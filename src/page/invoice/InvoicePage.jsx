@@ -56,7 +56,9 @@ const DEFAULT_INVOICE_TEMPLATE = {
   showAddress: true,
   showMemberInfo: true,
   showLogo: true,
-  logo: null
+  logo: null,
+  addressFieldsVisibility: { storeName: true, address: true, locationDetail: true, province: true, city: true, district: true, village: true, postalCode: true, phone: true, email: true },
+  memberFieldsVisible: { name: true, tier: true, points: true }
 };
 
 const sampleItems = [
@@ -89,6 +91,10 @@ const InvoicePreview = ({
   storeName,
   storePhone,
   storeEmail,
+  locationDetail,
+  cityName,
+  provinceName,
+  postalCodeValue,
   fullAddress,
   cashierName,
   memberName,
@@ -102,6 +108,8 @@ const InvoicePreview = ({
   showSocialMedia = true,
   socialMedia = [],
   socialMediaVisible = {},
+  addressFieldsVisible = {},
+  memberFieldsVisible = {},
 }) => {
   const { t } = useTranslation();
   const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
@@ -124,9 +132,13 @@ const InvoicePreview = ({
           )}
           {showAddress && (
             <div className="text-gray-500 mt-1 space-y-0.5">
-              {fullAddress && <p className="text-[11px]">{fullAddress}</p>}
-              {storePhone && <p className="text-[11px]">Telp: {storePhone}</p>}
-              {storeEmail && <p className="text-[11px]">{storeEmail}</p>}
+              {addressFieldsVisible.storeName !== false && storeName && <p className="text-[11px] font-semibold">{storeName}</p>}
+              {addressFieldsVisible.address !== false && locationDetail?.address && <p className="text-[11px]">{locationDetail.address}</p>}
+              {addressFieldsVisible.locationDetail !== false && locationDetail?.detailLocation && <p className="text-[11px]">{locationDetail.detailLocation}</p>}
+              {addressFieldsVisible.province !== false && provinceName && <p className="text-[11px]">{[cityName, provinceName].filter(Boolean).join(", ")}</p>}
+              {addressFieldsVisible.postalCode !== false && postalCodeValue && <p className="text-[11px]">Kode Pos: {postalCodeValue}</p>}
+              {addressFieldsVisible.phone !== false && storePhone && <p className="text-[11px]">Telp: {storePhone}</p>}
+              {addressFieldsVisible.email !== false && storeEmail && <p className="text-[11px]">{storeEmail}</p>}
             </div>
           )}
         </div>
@@ -157,11 +169,11 @@ const InvoicePreview = ({
           <div className="flex items-center gap-3 text-gray-700 text-[11px]">
             <Medal size={14} className="text-yellow-600 shrink-0" />
             <div className="flex-1 space-y-0.5">
-              <span className="block font-medium">{memberName || "-"}</span>
-              {memberTier && (
+              {memberFieldsVisible.name !== false && <span className="block font-medium">{memberName || "-"}</span>}
+              {memberTier && memberFieldsVisible.tier !== false && (
                 <span className="block text-gray-500 text-[10px]">Tier: {memberTier}</span>
               )}
-              {memberPoints !== undefined && (
+              {memberPoints !== undefined && memberFieldsVisible.points !== false && (
                 <span className="block text-gray-500 text-[10px]">
                   Poin: {Number(memberPoints).toLocaleString("id-ID")}
                 </span>
@@ -257,6 +269,7 @@ const InvoicePage = () => {
 
   const {
     data: storeData,
+    isLoading: storeLoading,
     isError: storeError,
     refetch: refetchStore
   } = useQuery(["store-detail", selectedStore], () => getLocationById({ id: selectedStore }), {
@@ -275,6 +288,13 @@ const InvoicePage = () => {
   const [showLogo, setShowLogo] = useState(true);
   const [showSocialMedia, setShowSocialMedia] = useState(true);
   const [socialMediaVisible, setSocialMediaVisible] = useState({});
+  const [addressFieldsVisible, setAddressFieldsVisible] = useState({
+    storeName: true, address: true, locationDetail: true, province: true,
+    city: true, district: true, village: true, postalCode: true, phone: true, email: true
+  });
+  const [memberFieldsVisible, setMemberFieldsVisible] = useState({
+    name: true, tier: true, points: true
+  });
   const [logoUrl, setLogoUrl] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
@@ -359,6 +379,26 @@ const InvoicePage = () => {
         setLogoUrl(settingsData.logo);
         setLogoPreview(settingsData.logo);
       }
+      if (settingsData.addressFieldsVisibility) {
+        try {
+          const v = typeof settingsData.addressFieldsVisibility === "string"
+            ? JSON.parse(settingsData.addressFieldsVisibility)
+            : settingsData.addressFieldsVisibility;
+          setAddressFieldsVisible((prev) => ({ ...prev, ...v }));
+        } catch (err) {
+          console.error("Failed to parse addressFieldsVisibility:", err);
+        }
+      }
+      if (settingsData.memberFieldsVisibility) {
+        try {
+          const v = typeof settingsData.memberFieldsVisibility === "string"
+            ? JSON.parse(settingsData.memberFieldsVisibility)
+            : settingsData.memberFieldsVisibility;
+          setMemberFieldsVisible((prev) => ({ ...prev, ...v }));
+        } catch (err) {
+          console.error("Failed to parse memberFieldsVisibility:", err);
+        }
+      }
     }
   }, [settingsData]);
 
@@ -429,6 +469,8 @@ const InvoicePage = () => {
       setShowAddress(DEFAULT_INVOICE_TEMPLATE.showAddress);
       setShowMemberInfo(DEFAULT_INVOICE_TEMPLATE.showMemberInfo);
       setShowLogo(DEFAULT_INVOICE_TEMPLATE.showLogo);
+      setAddressFieldsVisible(DEFAULT_INVOICE_TEMPLATE.addressFieldsVisibility);
+      setMemberFieldsVisible(DEFAULT_INVOICE_TEMPLATE.memberFieldsVisible);
       setLogoUrl(null);
       setLogoFile(null);
       setLogoPreview(null);
@@ -451,6 +493,8 @@ const InvoicePage = () => {
       payload.append("showLogo", showLogo);
       payload.append("showSocialMedia", showSocialMedia);
       payload.append("socialMediaVisibility", JSON.stringify(socialMediaVisible));
+      payload.append("addressFieldsVisibility", JSON.stringify(addressFieldsVisible));
+      payload.append("memberFieldsVisibility", JSON.stringify(memberFieldsVisible));
       if (logoFile) {
         payload.append("logo", logoFile);
       }
@@ -563,6 +607,56 @@ const InvoicePage = () => {
         </div>
       ) : storeError ? (
         <AbortController refetch={refetchStore} />
+      ) : storeLoading ? (
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-5 w-px" />
+            <Skeleton className="h-6 w-40" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3 space-y-6">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="bg-card rounded-xl border border-border p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="w-5 h-5 rounded" />
+                      <Skeleton className="h-5 w-32" />
+                    </div>
+                    <Skeleton className="h-6 w-11 rounded-full" />
+                  </div>
+                  <div className="space-y-3">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                </div>
+              ))}
+              <div className="flex gap-3">
+                <Skeleton className="h-11 flex-1 rounded-md" />
+                <Skeleton className="h-11 flex-1 rounded-md" />
+              </div>
+            </div>
+            <div className="lg:col-span-2">
+              <div className="bg-card rounded-xl border border-border p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="w-5 h-5 rounded" />
+                    <Skeleton className="h-5 w-24" />
+                  </div>
+                  <Skeleton className="h-8 w-28 rounded-md" />
+                </div>
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-4/6" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
         <>
           <div className="flex items-center gap-4 mb-4">
@@ -654,43 +748,37 @@ const InvoicePage = () => {
                   </div>
                 </div>
                 {hasStore ? (
-                  <div className="divide-y divide-border">
-                    <DetailRow icon={Store} label={t("page.invoice.storeName")} value={storeName} />
-                    <DetailRow
-                      icon={MapPin}
-                      label={t("page.invoice.address")}
-                      value={locationDetail?.address}
-                    />
-                    {locationDetail?.detailLocation && (
-                      <DetailRow
-                        icon={Globe}
-                        label={t("page.invoice.locationDetail")}
-                        value={locationDetail.detailLocation}
-                      />
-                    )}
-                    <DetailRow
-                      icon={Building2}
-                      label={t("page.invoice.province")}
-                      value={provinceName}
-                    />
-                    <DetailRow icon={Building2} label={t("page.invoice.city")} value={cityName} />
-                    <DetailRow
-                      icon={Building2}
-                      label={t("page.invoice.district")}
-                      value={districtName}
-                    />
-                    <DetailRow
-                      icon={Building2}
-                      label={t("page.invoice.village")}
-                      value={villageName}
-                    />
-                    <DetailRow
-                      icon={Hash}
-                      label={t("page.invoice.postalCode")}
-                      value={postalCodeValue}
-                    />
-                    <DetailRow icon={Phone} label={t("page.invoice.phone")} value={storePhone} />
-                    <DetailRow icon={Mail} label={t("page.invoice.email")} value={storeEmail} />
+                  <div className="space-y-3">
+                    {[
+                      { key: "storeName", icon: Store, label: t("page.invoice.storeName"), value: storeName },
+                      { key: "address", icon: MapPin, label: t("page.invoice.address"), value: locationDetail?.address },
+                      ...(locationDetail?.detailLocation ? [{ key: "locationDetail", icon: Globe, label: t("page.invoice.locationDetail"), value: locationDetail.detailLocation }] : []),
+                      { key: "province", icon: Building2, label: t("page.invoice.province"), value: provinceName },
+                      { key: "city", icon: Building2, label: t("page.invoice.city"), value: cityName },
+                      { key: "district", icon: Building2, label: t("page.invoice.district"), value: districtName },
+                      { key: "village", icon: Building2, label: t("page.invoice.village"), value: villageName },
+                      { key: "postalCode", icon: Hash, label: t("page.invoice.postalCode"), value: postalCodeValue },
+                      { key: "phone", icon: Phone, label: t("page.invoice.phone"), value: storePhone },
+                      { key: "email", icon: Mail, label: t("page.invoice.email"), value: storeEmail },
+                    ].map(({ key, icon: Icon, label, value }) => (
+                      <label
+                        key={key}
+                        className="flex items-center justify-between p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Icon size={16} className="text-muted-foreground shrink-0" />
+                          <div className="min-w-0">
+                            <span className="text-xs text-muted-foreground">{label}</span>
+                            <p className="text-sm font-medium truncate">{value || "-"}</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={addressFieldsVisible[key] ?? true}
+                          onCheckedChange={(v) =>
+                            setAddressFieldsVisible((prev) => ({ ...prev, [key]: v }))
+                          }
+                        />
+                      </label>
+                    ))}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground italic">
@@ -711,22 +799,52 @@ const InvoicePage = () => {
                     <Switch checked={showMemberInfo} onCheckedChange={setShowMemberInfo} />
                   </div>
                 </div>
-                <div className="divide-y divide-border">
-                  <DetailRow
-                    icon={Medal}
-                    label={t("page.invoice.memberName")}
-                    value={sampleMember.name}
-                  />
-                  <DetailRow
-                    icon={Award}
-                    label={t("page.invoice.memberTier")}
-                    value={sampleMember.tier}
-                  />
-                  <DetailRow
-                    icon={Coins}
-                    label={t("page.invoice.totalPoints")}
-                    value={Number(sampleMember.points).toLocaleString("id-ID")}
-                  />
+                <div className="space-y-3">
+                  <label className="flex items-center justify-between p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Medal size={16} className="text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        <span className="text-xs text-muted-foreground">{t("page.invoice.memberName")}</span>
+                        <p className="text-sm font-medium">{sampleMember.name}</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={memberFieldsVisible.name ?? true}
+                      onCheckedChange={(v) =>
+                        setMemberFieldsVisible((prev) => ({ ...prev, name: v }))
+                      }
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Award size={16} className="text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        <span className="text-xs text-muted-foreground">{t("page.invoice.memberTier")}</span>
+                        <p className="text-sm font-medium">{sampleMember.tier}</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={memberFieldsVisible.tier ?? true}
+                      onCheckedChange={(v) =>
+                        setMemberFieldsVisible((prev) => ({ ...prev, tier: v }))
+                      }
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Coins size={16} className="text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        <span className="text-xs text-muted-foreground">{t("page.invoice.totalPoints")}</span>
+                        <p className="text-sm font-medium">{Number(sampleMember.points).toLocaleString("id-ID")}</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={memberFieldsVisible.points ?? true}
+                      onCheckedChange={(v) =>
+                        setMemberFieldsVisible((prev) => ({ ...prev, points: v }))
+                      }
+                    />
+                  </label>
                 </div>
               </div>
 
@@ -818,6 +936,10 @@ const InvoicePage = () => {
                   storeName={storeName}
                   storePhone={storePhone}
                   storeEmail={storeEmail}
+                  locationDetail={locationDetail}
+                  cityName={cityName}
+                  provinceName={provinceName}
+                  postalCodeValue={postalCodeValue}
                   fullAddress={fullAddress}
                   cashierName={cashierName}
                   memberName={sampleMember.name}
@@ -831,6 +953,8 @@ const InvoicePage = () => {
                   showSocialMedia={showSocialMedia}
                   socialMedia={locationDetail?.socialMedia || []}
                   socialMediaVisible={socialMediaVisible}
+                  addressFieldsVisible={addressFieldsVisible}
+                  memberFieldsVisible={memberFieldsVisible}
                 />
               </div>
             </div>

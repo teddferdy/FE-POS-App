@@ -858,6 +858,9 @@ const AddPurchaseOrder = () => {
         </div>
       )}
 
+      {addSupplierMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+
       <Modal
         type="confirm"
         open={cancelModal}
@@ -868,6 +871,7 @@ const AddPurchaseOrder = () => {
         cancelText={t("page.purchaseOrder.add.cancelModalBack")}
         onConfirm={() => navigate("/purchase-order")}
       />
+
       <Modal
         type="confirm"
         open={draftModal}
@@ -880,6 +884,7 @@ const AddPurchaseOrder = () => {
           handleSubmit(null, true);
         }}
       />
+
       <Modal
         type="confirm"
         open={confirmModal}
@@ -896,6 +901,7 @@ const AddPurchaseOrder = () => {
           handleSubmit(null, false);
         }}
       />
+
       <Modal
         type="form"
         open={showAddSupplierModal}
@@ -941,8 +947,6 @@ const AddPurchaseOrder = () => {
           </div>
         </div>
       </Modal>
-      {addSupplierMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
-      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

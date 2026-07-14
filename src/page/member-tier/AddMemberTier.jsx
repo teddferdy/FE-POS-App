@@ -125,7 +125,10 @@ const AddMemberTier = () => {
       minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
       maxPoints: formData.maxPoints === "" ? 0 : Number(formData.maxPoints),
       discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
-      benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== "").join("\n"),
+      benefits: formData.perks
+        .map((p) => p.text)
+        .filter((t) => t.trim() !== "")
+        .join("\n"),
       status: saveAsDraft ? "draft" : formData.isActive ? "active" : "inactive",
       color: formData.selectedColor
     });
@@ -471,6 +474,8 @@ const AddMemberTier = () => {
         </div>
       </div>
 
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+
       <Modal
         type="confirm"
         open={cancelModal}
@@ -480,6 +485,7 @@ const AddMemberTier = () => {
         confirmText={t("page.memberTier.add.cancelConfirm")}
         onConfirm={() => navigate("/member-tier")}
       />
+
       <Modal
         type="confirm"
         open={draftModal}
@@ -494,13 +500,15 @@ const AddMemberTier = () => {
             minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
             maxPoints: formData.maxPoints === "" ? 0 : Number(formData.maxPoints),
             discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
-            benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== "").join("\n"),
+            benefits: formData.perks
+              .map((p) => p.text)
+              .filter((t) => t.trim() !== "")
+              .join("\n"),
             status: "draft",
             color: formData.selectedColor
           });
         }}
       />
-      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

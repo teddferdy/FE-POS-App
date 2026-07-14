@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getPurchaseOrderById } from "../../services/purchase-order";
 import { getPaymentsByPO, deletePayment, recordPayment } from "../../services/purchase-payment";
@@ -259,11 +259,7 @@ export default function DetailPurchaseOrder() {
           (() => {
             const st = statusMap[po.status] || statusMap.pending;
             const StatusIcon =
-              po.status === "received"
-                ? CheckCircle2
-                : po.status === "cancelled"
-                  ? XCircle
-                  : Clock;
+              po.status === "received" ? CheckCircle2 : po.status === "cancelled" ? XCircle : Clock;
             return (
               <span
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
@@ -280,442 +276,465 @@ export default function DetailPurchaseOrder() {
             <Card className="p-5 space-y-4">
               <Skeleton className="h-4 w-32" />
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
-                <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
               </div>
             </Card>
           </div>
           <div className="space-y-4">
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </Card>
           </div>
         </div>
       ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          {/* PO Info Card */}
-          <Card className="p-6">
-            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <FileText size={16} className="text-muted-foreground" />
-              {t("page.purchaseOrder.detail.info")}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-2 text-sm">
-                <Building2 size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">
-                  {t("page.purchaseOrder.detail.supplier")}:
-                </span>
-                <span className="font-medium">{po.supplierData?.name || "-"}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Store size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">
-                  {t("page.purchaseOrder.detail.store")}:
-                </span>
-                <span className="font-medium">{po.storeData?.name || "-"}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <User size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">{t("page.purchaseOrder.detail.pic")}:</span>
-                <span className="font-medium">{po.picData?.fullName || "-"}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <User size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">
-                  {t("page.purchaseOrder.detail.createdBy")}:
-                </span>
-                <span className="font-medium">{po.createdByUser?.fullName || "-"}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <CalendarDays size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">
-                  {t("page.purchaseOrder.detail.poDate")}:
-                </span>
-                <span className="font-medium">
-                  {po.orderDate ? format(new Date(po.orderDate), "dd MMM yyyy") : "-"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <CalendarDays size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">
-                  {t("page.purchaseOrder.detail.dueDate")}:
-                </span>
-                <span className="font-medium">
-                  {po.dueDate ? format(new Date(po.dueDate), "dd MMM yyyy") : "-"}
-                </span>
-              </div>
-              {po.supplierData?.phone && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* PO Info Card */}
+            <Card className="p-6">
+              <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <FileText size={16} className="text-muted-foreground" />
+                {t("page.purchaseOrder.detail.info")}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-2 text-sm">
-                  <Phone size={14} className="text-muted-foreground shrink-0" />
-                  <span className="text-muted-foreground">Telp:</span>
-                  <span className="font-medium">{po.supplierData.phone}</span>
-                </div>
-              )}
-              {po.receivedDate && (
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+                  <Building2 size={14} className="text-muted-foreground shrink-0" />
                   <span className="text-muted-foreground">
-                    {t("page.purchaseOrder.detail.date")} Received:
+                    {t("page.purchaseOrder.detail.supplier")}:
+                  </span>
+                  <span className="font-medium">{po.supplierData?.name || "-"}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Store size={14} className="text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.store")}:
+                  </span>
+                  <span className="font-medium">{po.storeData?.name || "-"}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <User size={14} className="text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.pic")}:
+                  </span>
+                  <span className="font-medium">{po.picData?.fullName || "-"}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <User size={14} className="text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.createdBy")}:
+                  </span>
+                  <span className="font-medium">{po.createdByUser?.fullName || "-"}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CalendarDays size={14} className="text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.poDate")}:
                   </span>
                   <span className="font-medium">
-                    {format(new Date(po.receivedDate), "dd MMM yyyy, HH:mm", { locale: localeId })}
+                    {po.orderDate ? format(new Date(po.orderDate), "dd MMM yyyy") : "-"}
                   </span>
                 </div>
-              )}
-            </div>
-            {po.notes && (
-              <div className="mt-4 p-3 bg-muted/30 rounded-lg text-sm">
-                <p className="text-muted-foreground mb-1">
-                  {t("page.purchaseOrder.detail.notes")}:
-                </p>
-                <p className="whitespace-pre-wrap">{po.notes}</p>
-              </div>
-            )}
-          </Card>
-
-          {/* Items Card */}
-          <Card className="p-6">
-            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <ShoppingBag size={16} className="text-muted-foreground" />
-              {t("page.purchaseOrder.detail.items")}
-            </h2>
-            <div className="overflow-x-auto border border-border rounded-lg">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
-                    <th className="text-left py-3 px-4 font-medium">
-                      {t("page.purchaseOrder.detail.product")}
-                    </th>
-                    <th className="text-right py-3 px-4 font-medium">
-                      {t("page.purchaseOrder.detail.qty")}
-                    </th>
-                    <th className="text-right py-3 px-4 font-medium">
-                      {t("page.purchaseOrder.detail.price")}
-                    </th>
-                    <th className="text-right py-3 px-4 font-medium">
-                      {t("page.purchaseOrder.detail.total")}
-                    </th>
-                    <th className="text-right py-3 px-4 font-medium">
-                      {t("page.purchaseOrder.detail.receivedCol")}
-                    </th>
-                    <th className="text-right py-3 px-4 font-medium">
-                      {t("page.purchaseOrder.detail.returnedCol")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {po.items?.map((item) => (
-                    <tr key={item.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="py-3 px-4">
-                        <p className="font-medium">
-                          {item.ingredientData?.name ||
-                            item.productData?.nameProduct ||
-                            item.ingredientName ||
-                            "-"}
-                        </p>
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono">
-                        {item.quantity || 0}
-                        <span className="text-xs text-muted-foreground ml-1">
-                          {item.unit || ""}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        Rp {Number(item.price || 0).toLocaleString("id-ID")}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold">
-                        Rp {Number(item.total || 0).toLocaleString("id-ID")}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono">
-                        <span
-                          className={
-                            item.receivedQuantity >= item.quantity
-                              ? "text-green-600"
-                              : "text-yellow-600"
-                          }>
-                          {item.receivedQuantity || 0} / {item.quantity || 0}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono">
-                        {item.returnedQty > 0 ? (
-                          <span className="text-red-500">{item.returnedQty}</span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-
-          {/* Payment Card */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <CreditCard size={16} className="text-muted-foreground" />
-                {t("page.purchaseOrder.detail.payment")}
-              </h2>
-              {remaining > 0 && po.status !== "cancelled" && po.status !== "draft" && (
-                <Button size="sm" variant="outline" onClick={() => setPaymentModalOpen(true)}>
-                  <Banknote size={14} className="mr-1" />
-                  {t("page.purchaseOrder.detail.pay")}
-                </Button>
-              )}
-            </div>
-            {payments.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                {t("page.purchaseOrder.detail.noPayment")}
-              </p>
-            ) : (
-              <div className="overflow-x-auto max-h-64 overflow-y-auto border border-border rounded-lg">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
-                      <th className="text-left py-3 px-4 font-medium">
-                        {t("page.purchaseOrder.detail.date")}
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium">
-                        {t("page.purchaseOrder.detail.paymentMethod")}
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium">
-                        {t("page.purchaseOrder.detail.reference")}
-                      </th>
-                      <th className="text-right py-3 px-4 font-medium">
-                        {t("page.purchaseOrder.detail.amount")}
-                      </th>
-                      <th className="text-right py-3 px-4 font-medium w-10" />
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {payments.map((payment) => (
-                      <tr key={payment.id} className="hover:bg-muted/30 transition-colors">
-                        <td className="py-3 px-4">
-                          {payment.paymentDate
-                            ? format(new Date(payment.paymentDate), "dd MMM yyyy, HH:mm", {
-                                locale: localeId
-                              })
-                            : "-"}
-                        </td>
-                        <td className="py-3 px-4 capitalize">{payment.paymentMethod || "-"}</td>
-                        <td className="py-3 px-4 text-muted-foreground">
-                          {payment.reference || "-"}
-                        </td>
-                        <td className="py-3 px-4 text-right font-mono font-bold">
-                          Rp {Number(payment.amount || 0).toLocaleString("id-ID")}
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                            onClick={() => {
-                              setPaymentToDelete(payment);
-                              setDeleteModalOpen(true);
-                            }}>
-                            <Trash2 size={14} />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
-
-          {/* Returns Card */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Undo2 size={16} className="text-muted-foreground" />
-                {t("page.purchaseOrder.detail.returns")}
-              </h2>
-              {po.status === "received" && (
-                <Button size="sm" variant="outline" onClick={openReturnModal}>
-                  <Plus size={14} className="mr-1" />
-                  {t("page.purchaseOrder.detail.addReturn")}
-                </Button>
-              )}
-            </div>
-            {returns.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                {t("page.purchaseOrder.detail.noReturn")}
-              </p>
-            ) : (
-              <div className="overflow-x-auto max-h-64 overflow-y-auto border border-border rounded-lg">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
-                      <th className="text-left py-3 px-4 font-medium">
-                        {t("page.purchaseOrder.detail.returnNo")}
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium">
-                        {t("page.purchaseOrder.detail.date")}
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium">
-                        {t("page.purchaseOrder.detail.status")}
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium">
-                        {t("page.purchaseOrder.detail.returnedBy")}
-                      </th>
-                      <th className="text-right py-3 px-4 font-medium">
-                        {t("page.purchaseOrder.detail.returnAmount")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {returns.map((r) => (
-                      <tr
-                        key={r.id}
-                        className="hover:bg-muted/30 transition-colors cursor-pointer"
-                        onClick={() => navigate(`/purchase-return/detail?id=${r.id}`)}>
-                        <td className="py-3 px-4 font-medium">{r.returnNumber || "-"}</td>
-                        <td className="py-3 px-4">
-                          {r.createdAt
-                            ? format(new Date(r.createdAt), "dd MMM yyyy, HH:mm", {
-                                locale: localeId
-                              })
-                            : "-"}
-                        </td>
-                        <td className="py-3 px-4">
-                          {(() => {
-                            const cls =
-                              r.status === "approved"
-                                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                                : r.status === "rejected"
-                                  ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                                  : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
-                            return (
-                              <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
-                                {r.status}
-                              </span>
-                            );
-                          })()}
-                        </td>
-                        <td className="py-3 px-4">{r.returnedBy?.name || "-"}</td>
-                        <td className="py-3 px-4 text-right font-mono">
-                          Rp {Number(r.totalAmount || r.amount || 0).toLocaleString("id-ID")}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
-        </div>
-
-        {/* Right Column: Summary & System */}
-        <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Receipt size={16} className="text-muted-foreground" />
-              {t("page.purchaseOrder.detail.summary")}
-            </h3>
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {t("page.purchaseOrder.detail.total")}
-                </span>
-                <span className="font-medium">
-                  Rp {Number(po.totalAmount || 0).toLocaleString("id-ID")}
-                </span>
-              </div>
-              {po.discount > 0 && (
-                <div className="flex justify-between text-sm">
+                <div className="flex items-center gap-2 text-sm">
+                  <CalendarDays size={14} className="text-muted-foreground shrink-0" />
                   <span className="text-muted-foreground">
-                    {t("page.purchaseOrder.detail.discount")}
+                    {t("page.purchaseOrder.detail.dueDate")}:
                   </span>
-                  <span className="font-medium text-red-500">
-                    - Rp {Number(po.discount).toLocaleString("id-ID")}
-                  </span>
-                </div>
-              )}
-              <div className="border-t border-border pt-3 flex justify-between text-sm font-bold">
-                <span>{t("page.purchaseOrder.detail.grandTotal")}</span>
-                <span>Rp {Number(po.finalAmount || 0).toLocaleString("id-ID")}</span>
-              </div>
-              {totalPaid > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {t("page.purchaseOrder.detail.paid")}
-                  </span>
-                  <span className="font-medium text-green-600">
-                    Rp {Number(totalPaid).toLocaleString("id-ID")}
+                  <span className="font-medium">
+                    {po.dueDate ? format(new Date(po.dueDate), "dd MMM yyyy") : "-"}
                   </span>
                 </div>
-              )}
-              {remaining > 0 ? (
-                <div className="flex justify-between text-sm border-t border-border pt-3">
-                  <span className="text-muted-foreground font-medium">
-                    {t("page.purchaseOrder.detail.remaining")}
-                  </span>
-                  <span className="font-bold text-red-500">
-                    Rp {Number(remaining).toLocaleString("id-ID")}
-                  </span>
-                </div>
-              ) : totalPaid > 0 ? (
-                <div className="flex justify-between text-sm border-t border-border pt-3">
-                  <span className="text-muted-foreground font-medium">
-                    {t("page.purchaseOrder.detail.paid")}
-                  </span>
-                  <span className="font-bold text-green-600">
-                    {t("page.purchaseOrder.detail.paid")}
-                  </span>
-                </div>
-              ) : null}
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Clock size={16} className="text-muted-foreground" />
-              {t("page.purchaseOrder.detail.system")}
-            </h3>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-border">
-                <tr>
-                  <td className="py-2 text-muted-foreground">
-                    {t("page.purchaseOrder.detail.created")}
-                  </td>
-                  <td className="py-2 text-right">
-                    {po.createdAt
-                      ? format(new Date(po.createdAt), "dd MMM yyyy, HH:mm", { locale: localeId })
-                      : "-"}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2 text-muted-foreground">
-                    {t("page.purchaseOrder.detail.updated")}
-                  </td>
-                  <td className="py-2 text-right">
-                    {po.updatedAt
-                      ? format(new Date(po.updatedAt), "dd MMM yyyy, HH:mm", { locale: localeId })
-                      : "-"}
-                  </td>
-                </tr>
+                {po.supplierData?.phone && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone size={14} className="text-muted-foreground shrink-0" />
+                    <span className="text-muted-foreground">Telp:</span>
+                    <span className="font-medium">{po.supplierData.phone}</span>
+                  </div>
+                )}
                 {po.receivedDate && (
-                  <tr>
-                    <td className="py-2 text-muted-foreground">
-                      {t("page.purchaseOrder.detail.receivedCol")}
-                    </td>
-                    <td className="py-2 text-right">
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+                    <span className="text-muted-foreground">
+                      {t("page.purchaseOrder.detail.date")} Received:
+                    </span>
+                    <span className="font-medium">
                       {format(new Date(po.receivedDate), "dd MMM yyyy, HH:mm", {
                         locale: localeId
                       })}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {po.notes && (
+                <div className="mt-4 p-3 bg-muted/30 rounded-lg text-sm">
+                  <p className="text-muted-foreground mb-1">
+                    {t("page.purchaseOrder.detail.notes")}:
+                  </p>
+                  <p className="whitespace-pre-wrap">{po.notes}</p>
+                </div>
+              )}
+            </Card>
+
+            {/* Items Card */}
+            <Card className="p-6">
+              <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <ShoppingBag size={16} className="text-muted-foreground" />
+                {t("page.purchaseOrder.detail.items")}
+              </h2>
+              <div className="overflow-x-auto border border-border rounded-lg">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.product")}
+                      </th>
+                      <th className="text-right py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.qty")}
+                      </th>
+                      <th className="text-right py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.price")}
+                      </th>
+                      <th className="text-right py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.total")}
+                      </th>
+                      <th className="text-right py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.receivedCol")}
+                      </th>
+                      <th className="text-right py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.returnedCol")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {po.items?.map((item) => (
+                      <tr key={item.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-3 px-4">
+                          <p className="font-medium">
+                            {item.ingredientData?.name ||
+                              item.productData?.nameProduct ||
+                              item.ingredientName ||
+                              "-"}
+                          </p>
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono">
+                          {item.quantity || 0}
+                          <span className="text-xs text-muted-foreground ml-1">
+                            {item.unit || ""}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          Rp {Number(item.price || 0).toLocaleString("id-ID")}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-bold">
+                          Rp {Number(item.total || 0).toLocaleString("id-ID")}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono">
+                          <span
+                            className={
+                              item.receivedQuantity >= item.quantity
+                                ? "text-green-600"
+                                : "text-yellow-600"
+                            }>
+                            {item.receivedQuantity || 0} / {item.quantity || 0}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono">
+                          {item.returnedQty > 0 ? (
+                            <span className="text-red-500">{item.returnedQty}</span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+
+            {/* Payment Card */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <CreditCard size={16} className="text-muted-foreground" />
+                  {t("page.purchaseOrder.detail.payment")}
+                </h2>
+                {remaining > 0 && po.status !== "cancelled" && po.status !== "draft" && (
+                  <Button size="sm" variant="outline" onClick={() => setPaymentModalOpen(true)}>
+                    <Banknote size={14} className="mr-1" />
+                    {t("page.purchaseOrder.detail.pay")}
+                  </Button>
+                )}
+              </div>
+              {payments.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {t("page.purchaseOrder.detail.noPayment")}
+                </p>
+              ) : (
+                <div className="overflow-x-auto max-h-64 overflow-y-auto border border-border rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
+                        <th className="text-left py-3 px-4 font-medium">
+                          {t("page.purchaseOrder.detail.date")}
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium">
+                          {t("page.purchaseOrder.detail.paymentMethod")}
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium">
+                          {t("page.purchaseOrder.detail.reference")}
+                        </th>
+                        <th className="text-right py-3 px-4 font-medium">
+                          {t("page.purchaseOrder.detail.amount")}
+                        </th>
+                        <th className="text-right py-3 px-4 font-medium w-10" />
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {payments.map((payment) => (
+                        <tr key={payment.id} className="hover:bg-muted/30 transition-colors">
+                          <td className="py-3 px-4">
+                            {payment.paymentDate
+                              ? format(new Date(payment.paymentDate), "dd MMM yyyy, HH:mm", {
+                                  locale: localeId
+                                })
+                              : "-"}
+                          </td>
+                          <td className="py-3 px-4 capitalize">{payment.paymentMethod || "-"}</td>
+                          <td className="py-3 px-4 text-muted-foreground">
+                            {payment.reference || "-"}
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono font-bold">
+                            Rp {Number(payment.amount || 0).toLocaleString("id-ID")}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => {
+                                setPaymentToDelete(payment);
+                                setDeleteModalOpen(true);
+                              }}>
+                              <Trash2 size={14} />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Card>
+
+            {/* Returns Card */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Undo2 size={16} className="text-muted-foreground" />
+                  {t("page.purchaseOrder.detail.returns")}
+                </h2>
+                {po.status === "received" && (
+                  <Button size="sm" variant="outline" onClick={openReturnModal}>
+                    <Plus size={14} className="mr-1" />
+                    {t("page.purchaseOrder.detail.addReturn")}
+                  </Button>
+                )}
+              </div>
+              {returns.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {t("page.purchaseOrder.detail.noReturn")}
+                </p>
+              ) : (
+                <div className="overflow-x-auto max-h-64 overflow-y-auto border border-border rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
+                        <th className="text-left py-3 px-4 font-medium">
+                          {t("page.purchaseOrder.detail.returnNo")}
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium">
+                          {t("page.purchaseOrder.detail.date")}
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium">
+                          {t("page.purchaseOrder.detail.status")}
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium">
+                          {t("page.purchaseOrder.detail.returnedBy")}
+                        </th>
+                        <th className="text-right py-3 px-4 font-medium">
+                          {t("page.purchaseOrder.detail.returnAmount")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {returns.map((r) => (
+                        <tr
+                          key={r.id}
+                          className="hover:bg-muted/30 transition-colors cursor-pointer"
+                          onClick={() => navigate(`/purchase-return/detail?id=${r.id}`)}>
+                          <td className="py-3 px-4 font-medium">{r.returnNumber || "-"}</td>
+                          <td className="py-3 px-4">
+                            {r.createdAt
+                              ? format(new Date(r.createdAt), "dd MMM yyyy, HH:mm", {
+                                  locale: localeId
+                                })
+                              : "-"}
+                          </td>
+                          <td className="py-3 px-4">
+                            {(() => {
+                              const cls =
+                                r.status === "approved"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                  : r.status === "rejected"
+                                    ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                                    : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
+                              return (
+                                <span
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
+                                  {r.status}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                          <td className="py-3 px-4">{r.returnedBy?.name || "-"}</td>
+                          <td className="py-3 px-4 text-right font-mono">
+                            Rp {Number(r.totalAmount || r.amount || 0).toLocaleString("id-ID")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Card>
+          </div>
+
+          {/* Right Column: Summary & System */}
+          <div className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Receipt size={16} className="text-muted-foreground" />
+                {t("page.purchaseOrder.detail.summary")}
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.total")}
+                  </span>
+                  <span className="font-medium">
+                    Rp {Number(po.totalAmount || 0).toLocaleString("id-ID")}
+                  </span>
+                </div>
+                {po.discount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {t("page.purchaseOrder.detail.discount")}
+                    </span>
+                    <span className="font-medium text-red-500">
+                      - Rp {Number(po.discount).toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                )}
+                <div className="border-t border-border pt-3 flex justify-between text-sm font-bold">
+                  <span>{t("page.purchaseOrder.detail.grandTotal")}</span>
+                  <span>Rp {Number(po.finalAmount || 0).toLocaleString("id-ID")}</span>
+                </div>
+                {totalPaid > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {t("page.purchaseOrder.detail.paid")}
+                    </span>
+                    <span className="font-medium text-green-600">
+                      Rp {Number(totalPaid).toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                )}
+                {remaining > 0 ? (
+                  <div className="flex justify-between text-sm border-t border-border pt-3">
+                    <span className="text-muted-foreground font-medium">
+                      {t("page.purchaseOrder.detail.remaining")}
+                    </span>
+                    <span className="font-bold text-red-500">
+                      Rp {Number(remaining).toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                ) : totalPaid > 0 ? (
+                  <div className="flex justify-between text-sm border-t border-border pt-3">
+                    <span className="text-muted-foreground font-medium">
+                      {t("page.purchaseOrder.detail.paid")}
+                    </span>
+                    <span className="font-bold text-green-600">
+                      {t("page.purchaseOrder.detail.paid")}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Clock size={16} className="text-muted-foreground" />
+                {t("page.purchaseOrder.detail.system")}
+              </h3>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-border">
+                  <tr>
+                    <td className="py-2 text-muted-foreground">
+                      {t("page.purchaseOrder.detail.created")}
+                    </td>
+                    <td className="py-2 text-right">
+                      {po.createdAt
+                        ? format(new Date(po.createdAt), "dd MMM yyyy, HH:mm", { locale: localeId })
+                        : "-"}
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </Card>
+                  <tr>
+                    <td className="py-2 text-muted-foreground">
+                      {t("page.purchaseOrder.detail.updated")}
+                    </td>
+                    <td className="py-2 text-right">
+                      {po.updatedAt
+                        ? format(new Date(po.updatedAt), "dd MMM yyyy, HH:mm", { locale: localeId })
+                        : "-"}
+                    </td>
+                  </tr>
+                  {po.receivedDate && (
+                    <tr>
+                      <td className="py-2 text-muted-foreground">
+                        {t("page.purchaseOrder.detail.receivedCol")}
+                      </td>
+                      <td className="py-2 text-right">
+                        {format(new Date(po.receivedDate), "dd MMM yyyy, HH:mm", {
+                          locale: localeId
+                        })}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </Card>
+          </div>
         </div>
-      </div>
       )}
 
       {/* Payment Modal */}

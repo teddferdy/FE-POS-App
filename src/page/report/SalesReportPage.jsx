@@ -5,7 +5,6 @@ import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getSalesSummary } from "@/services/report";
 import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
@@ -104,30 +103,13 @@ const SalesReportPage = () => {
             <AbortController refetch={refetch} />
           ) : (
             <div className="relative min-h-[300px]">
-              {salesLoading && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="bg-card rounded-xl border border-border p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <Skeleton className="h-3 w-24" />
-                        <Skeleton className="h-4 w-4 rounded" />
-                      </div>
-                      <Skeleton className="h-8 w-28 mb-2" />
-                      <Skeleton className="h-3 w-20" />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {salesData?.data && (
-                <GlobalSalesTab
-                  t={t}
-                  period={salesPeriod}
-                  setPeriod={setSalesPeriod}
-                  data={salesData?.data}
-                  isLoading={salesLoading}
-                />
-              )}
+              <GlobalSalesTab
+                t={t}
+                period={salesPeriod}
+                setPeriod={setSalesPeriod}
+                data={salesData?.data}
+                isLoading={salesLoading}
+              />
             </div>
           )}
         </>

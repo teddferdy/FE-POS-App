@@ -111,20 +111,20 @@ const AddProduct = () => {
 
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
-    ["allLocations"],
-    getAllLocation,
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const {
+    data: locationsData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["allLocations"], getAllLocation, {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const firstStore = selectedStores[0] || "";
   const { data: categoriesData } = useQuery(
     ["categories-for-product", firstStore],
     () => getAllCategoryActive({ location: firstStore }),
-    {  enabled: true }
+    { enabled: true }
   );
   const categories = categoriesData?.data || categoriesData?.categories || [];
 
@@ -1739,7 +1739,10 @@ const AddProduct = () => {
         </div>
       </div>
 
+      {isSubmitting && <Loading fullscreen size="lg" label={t("page.product.form.saving")} />}
+
       <Modal type="confirm" {...confirmModal()} />
+
       <Modal
         type="success"
         open={successModal}
@@ -1773,8 +1776,6 @@ const AddProduct = () => {
           handleSave(values, true);
         }}
       />
-
-      {isSubmitting && <Loading fullscreen size="lg" label={t("page.product.form.saving")} />}
     </div>
   );
 };

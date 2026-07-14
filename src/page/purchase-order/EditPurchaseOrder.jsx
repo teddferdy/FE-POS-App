@@ -55,7 +55,6 @@ const EditPurchaseOrder = () => {
 
   const {
     data: poData,
-    isLoading: loadingPo,
     isError,
     refetch
   } = useQuery(["po-edit", id], () => getPurchaseOrderById(id), { enabled: !!id });
@@ -88,17 +87,19 @@ const EditPurchaseOrder = () => {
     }
   }, [po]);
 
-  const { data: suppliersData, isLoading: suppliersLoading, isFetching: suppliersFetching } = useQuery(
+  const { data: suppliersData } = useQuery(
     ["suppliers-dropdown", store],
     () => getAllSupplier({ limit: 999, store: store || undefined }),
     { staleTime: 30000 }
   );
   const suppliers = suppliersData?.data || [];
 
-  const { data: employeesData, isLoading: employeesLoading, isFetching: employeesFetching } = useQuery(
+  const { data: employeesData } = useQuery(
     ["employees-dropdown"],
     () => getAllEmployee({ limit: 999, status: "active" }),
-    { staleTime: 30000 }
+    {
+      staleTime: 30000
+    }
   );
   const employees = employeesData?.data || [];
 
@@ -110,19 +111,18 @@ const EditPurchaseOrder = () => {
     (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
   );
 
-  const { data: locationsData, isLoading: locationsLoading, isFetching: locationsFetching } = useQuery(["locations-for-po"], () => getAllLocation(), {
+  const { data: locationsData } = useQuery(["locations-for-po"], () => getAllLocation(), {
     staleTime: 30000
   });
   const locations = locationsData?.data || [];
 
-  const { data: ingredientsData, isLoading: ingredientsLoading, isFetching: ingredientsFetching } = useQuery(
+  const { data: ingredientsData, isFetching: ingredientsFetching } = useQuery(
     ["ingredients-po-edit", selectedStore],
     () => getAllIngredients({ store: selectedStore, limit: 999 }),
     { enabled: !!selectedStore, staleTime: 30000 }
   );
   const ingredients = ingredientsData?.data || [];
 
-  const headerReady = !loadingPo && !suppliersLoading && !employeesLoading && !locationsLoading;
   const [ingredientsReady, setIngredientsReady] = useState(false);
   const prevStoreRef = useRef(selectedStore);
   useEffect(() => {
@@ -132,7 +132,7 @@ const EditPurchaseOrder = () => {
     }
     if (ingredientsData) setIngredientsReady(true);
   }, [selectedStore, ingredientsData]);
-  const itemsLoading = !!selectedStore && !ingredientsReady;
+  const itemsLoading = !!selectedStore && (!ingredientsReady || ingredientsFetching);
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
 
   const getFilteredIngredients = (search) =>
@@ -269,7 +269,6 @@ const EditPurchaseOrder = () => {
       notes,
       pic: picId,
       discount,
-      status: saveAsDraft ? "draft" : undefined,
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       orderDate: (() => {
         const d = new Date(orderDate);
@@ -319,8 +318,8 @@ const EditPurchaseOrder = () => {
                 { label: t("page.purchaseOrder.edit.title") }
               ]}
               title={t("page.purchaseOrder.edit.title")}
-            description={t("page.purchaseOrder.edit.description")}
-            backLink="/purchase-order">
+              description={t("page.purchaseOrder.edit.description")}
+              backLink="/purchase-order">
               <Skeleton className="h-9 w-28" />
             </PageHeader>
           </div>
@@ -371,7 +370,10 @@ const EditPurchaseOrder = () => {
                 href: "/purchase-order",
                 i18nKey: "page.purchaseOrder.list.title"
               },
-              { label: t("page.purchaseOrder.edit.title"), i18nKey: "page.purchaseOrder.edit.title" }
+              {
+                label: t("page.purchaseOrder.edit.title"),
+                i18nKey: "page.purchaseOrder.edit.title"
+              }
             ]}
             title={`${t("page.purchaseOrder.edit.editLabel")} ${po.orderNumber || `PO-${po.id}`}`}
             description={t("page.purchaseOrder.edit.description")}>
@@ -735,41 +737,41 @@ const EditPurchaseOrder = () => {
                       <Skeleton className="h-8 w-48" />
                     </div>
                   ) : (
-                  <div className="flex flex-col items-end space-y-2">
-                    <div className="flex items-center gap-3">
-                      <label className="text-sm text-muted-foreground font-medium">
-                        {t("page.purchaseOrder.add.discount")}
-                      </label>
-                      <Input
-                        placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                        value={discount ? formatIDR(discount) : ""}
-                        onChange={(e) => setDiscount(parseIDR(e.target.value))}
-                        className="h-9 text-sm w-36 text-right"
-                      />
+                    <div className="flex flex-col items-end space-y-2">
+                      <div className="flex items-center gap-3">
+                        <label className="text-sm text-muted-foreground font-medium">
+                          {t("page.purchaseOrder.add.discount")}
+                        </label>
+                        <Input
+                          placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                          value={discount ? formatIDR(discount) : ""}
+                          onChange={(e) => setDiscount(parseIDR(e.target.value))}
+                          className="h-9 text-sm w-36 text-right"
+                        />
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">
+                          {t("page.purchaseOrder.add.totalPrice")}
+                        </p>
+                        <p className="text-2xl font-bold text-foreground">
+                          Rp {totalAmount.toLocaleString("id-ID")}
+                        </p>
+                      </div>
+                      {discount > 0 && (
+                        <>
+                          <div className="w-full border-t border-border my-1" />
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-red-500">
+                              {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
+                              {discount.toLocaleString("id-ID")}
+                            </p>
+                            <p className="text-xl font-bold text-foreground">
+                              Rp {finalAmount.toLocaleString("id-ID")}
+                            </p>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">
-                        {t("page.purchaseOrder.add.totalPrice")}
-                      </p>
-                      <p className="text-2xl font-bold text-foreground">
-                        Rp {totalAmount.toLocaleString("id-ID")}
-                      </p>
-                    </div>
-                    {discount > 0 && (
-                      <>
-                        <div className="w-full border-t border-border my-1" />
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-red-500">
-                            {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
-                            {discount.toLocaleString("id-ID")}
-                          </p>
-                          <p className="text-xl font-bold text-foreground">
-                            Rp {finalAmount.toLocaleString("id-ID")}
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </div>
                   )}
                 </div>
               </div>
@@ -792,9 +794,9 @@ const EditPurchaseOrder = () => {
                   {itemsLoading ? (
                     <Skeleton className="h-4 w-28 ml-auto" />
                   ) : (
-                  <p className="text-sm font-semibold">
-                    Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
-                  </p>
+                    <p className="text-sm font-semibold">
+                      Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
+                    </p>
                   )}
                 </div>
                 <div className="flex gap-3">
@@ -849,7 +851,10 @@ const EditPurchaseOrder = () => {
         open={confirmModal}
         onOpenChange={setConfirmModal}
         title={t("page.purchaseOrder.add.confirmTitle") || "Simpan Perubahan?"}
-        description={t("page.purchaseOrder.add.confirmDesc") || "Pastikan data yang diubah sudah benar sebelum menyimpan."}
+        description={
+          t("page.purchaseOrder.add.confirmDesc") ||
+          "Pastikan data yang diubah sudah benar sebelum menyimpan."
+        }
         confirmText={t("common.yes") || "Ya"}
         cancelText={t("common.no") || "Batal"}
         onConfirm={() => {

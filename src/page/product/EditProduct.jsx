@@ -158,13 +158,13 @@ const EditProduct = () => {
   );
   const taxOptions = (taxData?.data || []).filter((t) => t.status === "active");
 
-  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
-    ["allLocations"],
-    getAllLocation,
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const {
+    data: locationsData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["allLocations"], getAllLocation, {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const storeIds = locations.map((l) => l.id);
@@ -1886,7 +1886,11 @@ const EditProduct = () => {
         </div>
       </div>
 
+      {isSubmitting && <Loading fullscreen size="lg" label={t("page.product.form.savingEdit")} />}
+      {savingStoreId && <Loading fullscreen size="lg" label={t("common.saving")} />}
+
       <Modal type="confirm" {...confirmModal()} />
+
       <Modal
         type="success"
         open={successModal}
@@ -1895,6 +1899,7 @@ const EditProduct = () => {
         description={t("page.product.form.successEditDesc")}
         onConfirm={() => navigate("/product-list")}
       />
+
       <Modal
         type="confirm"
         open={cancelModal}
@@ -1920,9 +1925,6 @@ const EditProduct = () => {
           handleSave(values, true);
         }}
       />
-
-      {isSubmitting && <Loading fullscreen size="lg" label={t("page.product.form.savingEdit")} />}
-      {savingStoreId && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

@@ -197,6 +197,7 @@ const TaxConfigList = () => {
     {
       header: t("common.actions"),
       align: "right",
+      stickyRight: true,
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "edit") && (

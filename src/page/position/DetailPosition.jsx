@@ -79,11 +79,7 @@ const DetailPosition = () => {
         </button>
         <span className="text-xs">/</span>
         <span className="text-primary font-semibold">
-          {isLoading ? (
-            <Skeleton className="h-4 w-32 inline-block" />
-          ) : (
-            position.name || "Detail"
-          )}
+          {isLoading ? <Skeleton className="h-4 w-32 inline-block" /> : position.name || "Detail"}
         </span>
       </nav>
 

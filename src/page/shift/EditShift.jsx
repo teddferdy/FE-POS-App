@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
@@ -106,7 +107,44 @@ const EditShift = () => {
   }
 
   if (isLoading) {
-    return <Loading fullscreen size="lg" label={t("page.shift.edit.loading")} />;
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2 text-sm">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <div className="flex gap-3">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-28" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+        </div>
+        <Card className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-6 w-32" />
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -124,12 +162,14 @@ const EditShift = () => {
               href: "/shift",
               i18nKey: "page.shift.edit.breadcrumb.list"
             },
-            { label: t("page.shift.edit.breadcrumb.edit"), i18nKey: "page.shift.edit.breadcrumb.edit" }
+            {
+              label: t("page.shift.edit.breadcrumb.edit"),
+              i18nKey: "page.shift.edit.breadcrumb.edit"
+            }
           ]}
           title={t("page.shift.edit.title")}
           description={t("page.shift.edit.subtitle")}
-          backLink="/shift">
-        </PageHeader>
+          backLink="/shift"></PageHeader>
 
         <div className="flex items-center justify-between">
           <div></div>
@@ -235,6 +275,10 @@ const EditShift = () => {
           </Form>
           <Modal type="confirm" {...confirmModal()} />
         </Card>
+
+        {updateMutation.isLoading && (
+          <Loading fullscreen size="lg" label={t("page.shift.edit.saving")} />
+        )}
 
         <Modal
           type="confirm"

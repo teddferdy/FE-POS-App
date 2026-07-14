@@ -118,108 +118,124 @@ const DetailProductionOrder = () => {
             <Card className="p-6 space-y-4">
               <Skeleton className="h-4 w-32" />
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
-                <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
               </div>
             </Card>
           </div>
           <div className="space-y-4">
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
           </div>
         </div>
       ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div>
-            <div className="bg-card p-6 rounded-xl border border-border">
-              <h2 className="text-lg font-semibold mb-4">
-                {t("page.productionOrder.detail.informasiProduksi")}
-              </h2>
-              <table className="w-full text-sm">
-                <tbody>
-                  {[
-                    [t("page.productionOrder.detail.noProduksi"), order.productionNo],
-                    [
-                      t("page.productionOrder.detail.produk"),
-                      order.productData?.nameProduct || "-"
-                    ],
-                    [t("page.productionOrder.detail.sku"), order.productData?.sku || "-"],
-                    [t("page.productionOrder.detail.jumlahRencana"), order.plannedQty],
-                    [t("page.productionOrder.detail.jumlahHasil"), order.producedQty || 0],
-                    [t("page.productionOrder.detail.store"), order.storeData?.name || "-"],
-                    [
-                      t("page.productionOrder.detail.tanggalJadwal"),
-                      order.scheduledDate
-                        ? new Date(order.scheduledDate).toLocaleDateString("id")
-                        : "-"
-                    ],
-                    [
-                      t("page.productionOrder.detail.tanggalSelesai"),
-                      order.completedDate
-                        ? new Date(order.completedDate).toLocaleDateString("id")
-                        : "-"
-                    ],
-                    [t("page.productionOrder.detail.catatan"), order.notes || "-"]
-                  ].map(([label, value]) => (
-                    <tr key={label} className="border-b border-muted/30">
-                      <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
-                      <td className="py-2 font-medium">{value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {order.bomComponents?.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
             <div>
               <div className="bg-card p-6 rounded-xl border border-border">
                 <h2 className="text-lg font-semibold mb-4">
-                  {t("page.productionOrder.detail.bomComponents")}
+                  {t("page.productionOrder.detail.informasiProduksi")}
                 </h2>
                 <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-2">{t("page.productionOrder.detail.bomBahan")}</th>
-                      <th className="pb-2">{t("page.productionOrder.detail.bomQtyPerUnit")}</th>
-                      <th className="pb-2">{t("page.productionOrder.detail.bomUnit")}</th>
-                      <th className="pb-2">{t("page.productionOrder.detail.bomTotal")}</th>
-                    </tr>
-                  </thead>
                   <tbody>
-                    {order.bomComponents.map((c, i) => (
-                      <tr key={i} className="border-b border-muted/20">
-                        <td className="py-2">{c.ingredientName || c.name}</td>
-                        <td className="py-2">{c.qty}</td>
-                        <td className="py-2">{c.unit || "pcs"}</td>
-                        <td className="py-2 font-mono">
-                          {(parseFloat(c.qty) || 0) * order.plannedQty}
-                        </td>
+                    {[
+                      [t("page.productionOrder.detail.noProduksi"), order.productionNo],
+                      [
+                        t("page.productionOrder.detail.produk"),
+                        order.productData?.nameProduct || "-"
+                      ],
+                      [t("page.productionOrder.detail.sku"), order.productData?.sku || "-"],
+                      [t("page.productionOrder.detail.jumlahRencana"), order.plannedQty],
+                      [t("page.productionOrder.detail.jumlahHasil"), order.producedQty || 0],
+                      [t("page.productionOrder.detail.store"), order.storeData?.name || "-"],
+                      [
+                        t("page.productionOrder.detail.tanggalJadwal"),
+                        order.scheduledDate
+                          ? new Date(order.scheduledDate).toLocaleDateString("id")
+                          : "-"
+                      ],
+                      [
+                        t("page.productionOrder.detail.tanggalSelesai"),
+                        order.completedDate
+                          ? new Date(order.completedDate).toLocaleDateString("id")
+                          : "-"
+                      ],
+                      [t("page.productionOrder.detail.catatan"), order.notes || "-"]
+                    ].map(([label, value]) => (
+                      <tr key={label} className="border-b border-muted/30">
+                        <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
+                        <td className="py-2 font-medium">{value}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
-          )}
-        </div>
 
-        <div className="space-y-6">
-          <div>
-            <div className="bg-card p-6 rounded-xl border border-border">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                {t("page.productionOrder.detail.status")}
-              </h2>
-              <div
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${st.class}`}>
-                <StatusIcon size={14} /> {st.label}
+            {order.bomComponents?.length > 0 && (
+              <div>
+                <div className="bg-card p-6 rounded-xl border border-border">
+                  <h2 className="text-lg font-semibold mb-4">
+                    {t("page.productionOrder.detail.bomComponents")}
+                  </h2>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th className="pb-2">{t("page.productionOrder.detail.bomBahan")}</th>
+                        <th className="pb-2">{t("page.productionOrder.detail.bomQtyPerUnit")}</th>
+                        <th className="pb-2">{t("page.productionOrder.detail.bomUnit")}</th>
+                        <th className="pb-2">{t("page.productionOrder.detail.bomTotal")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {order.bomComponents.map((c, i) => (
+                        <tr key={i} className="border-b border-muted/20">
+                          <td className="py-2">{c.ingredientName || c.name}</td>
+                          <td className="py-2">{c.qty}</td>
+                          <td className="py-2">{c.unit || "pcs"}</td>
+                          <td className="py-2 font-mono">
+                            {(parseFloat(c.qty) || 0) * order.plannedQty}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <div className="bg-card p-6 rounded-xl border border-border">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                  {t("page.productionOrder.detail.status")}
+                </h2>
+                <div
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${st.class}`}>
+                  <StatusIcon size={14} /> {st.label}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
       )}
     </div>
   );

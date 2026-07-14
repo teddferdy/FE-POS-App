@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Form,
   FormField,
@@ -59,9 +60,11 @@ const EditPosition = () => {
   });
   const position = positionData?.data || positionData;
 
-  const { data: departmentsData } = useQuery(["departments-all"], () => getAllDepartment(), {
-    
-  });
+  const { data: departmentsData, isLoading: deptLoading } = useQuery(
+    ["departments-all"],
+    () => getAllDepartment(),
+    {}
+  );
   const departments = departmentsData?.data || departmentsData?.departments || [];
 
   const form = useForm({
@@ -115,7 +118,42 @@ const EditPosition = () => {
     );
   }
 
-  if (positionsLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
+  if (positionsLoading || deptLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2 text-sm">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-12" />
+        </div>
+        <Skeleton className="h-8 w-48" />
+        <div className="bg-card p-6 rounded-xl shadow-sm border border-border space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+          <Skeleton className="h-14 w-full rounded-lg" />
+          <div className="flex justify-end gap-3">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-28" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (isError) return <AbortController refetch={refetch} />;
 
   if (!position) {
@@ -350,6 +388,8 @@ const EditPosition = () => {
         </div>
       </div>
 
+      {editMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+
       <Modal
         type="confirm"
         open={draftModal}
@@ -362,6 +402,7 @@ const EditPosition = () => {
           onSubmit(form.getValues(), true);
         }}
       />
+
       <Modal
         type="confirm"
         open={saveConfirm}

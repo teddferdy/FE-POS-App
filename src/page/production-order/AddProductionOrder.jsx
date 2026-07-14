@@ -34,9 +34,7 @@ const AddProductionOrder = () => {
   const [draftModal, setDraftModal] = useState(false);
   // const [productSearch, setProductSearch] = useState("");
 
-  const { data: productsData } = useQuery(["products-for-po"], () => getAllProduct({}), {
-    
-  });
+  const { data: productsData } = useQuery(["products-for-po"], () => getAllProduct({}), {});
   const products = productsData?.data || [];
 
   const { data: editData } = useQuery(["production-order", id], () => getProductionOrderById(id), {
@@ -241,6 +239,7 @@ const AddProductionOrder = () => {
           navigate("/production-order");
         }}
       />
+
       <Modal
         type="confirm"
         open={draftModal}

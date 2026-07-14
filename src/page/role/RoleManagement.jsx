@@ -178,7 +178,9 @@ const RoleManagement = () => {
                     {
                       header: t("page.globalSetting.roleManagement.table.description"),
                       render: (row) => (
-                        <span className="text-sm text-muted-foreground">{row.description || "-"}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {row.description || "-"}
+                        </span>
                       )
                     },
                     {

@@ -298,9 +298,15 @@ const DetailMemberTier = () => {
                 <Gift size={18} className="text-primary" />
                 <h3 className="text-base font-semibold text-foreground">Benefits</h3>
               </div>
-              {(Array.isArray(tier.benefits) ? tier.benefits : (tier.benefits || "").split("\n").filter(Boolean)).length > 0 ? (
+              {(Array.isArray(tier.benefits)
+                ? tier.benefits
+                : (tier.benefits || "").split("\n").filter(Boolean)
+              ).length > 0 ? (
                 <ul className="space-y-2">
-                  {(Array.isArray(tier.benefits) ? tier.benefits : (tier.benefits || "").split("\n").filter(Boolean)).map((b, i) => (
+                  {(Array.isArray(tier.benefits)
+                    ? tier.benefits
+                    : (tier.benefits || "").split("\n").filter(Boolean)
+                  ).map((b, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-foreground">
                       <span
                         className="w-2 h-2 rounded-full shrink-0"
