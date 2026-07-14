@@ -17,6 +17,11 @@ import {
   ChevronRight,
   ArrowLeft,
   ImagePlus,
+  Award,
+  Medal,
+  Coins,
+  RotateCcw,
+  Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
