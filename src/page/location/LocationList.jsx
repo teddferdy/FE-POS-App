@@ -404,6 +404,9 @@ const LocationList = () => {
                 emptyMessage={t("page.location.list.empty")}
                 toolbar={
                   <div className="flex items-center gap-3">
+                    <h3 className="text-sm font-semibold text-foreground whitespace-nowrap">
+                      {t("page.location.list.title")}
+                    </h3>
                     <div className="relative flex-1">
                       <Search
                         size={16}
