@@ -19,11 +19,11 @@ import NoStore from "@/components/ui/NoStore";
 const PriceStoreList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [cookie] = useCookies();
+  const [cookie, setCookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const [selectedStore, setSelectedStore] = useState("");
+  const [selectedStore, setSelectedStore] = useState(cookie?.activeStore || "");
   const [editModal, setEditModal] = useState(null);
   const [editPrice, setEditPrice] = useState("");
 
@@ -141,7 +141,11 @@ const PriceStoreList = () => {
             {stores.map((s) => (
               <button
                 key={s.id}
-                onClick={() => setSelectedStore(String(s.id))}
+                onClick={() => {
+                  setSelectedStore(String(s.id));
+                  setCookie("activeStore", String(s.id), { path: "/" });
+                  setCookie("activeStoreName", s.name || "", { path: "/" });
+                }}
                 className="group relative flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all duration-200">
                 <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
                   <Store size={28} className="text-primary" />
