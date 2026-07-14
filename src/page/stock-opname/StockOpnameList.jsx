@@ -68,9 +68,11 @@ const StockOpnameList = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
 
-  const { data: locData } = useQuery(["locations-stock-opname"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-stock-opname"],
+    () => getAllLocation("active"),
+    { enabled: isSuperAdmin }
+  );
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["stockOpname", page, limit, search, warehouseFilter, statusFilter],
@@ -447,81 +449,96 @@ const StockOpnameList = () => {
                 }}
                 toolbar={
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                    <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                      <h4 className="text-base font-semibold text-foreground shrink-0">
-                        {t("page.stockOpname.list.title")}
-                      </h4>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2 h-9 lg:hidden"
-                        onClick={() => setShowFilters(!showFilters)}>
-                        <span className="material-symbols-outlined text-base">filter_list</span>
-                        {showFilters ? "Tutup" : "Filter"}
-                      </Button>
-                    </div>
-                    <div
-                      className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="relative">
-                          <select
-                            value={warehouseFilter}
-                            onChange={(e) => {
-                              setWarehouseFilter(e.target.value);
-                              setPage(1);
-                            }}
-                            className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                            <option value="all">{t("page.stockOpname.list.allWarehouse")}</option>
-                            <option value="utama-jkt">
-                              {t("page.stockOpname.list.warehouseUtama")}
-                            </option>
-                            <option value="bsd">{t("page.stockOpname.list.warehouseBsd")}</option>
-                            <option value="dc">{t("page.stockOpname.list.warehouseDc")}</option>
-                          </select>
-                          <ChevronLeft
-                            size={14}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
-                          />
+                    {isLoadingLocations ? (
+                      <>
+                        <Skeleton className="h-6 w-32" />
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Skeleton className="h-9 w-48 rounded-md" />
+                          <Skeleton className="h-9 w-36 rounded-md" />
+                          <Skeleton className="h-9 w-64 rounded-md" />
                         </div>
-                        <div className="relative">
-                          <select
-                            value={statusFilter}
-                            onChange={(e) => {
-                              setStatusFilter(e.target.value);
-                              setPage(1);
-                            }}
-                            className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                            <option value="all">{t("page.stockOpname.list.allStatus")}</option>
-                            <option value="draft">{t("page.stockOpname.status.draft")}</option>
-                            <option value="completed">
-                              {t("page.stockOpname.status.completed")}
-                            </option>
-                            <option value="cancelled">
-                              {t("page.stockOpname.status.cancelled")}
-                            </option>
-                          </select>
-                          <ChevronLeft
-                            size={14}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
-                          />
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                          <h4 className="text-base font-semibold text-foreground shrink-0">
+                            {t("page.stockOpname.list.title")}
+                          </h4>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 h-9 lg:hidden"
+                            onClick={() => setShowFilters(!showFilters)}>
+                            <span className="material-symbols-outlined text-base">filter_list</span>
+                            {showFilters ? "Tutup" : "Filter"}
+                          </Button>
                         </div>
-                      </div>
-                      <div className="relative flex-1 md:w-64">
-                        <Search
-                          size={16}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                        />
-                        <Input
-                          placeholder={t("page.stockOpname.list.searchPlaceholder")}
-                          value={search}
-                          onChange={(e) => {
-                            setSearch(e.target.value);
-                            setPage(1);
-                          }}
-                          className="pl-9 h-9 text-sm"
-                        />
-                      </div>
-                    </div>
+                        <div
+                          className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {isSuperAdmin && (
+                              <div className="relative">
+                                <select
+                                  value={warehouseFilter}
+                                  onChange={(e) => {
+                                    setWarehouseFilter(e.target.value);
+                                    setPage(1);
+                                  }}
+                                  className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
+                                  <option value="all">{t("page.stockOpname.list.allWarehouse")}</option>
+                                  {(locData?.data || []).map((loc) => (
+                                    <option key={loc.id} value={loc.id}>
+                                      {loc.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <ChevronLeft
+                                  size={14}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
+                                />
+                              </div>
+                            )}
+                            <div className="relative">
+                              <select
+                                value={statusFilter}
+                                onChange={(e) => {
+                                  setStatusFilter(e.target.value);
+                                  setPage(1);
+                                }}
+                                className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
+                                <option value="all">{t("page.stockOpname.list.allStatus")}</option>
+                                <option value="draft">{t("page.stockOpname.status.draft")}</option>
+                                <option value="completed">
+                                  {t("page.stockOpname.status.completed")}
+                                </option>
+                                <option value="cancelled">
+                                  {t("page.stockOpname.status.cancelled")}
+                                </option>
+                              </select>
+                              <ChevronLeft
+                                size={14}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
+                              />
+                            </div>
+                          </div>
+                          <div className="relative flex-1 md:w-64">
+                            <Search
+                              size={16}
+                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            />
+                            <Input
+                              placeholder={t("page.stockOpname.list.searchPlaceholder")}
+                              value={search}
+                              onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                              }}
+                              className="pl-9 h-9 text-sm"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 }
                 pagination={{
