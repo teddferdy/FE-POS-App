@@ -650,7 +650,9 @@ const ProductList = () => {
                           <option value="price-desc">
                             {t("page.product.list.filter.priceHighLow")}
                           </option>
-                          <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
+                          <option value="stock-asc">
+                            {t("page.product.list.filter.stockLow")}
+                          </option>
                         </select>
                       </div>
                     </>

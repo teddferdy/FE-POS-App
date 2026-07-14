@@ -92,37 +92,10 @@ const DataTable = ({
   const renderTable = () => {
     if (data.length === 0) {
       return (
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-muted/50 text-muted-foreground">
-              {allColumns.map((col, i) => (
-                <th
-                  key={i}
-                  className={cn(
-                    "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap",
-                    col.align === "right" && "text-right",
-                    col.align === "center" && "text-center",
-                    col.stickyRight &&
-                      "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
-                    col.hideOn && `hidden ${col.hideOn}:table-cell`,
-                    col.className
-                  )}>
-                  {col.header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td
-                colSpan={allColumns.length}
-                className="px-4 py-12 text-center text-muted-foreground">
-                {EmptyIcon && <EmptyIcon size={40} className="mx-auto mb-3 opacity-30" />}
-                <p>{emptyMessage}</p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="px-4 py-12 text-center text-muted-foreground">
+          {EmptyIcon && <EmptyIcon size={40} className="mx-auto mb-3 opacity-30" />}
+          <p>{emptyMessage}</p>
+        </div>
       );
     }
 
