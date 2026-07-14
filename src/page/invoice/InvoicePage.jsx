@@ -101,6 +101,7 @@ const InvoicePreview = ({
   showMemberInfo = true,
   showSocialMedia = true,
   socialMedia = [],
+  socialMediaVisible = {},
 }) => {
   const { t } = useTranslation();
   const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
