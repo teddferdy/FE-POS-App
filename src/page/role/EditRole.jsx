@@ -16,6 +16,7 @@ import {
 } from "@/utils/permission";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -237,7 +238,54 @@ const EditRole = () => {
   if (isError) return <AbortController refetch={refetch} />;
 
   if (isLoadingRole) {
-    return <Loading fullscreen size="lg" label={t("common.loadingData")} />;
+    return (
+      <div className="space-y-6 p-6">
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-80" />
+        <div className="flex justify-end gap-3">
+          <Skeleton className="h-10 w-24 rounded-lg" />
+          <Skeleton className="h-10 w-32 rounded-lg" />
+          <Skeleton className="h-10 w-32 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+            <div className="bg-card p-6 rounded-xl border border-border space-y-4">
+              <Skeleton className="h-5 w-32" />
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-24 w-full rounded-lg" />
+              </div>
+            </div>
+            <div className="bg-card p-6 rounded-xl border border-border space-y-2">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </div>
+          <div className="col-span-12 lg:col-span-8">
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <div className="p-6 border-b border-border flex items-center justify-between">
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-5 w-24" />
+              </div>
+              <div className="divide-y divide-border">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="px-6 py-3 flex items-center gap-4">
+                    <Skeleton className="h-4 w-40" />
+                    {[...Array(6)].map((_, j) => (
+                      <Skeleton key={j} className="h-4 w-10 mx-auto" />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
