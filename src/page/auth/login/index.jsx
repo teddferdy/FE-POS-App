@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
 
 import { login } from "@/services/auth";
+import { resetSessionExpired } from "@/services";
 import { translationSelect } from "@/state/translation";
 import AuthGuideModal from "@/components/organism/AuthGuideModal";
 
@@ -83,6 +84,7 @@ const LoginPage = () => {
   const mutateLogin = useMutation(login, {
     onMutate: () => setIsLoading(true),
     onSuccess: (success) => {
+      resetSessionExpired();
       setCookie("token", success.token, { path: "/" });
       const user = { ...success.user };
       if (typeof user.accessMenu === "string") {

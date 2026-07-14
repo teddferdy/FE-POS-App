@@ -37,4 +37,7 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+export const resetSessionExpired = () => {
+  sessionExpiredFired = false;
+};
 export { axiosInstance };
