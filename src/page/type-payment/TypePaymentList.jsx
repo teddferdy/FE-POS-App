@@ -144,32 +144,8 @@ const TypePaymentList = () => {
 
   const columns = [
     {
-      header: t("page.typePayment.table.name"),
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
-            {row.name?.charAt(0)?.toUpperCase() || "P"}
-          </div>
-          <span className="font-medium text-foreground">{row.name || "-"}</span>
-        </div>
-      )
-    },
-    { header: t("page.typePayment.table.type"), accessor: "type" },
-    {
       header: t("common.status"),
       render: (row) => getStatusBadge(row)
-    },
-    {
-      header: t("page.typePayment.table.createdDate"),
-      render: (row) => (
-        <span className="text-sm font-mono text-muted-foreground">{formatDate(row.createdAt)}</span>
-      )
-    },
-    {
-      header: t("page.typePayment.table.updatedDate"),
-      render: (row) => (
-        <span className="text-sm font-mono text-muted-foreground">{formatDate(row.updatedAt)}</span>
-      )
     },
     {
       header: t("common.createdBy"),
@@ -177,6 +153,12 @@ const TypePaymentList = () => {
         <span className="text-sm text-muted-foreground">
           {row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}
         </span>
+      )
+    },
+    {
+      header: t("page.typePayment.table.createdDate"),
+      render: (row) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(row.createdAt)}</span>
       )
     },
     {
@@ -188,8 +170,15 @@ const TypePaymentList = () => {
       )
     },
     {
+      header: t("page.typePayment.table.updatedDate"),
+      render: (row) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(row.updatedAt)}</span>
+      )
+    },
+    {
       header: t("common.actions"),
       align: "right",
+      stickyRight: true,
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "detail") && (
