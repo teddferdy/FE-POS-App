@@ -568,7 +568,7 @@ const ProductList = () => {
               emptyIcon={Package}
               toolbar={
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                  {isLoadingLocations ? (
+                  {isLoading || isFetching || isLoadingLocations ? (
                     <>
                       <Skeleton className="h-6 w-32" />
                       <div className="flex flex-wrap items-center gap-2">
