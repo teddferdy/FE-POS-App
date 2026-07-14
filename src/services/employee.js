@@ -21,11 +21,11 @@ export const getAllEmployee = async ({
 const buildFormData = (payload) => {
   const formData = new FormData();
   Object.entries(payload).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
+    if (value !== undefined && value !== null) {
       if (Array.isArray(value)) {
         value.forEach((item) => formData.append(key, item));
       } else {
-        formData.append(key, value);
+        formData.append(key, String(value));
       }
     }
   });
