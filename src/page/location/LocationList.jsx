@@ -41,19 +41,17 @@ const LocationList = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [targetModal, setTargetModal] = useState({ open: false, location: null, value: 0 });
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery(
-    ["locations", page, limit, search, statusFilter, categoryFilter],
+    ["locations", page, limit, search, statusFilter],
     () =>
       getAllLocationTable({
         page,
         limit,
         search: search || undefined,
-        statusLocation: statusFilter,
-        category: categoryFilter
+        statusLocation: statusFilter
       }),
     { retry: 1 }
   );
@@ -83,7 +81,6 @@ const LocationList = () => {
   const locations = data?.data || data?.locations || [];
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
-  const categories = data?.categories || [];
 
   const handleDelete = (id) => {
     setDeleteTarget(id);
@@ -406,67 +403,39 @@ const LocationList = () => {
                 isLoading={isLoading || isFetching}
                 emptyMessage={t("page.location.list.empty")}
                 toolbar={
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 w-full">
-                      <div className="relative flex-1">
-                        <Search
-                          size={16}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                        />
-                        <Input
-                          placeholder={t("page.location.list.search")}
-                          value={search}
-                          onChange={(e) => setSearch(e.target.value)}
-                          className="pl-9 h-9 text-sm"
-                        />
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-1">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder={t("page.location.list.search")}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 h-9 text-sm"
+                      />
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-muted-foreground">
-                          {t("common.status")}:
-                        </span>
-                        <select
-                          value={statusFilter}
-                          onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                          <option value="all">{t("common.all")}</option>
-                          <option value="active">{t("common.active")}</option>
-                          <option value="inactive">{t("common.inactive")}</option>
-                          <option value="draft">{t("common.draft")}</option>
-                        </select>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-muted-foreground">
-                          {t("common.category")}:
-                        </span>
-                        <select
-                          value={categoryFilter}
-                          onChange={(e) => {
-                            setCategoryFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                          <option value="all">{t("common.all")}</option>
-                          {categories.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 gap-1.5"
-                        onClick={() => navigate("/store-geospatial")}>
-                        <Map size={14} />
-                        {t("page.location.button.viewMap")}
-                      </Button>
-                    </div>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                      <option value="all">{t("common.all")}</option>
+                      <option value="active">{t("common.active")}</option>
+                      <option value="inactive">{t("common.inactive")}</option>
+                      <option value="draft">{t("common.draft")}</option>
+                    </select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 gap-1.5"
+                      onClick={() => navigate("/store-geospatial")}>
+                      <Map size={14} />
+                      {t("page.location.button.viewMap")}
+                    </Button>
                   </div>
                 }
                 pagination={{
