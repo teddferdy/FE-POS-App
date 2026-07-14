@@ -65,14 +65,15 @@ const CategoryList = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-ingredient-categories"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["ingredient-categories", page, search],
-    () => getAllIngredientCategoryTable({ page, limit, search })
+    ["ingredient-categories", page, search, statusFilter],
+    () => getAllIngredientCategoryTable({ page, limit, search, status: statusFilter })
   );
 
   const deleteMutation = useMutation(deleteIngredientCategory, {
@@ -388,6 +389,15 @@ const CategoryList = () => {
                             {t("page.ingredientCategory.list.title")}
                           </h4>
                           <div className="flex items-center gap-3 w-full md:w-auto">
+                            <select
+                              value={statusFilter}
+                              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                              className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                              <option value="all">{t("common.all")}</option>
+                              <option value="active">{t("common.active")}</option>
+                              <option value="inactive">{t("common.inactive")}</option>
+                              <option value="draft">{t("common.draft")}</option>
+                            </select>
                             <div className="relative flex-1 md:w-64">
                               <Search
                                 size={16}

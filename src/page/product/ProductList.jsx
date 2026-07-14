@@ -61,6 +61,7 @@ const ProductList = () => {
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [showFilters, setShowFilters] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const user = cookie?.user;
   const MENU_KEY = "/product-list";
@@ -87,13 +88,13 @@ const ProductList = () => {
   }, [role, locData, locationParam, storeFilter, isLoadingLocations, navigate]);
 
   const { data, isLoading, isFetching } = useQuery(
-    ["products", page, limit, storeFilter, search, categoryFilter, sortFilter],
+    ["products", page, limit, storeFilter, search, categoryFilter, sortFilter, statusFilter],
     () =>
       getAllProductTable({
         location: effectiveLocation,
         page,
         limit,
-        statusProduct: "all",
+        statusProduct: statusFilter,
         search,
         category: categoryFilter,
         sort: sortFilter
@@ -605,6 +606,15 @@ const ProductList = () => {
                           isSuperAdmin={isSuperAdmin}
                           t={t}
                         />
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="all">{t("common.all")}</option>
+                          <option value="active">{t("common.active")}</option>
+                          <option value="inactive">{t("common.inactive")}</option>
+                          <option value="draft">{t("common.draft")}</option>
+                        </select>
                         <div className="relative min-w-0 flex-[1_1_180px]">
                           <Search
                             size={16}

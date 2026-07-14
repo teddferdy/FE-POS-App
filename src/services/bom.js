@@ -5,6 +5,7 @@ export const getAllBom = async (payload) => {
   if (payload?.page) params.append("page", payload.page);
   if (payload?.limit) params.append("limit", payload.limit);
   if (payload?.search) params.append("search", payload.search);
+  if (payload?.status && payload.status !== "all") params.append("status", payload.status);
   const { data, status } = await axiosInstance.get(`/bom/get-all?${params}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;

@@ -1,8 +1,9 @@
 import { axiosInstance } from ".";
 
 export const getAllSupplier = async (payload) => {
+  const statusParam = payload?.status && payload.status !== "all" ? `&status=${payload.status}` : "";
   const { data, status } = await axiosInstance.get(
-    `/supplier?page=${payload?.page || 1}&limit=${payload?.limit || 10}&search=${payload?.search || ""}&store=${payload?.store || ""}`
+    `/supplier?page=${payload?.page || 1}&limit=${payload?.limit || 10}&search=${payload?.search || ""}&store=${payload?.store || ""}${statusParam}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

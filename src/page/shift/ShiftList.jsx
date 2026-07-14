@@ -37,6 +37,7 @@ const ShiftList = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -48,8 +49,8 @@ const ShiftList = () => {
   });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["shifts", page, limit, search],
-    () => getAllShift({ store: locationParam, page, limit, statusShift: search })
+    ["shifts", page, limit, search, statusFilter],
+    () => getAllShift({ store: locationParam, page, limit, statusShift: statusFilter })
   );
 
   const deleteMutation = useMutation(deleteShift, {
@@ -293,6 +294,15 @@ const ShiftList = () => {
                         {t("page.shift.list.title")}
                       </h4>
                       <div className="flex items-center gap-3 w-full md:w-auto">
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="all">{t("common.all")}</option>
+                          <option value="active">{t("common.active")}</option>
+                          <option value="inactive">{t("common.inactive")}</option>
+                          <option value="draft">{t("common.draft")}</option>
+                        </select>
                         <div className="relative flex-1 md:w-64">
                           <Search
                             size={16}

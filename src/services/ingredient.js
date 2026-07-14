@@ -1,11 +1,12 @@
 import { axiosInstance } from ".";
 
-export const getAllIngredients = async ({ store, page = 1, limit = 10, search = "" } = {}) => {
+export const getAllIngredients = async ({ store, page = 1, limit = 10, search = "", status = "" } = {}) => {
   const params = new URLSearchParams();
   if (store) params.append("store", store);
   params.append("page", page);
   params.append("limit", limit);
   if (search) params.append("search", search);
+  if (status && status !== "all") params.append("status", status);
   const query = params.toString();
   const { data, status } = await axiosInstance.get(
     `/ingredient/get-all${query ? `?${query}` : ""}`

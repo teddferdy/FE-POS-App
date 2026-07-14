@@ -60,6 +60,7 @@ const DepartmentList = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const { data: locData } = useQuery(["locations-departments"], () => getAllLocation(), {
     
@@ -67,8 +68,8 @@ const DepartmentList = () => {
   });
 
   const { data, isLoading, isFetching } = useQuery(
-    ["departments", page, limit, search],
-    () => getAllDepartmentTable({ page, limit, statusRole: "all", search }),
+    ["departments", page, limit, search, statusFilter],
+    () => getAllDepartmentTable({ page, limit, statusRole: statusFilter, search }),
     { }
   );
 
@@ -454,6 +455,17 @@ const DepartmentList = () => {
                           <option value={10}>{t("page.department.list.show10")}</option>
                           <option value={25}>{t("page.department.list.show25")}</option>
                           <option value={50}>{t("page.department.list.show50")}</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="all">{t("common.all")}</option>
+                          <option value="active">{t("common.active")}</option>
+                          <option value="inactive">{t("common.inactive")}</option>
+                          <option value="draft">{t("common.draft")}</option>
                         </select>
                       </div>
                       <div className="relative">

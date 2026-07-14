@@ -16,12 +16,13 @@ export const getAllDiscountByLocationAndActive = async ({ limit, page, store }) 
   return data;
 };
 
-export const getAllDiscount = async ({ page, limit, location } = {}) => {
+export const getAllDiscount = async ({ page, limit, location, status } = {}) => {
   const storeParam = location ? `&store=${location}` : "";
-  const { data, status } = await axiosInstance.get(
-    `/discount/get-discount?page=${page}&limit=${limit}${storeParam}`
+  const statusParam = status && status !== "all" ? `&status=${status}` : "";
+  const { data, status: resStatus } = await axiosInstance.get(
+    `/discount/get-discount?page=${page}&limit=${limit}${storeParam}${statusParam}`
   );
-  if (status !== 200) throw Error(`${data?.message}`);
+  if (resStatus !== 200) throw Error(`${data?.message}`);
   return data;
 };
 

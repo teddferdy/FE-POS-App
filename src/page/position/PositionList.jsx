@@ -62,6 +62,7 @@ const PositionList = () => {
   const [noDepartmentModal, setNoDepartmentModal] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const { data: locData } = useQuery(["locations-positions"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -71,11 +72,11 @@ const PositionList = () => {
 
   const departments = departmentData?.data || departmentData?.departments || [];
 
-  const { data, isLoading, isFetching } = useQuery(["positions", page, limit, search], () =>
+  const { data, isLoading, isFetching } = useQuery(["positions", page, limit, search, statusFilter], () =>
     getAllPositionTable({
       page,
       limit,
-      statusRole: "all",
+      statusRole: statusFilter,
       search
     })
   );
@@ -437,6 +438,15 @@ const PositionList = () => {
                           <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
                           <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
                           <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
+                        </select>
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="all">{t("common.all")}</option>
+                          <option value="active">{t("common.active")}</option>
+                          <option value="inactive">{t("common.inactive")}</option>
+                          <option value="draft">{t("common.draft")}</option>
                         </select>
                       </div>
                       <div className="relative">

@@ -44,6 +44,7 @@ const DiscountList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
@@ -60,8 +61,8 @@ const DiscountList = () => {
     enabled: isSuperAdmin
   });
   const { data, isLoading, isFetching } = useQuery(
-    ["discounts", page, limit, search, storeFilter],
-    () => getAllDiscount({ location: locationParam, page, limit }),
+    ["discounts", page, limit, search, storeFilter, statusFilter],
+    () => getAllDiscount({ location: locationParam, page, limit, status: statusFilter }),
     { }
   );
 
@@ -334,6 +335,18 @@ const DiscountList = () => {
                           isSuperAdmin={isSuperAdmin}
                           t={t}
                         />
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => {
+                            setStatusFilter(e.target.value);
+                            setPage(1);
+                          }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="all">{t("common.all")}</option>
+                          <option value="active">{t("common.active")}</option>
+                          <option value="inactive">{t("common.inactive")}</option>
+                          <option value="draft">{t("common.draft")}</option>
+                        </select>
                         <div className="relative flex-1 md:w-64">
                           <Search
                             size={16}
