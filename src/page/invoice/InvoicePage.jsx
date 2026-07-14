@@ -257,7 +257,7 @@ const InvoicePage = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const [selectedStore, setSelectedStore] = useState(
-    isSuperAdmin ? (cookie?.activeStore || "") : String(user?.store || "")
+    isSuperAdmin ? "" : String(user?.store || "")
   );
   const cashierName = user?.userName || user?.name || user?.fullName || "";
 

@@ -24,7 +24,7 @@ const PriceStoreList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
 
   const [selectedStore, setSelectedStore] = useState(
-    isSuperAdmin ? (cookie?.activeStore || "") : String(cookie?.user?.store || "")
+    isSuperAdmin ? "" : String(cookie?.user?.store || "")
   );
   const [editModal, setEditModal] = useState(null);
   const [editPrice, setEditPrice] = useState("");
