@@ -954,7 +954,7 @@ const AddProduct = () => {
                                       size="icon"
                                       className="h-8 w-8 text-destructive shrink-0"
                                       onClick={() => removeComposition(c.id)}>
-                                      <Trash2 size={15} />
+                                      <Trash2 size={18} />
                                     </Button>
                                   </div>
                                 </div>
@@ -971,7 +971,7 @@ const AddProduct = () => {
                                 size="sm"
                                 className="gap-1"
                                 onClick={() => navigate("/add-stock-opname")}>
-                                <Plus size={15} /> {t("page.product.form.addStockOpnameFirst")}
+                                <Plus size={18} /> {t("page.product.form.addStockOpnameFirst")}
                               </Button>
                             ) : (
                               <Button
@@ -980,7 +980,7 @@ const AddProduct = () => {
                                 size="sm"
                                 className="gap-1"
                                 onClick={addComposition}>
-                                <Plus size={15} /> {t("page.product.form.addIngredient")}
+                                <Plus size={18} /> {t("page.product.form.addIngredient")}
                               </Button>
                             )}
                           </div>
@@ -1152,7 +1152,7 @@ const AddProduct = () => {
                                   size="icon"
                                   className="h-8 w-8 text-destructive shrink-0"
                                   onClick={() => removePriceTier(tier.id)}>
-                                  <Trash2 size={15} />
+                                  <Trash2 size={18} />
                                 </Button>
                               </div>
                             </div>
@@ -1163,7 +1163,7 @@ const AddProduct = () => {
                             size="sm"
                             className="gap-1"
                             onClick={addPriceTier}>
-                            <Plus size={15} /> {t("page.product.form.addTier")}
+                            <Plus size={18} /> {t("page.product.form.addTier")}
                           </Button>
                           {priceTiers.length === 0 && (
                             <p className="text-xs text-muted-foreground">
@@ -1241,7 +1241,7 @@ const AddProduct = () => {
                                         onClick={() =>
                                           setBatches((prev) => prev.filter((_, i) => i !== idx))
                                         }>
-                                        <Trash2 size={15} />
+                                        <Trash2 size={18} />
                                       </Button>
                                     )}
                                   </div>
@@ -1263,7 +1263,7 @@ const AddProduct = () => {
                                     }
                                   ])
                                 }>
-                                <Plus size={15} /> {t("page.product.form.addBatch")}
+                                <Plus size={18} /> {t("page.product.form.addBatch")}
                               </Button>
                             </div>
                           )}
@@ -1325,7 +1325,7 @@ const AddProduct = () => {
                                       size="icon"
                                       className="h-8 w-8 text-destructive shrink-0"
                                       onClick={() => removeVariantGroup(group.id)}>
-                                      <Trash2 size={15} />
+                                      <Trash2 size={18} />
                                     </Button>
                                   </div>
                                   <div className="space-y-2">
@@ -1390,7 +1390,7 @@ const AddProduct = () => {
                                             size="icon"
                                             className="h-8 w-8 text-muted-foreground shrink-0"
                                             onClick={() => removeVariantOption(group.id, idx)}>
-                                            <X size={15} />
+                                            <X size={18} />
                                           </Button>
                                         )}
                                       </div>
@@ -1412,7 +1412,7 @@ const AddProduct = () => {
                                 size="sm"
                                 className="gap-1"
                                 onClick={addVariantGroup}>
-                                <Plus size={15} /> {t("page.product.form.addVariantGroup")}
+                                <Plus size={18} /> {t("page.product.form.addVariantGroup")}
                               </Button>
                             </div>
                           )}
@@ -1500,7 +1500,7 @@ const AddProduct = () => {
                                         size="icon"
                                         className="h-8 w-8 text-destructive shrink-0"
                                         onClick={() => removeModifierItem(mod.id)}>
-                                        <Trash2 size={15} />
+                                        <Trash2 size={18} />
                                       </Button>
                                     </div>
                                   </div>
@@ -1511,7 +1511,7 @@ const AddProduct = () => {
                                   size="sm"
                                   className="gap-1"
                                   onClick={addModifierItem}>
-                                  <Plus size={15} /> {t("page.product.form.addModifier")}
+                                  <Plus size={18} /> {t("page.product.form.addModifier")}
                                 </Button>
                               </div>
                             )}

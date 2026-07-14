@@ -210,7 +210,7 @@ const DetailSupplier = () => {
           </Button>
           {supplier.status !== "inactive" && supplier.status !== "draft" && (
             <Button onClick={() => setPaymentModal(true)} className="gap-1.5">
-              <Plus size={15} /> {t("page.supplier.detail.catatPembayaran")}
+              <Plus size={18} /> {t("page.supplier.detail.catatPembayaran")}
             </Button>
           )}
         </div>
@@ -223,30 +223,30 @@ const DetailSupplier = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-sm">
             <div className="flex items-center gap-2">
-              <Building2 size={15} className="text-muted-foreground shrink-0" />
+              <Building2 size={18} className="text-muted-foreground shrink-0" />
               <span className="font-medium">{supplier.name}</span>
             </div>
             {supplier.contactPerson && (
               <div className="flex items-center gap-2">
-                <User size={15} className="text-muted-foreground shrink-0" />
+                <User size={18} className="text-muted-foreground shrink-0" />
                 <span>{supplier.contactPerson}</span>
               </div>
             )}
             {supplier.phone && (
               <div className="flex items-center gap-2">
-                <Phone size={15} className="text-muted-foreground shrink-0" />
+                <Phone size={18} className="text-muted-foreground shrink-0" />
                 <span>{supplier.phone}</span>
               </div>
             )}
             {supplier.email && (
               <div className="flex items-center gap-2">
-                <Mail size={15} className="text-muted-foreground shrink-0" />
+                <Mail size={18} className="text-muted-foreground shrink-0" />
                 <span>{supplier.email}</span>
               </div>
             )}
             {supplier.address && (
               <div className="flex items-start gap-2 md:col-span-2">
-                <MapPin size={15} className="text-muted-foreground mt-0.5 shrink-0" />
+                <MapPin size={18} className="text-muted-foreground mt-0.5 shrink-0" />
                 <span>{supplier.address}</span>
               </div>
             )}

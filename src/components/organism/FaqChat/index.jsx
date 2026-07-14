@@ -255,7 +255,7 @@ function FaqChat() {
                 className="h-9 w-9 shrink-0"
                 onClick={() => handleSearch(input)}
                 disabled={loading || !input.trim()}>
-                <Send size={15} />
+                <Send size={18} />
               </Button>
             </div>
           </Card>

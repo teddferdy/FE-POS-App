@@ -244,14 +244,14 @@ const ExpenseList = () => {
                 size="icon"
                 className="h-8 w-8 text-primary"
                 onClick={() => navigate(`/detail-expense?id=${item.id || item._id}`)}>
-                <Eye size={15} />
+                <Eye size={18} />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-primary"
                 onClick={() => navigate(`/edit-expense?id=${item.id || item._id}`)}>
-                <Edit size={15} />
+                <Edit size={18} />
               </Button>
             </>
           )}

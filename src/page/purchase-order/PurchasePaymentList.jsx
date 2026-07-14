@@ -104,7 +104,7 @@ const PurchasePaymentList = () => {
           className="h-8 w-8"
           onClick={() => navigate(`/purchase-payment-detail?id=${p.id}`)}
           title={t("common.detail")}>
-          <Eye size={15} />
+          <Eye size={18} />
         </Button>
       )
     }

@@ -258,7 +258,7 @@ const ReservationList = () => {
                     customerName: item.customerName
                   })
                 }>
-                <Check size={15} />
+                <Check size={18} />
               </Button>
               <Button
                 variant="ghost"
@@ -272,7 +272,7 @@ const ReservationList = () => {
                     customerName: item.customerName
                   })
                 }>
-                <X size={15} />
+                <X size={18} />
               </Button>
             </>
           )}
@@ -281,21 +281,21 @@ const ReservationList = () => {
             size="icon"
             className="h-8 w-8"
             onClick={() => navigate(`/reservation/${item.id}`)}>
-            <Eye size={15} />
+            <Eye size={18} />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-primary"
             onClick={() => navigate(`/edit-reservation?id=${item.id}`)}>
-            <Edit size={15} />
+            <Edit size={18} />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-destructive"
             onClick={() => setDeleteTarget(item)}>
-            <Trash2 size={15} />
+            <Trash2 size={18} />
           </Button>
         </div>
       )

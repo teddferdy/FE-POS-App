@@ -171,7 +171,7 @@ const DetailIngredientCategory = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                    <Tag size={15} className="text-muted-foreground" />
+                    <Tag size={18} className="text-muted-foreground" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -184,7 +184,7 @@ const DetailIngredientCategory = () => {
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                    <Hash size={15} className="text-muted-foreground" />
+                    <Hash size={18} className="text-muted-foreground" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -198,7 +198,7 @@ const DetailIngredientCategory = () => {
                 <div className="flex items-start gap-3">
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${st?.bg || "bg-gray-500 text-white"}`}>
-                    {StatusIcon && <StatusIcon size={15} />}
+                    {StatusIcon && <StatusIcon size={18} />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">

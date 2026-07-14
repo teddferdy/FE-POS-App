@@ -313,7 +313,7 @@ const StockOpnameList = () => {
                 size="icon"
                 className="h-8 w-8 text-primary"
                 onClick={() => navigate(`/stock-opname/detail?id=${item.id || item._id}`)}>
-                <Eye size={15} />
+                <Eye size={18} />
               </Button>
             )}
             {isDraft && (
@@ -324,7 +324,7 @@ const StockOpnameList = () => {
                     size="icon"
                     className="h-8 w-8 text-primary"
                     onClick={() => navigate(`/add-stock-opname?id=${item.id || item._id}`)}>
-                    <Edit size={15} />
+                    <Edit size={18} />
                   </Button>
                 )}
                 {canAccess(user, MENU_KEY, "delete") && (
@@ -333,7 +333,7 @@ const StockOpnameList = () => {
                     size="icon"
                     className="h-8 w-8 text-destructive"
                     onClick={() => setDeleteTarget(item.id || item._id)}>
-                    <Trash2 size={15} />
+                    <Trash2 size={18} />
                   </Button>
                 )}
               </>

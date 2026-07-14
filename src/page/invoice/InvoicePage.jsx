@@ -78,7 +78,7 @@ const formatPrice = (val) => `Rp${Number(val).toLocaleString("id-ID")}`;
 const DetailRow = ({ icon: Icon, label, value }) => (
   <div className="flex items-start gap-3 py-3 border-b border-border last:border-b-0">
     <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-      <Icon size={15} className="text-muted-foreground" />
+      <Icon size={18} className="text-muted-foreground" />
     </div>
     <div className="min-w-0 flex-1">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>

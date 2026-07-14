@@ -195,7 +195,7 @@ const DiscountList = () => {
             size="icon"
             className="h-8 w-8 text-muted-foreground"
             onClick={() => navigate(`/detail-discount?id=${item.id || item._id}`)}>
-            <Eye size={15} />
+            <Eye size={18} />
           </Button>
           {canAccess(user, MENU_KEY, "edit") && (
             <Button
@@ -203,7 +203,7 @@ const DiscountList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               onClick={() => navigate(`/edit-discount?id=${item.id || item._id}`)}>
-              <Edit size={15} />
+              <Edit size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "delete") && (
@@ -212,7 +212,7 @@ const DiscountList = () => {
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={() => handleDelete(item)}>
-              <Trash2 size={15} />
+              <Trash2 size={18} />
             </Button>
           )}
         </div>

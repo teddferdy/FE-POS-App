@@ -62,7 +62,7 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
             Salin Tautan
           </Button>
           <Button variant="outline" size="sm" onClick={handlePrint}>
-            <Printer size={15} className="mr-1" />
+            <Printer size={18} className="mr-1" />
             Print
           </Button>
           <Button size="sm" onClick={() => window.open(orderUrl, "_blank")}>

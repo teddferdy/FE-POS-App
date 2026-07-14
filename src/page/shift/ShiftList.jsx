@@ -184,7 +184,7 @@ const ShiftList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               onClick={() => navigate(`/edit-shift?id=${row.id || row._id}`)}>
-              <Edit size={15} />
+              <Edit size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "delete") && (
@@ -193,7 +193,7 @@ const ShiftList = () => {
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={() => handleDelete(row)}>
-              <Trash2 size={15} />
+              <Trash2 size={18} />
             </Button>
           )}
         </div>

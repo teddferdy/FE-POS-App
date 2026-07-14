@@ -487,7 +487,7 @@ const AddStockOpname = () => {
               size="sm"
               onClick={() => setUploadModalOpen(true)}
               className="transition-all">
-              <UploadIcon size={15} className="mr-1.5" />
+              <UploadIcon size={18} className="mr-1.5" />
               {t("page.stockOpname.button.uploadExcel")}
             </Button>
             <Button
@@ -497,9 +497,9 @@ const AddStockOpname = () => {
               onClick={handleDownloadTemplate}
               className="transition-all">
               {isDownloading ? (
-                <Loader2 size={15} className="mr-1.5 animate-spin" />
+                <Loader2 size={18} className="mr-1.5 animate-spin" />
               ) : (
-                <Download size={15} className="mr-1.5" />
+                <Download size={18} className="mr-1.5" />
               )}
               {isDownloading
                 ? t("page.stockOpname.button.downloading")

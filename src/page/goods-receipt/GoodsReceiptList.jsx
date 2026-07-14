@@ -224,7 +224,7 @@ const GoodsReceiptList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               onClick={() => navigate(`/goods-receipt/detail?id=${item.id}`)}>
-              <Eye size={15} />
+              <Eye size={18} />
             </Button>
           )}
           {item.status === "draft" && (
@@ -255,7 +255,7 @@ const GoodsReceiptList = () => {
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={() => setDeleteTarget(item.id)}>
-              <Trash2 size={15} />
+              <Trash2 size={18} />
             </Button>
           )}
         </div>

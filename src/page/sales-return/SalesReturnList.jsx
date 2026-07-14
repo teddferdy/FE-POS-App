@@ -196,7 +196,7 @@ const SalesReturnList = () => {
             size="icon"
             className="h-8 w-8 text-primary"
             onClick={() => navigate(`/sales-return/detail?id=${item.id}`)}>
-            <Eye size={15} />
+            <Eye size={18} />
           </Button>
           {item.status === "pending" && canAccess(user, MENU_KEY, "edit") && (
             <>
@@ -208,7 +208,7 @@ const SalesReturnList = () => {
                   setActionTarget(item.id);
                   setActionType("approve");
                 }}>
-                <CheckCircle size={15} />
+                <CheckCircle size={18} />
               </Button>
               <Button
                 variant="ghost"
@@ -218,7 +218,7 @@ const SalesReturnList = () => {
                   setActionTarget(item.id);
                   setActionType("reject");
                 }}>
-                <XCircle size={15} />
+                <XCircle size={18} />
               </Button>
             </>
           )}

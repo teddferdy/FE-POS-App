@@ -154,7 +154,7 @@ const CashRegisterHistory = () => {
             e.stopPropagation();
             navigate("/cash-register/history/detail", { state: { item } });
           }}>
-          <Eye size={15} />
+          <Eye size={18} />
         </Button>
       )
     }

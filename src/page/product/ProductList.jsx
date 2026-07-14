@@ -382,7 +382,7 @@ const ProductList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               onClick={() => navigate(`/detail-product/${product.id || product._id}`)}>
-              <Eye size={15} />
+              <Eye size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "edit") && (
@@ -391,7 +391,7 @@ const ProductList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               onClick={() => navigate(`/edit-product?id=${product.id || product._id}`)}>
-              <Edit size={15} />
+              <Edit size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "delete") && (
@@ -400,7 +400,7 @@ const ProductList = () => {
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={() => handleDelete(product.id || product._id)}>
-              <Trash2 size={15} />
+              <Trash2 size={18} />
             </Button>
           )}
         </div>
@@ -589,7 +589,7 @@ const ProductList = () => {
                           size="sm"
                           className="gap-2 h-9 lg:hidden"
                           onClick={() => setShowFilters(!showFilters)}>
-                          <Filter size={15} />
+                          <Filter size={18} />
                           {showFilters ? "Tutup" : "Filter"}
                         </Button>
                       </div>

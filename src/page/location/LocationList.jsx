@@ -255,7 +255,7 @@ const LocationList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               onClick={() => navigate(`/detail-location?id=${loc.id || loc._id}`)}>
-              <Eye size={15} />
+              <Eye size={18} />
             </Button>
           )}
           {loc.status === "active" && canAccess(user, MENU_KEY, "edit") && (
@@ -267,7 +267,7 @@ const LocationList = () => {
               onClick={() =>
                 setTargetModal({ open: true, location: loc, value: loc.dailyTarget || 0 })
               }>
-              <Target size={15} />
+              <Target size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "edit") && (
@@ -276,7 +276,7 @@ const LocationList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               onClick={() => navigate(`/edit-location?id=${loc.id || loc._id}`)}>
-              <Edit size={15} />
+              <Edit size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "delete") && (
@@ -285,7 +285,7 @@ const LocationList = () => {
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={() => handleDelete(loc.id || loc._id)}>
-              <Trash2 size={15} />
+              <Trash2 size={18} />
             </Button>
           )}
         </div>

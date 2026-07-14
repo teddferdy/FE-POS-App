@@ -162,7 +162,7 @@ const StockTransferList = () => {
                 className="h-8 w-8 text-green-600"
                 title={t("page.stockTransfer.list.receive")}
                 onClick={() => receiveMutation.mutate(item.id)}>
-                <CheckCircle size={15} />
+                <CheckCircle size={18} />
               </Button>
               <Button
                 variant="ghost"
@@ -170,7 +170,7 @@ const StockTransferList = () => {
                 className="h-8 w-8 text-red-600"
                 title={t("page.stockTransfer.list.cancel")}
                 onClick={() => cancelMutation.mutate(item.id)}>
-                <XCircle size={15} />
+                <XCircle size={18} />
               </Button>
             </>
           )}
@@ -179,7 +179,7 @@ const StockTransferList = () => {
             size="icon"
             className="h-8 w-8 text-primary"
             onClick={() => navigate(`/stock-transfer/detail?id=${item.id}`)}>
-            <Eye size={15} />
+            <Eye size={18} />
           </Button>
         </div>
       )

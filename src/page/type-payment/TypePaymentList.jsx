@@ -188,7 +188,7 @@ const TypePaymentList = () => {
               className="h-8 w-8 text-primary"
               title={t("common.view")}
               onClick={() => navigate(`/detail-type-payment?id=${row.id || row._id}`)}>
-              <Eye size={15} />
+              <Eye size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "edit") && !row.isSystem && (
@@ -198,7 +198,7 @@ const TypePaymentList = () => {
               className="h-8 w-8 text-primary"
               title={t("common.edit")}
               onClick={() => navigate(`/edit-type-payment?id=${row.id || row._id}`)}>
-              <Edit size={15} />
+              <Edit size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "delete") && !row.isSystem && (
@@ -208,7 +208,7 @@ const TypePaymentList = () => {
               className="h-8 w-8 text-destructive"
               title={t("common.delete")}
               onClick={() => handleDelete(row)}>
-              <Trash2 size={15} />
+              <Trash2 size={18} />
             </Button>
           )}
         </div>

@@ -179,7 +179,7 @@ const ExpenseCategoryList = () => {
             size="icon"
             className="h-8 w-8 text-primary"
             onClick={() => navigate(`/detail-expense-category?id=${row.id || row._id}`)}>
-            <Eye size={15} />
+            <Eye size={18} />
           </Button>
           {canAccess(user, MENU_KEY, "edit") && (
             <Button
@@ -187,7 +187,7 @@ const ExpenseCategoryList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               onClick={() => navigate(`/edit-expense-category?id=${row.id || row._id}`)}>
-              <Edit size={15} />
+              <Edit size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "delete") && (
@@ -196,7 +196,7 @@ const ExpenseCategoryList = () => {
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={() => handleDelete(row)}>
-              <Trash2 size={15} />
+              <Trash2 size={18} />
             </Button>
           )}
         </div>

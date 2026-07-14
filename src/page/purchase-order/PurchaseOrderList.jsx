@@ -434,7 +434,7 @@ const PurchaseOrderList = () => {
             className="h-8 w-8 text-muted-foreground"
             onClick={() => navigate(`/purchase-order/detail?id=${po.id}`)}
             title={t("page.purchaseOrder.list.action.detail")}>
-            <Eye size={15} />
+            <Eye size={18} />
           </Button>
           {po.status !== "cancelled" &&
             po.status !== "draft" &&
@@ -455,7 +455,7 @@ const PurchaseOrderList = () => {
                   setPayModal(true);
                 }}
                 title={t("page.purchaseOrder.list.action.pay")}>
-                <Wallet size={15} />
+                <Wallet size={18} />
               </Button>
             )}
           {po.status === "draft" && (
@@ -490,7 +490,7 @@ const PurchaseOrderList = () => {
                 setCancelModal(true);
               }}
               title={t("common.cancel")}>
-              <XCircle size={15} />
+              <XCircle size={18} />
             </Button>
           )}
           {(po.status === "draft" || po.status === "cancelled") && (
@@ -503,7 +503,7 @@ const PurchaseOrderList = () => {
                 setDeleteModal(true);
               }}
               title={t("common.delete")}>
-              <Trash2 size={15} />
+              <Trash2 size={18} />
             </Button>
           )}
           {po.status === "pending" && (
@@ -534,7 +534,7 @@ const PurchaseOrderList = () => {
                 className="h-8 w-8 text-green-600"
                 onClick={() => navigate(`/add-goods-receipt?poId=${po.id}`)}
                 title={t("page.purchaseOrder.list.action.receive")}>
-                <RefreshCw size={15} />
+                <RefreshCw size={18} />
               </Button>
             </>
           )}
@@ -549,7 +549,7 @@ const PurchaseOrderList = () => {
                 setReturModal(true);
               }}
               title={t("page.purchaseOrder.list.action.return")}>
-              <Undo2 size={15} />
+              <Undo2 size={18} />
             </Button>
           )}
         </div>

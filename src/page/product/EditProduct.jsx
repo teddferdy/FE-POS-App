@@ -1125,7 +1125,7 @@ const EditProduct = () => {
                                       size="icon"
                                       className="h-8 w-8 text-destructive shrink-0"
                                       onClick={() => removeComposition(c.id)}>
-                                      <Trash2 size={15} />
+                                      <Trash2 size={18} />
                                     </Button>
                                   </div>
                                 </div>
@@ -1142,7 +1142,7 @@ const EditProduct = () => {
                                 size="sm"
                                 className="gap-1"
                                 onClick={() => navigate("/add-stock-opname")}>
-                                <Plus size={15} /> {t("page.product.form.addStockOpnameFirst")}
+                                <Plus size={18} /> {t("page.product.form.addStockOpnameFirst")}
                               </Button>
                             ) : (
                               <Button
@@ -1151,7 +1151,7 @@ const EditProduct = () => {
                                 size="sm"
                                 className="gap-1"
                                 onClick={addComposition}>
-                                <Plus size={15} /> {t("page.product.form.addIngredient")}
+                                <Plus size={18} /> {t("page.product.form.addIngredient")}
                               </Button>
                             )}
                           </div>
@@ -1323,7 +1323,7 @@ const EditProduct = () => {
                                   size="icon"
                                   className="h-8 w-8 text-destructive shrink-0"
                                   onClick={() => removePriceTier(tier.id)}>
-                                  <Trash2 size={15} />
+                                  <Trash2 size={18} />
                                 </Button>
                               </div>
                             </div>
@@ -1334,7 +1334,7 @@ const EditProduct = () => {
                             size="sm"
                             className="gap-1"
                             onClick={addPriceTier}>
-                            <Plus size={15} />
+                            <Plus size={18} />
                             {t("page.product.form.addTier")}
                           </Button>
                           {priceTiers.length === 0 && (
@@ -1462,7 +1462,7 @@ const EditProduct = () => {
                                       size="icon"
                                       className="h-8 w-8 text-destructive shrink-0"
                                       onClick={() => removeVariantGroup(group.id)}>
-                                      <Trash2 size={15} />
+                                      <Trash2 size={18} />
                                     </Button>
                                   </div>
                                   <div className="space-y-2">

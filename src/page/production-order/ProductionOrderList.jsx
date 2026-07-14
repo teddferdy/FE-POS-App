@@ -251,7 +251,7 @@ const ProductionOrderList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               onClick={() => navigate(`/production-order/detail?id=${item.id}`)}>
-              <Eye size={15} />
+              <Eye size={18} />
             </Button>
           )}
           {item.status === "planned" && canAccess(user, MENU_KEY, "edit") && (
@@ -260,7 +260,7 @@ const ProductionOrderList = () => {
               size="icon"
               className="h-8 w-8 text-indigo-500"
               onClick={() => setStartTarget(item.id)}>
-              <Play size={15} />
+              <Play size={18} />
             </Button>
           )}
           {item.status === "in_progress" && canAccess(user, MENU_KEY, "edit") && (
@@ -272,7 +272,7 @@ const ProductionOrderList = () => {
                 setCompleteTarget(item.id);
                 setCompleteQty(String(item.plannedQty));
               }}>
-              <CheckCircle2 size={15} />
+              <CheckCircle2 size={18} />
             </Button>
           )}
           {(item.status === "draft" || item.status === "cancelled") &&
@@ -282,7 +282,7 @@ const ProductionOrderList = () => {
                 size="icon"
                 className="h-8 w-8 text-destructive"
                 onClick={() => setDeleteTarget(item.id)}>
-                <Trash2 size={15} />
+                <Trash2 size={18} />
               </Button>
             )}
         </div>

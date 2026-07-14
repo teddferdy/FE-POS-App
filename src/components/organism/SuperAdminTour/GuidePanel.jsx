@@ -171,7 +171,7 @@ const GuidePanel = ({ onClose }) => {
                               onClick={() => handleNavigate(page.path)}
                               className="w-full flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent/50 transition-colors text-left group">
                               <div className="p-1.5 rounded-lg bg-muted text-muted-foreground group-hover:text-foreground transition-colors shrink-0 mt-0.5">
-                                <PageIcon size={15} />
+                                <PageIcon size={18} />
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">

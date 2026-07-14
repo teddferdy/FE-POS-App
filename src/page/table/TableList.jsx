@@ -253,7 +253,7 @@ const TableList = () => {
               className="h-8 w-8 text-green-600"
               title={t("page.table.setAvailable")}
               onClick={() => setStatusTarget(row)}>
-              <RotateCcw size={15} />
+              <RotateCcw size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "edit") && (
@@ -262,11 +262,11 @@ const TableList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               onClick={() => openEdit(row)}>
-              <Edit size={15} />
+              <Edit size={18} />
             </Button>
           )}
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setQrTarget(row)}>
-            <QrCode size={15} />
+            <QrCode size={18} />
           </Button>
           {canAccess(user, MENU_KEY, "delete") && (
             <Button
@@ -274,7 +274,7 @@ const TableList = () => {
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={() => setDeleteTarget(row)}>
-              <Trash2 size={15} />
+              <Trash2 size={18} />
             </Button>
           )}
         </div>

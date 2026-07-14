@@ -481,7 +481,7 @@ const EditPurchaseOrder = () => {
                               }
                               disabled={addSupplierMutation.isLoading}
                               className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
-                              <Plus size={15} /> {t("page.purchaseOrder.add.addSupplier")} &quot;
+                              <Plus size={18} /> {t("page.purchaseOrder.add.addSupplier")} &quot;
                               {supplierSearch}&quot;
                             </button>
                           )}
@@ -508,7 +508,7 @@ const EditPurchaseOrder = () => {
                           size="sm"
                           onClick={() => navigate("/add-employee")}
                           className="gap-2">
-                          <Plus size={15} /> {t("page.purchaseOrder.add.addEmployee")}
+                          <Plus size={18} /> {t("page.purchaseOrder.add.addEmployee")}
                         </Button>
                       </div>
                     ) : (
@@ -609,7 +609,7 @@ const EditPurchaseOrder = () => {
                       size="sm"
                       className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
                       onClick={addItem}>
-                      <Plus size={15} />
+                      <Plus size={18} />
                       {t("page.purchaseOrder.add.addItem")}
                     </Button>
                   )}
@@ -722,7 +722,7 @@ const EditPurchaseOrder = () => {
                             size="icon"
                             className="h-8 w-8 text-destructive shrink-0"
                             onClick={() => removeItem(idx)}>
-                            <Trash2 size={15} />
+                            <Trash2 size={18} />
                           </Button>
                         )}
                       </div>
