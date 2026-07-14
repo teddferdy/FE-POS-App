@@ -171,6 +171,7 @@ const ExpenseCategoryList = () => {
     {
       header: t("page.expenseCategory.list.actions"),
       align: "right",
+      stickyRight: true,
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
           <Button

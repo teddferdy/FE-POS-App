@@ -214,6 +214,7 @@ const ExpenseList = () => {
     {
       header: t("page.expense.table.actions"),
       align: "right",
+      stickyRight: true,
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           {item.status === "pending" && canAccess(user, MENU_KEY, "edit") && (
