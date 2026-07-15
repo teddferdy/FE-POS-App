@@ -6,12 +6,14 @@ import AbortController from "@/components/organism/abort-controller";
 import { useTranslation } from "react-i18next";
 import { getProductByOutlet } from "@/services/product";
 import { getAllLocation } from "@/services/location";
+import { getAllTaxConfig } from "@/services/tax-config";
 import { orderList } from "@/state/order-list";
 import { Button } from "@/components/ui/button";
 import ProductGrid from "./components/ProductGrid";
 import CartPanel from "./components/CartPanel";
 import CheckoutModal from "./components/CheckoutModal";
 import ReceiptModal from "./components/ReceiptModal";
+import OrderQueue from "./components/OrderQueue";
 import Sidebar from "@/components/layout/Sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserDropdown, NotificationBell } from "@/components/layout/Header";
@@ -134,6 +136,43 @@ const CashierPage = () => {
 
   const totalItems = cart.order.reduce((sum, item) => sum + (item.count || 0), 0);
   const subtotal = cart.order.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
+
+  const { data: taxConfigData } = useQuery(
+    ["cashier-tax-config", store],
+    () => getAllTaxConfig({ location: store, status: "active", limit: 50 }),
+    { enabled: !!store }
+  );
+
+  const taxConfigs = taxConfigData?.data || [];
+  const taxRatePercent = useMemo(() => {
+    return taxConfigs
+      .filter((tc) => tc.type === "percentage" && tc.status === "active")
+      .reduce((sum, tc) => sum + (tc.rate || 0), 0);
+  }, [taxConfigs]);
+  const taxRate = taxRatePercent / 100;
+  const taxAmount = Math.round(subtotal * taxRate);
+
+  const handleLoadOrder = (order) => {
+    cart.resetOrder();
+    if (order?.items?.length) {
+      order.items.forEach((item) => {
+        cart.addingProduct({
+          id: item.product,
+          cartKey: `${item.product}_${item.options?.[0]?.name || ""}`,
+          nameProduct: item.productName,
+          variantName: item.options?.[0]?.name || null,
+          price: item.price,
+          count: item.quantity,
+          totalPrice: item.totalPrice || item.price * item.quantity,
+          image: null,
+          unit: "",
+          sku: "",
+          point: 0,
+          redeemPoints: 0
+        });
+      });
+    }
+  };
 
   const handleCheckoutComplete = (result) => {
     setReceiptData(result);
@@ -288,6 +327,7 @@ const CashierPage = () => {
             </div>
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
+              <OrderQueue store={store} onLoadOrder={handleLoadOrder} />
               <ProductGrid
                 products={filteredProducts}
                 isLoading={isLoading}
@@ -323,6 +363,8 @@ const CashierPage = () => {
                 <CartPanel
                   items={cart.order}
                   subtotal={subtotal}
+                  taxRate={taxRate}
+                  taxAmount={taxAmount}
                   onIncrement={cart.incrementOrder}
                   onDecrement={cart.decrementOrder}
                   onDelete={cart.handleDeleteOrder}
@@ -340,6 +382,8 @@ const CashierPage = () => {
               <CartPanel
                 items={cart.order}
                 subtotal={subtotal}
+                taxRate={taxRate}
+                taxAmount={taxAmount}
                 onIncrement={cart.incrementOrder}
                 onDecrement={cart.decrementOrder}
                 onDelete={cart.handleDeleteOrder}
@@ -356,6 +400,7 @@ const CashierPage = () => {
             onClose={() => setCheckoutOpen(false)}
             items={cart.order}
             subtotal={subtotal}
+            taxRate={taxRate}
             store={store}
             cashierName={userName}
             cashierId={user?.id || user?.ID}

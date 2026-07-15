@@ -26,6 +26,8 @@ import {
 const CartPanel = ({
   items,
   subtotal,
+  taxRate,
+  taxAmount,
   onIncrement,
   onDecrement,
   onDelete,
@@ -299,9 +301,25 @@ const CartPanel = ({
       </div>
 
       <div className="border-t border-border/50 bg-card/80 backdrop-blur-sm shrink-0 p-4 space-y-3">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{t("page.cashier.subtotal")}</span>
-          <span className="font-bold text-foreground text-lg">Rp {formatPrice(subtotal)}</span>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t("page.cashier.subtotal")}</span>
+            <span className="font-medium text-foreground">Rp {formatPrice(subtotal)}</span>
+          </div>
+          {taxRate > 0 && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                {t("page.cashier.tax")} ({Math.round(taxRate * 100)}%)
+              </span>
+              <span className="font-medium text-foreground">Rp {formatPrice(taxAmount)}</span>
+            </div>
+          )}
+          <div className="border-t border-border/30 pt-2 flex items-center justify-between">
+            <span className="text-sm font-semibold text-foreground">{t("page.cashier.total")}</span>
+            <span className="font-bold text-foreground text-lg">
+              Rp {formatPrice(subtotal + taxAmount)}
+            </span>
+          </div>
         </div>
         <Button
           onClick={onCheckout}
@@ -337,6 +355,8 @@ const CartPanel = ({
 CartPanel.propTypes = {
   items: PropTypes.array,
   subtotal: PropTypes.number,
+  taxRate: PropTypes.number,
+  taxAmount: PropTypes.number,
   onIncrement: PropTypes.func,
   onDecrement: PropTypes.func,
   onDelete: PropTypes.func,

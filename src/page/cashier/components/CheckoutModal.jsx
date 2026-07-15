@@ -36,6 +36,7 @@ import { toast } from "sonner";
 const CheckoutModal = ({
   items: propItems,
   subtotal: propSubtotal,
+  taxRate: propTaxRate,
   store,
   cashierName,
   cashierId,
@@ -200,7 +201,7 @@ const CheckoutModal = ({
     ];
   }, [paymentMethodsData]);
 
-  const taxRate = 0.11;
+  const taxRate = propTaxRate || 0.11;
   const taxAmount = subtotal * taxRate;
   const matchedTier = useMemo(() => {
     if (!memberPoints || memberTiers.length === 0) return null;
@@ -513,7 +514,7 @@ const CheckoutModal = ({
                   <span className="font-medium">Rp {formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{t("page.cashier.tax")} (11%)</span>
+                  <span className="text-muted-foreground">{t("page.cashier.tax")} ({Math.round(taxRate * 100)}%)</span>
                   <span className="font-medium">Rp {formatPrice(taxAmount)}</span>
                 </div>
                 {totalDiscount > 0 && (

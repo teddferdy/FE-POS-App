@@ -42,9 +42,13 @@ const AccountsReceivableList = () => {
   const [payModal, setPayModal] = useState(null);
   const [payAmount, setPayAmount] = useState("");
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-ar"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-ar"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["ar-list", page, limit, statusFilter, storeFilter],
@@ -245,8 +249,8 @@ const AccountsReceivableList = () => {
             </>
           )}
 
-          {isSuperAdmin && (
-            isLoadingLocations || isLoading || isFetching ? (
+          {isSuperAdmin &&
+            (isLoadingLocations || isLoading || isFetching ? (
               <Skeleton className="h-9 w-48 rounded-md" />
             ) : (
               <StoreFilter
@@ -257,8 +261,7 @@ const AccountsReceivableList = () => {
                   setPage(1);
                 }}
               />
-            )
-          )}
+            ))}
 
           <div className="flex items-center gap-2">
             {["", "UNPAID", "PARTIAL", "PAID", "OVERDUE"].map((s) => (

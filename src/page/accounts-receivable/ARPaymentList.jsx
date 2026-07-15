@@ -33,7 +33,7 @@ const ARPaymentList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["ar-payment-list", page, limit, statusFilter],
     () => getARList({ page, limit, status: statusFilter || undefined }),
-    { }
+    {}
   );
 
   const { data: agingData } = useQuery(["ar-aging-payment"], () => getARAging(), {
@@ -176,8 +176,9 @@ const ARPaymentList = () => {
       </div>
 
       <div className="flex items-center gap-2">
-        {["", "UNPAID", "PARTIAL", "OVERDUE"].map((s) => (
+        {["", "UNPAID", "PARTIAL", "OVERDUE"].map((s, idx) => (
           <button
+            key={idx}
             onClick={() => {
               setStatusFilter(s);
               setPage(1);

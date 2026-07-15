@@ -105,7 +105,9 @@ const AccountsReceivableDetail = () => {
                   <h1 className="text-2xl font-bold">{ar?.invoiceNo || `AR-${ar?.id}`}</h1>
                   <span
                     className={`inline-block px-2 py-0.5 rounded text-xs font-medium mt-1 ${statusInfo?.color}`}>
-                    {isOverdue ? t("page.accountsReceivable.detail.status.overdue") : statusInfo?.label}
+                    {isOverdue
+                      ? t("page.accountsReceivable.detail.status.overdue")
+                      : statusInfo?.label}
                     {ar?.overdueDays > 0 &&
                       ` (${t("page.accountsReceivable.detail.overdueLabel")} ${ar.overdueDays} ${t("page.accountsReceivable.detail.days")})`}
                   </span>
@@ -118,170 +120,184 @@ const AccountsReceivableDetail = () => {
 
       {isLoading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
-          <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
-          <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+          <Card className="p-5 space-y-3">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </Card>
+          <Card className="p-5 space-y-3">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </Card>
+          <Card className="p-5 space-y-3">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </Card>
         </div>
       ) : !ar ? (
         <p className="text-center text-muted-foreground py-12">
           {t("page.accountsReceivable.detail.notFound")}
         </p>
       ) : (
-      <>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div>
-          <Card className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-50">
-              <Receipt size={20} className="text-blue-600" />
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div>
+              <Card className="p-4 flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-blue-50">
+                  <Receipt size={20} className="text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.accountsReceivable.detail.card.totalTagihan")}
+                  </p>
+                  <p className="text-lg font-bold">{formatCurrencyRupiah(ar.totalAmount)}</p>
+                </div>
+              </Card>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">
-                {t("page.accountsReceivable.detail.card.totalTagihan")}
-              </p>
-              <p className="text-lg font-bold">{formatCurrencyRupiah(ar.totalAmount)}</p>
-            </div>
-          </Card>
-        </div>
-        <div>
-          <Card className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-50">
-              <Wallet size={20} className="text-green-600" />
+              <Card className="p-4 flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-green-50">
+                  <Wallet size={20} className="text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.accountsReceivable.detail.card.sudahDibayar")}
+                  </p>
+                  <p className="text-lg font-bold">{formatCurrencyRupiah(ar.paidAmount)}</p>
+                </div>
+              </Card>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">
-                {t("page.accountsReceivable.detail.card.sudahDibayar")}
-              </p>
-              <p className="text-lg font-bold">{formatCurrencyRupiah(ar.paidAmount)}</p>
+              <Card className="p-4 flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${isOverdue ? "bg-red-50" : "bg-yellow-50"}`}>
+                  {isOverdue ? (
+                    <AlertCircle size={20} className="text-red-600" />
+                  ) : (
+                    <Clock size={20} className="text-yellow-600" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.accountsReceivable.detail.card.sisaPiutang")}
+                  </p>
+                  <p className="text-lg font-bold">{formatCurrencyRupiah(ar.outstandingAmount)}</p>
+                </div>
+              </Card>
             </div>
-          </Card>
-        </div>
-        <div>
-          <Card className="p-4 flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${isOverdue ? "bg-red-50" : "bg-yellow-50"}`}>
-              {isOverdue ? (
-                <AlertCircle size={20} className="text-red-600" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <Card className="p-4">
+                <h3 className="font-semibold mb-3">
+                  {t("page.accountsReceivable.detail.section.informasiInvoice")}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {t("page.accountsReceivable.detail.field.noInvoice")}
+                    </span>
+                    <span>{ar.invoiceNo || "-"}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {t("page.accountsReceivable.detail.field.tanggalInvoice")}
+                    </span>
+                    <span>
+                      {ar.invoiceDate ? new Date(ar.invoiceDate).toLocaleDateString("id-ID") : "-"}
+                    </span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {t("page.accountsReceivable.detail.field.jatuhTempo")}
+                    </span>
+                    <span>
+                      {ar.dueDate ? new Date(ar.dueDate).toLocaleDateString("id-ID") : "-"}
+                    </span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {t("page.accountsReceivable.detail.field.customer")}
+                    </span>
+                    <span>{ar.customerName || ar.orderData?.customerName || "-"}</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            <div>
+              <Card className="p-4">
+                <h3 className="font-semibold mb-3">
+                  {t("page.accountsReceivable.detail.section.informasiOrder")}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {t("page.accountsReceivable.detail.field.noOrder")}
+                    </span>
+                    <span>{ar.orderNumber || "-"}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {t("page.accountsReceivable.detail.field.tipeOrder")}
+                    </span>
+                    <span>{ar.orderData?.orderType || ar.orderType || "-"}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {t("page.accountsReceivable.detail.field.statusOrder")}
+                    </span>
+                    <span>{ar.orderData?.status || "-"}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {t("page.accountsReceivable.detail.field.metodePembayaran")}
+                    </span>
+                    <span>{ar.orderData?.paymentMethod || ar.paymentMethod || "-"}</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          <div>
+            <Card className="p-4">
+              <h3 className="font-semibold mb-3">
+                {t("page.accountsReceivable.detail.paymentHistory")} ({payments.length})
+              </h3>
+              {payments.length > 0 ? (
+                <DataTable
+                  columns={paymentColumns}
+                  data={payments}
+                  isLoading={false}
+                  emptyMessage={t("page.accountsReceivable.detail.noPayments")}
+                  emptyIcon={Wallet}
+                />
               ) : (
-                <Clock size={20} className="text-yellow-600" />
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {t("page.accountsReceivable.detail.noPayments")}
+                </p>
               )}
-            </div>
+            </Card>
+          </div>
+
+          {ar.notes && (
             <div>
-              <p className="text-xs text-muted-foreground">
-                {t("page.accountsReceivable.detail.card.sisaPiutang")}
-              </p>
-              <p className="text-lg font-bold">{formatCurrencyRupiah(ar.outstandingAmount)}</p>
+              <Card className="p-4">
+                <h3 className="font-semibold mb-2">{t("page.accountsReceivable.detail.notes")}</h3>
+                <p className="text-sm text-muted-foreground">{ar.notes}</p>
+              </Card>
             </div>
-          </Card>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
-          <Card className="p-4">
-            <h3 className="font-semibold mb-3">
-              {t("page.accountsReceivable.detail.section.informasiInvoice")}
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t("page.accountsReceivable.detail.field.noInvoice")}
-                </span>
-                <span>{ar.invoiceNo || "-"}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t("page.accountsReceivable.detail.field.tanggalInvoice")}
-                </span>
-                <span>
-                  {ar.invoiceDate ? new Date(ar.invoiceDate).toLocaleDateString("id-ID") : "-"}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t("page.accountsReceivable.detail.field.jatuhTempo")}
-                </span>
-                <span>{ar.dueDate ? new Date(ar.dueDate).toLocaleDateString("id-ID") : "-"}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t("page.accountsReceivable.detail.field.customer")}
-                </span>
-                <span>{ar.customerName || ar.orderData?.customerName || "-"}</span>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        <div>
-          <Card className="p-4">
-            <h3 className="font-semibold mb-3">
-              {t("page.accountsReceivable.detail.section.informasiOrder")}
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t("page.accountsReceivable.detail.field.noOrder")}
-                </span>
-                <span>{ar.orderNumber || "-"}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t("page.accountsReceivable.detail.field.tipeOrder")}
-                </span>
-                <span>{ar.orderData?.orderType || ar.orderType || "-"}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t("page.accountsReceivable.detail.field.statusOrder")}
-                </span>
-                <span>{ar.orderData?.status || "-"}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t("page.accountsReceivable.detail.field.metodePembayaran")}
-                </span>
-                <span>{ar.orderData?.paymentMethod || ar.paymentMethod || "-"}</span>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      <div>
-        <Card className="p-4">
-          <h3 className="font-semibold mb-3">
-            {t("page.accountsReceivable.detail.paymentHistory")} ({payments.length})
-          </h3>
-          {payments.length > 0 ? (
-            <DataTable
-              columns={paymentColumns}
-              data={payments}
-              isLoading={false}
-              emptyMessage={t("page.accountsReceivable.detail.noPayments")}
-              emptyIcon={Wallet}
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              {t("page.accountsReceivable.detail.noPayments")}
-            </p>
           )}
-        </Card>
-      </div>
-
-      {ar.notes && (
-        <div>
-          <Card className="p-4">
-            <h3 className="font-semibold mb-2">{t("page.accountsReceivable.detail.notes")}</h3>
-            <p className="text-sm text-muted-foreground">{ar.notes}</p>
-          </Card>
-        </div>
-      )}
-      </>
+        </>
       )}
     </div>
   );
