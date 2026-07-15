@@ -376,27 +376,26 @@ const CashierPage = () => {
               </div>
             </div>
           )}
-        </div>
 
-        {/* Desktop cart sidebar */}
-        {store && (
-          <div className="hidden lg:flex lg:w-[380px] xl:w-[420px] lg:h-full border-l border-border/50 bg-card/50 backdrop-blur-sm">
-            <CartPanel
-              items={cart.order}
-              subtotal={subtotal}
-              taxRate={taxRate}
-              taxAmount={taxAmount}
-              onIncrement={cart.incrementOrder}
-              onDecrement={cart.decrementOrder}
-              onDelete={cart.handleDeleteOrder}
-              onCheckout={() => setCheckoutOpen(true)}
-              totalItems={totalItems}
-              onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
-              isLoading={taxLoading}
-            />
-          </div>
-        )}
-      </div>
+          {/* Desktop cart sidebar */}
+          {store && (
+            <div className="hidden lg:flex lg:w-[380px] xl:w-[420px] lg:h-full border-l border-border/50 bg-card/50 backdrop-blur-sm">
+              <CartPanel
+                items={cart.order}
+                subtotal={subtotal}
+                taxRate={taxRate}
+                taxAmount={taxAmount}
+                onIncrement={cart.incrementOrder}
+                onDecrement={cart.decrementOrder}
+                onDelete={cart.handleDeleteOrder}
+                onCheckout={() => setCheckoutOpen(true)}
+                totalItems={totalItems}
+                onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
+                isLoading={taxLoading}
+              />
+            </div>
+          )}
+        </div>
 
         {checkoutOpen && (
           <CheckoutModal
