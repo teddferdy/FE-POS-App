@@ -560,117 +560,144 @@ const ProductList = () => {
           )}
 
           <div data-tour="product-table" className="mt-6">
-            <DataTable
-              columns={columns}
-              data={products}
-              isLoading={isLoading || isFetching}
-              emptyMessage={t("page.product.list.empty")}
-              emptyIcon={Package}
-              toolbar={
+            {isLoading || isFetching ? (
+              <div className="space-y-4">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                  {isLoading || isFetching || isLoadingLocations ? (
-                    <>
-                      <Skeleton className="h-6 w-32" />
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Skeleton className="h-9 w-48 rounded-md" />
-                        <Skeleton className="h-9 w-64 rounded-md" />
-                        <Skeleton className="h-9 w-32 rounded-md" />
-                        <Skeleton className="h-9 w-32 rounded-md" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                        <h4 className="text-base font-semibold text-foreground shrink-0">
-                          {t("page.product.list.title")}
-                        </h4>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 h-9 lg:hidden"
-                          onClick={() => setShowFilters(!showFilters)}>
-                          <Filter size={18} />
-                          {showFilters ? "Tutup" : "Filter"}
-                        </Button>
-                      </div>
-                      <div
-                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                        <StoreFilter
-                          locations={locData?.data || []}
-                          value={storeFilter}
-                          onChange={(v) => {
-                            setGlobalStoreFilter(v);
-                            setPage(1);
-                          }}
-                          isSuperAdmin={isSuperAdmin}
-                          t={t}
-                        />
-                        <select
-                          value={statusFilter}
-                          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="all">{t("common.all")}</option>
-                          <option value="active">{t("common.active")}</option>
-                          <option value="inactive">{t("common.inactive")}</option>
-                          <option value="draft">{t("common.draft")}</option>
-                        </select>
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => { setSearch(val); setPage(1); }}
-                          placeholder={t("page.product.list.searchSku")}
-                          isLoading={isFetching}
-                        />
-                        <select
-                          value={categoryFilter}
-                          onChange={(e) => {
-                            setCategoryFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="">
-                            {t("common.all")} {t("page.product.table.category")}
-                          </option>
-                          {categories.map((cat) => (
-                            <option key={cat.id} value={cat.name}>
-                              {cat.name}
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={sortFilter}
-                          onChange={(e) => {
-                            setSortFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="">{t("page.product.list.filter.newest")}</option>
-                          <option value="price-asc">
-                            {t("page.product.list.filter.priceLowHigh")}
-                          </option>
-                          <option value="price-desc">
-                            {t("page.product.list.filter.priceHighLow")}
-                          </option>
-                          <option value="stock-asc">
-                            {t("page.product.list.filter.stockLow")}
-                          </option>
-                        </select>
-                      </div>
-                    </>
-                  )}
+                  <Skeleton className="h-6 w-32" />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Skeleton className="h-9 w-48 rounded-md" />
+                    <Skeleton className="h-9 w-64 rounded-md" />
+                    <Skeleton className="h-9 w-32 rounded-md" />
+                    <Skeleton className="h-9 w-32 rounded-md" />
+                  </div>
                 </div>
-              }
-              pagination={{
-                page,
-                totalPages,
-                total,
-                onPageChange: setPage,
-                pageSize: limit,
-                onPageSizeChange: (v) => {
-                  setLimit(v);
-                  setPage(1);
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-card rounded-xl border border-border p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <Skeleton className="w-12 h-12 rounded-lg shrink-0" />
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-3 w-1/2" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-5 w-24" />
+                        <Skeleton className="h-5 w-16 rounded-full" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                        <Skeleton className="h-3 w-28" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <DataTable
+                columns={columns}
+                data={products}
+                isLoading={false}
+                emptyMessage={t("page.product.list.empty")}
+                emptyIcon={Package}
+                toolbar={
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                    <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                      <h4 className="text-base font-semibold text-foreground shrink-0">
+                        {t("page.product.list.title")}
+                      </h4>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 h-9 lg:hidden"
+                        onClick={() => setShowFilters(!showFilters)}>
+                        <Filter size={18} />
+                        {showFilters ? "Tutup" : "Filter"}
+                      </Button>
+                    </div>
+                    <div
+                      className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                      <StoreFilter
+                        locations={locData?.data || []}
+                        value={storeFilter}
+                        onChange={(v) => {
+                          setGlobalStoreFilter(v);
+                          setPage(1);
+                        }}
+                        isSuperAdmin={isSuperAdmin}
+                        t={t}
+                      />
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                        <option value="all">{t("common.all")}</option>
+                        <option value="active">{t("common.active")}</option>
+                        <option value="inactive">{t("common.inactive")}</option>
+                        <option value="draft">{t("common.draft")}</option>
+                      </select>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => { setSearch(val); setPage(1); }}
+                        placeholder={t("page.product.list.searchSku")}
+                        isLoading={isFetching}
+                      />
+                      <select
+                        value={categoryFilter}
+                        onChange={(e) => {
+                          setCategoryFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                        <option value="">
+                          {t("common.all")} {t("page.product.table.category")}
+                        </option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={sortFilter}
+                        onChange={(e) => {
+                          setSortFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                        <option value="">{t("page.product.list.filter.newest")}</option>
+                        <option value="price-asc">
+                          {t("page.product.list.filter.priceLowHigh")}
+                        </option>
+                        <option value="price-desc">
+                          {t("page.product.list.filter.priceHighLow")}
+                        </option>
+                        <option value="stock-asc">
+                          {t("page.product.list.filter.stockLow")}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
                 }
-              }}
-            />
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => {
+                    setLimit(v);
+                    setPage(1);
+                  }
+                }}
+              />
+            )}
           </div>
 
           <Modal

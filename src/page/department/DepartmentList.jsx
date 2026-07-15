@@ -445,20 +445,11 @@ const DepartmentList = () => {
                   isLoading={isFetching}
                   emptyMessage={t("page.department.list.empty")}
                   toolbar={
-                    <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-semibold text-muted-foreground">
-                          {t("page.department.list.showLabel")}
-                        </span>
-                        <select
-                          value={limit}
-                          className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-                          <option value={10}>{t("page.department.list.show10")}</option>
-                          <option value={25}>{t("page.department.list.show25")}</option>
-                          <option value={50}>{t("page.department.list.show50")}</option>
-                        </select>
-                      </div>
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                      <h4 className="text-base font-semibold text-foreground shrink-0">
+                        {t("page.department.list.title")}
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-2">
                         <select
                           value={statusFilter}
                           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
@@ -468,13 +459,13 @@ const DepartmentList = () => {
                           <option value="inactive">{t("common.inactive")}</option>
                           <option value="draft">{t("common.draft")}</option>
                         </select>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => { setSearch(val); setPage(1); }}
+                          placeholder={t("page.department.list.search")}
+                          isLoading={isFetching}
+                        />
                       </div>
-                      <SearchInput
-                        value={search}
-                        onChange={(val) => { setSearch(val); setPage(1); }}
-                        placeholder={t("page.department.list.search")}
-                        isLoading={isFetching}
-                      />
                     </div>
                   }
                   pagination={{

@@ -1563,6 +1563,7 @@
   "page.typePayment.form.statusInactive": "Payment type is inactive",
   "page.typePayment.table.name": "Payment Name",
   "page.typePayment.table.type": "Type",
+  "page.typePayment.table.store": "Store",
   "page.typePayment.table.createdDate": "Created Date",
   "page.typePayment.table.updatedDate": "Updated",
   "page.typePayment.toast.addSuccess": "Payment type successfully added.",

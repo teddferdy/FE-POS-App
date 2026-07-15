@@ -29,7 +29,7 @@ const MemberTier = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
   const [limit, setLimit] = useState(5);
 
   const { data: locData } = useQuery(["locations-member-tier"], () => getAllLocation(), {
@@ -57,7 +57,7 @@ const MemberTier = () => {
 
   const filteredTiers = tiers.filter((tier) => {
     const matchesSearch = tier.name?.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = !statusFilter || normalizeStatus(tier.status) === statusFilter;
+    const matchesStatus = statusFilter === "all" || normalizeStatus(tier.status) === statusFilter;
     return matchesSearch && matchesStatus;
   });
   const totalPages = Math.ceil(filteredTiers.length / limit);
@@ -353,47 +353,29 @@ const MemberTier = () => {
                     isLoading={isLoading || isFetching}
                     rowClassName={() => "group"}
                     toolbar={
-                      <div className="flex flex-col gap-3 w-full">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-base font-semibold text-foreground">
-                            {t("page.memberTier.list.tableTitle")}
-                          </h4>
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                        <h4 className="text-base font-semibold text-foreground shrink-0">
+                          {t("page.memberTier.list.tableTitle")}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <select
+                            value={statusFilter}
+                            onChange={(e) => {
+                              setStatusFilter(e.target.value);
+                              setCurrentPage(1);
+                            }}
+                            className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                            <option value="all">{t("common.all")}</option>
+                            <option value="active">{t("common.active")}</option>
+                            <option value="draft">{t("common.draft")}</option>
+                            <option value="inactive">{t("common.inactive")}</option>
+                          </select>
                           <SearchInput
                             value={search}
                             onChange={(val) => { setSearch(val); setCurrentPage(1); }}
                             placeholder={t("common.search")}
                             isLoading={isFetching}
                           />
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          {[
-                            { key: null, label: t("common.all"), icon: "group" },
-                            { key: "active", label: t("common.active"), icon: "check_circle" },
-                            { key: "draft", label: t("common.draft"), icon: "edit_note" },
-                            { key: "inactive", label: t("common.inactive"), icon: "cancel" }
-                          ].map(({ key, label, icon }) => (
-                            <button
-                              key={key ?? "all"}
-                              onClick={() => {
-                                setStatusFilter(key);
-                                setCurrentPage(1);
-                              }}
-                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                                statusFilter === key
-                                  ? "bg-primary text-primary-foreground shadow-sm"
-                                  : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
-                              }`}>
-                              <span className="material-symbols-outlined text-sm">{icon}</span>
-                              {label}
-                            </button>
-                          ))}
-                          <span className="text-xs text-muted-foreground ml-auto">
-                            {t("common.showing", {
-                              start: filteredTiers.length > 0 ? (currentPage - 1) * limit + 1 : 0,
-                              end: Math.min(currentPage * limit, filteredTiers.length),
-                              total: filteredTiers.length
-                            })}
-                          </span>
                         </div>
                       </div>
                     }

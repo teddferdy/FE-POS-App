@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
-import { Search, Barcode, Grid3X3, List, Tag, Package, Loader2, X } from "lucide-react";
+import { Search, Barcode, Grid3X3, List, Tag, Package, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import { orderList } from "@/state/order-list";
 import { getAllCategoryActive } from "@/services/category";
 import { optimizeImage } from "@/utils/image";
+import { Skeleton } from "@/components/ui/skeleton";
 import VariantModal from "./VariantModal";
 
 const ProductGrid = ({
@@ -158,12 +159,39 @@ const ProductGrid = ({
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 size={40} className="mx-auto text-primary animate-spin mb-3" />
-          <p className="text-muted-foreground font-medium">{t("page.cashier.loadingProducts")}</p>
+      <>
+        <div className="flex items-center gap-3 px-4 lg:px-6 pt-4 pb-3">
+          <Skeleton className="w-9 h-9 rounded-xl shrink-0" />
+          <Skeleton className="flex-1 h-10 rounded-xl" />
+          <Skeleton className="w-9 h-9 rounded-xl shrink-0" />
         </div>
-      </div>
+        <div className="flex items-center gap-2 px-4 lg:px-6 pb-2 overflow-hidden">
+          <Skeleton className="shrink-0 w-20 h-7 rounded-lg" />
+          <Skeleton className="shrink-0 w-16 h-7 rounded-lg" />
+          <Skeleton className="shrink-0 w-24 h-7 rounded-lg" />
+          <Skeleton className="shrink-0 w-14 h-7 rounded-lg" />
+          <Skeleton className="shrink-0 w-20 h-7 rounded-lg" />
+        </div>
+        <div className="flex-1 overflow-y-auto pb-4">
+          <div className="px-4 lg:px-6 py-3">
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 px-4 lg:px-6 pt-3">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-card/80 border border-border/40 rounded-xl p-3 space-y-2.5">
+                <Skeleton className="w-full aspect-square rounded-lg" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
     );
   }
 

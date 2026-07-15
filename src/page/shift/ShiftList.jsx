@@ -37,19 +37,22 @@ const ShiftList = () => {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [storeFilter, setStoreFilter] = useState("");
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/shift-list";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations-shift"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-shift"], () => getAllLocation("active"), {
     enabled: isSuperAdmin
   });
 
+  const effectiveStore = isSuperAdmin ? storeFilter : locationParam;
+
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["shifts", page, limit, search, statusFilter],
-    () => getAllShift({ store: locationParam, page, limit, statusShift: statusFilter })
+    ["shifts", page, limit, search, statusFilter, effectiveStore],
+    () => getAllShift({ store: effectiveStore, page, limit, statusShift: statusFilter })
   );
 
   const deleteMutation = useMutation(deleteShift, {
@@ -288,11 +291,24 @@ const ShiftList = () => {
                   emptyIcon={Clock}
                   emptyMessage={t("page.shift.list.empty")}
                   toolbar={
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      <h4 className="text-base font-semibold text-foreground">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                      <h4 className="text-base font-semibold text-foreground shrink-0">
                         {t("page.shift.list.title")}
                       </h4>
-                      <div className="flex items-center gap-3 w-full md:w-auto">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {isSuperAdmin && (
+                          <select
+                            value={storeFilter}
+                            onChange={(e) => { setStoreFilter(e.target.value); setPage(1); }}
+                            className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                            <option value="">{t("page.employee.list.allStores")}</option>
+                            {(locData?.data || []).map((loc) => (
+                              <option key={loc.id} value={loc.id}>
+                                {loc.name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
                         <select
                           value={statusFilter}
                           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}

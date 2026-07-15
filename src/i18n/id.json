@@ -1559,6 +1559,7 @@
   "page.typePayment.form.statusInactive": "Tipe pembayaran tidak aktif",
   "page.typePayment.table.name": "Nama Pembayaran",
   "page.typePayment.table.type": "Tipe",
+  "page.typePayment.table.store": "Toko",
   "page.typePayment.table.createdDate": "Tanggal Dibuat",
   "page.typePayment.table.updatedDate": "Diperbarui",
   "page.typePayment.toast.addSuccess": "Tipe pembayaran berhasil ditambahkan.",

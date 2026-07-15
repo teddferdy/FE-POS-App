@@ -10,7 +10,7 @@ import {
   downloadPositionTemplate,
   downloadPositionExcel
 } from "@/services/position";
-import { getAllDepartment } from "@/services/department";
+import { getAllDepartmentTable } from "@/services/department";
 import { getAllLocation } from "@/services/location";
 import { Loader2, Briefcase, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -64,13 +64,16 @@ const PositionList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("");
 
   const { data: locData } = useQuery(["locations-positions"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
-  const { data: departmentData } = useQuery(["departments-all"], getAllDepartment, {});
-
+  const { data: departmentData } = useQuery(
+    ["departments-active"],
+    () => getAllDepartmentTable({ page: 1, limit: 100, statusRole: "active", search: "" })
+  );
   const departments = departmentData?.data || departmentData?.departments || [];
 
   const { data, isLoading, isFetching } = useQuery(["positions", page, limit, search, statusFilter], () =>
@@ -95,6 +98,12 @@ const PositionList = () => {
   });
 
   const positions = data?.data || [];
+  const filteredPositions = departmentFilter
+    ? positions.filter((p) => {
+        const deptName = p.departmentData?.name || p.department || "";
+        return deptName === departmentFilter;
+      })
+    : positions;
   const pagination = data?.pagination || {};
   const stats = data?.stats || {};
 
@@ -424,22 +433,15 @@ const PositionList = () => {
               <div data-tour="position-table" className="mt-6">
                 <DataTable
                   columns={columns}
-                  data={positions}
+                  data={filteredPositions}
                   isLoading={isLoading || isFetching}
                   emptyMessage={t("page.position.list.empty")}
                   toolbar={
-                    <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-semibold text-muted-foreground">
-                          {t("page.position.list.show")}:
-                        </span>
-                        <select
-                          value={limit}
-                          className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-                          <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
-                          <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
-                          <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
-                        </select>
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                      <h4 className="text-base font-semibold text-foreground shrink-0">
+                        {t("page.position.list.title")}
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-2">
                         <select
                           value={statusFilter}
                           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
@@ -449,13 +451,24 @@ const PositionList = () => {
                           <option value="inactive">{t("common.inactive")}</option>
                           <option value="draft">{t("common.draft")}</option>
                         </select>
+                        <select
+                          value={departmentFilter}
+                          onChange={(e) => { setDepartmentFilter(e.target.value); setPage(1); }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="">{t("common.all")} {t("page.position.table.department")}</option>
+                          {departments.map((dept) => (
+                            <option key={dept.id || dept._id} value={dept.name}>
+                              {dept.name}
+                            </option>
+                          ))}
+                        </select>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => { setSearch(val); setPage(1); }}
+                          placeholder={t("page.position.list.search")}
+                          isLoading={isFetching}
+                        />
                       </div>
-                      <SearchInput
-                        value={search}
-                        onChange={(val) => { setSearch(val); setPage(1); }}
-                        placeholder={t("page.position.list.search")}
-                        isLoading={isFetching}
-                      />
                     </div>
                   }
                   pagination={{

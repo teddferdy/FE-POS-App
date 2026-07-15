@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { Plus, Eye, Edit, Trash2, CreditCard, Loader2, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import {
   getAllTypePaymentListActive,
-  getAllTypePayment,
   deleteTypePayment,
   downloadTypePaymentTemplate,
   downloadTypePaymentExcel
@@ -62,23 +61,24 @@ const TypePaymentList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [storeFilter, setStoreFilter] = useState("");
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/type-payment-list";
+  const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations-type-payment"], () => getAllLocation(), {
-    
+  const { data: locData } = useQuery(["locations-type-payment"], () => getAllLocation("active"), {
     enabled: isSuperAdmin
   });
 
+  const effectiveStore = isSuperAdmin ? storeFilter : locationParam;
+
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["type-payments", page, limit, search, statusFilter],
-    () => getAllTypePaymentListActive({ page, limit, statusPayment: statusFilter }),
+    ["type-payments", page, limit, search, statusFilter, effectiveStore],
+    () => getAllTypePaymentListActive({ page: 1, limit: 9999, store: effectiveStore }),
     { }
   );
-
-  const { data: allData } = useQuery(["type-payments-all"], () => getAllTypePayment({}));
 
   const deleteMutation = useMutation(deleteTypePayment, {
     onSuccess: () => {
@@ -86,30 +86,44 @@ const TypePaymentList = () => {
         description: t("page.typePayment.toast.deleteSuccess")
       });
       queryClient.invalidateQueries(["type-payments"]);
-      queryClient.invalidateQueries(["type-payments-all"]);
     },
     onError: (err) => {
       toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
-  const payments = data?.data || [];
-  const allPayments = allData?.data || [];
+  const rawPayments = data?.data || [];
   const stats = data?.stats || {};
-  const pagination = data?.pagination || {};
-  const total = pagination?.total || pagination?.totalItems || data?.total || 0;
-  const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
+
+  const isStatusActive = (item) =>
+    item.status === "Aktif" || item.status === true || item.status === "active" || item.isActive === true;
+  const isStatusDraft = (item) => item.status === "draft";
+  const isStatusInactive = (item) => !isStatusActive(item) && !isStatusDraft(item);
+
+  const filteredPayments = rawPayments.filter((item) => {
+    if (statusFilter === "active" && !isStatusActive(item)) return false;
+    if (statusFilter === "draft" && !isStatusDraft(item)) return false;
+    if (statusFilter === "inactive" && !isStatusInactive(item)) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      const matchName = item.name?.toLowerCase().includes(q);
+      const matchType = item.type?.toLowerCase().includes(q);
+      if (!matchName && !matchType) return false;
+    }
+    return true;
+  });
+
+  const totalFiltered = filteredPayments.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / limit));
+  const safePage = Math.min(page, totalPages);
+  const payments = filteredPayments.slice((safePage - 1) * limit, safePage * limit);
+  const total = totalFiltered;
+
   const activeCount =
     stats.active ??
-    allPayments.filter(
-      (item) =>
-        item.status === "Aktif" ||
-        item.status === true ||
-        item.status === "active" ||
-        item.isActive === true
-    ).length;
-  const draftCount = stats.draft ?? allPayments.filter((item) => item.status === "draft").length;
-  const inactiveCount = stats.inactive ?? allPayments.length - activeCount - draftCount;
+    rawPayments.filter(isStatusActive).length;
+  const draftCount = stats.draft ?? rawPayments.filter(isStatusDraft).length;
+  const inactiveCount = stats.inactive ?? rawPayments.length - activeCount - draftCount;
 
   const handleDelete = (item) => {
     setDeleteTarget(item);
@@ -144,6 +158,26 @@ const TypePaymentList = () => {
   };
 
   const columns = [
+    {
+      header: t("page.typePayment.table.name"),
+      render: (row) => (
+        <span className="text-sm font-semibold text-foreground">{row.name || "-"}</span>
+      )
+    },
+    {
+      header: t("page.typePayment.table.type"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">{row.type || "-"}</span>
+      )
+    },
+    {
+      header: t("page.typePayment.table.store"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">
+          {row.store?.name || row.store || "-"}
+        </span>
+      )
+    },
     {
       header: t("common.status"),
       render: (row) => getStatusBadge(row)
@@ -376,11 +410,24 @@ const TypePaymentList = () => {
                   emptyIcon={CreditCard}
                   emptyMessage={t("page.typePayment.list.empty")}
                   toolbar={
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      <h4 className="text-base font-semibold text-foreground">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                      <h4 className="text-base font-semibold text-foreground shrink-0">
                         {t("page.typePayment.list.title")}
                       </h4>
-                      <div className="flex items-center gap-3 w-full md:w-auto">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {isSuperAdmin && (
+                          <select
+                            value={storeFilter}
+                            onChange={(e) => { setStoreFilter(e.target.value); setPage(1); }}
+                            className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                            <option value="">{t("page.employee.list.allStores")}</option>
+                            {(locData?.data || []).map((loc) => (
+                              <option key={loc.id} value={loc.id}>
+                                {loc.name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
                         <select
                           value={statusFilter}
                           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
@@ -438,7 +485,6 @@ const TypePaymentList = () => {
         title={t("page.typePayment.upload.title")}
         onSuccess={() => {
           queryClient.invalidateQueries(["type-payments"]);
-          queryClient.invalidateQueries(["type-payments-all"]);
         }}
       />
     </div>

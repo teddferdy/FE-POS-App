@@ -10,7 +10,7 @@ import { ArrowLeft, Store, MapPin, Navigation, Building2 } from "lucide-react";
 import { getAllLocation, getAllLocationTable } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 
 // const item = {
@@ -154,47 +154,81 @@ const StoreGeospatial = () => {
         </div>
 
         <Card className="p-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-muted-foreground">
-                {t("common.status")}:
-              </span>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                <option value="all">{t("common.all")}</option>
-                <option value="active">{t("common.active")}</option>
-                <option value="inactive">{t("common.inactive")}</option>
-              </select>
+          {isLoading ? (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Skeleton className="h-9 w-32 rounded-md" />
+              <Skeleton className="h-9 w-40 rounded-md" />
+              <Skeleton className="h-4 w-36 self-center ml-auto hidden sm:block" />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-muted-foreground">
-                {t("common.category")}:
-              </span>
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                <option value="all">{t("common.all")}</option>
-                <option value="Main Branch">{t("page.location.category.mainBranch")}</option>
-                <option value="Branch">{t("page.location.category.branch")}</option>
-                <option value="Warehouse">{t("page.location.category.warehouse")}</option>
-                <option value="Office">{t("page.location.category.office")}</option>
-              </select>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {t("common.status")}:
+                </span>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                  <option value="all">{t("common.all")}</option>
+                  <option value="active">{t("common.active")}</option>
+                  <option value="inactive">{t("common.inactive")}</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {t("common.category")}:
+                </span>
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                  <option value="all">{t("common.all")}</option>
+                  <option value="Main Branch">{t("page.location.category.mainBranch")}</option>
+                  <option value="Branch">{t("page.location.category.branch")}</option>
+                  <option value="Warehouse">{t("page.location.category.warehouse")}</option>
+                  <option value="Office">{t("page.location.category.office")}</option>
+                </select>
+              </div>
+              <p className="text-xs text-muted-foreground self-center ml-auto">
+                {t("page.location.map.showing", {
+                  count: locationsWithCoords.length,
+                  total: allLocations.length
+                })}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground self-center ml-auto">
-              {t("page.location.map.showing", {
-                count: locationsWithCoords.length,
-                total: allLocations.length
-              })}
-            </p>
-          </div>
+          )}
         </Card>
 
         <Card className="overflow-hidden">
           {isLoading ? (
-            <Loading fullscreen size="lg" label={t("common.loading")} />
+            <div className="h-[500px] relative">
+              <Skeleton className="absolute inset-0 rounded-none" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 px-6 py-4 shadow-lg space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-8 h-8 rounded-lg shrink-0" />
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-2 w-36" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-14 rounded-full" />
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                  </div>
+                </div>
+              </div>
+              <div className="absolute bottom-4 left-4 flex gap-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-1.5 bg-card/80 backdrop-blur-sm rounded-lg border border-border/50 px-2.5 py-1.5">
+                    <Skeleton className="w-2.5 h-2.5 rounded-full shrink-0" />
+                    <Skeleton className="h-2.5 w-8" />
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
             <div className="relative z-0 h-[500px]">
               <style>{`
@@ -277,32 +311,52 @@ const StoreGeospatial = () => {
         </Card>
 
         <Card className="p-4">
-          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">{t("page.location.map.legend")}:</span>
-            <div className="flex items-center gap-1.5">
-              <img
-                src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png"
-                className="w-4 h-5"
-                alt="active"
-              />
-              <span>{t("page.location.map.active")}</span>
+          {isLoading ? (
+            <div className="flex flex-wrap items-center gap-4">
+              <Skeleton className="h-3 w-12" />
+              <div className="flex items-center gap-1.5">
+                <Skeleton className="w-4 h-5 rounded" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Skeleton className="w-4 h-5 rounded" />
+                <Skeleton className="h-3 w-12" />
+              </div>
+              <div className="flex gap-2 ml-4">
+                <Skeleton className="h-5 w-20 rounded" />
+                <Skeleton className="h-5 w-14 rounded" />
+                <Skeleton className="h-5 w-20 rounded" />
+                <Skeleton className="h-5 w-14 rounded" />
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <img
-                src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png"
-                className="w-4 h-5"
-                alt="inactive"
-              />
-              <span>{t("page.location.map.inactive")}</span>
+          ) : (
+            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">{t("page.location.map.legend")}:</span>
+              <div className="flex items-center gap-1.5">
+                <img
+                  src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png"
+                  className="w-4 h-5"
+                  alt="active"
+                />
+                <span>{t("page.location.map.active")}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <img
+                  src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png"
+                  className="w-4 h-5"
+                  alt="inactive"
+                />
+                <span>{t("page.location.map.inactive")}</span>
+              </div>
+              <div className="flex gap-2 ml-4">
+                {Object.entries(categoryColors).map(([cat, cls]) => (
+                  <span key={cat} className={`text-[10px] font-semibold px-2 py-0.5 rounded ${cls}`}>
+                    {cat}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-2 ml-4">
-              {Object.entries(categoryColors).map(([cat, cls]) => (
-                <span key={cat} className={`text-[10px] font-semibold px-2 py-0.5 rounded ${cls}`}>
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </div>
+          )}
         </Card>
       </div>
     </div>

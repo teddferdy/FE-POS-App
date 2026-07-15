@@ -14,10 +14,15 @@ export function SearchInput({
   const [localValue, setLocalValue] = useState(value);
   const debouncedValue = useDebounce(localValue, debounceDelay);
   const inputRef = useRef(null);
+  const onChangeRef = useRef(onChange);
 
   useEffect(() => {
-    onChange(debouncedValue);
-  }, [debouncedValue, onChange]);
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    onChangeRef.current(debouncedValue);
+  }, [debouncedValue]);
 
   useEffect(() => {
     setLocalValue(value);
@@ -25,7 +30,7 @@ export function SearchInput({
 
   const handleClear = () => {
     setLocalValue("");
-    onChange("");
+    onChangeRef.current("");
     inputRef.current?.focus();
   };
 

@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { getAllEmployee, deleteEmployee } from "@/services/employee";
+import { getAllPositionTable } from "@/services/position";
+import { getAllDepartmentTable } from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Loading } from "@/components/ui/loading";
@@ -43,6 +45,7 @@ const EmployeeList = () => {
   const [search, setSearch] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [positionFilter, setPositionFilter] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const { t } = useTranslation();
 
@@ -53,9 +56,20 @@ const EmployeeList = () => {
   );
 
   const { data: locData } = useQuery(["locations-employees"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
+
+  const { data: positionData } = useQuery(
+    ["positions-active"],
+    () => getAllPositionTable({ page: 1, limit: 100, statusRole: "active", search: "" })
+  );
+  const positions = positionData?.data || positionData?.positions || [];
+
+  const { data: departmentData } = useQuery(
+    ["departments-active"],
+    () => getAllDepartmentTable({ page: 1, limit: 100, statusRole: "active", search: "" })
+  );
+  const departments = departmentData?.data || departmentData?.departments || [];
 
   const deleteMutation = useMutation(deleteEmployee, {
     onSuccess: () => {
@@ -72,6 +86,12 @@ const EmployeeList = () => {
   });
 
   const employees = data?.data || data?.employees || [];
+  const filteredEmployees = departmentFilter
+    ? employees.filter((e) => {
+        const deptName = e.departmentData?.name || e.department || "";
+        return deptName === departmentFilter;
+      })
+    : employees;
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
   const stats = data?.stats || {};
@@ -344,53 +364,64 @@ const EmployeeList = () => {
               <div data-tour="employee-table" className="mt-6">
                 <DataTable
                   columns={columns}
-                  data={employees}
+                  data={filteredEmployees}
                   isLoading={isLoading || isFetching}
                   emptyMessage={t("page.employee.list.empty")}
                   toolbar={
-                    <div className="flex flex-wrap gap-4 items-center justify-between">
-                      <div className="flex flex-wrap gap-4 items-center flex-grow">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                      <h4 className="text-base font-semibold text-foreground shrink-0">
+                        {t("page.employee.list.title")}
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-2">
                         <SearchInput
                           value={search}
                           onChange={(val) => { setSearch(val); setPage(1); }}
                           placeholder={t("page.employee.list.searchPlaceholder")}
                           isLoading={isFetching}
                         />
-                        <div className="flex gap-3">
-                          <select
-                            value={locationFilter}
-                            onChange={(e) => {
-                              setLocationFilter(e.target.value);
-                              setPage(1);
-                            }}
-                            className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-                            <option value="">{t("page.employee.list.allStores")}</option>
-                            {(locData?.data || []).map((loc) => (
-                              <option key={loc.id} value={loc.id}>
-                                {loc.name}
-                              </option>
-                            ))}
-                          </select>
-                          <select
-                            value={positionFilter}
-                            onChange={(e) => {
-                              setPositionFilter(e.target.value);
-                              setPage(1);
-                            }}
-                            className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-                            <option value="">{t("page.employee.list.allPositions")}</option>
-                            <option value="manager">{t("page.employee.list.manager")}</option>
-                            <option value="kasir">{t("page.employee.list.kasir")}</option>
-                            <option value="admin">{t("page.employee.list.admin")}</option>
-                            <option value="staff">{t("page.employee.list.staff")}</option>
-                            <option value="supervisor">{t("page.employee.list.supervisor")}</option>
-                          </select>
-                        </div>
+                        <select
+                          value={locationFilter}
+                          onChange={(e) => {
+                            setLocationFilter(e.target.value);
+                            setPage(1);
+                          }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="">{t("page.employee.list.allStores")}</option>
+                          {(locData?.data || []).map((loc) => (
+                            <option key={loc.id} value={loc.id}>
+                              {loc.name}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={positionFilter}
+                          onChange={(e) => {
+                            setPositionFilter(e.target.value);
+                            setPage(1);
+                          }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="">{t("page.employee.list.allPositions")}</option>
+                          {positions.map((pos) => (
+                            <option key={pos.id || pos._id} value={pos.name || pos.id}>
+                              {pos.name}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={departmentFilter}
+                          onChange={(e) => {
+                            setDepartmentFilter(e.target.value);
+                            setPage(1);
+                          }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="">{t("common.all")} {t("page.employee.form.department")}</option>
+                          {departments.map((dept) => (
+                            <option key={dept.id || dept._id} value={dept.name}>
+                              {dept.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                      <Button variant="outline" size="sm" className="gap-2 h-9">
-                        <span className="material-symbols-outlined text-base">tune</span>
-                        Advanced Filters
-                      </Button>
                     </div>
                   }
                   pagination={{
