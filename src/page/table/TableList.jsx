@@ -6,6 +6,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import {
   Plus,
+  Eye,
   Edit,
   Trash2,
   Sofa,
@@ -253,6 +254,16 @@ const TableList = () => {
               title={t("page.table.setAvailable")}
               onClick={() => setStatusTarget(row)}>
               <RotateCcw size={18} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "detail") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              title={t("common.view")}
+              onClick={() => navigate(`/detail-table?id=${row.id || row._id}`)}>
+              <Eye size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "edit") && (

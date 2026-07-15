@@ -203,6 +203,7 @@ const ProfilePage = React.lazy(() => import("./page/profile/ProfilePage"));
 
 // Table
 const TableList = React.lazy(() => import("./page/table/TableList"));
+const DetailTable = React.lazy(() => import("./page/table/DetailTable"));
 
 // Notification
 const NotificationPage = React.lazy(() => import("./page/notification/NotificationPage"));
@@ -389,6 +390,7 @@ function App() {
                 <Route path="/detail-department" element={<DetailDepartment />} />
 
                 <Route path="/table-list" element={<TableList />} />
+                <Route path="/detail-table" element={<DetailTable />} />
 
                 <Route path="/supplier" element={<SupplierList />} />
                 <Route path="/add-supplier" element={<AddSupplier />} />

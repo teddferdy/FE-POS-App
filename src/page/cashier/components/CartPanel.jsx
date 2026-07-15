@@ -14,6 +14,7 @@ import {
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +34,8 @@ const CartPanel = ({
   onDelete,
   onCheckout,
   totalItems,
-  onUpdatePrice
+  onUpdatePrice,
+  isLoading
 }) => {
   const { t } = useTranslation();
   const [editingPrice, setEditingPrice] = useState(null);
@@ -301,28 +303,46 @@ const CartPanel = ({
       </div>
 
       <div className="border-t border-border/50 bg-card/80 backdrop-blur-sm shrink-0 p-4 space-y-3">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">{t("page.cashier.subtotal")}</span>
-            <span className="font-medium text-foreground">Rp {formatPrice(subtotal)}</span>
-          </div>
-          {taxRate > 0 && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">
-                {t("page.cashier.tax")} ({Math.round(taxRate * 100)}%)
-              </span>
-              <span className="font-medium text-foreground">Rp {formatPrice(taxAmount)}</span>
+        {isLoading ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-24" />
             </div>
-          )}
-          <div className="border-t border-border/30 pt-2 flex items-center justify-between">
-            <span className="text-sm font-semibold text-foreground">{t("page.cashier.total")}</span>
-            <span className="font-bold text-foreground text-lg">
-              Rp {formatPrice(subtotal + taxAmount)}
-            </span>
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+            <div className="border-t border-border/30 pt-2 flex items-center justify-between">
+              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-6 w-28" />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{t("page.cashier.subtotal")}</span>
+              <span className="font-medium text-foreground">Rp {formatPrice(subtotal)}</span>
+            </div>
+            {taxRate > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {t("page.cashier.tax")} ({Math.round(taxRate * 100)}%)
+                </span>
+                <span className="font-medium text-foreground">Rp {formatPrice(taxAmount)}</span>
+              </div>
+            )}
+            <div className="border-t border-border/30 pt-2 flex items-center justify-between">
+              <span className="text-sm font-semibold text-foreground">{t("page.cashier.total")}</span>
+              <span className="font-bold text-foreground text-lg">
+                Rp {formatPrice(subtotal + taxAmount)}
+              </span>
+            </div>
+          </div>
+        )}
         <Button
           onClick={onCheckout}
+          disabled={isLoading}
           className="w-full h-11 rounded-xl font-semibold text-sm relative overflow-hidden group/btn">
           <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/90 opacity-90 group-hover/btn:opacity-100 transition-opacity" />
           <span className="relative flex items-center justify-center gap-2">
@@ -362,7 +382,8 @@ CartPanel.propTypes = {
   onDelete: PropTypes.func,
   onCheckout: PropTypes.func,
   totalItems: PropTypes.number,
-  onUpdatePrice: PropTypes.func
+  onUpdatePrice: PropTypes.func,
+  isLoading: PropTypes.bool
 };
 
 export default CartPanel;

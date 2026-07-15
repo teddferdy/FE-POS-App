@@ -137,7 +137,7 @@ const CashierPage = () => {
   const totalItems = cart.order.reduce((sum, item) => sum + (item.count || 0), 0);
   const subtotal = cart.order.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
 
-  const { data: taxConfigData } = useQuery(
+  const { data: taxConfigData, isLoading: taxLoading } = useQuery(
     ["cashier-tax-config", store],
     () => getAllTaxConfig({ location: store, status: "active", limit: 50 }),
     { enabled: !!store }
@@ -146,7 +146,7 @@ const CashierPage = () => {
   const taxConfigs = taxConfigData?.data || [];
   const taxRatePercent = useMemo(() => {
     return taxConfigs
-      .filter((tc) => tc.type === "percentage" && tc.status === "active")
+      .filter((tc) => tc.type === "ppn" && tc.status === "active")
       .reduce((sum, tc) => sum + (tc.rate || 0), 0);
   }, [taxConfigs]);
   const taxRate = taxRatePercent / 100;
@@ -371,7 +371,29 @@ const CashierPage = () => {
                   onCheckout={() => setCheckoutOpen(true)}
                   totalItems={totalItems}
                   onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
+                  isLoading={taxLoading}
                 />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop cart sidebar */}
+        {store && (
+          <div className="hidden lg:flex lg:w-[380px] xl:w-[420px] lg:h-full border-l border-border/50 bg-card/50 backdrop-blur-sm">
+            <CartPanel
+              items={cart.order}
+              subtotal={subtotal}
+              taxRate={taxRate}
+              taxAmount={taxAmount}
+              onIncrement={cart.incrementOrder}
+              onDecrement={cart.decrementOrder}
+              onDelete={cart.handleDeleteOrder}
+              onCheckout={() => setCheckoutOpen(true)}
+              totalItems={totalItems}
+              onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
+              isLoading={taxLoading}
+            />
               </div>
             </div>
           )}

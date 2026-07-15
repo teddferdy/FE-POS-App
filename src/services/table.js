@@ -8,6 +8,15 @@ export const getTablesByStore = async (payload) => {
   return data;
 };
 
+export const getTableById = async (id) => {
+  const { data, status } = await axiosInstance.get(`/table/get-tables`);
+  if (status !== 200) throw Error(`${data?.message}`);
+  const tables = data?.data || data || [];
+  const table = tables.find((t) => String(t.id) === String(id));
+  if (!table) throw Error("Table not found");
+  return { data: table };
+};
+
 export const getTableAvailability = async (payload) => {
   const { data, status } = await axiosInstance.get(
     `/table/get-availability?store=${payload?.location || ""}`
