@@ -1,70 +1,278 @@
-# Getting Started with Create React App
+# Bisa Nota - Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Point of Sale (POS) web application frontend built with React, Vite, and shadcn/ui.
 
-## Available Scripts
+## Tech Stack
 
-In the project directory, you can run:
+| Category | Technology |
+|----------|-----------|
+| **Framework** | React 18, Vite 5 |
+| **UI Library** | shadcn/ui (Radix UI primitives) |
+| **Styling** | Tailwind CSS 3 |
+| **State Management** | Zustand, React Query |
+| **Forms** | React Hook Form + Zod validation |
+| **Routing** | React Router v6 |
+| **i18n** | i18next (EN, ID, JP) |
+| **HTTP** | Axios |
+| **Real-time** | Socket.IO Client |
+| **Charts** | Recharts |
+| **Maps** | Leaflet + React-Leaflet |
+| **Monitoring** | Sentry |
+| **Export/Import** | SheetJS (xlsx) |
+| **PWA** | Service Worker + Manifest |
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Getting Started
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Prerequisites
 
-### `npm test`
+- Node.js v18+
+- npm or yarn
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Installation
 
-### `npm run build`
+```bash
+git clone <repository-url>
+cd FE-POS-App
+npm install
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Environment Variables
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Create `.env` file:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```env
+VITE_BASE_URL=https://api-bisa-nota.vercel.app
+```
 
-### `npm run eject`
+### Development
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+npm run dev        # Start dev server on http://localhost:3000
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Build & Deploy
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+npm run build      # Production build
+npm run preview    # Preview production build
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Other Commands
 
-## Learn More
+```bash
+npm run lint       # Run ESLint
+npm run test       # Run Jest tests
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Project Structure
 
-### Code Splitting
+```
+src/
+├── assets/               # Static images (flags, icons)
+├── components/
+│   ├── layout/           # DashboardLayout, Sidebar, Header, CommandPalette
+│   ├── organism/         # Complex feature components (modals, tour, FAQ chat)
+│   └── ui/               # shadcn/ui base components (Button, Input, Table, etc.)
+├── hooks/                # Custom hooks (useDebounce, useKeyboardShortcuts, etc.)
+├── i18n/                 # Translations (en.json, id.json, jpn.json)
+├── lib/                  # Utility libraries, constants
+├── page/                 # Page components (45+ modules, lazy-loaded)
+├── services/             # API service layer (50+ files, Axios-based)
+├── state/                # Zustand stores (theme, checkout, order, tour, etc.)
+├── utils/                # Utilities (permissions, sidebar menu, formatters)
+├── App.jsx               # Root router config
+└── index.jsx             # Entry point
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## Features
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Core POS
+- **Cashier Terminal** - Product grid, cart, order queue, checkout
+- **Kitchen Display System (KDS)** - Real-time order notifications via Socket.IO
+- **Customer Self-Order** - QR code menu, cart, and order tracking
+- **Customer Display** - Customer-facing order display screen
+- **Split Bill** - Divide orders among multiple customers
+- **Thermal Printing** - ESC/POS receipt printing via Bluetooth
 
-### Making a Progressive Web App
+### Inventory & Procurement
+- **Product Management** - CRUD, categories, sub-categories, images, per-store pricing
+- **Stock Management** - History, opname, adjustment, low stock alerts
+- **Stock Transfer** - Inter-store transfers with receive/cancel workflow
+- **Purchase Orders** - Create, approve, partial payments, goods receipt
+- **Production Orders** - BOM/recipes, ingredient deduction, production lifecycle
+- **Goods Receipt** - Receive goods from suppliers with quality checking
+- **Sales & Purchase Returns** - Customer/supplier return workflows
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### People & Access
+- **Employee Management** - CRUD with avatar, salary, contract info
+- **Role-Based Access Control (RBAC)** - 5 role types, granular per-menu permissions
+- **Departments & Positions** - Hierarchical organization management
+- **Members & Loyalty** - Points accumulation, redemption, tier system
 
-### Advanced Configuration
+### Finance & Reporting
+- **Cash Register** - Open/close sessions, history
+- **Expense Management** - Categories, approval workflow
+- **Accounts Receivable** - AR tracking, aging reports, payments
+- **Purchase Payments** - AP tracking, installments
+- **Tax Configuration** - PPN, service charges per store
+- **Reports** - Sales, daily summary, profit/loss, cash flow, best selling
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Settings & Config
+- **Store/Location Management** - Multi-branch with geospatial map view
+- **Payment Types** - Cash, e-wallet, QRIS, custom types
+- **Discount Management** - Percentage/fixed, date range, store scope
+- **Shift Management** - Work shifts per store
+- **Invoice/Receipt Settings** - Logo, footer, social media, preview
+- **Reservation System** - Table reservations with date/time/guest management
+- **Notifications** - In-app notification system
 
-### Deployment
+### Platform Features
+- **Internationalization (i18n)** - English, Indonesian, Japanese
+- **Dark Mode** - Full dark theme support
+- **PWA** - Offline indicator, auto-sync on reconnect
+- **Keyboard Shortcuts** - Ctrl+S (submit), Ctrl+N (add new)
+- **Guided Tours** - Super admin onboarding tour
+- **Excel Import/Export** - Products, suppliers, categories, departments, positions
+- **Error Monitoring** - Sentry integration with session replay
+- **Command Palette** - Quick navigation (Cmd+K)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## Routes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Public
+| Route | Description |
+|-------|-------------|
+| `/` | Login |
+| `/register` | Registration |
+| `/reset-password` | Password Reset |
+| `/home` | Cashier Terminal |
+| `/customer-order` | Customer QR Self-Order Menu |
+| `/customer-display` | Customer Display Screen |
+
+### Dashboard
+| Route | Description |
+|-------|-------------|
+| `/dashboard-super-admin` | Super Admin Dashboard (all stores) |
+| `/dashboard-admin` | Admin Dashboard (single store) |
+
+### POS & Operations
+| Route | Description |
+|-------|-------------|
+| `/kitchen-display` | Kitchen Display System |
+| `/qr-order-management` | QR Order Management |
+| `/cash-register/*` | Cash Register (open/close, current, history) |
+| `/table-list` | Table Management |
+
+### Products & Inventory
+| Route | Description |
+|-------|-------------|
+| `/product-list` | Product List |
+| `/category-list` | Category List |
+| `/ingredient` | Ingredient List |
+| `/ingredient-category` | Ingredient Category List |
+| `/stock-history` | Stock History |
+| `/stock-opname` | Stock Opname |
+| `/stock-transfer` | Stock Transfer |
+| `/low-stock` | Low Stock Alerts |
+| `/stock-adjustment` | Stock Adjustment |
+
+### Procurement & Production
+| Route | Description |
+|-------|-------------|
+| `/supplier` | Supplier List |
+| `/purchase-order` | Purchase Order List |
+| `/purchase-payment` | Purchase Payment List |
+| `/goods-receipt` | Goods Receipt List |
+| `/bom` | Bill of Materials |
+| `/production-order` | Production Order List |
+| `/sales-return` | Sales Return List |
+| `/purchase-return` | Purchase Return List |
+
+### People
+| Route | Description |
+|-------|-------------|
+| `/employee-list` | Employee List |
+| `/user-list` | User List |
+| `/role-management` | Role Management |
+| `/department-list` | Department List |
+| `/position-list` | Position List |
+
+### Members & Loyalty
+| Route | Description |
+|-------|-------------|
+| `/member-list` | Member List |
+| `/member-tier` | Member Tier List |
+| `/member-point-history` | Point History |
+
+### Finance & Reports
+| Route | Description |
+|-------|-------------|
+| `/accounts-receivable` | Accounts Receivable |
+| `/ar-payment` | AR Payments |
+| `/expense` | Expense List |
+| `/expense-category` | Expense Category List |
+| `/report/sales` | Sales Report |
+| `/report/daily` | Daily Report |
+| `/report/profit-loss` | Profit & Loss Report |
+| `/report/cash-flow` | Cash Flow Report |
+| `/best-selling` | Best Selling Report |
+
+### Settings
+| Route | Description |
+|-------|-------------|
+| `/location-list` | Store/Location List |
+| `/store-geospatial` | Store Geospatial Map |
+| `/type-payment-list` | Payment Type List |
+| `/discount-list` | Discount List |
+| `/shift-list` | Shift List |
+| `/tax-list` | Tax Config List |
+| `/invoice-page` | Invoice/Receipt Settings |
+| `/reservation` | Reservation List |
+| `/notification` | Notifications |
+| `/profile` | User Profile |
+| `/backup` | Backup & Restore |
+
+---
+
+## Role-Based Access
+
+| Role | Description | Access |
+|------|-------------|--------|
+| **super_admin** | Owner | All stores, all features |
+| **admin** | Store Manager | Store-level access |
+| **cashier** | POS Staff | POS + Membership |
+| **user** | General Staff | Dashboard + basic reports |
+| **kitchen** | Kitchen Staff | KDS only |
+
+Sidebar menus, page access, and button permissions are all controlled by RBAC. See `src/utils/sidebar-menu.js` and `src/utils/permission.js`.
+
+---
+
+## Environment
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `VITE_BASE_URL` | Backend API URL | `https://api-bisa-nota.vercel.app` |
+
+---
+
+## Deployment
+
+Deployed on **Vercel** with SPA rewrites configured in `vercel.json`.
+
+- **Demo**: https://bisa-nota-demo.vercel.app
+- **API**: https://api-bisa-nota.vercel.app
+
+---
+
+## Related
+
+- [Backend API](../BE-POS-APP/README.md)
+- [Super Admin Guide](./PANDUAN-SUPER-ADMIN.md)
