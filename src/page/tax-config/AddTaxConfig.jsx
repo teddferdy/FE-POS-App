@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useCookies } from "react-cookie";
 import { X, Save, Check } from "lucide-react";
 import { addTaxConfig } from "@/services/tax-config";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,20 +30,31 @@ const taxTypes = [
 
 const AddTaxConfig = () => {
   const { t } = useTranslation();
-  const formSchema = z.object({
-    name: z.string().min(1, t("page.taxConfig.validation.nameRequired")),
-    type: z.string().min(1, t("page.taxConfig.validation.typeRequired")),
-    rate: z.coerce
-      .number()
-      .min(0, t("page.taxConfig.validation.rateNegative"))
-      .max(100, t("page.taxConfig.validation.rateMax")),
-    description: z.string().optional().or(z.literal("")),
-    isActive: z.boolean().default(true)
-  });
   const navigate = useNavigate();
-  const [cancelModal, setCancelModal] = useState(false);
-  const [successModal, setSuccessModal] = useState(false);
-  const [draftModal, setDraftModal] = useState(false);
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
+
+  const { data: locationsData } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    { enabled: isSuperAdmin }
+  );
+  const locations = locationsData?.data || [];
+
+  const formSchema = useMemo(() => {
+    return z.object({
+      name: z.string().min(1, t("page.taxConfig.validation.nameRequired")),
+      type: z.string().min(1, t("page.taxConfig.validation.typeRequired")),
+      rate: z.coerce
+        .number()
+        .min(0, t("page.taxConfig.validation.rateNegative"))
+        .max(100, t("page.taxConfig.validation.rateMax")),
+      description: z.string().optional().or(z.literal("")),
+      isActive: z.boolean().default(true),
+      store: z.string().optional()
+    });
+  }, []);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -50,9 +63,14 @@ const AddTaxConfig = () => {
       type: "ppn",
       rate: 11,
       description: "",
-      isActive: true
+      isActive: true,
+      store: ""
     }
   });
+
+  const [cancelModal, setCancelModal] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
     onSubmit(values, false)
@@ -71,9 +89,10 @@ const AddTaxConfig = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const { isActive, ...rest } = values;
+    const { isActive, store, ...rest } = values;
     createMutation.mutate({
       ...rest,
+      store: isSuperAdmin && store ? Number(store) : undefined,
       status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };
@@ -158,6 +177,32 @@ const AddTaxConfig = () => {
                       </FormItem>
                     )}
                   />
+                  {isSuperAdmin && (
+                    <FormField
+                      control={form.control}
+                      name="store"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.taxConfig.form.store")}</FormLabel>
+                          <select
+                            value={field.value}
+                            onChange={field.onChange}
+                            className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+                            <option value="">{t("page.taxConfig.form.allStores")}</option>
+                            {locations.map((loc) => (
+                              <option key={loc.id} value={loc.id}>
+                                {loc.name}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.taxConfig.form.storeHint")}
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                   <FormField
                     control={form.control}
                     name="isActive"

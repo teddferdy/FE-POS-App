@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
@@ -6,9 +6,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useCookies } from "react-cookie";
 import { X, Save, Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { editTaxConfig, getTaxConfigById } from "@/services/tax-config";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,14 +30,29 @@ const taxTypes = [
 
 const EditTaxConfig = () => {
   const { t } = useTranslation();
-  const formSchema = z.object({
-    name: z.string().min(1, t("page.taxConfig.validation.nameRequired")),
-    type: z.string().min(1, t("page.taxConfig.validation.typeRequired")),
-    rate: z.coerce.number().min(0, t("page.taxConfig.validation.rateNegative")),
-    description: z.string().optional().or(z.literal("")),
-    isActive: z.boolean().default(true)
-  });
   const navigate = useNavigate();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
+
+  const { data: locationsData } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    { enabled: isSuperAdmin }
+  );
+  const locations = locationsData?.data || [];
+
+  const formSchema = useMemo(() => {
+    return z.object({
+      name: z.string().min(1, t("page.taxConfig.validation.nameRequired")),
+      type: z.string().min(1, t("page.taxConfig.validation.typeRequired")),
+      rate: z.coerce.number().min(0, t("page.taxConfig.validation.rateNegative")),
+      description: z.string().optional().or(z.literal("")),
+      isActive: z.boolean().default(true),
+      store: z.string().optional()
+    });
+  }, []);
+
   const [searchParams] = useSearchParams();
   const taxId = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
@@ -58,7 +75,8 @@ const EditTaxConfig = () => {
       type: "PPN",
       rate: 0,
       description: "",
-      isActive: true
+      isActive: true,
+      store: ""
     }
   });
 
@@ -75,7 +93,8 @@ const EditTaxConfig = () => {
         type: tax.type || "ppn",
         rate: tax.rate || 0,
         description: tax.description || "",
-        isActive: tax.status === "active"
+        isActive: tax.status === "active",
+        store: tax.store ? String(tax.store) : ""
       });
     }
   }, [tax, form]);
@@ -93,10 +112,11 @@ const EditTaxConfig = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const { isActive, ...rest } = values;
+    const { isActive, store, ...rest } = values;
     updateMutation.mutate({
       id: taxId,
       ...rest,
+      store: isSuperAdmin && store ? Number(store) : undefined,
       status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };
@@ -220,6 +240,32 @@ const EditTaxConfig = () => {
                     </FormItem>
                   )}
                 />
+                {isSuperAdmin && (
+                  <FormField
+                    control={form.control}
+                    name="store"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("page.taxConfig.form.store")}</FormLabel>
+                        <select
+                          value={field.value}
+                          onChange={field.onChange}
+                          className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+                          <option value="">{t("page.taxConfig.form.allStores")}</option>
+                          {locations.map((loc) => (
+                            <option key={loc.id} value={loc.id}>
+                              {loc.name}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-muted-foreground">
+                          {t("page.taxConfig.form.storeHint")}
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
                 <FormField
                   control={form.control}
                   name="isActive"
@@ -311,6 +357,7 @@ const EditTaxConfig = () => {
             onSubmit(values, true);
           }}
         />
+        {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       </div>
     </div>
   );
