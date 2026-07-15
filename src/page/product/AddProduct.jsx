@@ -1696,40 +1696,38 @@ const AddProduct = () => {
                       {t("page.product.form.prev")}
                     </Button>
                   )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={isSubmitting}
+                    className="gap-2">
+                    <Save size={18} />
+                    {t("page.product.form.saveDraft")}
+                  </Button>
                   {currentStep < 3 ? (
                     <Button type="button" onClick={handleNext} className="gap-2 shadow-md">
                       {t("page.product.form.next")}
                       <ChevronRight size={18} />
                     </Button>
                   ) : (
-                    <>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setDraftModal(true)}
-                        disabled={isSubmitting}
-                        className="gap-2">
-                        <Save size={18} />
-                        {t("page.product.form.saveDraft")}
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          if (!allStores && selectedStores.length === 0) {
-                            form.setError("store", {
-                              message: t("page.product.form.selectStoreError")
-                            });
-                            return;
-                          }
-                          form.clearErrors("store");
-                          handleSubmit();
-                        }}
-                        disabled={isSubmitting}
-                        className="gap-2 shadow-md">
-                        <Save size={18} />
-                        {t("page.product.form.save")}
-                      </Button>
-                    </>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (!allStores && selectedStores.length === 0) {
+                          form.setError("store", {
+                            message: t("page.product.form.selectStoreError")
+                          });
+                          return;
+                        }
+                        form.clearErrors("store");
+                        handleSubmit();
+                      }}
+                      disabled={isSubmitting}
+                      className="gap-2 shadow-md">
+                      <Save size={18} />
+                      {t("page.product.form.save")}
+                    </Button>
                   )}
                 </div>
               </div>
