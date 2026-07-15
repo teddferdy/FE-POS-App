@@ -165,7 +165,7 @@ const EditDiscount = () => {
             : discountItem.type === "nominal"
               ? "Nominal"
               : discountItem.type || "",
-        value: discountItem.value ?? "",
+        value: discountItem.value || "",
         startDate: discountItem.startDate ? new Date(discountItem.startDate) : undefined,
         endDate: discountItem.endDate ? new Date(discountItem.endDate) : undefined,
         minPurchase: discountItem.minimumOrder ?? "",
@@ -372,7 +372,13 @@ const EditDiscount = () => {
       return;
     }
     form.clearErrors("store");
-    form.handleSubmit((v) => onSubmit(v, false))();
+    form.handleSubmit(
+      (v) => onSubmit(v, false),
+      (err) => {
+        const firstError = Object.values(err)?.[0]?.message;
+        if (firstError) toast.error(firstError);
+      }
+    )();
   };
 
   return (
