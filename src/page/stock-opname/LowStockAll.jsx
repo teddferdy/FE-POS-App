@@ -131,7 +131,7 @@ const LowStockAll = () => {
           ) : (
             <ShoppingBasket size={14} className="text-orange-500" />
           )}
-          <span className="text-xs font-medium uppercase tracking-wider">{row.type}</span>
+          <span className="text-xs font-medium">{row.type}</span>
         </div>
       )
     },

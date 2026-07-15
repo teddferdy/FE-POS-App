@@ -251,7 +251,7 @@ const ProductList = () => {
     {
       header: t("page.product.table.productType"),
       render: (product) => (
-        <span className="text-sm text-foreground capitalize">
+        <span className="text-sm text-foreground">
           {product.tipeProduk === "bahan_baku"
             ? t("page.product.form.tipeProdukBahanBaku")
             : product.tipeProduk === "menu"

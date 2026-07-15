@@ -142,7 +142,7 @@ const DiscountList = () => {
       render: (item) => {
         const store = item.store;
         if (!store || Array.isArray(store))
-          return <span className="text-xs text-muted-foreground">Semua Toko</span>;
+          return <span className="text-xs text-foreground">Semua Toko</span>;
         return <span className="text-xs">{store.name || `Store #${store.id}`}</span>;
       }
     },
@@ -194,7 +194,7 @@ const DiscountList = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground"
+            className="h-8 w-8 text-foreground"
             onClick={() => navigate(`/detail-discount?id=${item.id || item._id}`)}>
             <Eye size={18} />
           </Button>

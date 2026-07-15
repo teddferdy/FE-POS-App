@@ -519,7 +519,7 @@ export default function DetailPurchaseOrder() {
                                 })
                               : "-"}
                           </td>
-                          <td className="py-3 px-4 capitalize">{payment.paymentMethod || "-"}</td>
+                          <td className="py-3 px-4">{payment.paymentMethod || "-"}</td>
                           <td className="py-3 px-4 text-muted-foreground">
                             {payment.reference || "-"}
                           </td>

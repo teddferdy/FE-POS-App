@@ -130,9 +130,7 @@ const LocationList = () => {
     {
       header: t("page.location.table.category"),
       render: (loc) => (
-        <span className="text-sm font-medium text-foreground text-capitalize">
-          {loc.category || "Main Branch"}
-        </span>
+        <span className="text-sm font-medium text-foreground">{loc.category || "Main Branch"}</span>
       )
     },
     {
@@ -168,7 +166,7 @@ const LocationList = () => {
         };
         return (
           <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
               styles[status] || styles.inactive
             }`}>
             {labels[status] || labels.inactive}
@@ -196,6 +194,12 @@ const LocationList = () => {
       )
     },
     {
+      header: t("page.location.table.createdBy"),
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground">{loc.createdByUser?.fullName || "-"}</span>
+      )
+    },
+    {
       header: t("page.location.table.createdAt"),
       render: (loc) => (
         <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -212,6 +216,12 @@ const LocationList = () => {
       )
     },
     {
+      header: t("page.location.table.modifiedBy"),
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground">{loc.modifiedByUser?.fullName || "-"}</span>
+      )
+    },
+    {
       header: t("page.location.table.updatedAt"),
       render: (loc) => (
         <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -224,22 +234,6 @@ const LocationList = () => {
                 minute: "2-digit"
               })
             : "-"}
-        </span>
-      )
-    },
-    {
-      header: t("page.location.table.createdBy"),
-      render: (loc) => (
-        <span className="text-xs text-muted-foreground">
-          {loc.createdBy?.fullName || loc.createdBy || "-"}
-        </span>
-      )
-    },
-    {
-      header: t("page.location.table.modifiedBy"),
-      render: (loc) => (
-        <span className="text-xs text-muted-foreground">
-          {loc.modifiedBy?.fullName || loc.modifiedBy || "-"}
         </span>
       )
     },

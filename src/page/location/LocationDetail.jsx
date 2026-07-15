@@ -321,11 +321,15 @@ const LocationDetail = () => {
       <div>
         <div>
           <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+            <button
+              onClick={() => navigate("/dashboard-super-admin")}
+              className="hover:text-foreground transition-colors">
               {t("breadcrumb.home")}
             </button>
             <span className="text-xs">/</span>
-            <button onClick={() => navigate("/location-list")} className="hover:text-foreground transition-colors">
+            <button
+              onClick={() => navigate("/location-list")}
+              className="hover:text-foreground transition-colors">
               {t("page.location.list.title")}
             </button>
             <span className="text-xs">/</span>
@@ -341,7 +345,9 @@ const LocationDetail = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">{location?.name || "-"}</h1>
-                <p className="text-sm text-muted-foreground">{t("page.location.detail.description")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.location.detail.description")}
+                </p>
               </div>
             </div>
             <Button variant="outline" onClick={() => navigate(`/edit-location?id=${id}`)}>

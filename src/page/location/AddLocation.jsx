@@ -106,7 +106,11 @@ const AddLocation = () => {
   const [managerPage, setManagerPage] = useState(1);
   const limit = 10;
 
-  const { data: managerEmployeesData, isLoading: managerLoading, isFetching: managerFetching } = useQuery(
+  const {
+    data: managerEmployeesData,
+    isLoading: managerLoading,
+    isFetching: managerFetching
+  } = useQuery(
     ["employees-manager-picker", managerFetchSearch, managerPage],
     () =>
       getAllEmployee({ search: managerFetchSearch, limit, page: managerPage, status: "active" }),
@@ -130,11 +134,11 @@ const AddLocation = () => {
       address: z.string().min(1, t("common.validation")),
       detailLocation: z.string().optional(),
       location: z.string().optional(),
-      city: z.string().optional(),
-      province: z.string().optional(),
-      district: z.string().optional(),
-      village: z.string().optional(),
-      postalCode: z.string().optional(),
+      city: z.string().min(1, t("common.validation")),
+      province: z.string().min(1, t("common.validation")),
+      district: z.string().min(1, t("common.validation")),
+      village: z.string().min(1, t("common.validation")),
+      postalCode: z.string().min(1, t("common.validation")),
       isActive: z.boolean().default(false),
       category: z.string().optional(),
       managerName: z.string().optional(),
@@ -317,12 +321,12 @@ const AddLocation = () => {
     const { latitude, longitude, category, ...rest } = values;
     const payload = {
       ...rest,
-      store: values.storeId,
+      store: Number(String(values.storeId).replace(/^ST-/i, "")) || null,
       locationId: values.locationId,
       mainBranch: category === "Main Branch",
       category: category || null,
-      latitude: latitude || null,
-      longitude: longitude || null,
+      latitude: latitude != null ? String(latitude) : null,
+      longitude: longitude != null ? String(longitude) : null,
       status: saveAsDraft ? "draft" : values.isActive === false ? "inactive" : "active",
       openingHours: openingHoursFormatted,
       socialMedia: socialLinks.filter((s) => s.platform && s.account)
@@ -589,6 +593,7 @@ const AddLocation = () => {
                             placeholder={t("page.location.form.detailPlaceholder")}
                             className="min-h-[80px]"
                           />
+                          <p className="text-xs text-muted-foreground mt-1">Optional</p>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -604,6 +609,7 @@ const AddLocation = () => {
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {t("page.location.form.provinceLabel")}{" "}
+                            <span className="text-destructive">*</span>
                           </FormLabel>
                           <Combobox
                             options={provinces.map((p) => ({
@@ -646,6 +652,7 @@ const AddLocation = () => {
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {t("page.location.form.cityLabel")}{" "}
+                            <span className="text-destructive">*</span>
                           </FormLabel>
                           <Combobox
                             options={cities.map((c) => ({
@@ -690,6 +697,7 @@ const AddLocation = () => {
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {t("page.location.form.districtLabel")}{" "}
+                            <span className="text-destructive">*</span>
                           </FormLabel>
                           <Combobox
                             options={districts.map((d) => ({
@@ -732,6 +740,7 @@ const AddLocation = () => {
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {t("page.location.form.villageLabel")}{" "}
+                            <span className="text-destructive">*</span>
                           </FormLabel>
                           <Combobox
                             options={villages.map((v) => ({
@@ -770,6 +779,7 @@ const AddLocation = () => {
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {t("page.location.form.postalCodeLabel")}{" "}
+                            <span className="text-destructive">*</span>
                           </FormLabel>
                           <Input
                             {...field}
@@ -1296,12 +1306,24 @@ const AddLocation = () => {
                 {managerLoading || managerFetching ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={`skel-${i}`}>
-                      <td className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>
-                      <td className="px-4 py-3"><Skeleton className="h-9 w-9 rounded-full" /></td>
-                      <td className="px-4 py-3"><Skeleton className="h-4 w-28" /></td>
-                      <td className="px-4 py-3"><Skeleton className="h-4 w-36" /></td>
-                      <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
-                      <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-16" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-9 w-9 rounded-full" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-28" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-36" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
                     </tr>
                   ))
                 ) : managerEmployees.length === 0 ? (

@@ -140,7 +140,7 @@ const DataTable = ({
                         key={colIndex}
                         onClick={isCheckboxCol ? (e) => e.stopPropagation() : undefined}
                         className={cn(
-                          "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap text-center",
+                          "px-6 py-3.5 text-xs font-semibold tracking-wider whitespace-nowrap text-center",
                           col.align === "right" && "text-right",
                           col.stickyRight &&
                             "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",

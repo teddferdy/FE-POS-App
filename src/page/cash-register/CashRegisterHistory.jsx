@@ -32,7 +32,7 @@ const CashRegisterHistory = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-cat"], () => getAllLocation("all"), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-cat"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 

@@ -879,7 +879,7 @@ const CheckoutModal = ({
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                     placeholder={t("page.cashier.promoCodePlaceholder")}
-                    className="flex-1 h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors uppercase"
+                    className="flex-1 h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
                     disabled={promoLoading || !!selectedDiscount}
                   />
                   <Button

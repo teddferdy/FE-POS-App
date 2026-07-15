@@ -133,7 +133,7 @@ const IngredientList = () => {
     },
     {
       header: t("page.ingredient.list.tableUnit"),
-      render: (item) => <span className="text-sm capitalize">{item.unit || "pcs"}</span>
+      render: (item) => <span className="text-sm">{item.unit || "pcs"}</span>
     },
     {
       header: t("page.ingredient.list.tableKonversi"),
