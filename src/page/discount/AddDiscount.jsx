@@ -49,6 +49,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import PageHeader from "@/components/ui/PageHeader";
 const PROMO_TYPES = {
   standard: "page.discount.form.promoType.standard",
   bogo: "page.discount.form.promoType.bogo",
@@ -270,11 +271,16 @@ const AddDiscount = () => {
   if (locsLoading || locsFetching) {
     return (
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-48" />
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-72" />
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
+            { label: t("page.discount.list.title"), href: "/discount", i18nKey: "page.discount.list.title" },
+            { label: t("breadcrumb.add"), i18nKey: "breadcrumb.add" }
+          ]}
+          title={t("breadcrumb.add")}
+          description={t("page.discount.add.description")}
+          backLink="/discount"
+        />
         <div className="bg-card rounded-xl border border-border p-6 space-y-4">
           <Skeleton className="h-5 w-32" />
           <div className="flex gap-2">
@@ -348,26 +354,16 @@ const AddDiscount = () => {
   return (
     <div>
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/discount")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.management")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
-        </nav>
-
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("breadcrumb.add")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.discount.add.description")}</p>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
+            { label: t("page.discount.list.title"), href: "/discount", i18nKey: "page.discount.list.title" },
+            { label: t("breadcrumb.add"), i18nKey: "breadcrumb.add" }
+          ]}
+          title={t("breadcrumb.add")}
+          description={t("page.discount.add.description")}
+          backLink="/discount"
+        />
 
         <Form {...form}>
           <form className="space-y-6">

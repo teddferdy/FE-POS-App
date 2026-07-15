@@ -282,8 +282,16 @@ const EditDiscount = () => {
       <div className="space-y-6">
         <PageHeader
           breadcrumbs={[
-            { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
-            { label: t("page.discount.list.title"), href: "/discount", i18nKey: "page.discount.list.title" },
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.discount.list.title"),
+              href: "/discount",
+              i18nKey: "page.discount.list.title"
+            },
             { label: t("page.discount.edit.title"), i18nKey: "page.discount.edit.title" }
           ]}
           title={t("page.discount.edit.title")}
