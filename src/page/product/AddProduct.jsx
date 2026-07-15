@@ -1594,7 +1594,11 @@ const AddProduct = () => {
                             name="status"
                             render={({ field }) => (
                               <FormItem>
-                                <div className="pt-2 flex items-center justify-between bg-muted/30 p-4 rounded-lg">
+                                <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                  field.value
+                                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                                }`}>
                                   <div className="flex items-center gap-3">
                                     <div
                                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -1633,7 +1637,11 @@ const AddProduct = () => {
                             name="isAvailable"
                             render={({ field }) => (
                               <FormItem>
-                                <div className="pt-2 flex items-center justify-between bg-muted/30 p-4 rounded-lg">
+                                <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                  field.value
+                                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                                }`}>
                                   <div className="flex items-center gap-3">
                                     <div
                                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
