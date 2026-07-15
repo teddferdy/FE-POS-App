@@ -5,7 +5,6 @@ import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import {
   Plus,
-  Search,
   Edit,
   Trash2,
   Eye,
@@ -20,7 +19,7 @@ import {
 import { toast } from "sonner";
 import { getAllLocationTable, deleteLocation, editLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
@@ -425,18 +424,13 @@ const LocationList = () => {
                         </div>
                         <div
                           className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                          <div className="relative min-w-0 flex-[1_1_180px]">
-                            <Search
-                              size={16}
-                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                            />
-                            <Input
-                              placeholder={t("page.location.list.search")}
-                              value={search}
-                              onChange={(e) => setSearch(e.target.value)}
-                              className="pl-9 h-9 text-sm"
-                            />
-                          </div>
+                          <SearchInput
+                            value={search}
+                            onChange={setSearch}
+                            placeholder={t("page.location.list.search")}
+                            isLoading={isFetching}
+                            resultCount={data?.total || data?.pagination?.total}
+                          />
                           <select
                             value={statusFilter}
                             onChange={(e) => {

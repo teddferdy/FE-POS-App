@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Eye, Edit, Trash2, CreditCard, Loader2, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, CreditCard, Loader2, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import {
   getAllTypePaymentListActive,
   getAllTypePayment,
@@ -14,7 +14,7 @@ import {
 } from "@/services/type-payment";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import StatCard from "@/components/ui/StatCard";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -390,21 +390,13 @@ const TypePaymentList = () => {
                           <option value="inactive">{t("common.inactive")}</option>
                           <option value="draft">{t("common.draft")}</option>
                         </select>
-                        <div className="relative flex-1 md:w-64">
-                          <Search
-                            size={16}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                          />
-                          <Input
-                            placeholder={t("page.typePayment.list.search")}
-                            value={search}
-                            onChange={(e) => {
-                              setSearch(e.target.value);
-                              setPage(1);
-                            }}
-                            className="pl-9 h-9 text-sm"
-                          />
-                        </div>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => { setSearch(val); setPage(1); }}
+                          placeholder={t("page.typePayment.list.search")}
+                          isLoading={isFetching}
+                          resultCount={total}
+                        />
                       </div>
                     </div>
                   }

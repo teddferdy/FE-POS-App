@@ -4,12 +4,12 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Search, Eye, CheckCircle, XCircle } from "lucide-react";
+import { Eye, CheckCircle, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import { getAllSalesReturn, approveSalesReturn, rejectSalesReturn } from "@/services/sales-return";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import NoStore from "@/components/ui/NoStore";
 import DataTable from "@/components/ui/DataTable";
 import { getAllLocation } from "@/services/location";
@@ -305,21 +305,16 @@ const SalesReturnList = () => {
                               </option>
                             ))}
                           </select>
-                          <div className="relative w-full sm:w-64">
-                            <Search
-                              size={16}
-                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                            />
-                            <Input
-                              placeholder={t("page.salesReturn.list.placeholder.search")}
-                              value={search}
-                              onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(1);
-                              }}
-                              className="pl-9 h-9 text-sm"
-                            />
-                          </div>
+                          <SearchInput
+                            value={search}
+                            onChange={(val) => {
+                              setSearch(val);
+                              setPage(1);
+                            }}
+                            placeholder={t("page.salesReturn.list.placeholder.search")}
+                            isLoading={isLoading}
+                            resultCount={total}
+                          />
                         </div>
                       </>
                     )}

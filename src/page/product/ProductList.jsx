@@ -6,7 +6,6 @@ import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import {
   Plus,
-  Search,
   Edit,
   Trash2,
   Upload,
@@ -31,8 +30,8 @@ import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import StoreFilter from "@/components/ui/StoreFilter";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
@@ -615,21 +614,13 @@ const ProductList = () => {
                           <option value="inactive">{t("common.inactive")}</option>
                           <option value="draft">{t("common.draft")}</option>
                         </select>
-                        <div className="relative min-w-0 flex-[1_1_180px]">
-                          <Search
-                            size={16}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                          />
-                          <Input
-                            placeholder={t("page.product.list.searchSku")}
-                            value={search}
-                            onChange={(e) => {
-                              setSearch(e.target.value);
-                              setPage(1);
-                            }}
-                            className="pl-9 h-9 text-sm"
-                          />
-                        </div>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => { setSearch(val); setPage(1); }}
+                          placeholder={t("page.product.list.searchSku")}
+                          isLoading={isFetching}
+                          resultCount={data?.total || data?.pagination?.total}
+                        />
                         <select
                           value={categoryFilter}
                           onChange={(e) => {

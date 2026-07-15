@@ -7,7 +7,6 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import {
   Plus,
-  Search,
   Package,
   Clock,
   CheckCircle2,
@@ -45,6 +44,7 @@ import { recordPayment } from "@/services/purchase-payment";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -774,21 +774,16 @@ const PurchaseOrderList = () => {
                               {t("page.purchaseOrder.status.cancelled")}
                             </option>
                           </select>
-                          <div className="relative min-w-0 flex-[1_1_180px]">
-                            <Search
-                              size={16}
-                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                            />
-                            <Input
-                              placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
-                              value={search}
-                              onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(1);
-                              }}
-                              className="pl-9 h-9 text-sm"
-                            />
-                          </div>
+                          <SearchInput
+                            value={search}
+                            onChange={(val) => {
+                              setSearch(val);
+                              setPage(1);
+                            }}
+                            placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
+                            isLoading={isFetching}
+                            resultCount={total}
+                          />
                         </div>
                       </>
                     )}

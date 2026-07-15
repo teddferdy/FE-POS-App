@@ -4,10 +4,10 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Tag, DollarSign, CheckCircle, XCircle, Eye, Wallet, FileEdit } from "lucide-react";
+import { Plus, Edit, Tag, DollarSign, CheckCircle, XCircle, Eye, Wallet, FileEdit } from "lucide-react";
 import { getAllExpenses, approveExpense, rejectExpense } from "@/services/expense";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
@@ -351,21 +351,13 @@ const ExpenseList = () => {
                 </div>
               ) : (
               <div className="flex flex-wrap items-center gap-2">
-                <div className="relative w-full sm:w-72">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    placeholder={t("page.expense.list.search")}
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setPage(1);
-                    }}
-                    className="pl-9 h-10"
-                  />
-                </div>
+                <SearchInput
+                  value={search}
+                  onChange={(val) => { setSearch(val); setPage(1); }}
+                  placeholder={t("page.expense.list.search")}
+                  isLoading={isFetching}
+                  resultCount={total}
+                />
                 {isSuperAdmin && (
                   <>
                     <Button

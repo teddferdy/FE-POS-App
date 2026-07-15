@@ -11,7 +11,7 @@ import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
 import { Loading } from "@/components/ui/loading";
@@ -93,7 +93,7 @@ const MemberList = () => {
   const tiers = tiersData?.data || tiersData?.tiers || [];
 
   const store = storeFilter !== "all" ? storeFilter : undefined;
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["members", page, limit, search, tierFilter, statusFilter, sortBy, store, storeFilter],
     () =>
       getAllMember({
@@ -575,20 +575,13 @@ const MemberList = () => {
                               t={t}
                             />
                           )}
-                          <div className="relative">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                              search
-                            </span>
-                            <Input
-                              placeholder={t("page.member.list.search")}
-                              value={search}
-                              onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(1);
-                              }}
-                              className="pl-9 h-9 w-72 text-sm"
-                            />
-                          </div>
+                          <SearchInput
+                            value={search}
+                            onChange={(val) => { setSearch(val); setPage(1); }}
+                            placeholder={t("page.member.list.search")}
+                            isLoading={isFetching}
+                            resultCount={total}
+                          />
                         </div>
                       )
                     }

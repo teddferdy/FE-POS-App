@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import {
   Plus,
-  Search,
   ChevronLeft,
   Eye,
   Edit,
@@ -22,7 +21,7 @@ import {
 import { toast } from "sonner";
 import { getStockOpname, deleteStockOpname, exportStockOpnameByIds } from "@/services/stock";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
@@ -513,21 +512,16 @@ const StockOpnameList = () => {
                               />
                             </div>
                           </div>
-                          <div className="relative flex-1 md:w-64">
-                            <Search
-                              size={16}
-                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                            />
-                            <Input
-                              placeholder={t("page.stockOpname.list.searchPlaceholder")}
-                              value={search}
-                              onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(1);
-                              }}
-                              className="pl-9 h-9 text-sm"
-                            />
-                          </div>
+                          <SearchInput
+                            value={search}
+                            onChange={(val) => {
+                              setSearch(val);
+                              setPage(1);
+                            }}
+                            placeholder={t("page.stockOpname.list.searchPlaceholder")}
+                            isLoading={isFetching}
+                            resultCount={total}
+                          />
                         </div>
                       </>
                     )}

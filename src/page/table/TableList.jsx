@@ -6,7 +6,6 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import {
   Plus,
-  Search,
   Edit,
   Trash2,
   Sofa,
@@ -29,7 +28,7 @@ import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import { SearchInput } from "@/components/ui/SearchInput";
 import {
   Select,
   SelectContent,
@@ -398,21 +397,16 @@ const TableList = () => {
                               isSuperAdmin={isSuperAdmin}
                               t={t}
                             />
-                            <div className="relative flex-1 md:w-64">
-                              <Search
-                                size={16}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                              />
-                              <Input
-                                placeholder={t("page.table.list.search")}
-                                value={search}
-                                onChange={(e) => {
-                                  setSearch(e.target.value);
-                                  setPage(1);
-                                }}
-                                className="pl-9 h-9 text-sm"
-                              />
-                            </div>
+                            <SearchInput
+                              value={search}
+                              onChange={(val) => {
+                                setSearch(val);
+                                setPage(1);
+                              }}
+                              placeholder={t("page.table.list.search")}
+                              isLoading={isFetching}
+                              resultCount={total}
+                            />
                           </div>
                         </>
                       )}

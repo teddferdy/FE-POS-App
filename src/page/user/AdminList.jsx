@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { getAllUsers } from "@/services/user";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loading } from "@/components/ui/loading";
 import { Shield, CheckCircle, FileEdit } from "lucide-react";
@@ -87,7 +87,7 @@ const AdminList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["admins", page, limit, search],
     () => getAllUsers({ page, limit, search }),
     { }
@@ -181,20 +181,13 @@ const AdminList = () => {
                   {t("page.user.adminList.tableTitle")}
                 </h4>
                 <div className="flex gap-3">
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                      search
-                    </span>
-                    <Input
-                      placeholder={t("page.user.adminList.search")}
-                      value={search}
-                      onChange={(e) => {
-                        setSearch(e.target.value);
-                        setPage(1);
-                      }}
-                      className="pl-9 h-9 w-60 text-sm"
-                    />
-                  </div>
+                  <SearchInput
+                    value={search}
+                    onChange={(val) => { setSearch(val); setPage(1); }}
+                    placeholder={t("page.user.adminList.search")}
+                    isLoading={isFetching}
+                    resultCount={total}
+                  />
                   <Button variant="outline" size="sm" className="gap-2 h-9">
                     <span className="material-symbols-outlined text-base">filter_list</span>
                     {t("page.user.adminList.filter")}

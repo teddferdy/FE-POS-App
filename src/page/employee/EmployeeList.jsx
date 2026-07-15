@@ -5,7 +5,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { getAllEmployee, deleteEmployee } from "@/services/employee";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
@@ -350,20 +350,13 @@ const EmployeeList = () => {
                   toolbar={
                     <div className="flex flex-wrap gap-4 items-center justify-between">
                       <div className="flex flex-wrap gap-4 items-center flex-grow">
-                        <div className="relative min-w-[260px]">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                            search
-                          </span>
-                          <Input
-                            placeholder={t("page.employee.list.searchPlaceholder")}
-                            value={search}
-                            onChange={(e) => {
-                              setSearch(e.target.value);
-                              setPage(1);
-                            }}
-                            className="pl-9 h-9 w-full text-sm"
-                          />
-                        </div>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => { setSearch(val); setPage(1); }}
+                          placeholder={t("page.employee.list.searchPlaceholder")}
+                          isLoading={isFetching}
+                          resultCount={total}
+                        />
                         <div className="flex gap-3">
                           <select
                             value={locationFilter}

@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
-import { Clock, ChefHat, User, Store, Loader2, Utensils, Search } from "lucide-react";
+import { Clock, ChefHat, User, Store, Loader2, Utensils } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -138,18 +138,12 @@ const CustomerOrderManagement = () => {
                     t={t}
                   />
                 )}
-                <div className="relative flex-1 md:w-64 w-full">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    placeholder={t("page.customerOrder.searchOrders")}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9 h-9 text-sm w-full"
-                  />
-                </div>
+                <SearchInput
+                  value={search}
+                  onChange={setSearch}
+                  placeholder={t("page.customerOrder.searchOrders")}
+                  isLoading={loading}
+                />
               </>
             )}
           </div>

@@ -5,11 +5,11 @@ import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import NoStore from "@/components/ui/NoStore";
-import { Search, AlertTriangle, Package, ShoppingBasket, Store, Filter } from "lucide-react";
+import { AlertTriangle, Package, ShoppingBasket, Store, Filter } from "lucide-react";
 import { getLowStockAll } from "@/services/stock";
 import { getAllLocation } from "@/services/location";
 import DataTable from "@/components/ui/DataTable";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import {
   Select,
   SelectContent,
@@ -179,21 +179,16 @@ const LowStockAll = () => {
     </div>
   ) : (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="relative w-56">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          placeholder="Cari nama barang..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="pl-9 h-9 text-sm"
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onChange={(val) => {
+          setSearch(val);
+          setPage(1);
+        }}
+        placeholder="Cari nama barang..."
+        isLoading={isLoading}
+        resultCount={total}
+      />
       <div className="flex items-center gap-2">
         <Store size={16} className="text-muted-foreground shrink-0" />
         <Select

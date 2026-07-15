@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
@@ -358,21 +358,13 @@ const MemberTier = () => {
                           <h4 className="text-base font-semibold text-foreground">
                             {t("page.memberTier.list.tableTitle")}
                           </h4>
-                          <div className="relative">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                              search
-                            </span>
-                            <Input
-                              data-tour="tier-search"
-                              placeholder={t("common.search")}
-                              value={search}
-                              onChange={(e) => {
-                                setSearch(e.target.value);
-                                setCurrentPage(1);
-                              }}
-                              className="pl-9 h-9 w-72 text-sm"
-                            />
-                          </div>
+                          <SearchInput
+                            value={search}
+                            onChange={(val) => { setSearch(val); setCurrentPage(1); }}
+                            placeholder={t("common.search")}
+                            isLoading={isFetching}
+                            resultCount={filteredTiers.length}
+                          />
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           {[

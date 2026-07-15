@@ -20,6 +20,7 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadDepartmentExcel } from "@/services/department";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
+import { SearchInput } from "@/components/ui/SearchInput";
 import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
 
@@ -468,21 +469,13 @@ const DepartmentList = () => {
                           <option value="draft">{t("common.draft")}</option>
                         </select>
                       </div>
-                      <div className="relative">
-                        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-                          search
-                        </span>
-                        <input
-                          data-tour="department-search"
-                          placeholder={t("page.department.list.search")}
-                          value={search}
-                          onChange={(e) => {
-                            setSearch(e.target.value);
-                            setPage(1);
-                          }}
-                          className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                        />
-                      </div>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => { setSearch(val); setPage(1); }}
+                        placeholder={t("page.department.list.search")}
+                        isLoading={isFetching}
+                        resultCount={data?.pagination?.total || data?.pagination?.totalItems}
+                      />
                     </div>
                   }
                   pagination={{

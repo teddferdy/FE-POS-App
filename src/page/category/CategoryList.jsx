@@ -13,8 +13,8 @@ import {
   downloadExcel
 } from "@/services/category";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -501,20 +501,13 @@ const CategoryList = () => {
                                 t={t}
                               />
                             )}
-                            <div className="relative min-w-0 flex-[1_1_180px]">
-                              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                                search
-                              </span>
-                              <Input
-                                placeholder={t("page.category.list.search")}
-                                value={search}
-                                onChange={(e) => {
-                                  setSearch(e.target.value);
-                                  setPage(1);
-                                }}
-                                className="pl-9 h-9 text-sm"
-                              />
-                            </div>
+                            <SearchInput
+                              value={search}
+                              onChange={(val) => { setSearch(val); setPage(1); }}
+                              placeholder={t("page.category.list.search")}
+                              isLoading={isFetching}
+                              resultCount={data?.total || data?.pagination?.total}
+                            />
                             <select
                               value={statusFilter}
                               onChange={(e) => {

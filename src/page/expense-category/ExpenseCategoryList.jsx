@@ -6,7 +6,6 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import {
   Plus,
-  Search,
   Edit,
   Trash2,
   Tag,
@@ -19,7 +18,7 @@ import {
 import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
 import { Loading } from "@/components/ui/loading";
@@ -286,18 +285,12 @@ const ExpenseCategoryList = () => {
               )}
 
               <div>
-                <div className="relative w-full sm:w-72">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    placeholder={t("page.expenseCategory.list.search")}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9 h-10"
-                  />
-                </div>
+                <SearchInput
+                  value={search}
+                  onChange={setSearch}
+                  placeholder={t("page.expenseCategory.list.search")}
+                  isLoading={isFetching}
+                />
               </div>
 
               <div>

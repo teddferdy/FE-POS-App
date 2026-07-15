@@ -18,7 +18,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Badge } from "@/components/ui/badge";
 import guideData from "./guideData";
 
@@ -118,18 +118,11 @@ const GuidePanel = ({ onClose }) => {
 
         {/* Search */}
         <div className="px-5 py-3 border-b">
-          <div className="relative">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              size={16}
-            />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t("guide.panel.search")}
-              className="pl-9 h-9 text-sm"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder={t("guide.panel.search")}
+          />
         </div>
 
         {/* Categories */}
