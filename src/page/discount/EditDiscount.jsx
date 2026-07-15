@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
@@ -93,13 +94,11 @@ const EditDiscount = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
-    ["locations"],
-    () => getAllLocation(),
-    {
-      
-    }
-  );
+  const {
+    data: locData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["locations"], () => getAllLocation(), {});
   const locations = locData?.data || [];
 
   const [selectedStores, setSelectedStores] = useState([]);
@@ -279,7 +278,81 @@ const EditDiscount = () => {
   if (isError) return <AbortController refetch={refetch} />;
 
   if (isLoading) {
-    return <Loading fullscreen size="lg" label={t("common.loading")} />;
+    return (
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+          <Skeleton className="h-5 w-32" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-32 rounded-full" />
+            <Skeleton className="h-10 w-32 rounded-full" />
+            <Skeleton className="h-10 w-32 rounded-full" />
+          </div>
+        </div>
+        <div className="bg-card rounded-xl border border-border p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+          <Skeleton className="h-16 w-full rounded-lg" />
+          <div className="flex justify-between">
+            <Skeleton className="h-10 w-24" />
+            <div className="flex gap-3">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-24" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!discountItem?.id) {
@@ -470,7 +543,8 @@ const EditDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Beli (Qty) <span className="text-destructive">*</span>
+                          {t("page.discount.form.buyQty")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           type="number"
@@ -491,7 +565,8 @@ const EditDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Gratis (Qty) <span className="text-destructive">*</span>
+                          {t("page.discount.form.freeQty")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           type="number"
@@ -507,7 +582,7 @@ const EditDiscount = () => {
                     )}
                   />
                   <p className="text-xs text-muted-foreground md:col-span-2">
-                    Contoh: Beli 2 gratis 1. Produk termurah akan diberikan gratis secara otomatis.
+                    {t("page.discount.form.bogoHint")}
                   </p>
                 </div>
               )}
@@ -521,7 +596,8 @@ const EditDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Harga Paket (Rp) <span className="text-destructive">*</span>
+                          {t("page.discount.form.bundlePriceLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           type="number"
@@ -542,7 +618,8 @@ const EditDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          ID Produk <span className="text-destructive">*</span>
+                          {t("page.discount.form.productIdsLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           placeholder={t("page.discount.form.placeholder.productIds")}
@@ -553,7 +630,7 @@ const EditDiscount = () => {
                     )}
                   />
                   <p className="text-xs text-muted-foreground md:col-span-2">
-                    Masukkan ID produk yang termasuk dalam paket, pisahkan dengan koma.
+                    {t("page.discount.form.bundleProductIdsHint")}
                   </p>
                 </div>
               )}
@@ -567,7 +644,8 @@ const EditDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Diskon (%) <span className="text-destructive">*</span>
+                          {t("page.discount.form.discountPercentLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           type="number"
@@ -589,7 +667,8 @@ const EditDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Jam Mulai <span className="text-destructive">*</span>
+                          {t("page.discount.form.startTimeLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <TimePicker
                           {...field}
@@ -605,7 +684,8 @@ const EditDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Jam Selesai <span className="text-destructive">*</span>
+                          {t("page.discount.form.endTimeLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <TimePicker
                           {...field}
@@ -620,7 +700,7 @@ const EditDiscount = () => {
                     name="daysOfWeek"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Hari (0=Minggu, 1=Senin, ..., 6=Sabtu)</FormLabel>
+                        <FormLabel>{t("page.discount.form.daysOfWeekLabel")}</FormLabel>
                         <Input
                           placeholder={t("page.discount.form.placeholder.daysOfWeek")}
                           {...field}
@@ -641,7 +721,8 @@ const EditDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Diskon (%) <span className="text-destructive">*</span>
+                          {t("page.discount.form.discountPercentLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           type="number"
@@ -663,7 +744,8 @@ const EditDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          ID Kategori <span className="text-destructive">*</span>
+                          {t("page.discount.form.categoryIdsLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           placeholder={t("page.discount.form.placeholder.categoryIds")}
@@ -684,7 +766,8 @@ const EditDiscount = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Tanggal Mulai <span className="text-destructive">*</span>
+                        {t("page.discount.form.startDateLabel")}{" "}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
                       <DatePicker date={field.value} setDate={field.onChange} />
                       <FormMessage />
@@ -845,7 +928,10 @@ const EditDiscount = () => {
           </form>
         </Form>
 
+        {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}
+
         <Modal type="confirm" {...confirmModal()} />
+
         <Modal
           type="confirm"
           open={cancelModal}
@@ -855,6 +941,7 @@ const EditDiscount = () => {
           confirmText={t("page.discount.edit.cancelConfirm")}
           onConfirm={() => navigate("/discount-list")}
         />
+
         <Modal
           type="success"
           open={successModal}
@@ -864,6 +951,7 @@ const EditDiscount = () => {
           confirmText={t("page.discount.edit.successConfirm")}
           onConfirm={() => navigate("/discount-list")}
         />
+
         <Modal
           type="confirm"
           open={draftModal}

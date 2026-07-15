@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable react/prop-types */
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -36,7 +37,14 @@ import {
 } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import Modal from "@/components/organism/modal";
@@ -64,13 +72,13 @@ const AddDiscount = () => {
   const [confirmModal, setConfirmModal] = useState(false);
   const [pendingValues, setPendingValues] = useState(null);
 
-  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const {
+    data: locationsData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["allLocations"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const storeId = selectedStores?.[0] || null;
@@ -259,6 +267,84 @@ const AddDiscount = () => {
     })();
   };
 
+  if (locsLoading || locsFetching) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-72" />
+        </div>
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+          <Skeleton className="h-5 w-32" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-32 rounded-full" />
+            <Skeleton className="h-10 w-32 rounded-full" />
+            <Skeleton className="h-10 w-32 rounded-full" />
+          </div>
+        </div>
+        <div className="bg-card rounded-xl border border-border p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+          <Skeleton className="h-16 w-full rounded-lg" />
+          <div className="flex justify-between">
+            <Skeleton className="h-10 w-24" />
+            <div className="flex gap-3">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-24" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="space-y-6">
@@ -429,7 +515,8 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Beli (Qty) <span className="text-destructive">*</span>
+                          {t("page.discount.form.buyQty")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           type="number"
@@ -450,7 +537,8 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Gratis (Qty) <span className="text-destructive">*</span>
+                          {t("page.discount.form.freeQty")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           type="number"
@@ -466,7 +554,7 @@ const AddDiscount = () => {
                     )}
                   />
                   <p className="text-xs text-muted-foreground md:col-span-2">
-                    Contoh: Beli 2 gratis 1. Produk termurah akan diberikan gratis secara otomatis.
+                    {t("page.discount.form.bogoHint")}
                   </p>
                 </div>
               )}
@@ -480,7 +568,8 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Harga Paket (Rp) <span className="text-destructive">*</span>
+                          {t("page.discount.form.bundlePriceLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
@@ -489,7 +578,9 @@ const AddDiscount = () => {
                           <Input
                             type="text"
                             className="pl-10"
-                            value={field.value ? formatIDR(field.value).replace("Rp", "").trim() : ""}
+                            value={
+                              field.value ? formatIDR(field.value).replace("Rp", "").trim() : ""
+                            }
                             placeholder="0"
                             onChange={(e) => {
                               const raw = e.target.value.replace(/\D/g, "");
@@ -507,11 +598,12 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Produk <span className="text-destructive">*</span>
+                          {t("page.discount.form.products")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         {!storeId ? (
                           <p className="text-sm text-muted-foreground">
-                            Pilih toko terlebih dahulu untuk memilih produk.
+                            {t("page.discount.form.selectStoreFirst")}
                           </p>
                         ) : productsLoading ? (
                           <div className="space-y-2">
@@ -527,7 +619,7 @@ const AddDiscount = () => {
                             <PackageOpen size={18} className="text-muted-foreground shrink-0" />
                             <div className="flex-1">
                               <p className="text-sm text-muted-foreground">
-                                Belum ada produk di toko ini.
+                                {t("page.discount.form.noProducts")}
                               </p>
                             </div>
                             <Button
@@ -537,7 +629,7 @@ const AddDiscount = () => {
                               className="gap-1 shrink-0"
                               onClick={() => navigate("/add-product")}>
                               <Plus size={14} />
-                              Tambah Produk
+                              {t("page.discount.form.addProduct")}
                             </Button>
                           </div>
                         ) : (
@@ -563,7 +655,8 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Diskon (%) <span className="text-destructive">*</span>
+                          {t("page.discount.form.discountPercentLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           type="number"
@@ -585,7 +678,8 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Jam Mulai <span className="text-destructive">*</span>
+                          {t("page.discount.form.startTimeLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <TimePicker
                           {...field}
@@ -601,7 +695,8 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Jam Selesai <span className="text-destructive">*</span>
+                          {t("page.discount.form.endTimeLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <TimePicker
                           {...field}
@@ -616,7 +711,7 @@ const AddDiscount = () => {
                     name="daysOfWeek"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Hari (0=Minggu, 1=Senin, ..., 6=Sabtu)</FormLabel>
+                        <FormLabel>{t("page.discount.form.daysOfWeekLabel")}</FormLabel>
                         <Input
                           placeholder={t("page.discount.form.placeholder.daysOfWeek")}
                           {...field}
@@ -637,7 +732,8 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Diskon (%) <span className="text-destructive">*</span>
+                          {t("page.discount.form.discountPercentLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           type="number"
@@ -659,7 +755,8 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          ID Kategori <span className="text-destructive">*</span>
+                          {t("page.discount.form.categoryIdsLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           placeholder={t("page.discount.form.placeholder.categoryIds")}
@@ -680,7 +777,8 @@ const AddDiscount = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Tanggal Mulai <span className="text-destructive">*</span>
+                        {t("page.discount.form.startDateLabel")}{" "}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
                       <DatePicker date={field.value} setDate={field.onChange} />
                       <FormMessage />
@@ -891,8 +989,13 @@ const AddDiscount = () => {
 };
 
 function ProductMultiSelect({ products, value, onChange }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const selectedIds = value ? (Array.isArray(value) ? value : value.split(",").filter(Boolean).map(Number)) : [];
+  const selectedIds = value
+    ? Array.isArray(value)
+      ? value
+      : value.split(",").filter(Boolean).map(Number)
+    : [];
 
   const toggleProduct = (id) => {
     const next = selectedIds.includes(id)
@@ -915,21 +1018,24 @@ function ProductMultiSelect({ products, value, onChange }) {
             className="w-full justify-between font-normal h-10">
             <span className="truncate text-muted-foreground">
               {selectedIds.length > 0
-                ? `${selectedIds.length} produk dipilih`
-                : "Pilih produk..."}
+                ? `${selectedIds.length} ${t("page.discount.form.productSelected")}`
+                : t("page.discount.form.selectProduct")}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
           <Command>
-            <CommandInput placeholder="Cari produk..." />
+            <CommandInput placeholder={t("page.discount.form.searchProduct")} />
             <CommandList>
-              <CommandEmpty>Produk tidak ditemukan</CommandEmpty>
+              <CommandEmpty>{t("page.discount.form.productNotFound")}</CommandEmpty>
               <CommandGroup>
                 {products.map((product) => {
                   const id = product.id || product.productId;
-                  const name = product.name || product.productName || `Produk #${id}`;
+                  const name =
+                    product.name ||
+                    product.productName ||
+                    `${t("page.discount.form.productFallback")}${id}`;
                   const isSelected = selectedIds.includes(id);
                   return (
                     <CommandItem
@@ -937,10 +1043,7 @@ function ProductMultiSelect({ products, value, onChange }) {
                       onSelect={() => toggleProduct(id)}
                       className="cursor-pointer">
                       <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          isSelected ? "opacity-100" : "opacity-0"
-                        )}
+                        className={cn("mr-2 h-4 w-4", isSelected ? "opacity-100" : "opacity-0")}
                       />
                       {name}
                     </CommandItem>
