@@ -455,7 +455,6 @@ const PositionList = () => {
                         onChange={(val) => { setSearch(val); setPage(1); }}
                         placeholder={t("page.position.list.search")}
                         isLoading={isFetching}
-                        resultCount={data?.stats?.total || data?.pagination?.total || data?.total}
                       />
                     </div>
                   }

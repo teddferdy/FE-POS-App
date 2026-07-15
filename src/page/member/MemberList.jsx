@@ -580,7 +580,6 @@ const MemberList = () => {
                             onChange={(val) => { setSearch(val); setPage(1); }}
                             placeholder={t("page.member.list.search")}
                             isLoading={isFetching}
-                            resultCount={total}
                           />
                         </div>
                       )

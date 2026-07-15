@@ -219,7 +219,6 @@ const CashRegisterHistory = () => {
                         onChange={(val) => { setSearch(val); setPage(1); }}
                         placeholder={t("page.cashRegister.history.search")}
                         isLoading={isFetching}
-                        resultCount={total}
                       />
                       {isSuperAdmin && (
                         <div className="w-44">

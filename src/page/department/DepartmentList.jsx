@@ -474,7 +474,6 @@ const DepartmentList = () => {
                         onChange={(val) => { setSearch(val); setPage(1); }}
                         placeholder={t("page.department.list.search")}
                         isLoading={isFetching}
-                        resultCount={data?.pagination?.total || data?.pagination?.totalItems}
                       />
                     </div>
                   }

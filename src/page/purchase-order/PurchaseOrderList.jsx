@@ -782,7 +782,6 @@ const PurchaseOrderList = () => {
                             }}
                             placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
                             isLoading={isFetching}
-                            resultCount={total}
                           />
                         </div>
                       </>

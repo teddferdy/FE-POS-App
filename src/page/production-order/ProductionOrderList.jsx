@@ -422,7 +422,6 @@ const ProductionOrderList = () => {
                         onChange={(val) => { setSearch(val); setPage(1); }}
                         placeholder={t("page.productionOrder.list.searchPlaceholder")}
                         isLoading={isFetching}
-                        resultCount={total}
                       />
                     </div>
                   }

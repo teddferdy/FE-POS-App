@@ -506,7 +506,6 @@ const CategoryList = () => {
                               onChange={(val) => { setSearch(val); setPage(1); }}
                               placeholder={t("page.category.list.search")}
                               isLoading={isFetching}
-                              resultCount={data?.total || data?.pagination?.total}
                             />
                             <select
                               value={statusFilter}

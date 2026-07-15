@@ -409,7 +409,6 @@ const GoodsReceiptList = () => {
                               }}
                               placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
                               isLoading={isFetching}
-                              resultCount={total}
                             />
                             <Button
                               variant="outline"

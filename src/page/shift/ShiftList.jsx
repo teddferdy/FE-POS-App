@@ -307,7 +307,6 @@ const ShiftList = () => {
                           onChange={(val) => { setSearch(val); setPage(1); }}
                           placeholder={t("page.shift.list.search")}
                           isLoading={isFetching}
-                          resultCount={total}
                         />
                       </div>
                     </div>

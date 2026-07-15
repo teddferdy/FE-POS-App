@@ -355,7 +355,6 @@ const EmployeeList = () => {
                           onChange={(val) => { setSearch(val); setPage(1); }}
                           placeholder={t("page.employee.list.searchPlaceholder")}
                           isLoading={isFetching}
-                          resultCount={total}
                         />
                         <div className="flex gap-3">
                           <select

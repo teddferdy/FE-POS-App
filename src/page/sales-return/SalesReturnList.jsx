@@ -313,7 +313,6 @@ const SalesReturnList = () => {
                             }}
                             placeholder={t("page.salesReturn.list.placeholder.search")}
                             isLoading={isLoading}
-                            resultCount={total}
                           />
                         </div>
                       </>

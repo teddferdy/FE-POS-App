@@ -402,7 +402,6 @@ const TaxConfigList = () => {
                           onChange={(val) => { setSearch(val); setPage(1); }}
                           placeholder={t("page.taxConfig.list.search")}
                           isLoading={isFetching}
-                          resultCount={total}
                         />
                       </div>
                     </div>

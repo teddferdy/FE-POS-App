@@ -314,7 +314,6 @@ const StockTransferList = () => {
                             }}
                             placeholder={t("page.stockTransfer.list.placeholder.search")}
                             isLoading={isLoading}
-                            resultCount={total}
                           />
                         </div>
                       </>

@@ -402,7 +402,6 @@ const CategoryList = () => {
                               onChange={(val) => { setSearch(val); setPage(1); }}
                               placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
                               isLoading={isFetching}
-                              resultCount={data?.stats?.total}
                             />
                           </div>
                         </>

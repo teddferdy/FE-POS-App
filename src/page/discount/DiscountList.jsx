@@ -352,7 +352,6 @@ const DiscountList = () => {
                           onChange={(val) => { setSearch(val); setPage(1); }}
                           placeholder={t("page.discount.list.search")}
                           isLoading={isFetching}
-                          resultCount={data?.pagination?.total || data?.total}
                         />
                       </div>
                     </>

@@ -363,7 +363,6 @@ const MemberTier = () => {
                             onChange={(val) => { setSearch(val); setCurrentPage(1); }}
                             placeholder={t("common.search")}
                             isLoading={isFetching}
-                            resultCount={filteredTiers.length}
                           />
                         </div>
                         <div className="flex flex-wrap items-center gap-2">

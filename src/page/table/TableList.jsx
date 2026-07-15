@@ -405,7 +405,6 @@ const TableList = () => {
                               }}
                               placeholder={t("page.table.list.search")}
                               isLoading={isFetching}
-                              resultCount={total}
                             />
                           </div>
                         </>

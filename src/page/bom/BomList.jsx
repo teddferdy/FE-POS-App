@@ -186,7 +186,6 @@ const BomList = () => {
                         onChange={(val) => { setSearch(val); setPage(1); }}
                         placeholder={t("page.bom.list.searchPlaceholder")}
                         isLoading={isFetching}
-                        resultCount={total}
                       />
                     </div>
                   </div>

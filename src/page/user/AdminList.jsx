@@ -186,7 +186,6 @@ const AdminList = () => {
                     onChange={(val) => { setSearch(val); setPage(1); }}
                     placeholder={t("page.user.adminList.search")}
                     isLoading={isFetching}
-                    resultCount={total}
                   />
                   <Button variant="outline" size="sm" className="gap-2 h-9">
                     <span className="material-symbols-outlined text-base">filter_list</span>

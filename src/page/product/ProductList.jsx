@@ -619,7 +619,6 @@ const ProductList = () => {
                           onChange={(val) => { setSearch(val); setPage(1); }}
                           placeholder={t("page.product.list.searchSku")}
                           isLoading={isFetching}
-                          resultCount={data?.total || data?.pagination?.total}
                         />
                         <select
                           value={categoryFilter}

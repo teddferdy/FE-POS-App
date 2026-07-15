@@ -355,7 +355,6 @@ const PurchaseReturnList = () => {
                             }}
                             placeholder={t("page.purchaseReturn.list.placeholder.search")}
                             isLoading={isFetching}
-                            resultCount={total}
                           />
                         </div>
                       </>

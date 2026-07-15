@@ -520,7 +520,6 @@ const StockOpnameList = () => {
                             }}
                             placeholder={t("page.stockOpname.list.searchPlaceholder")}
                             isLoading={isFetching}
-                            resultCount={total}
                           />
                         </div>
                       </>

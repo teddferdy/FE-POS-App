@@ -429,7 +429,6 @@ const LocationList = () => {
                             onChange={setSearch}
                             placeholder={t("page.location.list.search")}
                             isLoading={isFetching}
-                            resultCount={data?.total || data?.pagination?.total}
                           />
                           <select
                             value={statusFilter}

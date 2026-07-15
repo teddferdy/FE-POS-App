@@ -8,7 +8,6 @@ export function SearchInput({
   onChange,
   placeholder = "Search...",
   isLoading = false,
-  resultCount,
   className = "",
   debounceDelay = 300
 }) {
@@ -58,11 +57,6 @@ export function SearchInput({
           />
         )}
       </div>
-      {resultCount !== undefined && (
-        <p className="text-xs text-muted-foreground mt-1.5">
-          {isLoading ? "Searching..." : `${resultCount} items found`}
-        </p>
-      )}
     </div>
   );
 }

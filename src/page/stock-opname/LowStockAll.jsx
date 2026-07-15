@@ -187,7 +187,6 @@ const LowStockAll = () => {
         }}
         placeholder="Cari nama barang..."
         isLoading={isLoading}
-        resultCount={total}
       />
       <div className="flex items-center gap-2">
         <Store size={16} className="text-muted-foreground shrink-0" />

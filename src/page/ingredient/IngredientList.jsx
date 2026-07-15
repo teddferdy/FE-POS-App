@@ -459,7 +459,6 @@ const IngredientList = () => {
                           onChange={(val) => { setSearch(val); setPage(1); }}
                           placeholder={t("page.ingredient.list.searchPlaceholder")}
                           isLoading={isFetching}
-                          resultCount={data?.pagination?.total || data?.totalItems}
                         />
                       </div>
                     </>

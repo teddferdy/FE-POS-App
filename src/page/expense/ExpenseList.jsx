@@ -356,7 +356,6 @@ const ExpenseList = () => {
                   onChange={(val) => { setSearch(val); setPage(1); }}
                   placeholder={t("page.expense.list.search")}
                   isLoading={isFetching}
-                  resultCount={total}
                 />
                 {isSuperAdmin && (
                   <>
