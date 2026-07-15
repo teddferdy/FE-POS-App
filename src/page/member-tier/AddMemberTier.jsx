@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Star, Award, Medal, Diamond, Plus, CheckCircle, Delete, Save, X } from "lucide-react";
+import { Star, Award, Medal, Diamond, Plus, CheckCircle, Delete, Save, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
@@ -363,22 +363,19 @@ const AddMemberTier = () => {
                       {t("page.memberTier.add.tierStatus")}
                     </h3>
                   </div>
-                  <div
-                    className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
-                      formData.isActive
-                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                    }`}>
+                  <div className="pt-2 flex items-center justify-between bg-muted/30 p-4 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center ${
                           formData.isActive
-                            ? "bg-green-600 text-white"
+                            ? "bg-green-600 text-secondary"
                             : "bg-destructive/10 text-destructive"
                         }`}>
-                        <span className="material-symbols-outlined text-lg">
-                          {formData.isActive ? "check" : "close"}
-                        </span>
+                        {formData.isActive ? (
+                          <Check size={20} />
+                        ) : (
+                          <span className="text-lg font-bold">⏻</span>
+                        )}
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">

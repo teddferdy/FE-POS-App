@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save } from "lucide-react";
+import { X, Save, Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { editTaxConfig, getTaxConfigById } from "@/services/tax-config";
 import { Button } from "@/components/ui/button";
@@ -226,11 +226,30 @@ const EditTaxConfig = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("common.status")}</FormLabel>
-                      <div className="flex items-center gap-3 h-10">
+                      <div className="pt-2 flex items-center justify-between bg-muted/30 p-4 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              field.value
+                                ? "bg-green-600 text-secondary"
+                                : "bg-destructive/10 text-destructive"
+                            }`}>
+                            {field.value ? (
+                              <Check size={20} />
+                            ) : (
+                              <span className="text-lg font-bold">⏻</span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {field.value ? t("common.active") : t("common.inactive")}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {field.value ? t("common.active") : t("common.inactive")}
+                            </p>
+                          </div>
+                        </div>
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        <span className="text-sm text-muted-foreground">
-                          {field.value ? t("common.active") : t("common.inactive")}
-                        </span>
                       </div>
                       <FormMessage />
                     </FormItem>

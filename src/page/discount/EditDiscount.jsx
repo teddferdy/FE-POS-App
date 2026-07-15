@@ -7,7 +7,7 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
-import { X, Save } from "lucide-react";
+import { X, Save, Check } from "lucide-react";
 import { getDiscountById, editDiscount } from "@/services/discount";
 import { getAllLocation } from "@/services/location";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
@@ -280,11 +280,16 @@ const EditDiscount = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-48" />
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-80" />
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
+            { label: t("page.discount.list.title"), href: "/discount", i18nKey: "page.discount.list.title" },
+            { label: t("page.discount.edit.title"), i18nKey: "page.discount.edit.title" }
+          ]}
+          title={t("page.discount.edit.title")}
+          description={t("page.discount.edit.description")}
+          backLink="/discount"
+        />
         <div className="bg-card rounded-xl border border-border p-6 space-y-4">
           <Skeleton className="h-5 w-32" />
           <div className="flex gap-2">
@@ -867,22 +872,19 @@ const EditDiscount = () => {
                 name="isActive"
                 render={({ field }) => (
                   <FormItem>
-                    <div
-                      className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
-                        field.value
-                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                      }`}>
+                    <div className="pt-2 flex items-center justify-between bg-muted/30 p-4 rounded-lg cursor-pointer transition-all">
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-10 h-10 rounded-full flex items-center justify-center ${
                             field.value
-                              ? "bg-green-600 text-white"
+                              ? "bg-green-600 text-secondary"
                               : "bg-destructive/10 text-destructive"
                           }`}>
-                          <span className="material-symbols-outlined text-lg">
-                            {field.value ? "check" : "close"}
-                          </span>
+                          {field.value ? (
+                            <Check size={20} />
+                          ) : (
+                            <span className="text-lg font-bold">⏻</span>
+                          )}
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-foreground">

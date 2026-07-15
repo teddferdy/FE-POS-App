@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
+import { Check } from "lucide-react";
 import { addCategory } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
@@ -549,22 +550,19 @@ const AddCategory = () => {
                         name="isActive"
                         render={({ field }) => (
                           <FormItem>
-                            <div
-                              className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
-                                field.value
-                                  ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                  : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                              }`}>
+                            <div className="pt-2 flex items-center justify-between bg-muted/30 p-4 rounded-lg">
                               <div className="flex items-center gap-3">
                                 <div
                                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
                                     field.value
-                                      ? "bg-green-600 text-white"
+                                      ? "bg-green-600 text-secondary"
                                       : "bg-destructive/10 text-destructive"
                                   }`}>
-                                  <span className="material-symbols-outlined text-lg">
-                                    {field.value ? "check" : "close"}
-                                  </span>
+                                  {field.value ? (
+                                    <Check size={20} />
+                                  ) : (
+                                    <span className="text-lg font-bold">⏻</span>
+                                  )}
                                 </div>
                                 <div>
                                   <p className="text-sm font-semibold text-foreground">

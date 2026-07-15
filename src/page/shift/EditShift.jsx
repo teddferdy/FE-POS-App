@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save } from "lucide-react";
+import { X, Save, Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
 import { getAllShift, editShift } from "@/services/shift";
@@ -259,13 +259,34 @@ const EditShift = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("page.shift.edit.form.status")}</FormLabel>
-                    <div className="flex items-center gap-2 pt-1">
+                    <div className="pt-2 flex items-center justify-between bg-muted/30 p-4 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            field.value
+                              ? "bg-green-600 text-secondary"
+                              : "bg-destructive/10 text-destructive"
+                          }`}>
+                          {field.value ? (
+                            <Check size={20} />
+                          ) : (
+                            <span className="text-lg font-bold">⏻</span>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {field.value
+                              ? t("page.shift.edit.form.active")
+                              : t("page.shift.edit.form.inactive")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {field.value
+                              ? t("page.shift.edit.form.active")
+                              : t("page.shift.edit.form.inactive")}
+                          </p>
+                        </div>
+                      </div>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
-                      <span className="text-sm text-muted-foreground">
-                        {field.value
-                          ? t("page.shift.edit.form.active")
-                          : t("page.shift.edit.form.inactive")}
-                      </span>
                     </div>
                     <FormMessage />
                   </FormItem>

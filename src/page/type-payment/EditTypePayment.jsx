@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save } from "lucide-react";
+import { X, Save, Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { getTypePaymentById, editTypePayment } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
@@ -219,22 +219,31 @@ const EditTypePayment = () => {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <div
-                      className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
-                        field.value
-                          ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800"
-                          : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
-                      }`}>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {t("common.status")}{" "}
-                          {field.value ? t("common.active") : t("common.inactive")}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {field.value
-                            ? t("page.typePayment.form.statusActive")
-                            : t("page.typePayment.form.statusInactive")}
-                        </p>
+                    <div className="pt-2 flex items-center justify-between bg-muted/30 p-4 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            field.value
+                              ? "bg-green-600 text-secondary"
+                              : "bg-destructive/10 text-destructive"
+                          }`}>
+                          {field.value ? (
+                            <Check size={20} />
+                          ) : (
+                            <span className="text-lg font-bold">⏻</span>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t("common.status")}{" "}
+                            {field.value ? t("common.active") : t("common.inactive")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {field.value
+                              ? t("page.typePayment.form.statusActive")
+                              : t("page.typePayment.form.statusInactive")}
+                          </p>
+                        </div>
                       </div>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </div>
