@@ -119,6 +119,7 @@ const DetailIngredientCategory = React.lazy(
 const TaxConfigList = React.lazy(() => import("./page/tax-config/TaxConfigList"));
 const AddTaxConfig = React.lazy(() => import("./page/tax-config/AddTaxConfig"));
 const EditTaxConfig = React.lazy(() => import("./page/tax-config/EditTaxConfig"));
+const DetailTaxConfig = React.lazy(() => import("./page/tax-config/DetailTaxConfig"));
 
 // Purchase Order
 const PurchaseOrderList = React.lazy(() => import("./page/purchase-order/PurchaseOrderList"));
@@ -407,6 +408,7 @@ function App() {
                 <Route path="/tax-list" element={<TaxConfigList />} />
                 <Route path="/add-tax" element={<AddTaxConfig />} />
                 <Route path="/edit-tax" element={<EditTaxConfig />} />
+                <Route path="/detail-tax" element={<DetailTaxConfig />} />
 
                 <Route path="/purchase-order" element={<PurchaseOrderList />} />
                 <Route path="/add-purchase-order" element={<AddPurchaseOrder />} />

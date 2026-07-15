@@ -6,6 +6,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import {
   Plus,
+  Eye,
   Edit,
   Trash2,
   Percent,
@@ -200,6 +201,16 @@ const TaxConfigList = () => {
       stickyRight: true,
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
+          {canAccess(user, MENU_KEY, "detail") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              title={t("common.view")}
+              onClick={() => navigate(`/detail-tax?id=${item.id || item._id}`)}>
+              <Eye size={18} />
+            </Button>
+          )}
           {canAccess(user, MENU_KEY, "edit") && (
             <Button
               variant="ghost"
