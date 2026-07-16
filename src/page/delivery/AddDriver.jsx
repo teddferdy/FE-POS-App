@@ -24,7 +24,17 @@ const AddDriver = () => {
   const user = cookie?.user;
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
-  const schema = z.object({
+  const baseSchema = z.object({
+    name: z.string().min(1, t("page.delivery.driver.validation.nameRequired")),
+    phone: z.string().optional(),
+    email: z.string().email().optional().or(z.literal("")),
+    vehicleType: z.string().optional(),
+    vehiclePlate: z.string().optional(),
+    status: z.string().default("active"),
+    notes: z.string().optional()
+  });
+
+  const activeSchema = z.object({
     name: z.string().min(1, t("page.delivery.driver.validation.nameRequired")),
     phone: z.string().min(1, t("page.delivery.driver.validation.phoneRequired")),
     email: z.string().email().optional().or(z.literal("")),
@@ -33,6 +43,13 @@ const AddDriver = () => {
     status: z.string().default("active"),
     notes: z.string().optional()
   });
+
+  const getSchema = () => {
+    const currentStatus = form.watch("status");
+    return currentStatus === "draft" ? baseSchema : activeSchema;
+  };
+
+  const schema = getSchema();
 
   const form = useForm({
     resolver: zodResolver(schema),
@@ -208,7 +225,16 @@ const AddDriver = () => {
             variant="outline"
             onClick={() => {
               form.setValue("status", "draft");
-              form.handleSubmit(onSubmit)();
+              const draftData = {
+                name: form.getValues("name"),
+                phone: form.getValues("phone") || undefined,
+                email: form.getValues("email") || undefined,
+                vehicleType: form.getValues("vehicleType") || undefined,
+                vehiclePlate: form.getValues("vehiclePlate") || undefined,
+                status: "draft",
+                notes: form.getValues("notes") || undefined
+              };
+              createMutation.mutate(draftData);
             }}
             disabled={createMutation?.isLoading}
             className="gap-2">
