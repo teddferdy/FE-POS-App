@@ -24,7 +24,7 @@ const AddDriver = () => {
   const user = cookie?.user;
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
-  const baseSchema = z.object({
+  const schema = z.object({
     name: z.string().min(1, t("page.delivery.driver.validation.nameRequired")),
     phone: z.string().optional(),
     email: z.string().email().optional().or(z.literal("")),
@@ -34,7 +34,7 @@ const AddDriver = () => {
     notes: z.string().optional()
   });
 
-  const activeSchema = z.object({
+  const activeRequiredSchema = z.object({
     name: z.string().min(1, t("page.delivery.driver.validation.nameRequired")),
     phone: z.string().min(1, t("page.delivery.driver.validation.phoneRequired")),
     email: z.string().email().optional().or(z.literal("")),
@@ -43,13 +43,6 @@ const AddDriver = () => {
     status: z.string().default("active"),
     notes: z.string().optional()
   });
-
-  const getSchema = () => {
-    const currentStatus = form.watch("status");
-    return currentStatus === "draft" ? baseSchema : activeSchema;
-  };
-
-  const schema = getSchema();
 
   const form = useForm({
     resolver: zodResolver(schema),
@@ -80,6 +73,15 @@ const AddDriver = () => {
   });
 
   const onSubmit = (data) => {
+    if (data.status === "active") {
+      const result = activeRequiredSchema.safeParse(data);
+      if (!result.success) {
+        result.error.errors.forEach((err) => {
+          form.setError(err.path[0], { message: err.message });
+        });
+        return;
+      }
+    }
     createMutation.mutate(data);
   };
 
@@ -242,7 +244,20 @@ const AddDriver = () => {
             {t("common.saveDraft")}
           </Button>
           <Button
-            onClick={() => form.handleSubmit(onSubmit)()}
+            onClick={() => {
+              const currentStatus = form.getValues("status");
+              if (currentStatus === "active") {
+                const data = form.getValues();
+                const result = activeRequiredSchema.safeParse(data);
+                if (!result.success) {
+                  result.error.errors.forEach((err) => {
+                    form.setError(err.path[0], { message: err.message });
+                  });
+                  return;
+                }
+              }
+              form.handleSubmit(onSubmit)();
+            }}
             disabled={createMutation?.isLoading}
             className="gap-2">
             <Save size={18} />
