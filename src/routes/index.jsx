@@ -1,0 +1,16 @@
+export { authRoutes } from "./auth.routes";
+export { cashierRoutes } from "./cashier.routes";
+export { productRoutes } from "./product.routes";
+export { inventoryRoutes } from "./inventory.routes";
+export { purchasingRoutes } from "./purchasing.routes";
+export { hrRoutes } from "./hr.routes";
+export { financeRoutes } from "./finance.routes";
+export { crmRoutes } from "./crm.routes";
+export { reportRoutes } from "./report.routes";
+export { settingsRoutes } from "./settings.routes";
+export { miscRoutes } from "./misc.routes";
+export { deliveryRoutes } from "./delivery.routes";
+export { queueRoutes } from "./queue.routes";
+export { supplierPerformanceRoutes } from "./supplierPerformance.routes";
+export { promoRoutes } from "./promo.routes";
+export { bundleRoutes } from "./bundle.routes";

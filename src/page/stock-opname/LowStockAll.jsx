@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
-import { useQuery } from "react-query";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import NoStore from "@/components/ui/NoStore";
-import { AlertTriangle, Package, ShoppingBasket, Store, Filter } from "lucide-react";
-import { getLowStockAll } from "@/services/stock";
+import { AlertTriangle, Package, ShoppingBasket, Store, Filter, Zap } from "lucide-react";
+import { getLowStockAll, autoGeneratePOFromLowStock } from "@/services/stock";
 import { getAllLocation } from "@/services/location";
 import DataTable from "@/components/ui/DataTable";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -22,6 +22,9 @@ import { TipsCard } from "@/components/ui/tips-card";
 import StatCard from "@/components/ui/StatCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSidebar } from "@/components/layout/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import Modal from "@/components/organism/modal";
+import { toast } from "sonner";
 
 const LowStockAll = () => {
   const { t } = useTranslation();
@@ -30,6 +33,8 @@ const LowStockAll = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const sidebarCollapsed = useSidebar();
+  const queryClient = useQueryClient();
+  const [confirmModal, setConfirmModal] = useState(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [search, setSearch] = useState("");
@@ -52,6 +57,27 @@ const LowStockAll = () => {
         search: search || undefined
       })
   );
+
+  const autoGenerateMutation = useMutation(autoGeneratePOFromLowStock, {
+    onSuccess: (res) => {
+      const data = res?.data;
+      toast.success(t("common.success"), {
+        description: t("page.lowStock.autoPOSuccess", {
+          count: data?.purchaseOrders?.length || 0,
+          items: data?.totalItems || 0
+        })
+      });
+      queryClient.invalidateQueries(["low-stock-all"]);
+      setConfirmModal(false);
+      navigate("/purchase-order");
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), {
+        description: err?.response?.data?.message || err.message
+      });
+      setConfirmModal(false);
+    }
+  });
 
   const items = data?.data?.items || [];
   const total = data?.data?.total || 0;
@@ -230,6 +256,8 @@ const LowStockAll = () => {
     </div>
   );
 
+  const hasLowStock = stats.totalIngredients > 0 || stats.totalLowStock > 0;
+
   return (
     <div className="space-y-6">
       <div>
@@ -284,6 +312,19 @@ const LowStockAll = () => {
           ) : (
             <div>
               <div>
+                {hasLowStock && (
+                  <div className="flex justify-end mb-4">
+                    <Button
+                      onClick={() => setConfirmModal(true)}
+                      disabled={autoGenerateMutation.isLoading}
+                      className="gap-2">
+                      <Zap size={16} />
+                      {autoGenerateMutation.isLoading
+                        ? t("common.processing")
+                        : t("page.lowStock.autoGeneratePO")}
+                    </Button>
+                  </div>
+                )}
                 <DataTable
                   columns={columns}
                   data={items}
@@ -309,6 +350,18 @@ const LowStockAll = () => {
           )}
         </>
       )}
+
+      <Modal
+        open={confirmModal}
+        onOpenChange={setConfirmModal}
+        type="confirm"
+        title={t("page.lowStock.autoPOConfirmTitle")}
+        description={t("page.lowStock.autoPOConfirmDesc")}
+        confirmText={t("common.yes")}
+        cancelText={t("common.cancel")}
+        loading={autoGenerateMutation.isLoading}
+        onConfirm={() => autoGenerateMutation.mutate()}
+      />
     </div>
   );
 };

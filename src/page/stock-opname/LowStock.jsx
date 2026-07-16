@@ -1,8 +1,8 @@
-import React from "react";
-import { useQuery } from "react-query";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
-import { AlertTriangle, Package, ShoppingBasket, Plus } from "lucide-react";
-import { getLowStockProducts } from "@/services/stock";
+import { AlertTriangle, Package, ShoppingBasket, Plus, Zap, FileText } from "lucide-react";
+import { getLowStockProducts, autoGeneratePOFromLowStock } from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +19,8 @@ import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
 import { useNavigate } from "react-router-dom";
 import { getAllLocation } from "@/services/location";
+import { toast } from "sonner";
+import Modal from "@/components/organism/modal";
 
 const formatNumber = (num) => {
   if (num === null || num === undefined) return "0";
@@ -32,6 +34,8 @@ const LowStock = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const role = user?.roleType || "";
+  const queryClient = useQueryClient();
+  const [confirmModal, setConfirmModal] = useState(false);
 
   const { data: locData } = useQuery(["locations-low-stock"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -43,9 +47,31 @@ const LowStock = () => {
     {}
   );
 
+  const autoGenerateMutation = useMutation(autoGeneratePOFromLowStock, {
+    onSuccess: (res) => {
+      const data = res?.data;
+      toast.success(t("common.success"), {
+        description: t("page.lowStock.autoPOSuccess", {
+          count: data?.purchaseOrders?.length || 0,
+          items: data?.totalItems || 0
+        })
+      });
+      queryClient.invalidateQueries(["low-stock"]);
+      setConfirmModal(false);
+      navigate("/purchase-order");
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), {
+        description: err?.response?.data?.message || err.message
+      });
+      setConfirmModal(false);
+    }
+  });
+
   const lowStockData = data?.data || {};
   const products = lowStockData.products || [];
   const ingredients = lowStockData.ingredients || [];
+  const hasLowStockIngredients = ingredients.length > 0;
 
   const getStockStatus = (stock, t) => {
     if (stock <= 0)
@@ -123,6 +149,20 @@ const LowStock = () => {
                     </div>
                   </Card>
                 </div>
+
+                {hasLowStockIngredients && (
+                  <div className="flex justify-end mt-4">
+                    <Button
+                      onClick={() => setConfirmModal(true)}
+                      disabled={autoGenerateMutation.isLoading}
+                      className="gap-2">
+                      <Zap size={16} />
+                      {autoGenerateMutation.isLoading
+                        ? t("common.processing")
+                        : t("page.lowStock.autoGeneratePO")}
+                    </Button>
+                  </div>
+                )}
 
                 {isLoading ? (
                   <div className="space-y-4 mt-6">
@@ -311,6 +351,18 @@ const LowStock = () => {
           )}
         </>
       )}
+
+      <Modal
+        open={confirmModal}
+        onOpenChange={setConfirmModal}
+        type="confirm"
+        title={t("page.lowStock.autoPOConfirmTitle")}
+        description={t("page.lowStock.autoPOConfirmDesc")}
+        confirmText={t("common.yes")}
+        cancelText={t("common.cancel")}
+        loading={autoGenerateMutation.isLoading}
+        onConfirm={() => autoGenerateMutation.mutate()}
+      />
     </div>
   );
 };

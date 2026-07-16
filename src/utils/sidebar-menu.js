@@ -31,7 +31,11 @@ import {
   Database,
   QrCode,
   ShoppingBag,
-  FlaskConical
+  FlaskConical,
+  Truck,
+  Users as UsersIcon,
+  Megaphone,
+  Clock
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -244,6 +248,81 @@ export const sidebarMenuSuperAdmin = [
         href: "/accounts-receivable",
         icon: Receipt,
         actions: ["view"]
+      }
+    ]
+  },
+  {
+    title: "Delivery",
+    section: true,
+    i18nKey: "sidebar.section.delivery",
+    icon: Truck,
+    children: [
+      {
+        title: "Delivery Orders",
+        i18nKey: "sidebar.deliveryOrders",
+        href: "/delivery-orders",
+        icon: Truck,
+        actions: ["view", "add", "edit"]
+      },
+      {
+        title: "Driver",
+        i18nKey: "sidebar.driver",
+        href: "/driver-list",
+        icon: Users,
+        actions: ["view", "add", "edit", "delete"]
+      }
+    ]
+  },
+  {
+    title: "Queue",
+    section: true,
+    i18nKey: "sidebar.section.queue",
+    icon: Clock,
+    children: [
+      {
+        title: "Queue Management",
+        i18nKey: "sidebar.queue",
+        href: "/queue-list",
+        icon: Clock,
+        actions: ["view", "add", "edit"]
+      }
+    ]
+  },
+  {
+    title: "Supplier Performance",
+    section: true,
+    i18nKey: "sidebar.section.supplierPerformance",
+    icon: TrendingUp,
+    children: [
+      {
+        title: "Supplier Scores",
+        i18nKey: "sidebar.supplierPerformance",
+        href: "/supplier-score-list",
+        icon: TrendingUp,
+        actions: ["view", "add"]
+      }
+    ]
+  },
+  {
+    title: "Promotions",
+    section: true,
+    i18nKey: "sidebar.section.promo",
+    icon: Megaphone,
+    children: [
+      {
+        title: "Promo Campaigns",
+        i18nKey: "sidebar.promo",
+        href: "/promo-list",
+        icon: Megaphone,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Bundle / Combo",
+        i18nKey: "sidebar.bundle",
+        href: "/bundle",
+        icon: Package,
+        actions: ["view", "add", "edit", "delete"],
+        activePaths: ["/bundle/add", "/bundle/edit"]
       }
     ]
   },
@@ -673,6 +752,81 @@ export const sidebarMenuAdmin = [
         href: "/accounts-receivable",
         icon: Receipt,
         actions: ["view"]
+      }
+    ]
+  },
+  {
+    title: "Delivery",
+    section: true,
+    i18nKey: "sidebar.section.delivery",
+    icon: Truck,
+    children: [
+      {
+        title: "Delivery Orders",
+        i18nKey: "sidebar.deliveryOrders",
+        href: "/delivery-orders",
+        icon: Truck,
+        actions: ["view", "add", "edit"]
+      },
+      {
+        title: "Driver",
+        i18nKey: "sidebar.driver",
+        href: "/driver-list",
+        icon: Users,
+        actions: ["view", "add", "edit", "delete"]
+      }
+    ]
+  },
+  {
+    title: "Queue",
+    section: true,
+    i18nKey: "sidebar.section.queue",
+    icon: Clock,
+    children: [
+      {
+        title: "Queue Management",
+        i18nKey: "sidebar.queue",
+        href: "/queue-list",
+        icon: Clock,
+        actions: ["view", "add", "edit"]
+      }
+    ]
+  },
+  {
+    title: "Supplier Performance",
+    section: true,
+    i18nKey: "sidebar.section.supplierPerformance",
+    icon: TrendingUp,
+    children: [
+      {
+        title: "Supplier Scores",
+        i18nKey: "sidebar.supplierPerformance",
+        href: "/supplier-score-list",
+        icon: TrendingUp,
+        actions: ["view", "add"]
+      }
+    ]
+  },
+  {
+    title: "Promotions",
+    section: true,
+    i18nKey: "sidebar.section.promo",
+    icon: Megaphone,
+    children: [
+      {
+        title: "Promo Campaigns",
+        i18nKey: "sidebar.promo",
+        href: "/promo-list",
+        icon: Megaphone,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Bundle / Combo",
+        i18nKey: "sidebar.bundle",
+        href: "/bundle",
+        icon: Package,
+        actions: ["view", "add", "edit", "delete"],
+        activePaths: ["/bundle/add", "/bundle/edit"]
       }
     ]
   },

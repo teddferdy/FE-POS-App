@@ -17,7 +17,7 @@
 7. [Glossary / Istilah Penting](#7-glossary--istilah-penting)
 8. [Aturan Bisnis Penting](#8-aturan-bisnis-penting)
 9. [Tabel Role & Hak Akses](#9-tabel-role--hak-akses)
-10. [List Update Malam Ini (13 Juni 2026)](#10-list-update-malam-ini-13-juni-2026)
+10. [List Update Fitur](#10-list-update-fitur-16-juni-2026)
 
 ---
 
@@ -285,6 +285,40 @@ flowchart LR
 | **Purchase Order**      | Bikin pesanan ke supplier. Pilih supplier & item. Ada status (draft/sent/completed/cancelled), due date, dan PIC. | ➡ Goods Receipt ➡ Riwayat Pembayaran       |
 | **Riwayat Pembayaran**  | Catat pembayaran PO: lunas / cicil / belum bayar. Tau total utang ke supplier.                                    | ➡ Purchase Order                            |
 
+### 🚚 Pengiriman (Delivery)
+
+| Menu                     | Fungsinya buat bisnis                                                                       | Nyambung kemana                    |
+| ------------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------- |
+| **Delivery Orders**      | Kelola pesanan pengiriman: assign driver, lacak status, catat riwayat.                      | ➡ Driver ➡ Detail Delivery        |
+| **Driver**               | Data driver: nama, kendaraan, plat nomor, status (active/busy/offline). Status otomatis.    | ➡ Delivery Orders                  |
+
+### 🛒 Marketplace Integration
+
+| Menu                     | Fungsinya buat bisnis                                                                       | Nyambung kemana                    |
+| ------------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------- |
+| **Marketplace Orders**   | Pesanan dari GoFood/GrabFood/ShopeeFood masuk otomatis via webhook. Dilihat di satu tempat. | ➡ Delivery Order ➡ KDS            |
+| **Produk Mapping**       | Map produk internal ke produk di marketplace. Nama & harga bisa beda per platform.           | ➡ Produk ➡ Marketplace            |
+| **Menu Availability**    | Sinkronisasi ketersediaan produk ke semua marketplace. Habis di sistem → unavailable.        | ➡ Produk                           |
+| **Commission Tracking**  | Catat komisi marketplace per pesanan (GoFood 15-25%, Grab 15-30%).                          | ➡ Laporan Laba/Rugi               |
+
+### ⏳ Antrian (Queue)
+
+| Menu                     | Fungsinya buat bisnis                                                                       | Nyambung kemana                    |
+| ------------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------- |
+| **Queue Management**     | Kelola daftar tunggu pelanggan: tambah ke antrian, dudukkan, batalkan. Nomor auto-generate.  | ➡ Meja (status occupied/available) |
+
+### 📊 Performa Supplier
+
+| Menu                     | Fungsinya buat bisnis                                                                       | Nyambung kemana                    |
+| ------------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------- |
+| **Supplier Performance** | Skor & grade supplier: on-time rate, defect rate, harga. Evaluasi otomatis dari PO & GR.    | ➡ Supplier ➡ Purchase Order       |
+
+### 🏷️ Promosi (Promo)
+
+| Menu                     | Fungsinya buat bisnis                                                                       | Nyambung kemana                    |
+| ------------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------- |
+| **Promo Campaigns**      | Kampanye promo otomatis: happy hour, birthday, buy X get Y. Auto-activate berdasarkan jadwal.| ➡ POS (diskon otomatis)            |
+
 ### 👥 Pelanggan
 
 | Menu              | Fungsinya buat bisnis                                                                  | Nyambung kemana        |
@@ -397,6 +431,7 @@ flowchart TB
         E2["Karyawan & Shift"]
         E3["Pengeluaran"]
         E4["Pengaturan"]
+        E5["Marketplace<br/>Integration"]
     end
 
     A1 --> B1
@@ -429,8 +464,11 @@ flowchart TB
 
     E1 --> B1
     E2 --> B1
+    E3 --> D3
     E4 --> A1
     E4 --> A2
+    E5 --> B1
+    E5 --> B2
 ```
 
 **Bacanya gini:**
@@ -439,7 +477,7 @@ flowchart TB
 - 🔵 **OPERASIONAL**: POS buat jualan, PO buat beli stok, GR buat terima barang, Production Order buat produksi — ini kegiatan sehari-hari
 - 🟡 **MONITORING**: Cek stok rutin biar gak kehabisan, catat pembayaran supplier biar gak lupa utang
 - 🟠 **LAPORAN**: Dari semua kegiatan, laporan otomatis tergenerate — tinggal buka & analisis
-- 🔴 **PENDUKUNG**: Member, karyawan, pengaturan — fitur pendukung biar bisnis jalan mulus
+- 🔴 **PENDUKUNG**: Member, karyawan, pengaturan, marketplace integration — fitur pendukung biar bisnis jalan mulus. Marketplace nerima pesanan dari GoFood/GrabFood/ShopeeFood via webhook, otomatis jadi Delivery Order
 
 ---
 
@@ -1224,6 +1262,14 @@ flowchart TD
 | **Kirim notifikasi ke pelanggan**   | WhatsApp notifikasi otomatis             |
 | **Tanya soal penggunaan POS**      | FAQ Chat (floating button)               |
 | **Analisa performa toko / revenue** | FAQ Chat → ganti mode AI                 |
+| **Kirim pesanan ke pelanggan**      | Delivery Order → Assign Driver           |
+| **Atur pengiriman internal**        | Delivery Order → Driver Management       |
+| **Kelola antrian pelanggan**        | Queue Management → Tambah ke Antrian     |
+| **Cek performa supplier**           | Supplier Performance → Hitung Skor       |
+| **Buat promo otomatis**             | Promo Campaign → Buat Kampanye           |
+| **Jualan di GoFood/GrabFood**       | Marketplace Integration → Produk Mapping |
+| **Terima pesanan marketplace**      | Marketplace → Webhook → Delivery Order   |
+| **Cek komisi marketplace**          | Marketplace → Commission Tracking        |
 
 ---
 
@@ -1392,7 +1438,163 @@ flowchart TD
 
 ---
 
-### 5.18 Ringkasan Fitur Tambahan
+### 5.18 Delivery Order — Pengiriman Internal
+
+> Fitur kelola pesanan pengiriman dari POS ke pelanggan. Driver internal toko yang antar.
+
+```mermaid
+flowchart TD
+    START([Pelanggan pesan<br/>via POS / Online]) --> BUAT_DO[Buat Delivery Order]
+    BUAT_DO --> FORM_DO[Form:<br/>- Pilih/Isi data pelanggan<br/>- Alamat pengiriman<br/>- No telepon<br/>- Sumber: POS/QR/Manual/Online<br/>- Estimasi waktu<br/>- Catatan]
+    FORM_DO --> SIMPAN_DO[Simpan DO<br/>status: Pending]
+
+    SIMPAN_DO --> ASSIGN{Admin assign<br/>driver}
+    ASSIGN --> PILIH_DRIVER[Pilih driver<br/>yang available]
+    PILIH_DRIVER --> STATUS_ASSIGNED[Status: Assigned<br/>Driver status → Busy]
+
+    STATUS_ASSIGNED --> DRIVER_AMBIL[Driver ambil<br/>barang dari toko]
+    DRIVER_AMBIL --> STATUS_PICKED[Status: Picked Up]
+
+    STATUS_PICKED --> STATUS_TRANSIT[Status: In Transit<br/>Driver di jalan]
+
+    STATUS_TRANSIT --> CEK_STATUS{Status pengiriman}
+    CEK_STATUS -->|Berhasil| STATUS_DELIVERED[Status: Delivered ✅<br/>Driver status → Active]
+    CEK_STATUS -->|Batal| STATUS_CANCELLED[Status: Cancelled ❌<br/>Driver status → Active]
+
+    STATUS_DELIVERED --> SELESAI[Selesai]
+    STATUS_CANCELLED --> SELESAI
+```
+
+**Yang perlu kamu tau:**
+
+- **Driver auto-manage status**: active → busy saat assign, busy → active saat delivery selesai/dibatalkan
+- **Status tracking real-time** via Socket.IO — semua perubahan tercatat di history
+- **Sumber pesanan**: bisa dari POS langsung, QR order, manual admin, atau online
+- **Stats dashboard**: total pesanan, pending, assigned, in transit, delivered, cancelled
+
+---
+
+### 5.19 Queue Management — Antrian Pelanggan
+
+> Fitur antrian pelanggan untuk restoran/kafe. Pelanggan kasih nama, sistem urutkan otomatis berdasarkan prioritas.
+
+```mermaid
+flowchart TD
+    START([Pelanggan datang<br/>tanpa reservasi]) --> TAMBAH[Tambah ke Antrian]
+    TAMBAH --> FORM_Q[Form:<br/>- Nama Pelanggan<br/>- Jumlah Orang<br/>- Prioritas: Normal/VPN/Pregnant/Elderly/Disabled<br/>- Catatan]
+    FORM_Q --> AUTO_NUM[Nomor antrian<br/>auto-generate<br/>QHHMM-XXX]
+    AUTO_NUM --> STATUS_WAIT[Status: Waiting<br/>Menunggu meja]
+
+    STATUS_WAIT --> ADMIN_SEAT{Admin pilih<br/>dudukkan}
+    ADMIN_SEAT --> PILIH_MEJA[Pilih meja<br/>yang kosong]
+    PILIH_MEJA --> STATUS_SEATED[Status: Seated<br/>Meja → Occupied]
+
+    STATUS_SEATED --> SELESAI{Selesai<br/>makan?}
+    SELESAI -->|Ya| STATUS_COMPLETED[Status: Completed ✅]
+    SELESAI -->|Batal| STATUS_CANCELLED[Status: Cancelled ❌]
+
+    STATUS_COMPLETED --> UPDATE_MEJA[Meja → Available]
+    STATUS_CANCELLED --> UPDATE_MEJA
+```
+
+**Yang perlu kamu tau:**
+
+- **Nomor antrian auto**: format QHHMM-XXX (contoh: Q1407-003)
+- **Prioritas**: Normal, VIP, Elderly, Pregnant, Disabled — yang prioritas lebih tinggi duluan
+- **Meja otomatis update**: Seated → meja jadi Occupied, selesai → meja jadi Available
+- **Stats real-time**: berapa yang menunggu, sudah duduk hari ini, rata-rata waktu tunggu
+
+---
+
+### 5.20 Supplier Performance — Skor & Grade Supplier
+
+> Evaluasi performa supplier secara otomatis berdasarkan data riwayat pengadaan.
+
+```mermaid
+flowchart TD
+    START([Admin buka<br/>Supplier Performance]) --> HITUNG[Hitung Skor<br/>untuk semua supplier]
+    HITUNG --> CEK_PO[Data dari PO<br/>+ Goods Receipt]
+    CEK_PO --> ONTIME[On-Time Rate<br/>40% bobot]
+    CEK_PO --> DEFECT[Defect Rate<br/>30% bobot]
+    CEK_PO --> PRICE[Price Competitiveness<br/>30% bobot]
+
+    ONTIME --> HITUNG_SKOR[Hitung Overall Score]
+    DEFECT --> HITUNG_SKOR
+    PRICE --> HITUNG_SKOR
+
+    HITUNG_SKOR --> GRADE{Penilaian<br/>Grade}
+    GRADE -->|≥85| GRADE_A[Grade A — Excellent ✅]
+    GRADE -->|70-84| GRADE_B[Grade B — Good 👍]
+    GRADE -->|55-69| GRADE_C[Grade C — Average ⚠️]
+    GRADE -->|40-54| GRADE_D[Grade D — Below Avg 🔶]
+    GRADE -->|<40| GRADE_F[Grade F — Poor ❌]
+
+    GRADE_A --> SAVE[Simpan Skor<br/>per periode]
+    GRADE_B --> SAVE
+    GRADE_C --> SAVE
+    GRADE_D --> SAVE
+    GRADE_F --> SAVE
+
+    SAVE --> DETAIL[Detail per Supplier<br/>- Rincian metrik<br/>- History skor<br/>- Catatan admin]
+```
+
+**Yang perlu kamu tau:**
+
+- **Skor dihitung otomatis** dari data PO & GR (gak perlu input manual)
+- **3 komponen**: ketepatan waktu (40%), tingkat cacat (30%), daya saing harga (30%)
+- **Grade**: A (85+), B (70-84), C (55-69), D (40-54), F (<40)
+- **Catatan admin** bisa ditambah per supplier per periode
+
+---
+
+### 5.21 Promo Campaign — Promosi Otomatis
+
+> Bikin kampanye promosi yang otomatis aktif berdasarkan waktu, event, atau kondisi tertentu.
+
+```mermaid
+flowchart TD
+    START([Admin buat<br/>Kampanye Promo]) --> FORM_PROMO[Form:<br/>- Nama Kampanye<br/>- Kode Promo<br/>- Deskripsi<br/>- Tipe: Time/Event/Condition<br/>- Jadwal: Mulai - Selesai<br/>- Auto-Activate: Ya/Tidak<br/>- Diskon Settings<br/>- Rules & Rewards]
+
+    FORM_PROMO --> STATUS_DRAFT[Status: Draft]
+
+    STATUS_DRAFT --> AKTIF{Kapan aktif?}
+    AKTIF -->|Manual| KLIK_AKTIF[Admin klik Aktifkan]
+    AKTIF -->|Auto| TUNGGU_DATE[Tunggu tanggal<br/>mulai otomatis]
+
+    KLIK_AKTIF --> STATUS_ACTIVE[Status: Active ✅]
+    TUNGGU_DATE --> STATUS_ACTIVE
+
+    STATUS_ACTIVE --> CEK_RULES[Cek Syarat<br/>pada transaksi POS]
+    CEK_RULES -->|"time_based<br/>(jam tertentu)"| CEK_JAM[Cek jam<br/>misal: 14:00-16:00]
+    CEK_RULES -->|"event_based<br/>(ulang tahun)"| CEK_EVENT[Cek event<br/>misal: birthday member]
+    CEK_RULES -->|"condition_based<br/>(beli X gratis Y)"| CEK_SYARAT[Cek kondisi<br/>misal: beli 2 gratis 1]
+
+    CEK_JAM --> APPLY[Terapkan Diskon<br/>di POS otomatis]
+    CEK_EVENT --> APPLY
+    CEK_SYARAT --> APPLY
+
+    STATUS_ACTIVE --> CEK_EXPIRED{Sudah lewat<br/>tanggal akhir?}
+    CEK_EXPIRED -->|Ya| STATUS_EXPIRED[Status: Expired ⏰<br/>Otomatis nonaktif]
+    CEK_EXPIRED -->|Tidak| STATUS_ACTIVE
+
+    STATUS_ACTIVE --> PAUSE{Admin jeda?}
+    PAUSE -->|Ya| STATUS_PAUSED[Status: Paused ⏸️]
+    PAUSED -->|Lanjut| STATUS_ACTIVE
+
+    STATUS_ACTIVE --> CANCEL{Admin batalkan?}
+    CANCEL -->|Ya| STATUS_CANCELLED[Status: Cancelled ❌]
+```
+
+**Yang perlu kamu tau:**
+
+- **3 tipe trigger**: time_based (jam/periode), event_based (ulang tahun), condition_based (beli X dapat Y)
+- **Auto-Activate**: promo otomatis aktif pada tanggal mulai tanpa perlu admin
+- **Rules & Rewards fleksibel**: bisa atur syarat & hadiah sesuai kebutuhan
+- **Usage tracking**: batas total usage & per member — promosi terkontrol
+
+---
+
+### 5.22 Ringkasan Fitur Tambahan
 
 | Fitur              | Input                                   | Proses                       | Output / Dampak                                       |
 | ------------------ | --------------------------------------- | ---------------------------- | ----------------------------------------------------- |
@@ -1404,6 +1606,191 @@ flowchart TD
 | **Redeem Points**  | Set harga poin di produk                | Tukar poin di POS            | Member makin loyal, poin jadi nilai tukar nyata       |
 | **Split Bill**     | Pilih metode "Pisah Bayar" di POS       | Bagi total per orang         | Pelanggan bayar sesuai porsi masing-masing            |
 | **WhatsApp Notif** | Order masuk → otomatis kirim WA         | WhatsApp Client              | Pelanggan dapet notifikasi real-time                  |
+| **Delivery Order** | Isi data pelanggan + alamat             | Assign driver → kirim        | Pesanan diantar driver internal, status real-time     |
+| **Queue (Antrian)** | Nama + jumlah orang + prioritas        | Auto numbering → urut prioritas | Pelanggan dapat nomor, sistem urutkan otomatis      |
+| **Supplier Score** | Auto dari PO & GR                      | Hitung on-time, defect, harga | Grade supplier (A-F), keputusan pengadaan lebih tepat |
+| **Promo Campaign** | Nama + kode + tipe + jadwal            | Auto-activate → terapkan di POS | Diskon otomatis sesuai syarat, tanpa perlu manual   |
+| **Marketplace Integration** | Webhook dari GoFood/GrabFood/ShopeeFood | Validasi → mapping → buat DO | Pesanan eksternal masuk otomatis, status sync dua arah |
+
+---
+
+### 5.23 Marketplace Integration — GoFood / GrabFood / ShopeeFood
+
+> Integrasi delivery eksternal via webhook. Pesanan dari marketplace masuk otomatis ke sistem, driver marketplace yang antar. Cocok buat bisnis yang jualan di beberapa platform sekaligus.
+
+```mermaid
+flowchart TD
+    subgraph MARKETPLACE["🛒 MARKETPLACE"]
+        GOFOOD["GoFood"]
+        GRAB["GrabFood"]
+        SHOPEE["ShopeeFood"]
+    end
+
+    subgraph WEBHOOK["🔗 WEBHOOK HANDLER"]
+        WH_RECEIVE["Terima Webhook<br/>POST /api/marketplace/webhook"]
+        WH_VALIDATE["Validasi Signature<br/>& Decode Payload"]
+        WH_MAP["Map ke Internal Order<br/> produk, qty, alamat]
+    end
+
+    subgraph SYSTEM["📦 SISTEM INTERNAL"]
+        CREATE_DO["Buat Delivery Order<br/>otomatis"]
+        ASSIGN_DRIVER["Assign Driver<br/>internal / marketplace"]
+        UPDATE_STATUS["Update Status<br/>via webhook callback"]
+    end
+
+    subgraph NOTIF["📱 NOTIFIKASI"]
+        CUST_NOTIF["Notifikasi ke Pelanggan<br/>via marketplace app"]
+        KITCHEN_NOTIF["Pesanan masuk KDS<br/>Dapur mulai proses"]
+    end
+
+    GOFOOD -->|POST /webhook| WH_RECEIVE
+    GRAB -->|POST /webhook| WH_RECEIVE
+    SHOPEE -->|POST /webhook| WH_RECEIVE
+
+    WH_RECEIVE --> WH_VALIDATE
+    WH_VALIDATE -->|Valid| WH_MAP
+    WH_VALIDATE -->|Invalid| REJECT["Tolak webhook ❌"]
+
+    WH_MAP --> CREATE_DO
+    CREATE_DO --> ASSIGN_DRIVER
+
+    ASSIGN_DRIVER --> KITCHEN_NOTIF
+    ASSIGN_DRIVER --> CUST_NOTIF
+
+    UPDATE_STATUS -->|Status: delivered| CLOSE_DO["Tutup DO ✅"]
+    UPDATE_STATUS -->|Status: cancelled| CANCEL_DO["Batal DO ❌"]
+    UPDATE_STATUS -->|Status: in_transit| DRIVER_ON_WAY["Driver di jalan 🚗"]
+```
+
+**Alur kerja:**
+
+1. **Pesanan masuk** dari marketplace (GoFood/GrabFood/ShopeeFood) via webhook POST
+2. **Sistem validasi** signature & decode payload marketplace
+3. **Mapping otomatis** ke internal Delivery Order (produk, qty, alamat pelanggan)
+4. **Assign driver** — bisa driver internal toko atau driver dari marketplace
+5. **Status sync** — setiap perubahan status dari marketplace dikirim balik via webhook callback
+6. **Dapur proses** — pesanan otomatis masuk KDS buat diproses
+
+**Yang perlu kamu tau:**
+
+- **Multi-platform** — satu sistem bisa nerima pesanan dari GoFood, GrabFood, dan ShopeeFood sekaligus
+- **Webhook-based** — real-time, gak perlu polling. Marketplace kirim notifikasi langsung ke sistem kita
+- **Driver fleksibel** — bisa pakai driver internal toko atau driver dari marketplace (GoSend/GrabExpress)
+- **Status sync dua arah** — perubahan status di sistem kita (misal: "sedang dimasak") bisa dikirim balik ke marketplace
+- **Produk mapping** — admin bisa map produk internal ke produk di marketplace (nama, harga bisa beda per platform)
+- **Menu sync** — ketersediaan produk otomatis sync ke semua platform (habis di sistem → unavailable di marketplace)
+
+**Fitur pendukung:**
+
+| Fitur | Fungsi |
+|-------|--------|
+| **Produk Mapping** | Map produk internal ke produk di GoFood/GrabFood/ShopeeFood. Nama & harga bisa beda per platform. |
+| **Menu Availability Sync** | Kalau produk habis atau low stock, otomatis mark unavailable di marketplace |
+| **Order Queue** | Semua pesanan dari semua platform masuk ke satu antrian terpadu |
+| **Revenue Reconciliation** | Cocokkan pendapatan dari marketplace dengan catatan internal |
+| **Commission Tracking** | Catat komisi marketplace per pesanan (GoFood: 15-25%, Grab: 15-30%, dll) |
+
+---
+
+### 5.24 Auto Generate PO dari Low Stock
+
+> Fitur untuk otomatis membuat draft PO berdasarkan bahan baku yang stoknya menipis. Hemat waktu admin — tinggal review dan kirim.
+
+```mermaid
+flowchart TD
+    subgraph LOW_STOCK["📉 STOK MENIPIS"]
+        LS_VIEW["Lihat Halaman<br/>Stok Menipis"]
+        LS_CHECK["Cek Daftar<br/>Bahan Baku"]
+    end
+
+    subgraph AUTO_PO["🤖 AUTO GENERATE PO"]
+        CLICK["Klik Tombol<br/>Auto Buat PO"]
+        CONFIRM["Konfirmasi<br/>Modal Dialog"]
+        PROCESS["Sistem Proses<br/>- Fetch data stok<br/>- Group per supplier<br/>- Hitung qty reorder"]
+    end
+
+    subgraph RESULT["✅ HASIL"]
+        PO_DRAFT["Draft PO<br/>per Supplier"]
+        NAVIGATE["Navigasi ke<br/>Halaman PO"]
+        REVIEW["Admin Review<br/>& Kirim"]
+    end
+
+    LS_VIEW --> LS_CHECK
+    LS_CHECK -->|Ada bahan menipis| CLICK
+    CLICK --> CONFIRM
+    CONFIRM --> PROCESS
+    PROCESS --> PO_DRAFT
+    PO_DRAFT --> NAVIGATE
+    NAVIGATE --> REVIEW
+```
+
+**Alur kerja:**
+
+1. **Admin lihat** halaman Stok Menipis → cek daftar bahan baku yang perlu di-restock
+2. **Klik tombol** "Auto Buat PO" → muncul modal konfirmasi
+3. **Sistem proses** → fetch data stok, group per supplier, hitung qty reorder (`minStock - stock`)
+4. **Draft PO dibuat** → 1 PO per supplier, items berisi bahan baku dari supplier tersebut
+5. **Admin review** → periksa detail PO, edit jika perlu, lalu kirim ke supplier
+
+**Yang perlu kamu tau:**
+
+- **Hanya bahan baku** — fitur ini untuk ingredient, bukan produk jadi
+- **Group per supplier** — bahan baku dari supplier yang sama digabung dalam 1 PO
+- **Reorder qty** — otomatis `minStock - stock` (minimal 1 unit)
+- **Draft status** — PO yang dibuat masih draft, belum langsung dikirim
+- **Tanpa supplier** — bahan baku tanpa supplier akan dikelompokkan dalam PO terpisah dengan catatan khusus
+
+---
+
+### 5.25 Bundle / Combo Product
+
+> Fitur untuk menjual paket produk dengan harga spesial. Misal: "Paket Hemat = Nasi + Ayam + Es Teh" dengan harga lebih murah dari beli satuan.
+
+```mermaid
+flowchart TD
+    subgraph CREATE["➕ BUAT BUNDLE"]
+        FORM["Form Bundle<br/>- Nama<br/>- Harga Bundle<br/>- Deskripsi"]
+        ADD_ITEMS["Tambah Item<br/>Pilih Produk + Qty"]
+        CALC["Hitung<br/>- Harga Normal<br/>- Harga Bundle<br/>- Diskon %"]
+    end
+
+    subgraph MANAGE["📋 KELOLA BUNDLE"]
+        LIST["Daftar Bundle<br/>Status: Active/Draft/Inactive"]
+        EDIT["Edit Bundle<br/>Tambah/Hapus Item"]
+        STATUS["Ubah Status<br/>Active ↔ Inactive"]
+    end
+
+    subgraph SELL["🛒 JUAL DI POS"]
+        POS_VIEW["Bundle muncul<br/>di Produk Grid"]
+        ADD_CART["Tambah ke Cart<br/>Harga Bundle"]
+        CHECKOUT["Checkout<br/>Stok individual terkurangi"]
+    end
+
+    FORM --> ADD_ITEMS
+    ADD_ITEMS --> CALC
+    CALC -->|Simpan| LIST
+    LIST --> EDIT
+    LIST --> STATUS
+    LIST -->|Status: Active| POS_VIEW
+    POS_VIEW --> ADD_CART
+    ADD_CART --> CHECKOUT
+```
+
+**Alur kerja:**
+
+1. **Admin buat bundle** → isi nama, pilih produk, tentukan harga bundle
+2. **Sistem hitung** → harga normal (total harga satuan), diskon persentase
+3. **Simpan bundle** → status draft atau active
+4. **Bundle muncul** di POS (kalau status active)
+5. **Kasir tambah** bundle ke cart → stok individual produk terkurangi
+
+**Yang perlu kamu tau:**
+
+- **Harga bundle** harus lebih rendah dari total harga satuan untuk memberikan value
+- **Stok individual** — saat bundle dijual, stok masing-masing produk dikurangi sesuai qty
+- **Status management** — bundle bisa di-pause (inactive) sementara, lalu diaktifkan lagi
+- **Validitas periode** — bundle bisa diatur berlaku dari tanggal tertentu sampai tanggal tertentu
+- **Item opsional** — beberapa item dalam bundle bisa ditandai sebagai opsional (untuk variasi)
 
 ---
 
@@ -1559,6 +1946,10 @@ stateDiagram-v2
 | **Stock Transfer**   | Draft → Sent → Received / Cancelled            | Sent → stok toko asal -; Received → stok toko tujuan +; Cancelled → stok balik |
 | **Purchase Return**  | Draft → Completed                              | Completed → stok -                     |
 | **Sales Return**     | Draft → Completed                              | Completed → stok +                     |
+| **Delivery Order**   | Pending → Assigned → PickedUp → InTransit → Delivered / Cancelled | Assigned → driver aktif; Delivered → driver balik active |
+| **Queue**            | Waiting → Seated → Completed / Cancelled       | Seated → meja otomatis occupied        |
+| **Promo Campaign**   | Draft → Active → Paused / Cancelled / Expired  | Active → berlaku sesuai jadwal; Expired → otomatis nonaktif |
+| **Marketplace Order**| Webhook Received → Mapped → DO Created → Assigned → Synced | Webhook → validasi → mapping → DO otomatis |
 
 ---
 
@@ -1593,6 +1984,26 @@ stateDiagram-v2
 | **Split Bill**                         | Fitur pisah bayar — 1 meja dibagi pembayarannya per orang                                 | "4 orang makan total Rp 200rb, masing2 bayar Rp 50rb"         |
 | **i18n**                               | Internationalization — dukungan multi bahasa (Indonesia & Inggris)                        | "Switch ke English dari menu pengaturan"                      |
 | **FAQ Chat**                           | Fitur chatbot floating buat tanya jawab seputar POS dan analisa bisnis pake AI            | "Klik ikon 💬 di pojok kanan bawah untuk mulai"               |
+| **Delivery Order**                     | Pesanan pengiriman — dari POS ke pelanggan, dilayani driver internal                      | "Pelanggan pesan nasi goreng, dikirim lewat driver toko"       |
+| **Driver**                             | Kurir internal toko yang mengantar delivery order ke pelanggan                            | "Driver Budi lagi ngantar 3 pesanan ke pelanggan"              |
+| **Queue (Antrian)**                    | Daftar tunggu pelanggan yang belum dapat meja — diurutkan berdasarkan prioritas            | "Antrian nomor Q1407-003, keluarga 4 orang, prioritas normal"  |
+| **Priority**                           | Level urutan di antrian: Normal, VIP, Elderly, Pregnant, Disabled                         | "Pelanggan hamil dikasih prioritas Pregnant — lebih cepat dapat meja" |
+| **Supplier Performance**               | Skor evaluasi supplier berdasarkan ketepatan waktu, tingkat cacat, dan harga              | "Supplier A grade A (skor 88), Supplier B grade C (skor 52)"   |
+| **Grade (Supplier)**                   | Penilaian supplier: A (≥85), B (70-84), C (55-69), D (40-54), F (<40)                    | "Grade A = supplier paling reliable"                           |
+| **Promo Campaign**                     | Kampanye promosi otomatis berdasarkan waktu, event, atau kondisi tertentu                  | "Happy Hour diskon 20% setiap hari jam 14:00-16:00"           |
+| **Trigger Type**                       | Jenis pemicu promo: time_based (waktu), event_based (ulang tahun), condition_based (syarat) | "Happy Hour = trigger time_based, Birthday = trigger event_based" |
+| **Auto-Activate**                      | Fitur promo yang otomatis aktif pada tanggal mulai tanpa perlu manual                     | "Kampanye weekend auto-activate setiap Sabtu-Minggu"          |
+| **Marketplace Integration**            | Integrasi delivery eksternal via webhook dengan GoFood, GrabFood, ShopeeFood               | "Pesanan dari GrabFood masuk otomatis ke sistem"              |
+| **Webhook**                            | HTTP callback dari marketplace ke sistem kita — real-time, gak perlu polling               | "GrabFood kirim POST ke /api/marketplace/webhook"             |
+| **Produk Mapping**                     | Pemetaan produk internal ke produk di marketplace (nama & harga bisa beda per platform)     | "Nasi Goreng Internal → Nasi Goreng GrabFood (Rp 35.000)"    |
+| **Menu Availability Sync**             | Sinkronisasi ketersediaan produk ke semua marketplace — habis di sistem → unavailable       | "Stok ayam habis → produk unavailable di GoFood"              |
+| **Commission Tracking**                | Pencatatan komisi marketplace per pesanan (GoFood: 15-25%, Grab: 15-30%)                  | "Pesanan Rp 50rb, komisi Grab 20% = Rp 10rb"                 |
+| **Revenue Reconciliation**             | Pencocokan pendapatan dari marketplace dengan catatan internal                             | "Omzet Grab bulan ini Rp 5 juta, cocok dengan sistem"         |
+| **Auto Generate PO**                   | Pembuatan PO otomatis berdasarkan data stok menipis, dikelompokkan per supplier             | "Klik Auto Buat PO → sistem bikin draft PO per supplier"      |
+| **Reorder Qty**                        | Jumlah yang harus dipesan: minStock - stock (minimal 1 unit)                                | "Stok 5, min 20 → reorder 15 unit"                            |
+| **Bundle / Combo**                     | Paket produk yang dijual dengan harga spesial (lebih murah dari beli satuan)                 | "Paket Hemat = Nasi + Ayam + Es Teh = Rp 25.000"             |
+| **Bundle Price**                       | Harga jual bundle (harus lebih rendah dari total harga satuan)                               | "Harga satuan Rp 35.000, bundle Rp 25.000 → hemat Rp 10.000" |
+| **Original Price**                     | Total harga jika item dibeli satuan-satuan (sebelum diskon bundle)                           | "Nasi 12rb + Ayam 15rb + Es Teh 8rb = Rp 35.000"            |
 
 ---
 
@@ -1693,6 +2104,55 @@ stateDiagram-v2
 | 2   | **Member bisa tukar poin langsung di POS** | Kasir bisa redeem poin member pas transaksi                |
 | 3   | **Poin yang dipake otomatis berkurang**    | Sistem otomatis kurangi poin member yang dipake            |
 
+### 8.11 Aturan Delivery Order
+
+| #   | Aturan                                                              | Penjelasan                                                           |
+| --- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | **Driver status otomatis berubah**                                  | Active → Busy saat assign delivery, Busy → Active saat selesai       |
+| 2   | **Status delivery tercatat di history**                             | Semua perubahan status (pending, assigned, picked up, transit, dll)  |
+| 3   | **Delivery bisa dibatalkan**                                        | Status berubah ke Cancelled, driver balik ke Active                  |
+| 4   | **Stats dashboard real-time**                                       | Total, pending, assigned, in transit, delivered, cancelled           |
+
+### 8.12 Aturan Queue Management
+
+| #   | Aturan                                                              | Penjelasan                                                           |
+| --- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | **Nomor antrian auto-generate**                                     | Format QHHMM-XXX, gak perlu input manual                            |
+| 2   | **Prioritas menentukan urutan**                                     | Disabled/Pregnant/Elderly/VIP lebih duluan dari Normal               |
+| 3   | **Seated otomatis update meja**                                     | Meja berubah dari Available → Occupied                               |
+| 4   | **Completed/Cancelled meja balik Available**                        | Meja otomatis kosong lagi                                            |
+
+### 8.13 Aturan Supplier Performance
+
+| #   | Aturan                                                              | Penjelasan                                                           |
+| --- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | **Skor dihitung dari data PO & GR**                                | Gak perlu input manual — data dari riwayat pengadaan                |
+| 2   | **3 komponen: on-time (40%), defect (30%), price (30%)**           | Bobot sudah ditentukan sistem                                       |
+| 3   | **Grade: A(≥85) B(70-84) C(55-69) D(40-54) F(<40)**              | Penilaian berdasarkan overall score                                 |
+| 4   | **Catatan admin bisa ditambah**                                     | Untuk catatan qualitative per supplier per periode                   |
+
+### 8.14 Aturan Promo Campaign
+
+| #   | Aturan                                                              | Penjelasan                                                           |
+| --- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | **Auto-activate pada tanggal mulai**                                | Promo otomatis aktif tanpa perlu admin                              |
+| 2   | **Auto-expire pada tanggal akhir**                                  | Promo otomatis nonaktif setelah masa berlaku habis                   |
+| 3   | **Batas usage per total & per member**                              | Kontrol biaya promosi — promo gak bisa dipakai berlebihan           |
+| 4   | **Rules & rewards fleksibel**                                       | Bisa atur syarat & hadiah sesuai kebutuhan bisnis                   |
+
+### 8.15 Aturan Marketplace Integration
+
+| #   | Aturan                                                              | Penjelasan                                                           |
+| --- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | **Webhook harus valid**                                             | Signature marketplace harus cocok — tolak kalau invalid              |
+| 2   | **Produk harus di-mapping dulu**                                    | Kalau produk belum di-mapping ke marketplace, pesanan ditolak        |
+| 3   | **Stok harus tersedia**                                             | Kalau produk habis di sistem, marketplace otomatis mark unavailable   |
+| 4   | **Status sync dua arah**                                            | Perubahan status di sistem → callback ke marketplace, dan sebaliknya |
+| 5   | **Driver bisa internal atau marketplace**                           | Admin bisa pilih driver toko atau biarkan marketplace handle driver  |
+| 6   | **Komisi tercatat otomatis**                                        | Komisi marketplace per pesanan otomatis dicatat buat laporan laba/rugi |
+| 7   | **Menu sync saat stok berubah**                                     | Kalau stok produk berubah (POS/GR/Transfer), availability di marketplace ikut update |
+| 8   | **Harga bisa beda per platform**                                    | Harga di GoFood, GrabFood, ShopeeFood bisa diatur berbeda dari harga internal |
+
 ---
 
 ## 9. Tabel Role & Hak Akses
@@ -1754,6 +2214,15 @@ stateDiagram-v2
 | **Piutang & Pembayaran**     |             |       |         |                 |      |
 | Accounts Receivable (Lihat)  |     ✅      |  ✅   |    —    |        —        |  —   |
 | AR Payment (Tambah)          |     ✅      |  ✅   |    —    |        —        |  —   |
+| **Pengiriman**               |             |       |         |                 |      |
+| Delivery Orders              |     ✅      |  ✅   |    —    |        —        |  —   |
+| Driver Management            |     ✅      |  ✅   |    —    |        —        |  —   |
+| **Antrian**                  |             |       |         |                 |      |
+| Queue Management             |     ✅      |  ✅   |    —    |        —        |  —   |
+| **Performa Supplier**        |             |       |         |                 |      |
+| Supplier Performance         |     ✅      |  ✅   |    —    |        —        |  —   |
+| **Promosi**                  |             |       |         |                 |      |
+| Promo Campaigns              |     ✅      |  ✅   |    —    |        —        |  —   |
 | **Laporan**                  |             |       |         |                 |      |
 | Laporan Penjualan            |     ✅      |  ✅   |   ✅    |       ✅        |  —   |
 | Produk Terlaris              |     ✅      |  ✅   |   ✅    |       ✅        |  —   |
@@ -1772,6 +2241,10 @@ stateDiagram-v2
 | Reservasi                    |     ✅      |  ✅   |    —    |        —        |  —   |
 | Pengeluaran                  |     ✅      |  ✅   |    —    |        —        |  —   |
 | Notifikasi                   |     ✅      |  ✅   |   ✅    |       ✅        |  ✅  |
+| **Marketplace Integration**  |             |       |         |                 |      |
+| Marketplace (Lihat Pesanan)  |     ✅      |  ✅   |    —    |        —        |  —   |
+| Marketplace (Produk Mapping) |     ✅      |  ✅   |    —    |        —        |  —   |
+| Marketplace (Pengaturan)     |     ✅      |   —   |    —    |        —        |  —   |
 
 ### 9.2 Izin per Aksi
 
@@ -1876,15 +2349,36 @@ stateDiagram-v2
 | -- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | 1  | **FAQ Chat (Floating Chatbot)** — floating button 💬 di pojok kanan bawah. 2 mode: FAQ (search dari database) & AI (pake Gemini buat analisa toko). Panel bisa di-scroll, nutup otomatis pas klik luar / Escape. | ✅ Semua role bisa cari jawaban cepat soal POS tanpa buka menu. Admin bisa analisa bisnis pake AI langsung dari panel chat |
 
+### 🔧 Fitur Baru (16 Juli 2026)
+
+| #  | Perubahan                                                                                                                                                                            | Dampak buat Bisnis                                                                                                                                                     |
+| -- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | **Delivery Order Management** — modul lengkap: daftar pesanan driver, detail delivery, status tracking (pending → assigned → picked up → in transit → delivered/cancelled), history perubahan status, dan stats dashboard. | ✅ Kelola pengiriman internal dari POS — assign driver, lacak status real-time, catat riwayat perubahan. Terintegrasi dengan Socket.IO buat notifikasi real-time           |
+| 2  | **Driver Management** — CRUD driver (tambah, edit, detail, hapus). Data: nama, telepon, email, kendaraan, plat nomor, status (active/busy/offline/inactive), toko assigned. Status driver otomatis berubah: active → busy saat assign delivery, busy → active saat semua delivery selesai. | ✅ Kelola data driver dengan status otomatis — driver gak perlu update manual, sistem yang atur berdasarkan aktivitas delivery                                           |
+| 3  | **Queue Management (Antrian)** — fitur antrian pelanggan. Tambah pelanggan ke antrian dengan nama, jumlah orang, prioritas (normal/VIP/elderly/pregnant/disabled). Nomor antrian auto-generate (format QHHMM-XXX). Status: waiting → seated → completed/cancelled. Prioritas menentukan urutan — VIP/difabel lebih duluan. | ✅ Kelola antrian restoran/kafe secara digital. Pelanggan gak perlu berdiri — cukup kasih nama, sistem urutkan otomatis berdasarkan prioritas                           |
+| 4  | **Supplier Performance Tracking** — skor performa supplier otomatis berdasarkan data PO & goods receipt. Hitung: on-time rate (40%), defect rate (30%), price competitiveness (30%). Grade: A (≥85) → F (<40). Catatan manual bisa ditambah per supplier per periode. | ✅ Evaluasi supplier secara objektif — tau supplier mana yang paling tepat waktu, paling sedikit cacat, dan paling kompetitif harganya. Bantu keputusan pengadaan      |
+| 5  | **Promo Campaign Scheduler** — kampanye promosi otomatis berdasarkan waktu (happy hour, weekend), event (birthday), atau kondisi (buy X get Y, spend & get). Auto-activate pada tanggal mulai, auto-expire pada tanggal akhir. Tracking penggunaan per promo, batas total usage & per member. Rules & rewards fleksibel. | ✅ Bikin promo otomatis tanpa perlu manual aktifin setiap hari. Misal: Happy Hour diskon 20% setiap hari jam 14:00-16:00, atau Birthday diskon untuk pelanggan ulang tahun |
+| 6  | **Sidebar Updates** — menu antrian, performa supplier, dan promosi ditambahkan ke sidebar (kedua role: super_admin & admin). Navigasi jadi lebih gampang.                                                                          | ✅ Semua fitur baru gampang diakses dari sidebar — gak perlu cari-cari                                                                                                  |
+| 7  | **i18n Updates** — 150+ key terjemahan baru untuk Bahasa Indonesia & Inggris. Semua halaman baru fully bilingual.                                                                                                                                   | ✅ Karyawan asing & lokal sama-sama bisa pakai aplikasi tanpa barrier bahasa                                                                                            |
+| 8  | **Add/Edit Driver Button Style** — tombol Cancel & Save di halaman tambah/edit driver sekarang sesuai dengan style halaman supplier (full-width bottom bar dengan icon).                                                           | ✅ Konsistensi UI — semua form create/edit punya style tombol yang sama                                                                                                 |
+| 9  | **Marketplace Integration (GoFood / GrabFood / ShopeeFood)** — integrasi delivery eksternal via webhook. Pesanan dari marketplace masuk otomatis ke sistem sebagai Delivery Order. Support multi-platform sekaligus. Fitur: produk mapping (nama & harga bisa beda per platform), menu availability sync (habis di sistem → unavailable di marketplace), order queue terpadu, revenue reconciliation, commission tracking. | ✅ Satu sistem nerima pesanan dari GoFood, GrabFood, dan ShopeeFood sekaligus. Pesanan masuk otomatis, status sync dua arah, gak perlu input manual. Bantu pendapatan & kurangi kesalahan. |
+
+### 🔧 Fitur Baru (17 Juli 2026)
+
+| #  | Perubahan                                                                                                                                                                            | Dampak buat Bisnis                                                                                                                                                     |
+| -- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | **Auto Generate PO dari Low Stock** — tombol "Auto Buat PO" di halaman Stok Menipis. Sistem otomatis bikin draft PO berdasarkan bahan baku yang stoknya menipis, dikelompokkan per supplier. Admin tinggal review & kirim. | ✅ Gak perlu bikin PO manual satu-satu untuk bahan baku yang menipis. Hemat waktu, kurangi human error, dan pastikan stok selalu tersedia                               |
+| 2  | **Bundle / Combo Product** — modul lengkap bundle produk: CRUD bundle (tambah, edit, detail, hapus), item dalam bundle, harga bundle vs harga normal, diskon persentase, validitas periode, status (active/draft/inactive). Bundle muncul di sidebar menu Promosi. | ✅ Jual paket produk dengan harga spesial (misal: Paket Hemat = Nasi + Ayam + Es Teh lebih murah dari beli satuan). Tingkatkan penjualan & average order value            |
+
 ### 📋 Yang Lagi Dikerjakan
 
 | Fitur                            | Rencana                                                                 |
 | -------------------------------- | ----------------------------------------------------------------------- |
-| **Halaman Detail Supplier**      | Lihat info supplier + history PO + status pembayaran + total utang      |
 | **Dashboard Utang (AP Module)**  | Daftar semua PO yang belum lunas, total utang per supplier, jatuh tempo |
 | **Payment Tracking di Supplier** | Filter & cari pembayaran berdasarkan supplier                           |
 | **Laporan Piutang (AR Report)**  | Rekap piutang pelanggan, umur piutang, collection tracking              |
-| **Bulk GET /product/prices-by-store?store=X** | Biar PriceStoreList bisa nampilin harga toko saat ini (N+1 problem) |
+| **Bundle POS Integration**       | Tampilkan bundle di POS, tambah ke cart, kurangi stok individual item   |
+| **Low Stock → PO (Super Admin)** | Auto generate PO di halaman Low Stock All (per toko)                    |
 
 ---
 

@@ -146,7 +146,22 @@ const tipsKeys = {
   "/role-management": ["tips.role", "tips.role2"],
   "/add-role": ["tips.role", "tips.role2"],
   "/edit-role": ["tips.role", "tips.role2"],
-  "/detail-role": ["tips.role", "tips.role2"]
+  "/detail-role": ["tips.role", "tips.role2"],
+
+  "/delivery-orders": ["tips.deliveryOrders", "tips.deliveryOrders2"],
+  "/detail-delivery-order": ["tips.deliveryOrderDetail", "tips.deliveryOrderDetail2"],
+  "/driver-list": ["tips.driver", "tips.driver2"],
+  "/add-driver": ["tips.driver", "tips.driver2"],
+  "/edit-driver": ["tips.driver", "tips.driver2"],
+  "/detail-driver": ["tips.driver", "tips.driver2"],
+
+  "/queue-list": ["tips.queue", "tips.queue2"],
+  "/supplier-score-list": ["tips.supplierPerformance", "tips.supplierPerformance2"],
+  "/detail-supplier-score": ["tips.supplierPerformance", "tips.supplierPerformance2"],
+  "/promo-list": ["tips.promo", "tips.promo2"],
+  "/add-promo-campaign": ["tips.promo", "tips.promo2"],
+  "/edit-promo-campaign": ["tips.promo", "tips.promo2"],
+  "/detail-promo-campaign": ["tips.promo", "tips.promo2"]
 };
 
 const DashboardLayout = () => {

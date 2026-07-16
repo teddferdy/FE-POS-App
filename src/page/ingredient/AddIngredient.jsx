@@ -168,7 +168,11 @@ const AddIngredient = () => {
       supplier: values.supplier ? parseInt(values.supplier) : null,
       category: values.category ? parseInt(values.category) : null,
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
-      store: values.store ? parseInt(values.store) : cookie?.user?.store || null
+      store: saveAsDraft
+        ? null
+        : values.store
+          ? parseInt(values.store)
+          : cookie?.user?.store || null
     });
   };
 

@@ -52,6 +52,12 @@ export const getLowStockAll = async (payload) => {
   return data;
 };
 
+export const autoGeneratePOFromLowStock = async (payload) => {
+  const { data, status } = await axiosInstance.post("/stock-history/auto-generate-po", payload || {});
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
 export const checkStockOpnameExists = async (store) => {
   const { data, status } = await axiosInstance.get(`/stock-opname/check-exists?store=${store}`);
   if (status !== 200) throw Error(`${data.message}`);
