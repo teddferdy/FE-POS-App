@@ -82,6 +82,70 @@ const EditDiscount = () => {
 
   const draftSchema = useMemo(() => z.object(baseFields), [baseFields]);
 
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
+  const [cookie] = useCookies();
+  const [draftModal, setDraftModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
+
+  const {
+    data: locData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["locations"], () => getAllLocation(), {});
+  const locations = locData?.data || [];
+
+  const [selectedStores, setSelectedStores] = useState([]);
+  const [allStores, setAllStores] = useState(true);
+
+  const { data, isLoading, isError, refetch } = useQuery(
+    ["discount", id],
+    () => getDiscountById(id),
+    { enabled: !!id }
+  );
+
+  const discountItem = data?.data || {};
+
+  const form = useForm({
+    resolver: zodResolver(draftSchema),
+    mode: "onChange",
+    defaultValues: {
+      name: "",
+      promoType: "standard",
+      type: "",
+      value: "",
+      startDate: undefined,
+      endDate: undefined,
+      minPurchase: "",
+      description: "",
+      isActive: true,
+      code: "",
+      maxDiscount: "",
+      buyQty: "",
+      freeQty: "",
+      bundlePrice: "",
+      productIds: "",
+      discountPercent: "",
+      startTime: "",
+      endTime: "",
+      daysOfWeek: "",
+      categoryIds: "",
+      catDiscountPercent: "",
+      store: ""
+    }
+  });
+
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const currentPromoType = form.watch("promoType");
+
   const discountFieldLabels = useMemo(
     () => ({
       name: t("page.discount.form.name"),
@@ -101,8 +165,6 @@ const EditDiscount = () => {
     }),
     [t]
   );
-
-  const currentPromoType = form.watch("promoType");
 
   const saveSchema = useMemo(() => {
     const required = (label) => z.string().min(1, label);
@@ -137,71 +199,6 @@ const EditDiscount = () => {
       ...(promoTypeFields[currentPromoType] || {})
     });
   }, [baseFields, currentPromoType]);
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
-  const [cookie] = useCookies();
-  const [draftModal, setDraftModal] = useState(false);
-  const [cancelModal, setCancelModal] = useState(false);
-  const [successModal, setSuccessModal] = useState(false);
-
-  const user = cookie?.user;
-  const isSuperAdmin = user?.roleType === "super_admin";
-
-  const {
-    data: locData,
-    isLoading: locsLoading,
-    isFetching: locsFetching
-  } = useQuery(["locations"], () => getAllLocation(), {});
-  const locations = locData?.data || [];
-
-  const [selectedStores, setSelectedStores] = useState([]);
-  const [allStores, setAllStores] = useState(true);
-  // const locationParam = user?.store || "";
-
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["discount", id],
-    () => getDiscountById(id),
-    { enabled: !!id }
-  );
-
-  const discountItem = data?.data || {};
-
-  // const cond = useMemo(() => discountItem?.conditions || {}, [discountItem]);
-  // const promoType = useMemo(() => cond?.promoType || "standard", [cond]);
-
-  const form = useForm({
-    resolver: zodResolver(draftSchema),
-    mode: "onChange",
-    defaultValues: {
-      name: "",
-      promoType: "standard",
-      type: "",
-      value: "",
-      startDate: undefined,
-      endDate: undefined,
-      minPurchase: "",
-      description: "",
-      isActive: true,
-      code: "",
-      maxDiscount: "",
-      buyQty: "",
-      freeQty: "",
-      bundlePrice: "",
-      productIds: "",
-      discountPercent: "",
-      startTime: "",
-      endTime: "",
-      daysOfWeek: "",
-      categoryIds: "",
-      catDiscountPercent: "",
-      store: ""
-    }
-  });
-
-  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
-  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
-  const [missingFields, setMissingFields] = useState([]);
 
   useEffect(() => {
     if (discountItem?.id) {

@@ -134,6 +134,35 @@ const AddDiscount = () => {
 
   const draftSchema = useMemo(() => z.object(baseFields), [baseFields]);
 
+  const form = useForm({
+    resolver: zodResolver(draftSchema),
+    mode: "onChange",
+    defaultValues: {
+      name: "",
+      promoType: "standard",
+      type: "",
+      value: "",
+      startDate: undefined,
+      endDate: undefined,
+      minPurchase: "",
+      description: "",
+      isActive: true,
+      code: "",
+      maxDiscount: "",
+      buyQty: "",
+      freeQty: "",
+      bundlePrice: "",
+      productIds: "",
+      discountPercent: "",
+      startTime: "",
+      endTime: "",
+      daysOfWeek: "",
+      categoryIds: "",
+      catDiscountPercent: "",
+      store: ""
+    }
+  });
+
   const promoType = form.watch("promoType");
 
   const saveSchema = useMemo(() => {
@@ -189,35 +218,6 @@ const AddDiscount = () => {
     }),
     [t]
   );
-
-  const form = useForm({
-    resolver: zodResolver(draftSchema),
-    mode: "onChange",
-    defaultValues: {
-      name: "",
-      promoType: "standard",
-      type: "",
-      value: "",
-      startDate: undefined,
-      endDate: undefined,
-      minPurchase: "",
-      description: "",
-      isActive: true,
-      code: "",
-      maxDiscount: "",
-      buyQty: "",
-      freeQty: "",
-      bundlePrice: "",
-      productIds: "",
-      discountPercent: "",
-      startTime: "",
-      endTime: "",
-      daysOfWeek: "",
-      categoryIds: "",
-      catDiscountPercent: "",
-      store: ""
-    }
-  });
 
   const queryClient = useQueryClient();
 
