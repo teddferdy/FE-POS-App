@@ -65,7 +65,8 @@ import {
 import { reverseGeocode, forwardGeocode } from "@/services/geocoding";
 import { getAllEmployee } from "@/services/employee";
 import UserGuide from "@/components/organism/UserGuide";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -98,12 +99,30 @@ const EditLocation = () => {
   const [imageFile, setImageFile] = useState(null);
   const [existingImage, setExistingImage] = useState(null);
   const [imageRemoved, setImageRemoved] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
   const fileInputRef = useRef(null);
   const [managerModalOpen, setManagerModalOpen] = useState(false);
   const [managerSearch, setManagerSearch] = useState("");
   const [managerFetchSearch, setManagerFetchSearch] = useState("");
   const [managerPage, setManagerPage] = useState(1);
   const limit = 10;
+
+  const locationFieldLabels = useMemo(
+    () => ({
+      name: t("page.location.form.nameLabel"),
+      storeId: t("page.location.form.storeIdLabel"),
+      phoneNumber: t("page.location.form.phoneLabel"),
+      email: t("page.location.form.emailLabel"),
+      address: t("page.location.form.addressLabel"),
+      province: t("page.location.form.provinceLabel"),
+      city: t("page.location.form.cityLabel"),
+      district: t("page.location.form.districtLabel"),
+      village: t("page.location.form.villageLabel"),
+      postalCode: t("page.location.form.postalCodeLabel"),
+      photo: t("page.location.form.storePhoto")
+    }),
+    [t]
+  );
 
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
@@ -161,25 +180,25 @@ const EditLocation = () => {
   const managerTotal = managerEmployeesData?.total || managerEmployeesData?.pagination?.total || 0;
   const managerTotalPages = Math.ceil(managerTotal / limit) || 1;
 
-  const formSchema = useMemo(() => {
-    return z.object({
-      name: z.string().min(1, t("common.validation")),
+  const baseFields = useMemo(
+    () => ({
+      name: z.string().min(1, "Nama Toko tidak boleh kosong"),
       storeId: z.string().optional(),
       locationId: z.string().optional(),
       phoneNumber: z
         .string()
-        .min(1, t("common.validation"))
-        .regex(/^\d*$/, "Digits only")
-        .max(14, "Max 14 digits"),
+        .min(1, "Nomor Telepon harus diisi")
+        .regex(/^\d*$/, "Nomor Telepon hanya boleh angka")
+        .max(14, "Nomor Telepon maksimal 14 digit"),
       email: z.string().optional(),
-      address: z.string().min(1, t("common.validation")),
+      address: z.string().min(1, "Alamat Lengkap harus diisi"),
       detailLocation: z.string().optional(),
       location: z.string().optional(),
-      city: z.string().min(1, t("common.validation")),
-      province: z.string().min(1, t("common.validation")),
-      district: z.string().min(1, t("common.validation")),
-      village: z.string().min(1, t("common.validation")),
-      postalCode: z.string().min(1, t("common.validation")),
+      city: z.string().min(1, "Kota/Kabupaten harus diisi"),
+      province: z.string().min(1, "Provinsi harus diisi"),
+      district: z.string().min(1, "Kecamatan harus diisi"),
+      village: z.string().min(1, "Kelurahan/Desa harus diisi"),
+      postalCode: z.string().min(1, "Kode Pos harus diisi"),
       isActive: z.boolean().default(false),
       category: z.string().optional(),
       managerName: z.string().optional(),
@@ -193,11 +212,25 @@ const EditLocation = () => {
           isOpen: z.boolean().default(true)
         })
       )
-    });
-  }, [t]);
+    }),
+    []
+  );
+
+  const draftSchema = useMemo(() => z.object(baseFields), [baseFields]);
+
+  const saveSchema = useMemo(
+    () =>
+      z.object({
+        ...baseFields,
+        storeId: z.string().min(1, "ID Toko harus diisi"),
+        email: z.string().min(1, "Email harus diisi").email("Format email tidak valid")
+      }),
+    [baseFields]
+  );
 
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(draftSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       storeId: "",
@@ -226,11 +259,9 @@ const EditLocation = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
-    onSubmit(values, false)
-  );
-
-  console.log("form.getValues()", form.getValues());
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
 
   const { data: locationData, isLoading: locationLoading } = useQuery(
     ["location-edit", editId],
@@ -350,7 +381,10 @@ const EditLocation = () => {
     }
   });
 
-  const onSubmit = (values, saveAsDraft = false) => {
+  const submitData = (values, saveAsDraft = false) => {
+    if (!saveAsDraft) {
+      setValidationErrors({});
+    }
     setIsSubmitting(true);
     const openingHoursFormatted = (values.openingHours || []).map((h) => ({
       day: h.day,
@@ -380,6 +414,31 @@ const EditLocation = () => {
     }
     fd.append("data", JSON.stringify(payload));
     editMutation.mutate(fd);
+  };
+
+  const onSubmit = (values) => {
+    const extraErrors = !imageFile && !existingImage ? [{ name: "photo" }] : [];
+    const missing = getMissingFields(values, saveSchema, locationFieldLabels, extraErrors);
+
+    const result = saveSchema.safeParse(values);
+    if (!result.success) {
+      result.error.errors.forEach((err) => {
+        form.setError(err.path[0], { message: err.message });
+      });
+    }
+    setValidationErrors(!imageFile && !existingImage ? { photo: "Foto Toko harus diupload" } : {});
+
+    if (missing.length > 0) {
+      setMissingFields(missing);
+      setMissingFieldsModal(true);
+      return;
+    }
+    setConfirmSaveModal(true);
+  };
+
+  const handleConfirmSave = () => {
+    setConfirmSaveModal(false);
+    submitData(form.getValues(), false);
   };
 
   const updateOpeningHours = (dayId, field, value) => {
@@ -416,6 +475,13 @@ const EditLocation = () => {
     if (file) {
       setImageFile(file);
       setImageRemoved(false);
+      if (validationErrors.photo) {
+        setValidationErrors((prev) => {
+          const next = { ...prev };
+          delete next.photo;
+          return next;
+        });
+      }
       const reader = new FileReader();
       reader.onload = (event) => setPreviewImage(event.target.result);
       reader.readAsDataURL(file);
@@ -596,7 +662,12 @@ const EditLocation = () => {
         <div>
           <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
             <Form {...form}>
-              <form onSubmit={handleSubmit} className="p-6">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  onSubmit(form.getValues());
+                }}
+                className="p-6">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   {/* Left Column - Form Fields */}
                   <div className="lg:col-span-2 space-y-8">
@@ -634,7 +705,8 @@ const EditLocation = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.location.form.storeIdLabel")}
+                                {t("page.location.form.storeIdLabel")}{" "}
+                                <span className="text-destructive">*</span>{" "}
                               </FormLabel>
                               <Input
                                 {...field}
@@ -689,6 +761,7 @@ const EditLocation = () => {
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 {t("page.location.form.emailLabel")}{" "}
+                                <span className="text-destructive">*</span>{" "}
                               </FormLabel>
                               <div className="relative">
                                 <Mail
@@ -1263,11 +1336,17 @@ const EditLocation = () => {
                         <Building2 className="text-primary" size={20} />
                         <h3 className="text-base font-semibold text-foreground">
                           {t("page.location.form.storePhoto")}{" "}
+                          <span className="text-destructive">*</span>
                         </h3>
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {t("page.location.form.photoFormat")}
                       </p>
+                      {validationErrors.photo && (
+                        <p className="text-sm font-medium text-destructive">
+                          {validationErrors.photo}
+                        </p>
+                      )}
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -1580,11 +1659,23 @@ const EditLocation = () => {
         confirmText={t("page.location.form.draftModalConfirm")}
         onConfirm={() => {
           setDraftModal(false);
-          const values = form.getValues();
-          onSubmit(values, true);
+          submitData(form.getValues(), true);
         }}
       />
-      <Modal type="confirm" {...confirmModal()} />
+      <Modal
+        type="confirm"
+        open={confirmSaveModal}
+        onOpenChange={setConfirmSaveModal}
+        title={t("common.confirmSave")}
+        description={t("common.confirmSaveDesc")}
+        confirmText={t("common.yesSave")}
+        onConfirm={handleConfirmSave}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFields}
+      />
     </div>
   );
 };

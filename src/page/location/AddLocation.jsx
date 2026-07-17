@@ -66,7 +66,8 @@ import { useQuery } from "react-query";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import UserGuide from "@/components/organism/UserGuide";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -97,6 +98,7 @@ const AddLocation = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
   const [imageFile, setImageFile] = useState(null);
   const [isIdGenerating, setIsIdGenerating] = useState(!isEdit);
   const fileInputRef = useRef(null);
@@ -105,6 +107,23 @@ const AddLocation = () => {
   const [managerFetchSearch, setManagerFetchSearch] = useState("");
   const [managerPage, setManagerPage] = useState(1);
   const limit = 10;
+
+  const locationFieldLabels = useMemo(
+    () => ({
+      name: t("page.location.form.nameLabel"),
+      storeId: t("page.location.form.storeIdLabel"),
+      phoneNumber: t("page.location.form.phoneLabel"),
+      email: t("page.location.form.emailLabel"),
+      address: t("page.location.form.addressLabel"),
+      province: t("page.location.form.provinceLabel"),
+      city: t("page.location.form.cityLabel"),
+      district: t("page.location.form.districtLabel"),
+      village: t("page.location.form.villageLabel"),
+      postalCode: t("page.location.form.postalCodeLabel"),
+      photo: t("page.location.form.storePhoto")
+    }),
+    [t]
+  );
 
   const {
     data: managerEmployeesData,
@@ -120,25 +139,25 @@ const AddLocation = () => {
   const managerTotal = managerEmployeesData?.total || managerEmployeesData?.pagination?.total || 0;
   const managerTotalPages = Math.ceil(managerTotal / limit) || 1;
 
-  const formSchema = useMemo(() => {
-    return z.object({
-      name: z.string().min(1, t("common.validation")),
+  const baseFields = useMemo(
+    () => ({
+      name: z.string().min(1, "Nama Toko tidak boleh kosong"),
       storeId: z.string().optional(),
       locationId: z.string().optional(),
       phoneNumber: z
         .string()
-        .min(1, t("common.validation"))
-        .regex(/^\d*$/, "Digits only")
-        .max(14, "Max 14 digits"),
+        .min(1, "Nomor Telepon harus diisi")
+        .regex(/^\d*$/, "Nomor Telepon hanya boleh angka")
+        .max(14, "Nomor Telepon maksimal 14 digit"),
       email: z.string().optional(),
-      address: z.string().min(1, t("common.validation")),
+      address: z.string().min(1, "Alamat Lengkap harus diisi"),
       detailLocation: z.string().optional(),
       location: z.string().optional(),
-      city: z.string().min(1, t("common.validation")),
-      province: z.string().min(1, t("common.validation")),
-      district: z.string().min(1, t("common.validation")),
-      village: z.string().min(1, t("common.validation")),
-      postalCode: z.string().min(1, t("common.validation")),
+      city: z.string().min(1, "Kota/Kabupaten harus diisi"),
+      province: z.string().min(1, "Provinsi harus diisi"),
+      district: z.string().min(1, "Kecamatan harus diisi"),
+      village: z.string().min(1, "Kelurahan/Desa harus diisi"),
+      postalCode: z.string().min(1, "Kode Pos harus diisi"),
       isActive: z.boolean().default(false),
       category: z.string().optional(),
       managerName: z.string().optional(),
@@ -152,8 +171,21 @@ const AddLocation = () => {
           isOpen: z.boolean().default(true)
         })
       )
-    });
-  }, [t]);
+    }),
+    []
+  );
+
+  const draftSchema = useMemo(() => z.object(baseFields), [baseFields]);
+
+  const saveSchema = useMemo(
+    () =>
+      z.object({
+        ...baseFields,
+        storeId: z.string().min(1, "ID Toko harus diisi"),
+        email: z.string().min(1, "Email harus diisi").email("Format email tidak valid")
+      }),
+    [baseFields]
+  );
 
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
@@ -212,7 +244,8 @@ const AddLocation = () => {
   }, []);
 
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(draftSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       storeId: "",
@@ -241,9 +274,9 @@ const AddLocation = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
-    onSubmit(values, false)
-  );
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
 
   const [showOperasional, setShowOperasional] = useState(false);
   const [showSocialMedia, setShowSocialMedia] = useState(false);
@@ -311,7 +344,10 @@ const AddLocation = () => {
     }
   });
 
-  const onSubmit = (values, saveAsDraft = false) => {
+  const submitData = (values, saveAsDraft = false) => {
+    if (!saveAsDraft) {
+      setValidationErrors({});
+    }
     setIsSubmitting(true);
     const openingHoursFormatted = (values.openingHours || []).map((h) => ({
       day: h.day,
@@ -354,6 +390,31 @@ const AddLocation = () => {
     }
   };
 
+  const onSubmit = (values) => {
+    const extraErrors = !imageFile ? [{ name: "photo" }] : [];
+    const missing = getMissingFields(values, saveSchema, locationFieldLabels, extraErrors);
+
+    const result = saveSchema.safeParse(values);
+    if (!result.success) {
+      result.error.errors.forEach((err) => {
+        form.setError(err.path[0], { message: err.message });
+      });
+    }
+    setValidationErrors(!imageFile ? { photo: "Foto Toko harus diupload" } : {});
+
+    if (missing.length > 0) {
+      setMissingFields(missing);
+      setMissingFieldsModal(true);
+      return;
+    }
+    setConfirmSaveModal(true);
+  };
+
+  const handleConfirmSave = () => {
+    setConfirmSaveModal(false);
+    submitData(form.getValues(), false);
+  };
+
   const handleImageClick = () => {
     fileInputRef.current?.click();
   };
@@ -362,6 +423,13 @@ const AddLocation = () => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      if (validationErrors.photo) {
+        setValidationErrors((prev) => {
+          const next = { ...prev };
+          delete next.photo;
+          return next;
+        });
+      }
       const reader = new FileReader();
       reader.onload = (event) => setPreviewImage(event.target.result);
       reader.readAsDataURL(file);
@@ -434,785 +502,7 @@ const AddLocation = () => {
       </div>
 
       {/* Form Card */}
-      <div>
-        <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
-          <Form {...form}>
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column - Form Fields */}
-                <div className="lg:col-span-2 space-y-8">
-                  {/* Section: Informasi Toko */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 pb-2 border-b border-border">
-                      <MapPin className="text-primary" size={20} />
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.location.form.informasiToko")}
-                      </h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.location.form.nameLabel")}{" "}
-                              <span className="text-destructive">*</span>{" "}
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              placeholder={t("page.location.form.namePlaceholder")}
-                              className="h-12"
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="storeId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.location.form.storeIdLabel")}
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              placeholder={t("page.location.form.autoFromSystem")}
-                              disabled
-                              className="font-mono h-12 bg-muted/50"
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="phoneNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.location.form.phoneLabel")}{" "}
-                              <span className="text-destructive">*</span>{" "}
-                            </FormLabel>
-                            <div className="relative">
-                              <Phone
-                                size={16}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                              />
-                              <Input
-                                {...field}
-                                placeholder={t("page.location.form.phonePlaceholder")}
-                                className="pl-9"
-                                inputMode="numeric"
-                                maxLength={14}
-                                onChange={(e) => {
-                                  const value = e.target.value.replace(/\D/g, "").slice(0, 14);
-                                  field.onChange(value);
-                                }}
-                              />
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {t("page.location.form.phoneHint")}
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Email */}
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.location.form.emailLabel")}{" "}
-                            </FormLabel>
-                            <div className="relative">
-                              <Mail
-                                size={16}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                              />
-                              <Input
-                                {...field}
-                                placeholder={t("page.location.form.emailPlaceholder")}
-                                className="pl-9"
-                                type="email"
-                              />
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Address */}
-                    <FormField
-                      control={form.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.addressLabel")}{" "}
-                            <span className="text-destructive">*</span>{" "}
-                          </FormLabel>
-                          <div className="relative">
-                            <MapPin
-                              size={16}
-                              className="absolute left-3 top-3 text-muted-foreground"
-                            />
-                            <Textarea
-                              {...field}
-                              placeholder={t("page.location.form.addressPlaceholder")}
-                              className="pl-9 min-h-[80px]"
-                            />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Detail Location */}
-                    <FormField
-                      control={form.control}
-                      name="detailLocation"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.detailLocationLabel")}
-                          </FormLabel>
-                          <Textarea
-                            {...field}
-                            placeholder={t("page.location.form.detailPlaceholder")}
-                            className="min-h-[80px]"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">Optional</p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {/* Province, City */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="province"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.provinceLabel")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Combobox
-                            options={provinces.map((p) => ({
-                              value: p.kode_prov,
-                              label: p.nama_provinsi
-                            }))}
-                            value={field.value || ""}
-                            onChange={async (val) => {
-                              field.onChange(val);
-                              form.setValue("city", "");
-                              form.setValue("district", "");
-                              form.setValue("village", "");
-                              form.setValue("postalCode", "");
-                              setCities([]);
-                              setDistricts([]);
-                              setVillages([]);
-
-                              if (val) {
-                                setCitiesLoading(true);
-                                try {
-                                  const citiesResponse = await getCities(val);
-                                  setCities(citiesResponse || []);
-                                } catch (error) {
-                                  console.error("Error fetching cities:", error);
-                                } finally {
-                                  setCitiesLoading(false);
-                                }
-                              }
-                            }}
-                            placeholder={t("page.location.form.selectProvince")}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="city"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.cityLabel")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Combobox
-                            options={cities.map((c) => ({
-                              value: c.kode_kab,
-                              label: c.nama_kabupaten
-                            }))}
-                            value={field.value || ""}
-                            onChange={async (val) => {
-                              field.onChange(val);
-                              form.setValue("district", "");
-                              form.setValue("village", "");
-                              form.setValue("postalCode", "");
-                              setDistricts([]);
-                              setVillages([]);
-
-                              if (val) {
-                                setDistrictsLoading(true);
-                                try {
-                                  const districtsResponse = await getDistricts(val);
-                                  setDistricts(districtsResponse || []);
-                                } catch (error) {
-                                  console.error("Error fetching districts:", error);
-                                } finally {
-                                  setDistrictsLoading(false);
-                                }
-                              }
-                            }}
-                            placeholder={t("page.location.form.selectCity")}
-                            disabled={!cities.length}
-                            loading={citiesLoading}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="district"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.districtLabel")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Combobox
-                            options={districts.map((d) => ({
-                              value: d.kode_kec,
-                              label: d.nama_kecamatan
-                            }))}
-                            value={field.value || ""}
-                            onChange={async (val) => {
-                              field.onChange(val);
-                              form.setValue("village", "");
-                              form.setValue("postalCode", "");
-                              setVillages([]);
-
-                              if (val) {
-                                setVillagesLoading(true);
-                                try {
-                                  const villagesResponse = await getVillages(val);
-                                  setVillages(villagesResponse || []);
-                                } catch (error) {
-                                  console.error("Error fetching villages:", error);
-                                } finally {
-                                  setVillagesLoading(false);
-                                }
-                              } else {
-                                form.setValue("postalCode", "");
-                              }
-                            }}
-                            placeholder={t("page.location.form.selectDistrict")}
-                            disabled={!districts.length}
-                            loading={districtsLoading}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="village"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.villageLabel")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Combobox
-                            options={villages.map((v) => ({
-                              value: v.kode_desa,
-                              label: v.nama_desa
-                            }))}
-                            value={field.value || ""}
-                            onChange={async (val) => {
-                              field.onChange(val);
-                              form.setValue("postalCode", "");
-
-                              if (val) {
-                                try {
-                                  const postalData = await getPostalCode(val);
-                                  if (postalData && postalData.length > 0) {
-                                    form.setValue("postalCode", postalData[0].kode_pos);
-                                    handleAreaSelect();
-                                  }
-                                } catch (error) {
-                                  console.error("Error fetching postal code:", error);
-                                }
-                              }
-                            }}
-                            placeholder={t("page.location.form.selectVillage")}
-                            disabled={!villages.length}
-                            loading={villagesLoading}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="postalCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.postalCodeLabel")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Input
-                            {...field}
-                            placeholder={t("page.location.form.autoFill")}
-                            disabled
-                            className="bg-muted/50"
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {/* Location Map Picker */}
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.location.form.mapLabel")}
-                        </FormLabel>
-                        <LocationMapPicker
-                          lat={form.watch("latitude")}
-                          lng={form.watch("longitude")}
-                          onChange={async (lat, lng) => {
-                            form.setValue("latitude", lat);
-                            form.setValue("longitude", lng);
-                            setGeoLoading(true);
-                          }}
-                          height="500px"
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Category */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.categoryLabel")}
-                          </FormLabel>
-                          <select
-                            value={field.value || ""}
-                            onChange={field.onChange}
-                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                            {categoryOptions.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {t(opt.labelKey)}
-                              </option>
-                            ))}
-                          </select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {/* Manager Name */}
-                  <FormField
-                    control={form.control}
-                    name="managerName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.location.form.managerLabel")}
-                        </FormLabel>
-                        <div className="relative">
-                          <div className="cursor-pointer" onClick={() => setManagerModalOpen(true)}>
-                            <User
-                              size={16}
-                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                            />
-                            <Input
-                              {...field}
-                              placeholder={t("page.location.form.clickSelectManager")}
-                              className="pl-9 pr-10 cursor-pointer"
-                              readOnly
-                            />
-                          </div>
-                          {field.value && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                form.setValue("managerName", "");
-                              }}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-destructive transition-colors">
-                              <X size={16} />
-                            </button>
-                          )}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Operasional Toggle */}
-                  <div
-                    className="flex items-center justify-between bg-muted/30 p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => setShowOperasional(!showOperasional)}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-amber-600/10 text-amber-600 rounded-lg flex items-center justify-center">
-                        <Clock size={20} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {t("page.location.form.operationalHours")}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {t("page.location.form.operationalHoursDesc")}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      size={20}
-                      className={`text-muted-foreground transition-transform ${showOperasional ? "rotate-180" : ""}`}
-                    />
-                  </div>
-
-                  {/* Operasional Panel */}
-                  {showOperasional && (
-                    <div className="border border-border rounded-lg p-4 bg-muted/20">
-                      <div className="space-y-2">
-                        {days.map((day) => {
-                          const dayData = form
-                            .watch("openingHours")
-                            ?.find((h) => h.day === day.id) || {
-                            day: day.id,
-                            open: "09:00",
-                            close: "21:00",
-                            isOpen: true
-                          };
-                          return (
-                            <div key={day.id} className="grid grid-cols-12 gap-2 items-center py-2">
-                              <div className="col-span-2 text-sm font-medium">{t(day.label)}</div>
-                              <div className="col-span-3 relative">
-                                <Clock
-                                  size={14}
-                                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                                />
-                                <input
-                                  className="w-full pl-8 pr-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                  type="time"
-                                  value={dayData.open || ""}
-                                  disabled={!dayData.isOpen}
-                                  onChange={(e) =>
-                                    updateOpeningHours(day.id, "open", e.target.value)
-                                  }
-                                />
-                              </div>
-                              <div className="col-span-1 text-center text-xs text-muted-foreground flex items-center justify-center">
-                                <span className="text-xs">{t("common.to")}</span>
-                              </div>
-                              <div className="col-span-3 relative">
-                                <Clock
-                                  size={14}
-                                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                                />
-                                <input
-                                  className="w-full pl-8 pr-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                  type="time"
-                                  value={dayData.close || ""}
-                                  disabled={!dayData.isOpen}
-                                  onChange={(e) =>
-                                    updateOpeningHours(day.id, "close", e.target.value)
-                                  }
-                                />
-                              </div>
-                              <div className="col-span-2 flex justify-end items-center gap-2">
-                                <span
-                                  className={`text-xs ${dayData.isOpen ? "text-green-600 dark:text-green-400" : "text-destructive dark:text-red-400"}`}>
-                                  {dayData.isOpen
-                                    ? t("page.location.form.openStatus")
-                                    : t("page.location.form.closedStatus")}
-                                </span>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    className="sr-only peer"
-                                    checked={dayData.isOpen}
-                                    onChange={() => toggleDay(day.id)}
-                                  />
-                                  <div className="w-9 h-5 bg-border rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600 dark:peer-checked:bg-green-500" />
-                                </label>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Social Media */}
-                  <div
-                    className="flex items-center justify-between bg-muted/30 p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => setShowSocialMedia(!showSocialMedia)}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-600/10 text-blue-600 rounded-lg flex items-center justify-center">
-                        <Globe size={20} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {t("page.location.form.socialMedia")}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {t("page.location.form.socialMediaDesc")}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      size={20}
-                      className={`text-muted-foreground transition-transform ${showSocialMedia ? "rotate-180" : ""}`}
-                    />
-                  </div>
-
-                  {showSocialMedia && (
-                    <div className="border border-border rounded-lg p-4 bg-muted/20 space-y-3">
-                      {socialLinks.map((link, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <Select
-                            value={link.platform}
-                            onValueChange={(val) => updateSocial(idx, "platform", val)}>
-                            <SelectTrigger className="flex-1">
-                              <SelectValue placeholder={t("page.location.form.socialPlatform")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Instagram">Instagram</SelectItem>
-                              <SelectItem value="Facebook">Facebook</SelectItem>
-                              <SelectItem value="Twitter / X">Twitter / X</SelectItem>
-                              <SelectItem value="TikTok">TikTok</SelectItem>
-                              <SelectItem value="YouTube">YouTube</SelectItem>
-                              <SelectItem value="WhatsApp">WhatsApp</SelectItem>
-                              <SelectItem value="Telegram">Telegram</SelectItem>
-                              <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                              <SelectItem value="Shopee">Shopee</SelectItem>
-                              <SelectItem value="Tokopedia">Tokopedia</SelectItem>
-                              <SelectItem value="Website">Website</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <Input
-                            placeholder={t("page.location.form.socialAccount")}
-                            value={link.account}
-                            onChange={(e) => updateSocial(idx, "account", e.target.value)}
-                            className="flex-1"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeSocial(idx)}
-                            className="p-2 text-muted-foreground hover:text-destructive transition-colors">
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      ))}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addSocialRow}
-                        className="gap-1">
-                        <Plus size={14} />
-                        {t("page.location.form.addSocialMedia")}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right Column - Cards */}
-                <div className="lg:col-span-1 space-y-6">
-                  {/* Status Toggle */}
-                  <FormField
-                    control={form.control}
-                    name="isActive"
-                    render={({ field }) => (
-                      <div
-                        className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                          field.value
-                            ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                            : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                        }`}>
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              field.value
-                                ? "bg-green-600 text-secondary"
-                                : "bg-destructive/10 text-destructive"
-                            }`}>
-                            {field.value ? (
-                              <Check size={20} />
-                            ) : (
-                              <span className="text-lg font-bold">⏻</span>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">
-                              {field.value
-                                ? t("page.location.form.active")
-                                : t("page.location.form.inactive")}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {field.value
-                                ? t("page.location.form.activeDesc")
-                                : t("page.location.form.inactiveDesc")}
-                            </p>
-                          </div>
-                        </div>
-                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                      </div>
-                    )}
-                  />
-                  {/* Foto Toko Card */}
-                  <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="text-primary" size={20} />
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.location.form.storePhoto")}{" "}
-                      </h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.location.form.photoFormat")}
-                    </p>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                    <div
-                      onClick={handleImageClick}
-                      className="relative rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center bg-muted/30 overflow-hidden cursor-pointer group">
-                      {previewImage ? (
-                        <>
-                          <img
-                            src={previewImage}
-                            alt="Preview"
-                            className="w-full h-auto max-h-[500px] object-contain"
-                          />
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              clearImage();
-                            }}
-                            className="absolute top-2 right-2 z-10 p-2 bg-background/90 rounded-full text-muted-foreground hover:text-foreground shadow-md">
-                            <X size={16} />
-                          </button>
-                        </>
-                      ) : (
-                        <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors p-8 min-h-[300px] justify-center">
-                          <CloudUpload size={64} className="mb-4" />
-                          <span className="text-base font-semibold text-center">
-                            {t("page.location.form.clickOrDragPhoto")}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Help Cards */}
-                  <div className="space-y-3">
-                    <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3">
-                      <Info size={18} className="text-primary shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                          {t("page.location.form.validationTitle")}
-                        </h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("page.location.form.validationDesc")}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3">
-                      <ShieldCheck size={18} className="text-secondary shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                          {t("page.location.form.securityTitle")}
-                        </h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("page.location.form.securityDesc")}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3">
-                      <History size={18} className="text-amber-600 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                          {t("page.location.form.auditTitle")}
-                        </h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("page.location.form.auditDesc")}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setCancelModal(true)}>
-                  {t("common.cancel")}
-                </Button>
-                <div className="flex gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setDraftModal(true)}
-                    disabled={isSubmitting}>
-                    {t("page.location.form.saveDraft")}
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
-                    <Save size={18} />
-                    {isEdit
-                      ? t("page.location.form.saveChanges")
-                      : t("page.location.form.saveLocation")}
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </Form>
-        </div>
-      </div>
-
-      {isIdGenerating && (
+      {isIdGenerating ? (
         <div className="bg-card rounded-xl border border-border p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
@@ -1237,6 +527,804 @@ const AddLocation = () => {
               <Skeleton className="h-20 w-full rounded-lg" />
               <Skeleton className="h-48 w-full rounded-lg" />
             </div>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
+            <Form {...form}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  onSubmit(form.getValues());
+                }}
+                className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Left Column - Form Fields */}
+                  <div className="lg:col-span-2 space-y-8">
+                    {/* Section: Informasi Toko */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border">
+                        <MapPin className="text-primary" size={20} />
+                        <h3 className="text-base font-semibold text-foreground">
+                          {t("page.location.form.informasiToko")}
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.location.form.nameLabel")}{" "}
+                                <span className="text-destructive">*</span>{" "}
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                placeholder={t("page.location.form.namePlaceholder")}
+                                className="h-12"
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="storeId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.location.form.storeIdLabel")}{" "}
+                                <span className="text-destructive">*</span>{" "}
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                placeholder={t("page.location.form.autoFromSystem")}
+                                disabled
+                                className="font-mono h-12 bg-muted/50"
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="phoneNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.location.form.phoneLabel")}{" "}
+                                <span className="text-destructive">*</span>{" "}
+                              </FormLabel>
+                              <div className="relative">
+                                <Phone
+                                  size={16}
+                                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                />
+                                <Input
+                                  {...field}
+                                  placeholder={t("page.location.form.phonePlaceholder")}
+                                  className="pl-9"
+                                  inputMode="numeric"
+                                  maxLength={14}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, "").slice(0, 14);
+                                    field.onChange(value);
+                                  }}
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {t("page.location.form.phoneHint")}
+                              </p>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Email */}
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.location.form.emailLabel")}{" "}
+                                <span className="text-destructive">*</span>{" "}
+                              </FormLabel>
+                              <div className="relative">
+                                <Mail
+                                  size={16}
+                                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                />
+                                <Input
+                                  {...field}
+                                  placeholder={t("page.location.form.emailPlaceholder")}
+                                  className="pl-9"
+                                  type="email"
+                                />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Address */}
+                      <FormField
+                        control={form.control}
+                        name="address"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.location.form.addressLabel")}{" "}
+                              <span className="text-destructive">*</span>{" "}
+                            </FormLabel>
+                            <div className="relative">
+                              <MapPin
+                                size={16}
+                                className="absolute left-3 top-3 text-muted-foreground"
+                              />
+                              <Textarea
+                                {...field}
+                                placeholder={t("page.location.form.addressPlaceholder")}
+                                className="pl-9 min-h-[80px]"
+                              />
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Detail Location */}
+                      <FormField
+                        control={form.control}
+                        name="detailLocation"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.location.form.detailLocationLabel")}
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder={t("page.location.form.detailPlaceholder")}
+                              className="min-h-[80px]"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">Optional</p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Province, City */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="province"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.location.form.provinceLabel")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Combobox
+                              options={provinces.map((p) => ({
+                                value: p.kode_prov,
+                                label: p.nama_provinsi
+                              }))}
+                              value={field.value || ""}
+                              onChange={async (val) => {
+                                field.onChange(val);
+                                form.setValue("city", "");
+                                form.setValue("district", "");
+                                form.setValue("village", "");
+                                form.setValue("postalCode", "");
+                                setCities([]);
+                                setDistricts([]);
+                                setVillages([]);
+
+                                if (val) {
+                                  setCitiesLoading(true);
+                                  try {
+                                    const citiesResponse = await getCities(val);
+                                    setCities(citiesResponse || []);
+                                  } catch (error) {
+                                    console.error("Error fetching cities:", error);
+                                  } finally {
+                                    setCitiesLoading(false);
+                                  }
+                                }
+                              }}
+                              placeholder={t("page.location.form.selectProvince")}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="city"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.location.form.cityLabel")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Combobox
+                              options={cities.map((c) => ({
+                                value: c.kode_kab,
+                                label: c.nama_kabupaten
+                              }))}
+                              value={field.value || ""}
+                              onChange={async (val) => {
+                                field.onChange(val);
+                                form.setValue("district", "");
+                                form.setValue("village", "");
+                                form.setValue("postalCode", "");
+                                setDistricts([]);
+                                setVillages([]);
+
+                                if (val) {
+                                  setDistrictsLoading(true);
+                                  try {
+                                    const districtsResponse = await getDistricts(val);
+                                    setDistricts(districtsResponse || []);
+                                  } catch (error) {
+                                    console.error("Error fetching districts:", error);
+                                  } finally {
+                                    setDistrictsLoading(false);
+                                  }
+                                }
+                              }}
+                              placeholder={t("page.location.form.selectCity")}
+                              disabled={!cities.length}
+                              loading={citiesLoading}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="district"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.location.form.districtLabel")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Combobox
+                              options={districts.map((d) => ({
+                                value: d.kode_kec,
+                                label: d.nama_kecamatan
+                              }))}
+                              value={field.value || ""}
+                              onChange={async (val) => {
+                                field.onChange(val);
+                                form.setValue("village", "");
+                                form.setValue("postalCode", "");
+                                setVillages([]);
+
+                                if (val) {
+                                  setVillagesLoading(true);
+                                  try {
+                                    const villagesResponse = await getVillages(val);
+                                    setVillages(villagesResponse || []);
+                                  } catch (error) {
+                                    console.error("Error fetching villages:", error);
+                                  } finally {
+                                    setVillagesLoading(false);
+                                  }
+                                } else {
+                                  form.setValue("postalCode", "");
+                                }
+                              }}
+                              placeholder={t("page.location.form.selectDistrict")}
+                              disabled={!districts.length}
+                              loading={districtsLoading}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="village"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.location.form.villageLabel")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Combobox
+                              options={villages.map((v) => ({
+                                value: v.kode_desa,
+                                label: v.nama_desa
+                              }))}
+                              value={field.value || ""}
+                              onChange={async (val) => {
+                                field.onChange(val);
+                                form.setValue("postalCode", "");
+
+                                if (val) {
+                                  try {
+                                    const postalData = await getPostalCode(val);
+                                    if (postalData && postalData.length > 0) {
+                                      form.setValue("postalCode", postalData[0].kode_pos);
+                                      handleAreaSelect();
+                                    }
+                                  } catch (error) {
+                                    console.error("Error fetching postal code:", error);
+                                  }
+                                }
+                              }}
+                              placeholder={t("page.location.form.selectVillage")}
+                              disabled={!villages.length}
+                              loading={villagesLoading}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="postalCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.location.form.postalCodeLabel")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder={t("page.location.form.autoFill")}
+                              disabled
+                              className="bg-muted/50"
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Location Map Picker */}
+                    <FormField
+                      control={form.control}
+                      name="location"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.location.form.mapLabel")}
+                          </FormLabel>
+                          <LocationMapPicker
+                            lat={form.watch("latitude")}
+                            lng={form.watch("longitude")}
+                            onChange={async (lat, lng) => {
+                              form.setValue("latitude", lat);
+                              form.setValue("longitude", lng);
+                              setGeoLoading(true);
+                            }}
+                            height="500px"
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Category */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.location.form.categoryLabel")}
+                            </FormLabel>
+                            <select
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                              {categoryOptions.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {t(opt.labelKey)}
+                                </option>
+                              ))}
+                            </select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Manager Name */}
+                    <FormField
+                      control={form.control}
+                      name="managerName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.location.form.managerLabel")}
+                          </FormLabel>
+                          <div className="relative">
+                            <div
+                              className="cursor-pointer"
+                              onClick={() => setManagerModalOpen(true)}>
+                              <User
+                                size={16}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                              />
+                              <Input
+                                {...field}
+                                placeholder={t("page.location.form.clickSelectManager")}
+                                className="pl-9 pr-10 cursor-pointer"
+                                readOnly
+                              />
+                            </div>
+                            {field.value && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  form.setValue("managerName", "");
+                                }}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-destructive transition-colors">
+                                <X size={16} />
+                              </button>
+                            )}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Operasional Toggle */}
+                    <div
+                      className="flex items-center justify-between bg-muted/30 p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => setShowOperasional(!showOperasional)}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-amber-600/10 text-amber-600 rounded-lg flex items-center justify-center">
+                          <Clock size={20} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t("page.location.form.operationalHours")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.location.form.operationalHoursDesc")}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDown
+                        size={20}
+                        className={`text-muted-foreground transition-transform ${showOperasional ? "rotate-180" : ""}`}
+                      />
+                    </div>
+
+                    {/* Operasional Panel */}
+                    {showOperasional && (
+                      <div className="border border-border rounded-lg p-4 bg-muted/20">
+                        <div className="space-y-2">
+                          {days.map((day) => {
+                            const dayData = form
+                              .watch("openingHours")
+                              ?.find((h) => h.day === day.id) || {
+                              day: day.id,
+                              open: "09:00",
+                              close: "21:00",
+                              isOpen: true
+                            };
+                            return (
+                              <div
+                                key={day.id}
+                                className="grid grid-cols-12 gap-2 items-center py-2">
+                                <div className="col-span-2 text-sm font-medium">{t(day.label)}</div>
+                                <div className="col-span-3 relative">
+                                  <Clock
+                                    size={14}
+                                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                                  />
+                                  <input
+                                    className="w-full pl-8 pr-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    type="time"
+                                    value={dayData.open || ""}
+                                    disabled={!dayData.isOpen}
+                                    onChange={(e) =>
+                                      updateOpeningHours(day.id, "open", e.target.value)
+                                    }
+                                  />
+                                </div>
+                                <div className="col-span-1 text-center text-xs text-muted-foreground flex items-center justify-center">
+                                  <span className="text-xs">{t("common.to")}</span>
+                                </div>
+                                <div className="col-span-3 relative">
+                                  <Clock
+                                    size={14}
+                                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                                  />
+                                  <input
+                                    className="w-full pl-8 pr-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    type="time"
+                                    value={dayData.close || ""}
+                                    disabled={!dayData.isOpen}
+                                    onChange={(e) =>
+                                      updateOpeningHours(day.id, "close", e.target.value)
+                                    }
+                                  />
+                                </div>
+                                <div className="col-span-2 flex justify-end items-center gap-2">
+                                  <span
+                                    className={`text-xs ${dayData.isOpen ? "text-green-600 dark:text-green-400" : "text-destructive dark:text-red-400"}`}>
+                                    {dayData.isOpen
+                                      ? t("page.location.form.openStatus")
+                                      : t("page.location.form.closedStatus")}
+                                  </span>
+                                  <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      className="sr-only peer"
+                                      checked={dayData.isOpen}
+                                      onChange={() => toggleDay(day.id)}
+                                    />
+                                    <div className="w-9 h-5 bg-border rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600 dark:peer-checked:bg-green-500" />
+                                  </label>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Social Media */}
+                    <div
+                      className="flex items-center justify-between bg-muted/30 p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => setShowSocialMedia(!showSocialMedia)}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-600/10 text-blue-600 rounded-lg flex items-center justify-center">
+                          <Globe size={20} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t("page.location.form.socialMedia")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.location.form.socialMediaDesc")}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDown
+                        size={20}
+                        className={`text-muted-foreground transition-transform ${showSocialMedia ? "rotate-180" : ""}`}
+                      />
+                    </div>
+
+                    {showSocialMedia && (
+                      <div className="border border-border rounded-lg p-4 bg-muted/20 space-y-3">
+                        {socialLinks.map((link, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <Select
+                              value={link.platform}
+                              onValueChange={(val) => updateSocial(idx, "platform", val)}>
+                              <SelectTrigger className="flex-1">
+                                <SelectValue placeholder={t("page.location.form.socialPlatform")} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Instagram">Instagram</SelectItem>
+                                <SelectItem value="Facebook">Facebook</SelectItem>
+                                <SelectItem value="Twitter / X">Twitter / X</SelectItem>
+                                <SelectItem value="TikTok">TikTok</SelectItem>
+                                <SelectItem value="YouTube">YouTube</SelectItem>
+                                <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                                <SelectItem value="Telegram">Telegram</SelectItem>
+                                <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                                <SelectItem value="Shopee">Shopee</SelectItem>
+                                <SelectItem value="Tokopedia">Tokopedia</SelectItem>
+                                <SelectItem value="Website">Website</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Input
+                              placeholder={t("page.location.form.socialAccount")}
+                              value={link.account}
+                              onChange={(e) => updateSocial(idx, "account", e.target.value)}
+                              className="flex-1"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeSocial(idx)}
+                              className="p-2 text-muted-foreground hover:text-destructive transition-colors">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={addSocialRow}
+                          className="gap-1">
+                          <Plus size={14} />
+                          {t("page.location.form.addSocialMedia")}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column - Cards */}
+                  <div className="lg:col-span-1 space-y-6">
+                    {/* Status Toggle */}
+                    <FormField
+                      control={form.control}
+                      name="isActive"
+                      render={({ field }) => (
+                        <div
+                          className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                            field.value
+                              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                          }`}>
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                field.value
+                                  ? "bg-green-600 text-secondary"
+                                  : "bg-destructive/10 text-destructive"
+                              }`}>
+                              {field.value ? (
+                                <Check size={20} />
+                              ) : (
+                                <span className="text-lg font-bold">⏻</span>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">
+                                {field.value
+                                  ? t("page.location.form.active")
+                                  : t("page.location.form.inactive")}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {field.value
+                                  ? t("page.location.form.activeDesc")
+                                  : t("page.location.form.inactiveDesc")}
+                              </p>
+                            </div>
+                          </div>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </div>
+                      )}
+                    />
+                    {/* Foto Toko Card */}
+                    <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="text-primary" size={20} />
+                        <h3 className="text-base font-semibold text-foreground">
+                          {t("page.location.form.storePhoto")}{" "}
+                          <span className="text-destructive">*</span>
+                        </h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {t("page.location.form.photoFormat")}
+                      </p>
+                      {validationErrors.photo && (
+                        <p className="text-sm font-medium text-destructive">
+                          {validationErrors.photo}
+                        </p>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                      <div
+                        onClick={handleImageClick}
+                        className="relative rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center bg-muted/30 overflow-hidden cursor-pointer group">
+                        {previewImage ? (
+                          <>
+                            <img
+                              src={previewImage}
+                              alt="Preview"
+                              className="w-full h-auto max-h-[500px] object-contain"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                clearImage();
+                              }}
+                              className="absolute top-2 right-2 z-10 p-2 bg-background/90 rounded-full text-muted-foreground hover:text-foreground shadow-md">
+                              <X size={16} />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors p-8 min-h-[300px] justify-center">
+                            <CloudUpload size={64} className="mb-4" />
+                            <span className="text-base font-semibold text-center">
+                              {t("page.location.form.clickOrDragPhoto")}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Help Cards */}
+                    <div className="space-y-3">
+                      <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3">
+                        <Info size={18} className="text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+                            {t("page.location.form.validationTitle")}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t("page.location.form.validationDesc")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3">
+                        <ShieldCheck size={18} className="text-secondary shrink-0 mt-0.5" />
+                        <div>
+                          <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+                            {t("page.location.form.securityTitle")}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t("page.location.form.securityDesc")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3">
+                        <History size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+                            {t("page.location.form.auditTitle")}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t("page.location.form.auditDesc")}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    onClick={() => setCancelModal(true)}>
+                    {t("common.cancel")}
+                  </Button>
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setDraftModal(true)}
+                      disabled={isSubmitting}>
+                      {t("page.location.form.saveDraft")}
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full sm:w-auto gap-2">
+                      <Save size={18} />
+                      {isEdit
+                        ? t("page.location.form.saveChanges")
+                        : t("page.location.form.saveLocation")}
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            </Form>
           </div>
         </div>
       )}
@@ -1447,11 +1535,23 @@ const AddLocation = () => {
         confirmText={t("page.location.form.draftModalConfirm")}
         onConfirm={() => {
           setDraftModal(false);
-          const values = form.getValues();
-          onSubmit(values, true);
+          submitData(form.getValues(), true);
         }}
       />
-      <Modal type="confirm" {...confirmModal()} />
+      <Modal
+        type="confirm"
+        open={confirmSaveModal}
+        onOpenChange={setConfirmSaveModal}
+        title={t("common.confirmSave")}
+        description={t("common.confirmSaveDesc")}
+        confirmText={t("common.yesSave")}
+        onConfirm={handleConfirmSave}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFields}
+      />
     </div>
   );
 };

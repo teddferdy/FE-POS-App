@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
@@ -6,15 +6,15 @@ import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Save, FileEdit, Info, X } from "lucide-react";
+import { Save, FileEdit, Info, X } from "lucide-react";
 import { toast } from "sonner";
 import { createDriver } from "@/services/delivery";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
-
-const DriverList = React.lazy(() => import("./DriverList"));
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const AddDriver = () => {
   const { t } = useTranslation();
@@ -23,6 +23,19 @@ const AddDriver = () => {
   const [cookie] = useCookies();
   const user = cookie?.user;
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const driverFieldLabels = useMemo(
+    () => ({
+      name: t("page.delivery.driver.form.name"),
+      phone: t("page.delivery.driver.form.phone"),
+      email: t("page.delivery.driver.form.email"),
+      vehicleType: t("page.delivery.driver.form.vehicleType"),
+      vehiclePlate: t("page.delivery.driver.form.vehiclePlate")
+    }),
+    [t]
+  );
 
   const schema = z.object({
     name: z.string().min(1, t("page.delivery.driver.validation.nameRequired")),
@@ -46,6 +59,7 @@ const AddDriver = () => {
 
   const form = useForm({
     resolver: zodResolver(schema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       phone: "",
@@ -74,11 +88,16 @@ const AddDriver = () => {
 
   const onSubmit = (data) => {
     if (data.status === "active") {
+      const missing = getMissingFields(data, activeRequiredSchema, driverFieldLabels);
       const result = activeRequiredSchema.safeParse(data);
       if (!result.success) {
         result.error.errors.forEach((err) => {
           form.setError(err.path[0], { message: err.message });
         });
+      }
+      if (missing.length > 0) {
+        setMissingFields(missing);
+        setMissingFieldsModal(true);
         return;
       }
     }
@@ -87,6 +106,7 @@ const AddDriver = () => {
 
   return (
     <div className="space-y-6">
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       <PageHeader
         breadcrumbs={[
           {
@@ -111,11 +131,15 @@ const AddDriver = () => {
         </Button>
       </PageHeader>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Form */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-foreground mb-4">{t("page.delivery.driver.detail.name")}</h3>
+            <h3 className="font-semibold text-foreground mb-4">
+              {t("page.delivery.driver.detail.name")}
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-foreground">
@@ -127,7 +151,9 @@ const AddDriver = () => {
                   placeholder={t("page.delivery.driver.form.namePlaceholder")}
                 />
                 {form.formState.errors.name && (
-                  <p className="text-xs text-destructive mt-1">{form.formState.errors.name.message}</p>
+                  <p className="text-xs text-destructive mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
                 )}
               </div>
               <div>
@@ -140,11 +166,15 @@ const AddDriver = () => {
                   placeholder={t("page.delivery.driver.form.phonePlaceholder")}
                 />
                 {form.formState.errors.phone && (
-                  <p className="text-xs text-destructive mt-1">{form.formState.errors.phone.message}</p>
+                  <p className="text-xs text-destructive mt-1">
+                    {form.formState.errors.phone.message}
+                  </p>
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">{t("page.delivery.driver.form.email")}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {t("page.delivery.driver.form.email")}
+                </label>
                 <input
                   {...form.register("email")}
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
@@ -152,7 +182,9 @@ const AddDriver = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">{t("page.delivery.driver.form.status")}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {t("page.delivery.driver.form.status")}
+                </label>
                 <select
                   {...form.register("status")}
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
@@ -165,11 +197,14 @@ const AddDriver = () => {
           </div>
 
           <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-foreground mb-4">{t("page.delivery.driver.detail.vehicleType")}</h3>
+            <h3 className="font-semibold text-foreground mb-4">
+              {t("page.delivery.driver.detail.vehicleType")}
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-foreground">
-                  {t("page.delivery.driver.form.vehicleType")} <span className="text-destructive">*</span>
+                  {t("page.delivery.driver.form.vehicleType")}{" "}
+                  <span className="text-destructive">*</span>
                 </label>
                 <input
                   {...form.register("vehicleType")}
@@ -177,12 +212,15 @@ const AddDriver = () => {
                   placeholder={t("page.delivery.driver.form.vehicleTypePlaceholder")}
                 />
                 {form.formState.errors.vehicleType && (
-                  <p className="text-xs text-destructive mt-1">{form.formState.errors.vehicleType.message}</p>
+                  <p className="text-xs text-destructive mt-1">
+                    {form.formState.errors.vehicleType.message}
+                  </p>
                 )}
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">
-                  {t("page.delivery.driver.form.vehiclePlate")} <span className="text-destructive">*</span>
+                  {t("page.delivery.driver.form.vehiclePlate")}{" "}
+                  <span className="text-destructive">*</span>
                 </label>
                 <input
                   {...form.register("vehiclePlate")}
@@ -190,11 +228,15 @@ const AddDriver = () => {
                   placeholder={t("page.delivery.driver.form.vehiclePlatePlaceholder")}
                 />
                 {form.formState.errors.vehiclePlate && (
-                  <p className="text-xs text-destructive mt-1">{form.formState.errors.vehiclePlate.message}</p>
+                  <p className="text-xs text-destructive mt-1">
+                    {form.formState.errors.vehiclePlate.message}
+                  </p>
                 )}
               </div>
               <div className="md:col-span-2">
-                <label className="text-sm font-medium text-foreground">{t("page.delivery.driver.form.notes")}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {t("page.delivery.driver.form.notes")}
+                </label>
                 <textarea
                   {...form.register("notes")}
                   className="mt-1 w-full h-20 px-3 py-2 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none resize-none"
@@ -210,9 +252,13 @@ const AddDriver = () => {
           <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-2 mb-3">
               <Info size={16} className="text-primary" />
-              <h4 className="text-sm font-semibold text-foreground">{t("page.delivery.driver.form.tipsTitle")}</h4>
+              <h4 className="text-sm font-semibold text-foreground">
+                {t("page.delivery.driver.form.tipsTitle")}
+              </h4>
             </div>
-            <p className="text-xs text-muted-foreground">{t("page.delivery.driver.form.tipsContent")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("page.delivery.driver.form.tipsContent")}
+            </p>
           </div>
         </div>
       </form>
@@ -274,6 +320,11 @@ const AddDriver = () => {
         description={t("page.delivery.driver.modal.cancelDescription")}
         confirmText={t("page.delivery.driver.modal.confirmCancel")}
         onConfirm={() => navigate("/driver-list")}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFields}
       />
     </div>
   );

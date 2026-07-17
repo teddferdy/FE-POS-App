@@ -27,6 +27,28 @@ import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "-";
+    return (
+      d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      }) +
+      " " +
+      d.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    );
+  } catch {
+    return "-";
+  }
+};
+
 const statusOptions = [
   { value: "all", label: "All" },
   { value: "active", label: "Active" },
@@ -138,6 +160,44 @@ const DriverList = () => {
       render: (driver) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${statusBadge(driver.status)}`}>
           {t(`page.delivery.driver.status.${driver.status}`)}
+        </span>
+      )
+    },
+    {
+      header: t("common.createdBy"),
+      render: (driver) => (
+        <span className="text-sm text-muted-foreground">
+          {driver.createdByUser?.fullName ||
+            driver.createdByUser?.userName ||
+            driver.createdBy ||
+            "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.department.table.createdDate"),
+      render: (driver) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(driver.createdAt)}
+        </span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (driver) => (
+        <span className="text-sm text-muted-foreground">
+          {driver.modifiedByUser?.fullName ||
+            driver.modifiedByUser?.userName ||
+            driver.modifiedBy ||
+            "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.department.table.updatedDate"),
+      render: (driver) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(driver.updatedAt)}
         </span>
       )
     },

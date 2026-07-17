@@ -80,7 +80,7 @@ const StoreGeospatial = () => {
     isLoading: detailLoading,
     isError,
     refetch
-  } = useQuery(["all-locations-detail"], getAllLocation);
+  } = useQuery(["all-locations-detail"], () => getAllLocation("all"));
   const { data: tableData, isLoading: tableLoading } = useQuery(["all-locations-table"], () =>
     getAllLocationTable({ page: 1, limit: 1000 })
   );
@@ -100,7 +100,8 @@ const StoreGeospatial = () => {
     return tableItems.map((loc) => {
       const num = parseInt(loc.storeId?.replace(/^ST-/i, ""), 10);
       const key = String(isNaN(num) ? loc.id : num);
-      return { ...loc, ...(coordMap[key] || {}) };
+      const hasOwnCoords = loc.latitude && loc.longitude;
+      return { ...loc, ...(hasOwnCoords ? {} : coordMap[key] || {}) };
     });
   }, [detailData, tableData]);
 
