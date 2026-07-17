@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -50,6 +50,8 @@ import { cn } from "@/lib/utils";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import PageHeader from "@/components/ui/PageHeader";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 const PROMO_TYPES = {
   standard: "page.discount.form.promoType.standard",
   bogo: "page.discount.form.promoType.bogo",
@@ -70,8 +72,9 @@ const AddDiscount = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
-  const [confirmModal, setConfirmModal] = useState(false);
-  const [pendingValues, setPendingValues] = useState(null);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
 
   const {
     data: locationsData,
@@ -101,45 +104,68 @@ const AddDiscount = () => {
     }).format(Number(value));
   };
 
-  const formSchema = z.object({
-    name: z.string().min(1, t("page.discount.form.validation.nameRequired")),
-    promoType: z.string().default("standard"),
-    type: z
-      .string()
-      .min(1, t("page.discount.form.validation.typeRequired"))
-      .optional()
-      .or(z.literal("")),
-    value: z.coerce
-      .number()
-      .min(1, t("page.discount.form.validation.valueRequired"))
-      .optional()
-      .or(z.literal("")),
-    startDate: z.date({ required_error: t("page.discount.form.validation.startDateRequired") }),
-    endDate: z.date().nullable().optional(),
-    minPurchase: z.coerce.number().min(0).optional().or(z.literal("")),
-    description: z.string().optional().or(z.literal("")),
-    isActive: z.boolean().default(true),
-    code: z.string().optional().or(z.literal("")),
-    maxDiscount: z.coerce.number().min(0).optional().or(z.literal("")),
-    // BOGO fields
-    buyQty: z.coerce.number().min(1).optional().or(z.literal("")),
-    freeQty: z.coerce.number().min(1).optional().or(z.literal("")),
-    // Bundling fields
-    bundlePrice: z.coerce.number().min(1).optional().or(z.literal("")),
-    productIds: z.string().optional().or(z.literal("")),
-    // Happy Hour fields
-    discountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal("")),
-    startTime: z.string().optional().or(z.literal("")),
-    endTime: z.string().optional().or(z.literal("")),
-    daysOfWeek: z.string().optional().or(z.literal("")),
-    // Category fields
-    categoryIds: z.string().optional().or(z.literal("")),
-    catDiscountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal("")),
-    store: z.string().optional()
-  });
+  const baseFields = useMemo(
+    () => ({
+      name: z.string().min(1, "Nama Diskon tidak boleh kosong"),
+      promoType: z.string().default("standard"),
+      type: z.string().min(1, "Tipe Diskon harus diisi").optional().or(z.literal("")),
+      value: z.coerce.number().min(1, "Nilai Diskon harus diisi").optional().or(z.literal("")),
+      startDate: z.date({ required_error: "Tanggal Mulai harus diisi" }),
+      endDate: z.date().nullable().optional(),
+      minPurchase: z.coerce.number().min(0).optional().or(z.literal("")),
+      description: z.string().optional().or(z.literal("")),
+      isActive: z.boolean().default(true),
+      code: z.string().optional().or(z.literal("")),
+      maxDiscount: z.coerce.number().min(0).optional().or(z.literal("")),
+      buyQty: z.coerce.number().min(1).optional().or(z.literal("")),
+      freeQty: z.coerce.number().min(1).optional().or(z.literal("")),
+      bundlePrice: z.coerce.number().min(1).optional().or(z.literal("")),
+      productIds: z.string().optional().or(z.literal("")),
+      discountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal("")),
+      startTime: z.string().optional().or(z.literal("")),
+      endTime: z.string().optional().or(z.literal("")),
+      daysOfWeek: z.string().optional().or(z.literal("")),
+      categoryIds: z.string().optional().or(z.literal("")),
+      catDiscountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal("")),
+      store: z.string().optional()
+    }),
+    []
+  );
+
+  const draftSchema = useMemo(() => z.object(baseFields), [baseFields]);
+
+  const saveSchema = useMemo(
+    () =>
+      z.object({
+        ...baseFields,
+        type: z.string().min(1, "Tipe Diskon harus diisi").optional().or(z.literal(""))
+      }),
+    [baseFields]
+  );
+
+  const discountFieldLabels = useMemo(
+    () => ({
+      name: t("page.discount.form.name"),
+      store: t("page.category.form.storeSection.title"),
+      startDate: t("page.discount.form.startDateLabel"),
+      type: t("page.discount.form.typeLabel"),
+      value: t("page.discount.form.value"),
+      buyQty: t("page.discount.form.buyQty"),
+      freeQty: t("page.discount.form.freeQty"),
+      bundlePrice: t("page.discount.form.bundlePriceLabel"),
+      productIds: t("page.discount.form.products"),
+      discountPercent: t("page.discount.form.discountPercentLabel"),
+      startTime: t("page.discount.form.startTimeLabel"),
+      endTime: t("page.discount.form.endTimeLabel"),
+      catDiscountPercent: t("page.discount.form.discountPercentLabel"),
+      categoryIds: t("page.discount.form.categoryIdsLabel")
+    }),
+    [t]
+  );
 
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(draftSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       promoType: "standard",
@@ -222,13 +248,7 @@ const AddDiscount = () => {
     }
   };
 
-  const onSubmit = (values, saveAsDraft = false) => {
-    console.log("Selected Stores:", values, selectedStores, allStores, saveAsDraft);
-    if (isSuperAdmin && !allStores && selectedStores.length === 0 && !saveAsDraft) {
-      form.setError("store", { message: t("page.ingredientCategory.add.storeRequired") });
-      return;
-    }
-    form.clearErrors("store");
+  const submitData = (values, saveAsDraft = false) => {
     const conditions = buildConditions(values);
     const isAdvanced = values.promoType !== "standard";
 
@@ -255,17 +275,41 @@ const AddDiscount = () => {
     createMutation.mutate(payload);
   };
 
-  const handleTypeClick = (e) => {
-    e.preventDefault();
+  const onSubmit = (values) => {
     if (isSuperAdmin && !allStores && selectedStores.length === 0) {
-      form.setError("store", { message: t("page.ingredientCategory.add.storeRequired") });
+      form.setError("store", { message: "Toko harus dipilih" });
+    }
+
+    const extraErrors = [];
+    if (isSuperAdmin && !allStores && selectedStores.length === 0) {
+      extraErrors.push({ name: "store" });
+    }
+
+    const missing = getMissingFields(values, saveSchema, discountFieldLabels, extraErrors);
+
+    const result = saveSchema.safeParse(values);
+    if (!result.success) {
+      result.error.errors.forEach((err) => {
+        form.setError(err.path[0], { message: err.message });
+      });
+    }
+
+    if (missing.length > 0) {
+      setMissingFields(missing);
+      setMissingFieldsModal(true);
       return;
     }
-    form.clearErrors("store");
-    form.handleSubmit((v) => {
-      setPendingValues(v);
-      setConfirmModal(true);
-    })();
+    setConfirmSaveModal(true);
+  };
+
+  const handleConfirmSave = () => {
+    setConfirmSaveModal(false);
+    submitData(form.getValues(), false);
+  };
+
+  const handleTypeClick = (e) => {
+    e.preventDefault();
+    onSubmit(form.getValues());
   };
 
   if (locsLoading || locsFetching) {
@@ -382,7 +426,12 @@ const AddDiscount = () => {
         />
 
         <Form {...form}>
-          <form className="space-y-6">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSubmit(form.getValues());
+            }}
+            className="space-y-6">
             <div className="grid grid-cols-12">
               <div className="col-span-12">
                 <FormField
@@ -980,21 +1029,22 @@ const AddDiscount = () => {
           confirmText={t("page.discount.add.draftConfirm")}
           onConfirm={() => {
             setDraftModal(false);
-            const values = form.getValues();
-            onSubmit(values, true);
+            submitData(form.getValues(), true);
           }}
         />
         <Modal
           type="confirm"
-          open={confirmModal}
-          onOpenChange={setConfirmModal}
-          title={t("page.discount.add.confirmTitle")}
-          description={t("page.discount.add.confirmDescription")}
-          confirmText={t("button.save")}
-          onConfirm={() => {
-            setConfirmModal(false);
-            if (pendingValues) onSubmit(pendingValues, false);
-          }}
+          open={confirmSaveModal}
+          onOpenChange={setConfirmSaveModal}
+          title={t("common.confirmSave")}
+          description={t("common.confirmSaveDesc")}
+          confirmText={t("common.yesSave")}
+          onConfirm={handleConfirmSave}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFields}
         />
         {createMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}
       </div>
