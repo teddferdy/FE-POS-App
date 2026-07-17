@@ -56,8 +56,8 @@ const EditDiscount = () => {
     () => ({
       name: z.string().min(1, "Nama Diskon tidak boleh kosong"),
       promoType: z.string().default("standard"),
-      type: z.string().min(1, "Tipe Diskon harus diisi").optional().or(z.literal("")),
-      value: z.coerce.number().min(1, "Nilai Diskon harus diisi").optional().or(z.literal("")),
+      type: z.string().optional().or(z.literal("")),
+      value: z.coerce.number().optional().or(z.literal("")),
       startDate: z.date({ required_error: "Tanggal Mulai harus diisi" }),
       endDate: z.date().nullable().optional(),
       minPurchase: z.coerce.number().min(0).optional().or(z.literal("")),
@@ -65,31 +65,22 @@ const EditDiscount = () => {
       isActive: z.boolean().default(true),
       code: z.string().optional().or(z.literal("")),
       maxDiscount: z.coerce.number().min(0).optional().or(z.literal("")),
-      buyQty: z.coerce.number().min(1).optional().or(z.literal("")),
-      freeQty: z.coerce.number().min(1).optional().or(z.literal("")),
-      bundlePrice: z.coerce.number().min(1).optional().or(z.literal("")),
+      buyQty: z.coerce.number().optional().or(z.literal("")),
+      freeQty: z.coerce.number().optional().or(z.literal("")),
+      bundlePrice: z.coerce.number().optional().or(z.literal("")),
       productIds: z.string().optional().or(z.literal("")),
-      discountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal("")),
+      discountPercent: z.coerce.number().optional().or(z.literal("")),
       startTime: z.string().optional().or(z.literal("")),
       endTime: z.string().optional().or(z.literal("")),
       daysOfWeek: z.string().optional().or(z.literal("")),
       categoryIds: z.string().optional().or(z.literal("")),
-      catDiscountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal("")),
+      catDiscountPercent: z.coerce.number().optional().or(z.literal("")),
       store: z.string().optional()
     }),
     []
   );
 
   const draftSchema = useMemo(() => z.object(baseFields), [baseFields]);
-
-  const saveSchema = useMemo(
-    () =>
-      z.object({
-        ...baseFields,
-        type: z.string().min(1, "Tipe Diskon harus diisi").optional().or(z.literal(""))
-      }),
-    [baseFields]
-  );
 
   const discountFieldLabels = useMemo(
     () => ({
@@ -110,6 +101,42 @@ const EditDiscount = () => {
     }),
     [t]
   );
+
+  const currentPromoType = form.watch("promoType");
+
+  const saveSchema = useMemo(() => {
+    const required = (label) => z.string().min(1, label);
+    const requiredNum = (label) => z.coerce.number().min(1, label);
+
+    const promoTypeFields = {
+      standard: {
+        type: required("Tipe Diskon harus diisi").or(z.literal("")),
+        value: requiredNum("Nilai Diskon harus diisi").or(z.literal(""))
+      },
+      bogo: {
+        buyQty: requiredNum("Jumlah Beli harus diisi").or(z.literal("")),
+        freeQty: requiredNum("Jumlah Gratis harus diisi").or(z.literal(""))
+      },
+      bundling: {
+        bundlePrice: requiredNum("Harga Bundling harus diisi").or(z.literal("")),
+        productIds: required("Produk harus dipilih").or(z.literal(""))
+      },
+      happyHour: {
+        discountPercent: requiredNum("Persentase Diskon harus diisi").or(z.literal("")),
+        startTime: required("Jam Mulai harus diisi").or(z.literal("")),
+        endTime: required("Jam Selesai harus diisi").or(z.literal(""))
+      },
+      category: {
+        catDiscountPercent: requiredNum("Persentase Diskon harus diisi").or(z.literal("")),
+        categoryIds: required("Kategori harus dipilih").or(z.literal(""))
+      }
+    };
+
+    return z.object({
+      ...baseFields,
+      ...(promoTypeFields[currentPromoType] || {})
+    });
+  }, [baseFields, currentPromoType]);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -429,8 +456,6 @@ const EditDiscount = () => {
       </div>
     );
   }
-
-  const currentPromoType = form.watch("promoType");
 
   const handleTypeClick = (e) => {
     e.preventDefault();
