@@ -2370,6 +2370,19 @@ stateDiagram-v2
 | 1  | **Auto Generate PO dari Low Stock** — tombol "Auto Buat PO" di halaman Stok Menipis. Sistem otomatis bikin draft PO berdasarkan bahan baku yang stoknya menipis, dikelompokkan per supplier. Admin tinggal review & kirim. | ✅ Gak perlu bikin PO manual satu-satu untuk bahan baku yang menipis. Hemat waktu, kurangi human error, dan pastikan stok selalu tersedia                               |
 | 2  | **Bundle / Combo Product** — modul lengkap bundle produk: CRUD bundle (tambah, edit, detail, hapus), item dalam bundle, harga bundle vs harga normal, diskon persentase, validitas periode, status (active/draft/inactive). Bundle muncul di sidebar menu Promosi. | ✅ Jual paket produk dengan harga spesial (misal: Paket Hemat = Nasi + Ayam + Es Teh lebih murah dari beli satuan). Tingkatkan penjualan & average order value            |
 
+### 🔧 Fitur Baru (18 Juli 2026)
+
+| #  | Perubahan                                                                                                                                                                            | Dampak buat Bisnis                                                                                                                                                     |
+| -- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | **Bundle POS Integration** — bundle/combo produk sekarang tampil di POS. Kasir bisa pilih bundle, stok otomatis dikurangi per item individual. Backend menerima `bundleId` di cart, stok komponen + Bahan Baku (BOM) otomatis terpotong. | ✅ Paket hemat langsung bisa dijual di kasir — stok tetap akurat karena terpotong per item, bukan per bundle                                                        |
+| 2  | **Promo Campaign Engine** — engine otomatis evaluasi promo saat checkout. Support rules: Happy Hour, Birthday, Buy X Get Y, Spend Threshold, Member Tier, First Purchase. Reward: diskon %, diskon nominal, free item, cashback, poin multiplier. | ✅ Promo otomatis jalan tanpa perlu admin aktifin manual — hemat waktu, kurangi human error                                                                          |
+| 3  | **Auto Generate PO dari Low Stock** — backend endpoint `POST /stock-history/auto-generate-po` otomatis bikin draft PO dari bahan baku yang stoknya menipis, dikelompokkan per supplier. | ✅ Admin tinggal review & kirim PO, gak perlu input manual satu-satu                                                                                                   |
+| 4  | **Low Stock Alert All Stores** — endpoint `GET /stock-history/low-stock-all` tampilkan bahan menipis di semua toko sekaligus (Super Admin view).                                       | ✅ Super Admin bisa pantau stok kritis lintas toko dari satu halaman                                                                                                    |
+| 5  | **Server-Side Price Calculation** — backend sekarang **selalu** hitung ulang `item.price` & `item.subtotal` dari database saat checkout. FE hanya kirim `product`, `quantity`, `bundleId`. | ✅ Harga tidak bisa dimanipulasi dari payload FE — keamanan transaksi lebih terjamin                                                                                    |
+| 6  | **SQL Aggregation untuk Laporan** — semua laporan (Daily, P/L, Cash Flow, Profit per Product, Earning Today, Sales Summary, Cash Register) sekarang pakai SQL `GROUP BY` / `SUM` di database, bukan load semua data ke Node.js. | ✅ Laporan 10-100x lebih cepat — data langsung di-aggregate di database, hemat memory & waktu. Terutama terasa untuk toko dengan ribuan transaksi per hari              |
+| 7  | **Overview Dashboard pakai SQL COUNT** — Product/Category/Location/Member/User summary sekarang pakai `COUNT` + `FILTER` di SQL, bukan `findAll().filter().length`.                   | ✅ Dashboard summary lebih cepat — gak perlu load semua row ke memori                                                                                                   |
+| 8  | **Table Availability pakai SQL** — summary meja (available/occupied/reserved/maintenance) sekarang dihitung di SQL, bukan JS filter.                                                  | ✅ Ringan di server — gak perlu load semua meja ke memori                                                                                                               |
+
 ### 📋 Yang Lagi Dikerjakan
 
 | Fitur                            | Rencana                                                                 |
@@ -2377,8 +2390,7 @@ stateDiagram-v2
 | **Dashboard Utang (AP Module)**  | Daftar semua PO yang belum lunas, total utang per supplier, jatuh tempo |
 | **Payment Tracking di Supplier** | Filter & cari pembayaran berdasarkan supplier                           |
 | **Laporan Piutang (AR Report)**  | Rekap piutang pelanggan, umur piutang, collection tracking              |
-| **Bundle POS Integration**       | Tampilkan bundle di POS, tambah ke cart, kurangi stok individual item   |
-| **Low Stock → PO (Super Admin)** | Auto generate PO di halaman Low Stock All (per toko)                    |
+| **Customer Self-Order (QR)**     | Pelanggan order via QR code di meja, tanpa perlu kasir                  |
 
 ---
 
