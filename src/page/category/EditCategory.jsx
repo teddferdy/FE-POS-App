@@ -397,7 +397,11 @@ const EditCategory = () => {
         if (d.store) {
           try {
             const parsed = typeof d.store === "string" ? JSON.parse(d.store) : d.store;
-            setSelectedStore(Array.isArray(parsed) ? parsed : []);
+            setSelectedStore(
+              Array.isArray(parsed)
+                ? parsed.map((s) => (typeof s === "object" ? s.id : s))
+                : [],
+            );
           } catch {
             setSelectedStore([]);
           }

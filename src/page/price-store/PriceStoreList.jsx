@@ -56,11 +56,7 @@ const PriceStoreList = () => {
   const allProducts = useMemo(() => prodData?.data || prodData || [], [prodData]);
 
   const products = useMemo(() => {
-    if (!selectedStore) return allProducts;
-    return allProducts.filter((p) => {
-      if (!p.store || p.store?.length === 0) return true;
-      return p.store.map(Number).includes(Number(selectedStore));
-    });
+    return allProducts;
   }, [allProducts, selectedStore]);
 
   const saveMutation = useMutation({

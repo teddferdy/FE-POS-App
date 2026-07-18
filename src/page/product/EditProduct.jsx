@@ -144,7 +144,7 @@ const EditProduct = () => {
   });
   const product = productData?.data || {};
 
-  const productStore = product?.store || "";
+  const productStore = selectedStores[0] || "";
   const { data: categoriesData } = useQuery(
     ["categories-for-edit", productStore],
     () => getAllCategoryActive({ location: productStore }),
@@ -352,27 +352,25 @@ const EditProduct = () => {
 
   useEffect(() => {
     if (tipeProduk === "bahan_baku") {
-      const store =
-        Array.isArray(product.store) && product.store.length > 0 ? product.store[0] : null;
-      if (store) {
-        checkStockOpnameExists(store)
+      const storeId = selectedStores[0] || null;
+      if (storeId) {
+        checkStockOpnameExists(storeId)
           .then((res) => setNoStockOpname(!res?.data?.exists))
           .catch(() => setNoStockOpname(false));
       }
     } else {
       setNoStockOpname(false);
     }
-  }, [tipeProduk, product.store]);
+  }, [tipeProduk, selectedStores]);
 
   useEffect(() => {
-    const store =
-      Array.isArray(product.store) && product.store.length > 0 ? product.store[0] : null;
-    if (store) {
-      getStockOpnameCompositionItems(store)
+    const storeId = selectedStores[0] || null;
+    if (storeId) {
+      getStockOpnameCompositionItems(storeId)
         .then((res) => setCompositionOptions(res?.data || []))
         .catch(() => setCompositionOptions([]));
     }
-  }, [product.store]);
+  }, [selectedStores]);
 
   useEffect(() => {
     if (product.id && product.composition) {
@@ -572,12 +570,9 @@ const EditProduct = () => {
         return;
       }
       try {
-        const store =
-          Array.isArray(product.store) && product.store.length > 0
-            ? product.store[0]
-            : product.store || null;
-        if (store) {
-          const res = await checkStockOpnameExists(store);
+        const storeId = selectedStores[0] || null;
+        if (storeId) {
+          const res = await checkStockOpnameExists(storeId);
           if (!res?.data?.exists) {
             toast.warning(t("page.product.form.noStockOpname"), {
               description: t("page.product.form.noStockOpnameDesc")
