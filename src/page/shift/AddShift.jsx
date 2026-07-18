@@ -22,7 +22,8 @@ import { DatePicker } from "@/components/ui/date-picker";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const AddShift = () => {
   const { t } = useTranslation();
@@ -42,6 +43,21 @@ const AddShift = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [employeeOpen, setEmployeeOpen] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+
+  const fieldLabels = {
+    nama_shift: "Nama Shift",
+    tipe_shift: "Tipe Shift",
+    store: "Penempatan Toko",
+    jam_mulai: "Jam Mulai",
+    jam_selesai: "Jam Selesai",
+    tanggal_mulai: "Tanggal Mulai",
+    tanggal_selesai: "Tanggal Selesai",
+    karyawan: "Karyawan",
+    status: "Status"
+  };
 
   const { data: employeesData, isLoading: empLoading } = useQuery(
     ["employees-for-shift"],
@@ -57,6 +73,7 @@ const AddShift = () => {
   const isInitialLoading = empLoading || locLoading;
 
   const form = useForm({
+    mode: "onChange",
     resolver: zodResolver(formSchema),
     defaultValues: {
       nama_shift: "",
@@ -129,7 +146,6 @@ const AddShift = () => {
   };
 
   const onSubmit = (values) => handleSave(values, false);
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   return (
     <div className="space-y-6">
@@ -206,7 +222,7 @@ const AddShift = () => {
           <div>
             <Card className="p-6">
               <Form {...form}>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                   {/* Baris 1: Nama Shift & Tipe */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
@@ -568,7 +584,19 @@ const AddShift = () => {
                         className="gap-2">
                         <Save size={18} /> {t("common.saveAsDraft")}
                       </Button>
-                      <Button type="submit" disabled={createMutation.isLoading} className="gap-2">
+                      <Button
+                        type="button"
+                        disabled={createMutation.isLoading}
+                        onClick={() => {
+                          const fields = getMissingFields(form.getValues(), fieldLabels);
+                          if (fields.length > 0) {
+                            setMissingFieldsList(fields);
+                            setMissingFieldsModal(true);
+                            return;
+                          }
+                          setConfirmSaveModal(true);
+                        }}
+                        className="gap-2">
                         <Save size={18} />
                         {createMutation.isLoading ? t("common.saving") : t("common.save")}
                       </Button>
@@ -576,7 +604,6 @@ const AddShift = () => {
                   </div>
                 </form>
               </Form>
-              <Modal type="confirm" {...confirmModal()} />
             </Card>
           </div>
         </div>
@@ -614,6 +641,23 @@ const AddShift = () => {
         }}
       />
       {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        missingFields={missingFieldsList}
+      />
+      <Modal
+        type="confirm"
+        open={confirmSaveModal}
+        onOpenChange={setConfirmSaveModal}
+        title={t("modal.saveTitle")}
+        description={t("modal.saveDescription")}
+        confirmText={t("modal.yesSave")}
+        onConfirm={() => {
+          setConfirmSaveModal(false);
+          onSubmit(form.getValues());
+        }}
+      />
     </div>
   );
 };

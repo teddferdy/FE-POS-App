@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
+import { z } from "zod";
 import { toast } from "sonner";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { editRole, getRoleById } from "@/services/role";
@@ -18,6 +19,8 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 // ponytail: action labels map to translation keys. Add new actions here and in id.json/en.json.
 const actionLabelKeys = {
@@ -131,7 +134,26 @@ const EditRole = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [collapsedGroups, setCollapsedGroups] = useState({});
+
+  const roleFieldLabels = useMemo(
+    () => ({
+      name: t("page.role.edit.name"),
+      description: t("page.role.edit.description")
+    }),
+    [t]
+  );
+
+  const roleFormSchema = useMemo(
+    () =>
+      z.object({
+        name: z.string().min(1),
+        description: z.string().optional().or(z.literal(""))
+      }),
+    []
+  );
 
   const groups = useMemo(() => getLeafItemsGrouped(), []);
 
@@ -497,7 +519,15 @@ const EditRole = () => {
             </Button>
             <Button
               data-tour="role-save"
-              onClick={(e) => handleSubmit(e, false)}
+              onClick={() => {
+                const missing = getMissingFields({ name, description }, roleFormSchema, roleFieldLabels);
+                if (missing.length > 0) {
+                  setMissingFieldsList(missing);
+                  setMissingFieldsModal(true);
+                  return;
+                }
+                handleSubmit({ preventDefault: () => {} }, false);
+              }}
               disabled={isSubmitting}>
               {t("page.role.edit.saveChanges")}
             </Button>
@@ -533,6 +563,11 @@ const EditRole = () => {
             setDraftModal(false);
             handleSubmit(new Event("submit"), true);
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
       </div>
     </div>

@@ -18,7 +18,8 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 
 const EditShift = () => {
@@ -35,6 +36,16 @@ const EditShift = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+
+  const fieldLabels = {
+    nama_shift: "Nama Shift",
+    jam_mulai: "Jam Mulai",
+    jam_selesai: "Jam Selesai",
+    status: "Status"
+  };
 
   const {
     data: shiftsData,
@@ -46,6 +57,7 @@ const EditShift = () => {
   });
 
   const form = useForm({
+    mode: "onChange",
     resolver: zodResolver(formSchema),
     defaultValues: {
       nama_shift: "",
@@ -95,7 +107,6 @@ const EditShift = () => {
   };
 
   const onSubmit = (values) => handleSave(values, false);
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   if (isError) return <AbortController refetch={refetch} />;
   if (!shiftId) {
@@ -187,7 +198,15 @@ const EditShift = () => {
               {t("page.shift.edit.saveDraft")}
             </Button>
             <Button
-              onClick={() => handleSubmit()}
+              onClick={() => {
+                const fields = getMissingFields(form.getValues(), fieldLabels);
+                if (fields.length > 0) {
+                  setMissingFieldsList(fields);
+                  setMissingFieldsModal(true);
+                  return;
+                }
+                setConfirmSaveModal(true);
+              }}
               disabled={updateMutation.isLoading}
               className="gap-2">
               <Save size={18} />
@@ -198,7 +217,7 @@ const EditShift = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -298,7 +317,6 @@ const EditShift = () => {
               />
             </form>
           </Form>
-          <Modal type="confirm" {...confirmModal()} />
         </Card>
 
         {updateMutation.isLoading && (
@@ -334,6 +352,23 @@ const EditShift = () => {
             setDraftModal(false);
             const values = form.getValues();
             handleSave(values, true);
+          }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          missingFields={missingFieldsList}
+        />
+        <Modal
+          type="confirm"
+          open={confirmSaveModal}
+          onOpenChange={setConfirmSaveModal}
+          title={t("modal.saveTitle")}
+          description={t("modal.saveDescription")}
+          confirmText={t("modal.yesSave")}
+          onConfirm={() => {
+            setConfirmSaveModal(false);
+            onSubmit(form.getValues());
           }}
         />
       </div>

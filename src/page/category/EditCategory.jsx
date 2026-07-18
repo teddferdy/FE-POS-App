@@ -18,7 +18,7 @@ import { Loading } from "@/components/ui/loading";
 import { Check } from "lucide-react";
 
 import Modal from "@/components/organism/modal";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+// Removed useConfirmSubmit - replaced with MissingFieldsModal pattern
 import PageHeader from "@/components/ui/PageHeader";
 import {
   Form,
@@ -29,6 +29,8 @@ import {
   FormControl
 } from "@/components/ui/form";
 import UserGuide from "@/components/organism/UserGuide";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const iconSections = [
   {
@@ -355,6 +357,15 @@ const EditCategory = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
+
+  const categoryFieldLabels = {
+    name: "Nama Kategori",
+  };
+
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+
   const fileInputRef = useRef(null);
   const [cookie] = useCookies();
   const user = cookie?.user;
@@ -373,7 +384,32 @@ const EditCategory = () => {
   const { data: categoryData, isLoading: categoryLoading } = useQuery(
     ["category-edit", categoryId],
     () => getCategoryById({ id: categoryId }),
-    { enabled: !!categoryId }
+    {
+      enabled: !!categoryId,
+      onSuccess: (res) => {
+        const d = res?.data || res?.category || {};
+        form.reset({
+          name: d.name || "",
+          description: d.description || "",
+          isActive: d.status !== "inactive",
+          store: ""
+        });
+        if (d.store) {
+          try {
+            const parsed = typeof d.store === "string" ? JSON.parse(d.store) : d.store;
+            setSelectedStore(Array.isArray(parsed) ? parsed : []);
+          } catch {
+            setSelectedStore([]);
+          }
+        }
+        if (d.image) {
+          setImagePreview(d.image);
+        }
+        if (d.icon) {
+          setSelectedIcon(d.icon);
+        }
+      }
+    }
   );
 
   const category = categoryData?.data || categoryData?.category || {};
@@ -389,6 +425,7 @@ const EditCategory = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       description: "",
@@ -397,57 +434,32 @@ const EditCategory = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
-
-  useEffect(() => {
-    if (!category || !category.id) return;
-    form.reset({
-      name: category.name || "",
-      description: category.description || "",
-      isActive: category.status === "active"
-    });
-    if (category.image) {
-      setSelectedIcon(category.image.startsWith("http") ? "" : category.image);
-    }
-    if (category.store) {
-      const storeArr = Array.isArray(category.store) ? category.store : [];
-      if (storeArr.length === 0) {
-        setAllStores(true);
-        setSelectedStore([]);
-      } else {
-        setAllStores(false);
-        setSelectedStore(storeArr.map((s) => (typeof s === "object" ? s.id : s)));
-      }
-    }
-  }, [category, form]);
-
   const updateMutation = useMutation(editCategory, {
     onSuccess: () => {
-      setIsSubmitting(false);
       queryClient.invalidateQueries(["categories"]);
       setSuccessModal(true);
+      setIsSubmitting(false);
     },
     onError: (err) => {
-      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);
+      toast.error(err?.response?.data?.message || err.message);
     }
   });
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+      setSelectedIcon("");
+    }
+  };
 
   const handleSelectIcon = (icon) => {
     setSelectedIcon(icon);
     setSelectedImage(null);
     setImagePreview(null);
-  };
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setSelectedIcon("");
-    setSelectedImage(file);
-    const reader = new FileReader();
-    reader.onload = (ev) => setImagePreview(ev.target.result);
-    reader.readAsDataURL(file);
-    e.target.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const onSubmit = (values, saveAsDraft = false) => {
@@ -508,7 +520,7 @@ const EditCategory = () => {
       <div>
         <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) => e.preventDefault()}>
               <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8 space-y-6">
                   <FormField
@@ -790,7 +802,8 @@ const EditCategory = () => {
                   </Button>
                   <Button
                     type="button"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       if (isSuperAdmin && !allStores && selectedStore.length === 0) {
                         form.setError("store", {
                           message: t("page.ingredientCategory.add.storeRequired")
@@ -798,7 +811,14 @@ const EditCategory = () => {
                         return;
                       }
                       form.clearErrors("store");
-                      form.handleSubmit((v) => onSubmit(v, false))();
+                      const values = form.getValues();
+                      const missing = getMissingFields(values, formSchema, categoryFieldLabels);
+                      if (missing.length > 0) {
+                        setMissingFieldsList(missing);
+                        setMissingFieldsModal(true);
+                        return;
+                      }
+                      setConfirmSaveModal(true);
                     }}
                     disabled={isSubmitting}>
                     {t("page.category.button.saveChanges")}
@@ -808,8 +828,6 @@ const EditCategory = () => {
             </form>
           </Form>
         </div>
-
-        <Modal type="confirm" {...confirmModal()} />
 
         {iconPickerOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -961,6 +979,24 @@ const EditCategory = () => {
             const values = form.getValues();
             onSubmit(values, true);
           }}
+        />
+        <Modal
+          type="confirm"
+          open={confirmSaveModal}
+          onOpenChange={setConfirmSaveModal}
+          title="Konfirmasi Simpan"
+          description="Apakah Anda yakin ingin menyimpan perubahan ini?"
+          confirmText="Ya, Simpan"
+          onConfirm={() => {
+            setConfirmSaveModal(false);
+            const values = form.getValues();
+            onSubmit(values);
+          }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
       </div>
     </div>

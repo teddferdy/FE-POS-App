@@ -33,8 +33,9 @@ import {
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { useTranslation } from "react-i18next";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 
@@ -48,11 +49,24 @@ const AddExpense = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [saveConfirm, setSaveConfirm] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
 
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
+
+  const expenseFieldLabels = useMemo(
+    () => ({
+      categoryId: t("page.expense.add.category"),
+      description: t("page.expense.add.description"),
+      amount: t("page.expense.add.amount"),
+      date: t("page.expense.add.date")
+    }),
+    [t]
+  );
 
   const {
     data: locationsData,
@@ -85,6 +99,7 @@ const AddExpense = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       categoryId: "",
       description: "",
@@ -94,8 +109,6 @@ const AddExpense = () => {
       store: ""
     }
   });
-
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
 
   const createMutation = useMutation(addExpense, {
     onSuccess: () => {
@@ -170,7 +183,7 @@ const AddExpense = () => {
             </div>
           ) : (
             <Form {...form}>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                 <FormField
                   control={form.control}
                   name="store"
@@ -329,8 +342,17 @@ const AddExpense = () => {
                     </Button>
                     <Button
                       type="button"
-                      onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
                       disabled={createMutation.isLoading}
+                      onClick={() => {
+                        const data = form.getValues();
+                        const missing = getMissingFields(data, formSchema, expenseFieldLabels);
+                        if (missing.length > 0) {
+                          setMissingFields(missing);
+                          setMissingFieldsModal(true);
+                          return;
+                        }
+                        setSaveConfirm(true);
+                      }}
                       className="gap-2">
                       <Save size={18} />
                       {createMutation.isLoading ? t("button.saving") : t("button.save")}
@@ -342,7 +364,6 @@ const AddExpense = () => {
           )}
         </Card>
 
-        <Modal type="confirm" {...confirmModal()} />
         <Modal
           type="confirm"
           open={cancelModal}
@@ -373,6 +394,23 @@ const AddExpense = () => {
             const values = form.getValues();
             onSubmit(values, true);
           }}
+        />
+        <Modal
+          type="confirm"
+          open={saveConfirm}
+          onOpenChange={setSaveConfirm}
+          title={t("common.confirmSave")}
+          description={t("common.confirmSaveDesc")}
+          confirmText={t("common.yesSave")}
+          onConfirm={() => {
+            setSaveConfirm(false);
+            onSubmit(form.getValues(), false);
+          }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFields}
         />
         {createMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}
       </div>

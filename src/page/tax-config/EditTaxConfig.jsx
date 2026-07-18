@@ -21,6 +21,8 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const taxTypes = [
   { value: "ppn", label: "PPN" },
@@ -98,9 +100,18 @@ const EditTaxConfig = () => {
 
   const [searchParams] = useSearchParams();
   const taxId = searchParams.get("id");
+  const taxFieldLabels = {
+    name: "Nama Pajak",
+    type: "Tipe Pajak",
+    rate: "Tarif Pajak",
+  };
+
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
   const {
     data: taxData,
@@ -113,6 +124,7 @@ const EditTaxConfig = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       type: "PPN",
@@ -122,10 +134,6 @@ const EditTaxConfig = () => {
       store: ""
     }
   });
-
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
-    onSubmit(values)
-  );
 
   const tax = taxData?.data || {};
 
@@ -195,7 +203,7 @@ const EditTaxConfig = () => {
 
       <Card className="p-6">
         <Form {...form}>
-          <form onSubmit={onConfirmSubmit} className="space-y-6">
+          <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -353,7 +361,17 @@ const EditTaxConfig = () => {
                 </Button>
                 <Button
                   type="button"
-                  onClick={() => onConfirmSubmit()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const values = form.getValues();
+                    const missing = getMissingFields(values, formSchema, taxFieldLabels);
+                    if (missing.length > 0) {
+                      setMissingFieldsList(missing);
+                      setMissingFieldsModal(true);
+                      return;
+                    }
+                    setConfirmSaveModal(true);
+                  }}
                   disabled={updateMutation.isLoading}
                   className="gap-2">
                   <Save size={18} />
@@ -363,7 +381,24 @@ const EditTaxConfig = () => {
             </div>
           </form>
         </Form>
-        <Modal type="confirm" {...confirmModal()} />
+        <Modal
+          type="confirm"
+          open={confirmSaveModal}
+          onOpenChange={setConfirmSaveModal}
+          title="Konfirmasi Simpan"
+          description="Apakah Anda yakin ingin menyimpan data ini?"
+          confirmText="Ya, Simpan"
+          onConfirm={() => {
+            setConfirmSaveModal(false);
+            const values = form.getValues();
+            onSubmit(values);
+          }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
+        />
       </Card>
 
       <Modal

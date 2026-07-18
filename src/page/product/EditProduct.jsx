@@ -55,6 +55,8 @@ import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import UserGuide from "@/components/organism/UserGuide";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import AbortController from "@/components/organism/abort-controller";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const EditProduct = () => {
   const { t } = useTranslation();
@@ -79,6 +81,14 @@ const EditProduct = () => {
     { value: "gelas", label: t("page.product.form.unit.gelas") },
     { value: "porsi", label: t("page.product.form.unit.porsi") }
   ];
+
+  const productFieldLabels = {
+    nameProduct: "Nama Produk",
+    category: "Kategori",
+    price: "Harga",
+    store: "Toko",
+  };
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();

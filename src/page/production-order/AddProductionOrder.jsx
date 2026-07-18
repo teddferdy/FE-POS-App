@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
+import { z } from "zod";
 import { Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -17,6 +18,8 @@ import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const AddProductionOrder = () => {
   const { t } = useTranslation();
@@ -32,6 +35,27 @@ const AddProductionOrder = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+
+  const poFieldLabels = useMemo(
+    () => ({
+      productId: t("page.productionOrder.add.labelProduk"),
+      plannedQty: t("page.productionOrder.add.labelJumlahProduksi"),
+      scheduledDate: t("page.productionOrder.add.labelJadwal")
+    }),
+    [t]
+  );
+
+  const poSchema = useMemo(
+    () =>
+      z.object({
+        productId: z.string().min(1, ""),
+        plannedQty: z.string().min(1, "").refine((v) => parseInt(v) >= 1, ""),
+        scheduledDate: z.any().optional()
+      }),
+    []
+  );
   // const [productSearch, setProductSearch] = useState("");
 
   const { data: productsData } = useQuery(["products-for-po"], () => getAllProduct({}), {});
@@ -53,14 +77,7 @@ const AddProductionOrder = () => {
 
   const selectedProduct = products.find((p) => p.id === parseInt(productId));
 
-  const handleSubmit = async (e, saveAsDraft = false) => {
-    e.preventDefault();
-    if (!productId || !plannedQty || parseInt(plannedQty) < 1) {
-      toast.error(t("page.productionOrder.add.toastValidation"), {
-        description: t("page.productionOrder.add.toastValidationDesc")
-      });
-      return;
-    }
+  const handleSubmit = async (saveAsDraft = false) => {
     setIsSubmitting(true);
     try {
       const payload = {
@@ -129,7 +146,7 @@ const AddProductionOrder = () => {
 
       <div>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => e.preventDefault()}
           className="bg-card p-6 rounded-xl border border-border space-y-6 max-w-2xl">
           <div className="space-y-2">
             <Label>
@@ -212,7 +229,17 @@ const AddProductionOrder = () => {
               <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
                 Save as Draft
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="button" disabled={isSubmitting}
+                  onClick={() => {
+                    const data = { productId, plannedQty, scheduledDate };
+                    const missing = getMissingFields(data, poSchema, poFieldLabels);
+                    if (missing.length > 0) {
+                      setMissingFieldsList(missing);
+                      setMissingFieldsModal(true);
+                      return;
+                    }
+                    handleSubmit(false);
+                  }}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting
                   ? t("page.productionOrder.add.savingButton")
@@ -249,8 +276,13 @@ const AddProductionOrder = () => {
         confirmText={t("common.yesSaveDraft")}
         onConfirm={() => {
           setDraftModal(false);
-          handleSubmit({ preventDefault: () => {} }, true);
+          handleSubmit(true);
         }}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
       />
     </div>
   );

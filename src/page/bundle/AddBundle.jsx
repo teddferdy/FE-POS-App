@@ -7,6 +7,9 @@ import { Save, Plus, Trash2, Package, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { createBundle } from "@/services/productBundle";
 import { getAllProduct } from "@/services/product";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -43,6 +46,14 @@ const AddBundle = () => {
   const [bundleItems, setBundleItems] = useState([
     { product: "", quantity: 1, unitPrice: 0, isOptional: false }
   ]);
+
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const saveSchema = z.object({
+    name: z.string().min(1, "Nama Bundle harus diisi"),
+    bundlePrice: z.coerce.number().min(1, "Harga Bundle harus diisi"),
+  });
 
   const { data: productsData, isLoading: isLoadingProducts } = useQuery(
     ["products-for-bundle"],
@@ -98,6 +109,12 @@ const AddBundle = () => {
     setBundleItems((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const bundleFieldLabels = {
+    name: "Nama Bundle",
+    bundlePrice: "Harga Bundle",
+    items: "Item Bundle",
+  };
+
   const calculateOriginalPrice = () => {
     return bundleItems.reduce((sum, item) => {
       return sum + item.unitPrice * (item.quantity || 1);
@@ -105,6 +122,17 @@ const AddBundle = () => {
   };
 
   const handleSubmit = (asDraft) => {
+    if (!asDraft) {
+      const missing = getMissingFields({ ...formData, items: bundleItems }, saveSchema, bundleFieldLabels, 
+        bundleItems.filter(i => i.product).length === 0 ? [{ name: "items" }] : []);
+      
+      if (missing.length > 0) {
+        setMissingFields(missing);
+        setMissingFieldsModal(true);
+        return;
+      }
+    }
+
     const payload = {
       ...formData,
       status: asDraft ? "draft" : formData.status,
@@ -121,9 +149,9 @@ const AddBundle = () => {
         }))
     };
 
-    if (payload.items.length === 0) {
+    if (!asDraft && payload.items.length === 0) {
       toast.error(t("common.error"), {
-        description: t("page.bundle至少需要一个item")
+        description: "Minimal harus ada 1 item bundle"
       });
       return;
     }
@@ -344,6 +372,11 @@ const AddBundle = () => {
           </div>
         </div>
       </div>
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFields}
+      />
     </div>
   );
 };

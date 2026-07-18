@@ -103,13 +103,36 @@ export const sidebarMenuSuperAdmin = [
         href: "/price-list-template",
         icon: BadgePercent,
         actions: ["view", "edit"]
-      },
+      }
+    ]
+  },
+  {
+    title: "Promo & Diskon",
+    section: true,
+    i18nKey: "sidebar.section.promoDiskon",
+    icon: Megaphone,
+    children: [
       {
-        title: "Diskon",
+        title: "Diskon & Voucher",
         i18nKey: "sidebar.diskon",
         href: "/discount-list",
         icon: BadgePercent,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Kampanye Promo",
+        i18nKey: "sidebar.promo",
+        href: "/promo-list",
+        icon: Megaphone,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Paket / Bundle",
+        i18nKey: "sidebar.bundle",
+        href: "/bundle",
+        icon: Package,
+        actions: ["view", "add", "edit", "delete"],
+        activePaths: ["/bundle/add", "/bundle/edit"]
       }
     ]
   },
@@ -303,29 +326,7 @@ export const sidebarMenuSuperAdmin = [
       }
     ]
   },
-  {
-    title: "Promotions",
-    section: true,
-    i18nKey: "sidebar.section.promo",
-    icon: Megaphone,
-    children: [
-      {
-        title: "Promo Campaigns",
-        i18nKey: "sidebar.promo",
-        href: "/promo-list",
-        icon: Megaphone,
-        actions: ["view", "add", "edit", "delete"]
-      },
-      {
-        title: "Bundle / Combo",
-        i18nKey: "sidebar.bundle",
-        href: "/bundle",
-        icon: Package,
-        actions: ["view", "add", "edit", "delete"],
-        activePaths: ["/bundle/add", "/bundle/edit"]
-      }
-    ]
-  },
+
   {
     title: "Inventory",
     section: true,
@@ -602,18 +603,41 @@ export const sidebarMenuAdmin = [
     icon: Package,
     children: [
       {
-        title: "Diskon",
+        title: "Harga per Toko",
+        i18nKey: "sidebar.pricePerStore",
+        href: "/price-list-template",
+        icon: BadgePercent,
+        actions: ["view", "edit"]
+      }
+    ]
+  },
+  {
+    title: "Promo & Diskon",
+    section: true,
+    i18nKey: "sidebar.section.promoDiskon",
+    icon: Megaphone,
+    children: [
+      {
+        title: "Diskon & Voucher",
         i18nKey: "sidebar.diskon",
         href: "/discount-list",
         icon: BadgePercent,
         actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "Harga per Toko",
-        i18nKey: "sidebar.pricePerStore",
-        href: "/price-list-template",
-        icon: BadgePercent,
-        actions: ["view", "edit"]
+        title: "Kampanye Promo",
+        i18nKey: "sidebar.promo",
+        href: "/promo-list",
+        icon: Megaphone,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Paket / Bundle",
+        i18nKey: "sidebar.bundle",
+        href: "/bundle",
+        icon: Package,
+        actions: ["view", "add", "edit", "delete"],
+        activePaths: ["/bundle/add", "/bundle/edit"]
       }
     ]
   },
@@ -807,29 +831,7 @@ export const sidebarMenuAdmin = [
       }
     ]
   },
-  {
-    title: "Promotions",
-    section: true,
-    i18nKey: "sidebar.section.promo",
-    icon: Megaphone,
-    children: [
-      {
-        title: "Promo Campaigns",
-        i18nKey: "sidebar.promo",
-        href: "/promo-list",
-        icon: Megaphone,
-        actions: ["view", "add", "edit", "delete"]
-      },
-      {
-        title: "Bundle / Combo",
-        i18nKey: "sidebar.bundle",
-        href: "/bundle",
-        icon: Package,
-        actions: ["view", "add", "edit", "delete"],
-        activePaths: ["/bundle/add", "/bundle/edit"]
-      }
-    ]
-  },
+
   {
     title: "Inventory",
     section: true,

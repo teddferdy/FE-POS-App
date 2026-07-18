@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
-import { Save, X, Plus, Trash2, Package } from "lucide-react";
+import { Save, X, Plus, Trash2, Package, Search } from "lucide-react";
 import { toast } from "sonner";
 import { addGoodsReceipt } from "@/services/goods-receipt";
 import { getAllPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
@@ -12,8 +12,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
+import { z } from "zod";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const AddGoodsReceipt = () => {
   const navigate = useNavigate();
@@ -28,15 +31,44 @@ const AddGoodsReceipt = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+  const [poSearch, setPoSearch] = useState("");
+  const [poOpen, setPoOpen] = useState(false);
+  const poRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (poRef.current && !poRef.current.contains(e.target)) {
+        setPoOpen(false);
+        setPoSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const fieldLabels = {
+    poId: t("page.goodsReceipt.add.form.purchaseOrder"),
+    items: t("page.goodsReceipt.add.form.items")
+  };
+
+  const formSchema = z.object({
+    poId: z.string().min(1),
+    items: z.array(z.any()).min(1)
+  });
 
   const { data: poData, isLoading: loadingPOs } = useQuery(
     ["pos-for-gr"],
-    () => getAllPurchaseOrder({ limit: 50, status: "received" }),
+    () => getAllPurchaseOrder({ limit: 9999, status: "received" }),
     {
       
     }
   );
   const purchaseOrders = poData?.data || [];
+  const filteredPOs = purchaseOrders.filter((po) =>
+    po.orderNumber?.toLowerCase().includes(poSearch.toLowerCase())
+  );
 
   const { data: poDetail, isLoading: loadingPo } = useQuery(
     ["po-detail", poId],
@@ -173,21 +205,62 @@ const AddGoodsReceipt = () => {
               </Label>
               {loadingPOs ? (
                 <Skeleton className="h-10 w-full" />
+              ) : purchaseOrders.length === 0 ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground">
+                    {t("page.goodsReceipt.add.form.noPOEmpty")}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => navigate("/add-purchase-order")}>
+                    <Plus size={14} /> {t("page.goodsReceipt.add.form.addPO")}
+                  </Button>
+                </div>
               ) : (
-              <select
-                value={poId}
-                onChange={(e) => {
-                  setPoId(e.target.value);
-                  setItems([]);
-                }}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-                <option value="">{t("page.goodsReceipt.add.form.selectPO")}</option>
-                {purchaseOrders.map((po) => (
-                  <option key={po.id} value={po.id}>
-                    {po.orderNumber}
-                  </option>
-                ))}
-              </select>
+                <div className="relative" ref={poRef}>
+                  <div
+                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm flex items-center cursor-pointer"
+                    onClick={() => setPoOpen(!poOpen)}>
+                    <Search size={14} className="mr-2 text-muted-foreground shrink-0" />
+                    <input
+                      type="text"
+                      value={poOpen ? poSearch : selectedPO?.orderNumber || ""}
+                      readOnly={!poOpen}
+                      onFocus={() => setPoOpen(true)}
+                      onChange={(e) => setPoSearch(e.target.value)}
+                      placeholder={t("page.goodsReceipt.add.form.selectPO")}
+                      className="flex-1 bg-transparent outline-none text-sm"
+                    />
+                  </div>
+                  {poOpen && (
+                    <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-md shadow-md max-h-60 overflow-auto">
+                      {filteredPOs.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">
+                          {t("page.goodsReceipt.add.form.noPOSearch")}
+                        </div>
+                      ) : (
+                        filteredPOs.map((po) => (
+                          <div
+                            key={po.id}
+                            className={`px-3 py-2 text-sm cursor-pointer hover:bg-accent ${
+                              String(po.id) === poId ? "bg-accent" : ""
+                            }`}
+                            onClick={() => {
+                              setPoId(String(po.id));
+                              setItems([]);
+                              setPoSearch("");
+                              setPoOpen(false);
+                            }}>
+                            {po.orderNumber}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
               {selectedPO && (
                 <div className="flex items-center gap-3 mt-1">
@@ -386,7 +459,18 @@ const AddGoodsReceipt = () => {
                 disabled={isSubmitting}>
                 Simpan sebagai Draft
               </Button>
-              <Button type="submit" disabled={isSubmitting || items.length === 0}>
+              <Button
+                type="button"
+                disabled={isSubmitting || items.length === 0}
+                onClick={() => {
+                  const missing = getMissingFields({ poId, items }, formSchema, fieldLabels);
+                  if (missing.length > 0) {
+                    setMissingFields(missing);
+                    setMissingFieldsModal(true);
+                    return;
+                  }
+                  doSubmit(false);
+                }}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting
                   ? t("page.goodsReceipt.add.form.saving")
@@ -423,6 +507,11 @@ const AddGoodsReceipt = () => {
             setDraftModal(false);
             doSubmit(true);
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFields}
         />
       </div>
     </>

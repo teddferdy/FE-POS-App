@@ -28,7 +28,8 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 
 const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
@@ -67,6 +68,22 @@ const EditReservation = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [availableTables, setAvailableTables] = useState([]);
   const [locationDetail, setLocationDetail] = useState(null);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+
+  const fieldLabels = {
+    customerName: "Nama Customer",
+    customerPhone: "No. Telepon",
+    customerEmail: "Email",
+    guestCount: "Jumlah Tamu",
+    reservationDate: "Tanggal",
+    startTime: "Jam Mulai",
+    endTime: "Jam Selesai",
+    tableId: "Meja",
+    notes: "Catatan",
+    status: "Status"
+  };
 
   const {
     data: listData,
@@ -82,6 +99,7 @@ const EditReservation = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       customerName: "",
       customerPhone: "",
@@ -193,8 +211,6 @@ const EditReservation = () => {
     });
   };
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
-
   if (isError) return <AbortController refetch={refetch} />;
   if (!id)
     return (
@@ -236,7 +252,7 @@ const EditReservation = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="col-span-full">
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
@@ -446,7 +462,21 @@ const EditReservation = () => {
                 <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
                   <X size={18} /> {t("page.reservation.edit.cancel")}
                 </Button>
-                <Button type="submit" disabled={updateMutation.isLoading} className="gap-2">
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const values = form.getValues();
+                    const missing = getMissingFields(values, formSchema, fieldLabels);
+                    if (missing.length > 0) {
+                      setMissingFieldsList(missing);
+                      setMissingFieldsModal(true);
+                      return;
+                    }
+                    setConfirmSaveModal(true);
+                  }}
+                  disabled={updateMutation.isLoading}
+                  className="gap-2">
                   <Save size={18} />
                   {updateMutation.isLoading
                     ? t("page.reservation.edit.saving")
@@ -455,7 +485,19 @@ const EditReservation = () => {
               </div>
             </form>
           </Form>
-          <Modal type="confirm" {...confirmModal()} />
+          <Modal
+            type="confirm"
+            open={confirmSaveModal}
+            onOpenChange={setConfirmSaveModal}
+            title="Konfirmasi Simpan"
+            description="Apakah Anda yakin ingin menyimpan perubahan ini?"
+            confirmText="Ya, Simpan"
+            onConfirm={() => {
+              setConfirmSaveModal(false);
+              const values = form.getValues();
+              onSubmit(values);
+            }}
+          />
         </Card>
 
         <Modal
@@ -475,6 +517,11 @@ const EditReservation = () => {
           description={t("page.reservation.edit.modal.successDesc")}
           confirmText={t("page.reservation.edit.modal.successConfirm")}
           onConfirm={() => navigate("/reservation")}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
       </div>
     </div>

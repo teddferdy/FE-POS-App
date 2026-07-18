@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -15,8 +15,9 @@ import { Loading } from "@/components/ui/loading";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { useTranslation } from "react-i18next";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
 const AddExpenseCategory = () => {
   const { t } = useTranslation();
@@ -25,6 +26,17 @@ const AddExpenseCategory = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [saveConfirm, setSaveConfirm] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const expenseCategoryFieldLabels = useMemo(
+    () => ({
+      name: t("page.expenseCategory.add.name"),
+      description: t("page.expenseCategory.add.description")
+    }),
+    [t]
+  );
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.expenseCategory.add.validation.nameRequired")),
@@ -34,14 +46,13 @@ const AddExpenseCategory = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       description: "",
       isActive: true
     }
   });
-
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
 
   const createMutation = useMutation(addExpenseCategory, {
     onSuccess: () => {
@@ -96,7 +107,7 @@ const AddExpenseCategory = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <div className="grid grid-cols-1 gap-6">
                 <FormField
                   control={form.control}
@@ -183,7 +194,20 @@ const AddExpenseCategory = () => {
                     disabled={createMutation.isLoading}>
                     {t("page.expenseCategory.add.saveAsDraft")}
                   </Button>
-                  <Button type="submit" disabled={createMutation.isLoading} className="gap-2">
+                  <Button
+                    type="button"
+                    disabled={createMutation.isLoading}
+                    onClick={() => {
+                      const data = form.getValues();
+                      const missing = getMissingFields(data, formSchema, expenseCategoryFieldLabels);
+                      if (missing.length > 0) {
+                        setMissingFields(missing);
+                        setMissingFieldsModal(true);
+                        return;
+                      }
+                      setSaveConfirm(true);
+                    }}
+                    className="gap-2">
                     <Save size={18} />
                     {createMutation.isLoading ? t("button.saving") : t("button.save")}
                   </Button>
@@ -224,7 +248,23 @@ const AddExpenseCategory = () => {
             onSubmit(values, true);
           }}
         />
-        <Modal type="confirm" {...confirmModal()} />
+        <Modal
+          type="confirm"
+          open={saveConfirm}
+          onOpenChange={setSaveConfirm}
+          title={t("common.confirmSave")}
+          description={t("common.confirmSaveDesc")}
+          confirmText={t("common.yesSave")}
+          onConfirm={() => {
+            setSaveConfirm(false);
+            onSubmit(form.getValues(), false);
+          }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFields}
+        />
         {createMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}
       </div>
     </div>

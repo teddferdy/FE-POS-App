@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
+import { z } from "zod";
 import { toast } from "sonner";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { addRole } from "@/services/role";
@@ -11,6 +12,8 @@ import { buildAccessMenuPayload } from "@/utils/permission";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const actionLabels = {
   view: "Lihat",
@@ -110,7 +113,26 @@ const AddRole = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [collapsedGroups, setCollapsedGroups] = useState({});
+
+  const roleFieldLabels = useMemo(
+    () => ({
+      name: t("page.role.add.name"),
+      description: t("page.role.add.description")
+    }),
+    [t]
+  );
+
+  const roleFormSchema = useMemo(
+    () =>
+      z.object({
+        name: z.string().min(1),
+        description: z.string().optional().or(z.literal(""))
+      }),
+    []
+  );
 
   const groups = useMemo(() => getLeafItemsGrouped(), []);
   const [permissions, setPermissions] = useState(() => buildInitialPermissions(groups));
@@ -382,7 +404,17 @@ const AddRole = () => {
             <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
               {t("common.saveAsDraft")}
             </Button>
-            <Button onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting}>
+            <Button
+              onClick={() => {
+                const missing = getMissingFields({ name, description }, roleFormSchema, roleFieldLabels);
+                if (missing.length > 0) {
+                  setMissingFieldsList(missing);
+                  setMissingFieldsModal(true);
+                  return;
+                }
+                handleSubmit({ preventDefault: () => {} }, false);
+              }}
+              disabled={isSubmitting}>
               {t("page.role.add.saveRole")}
             </Button>
           </div>
@@ -425,6 +457,11 @@ const AddRole = () => {
               accessMenu
             });
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -25,6 +25,8 @@ import { Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const EditDepartment = () => {
   const { t } = useTranslation();
@@ -34,6 +36,16 @@ const EditDepartment = () => {
   const departmentId = searchParams.get("id");
   const [draftModal, setDraftModal] = useState(false);
   const [saveConfirm, setSaveConfirm] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const departmentFieldLabels = useMemo(
+    () => ({
+      name: t("page.department.form.name"),
+      description: t("page.department.form.description")
+    }),
+    [t]
+  );
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.department.validation.nameRequired")),
@@ -53,6 +65,7 @@ const EditDepartment = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: { name: "", description: "", isActive: true }
   });
 
@@ -130,7 +143,7 @@ const EditDepartment = () => {
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(() => setSaveConfirm(true))} className="space-y-6">
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
               <FormField
                 control={form.control}
@@ -239,8 +252,18 @@ const EditDepartment = () => {
                   {t("common.saveAsDraft")}
                 </Button>
                 <Button
-                  type="submit"
+                  type="button"
                   disabled={editMutation.isLoading}
+                  onClick={() => {
+                    const data = form.getValues();
+                    const missing = getMissingFields(data, formSchema, departmentFieldLabels);
+                    if (missing.length > 0) {
+                      setMissingFields(missing);
+                      setMissingFieldsModal(true);
+                      return;
+                    }
+                    setSaveConfirm(true);
+                  }}
                   className="gap-2 shadow-lg shadow-primary/20">
                   <span className="material-symbols-outlined text-lg">save</span>
                   {t("page.department.button.saveChanges")}
@@ -274,6 +297,11 @@ const EditDepartment = () => {
           setSaveConfirm(false);
           onSubmit(form.getValues(), false);
         }}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFields}
       />
     </div>
   );

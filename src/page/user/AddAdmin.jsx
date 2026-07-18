@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
+import { z } from "zod";
 import { toast } from "sonner";
 import { createUser } from "@/services/user";
 import { getAllLocation } from "@/services/location";
@@ -9,6 +10,8 @@ import { getAllRole } from "@/services/role";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const AddAdmin = () => {
   const { t } = useTranslation();
@@ -28,6 +31,33 @@ const AddAdmin = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+
+  const adminFieldLabels = useMemo(
+    () => ({
+      name: t("page.user.form.name"),
+      email: t("page.user.form.email"),
+      password: t("page.user.form.password"),
+      phoneNumber: t("page.user.form.phone"),
+      locationId: t("page.user.form.location"),
+      role: t("page.user.form.role")
+    }),
+    [t]
+  );
+
+  const adminFormSchema = useMemo(
+    () =>
+      z.object({
+        name: z.string().min(1),
+        email: z.string().min(1),
+        password: z.string().min(1),
+        phoneNumber: z.string().optional().or(z.literal("")),
+        locationId: z.string().optional().or(z.literal("")),
+        role: z.string().min(1)
+      }),
+    []
+  );
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || locationsData?.locations || [];
@@ -100,7 +130,7 @@ const AddAdmin = () => {
 
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-12 lg:col-span-8 bg-card rounded-xl shadow-sm border border-border p-6">
-            <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -294,7 +324,15 @@ const AddAdmin = () => {
               Simpan sebagai Draft
             </Button>
             <Button
-              onClick={(e) => handleSubmit(e, false)}
+              onClick={() => {
+                const missing = getMissingFields(form, adminFormSchema, adminFieldLabels);
+                if (missing.length > 0) {
+                  setMissingFieldsList(missing);
+                  setMissingFieldsModal(true);
+                  return;
+                }
+                handleSubmit({ preventDefault: () => {} }, false);
+              }}
               disabled={isSubmitting}
               className="gap-2">
               <span className="material-symbols-outlined text-lg">save</span>
@@ -341,6 +379,11 @@ const AddAdmin = () => {
               status: "draft"
             });
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
       </div>
     </div>

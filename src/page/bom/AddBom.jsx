@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import { Save, X, Plus, Trash2 } from "lucide-react";
 import { addBom } from "@/services/bom";
 import { getAllProduct } from "@/services/product";
@@ -14,6 +15,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
+
+const formSchema = z.object({
+  productId: z.string().min(1, "Required"),
+  firstIngredient: z.string().min(1, "Required")
+});
 
 const AddBom = () => {
   const navigate = useNavigate();
@@ -32,6 +40,16 @@ const AddBom = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+
+  const bomFieldLabels = useMemo(
+    () => ({
+      productId: t("page.bom.add.form.product"),
+      firstIngredient: t("page.bom.add.form.ingredients")
+    }),
+    [t]
+  );
 
   const { data: prodData } = useQuery(["products-for-bom"], () => getAllProduct({}), {
     
@@ -53,20 +71,24 @@ const AddBom = () => {
   const updateLine = (idx, field, value) =>
     setLines((prev) => prev.map((it, i) => (i !== idx ? it : { ...it, [field]: value })));
 
+  const handleSaveClick = (saveAsDraft = false) => {
+    if (!saveAsDraft) {
+      const missing = getMissingFields(
+        { productId, firstIngredient: lines[0]?.ingredientId || "" },
+        formSchema,
+        bomFieldLabels
+      );
+      if (missing.length > 0) {
+        setMissingFieldsList(missing);
+        setMissingFieldsModal(true);
+        return;
+      }
+    }
+    handleSubmit(null, saveAsDraft);
+  };
+
   const handleSubmit = async (e, saveAsDraft = false) => {
     if (e?.preventDefault) e.preventDefault();
-    if (!productId) {
-      toast.error(t("page.bom.add.toast.validation"), {
-        description: t("page.bom.add.toast.selectProduct")
-      });
-      return;
-    }
-    if (!lines[0].ingredientId && !saveAsDraft) {
-      toast.error(t("page.bom.add.toast.validation"), {
-        description: t("page.bom.add.toast.minIngredient")
-      });
-      return;
-    }
     setIsSubmitting(true);
     try {
       await addBom({
@@ -124,7 +146,7 @@ const AddBom = () => {
 
       <div>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => e.preventDefault()}
           className="bg-card p-6 rounded-xl border border-border space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -255,16 +277,11 @@ const AddBom = () => {
               <X size={16} className="mr-1" /> {t("page.bom.add.form.cancel")}
             </Button>
             <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setDraftModal(true)}
-                disabled={isSubmitting}
-                className="gap-2">
+              <Button type="button" variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting} className="gap-2">
                 <Save size={16} />
                 {t("page.bom.add.form.saveDraft")}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="button" onClick={() => handleSaveClick()} disabled={isSubmitting}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting ? t("page.bom.add.form.saving") : t("page.bom.add.form.save")}
               </Button>
@@ -294,8 +311,13 @@ const AddBom = () => {
         confirmText={t("page.bom.add.modal.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
-          handleSubmit(null, true);
+          handleSaveClick(true);
         }}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
       />
     </div>
   );

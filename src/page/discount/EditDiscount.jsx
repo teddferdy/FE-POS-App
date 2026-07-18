@@ -172,25 +172,25 @@ const EditDiscount = () => {
 
     const promoTypeFields = {
       standard: {
-        type: required("Tipe Diskon harus diisi").or(z.literal("")),
-        value: requiredNum("Nilai Diskon harus diisi").or(z.literal(""))
+        type: required("Tipe Diskon harus diisi"),
+        value: requiredNum("Nilai Diskon harus diisi")
       },
       bogo: {
-        buyQty: requiredNum("Jumlah Beli harus diisi").or(z.literal("")),
-        freeQty: requiredNum("Jumlah Gratis harus diisi").or(z.literal(""))
+        buyQty: requiredNum("Jumlah Beli harus diisi"),
+        freeQty: requiredNum("Jumlah Gratis harus diisi")
       },
       bundling: {
-        bundlePrice: requiredNum("Harga Bundling harus diisi").or(z.literal("")),
-        productIds: required("Produk harus dipilih").or(z.literal(""))
+        bundlePrice: requiredNum("Harga Bundling harus diisi"),
+        productIds: required("Produk harus dipilih")
       },
       happyHour: {
-        discountPercent: requiredNum("Persentase Diskon harus diisi").or(z.literal("")),
-        startTime: required("Jam Mulai harus diisi").or(z.literal("")),
-        endTime: required("Jam Selesai harus diisi").or(z.literal(""))
+        discountPercent: requiredNum("Persentase Diskon harus diisi"),
+        startTime: required("Jam Mulai harus diisi"),
+        endTime: required("Jam Selesai harus diisi")
       },
       category: {
-        catDiscountPercent: requiredNum("Persentase Diskon harus diisi").or(z.literal("")),
-        categoryIds: required("Kategori harus dipilih").or(z.literal(""))
+        catDiscountPercent: requiredNum("Persentase Diskon harus diisi"),
+        categoryIds: required("Kategori harus dipilih")
       }
     };
 

@@ -29,7 +29,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AccessMenuModal from "@/components/organism/AccessMenuModal";
 import AbortController from "@/components/organism/abort-controller";
 import {
@@ -44,6 +43,8 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import PageHeader from "@/components/ui/PageHeader";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const EditEmployee = () => {
   const { t } = useTranslation();
@@ -66,6 +67,23 @@ const EditEmployee = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [accessMenuModalOpen, setAccessMenuModalOpen] = useState(false);
+
+  const employeeFieldLabels = {
+    fullName: "Nama Lengkap",
+    userName: "Username",
+    email: "Email",
+    password: "Password",
+    phoneNumber: "Nomor Telepon",
+    placeOfBirth: "Tempat Lahir",
+    address: "Alamat",
+    gender: "Jenis Kelamin",
+    dateOfBirth: "Tanggal Lahir",
+    employeeId: "ID Employee"
+  };
+
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
   const formSchema = useMemo(() => {
     return z.object({
@@ -104,6 +122,7 @@ const EditEmployee = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       fullName: "",
       userName: "",
@@ -129,8 +148,6 @@ const EditEmployee = () => {
       monthlySalary: ""
     }
   });
-
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
 
   const {
     data: employeeData,
@@ -488,7 +505,7 @@ const EditEmployee = () => {
       <div>
         <div>
           <Form {...form}>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) => { e.preventDefault(); }}>
               <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8 space-y-6">
                   {/* Section 1: Informasi Pribadi */}
@@ -1441,9 +1458,20 @@ const EditEmployee = () => {
                         {t("page.employee.edit.saveAsDraft")}
                       </Button>
                       <Button
-                        type="submit"
+                        type="button"
                         disabled={isSubmitting}
-                        className="w-full sm:w-auto gap-2">
+                        className="w-full sm:w-auto gap-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const values = form.getValues();
+                          const missing = getMissingFields(values, formSchema, employeeFieldLabels);
+                          if (missing.length > 0) {
+                            setMissingFieldsList(missing);
+                            setMissingFieldsModal(true);
+                            return;
+                          }
+                          setConfirmSaveModal(true);
+                        }}>
                         <span className="material-symbols-outlined text-lg">save</span>
                         {t("page.employee.edit.saveChanges")}
                       </Button>
@@ -1456,7 +1484,18 @@ const EditEmployee = () => {
         </div>
       </div>
 
-      <Modal type="confirm" {...confirmModal()} />
+      <Modal
+        type="confirm"
+        open={confirmSaveModal}
+        onOpenChange={setConfirmSaveModal}
+        title="Konfirmasi Simpan"
+        description="Apakah Anda yakin ingin menyimpan perubahan data ini?"
+        confirmText="Ya, Simpan"
+        onConfirm={() => {
+          setConfirmSaveModal(false);
+          onSubmit(form.getValues(), false);
+        }}
+      />
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
@@ -1488,6 +1527,11 @@ const EditEmployee = () => {
           const values = form.getValues();
           onSubmit(values, true);
         }}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
       />
     </div>
   );

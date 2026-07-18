@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const AddPromoCampaign = () => {
   const { t } = useTranslation();
@@ -23,6 +25,16 @@ const AddPromoCampaign = () => {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [rules, setRules] = useState([]);
   const [rewards, setRewards] = useState([]);
+
+  const promoFieldLabels = {
+    name: "Nama Campaign",
+    type: "Tipe Campaign",
+    startDate: "Tanggal Mulai",
+    endDate: "Tanggal Akhir",
+  };
+
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
   const schema = z.object({
     name: z.string().min(1, t("page.promo.validation.nameRequired")),
@@ -47,6 +59,7 @@ const AddPromoCampaign = () => {
 
   const form = useForm({
     resolver: zodResolver(schema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       description: "",
@@ -83,6 +96,20 @@ const AddPromoCampaign = () => {
       });
     }
   });
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    const values = form.getValues();
+    const missing = getMissingFields(values, schema, promoFieldLabels);
+    if (missing.length > 0) {
+      setMissingFieldsList(missing);
+      setMissingFieldsModal(true);
+      return;
+    }
+    setConfirmSaveModal(true);
+  };
+
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
   const onSubmit = (data) => {
     createMutation.mutate({ ...data, store: cookie?.activeStore, rules, rewards });
@@ -144,7 +171,7 @@ const AddPromoCampaign = () => {
         </Button>
       </PageHeader>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <form onSubmit={handleFormSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Basic Info */}
           <div className="bg-card rounded-xl border border-border p-6">
@@ -476,6 +503,23 @@ const AddPromoCampaign = () => {
         description={t("page.promo.modal.cancelDescription")}
         confirmText={t("page.promo.modal.confirmCancel")}
         onConfirm={() => navigate("/promo-list")}
+      />
+      <Modal
+        type="confirm"
+        open={confirmSaveModal}
+        onOpenChange={setConfirmSaveModal}
+        title="Konfirmasi Simpan"
+        description="Apakah Anda yakin ingin menyimpan data ini?"
+        confirmText="Ya, Simpan"
+        onConfirm={() => {
+          setConfirmSaveModal(false);
+          onSubmit(form.getValues());
+        }}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
       />
     </div>
   );

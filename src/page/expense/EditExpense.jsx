@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -23,7 +23,8 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
@@ -48,6 +49,19 @@ const EditExpense = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [saveConfirm, setSaveConfirm] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const expenseFieldLabels = useMemo(
+    () => ({
+      categoryId: t("page.expense.edit.categoryLabel"),
+      description: t("page.expense.edit.descriptionLabel"),
+      amount: t("page.expense.edit.amountLabel"),
+      date: t("page.expense.edit.dateLabel")
+    }),
+    [t]
+  );
 
   const {
     data: expenseData,
@@ -69,6 +83,7 @@ const EditExpense = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       categoryId: "",
       description: "",
@@ -77,8 +92,6 @@ const EditExpense = () => {
       notes: ""
     }
   });
-
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
 
   useEffect(() => {
     if (expenseItem?.id) {
@@ -162,7 +175,7 @@ const EditExpense = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -286,8 +299,17 @@ const EditExpense = () => {
                   </Button>
                   <Button
                     type="button"
-                    onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
                     disabled={updateMutation.isLoading}
+                    onClick={() => {
+                      const data = form.getValues();
+                      const missing = getMissingFields(data, formSchema, expenseFieldLabels);
+                      if (missing.length > 0) {
+                        setMissingFields(missing);
+                        setMissingFieldsModal(true);
+                        return;
+                      }
+                      setSaveConfirm(true);
+                    }}
                     className="gap-2">
                     <Save size={18} />
                     {updateMutation.isLoading
@@ -300,7 +322,6 @@ const EditExpense = () => {
           </Form>
         </Card>
 
-        <Modal type="confirm" {...confirmModal()} />
         <Modal
           type="confirm"
           open={cancelModal}
@@ -331,6 +352,23 @@ const EditExpense = () => {
             const values = form.getValues();
             onSubmit(values, true);
           }}
+        />
+        <Modal
+          type="confirm"
+          open={saveConfirm}
+          onOpenChange={setSaveConfirm}
+          title={t("common.confirmSave")}
+          description={t("common.confirmSaveDesc")}
+          confirmText={t("common.yesSave")}
+          onConfirm={() => {
+            setSaveConfirm(false);
+            onSubmit(form.getValues(), false);
+          }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFields}
         />
       </div>
     </div>

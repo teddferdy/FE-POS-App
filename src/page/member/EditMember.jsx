@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { toast } from "sonner";
@@ -15,6 +15,8 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const editSchema = z.object({
   name: z.string().min(1),
@@ -35,6 +37,21 @@ const EditMember = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+
+  const memberFieldLabels = useMemo(
+    () => ({
+      name: t("page.member.edit.fullName"),
+      phoneNumber: t("page.member.edit.phoneNumber"),
+      email: t("page.member.edit.email"),
+      birthDate: t("page.member.edit.dateOfBirth"),
+      gender: t("page.member.edit.gender"),
+      address: t("page.member.edit.fullAddress"),
+      tier: t("page.member.edit.membershipTier")
+    }),
+    [t]
+  );
 
   const {
     data: memberData,
@@ -87,14 +104,12 @@ const EditMember = () => {
     setForm((prev) => ({ ...prev, [name]: name === "tier" ? Number(value) : value }));
   };
 
-  const handleSubmit = (e, saveAsDraft = false) => {
-    e.preventDefault();
+  const handleSaveClick = (saveAsDraft = false) => {
     if (!saveAsDraft) {
-      const result = editSchema.safeParse(form);
-      if (!result.success) {
-        toast.error(t("page.member.edit.toastValidation"), {
-          description: t("page.member.edit.validationDesc")
-        });
+      const missing = getMissingFields(form, editSchema, memberFieldLabels);
+      if (missing.length > 0) {
+        setMissingFieldsList(missing);
+        setMissingFieldsModal(true);
         return;
       }
     }
@@ -137,7 +152,7 @@ const EditMember = () => {
       </div>
       <div>
         <div>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => e.preventDefault()}>
             <div className="grid grid-cols-12 gap-6">
               <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -418,7 +433,7 @@ const EditMember = () => {
                   disabled={isSubmitting}>
                   {t("page.member.edit.saveDraft")}
                 </Button>
-                <Button type="submit" disabled={isSubmitting} size="lg" className="px-8 gap-2">
+                <Button type="button" onClick={() => handleSaveClick()} disabled={isSubmitting} size="lg" className="px-8 gap-2">
                   <span className="material-symbols-outlined text-lg">save</span>
                   {t("page.member.button.save")}
                 </Button>
@@ -468,6 +483,12 @@ const EditMember = () => {
             status: "draft"
           });
         }}
+      />
+
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
       />
     </div>
   );

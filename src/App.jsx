@@ -10,7 +10,7 @@ import OfflineIndicator from "./components/organism/OfflineIndicator";
 import { setupAutoSync } from "@/services/offline";
 
 // Layout
-import DashboardLayout from "./components/layout/DashboardLayout";
+const DashboardLayout = React.lazy(() => import("./components/layout/DashboardLayout"));
 
 import Modal from "@/components/organism/modal";
 import ErrorBoundary from "@/components/ErrorBoundary";

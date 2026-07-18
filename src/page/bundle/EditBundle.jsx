@@ -21,6 +21,9 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
+import { z } from "zod";
 
 const EditBundle = () => {
   const { t } = useTranslation();
@@ -42,6 +45,20 @@ const EditBundle = () => {
   });
 
   const [bundleItems, setBundleItems] = useState([]);
+
+  const saveSchema = z.object({
+    name: z.string().min(1, "Nama Bundle harus diisi"),
+    bundlePrice: z.coerce.number().min(1, "Harga Bundle harus diisi"),
+  });
+
+  const bundleFieldLabels = {
+    name: "Nama Bundle",
+    bundlePrice: "Harga Bundle",
+    items: "Item Bundle",
+  };
+
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
 
   const { data: bundleData, isLoading: isLoadingBundle, isError } = useQuery(
     ["bundle", id],
@@ -143,6 +160,17 @@ const EditBundle = () => {
   };
 
   const handleSubmit = (asDraft) => {
+    if (!asDraft) {
+      const missing = getMissingFields({ ...formData, items: bundleItems }, saveSchema, bundleFieldLabels,
+        bundleItems.filter(i => i.product).length === 0 ? [{ name: "items" }] : []);
+      
+      if (missing.length > 0) {
+        setMissingFields(missing);
+        setMissingFieldsModal(true);
+        return;
+      }
+    }
+
     const payload = {
       ...formData,
       status: asDraft ? "draft" : formData.status,
@@ -166,6 +194,7 @@ const EditBundle = () => {
   if (isError || !bundleData?.data) return <AbortController refetch={() => {}} />;
 
   return (
+    <>
     <div className="space-y-6">
       <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -379,6 +408,12 @@ const EditBundle = () => {
         </div>
       </div>
     </div>
+    <MissingFieldsModal
+      open={missingFieldsModal}
+      onOpenChange={setMissingFieldsModal}
+      fields={missingFields}
+    />
+  </>
   );
 };
 

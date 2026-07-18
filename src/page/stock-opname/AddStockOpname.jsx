@@ -57,6 +57,7 @@ import {
 import UploadExcelModal from "./components/UploadExcelModal";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 
 const toInt = (val) => {
   if (val === null || val === undefined || val === "") return 0;
@@ -179,8 +180,8 @@ const AddStockOpname = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [noLocationModal, setNoLocationModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
-  const [validationModal, setValidationModal] = useState(false);
-  const [validationErrors, setValidationErrors] = useState([]);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
   const [formMeta, setFormMeta] = useState({
     tanggalAudit: new Date(),
@@ -189,6 +190,23 @@ const AddStockOpname = () => {
 
   const [rows, setRows] = useState([createRow()]);
   const [catatan, setCatatan] = useState("");
+
+  const fieldLabels = useMemo(
+    () => ({
+      tanggalAudit: t("page.stockOpname.form.auditDate"),
+      auditor: t("page.stockOpname.form.auditor"),
+      kodeBarang: t("page.stockOpname.table.kodeBarang"),
+      namaBarang: t("page.stockOpname.table.namaBarang"),
+      satuan: t("page.stockOpname.table.satuan"),
+      lokasiId: t("page.stockOpname.table.lokasi"),
+      stokAwalJumlah: t("page.stockOpname.table.stokAwal"),
+      barangMasukJumlah: t("page.stockOpname.table.barangMasuk"),
+      barangKeluarJumlah: t("page.stockOpname.table.barangKeluar"),
+      stokFisikJumlah: t("page.stockOpname.table.stockFisik"),
+      keterangan: t("page.stockOpname.table.keterangan")
+    }),
+    [t]
+  );
 
   const { data: locationData, isLoading: locationLoading } = useQuery(
     ["locations-all"],
@@ -396,42 +414,32 @@ const AddStockOpname = () => {
   });
 
   const validate = () => {
-    const errors = [];
+    const missing = [];
 
     if (!formMeta.tanggalAudit) {
-      errors.push(t("page.stockOpname.validation.auditDateRequired"));
+      missing.push(fieldLabels.tanggalAudit);
     }
     if (!formMeta.auditor.trim()) {
-      errors.push(t("page.stockOpname.validation.auditorRequired"));
+      missing.push(fieldLabels.auditor);
     }
 
-    const fieldLabels = [
-      { key: "kodeBarang", label: t("page.stockOpname.table.kodeBarang") },
-      { key: "namaBarang", label: t("page.stockOpname.table.namaBarang") },
-      { key: "satuan", label: t("page.stockOpname.table.satuan") },
-      { key: "lokasiId", label: t("page.stockOpname.table.lokasi") },
-      { key: "stokAwalJumlah", label: t("page.stockOpname.table.stokAwal") },
-      { key: "barangMasukJumlah", label: t("page.stockOpname.table.barangMasuk") },
-      { key: "barangKeluarJumlah", label: t("page.stockOpname.table.barangKeluar") },
-      { key: "stokFisikJumlah", label: t("page.stockOpname.table.stockFisik") },
-      { key: "keterangan", label: t("page.stockOpname.table.keterangan") }
-    ];
+    const rowFields = ["kodeBarang", "namaBarang", "satuan", "lokasiId", "stokAwalJumlah", "barangMasukJumlah", "barangKeluarJumlah", "stokFisikJumlah", "keterangan"];
 
     rows.forEach((row, idx) => {
-      const missing = fieldLabels
-        .filter((f) => {
-          const val = row[f.key];
-          return !val || (typeof val === "string" && !val.trim());
-        })
-        .map((f) => f.label);
-      if (missing.length > 0) {
-        errors.push(`${t("page.stockOpname.table.row")} ${idx + 1}: ${missing.join(", ")}`);
-      }
+      rowFields.forEach((key) => {
+        const val = row[key];
+        if (!val || (typeof val === "string" && !val.trim())) {
+          const label = `${t("page.stockOpname.table.row")} ${idx + 1} - ${fieldLabels[key]}`;
+          if (!missing.includes(label)) {
+            missing.push(label);
+          }
+        }
+      });
     });
 
-    if (errors.length > 0) {
-      setValidationErrors(errors);
-      setValidationModal(true);
+    if (missing.length > 0) {
+      setMissingFieldsList(missing);
+      setMissingFieldsModal(true);
       return false;
     }
 
@@ -908,14 +916,10 @@ const AddStockOpname = () => {
         }}
       />
 
-      <Modal
-        type="error"
-        open={validationModal}
-        onOpenChange={(open) => !open && setValidationModal(false)}
-        title={t("common.error")}
-        description={validationErrors.join(". ")}
-        confirmText={t("common.ok")}
-        onConfirm={() => setValidationModal(false)}
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
       />
 
       <UploadExcelModal

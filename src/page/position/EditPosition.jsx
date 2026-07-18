@@ -34,6 +34,8 @@ import { Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const EditPosition = () => {
   const { t } = useTranslation();
@@ -42,7 +44,9 @@ const EditPosition = () => {
   const [searchParams] = useSearchParams();
   const positionId = searchParams.get("id");
   const [draftModal, setDraftModal] = useState(false);
-  const [saveConfirm, setSaveConfirm] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.position.validation.nameRequired")),
@@ -70,8 +74,14 @@ const EditPosition = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: { name: "", department: "", description: "", isActive: true }
   });
+
+  const positionFieldLabels = {
+    name: "Nama Posisi",
+    department: "Departemen",
+  };
 
   useEffect(() => {
     if (position) {
@@ -184,7 +194,7 @@ const EditPosition = () => {
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(() => setSaveConfirm(true))} className="space-y-6">
+          <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <FormField
                 control={form.control}
@@ -366,7 +376,18 @@ const EditPosition = () => {
                   {t("page.position.button.saveDraft")}
                 </Button>
                 <Button
-                  type="submit"
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const values = form.getValues();
+                    const missing = getMissingFields(values, formSchema, positionFieldLabels);
+                    if (missing.length > 0) {
+                      setMissingFieldsList(missing);
+                      setMissingFieldsModal(true);
+                      return;
+                    }
+                    setConfirmSaveModal(true);
+                  }}
                   disabled={editMutation.isLoading}
                   className="gap-2 shadow-lg shadow-primary/20">
                   <span className="material-symbols-outlined text-lg">save</span>
@@ -407,15 +428,21 @@ const EditPosition = () => {
 
       <Modal
         type="confirm"
-        open={saveConfirm}
-        onOpenChange={setSaveConfirm}
+        open={confirmSaveModal}
+        onOpenChange={setConfirmSaveModal}
         title={t("common.confirmSave")}
         description={t("common.confirmSaveDesc")}
         confirmText={t("common.yesSave")}
         onConfirm={() => {
-          setSaveConfirm(false);
+          setConfirmSaveModal(false);
           onSubmit(form.getValues(), false);
         }}
+      />
+
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
       />
     </div>
   );

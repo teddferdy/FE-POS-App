@@ -17,8 +17,9 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import PageHeader from "@/components/ui/PageHeader";
 
 const EditExpenseCategory = () => {
@@ -38,6 +39,17 @@ const EditExpenseCategory = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [saveConfirm, setSaveConfirm] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const expenseCategoryFieldLabels = useMemo(
+    () => ({
+      name: t("page.expenseCategory.edit.nameLabel"),
+      description: t("page.expenseCategory.edit.descriptionLabel")
+    }),
+    [t]
+  );
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["expense-categories", store],
@@ -55,6 +67,7 @@ const EditExpenseCategory = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       description: "",
@@ -62,7 +75,7 @@ const EditExpenseCategory = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
+
 
   useEffect(() => {
     if (categoryItem?.id) {
@@ -142,7 +155,7 @@ const EditExpenseCategory = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <div className="grid grid-cols-1 gap-6">
                 <FormField
                   control={form.control}
@@ -229,7 +242,20 @@ const EditExpenseCategory = () => {
                     disabled={updateMutation.isLoading}>
                     {t("page.expenseCategory.add.saveAsDraft")}
                   </Button>
-                  <Button type="submit" disabled={updateMutation.isLoading} className="gap-2">
+                  <Button
+                    type="button"
+                    disabled={updateMutation.isLoading}
+                    onClick={() => {
+                      const data = form.getValues();
+                      const missing = getMissingFields(data, formSchema, expenseCategoryFieldLabels);
+                      if (missing.length > 0) {
+                        setMissingFields(missing);
+                        setMissingFieldsModal(true);
+                        return;
+                      }
+                      setSaveConfirm(true);
+                    }}
+                    className="gap-2">
                     <Save size={18} />
                     {updateMutation.isLoading ? t("button.saving") : t("button.save")}
                   </Button>
@@ -270,7 +296,23 @@ const EditExpenseCategory = () => {
             onSubmit(values, true);
           }}
         />
-        <Modal type="confirm" {...confirmModal()} />
+        <Modal
+          type="confirm"
+          open={saveConfirm}
+          onOpenChange={setSaveConfirm}
+          title={t("common.confirmSave")}
+          description={t("common.confirmSaveDesc")}
+          confirmText={t("common.yesSave")}
+          onConfirm={() => {
+            setSaveConfirm(false);
+            onSubmit(form.getValues(), false);
+          }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFields}
+        />
       </div>
     </div>
   );

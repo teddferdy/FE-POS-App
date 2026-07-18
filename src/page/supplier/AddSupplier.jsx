@@ -20,7 +20,8 @@ import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { Loading } from "@/components/ui/loading";
 const AddSupplier = () => {
   const { t } = useTranslation();
@@ -43,9 +44,17 @@ const AddSupplier = () => {
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
+  const supplierFieldLabels = {
+    name: t("page.supplier.form.name"),
+    phone: t("page.supplier.form.phone"),
+  };
+
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
 
@@ -58,6 +67,7 @@ const AddSupplier = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       contactPerson: "",
@@ -67,10 +77,6 @@ const AddSupplier = () => {
       isActive: true
     }
   });
-
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
-    onSubmit(values)
-  );
 
   const createMutation = useMutation(addSupplier, {
     onSuccess: () => {
@@ -135,7 +141,7 @@ const AddSupplier = () => {
             <div className="lg:col-span-2 space-y-6">
               <Card className="p-6">
               <Form {...form}>
-                <form onSubmit={onConfirmSubmit} className="space-y-6">
+                <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-6">
                   {isSuperAdmin && (
                     <FormField
                       control={form.control}
@@ -258,7 +264,24 @@ const AddSupplier = () => {
                   />
                 </form>
               </Form>
-              <Modal type="confirm" {...confirmModal()} />
+              <Modal
+                type="confirm"
+                open={confirmSaveModal}
+                onOpenChange={setConfirmSaveModal}
+                title="Konfirmasi Simpan"
+                description="Apakah Anda yakin ingin menyimpan data ini?"
+                confirmText="Ya, Simpan"
+                onConfirm={() => {
+                  setConfirmSaveModal(false);
+                  const values = form.getValues();
+                  onSubmit(values);
+                }}
+              />
+              <MissingFieldsModal
+                open={missingFieldsModal}
+                onOpenChange={setMissingFieldsModal}
+                fields={missingFieldsList}
+              />
             </Card>
             </div>
 
@@ -334,7 +357,21 @@ const AddSupplier = () => {
                 {t("page.supplier.form.saveAsDraft")}
               </Button>
               <Button
-                onClick={() => onConfirmSubmit()}
+                type="button"
+                onClick={() => {
+                  const values = form.getValues();
+                  const extraErrors = [];
+                  if (isSuperAdmin && !allStores && selectedStore.length === 0) {
+                    extraErrors.push({ name: "store", message: "required" });
+                  }
+                  const missing = getMissingFields(values, formSchema, supplierFieldLabels, extraErrors);
+                  if (missing.length > 0) {
+                    setMissingFieldsList(missing);
+                    setMissingFieldsModal(true);
+                    return;
+                  }
+                  setConfirmSaveModal(true);
+                }}
                 disabled={createMutation.isLoading}
                 className="gap-2">
                 <Save size={18} />

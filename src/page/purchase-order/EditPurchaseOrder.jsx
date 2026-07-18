@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Save, X, Plus, Trash2, ShoppingCart, Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
+import { z } from "zod";
 import { editPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
 import { getAllSupplier, addSupplier } from "@/services/supplier";
 import { getAllEmployee } from "@/services/employee";
@@ -22,6 +23,8 @@ import { TimePicker } from "@/components/ui/time-picker";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 
 const EditPurchaseOrder = () => {
@@ -33,6 +36,35 @@ const EditPurchaseOrder = () => {
   const user = cookie?.user;
   const store = user?.store || "";
 
+  const poFieldLabels = {
+    store: t("page.purchaseOrder.add.store"),
+    supplier: t("page.purchaseOrder.add.supplier"),
+    pic: t("page.purchaseOrder.add.pic"),
+    orderDate: t("page.purchaseOrder.add.poDate"),
+    orderTime: t("page.purchaseOrder.add.time"),
+    dueDate: t("page.purchaseOrder.add.dueDate"),
+    items: t("page.purchaseOrder.add.itemSection")
+  };
+
+  const poSchema = z.object({
+    store: z.number().min(1, ""),
+    supplier: z.number().min(1, ""),
+    pic: z.number().min(1, ""),
+    orderDate: z.date({ required_error: "" }),
+    orderTime: z.string().min(1, ""),
+    dueDate: z.date({ required_error: "" }),
+    items: z
+      .array(
+        z.object({
+          name: z.string().min(1, ""),
+          qty: z.number().min(1, ""),
+          price: z.number().min(0, ""),
+          unit: z.string().min(1)
+        })
+      )
+      .min(1, "")
+  });
+
   const [selectedStore, setSelectedStore] = useState("");
   const [supplierSearch, setSupplierSearch] = useState("");
   const [supplierId, setSupplierId] = useState(null);
@@ -43,6 +75,8 @@ const EditPurchaseOrder = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [orderDate, setOrderDate] = useState(null);
   const [orderTime, setOrderTime] = useState("");
   const [dueDate, setDueDate] = useState(null);
@@ -384,7 +418,7 @@ const EditPurchaseOrder = () => {
 
       <div>
         <div>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
             <Card className="overflow-hidden border-0 shadow-md rounded-xl">
               <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 px-6 py-4">
                 <div className="flex items-center gap-3">
@@ -811,7 +845,27 @@ const EditPurchaseOrder = () => {
                     type="button"
                     disabled={updateMutation.isLoading}
                     className="gap-2 min-w-[140px] shadow-md"
-                    onClick={() => setConfirmModal(true)}>
+                    onClick={() => {
+                      const missing = getMissingFields(
+                        {
+                          store: Number(selectedStore) || 0,
+                          supplier: supplierId,
+                          pic: picId,
+                          orderDate,
+                          orderTime,
+                          dueDate,
+                          items: items.filter((i) => i.name?.trim())
+                        },
+                        poSchema,
+                        poFieldLabels
+                      );
+                      if (missing.length > 0) {
+                        setMissingFieldsList(missing);
+                        setMissingFieldsModal(true);
+                        return;
+                      }
+                      setConfirmModal(true);
+                    }}>
                     <Save size={18} />
                     {updateMutation.isLoading
                       ? t("common.saving")
@@ -909,6 +963,11 @@ const EditPurchaseOrder = () => {
       </Modal>
       {addSupplierMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
+      />
     </div>
   );
 };

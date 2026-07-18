@@ -23,8 +23,20 @@ import { TimePicker } from "@/components/ui/time-picker";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 const AddPurchaseOrder = () => {
   const { t } = useTranslation();
+
+  const poFieldLabels = {
+    store: t("page.purchaseOrder.add.store"),
+    supplier: t("page.purchaseOrder.add.supplier"),
+    pic: t("page.purchaseOrder.add.pic"),
+    orderDate: t("page.purchaseOrder.add.poDate"),
+    orderTime: t("page.purchaseOrder.add.time"),
+    dueDate: t("page.purchaseOrder.add.dueDate"),
+    items: t("page.purchaseOrder.add.itemSection")
+  };
 
   const poSchema = z.object({
     store: z.number().min(1, t("page.purchaseOrder.add.validation.store")),
@@ -79,6 +91,8 @@ const AddPurchaseOrder = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [orderDate, setOrderDate] = useState(new Date());
   const [orderTime, setOrderTime] = useState(format(new Date(), "HH:mm"));
   const [dueDate, setDueDate] = useState(null);
@@ -346,7 +360,7 @@ const AddPurchaseOrder = () => {
       ) : (
         <div>
           <div>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <Card className="overflow-hidden border-0 shadow-md rounded-xl">
                 <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -844,7 +858,27 @@ const AddPurchaseOrder = () => {
                       type="button"
                       disabled={createMutation.isLoading}
                       className="gap-2 min-w-[140px] shadow-md"
-                      onClick={() => setConfirmModal(true)}>
+                      onClick={() => {
+                        const missing = getMissingFields(
+                          {
+                            store: Number(selectedStore) || 0,
+                            supplier: supplierId,
+                            pic: picId,
+                            orderDate,
+                            orderTime,
+                            dueDate,
+                            items: items.filter((i) => i.name?.trim())
+                          },
+                          poSchema,
+                          poFieldLabels
+                        );
+                        if (missing.length > 0) {
+                          setMissingFieldsList(missing);
+                          setMissingFieldsModal(true);
+                          return;
+                        }
+                        setConfirmModal(true);
+                      }}>
                       <Save size={18} />
                       {createMutation.isLoading
                         ? t("common.saving")
@@ -947,6 +981,11 @@ const AddPurchaseOrder = () => {
           </div>
         </div>
       </Modal>
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
+      />
     </div>
   );
 };

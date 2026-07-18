@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+// Removed useConfirmSubmit - replaced with MissingFieldsModal pattern
 import {
   Form,
   FormField,
@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/form";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const iconSections = [
   {
@@ -353,18 +355,27 @@ const AddCategory = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
+
+  const categoryFieldLabels = {
+    name: "Nama Kategori"
+  };
+
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+
   const fileInputRef = useRef(null);
   const role = user?.roleType || "";
 
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const {
+    data: locationsData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["allLocations"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const formSchema = useMemo(() => {
@@ -378,6 +389,7 @@ const AddCategory = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       description: "",
@@ -386,34 +398,32 @@ const AddCategory = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
-
   const createMutation = useMutation(addCategory, {
     onSuccess: () => {
-      setIsSubmitting(false);
+      queryClient.invalidateQueries(["categories"]);
       setSuccessModal(true);
+      setIsSubmitting(false);
     },
     onError: (err) => {
-      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);
+      toast.error(err?.response?.data?.message || err.message);
     }
   });
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+      setSelectedIcon("");
+    }
+  };
 
   const handleSelectIcon = (icon) => {
     setSelectedIcon(icon);
     setSelectedImage(null);
     setImagePreview(null);
-  };
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setSelectedIcon("");
-    setSelectedImage(file);
-    const reader = new FileReader();
-    reader.onload = (ev) => setImagePreview(ev.target.result);
-    reader.readAsDataURL(file);
-    e.target.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const onSubmit = (values, saveAsDraft = false) => {
@@ -466,7 +476,7 @@ const AddCategory = () => {
       <div>
         <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) => e.preventDefault()}>
               <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8 space-y-6">
                   <FormField
@@ -550,11 +560,12 @@ const AddCategory = () => {
                         name="isActive"
                         render={({ field }) => (
                           <FormItem>
-                            <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                              field.value
-                                ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                            }`}>
+                            <div
+                              className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                field.value
+                                  ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                  : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                              }`}>
                               <div className="flex items-center gap-3">
                                 <div
                                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -725,7 +736,8 @@ const AddCategory = () => {
                   </Button>
                   <Button
                     type="button"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       if (isSuperAdmin && !allStores && selectedStore.length === 0) {
                         form.setError("store", {
                           message: t("page.ingredientCategory.add.storeRequired")
@@ -733,7 +745,14 @@ const AddCategory = () => {
                         return;
                       }
                       form.clearErrors("store");
-                      form.handleSubmit((v) => onSubmit(v, false))();
+                      const values = form.getValues();
+                      const missing = getMissingFields(values, formSchema, categoryFieldLabels);
+                      if (missing.length > 0) {
+                        setMissingFieldsList(missing);
+                        setMissingFieldsModal(true);
+                        return;
+                      }
+                      setConfirmSaveModal(true);
                     }}
                     disabled={isSubmitting}>
                     {t("page.category.button.save")}
@@ -742,8 +761,6 @@ const AddCategory = () => {
               </div>
             </form>
           </Form>
-
-          <Modal type="confirm" {...confirmModal()} />
 
           {iconPickerOpen && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -899,6 +916,24 @@ const AddCategory = () => {
             const values = form.getValues();
             onSubmit(values, true);
           }}
+        />
+        <Modal
+          type="confirm"
+          open={confirmSaveModal}
+          onOpenChange={setConfirmSaveModal}
+          title="Konfirmasi Simpan"
+          description="Apakah Anda yakin ingin menyimpan data ini?"
+          confirmText="Ya, Simpan"
+          onConfirm={() => {
+            setConfirmSaveModal(false);
+            const values = form.getValues();
+            onSubmit(values);
+          }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
@@ -23,8 +23,9 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const EditTypePayment = () => {
   const { t } = useTranslation();
@@ -39,6 +40,17 @@ const EditTypePayment = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [saveConfirm, setSaveConfirm] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+
+  const fieldLabels = useMemo(
+    () => ({
+      name: t("page.typePayment.form.name"),
+      type: t("page.typePayment.form.type")
+    }),
+    [t]
+  );
 
   const {
     data: detailData,
@@ -59,6 +71,7 @@ const EditTypePayment = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       type: "",
@@ -82,10 +95,6 @@ const EditTypePayment = () => {
       });
     }
   }, [item, form]);
-
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
-    onSubmit(values)
-  );
 
   const updateMutation = useMutation(editTypePayment, {
     onSuccess: () => {
@@ -161,8 +170,18 @@ const EditTypePayment = () => {
               {t("common.saveAsDraft")}
             </Button>
             <Button
-              onClick={() => onConfirmSubmit()}
+              type="button"
               disabled={updateMutation.isLoading}
+              onClick={() => {
+                const data = form.getValues();
+                const missing = getMissingFields(data, formSchema, fieldLabels);
+                if (missing.length > 0) {
+                  setMissingFieldsList(missing);
+                  setMissingFieldsModal(true);
+                  return;
+                }
+                setSaveConfirm(true);
+              }}
               className="gap-2">
               <Save size={18} />
               {updateMutation.isLoading ? t("common.saving") : t("common.save")}
@@ -172,7 +191,7 @@ const EditTypePayment = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={onConfirmSubmit} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -257,7 +276,18 @@ const EditTypePayment = () => {
               />
             </form>
           </Form>
-          <Modal type="confirm" {...confirmModal()} />
+          <Modal
+            type="confirm"
+            open={saveConfirm}
+            onOpenChange={setSaveConfirm}
+            title={t("common.confirmSave")}
+            description={t("common.confirmSaveDesc")}
+            confirmText={t("common.yesSave")}
+            onConfirm={() => {
+              setSaveConfirm(false);
+              onSubmit(form.getValues(), false);
+            }}
+          />
         </Card>
 
         <Modal
@@ -290,6 +320,11 @@ const EditTypePayment = () => {
             const values = form.getValues();
             onSubmit(values, true);
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
       </div>
     </div>

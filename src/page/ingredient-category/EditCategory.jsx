@@ -17,7 +17,8 @@ import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const EditCategory = () => {
   const { t } = useTranslation();
@@ -34,14 +35,19 @@ const EditCategory = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
+  const categoryFieldLabels = {
+    name: "Nama Kategori",
+  };
+
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: { name: "", isActive: true }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
-    onSubmit(values, false)
-  );
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
   const {
     isLoading: loadingData,
@@ -105,7 +111,7 @@ const EditCategory = () => {
       </PageHeader>
 
       <Form {...form} className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12">
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -194,7 +200,20 @@ const EditCategory = () => {
                 disabled={editMutation.isLoading}>
                 {t("common.saveAsDraft")}
               </Button>
-              <Button type="submit" disabled={editMutation.isLoading}>
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const values = form.getValues();
+                  const missing = getMissingFields(values, formSchema, categoryFieldLabels);
+                  if (missing.length > 0) {
+                    setMissingFieldsList(missing);
+                    setMissingFieldsModal(true);
+                    return;
+                  }
+                  setConfirmSaveModal(true);
+                }}
+                disabled={editMutation.isLoading}>
                 <Save size={16} className="mr-1" />
                 {editMutation.isLoading
                   ? t("page.ingredientCategory.add.savingButton")
@@ -281,7 +300,24 @@ const EditCategory = () => {
           onSubmit(values, true);
         }}
       />
-      <Modal type="confirm" {...confirmModal()} />
+      <Modal
+        type="confirm"
+        open={confirmSaveModal}
+        onOpenChange={setConfirmSaveModal}
+        title="Konfirmasi Simpan"
+        description="Apakah Anda yakin ingin menyimpan data ini?"
+        confirmText="Ya, Simpan"
+        onConfirm={() => {
+          setConfirmSaveModal(false);
+          const values = form.getValues();
+          onSubmit(values);
+        }}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
+      />
     </div>
   );
 };

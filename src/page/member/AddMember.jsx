@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -15,6 +15,8 @@ import UserGuide from "@/components/organism/UserGuide";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -37,6 +39,8 @@ const AddMember = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -47,6 +51,20 @@ const AddMember = () => {
     tier: "",
     initialPoints: 0
   });
+
+  const memberFieldLabels = useMemo(
+    () => ({
+      name: t("page.member.add.fullName"),
+      email: t("page.member.add.email"),
+      phoneNumber: t("page.member.add.phoneNumber"),
+      birthDate: t("page.member.add.dateOfBirth"),
+      gender: t("page.member.add.gender"),
+      address: t("page.member.add.fullAddress"),
+      tier: t("page.member.add.membershipTier"),
+      initialPoints: t("page.member.add.initialPoints")
+    }),
+    [t]
+  );
 
   const { data: tiersData } = useQuery(
     ["member-tiers-active"],
@@ -80,14 +98,12 @@ const AddMember = () => {
     }));
   };
 
-  const handleSubmit = (e, saveAsDraft = false) => {
-    e.preventDefault();
+  const handleSaveClick = (saveAsDraft = false) => {
     if (!saveAsDraft) {
-      const result = formSchema.safeParse(form);
-      if (!result.success) {
-        toast.error(t("page.member.add.toastValidation"), {
-          description: t("page.member.add.validationDesc")
-        });
+      const missing = getMissingFields(form, formSchema, memberFieldLabels);
+      if (missing.length > 0) {
+        setMissingFieldsList(missing);
+        setMissingFieldsModal(true);
         return;
       }
     }
@@ -126,7 +142,7 @@ const AddMember = () => {
       <div>
         <div>
           <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) => e.preventDefault()}>
               <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -434,7 +450,7 @@ const AddMember = () => {
                     disabled={isSubmitting}>
                     {t("page.member.add.saveDraft")}
                   </Button>
-                  <Button type="submit" disabled={isSubmitting} className="gap-2">
+                  <Button type="button" onClick={() => handleSaveClick()} disabled={isSubmitting} className="gap-2">
                     <span className="material-symbols-outlined text-lg">save</span>
                     {t("page.member.button.save")}
                   </Button>
@@ -486,6 +502,12 @@ const AddMember = () => {
             status: "draft"
           });
         }}
+      />
+
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
       />
     </div>
   );

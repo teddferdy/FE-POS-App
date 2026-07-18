@@ -14,6 +14,7 @@ import {
 } from "@/utils/sidebar-menu";
 import { filterMenuByPermission } from "@/utils/permission";
 import { logOut } from "@/services/auth";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const Sidebar = ({ collapsed, onToggle }) => {
@@ -83,6 +84,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     return result;
   });
   const [logoutModal, setLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleSupportClick = () => {
     navigate("/support");
@@ -146,6 +148,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   };
 
   const confirmLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await logOut();
     } catch (e) {}
@@ -285,6 +288,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
       className={`fixed left-0 top-0 h-screen z-50 bg-card border-r border-border shadow-sm flex flex-col py-4 px-2 transition-all duration-300 ${
         collapsed ? "w-16" : "w-64"
       }`}>
+      {isLoggingOut && (
+        <Loading fullscreen size="lg" label={t("header.loggingOut") || "Logging out..."} />
+      )}
       {/* Brand */}
       <div className="mb-6 px-2 flex items-center justify-between">
         <div

@@ -28,7 +28,8 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
@@ -66,9 +67,26 @@ const AddReservation = () => {
   const [availableTables, setAvailableTables] = useState([]);
   const [loadingTables, setLoadingTables] = useState(false);
   const [locationDetail, setLocationDetail] = useState(null);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+
+  const fieldLabels = {
+    customerName: "Nama Customer",
+    customerPhone: "No. Telepon",
+    customerEmail: "Email",
+    guestCount: "Jumlah Tamu",
+    store: "Toko",
+    reservationDate: "Tanggal",
+    startTime: "Jam Mulai",
+    endTime: "Jam Selesai",
+    tableId: "Meja",
+    notes: "Catatan"
+  };
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       customerName: "",
       customerPhone: "",
@@ -174,8 +192,6 @@ const AddReservation = () => {
     createMutation.mutate(payload);
   };
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
-
   return (
     <div>
       <div className="space-y-6">
@@ -202,7 +218,7 @@ const AddReservation = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="col-span-full">
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
@@ -409,14 +425,40 @@ const AddReservation = () => {
                 <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
                   <X size={18} /> {t("breadcrumb.back")}
                 </Button>
-                <Button type="submit" disabled={createMutation.isLoading} className="gap-2">
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const values = form.getValues();
+                    const missing = getMissingFields(values, formSchema, fieldLabels);
+                    if (missing.length > 0) {
+                      setMissingFieldsList(missing);
+                      setMissingFieldsModal(true);
+                      return;
+                    }
+                    setConfirmSaveModal(true);
+                  }}
+                  disabled={createMutation.isLoading}
+                  className="gap-2">
                   <Save size={18} />
                   {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
                 </Button>
               </div>
             </form>
           </Form>
-          <Modal type="confirm" {...confirmModal()} />
+          <Modal
+            type="confirm"
+            open={confirmSaveModal}
+            onOpenChange={setConfirmSaveModal}
+            title="Konfirmasi Simpan"
+            description="Apakah Anda yakin ingin menyimpan data ini?"
+            confirmText="Ya, Simpan"
+            onConfirm={() => {
+              setConfirmSaveModal(false);
+              const values = form.getValues();
+              onSubmit(values);
+            }}
+          />
         </Card>
 
         <Modal
@@ -427,6 +469,11 @@ const AddReservation = () => {
           description="Perubahan yang belum disimpan akan hilang."
           confirmText="Ya, Batalkan"
           onConfirm={() => navigate("/reservation")}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
         {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       </div>

@@ -13,9 +13,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
+import { z } from "zod";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const EditGoodsReceipt = () => {
   const navigate = useNavigate();
@@ -33,6 +36,18 @@ const EditGoodsReceipt = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const fieldLabels = {
+    poId: t("page.goodsReceipt.edit.form.purchaseOrder"),
+    items: t("page.goodsReceipt.edit.form.items")
+  };
+
+  const formSchema = z.object({
+    poId: z.string().min(1),
+    items: z.array(z.any()).min(1)
+  });
 
   const {
     data: receiptData,
@@ -506,7 +521,18 @@ const EditGoodsReceipt = () => {
                 disabled={isSubmitting}>
                 Simpan sebagai Draft
               </Button>
-              <Button type="submit" disabled={isSubmitting || items.length === 0}>
+              <Button
+                type="button"
+                disabled={isSubmitting || items.length === 0}
+                onClick={() => {
+                  const missing = getMissingFields({ poId, items }, formSchema, fieldLabels);
+                  if (missing.length > 0) {
+                    setMissingFields(missing);
+                    setMissingFieldsModal(true);
+                    return;
+                  }
+                  doSubmit(false);
+                }}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting
                   ? t("page.goodsReceipt.edit.form.saving")
@@ -543,6 +569,11 @@ const EditGoodsReceipt = () => {
             setDraftModal(false);
             doSubmit(true);
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFields}
         />
 
         <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">

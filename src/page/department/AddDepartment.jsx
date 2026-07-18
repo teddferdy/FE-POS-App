@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -25,6 +25,8 @@ import { Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const AddDepartment = () => {
   const { t } = useTranslation();
@@ -32,6 +34,16 @@ const AddDepartment = () => {
   const queryClient = useQueryClient();
   const [draftModal, setDraftModal] = useState(false);
   const [saveConfirm, setSaveConfirm] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const departmentFieldLabels = useMemo(
+    () => ({
+      name: t("page.department.form.name"),
+      description: t("page.department.form.description")
+    }),
+    [t]
+  );
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.department.validation.nameRequired")),
@@ -41,6 +53,7 @@ const AddDepartment = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: { name: "", description: "", isActive: true }
   });
 
@@ -80,7 +93,7 @@ const AddDepartment = () => {
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(() => setSaveConfirm(true))} className="space-y-6">
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
               <FormField
                 control={form.control}
@@ -134,11 +147,12 @@ const AddDepartment = () => {
               name="isActive"
               render={({ field }) => (
                 <FormItem>
-                  <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                    field.value
-                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                  }`}>
+                  <div
+                    className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                      field.value
+                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                    }`}>
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -189,8 +203,18 @@ const AddDepartment = () => {
                   {t("common.saveAsDraft")}
                 </Button>
                 <Button
-                  type="submit"
+                  type="button"
                   disabled={createMutation.isLoading}
+                  onClick={() => {
+                    const data = form.getValues();
+                    const missing = getMissingFields(data, formSchema, departmentFieldLabels);
+                    if (missing.length > 0) {
+                      setMissingFields(missing);
+                      setMissingFieldsModal(true);
+                      return;
+                    }
+                    setSaveConfirm(true);
+                  }}
                   className="gap-2 shadow-lg shadow-primary/20">
                   <span className="material-symbols-outlined text-lg">save</span>
                   {t("page.department.button.save")}
@@ -226,6 +250,11 @@ const AddDepartment = () => {
         }}
       />
       {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFields}
+      />
     </div>
   );
 };

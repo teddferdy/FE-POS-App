@@ -56,6 +56,8 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -80,6 +82,13 @@ const AddProduct = () => {
     { value: "gelas", label: t("page.product.form.unit.gelas") },
     { value: "porsi", label: t("page.product.form.unit.porsi") }
   ];
+
+  const productFieldLabels = {
+    nameProduct: "Nama Produk",
+    category: "Kategori",
+    price: "Harga",
+    store: "Toko",
+  };
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -109,6 +118,8 @@ const AddProduct = () => {
   const [noStockOpname, setNoStockOpname] = useState(false);
   const [composition, setComposition] = useState([]);
   const [compositionOptions, setCompositionOptions] = useState([]);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
   const isSuperAdmin = role === "super_admin";
 
@@ -170,6 +181,7 @@ const AddProduct = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       nameProduct: "",
       sku: "",
@@ -478,7 +490,7 @@ const AddProduct = () => {
   };
 
   const onSubmit = (values) => handleSave(values, false);
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
   const steps = [
     { num: 1, title: t("page.product.step.info"), desc: t("page.product.step.infoDesc") },
@@ -554,7 +566,7 @@ const AddProduct = () => {
           </div>
 
           <Form {...form}>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) => { e.preventDefault(); }}>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
                   {currentStep === 1 && (
@@ -1713,15 +1725,17 @@ const AddProduct = () => {
                   ) : (
                     <Button
                       type="button"
-                      onClick={() => {
-                        if (!allStores && selectedStores.length === 0) {
-                          form.setError("store", {
-                            message: t("page.product.form.selectStoreError")
-                          });
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const values = form.getValues();
+                        const extraErrors = !allStores && selectedStores.length === 0 ? [{ name: "store" }] : [];
+                        const missing = getMissingFields(values, formSchema, productFieldLabels, extraErrors);
+                        if (missing.length > 0) {
+                          setMissingFieldsList(missing);
+                          setMissingFieldsModal(true);
                           return;
                         }
-                        form.clearErrors("store");
-                        handleSubmit();
+                        setConfirmSaveModal(true);
                       }}
                       disabled={isSubmitting}
                       className="gap-2 shadow-md">
@@ -1738,7 +1752,23 @@ const AddProduct = () => {
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("page.product.form.saving")} />}
 
-      <Modal type="confirm" {...confirmModal()} />
+      <Modal
+        type="confirm"
+        open={confirmSaveModal}
+        onOpenChange={setConfirmSaveModal}
+        title="Konfirmasi Simpan"
+        description="Apakah Anda yakin ingin menyimpan data ini?"
+        confirmText="Ya, Simpan"
+        onConfirm={() => {
+          setConfirmSaveModal(false);
+          onSubmit(form.getValues());
+        }}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
+      />
 
       <Modal
         type="success"

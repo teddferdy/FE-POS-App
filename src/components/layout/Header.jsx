@@ -32,6 +32,7 @@ import CommandPalette from "./CommandPalette";
 import { useTourStore } from "@/state/tour";
 import { useThemeStore } from "@/state/theme";
 import { logOut } from "@/services/auth";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const StoreSelector = ({ cookie, setCookie }) => {
@@ -146,6 +147,7 @@ export const UserDropdown = () => {
   const ref = useRef(null);
   const [cookie, , removeCookie] = useCookies();
   const [logoutModal, setLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const user = cookie?.user;
   const userName = user?.userName || user?.name || "Admin";
@@ -163,6 +165,7 @@ export const UserDropdown = () => {
   }, []);
 
   const confirmLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await logOut();
     } catch (_e) {
@@ -184,6 +187,9 @@ export const UserDropdown = () => {
 
   return (
     <div data-tour="header-user" className="relative" ref={ref}>
+      {isLoggingOut && (
+        <Loading fullscreen size="lg" label={t("header.loggingOut") || "Logging out..."} />
+      )}
       <button
         onClick={() => setOpen(!open)}
         className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden border-2 border-primary flex items-center justify-center bg-accent text-foreground text-[10px] sm:text-xs font-bold shrink-0 hover:brightness-90 transition-all">

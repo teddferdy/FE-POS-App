@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/command";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 
 const AddStockTransfer = () => {
   const { t } = useTranslation();
@@ -39,6 +40,15 @@ const AddStockTransfer = () => {
   const [items, setItems] = useState([{ productId: "", qty: "", unit: "pcs", notes: "" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+
+  const fieldLabels = {
+    fromStore: t("page.stockTransfer.add.form.fromStore"),
+    toStore: t("page.stockTransfer.add.form.toStore"),
+    productId: t("page.stockTransfer.add.table.product"),
+    qty: t("page.stockTransfer.add.table.qty")
+  };
 
   const { data: locData } = useQuery(["locations-for-transfer"], getAllLocation, {
     
@@ -63,16 +73,24 @@ const AddStockTransfer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!fromStore || !toStore || fromStore === toStore) {
-      toast.error(t("page.stockTransfer.add.toast.validation"), {
-        description: t("page.stockTransfer.add.toast.storeMustDiff")
-      });
-      return;
+    const missing = [];
+    if (isSuperAdmin && !fromStore) {
+      missing.push(fieldLabels.fromStore);
+    }
+    if (!toStore) {
+      missing.push(fieldLabels.toStore);
+    }
+    if (fromStore && toStore && fromStore === toStore) {
+      if (!missing.includes(fieldLabels.toStore)) {
+        missing.push(fieldLabels.toStore);
+      }
     }
     if (!items[0].productId) {
-      toast.error(t("page.stockTransfer.add.toast.validation"), {
-        description: t("page.stockTransfer.add.toast.minItem")
-      });
+      missing.push(fieldLabels.productId);
+    }
+    if (missing.length > 0) {
+      setMissingFieldsList(missing);
+      setMissingFieldsModal(true);
       return;
     }
     setIsSubmitting(true);
@@ -360,6 +378,11 @@ const AddStockTransfer = () => {
             setCancelModal(false);
             navigate("/stock-transfer");
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
       </div>
     </>

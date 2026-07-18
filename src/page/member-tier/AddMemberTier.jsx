@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -12,6 +12,8 @@ import { addMemberTier } from "@/services/member-tier";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -58,6 +60,22 @@ const AddMemberTier = () => {
 
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const tierFieldLabels = useMemo(
+    () => ({
+      tierName: t("page.memberTier.add.tierName"),
+      minPoints: t("page.memberTier.add.minPoints"),
+      maxPoints: t("page.memberTier.add.maxPoints"),
+      discountPercent: t("page.memberTier.add.discountPercent"),
+      isActive: t("page.memberTier.add.tierStatus"),
+      selectedIcon: t("page.memberTier.add.selectIcon"),
+      selectedColor: t("page.memberTier.add.badgeColor"),
+      perks: t("page.memberTier.add.benefits")
+    }),
+    [t]
+  );
 
   const formatIDR = (value) => {
     if (!value) return "";
@@ -112,11 +130,10 @@ const AddMemberTier = () => {
 
   const handleSave = (saveAsDraft = false) => {
     if (!saveAsDraft) {
-      const result = tierSchema.safeParse(formData);
-      if (!result.success) {
-        toast.error(t("page.memberTier.add.toastError"), {
-          description: t("page.memberTier.add.footerHint")
-        });
+      const missing = getMissingFields(formData, tierSchema, tierFieldLabels);
+      if (missing.length > 0) {
+        setMissingFields(missing);
+        setMissingFieldsModal(true);
         return;
       }
     }
@@ -509,6 +526,12 @@ const AddMemberTier = () => {
             color: formData.selectedColor
           });
         }}
+      />
+
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFields}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -11,6 +11,8 @@ import { z } from "zod";
 import { getDetailMemberTier, editMemberTier } from "@/services/member-tier";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -58,6 +60,22 @@ const EditMemberTier = () => {
 
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  const tierFieldLabels = useMemo(
+    () => ({
+      tierName: t("page.memberTier.edit.tierName"),
+      minPoints: t("page.memberTier.edit.minPoints"),
+      maxPoints: t("page.memberTier.edit.maxPoints"),
+      discountPercent: t("page.memberTier.edit.discountPercent"),
+      isActive: t("page.memberTier.add.tierStatus"),
+      selectedIcon: t("page.memberTier.edit.selectIcon"),
+      selectedColor: t("page.memberTier.edit.badgeColor"),
+      perks: t("page.memberTier.edit.benefits")
+    }),
+    [t]
+  );
 
   const {
     data: tierData,
@@ -137,11 +155,10 @@ const EditMemberTier = () => {
 
   const handleSave = (saveAsDraft = false) => {
     if (!saveAsDraft) {
-      const result = tierSchema.safeParse(formData);
-      if (!result.success) {
-        toast.error(t("page.memberTier.edit.toastError"), {
-          description: t("page.memberTier.edit.basicInfoDesc")
-        });
+      const missing = getMissingFields(formData, tierSchema, tierFieldLabels);
+      if (missing.length > 0) {
+        setMissingFields(missing);
+        setMissingFieldsModal(true);
         return;
       }
     }
@@ -525,6 +542,12 @@ const EditMemberTier = () => {
           setDraftModal(false);
           handleSave(true);
         }}
+      />
+
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFields}
       />
     </div>
   );

@@ -22,6 +22,8 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import UserGuide from "@/components/organism/UserGuide";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 // const item = {
 //   hidden: { opacity: 0, y: 20 },
 //   show: { opacity: 1, y: 0 }
@@ -48,6 +50,8 @@ const AddIngredient = () => {
   const isSuperAdmin = role === "super_admin";
   const [cancelModal, setCancelModal] = React.useState(false);
   const [draftModal, setDraftModal] = React.useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = React.useState(false);
+  const [missingFieldsList, setMissingFieldsList] = React.useState([]);
 
   const unitOptions = [
     { value: "pcs", label: t("page.ingredient.form.unitPcs") },
@@ -72,6 +76,11 @@ const AddIngredient = () => {
     { value: "buah", label: t("page.ingredient.form.unitBuah") },
     { value: "lembar", label: t("page.ingredient.form.unitLembar") }
   ];
+
+  const ingredientFieldLabels = {
+    name: "Nama Ingredient",
+    store: "Toko",
+  };
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.ingredient.form.nameRequired")),
@@ -113,6 +122,7 @@ const AddIngredient = () => {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       unit: "pcs",
@@ -128,9 +138,7 @@ const AddIngredient = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
-    onSubmit(values, false)
-  );
+  const [confirmSaveModal, setConfirmSaveModal] = React.useState(false);
 
   const watchUnit = form.watch("unit");
   const watchBaseUnit = form.watch("baseUnit");
@@ -241,7 +249,7 @@ const AddIngredient = () => {
         ) : (
           <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
             <Form {...form}>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={(e) => { e.preventDefault(); }}>
                 {isSuperAdmin && (
                   <FormField
                     control={form.control}
@@ -675,15 +683,17 @@ const AddIngredient = () => {
                     </Button>
                     <Button
                       type="button"
-                      onClick={() => {
-                        if (isSuperAdmin && !form.getValues("store")) {
-                          form.setError("store", {
-                            message: t("page.ingredientCategory.add.storeRequired")
-                          });
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const values = form.getValues();
+                        const extraErrors = isSuperAdmin && !values.store ? [{ name: "store" }] : [];
+                        const missing = getMissingFields(values, formSchema, ingredientFieldLabels, extraErrors);
+                        if (missing.length > 0) {
+                          setMissingFieldsList(missing);
+                          setMissingFieldsModal(true);
                           return;
                         }
-                        form.clearErrors("store");
-                        handleSubmit();
+                        setConfirmSaveModal(true);
                       }}
                       disabled={mutation.isLoading}>
                       <Save size={16} className="mr-1" />{" "}
@@ -727,7 +737,23 @@ const AddIngredient = () => {
             onSubmit(values, true);
           }}
         />
-        <Modal type="confirm" {...confirmModal()} />
+        <Modal
+          type="confirm"
+          open={confirmSaveModal}
+          onOpenChange={setConfirmSaveModal}
+          title="Konfirmasi Simpan"
+          description="Apakah Anda yakin ingin menyimpan data ini?"
+          confirmText="Ya, Simpan"
+          onConfirm={() => {
+            setConfirmSaveModal(false);
+            onSubmit(form.getValues(), false);
+          }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
+        />
       </div>
     </div>
   );
