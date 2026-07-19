@@ -86,9 +86,9 @@ const AddSupplier = () => {
   const excelImportMutation = useMutation(({ id, file }) => importSupplierProducts({ id, file }), {
     onSuccess: (data) => {
       const imported = (data?.data || data?.products || []).map((p) => ({
-        id: p.productId || p._id || p.id,
-        name: p.name || p.productName || p.product_name,
-        price: p.price || p.supplierPrice || 0
+        id: p.id || `imported_${Date.now()}`,
+        name: p.name || p.productName || "",
+        price: p.price || 0
       }));
       setSupplierProducts((prev) => [...prev, ...imported]);
       toast.success(t("page.supplier.products.importSuccess"));
@@ -181,7 +181,7 @@ const AddSupplier = () => {
       ...values,
       status: statusValue,
       store: selectedStore,
-      products: supplierProducts.map((p) => ({ id: p.id, price: p.price }))
+      products: supplierProducts.map((p) => ({ name: p.name, price: p.price }))
     });
   };
 

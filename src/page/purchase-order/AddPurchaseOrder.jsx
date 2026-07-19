@@ -172,7 +172,9 @@ const AddPurchaseOrder = () => {
   const supplierToIngredients = useMemo(() => {
     const map = {};
     for (const { supplier, products } of allSupplierDetails) {
-      map[supplier.id || supplier._id] = new Set(products.map((p) => String(p.id)));
+      map[supplier.id || supplier._id] = new Set(
+        products.map((p) => (p.name || "").toLowerCase().trim())
+      );
     }
     return map;
   }, [allSupplierDetails]);
@@ -183,19 +185,28 @@ const AddPurchaseOrder = () => {
       const sid = supplier.id || supplier._id;
       const sname = supplier.name;
       for (const prod of products) {
-        const pid = String(prod.id);
-        if (!map[pid]) map[pid] = [];
-        map[pid].push({ supplierId: sid, supplierName: sname, price: prod.price });
+        const pname = (prod.name || "").toLowerCase().trim();
+        if (!map[pname]) map[pname] = [];
+        map[pname].push({ supplierId: sid, supplierName: sname, price: prod.price });
       }
     }
     return map;
   }, [allSupplierDetails]);
 
+  const getSuppliersForIngredientName = (ingredientId) => {
+    if (!ingredientId) return [];
+    const ing = activeIngredients.find((i) => i.id === ingredientId);
+    if (!ing) return [];
+    return ingredientSuppliersMap[(ing.name || "").toLowerCase().trim()] || [];
+  };
+
   const getFilteredIngredients = (search, itemSupplierId) => {
     let filtered = activeIngredients;
     if (itemSupplierId && supplierToIngredients[itemSupplierId]?.size > 0) {
-      const allowedIds = supplierToIngredients[itemSupplierId];
-      filtered = activeIngredients.filter((i) => allowedIds.has(String(i.id)));
+      const allowedNames = supplierToIngredients[itemSupplierId];
+      filtered = activeIngredients.filter((i) =>
+        allowedNames.has((i.name || "").toLowerCase().trim())
+      );
     }
     return filtered.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
   };
@@ -672,9 +683,7 @@ const AddPurchaseOrder = () => {
                   ) : (
                     <div className="space-y-3">
                       {items.map((item, idx) => {
-                        const suppliersForItem = item.ingredientId
-                          ? ingredientSuppliersMap[String(item.ingredientId)] || []
-                          : [];
+                        const suppliersForItem = getSuppliersForIngredientName(item.ingredientId);
                         const itemPrices = suppliersForItem.map((s) => s.price);
                         const minPrice = itemPrices.length > 0 ? Math.min(...itemPrices) : 0;
 
@@ -738,10 +747,13 @@ const AddPurchaseOrder = () => {
                                   onChange={(e) => {
                                     const val = e.target.value || null;
                                     updateItem(idx, "supplierId", val);
-                                    if (val && ingredientSuppliersMap[String(item.ingredientId)]) {
-                                      const match = ingredientSuppliersMap[
-                                        String(item.ingredientId)
-                                      ].find((s) => s.supplierId === val);
+                                    if (
+                                      val &&
+                                      getSuppliersForIngredientName(item.ingredientId).length > 0
+                                    ) {
+                                      const match = getSuppliersForIngredientName(
+                                        item.ingredientId
+                                      ).find((s) => s.supplierId === val);
                                       if (match) updateItem(idx, "price", match.price);
                                     }
                                   }}

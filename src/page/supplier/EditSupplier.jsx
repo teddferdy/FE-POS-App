@@ -238,7 +238,7 @@ const EditSupplier = () => {
       ...values,
       status: statusValue,
       store: selectedStore,
-      products: supplierProducts
+      products: supplierProducts.map((p) => ({ name: p.name, price: p.price }))
     });
   };
 
