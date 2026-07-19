@@ -305,10 +305,10 @@ const EditSupplier = () => {
                                 isSuperAdmin={isSuperAdmin}
                                 user={user}
                                 t={t}
-                                title={t("page.category.form.storeSection.title")}
-                                description={t("page.category.form.storeSection.desc")}
-                                noStoreLabel={t("page.category.form.storeSection.noStore")}
-                                addStoreLabel={t("page.category.form.storeSection.addStore")}
+                                title={t("page.supplier.form.storeSection.title")}
+                                description={t("page.supplier.form.storeSection.desc")}
+                                noStoreLabel={t("page.supplier.form.storeSection.noStore")}
+                                addStoreLabel={t("page.supplier.form.storeSection.addStore")}
                                 storeInfoLabel={t("page.category.form.storeInfo")}
                                 allStores={allStores}
                                 onAllStoresChange={(val) => {
