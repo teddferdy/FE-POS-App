@@ -517,7 +517,7 @@
   "page.supplier.products.productCount": "{count} Products",
   "page.supplier.products.availableProducts": "Products Supplied",
   "page.supplier.products.templateColumns": "Template contains columns: name, price",
-  "page.supplier.products.searchPlaceholder": "Search product...",
+  "page.supplier.products.searchPlaceholder": "Add Product",
   "page.supplier.products.pricePlaceholder": "Enter price",
   "page.supplier.products.add": "Add",
   "page.supplier.products.empty": "No products added yet",

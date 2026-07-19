@@ -481,13 +481,22 @@ const EditSupplier = () => {
                         <label className="text-xs font-medium text-muted-foreground">
                           Harga per Supplier
                         </label>
-                        <Input
-                          type="number"
-                          placeholder="Masukkan harga"
-                          value={productPrice}
-                          onChange={(e) => setProductPrice(e.target.value)}
-                          min="0"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                            Rp
+                          </span>
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="0"
+                            className="pl-9"
+                            value={productPrice ? Number(productPrice).toLocaleString("id-ID") : ""}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^0-9]/g, "");
+                              setProductPrice(raw);
+                            }}
+                          />
+                        </div>
                       </div>
                       <div className="flex gap-2 justify-end">
                         <Button

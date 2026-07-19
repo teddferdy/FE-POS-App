@@ -406,12 +406,22 @@ const AddSupplier = () => {
                         value={newProductName}
                         onChange={(e) => setNewProductName(e.target.value)}
                       />
-                      <Input
-                        type="number"
-                        placeholder={t("page.supplier.products.pricePlaceholder")}
-                        value={productPrice}
-                        onChange={(e) => setProductPrice(e.target.value)}
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          Rp
+                        </span>
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="0"
+                          className="pl-9"
+                          value={productPrice ? Number(productPrice).toLocaleString("id-ID") : ""}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^0-9]/g, "");
+                            setProductPrice(raw);
+                          }}
+                        />
+                      </div>
                       <Button
                         type="button"
                         size="sm"

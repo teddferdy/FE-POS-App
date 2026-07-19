@@ -516,7 +516,7 @@
   "page.supplier.products.productCount": "{count} Produk",
   "page.supplier.products.availableProducts": "Produk yang Disediakan",
   "page.supplier.products.templateColumns": "Template berisi kolom: name, price",
-  "page.supplier.products.searchPlaceholder": "Cari produk...",
+  "page.supplier.products.searchPlaceholder": "Tambahkan Produk",
   "page.supplier.products.pricePlaceholder": "Masukkan harga",
   "page.supplier.products.add": "Tambah",
   "page.supplier.products.empty": "Belum ada produk yang ditambahkan",
