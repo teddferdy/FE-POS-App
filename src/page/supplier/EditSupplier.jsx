@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -5,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, Store, Check, Plus, Trash2, Upload, Download } from "lucide-react";
+import { X, Save, Check, Plus, Trash2, Upload, Download } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -165,25 +166,28 @@ const EditSupplier = () => {
 
   const importMutation = useMutation(importSupplierProducts, {
     onSuccess: () => {
-      toast.success(t("common.success"), { description: "Produk berhasil diimport" });
+      toast.success(t("common.success"), {
+        description: t("page.supplier.products.importSuccessToast")
+      });
       setShowImportExcel(false);
       setImportFile(null);
       refetch();
     },
     onError: (err) => {
       toast.error(t("common.error"), {
-        description: err?.response?.data?.message || err.message || "Gagal import produk"
+        description:
+          err?.response?.data?.message || err.message || t("page.supplier.products.importFailed")
       });
     }
   });
 
   const handleAddProduct = () => {
     if (!newProductName.trim()) {
-      toast.error(t("common.error"), { description: "Masukkan nama produk" });
+      toast.error(t("common.error"), { description: t("page.supplier.products.enterProductName") });
       return;
     }
     if (!productPrice || Number(productPrice) <= 0) {
-      toast.error(t("common.error"), { description: "Masukkan harga yang valid" });
+      toast.error(t("common.error"), { description: t("page.supplier.products.enterValidPrice") });
       return;
     }
     setSupplierProducts((prev) => [
@@ -203,13 +207,13 @@ const EditSupplier = () => {
     try {
       await downloadSupplierProductTemplate();
     } catch (err) {
-      toast.error(t("common.error"), { description: "Gagal download template" });
+      toast.error(t("common.error"), { description: t("page.supplier.products.templateFailed") });
     }
   };
 
   const handleImportExcel = () => {
     if (!importFile) {
-      toast.error(t("common.error"), { description: "Pilih file terlebih dahulu" });
+      toast.error(t("common.error"), { description: t("page.supplier.products.selectFileFirst") });
       return;
     }
     importMutation.mutate({ id: supplierId, file: importFile });
@@ -457,9 +461,9 @@ const EditSupplier = () => {
                 type="confirm"
                 open={confirmSaveModal}
                 onOpenChange={setConfirmSaveModal}
-                title="Konfirmasi Simpan"
-                description="Apakah Anda yakin ingin menyimpan data ini?"
-                confirmText="Ya, Simpan"
+                title={t("page.supplier.modal.confirmSave")}
+                description={t("page.supplier.modal.confirmSaveDesc")}
+                confirmText={t("page.supplier.modal.confirmSaveText")}
                 onConfirm={() => {
                   setConfirmSaveModal(false);
                   const values = form.getValues();
@@ -488,7 +492,9 @@ const EditSupplier = () => {
             {isSuperAdmin && (
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-foreground">Produk yang Disediakan</h3>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {t("page.supplier.products.title")}
+                  </h3>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -499,7 +505,7 @@ const EditSupplier = () => {
                         setShowImportExcel(false);
                       }}>
                       <Plus size={14} />
-                      Tambah Produk
+                      {t("page.supplier.products.addProduct")}
                     </Button>
                     <Button
                       variant="outline"
@@ -510,7 +516,7 @@ const EditSupplier = () => {
                         setShowAddProduct(false);
                       }}>
                       <Upload size={14} />
-                      Import Excel
+                      {t("page.supplier.products.importExcel")}
                     </Button>
                     <Button
                       variant="outline"
@@ -527,17 +533,17 @@ const EditSupplier = () => {
                   <div className="flex flex-col gap-3 p-4 bg-muted/50 rounded-lg mb-4">
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-medium text-muted-foreground">
-                        Nama Produk
+                        {t("page.supplier.products.productName")}
                       </label>
                       <Input
-                        placeholder="Ketik nama produk..."
+                        placeholder={t("page.supplier.products.searchPlaceholder")}
                         value={newProductName}
                         onChange={(e) => setNewProductName(e.target.value)}
                       />
                     </div>
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-medium text-muted-foreground">
-                        Harga per Supplier
+                        {t("page.supplier.products.price")}
                       </label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
@@ -565,13 +571,13 @@ const EditSupplier = () => {
                           setNewProductName("");
                           setProductPrice("");
                         }}>
-                        Batal
+                        {t("common.cancel")}
                       </Button>
                       <Button
                         size="sm"
                         disabled={!newProductName.trim() || !productPrice}
                         onClick={handleAddProduct}>
-                        Add
+                        {t("page.supplier.products.add")}
                       </Button>
                     </div>
                   </div>
@@ -585,7 +591,7 @@ const EditSupplier = () => {
                       className="gap-1 w-fit"
                       onClick={handleDownloadTemplate}>
                       <Download size={14} />
-                      Download Template
+                      {t("page.supplier.products.downloadTemplate")}
                     </Button>
                     <Input
                       type="file"
@@ -600,13 +606,15 @@ const EditSupplier = () => {
                           setShowImportExcel(false);
                           setImportFile(null);
                         }}>
-                        Batal
+                        {t("common.cancel")}
                       </Button>
                       <Button
                         size="sm"
                         onClick={handleImportExcel}
                         disabled={importMutation.isLoading}>
-                        {importMutation.isLoading ? "Importing..." : "Upload & Import"}
+                        {importMutation.isLoading
+                          ? t("page.supplier.products.importing")
+                          : t("page.supplier.products.uploadImport")}
                       </Button>
                     </div>
                   </div>
@@ -614,19 +622,23 @@ const EditSupplier = () => {
 
                 {supplierProducts.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p className="text-sm">Belum ada produk yang ditambahkan</p>
-                    <p className="text-xs mt-1">
-                      Klik "Tambah Produk" atau "Import Excel" untuk menambahkan
-                    </p>
+                    <p className="text-sm">{t("page.supplier.products.empty")}</p>
+                    <p className="text-xs mt-1">{t("page.supplier.products.hint")}</p>
                   </div>
                 ) : (
                   <div className="border rounded-lg overflow-hidden">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-xs">Nama Produk</TableHead>
-                          <TableHead className="text-xs text-right">Harga per Supplier</TableHead>
-                          <TableHead className="text-xs text-center w-12">Aksi</TableHead>
+                          <TableHead className="text-xs">
+                            {t("page.supplier.products.table.name")}
+                          </TableHead>
+                          <TableHead className="text-xs text-right">
+                            {t("page.supplier.products.table.price")}
+                          </TableHead>
+                          <TableHead className="text-xs text-center w-12">
+                            {t("page.supplier.products.table.action")}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
