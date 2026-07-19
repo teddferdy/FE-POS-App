@@ -15,7 +15,6 @@ import {
   importSupplierProducts
 } from "@/services/supplier";
 import { getAllLocation } from "@/services/location";
-import { getAllProduct } from "@/services/product";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -86,8 +85,7 @@ const EditSupplier = () => {
   // Supplier Products state
   const [supplierProducts, setSupplierProducts] = useState([]);
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const [productSearchQuery, setProductSearchQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [newProductName, setNewProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [showImportExcel, setShowImportExcel] = useState(false);
   const [importFile, setImportFile] = useState(null);
@@ -107,19 +105,6 @@ const EditSupplier = () => {
   } = useQuery(["supplier-detail", supplierId], () => getSupplierById({ id: supplierId }), {
     enabled: !!supplierId
   });
-
-  const { data: productsData } = useQuery(
-    ["products-for-supplier-search", productSearchQuery],
-    () => getAllProduct({ nameProduct: productSearchQuery }),
-    { enabled: showAddProduct && productSearchQuery.length > 0 }
-  );
-
-  const productSearchResults = (
-    productsData?.data ||
-    productsData?.products ||
-    productsData ||
-    []
-  ).filter((p) => !supplierProducts.some((sp) => sp.id === p.id));
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -192,8 +177,8 @@ const EditSupplier = () => {
   });
 
   const handleAddProduct = () => {
-    if (!selectedProduct) {
-      toast.error(t("common.error"), { description: "Pilih produk terlebih dahulu" });
+    if (!newProductName.trim()) {
+      toast.error(t("common.error"), { description: "Masukkan nama produk" });
       return;
     }
     if (!productPrice || Number(productPrice) <= 0) {
@@ -202,11 +187,10 @@ const EditSupplier = () => {
     }
     setSupplierProducts((prev) => [
       ...prev,
-      { id: selectedProduct.id, name: selectedProduct.name, price: Number(productPrice) }
+      { id: `manual_${Date.now()}`, name: newProductName.trim(), price: Number(productPrice) }
     ]);
-    setSelectedProduct(null);
+    setNewProductName("");
     setProductPrice("");
-    setProductSearchQuery("");
     setShowAddProduct(false);
   };
 
@@ -485,67 +469,41 @@ const EditSupplier = () => {
                     <div className="flex flex-col gap-3 p-4 bg-muted/50 rounded-lg mb-4">
                       <div className="flex flex-col gap-2">
                         <label className="text-xs font-medium text-muted-foreground">
-                          Cari Produk
+                          Nama Produk
                         </label>
                         <Input
                           placeholder="Ketik nama produk..."
-                          value={productSearchQuery}
-                          onChange={(e) => {
-                            setProductSearchQuery(e.target.value);
-                            setSelectedProduct(null);
-                          }}
+                          value={newProductName}
+                          onChange={(e) => setNewProductName(e.target.value)}
                         />
-                        {productSearchQuery &&
-                          !selectedProduct &&
-                          productSearchResults.length > 0 && (
-                            <div className="border rounded-lg max-h-40 overflow-y-auto bg-background">
-                              {productSearchResults.slice(0, 10).map((product) => (
-                                <button
-                                  key={product.id}
-                                  type="button"
-                                  className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
-                                  onClick={() => {
-                                    setSelectedProduct(product);
-                                    setProductSearchQuery(product.name);
-                                  }}>
-                                  {product.name}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        {productSearchQuery &&
-                          !selectedProduct &&
-                          productSearchResults.length === 0 && (
-                            <p className="text-xs text-muted-foreground">Produk tidak ditemukan</p>
-                          )}
                       </div>
-                      {selectedProduct && (
-                        <div className="flex flex-col gap-2">
-                          <label className="text-xs font-medium text-muted-foreground">
-                            Harga per Supplier
-                          </label>
-                          <Input
-                            type="number"
-                            placeholder="Masukkan harga"
-                            value={productPrice}
-                            onChange={(e) => setProductPrice(e.target.value)}
-                            min="0"
-                          />
-                        </div>
-                      )}
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Harga per Supplier
+                        </label>
+                        <Input
+                          type="number"
+                          placeholder="Masukkan harga"
+                          value={productPrice}
+                          onChange={(e) => setProductPrice(e.target.value)}
+                          min="0"
+                        />
+                      </div>
                       <div className="flex gap-2 justify-end">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => {
                             setShowAddProduct(false);
-                            setSelectedProduct(null);
+                            setNewProductName("");
                             setProductPrice("");
-                            setProductSearchQuery("");
                           }}>
                           Batal
                         </Button>
-                        <Button size="sm" onClick={handleAddProduct}>
+                        <Button
+                          size="sm"
+                          disabled={!newProductName.trim() || !productPrice}
+                          onClick={handleAddProduct}>
                           Add
                         </Button>
                       </div>

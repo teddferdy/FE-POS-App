@@ -5,13 +5,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, Store, Check, Plus, Trash2, Upload, Download, Search } from "lucide-react";
+import { X, Save, Store, Check, Plus, Trash2, Upload, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { Switch } from "@/components/ui/switch";
 import { addSupplier } from "@/services/supplier";
 import { downloadSupplierProductTemplate, importSupplierProducts } from "@/services/supplier";
-import { getAllProduct } from "@/services/product";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,8 +71,7 @@ const AddSupplier = () => {
   const [supplierProducts, setSupplierProducts] = useState([]);
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [showExcelImport, setShowExcelImport] = useState(false);
-  const [productSearch, setProductSearch] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [newProductName, setNewProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [excelFile, setExcelFile] = useState(null);
 
@@ -83,15 +81,6 @@ const AddSupplier = () => {
     isFetching: locsFetching
   } = useQuery(["allLocations"], () => getAllLocation(), { enabled: isSuperAdmin });
   const locations = locationsData?.data || locationsData?.locations || [];
-
-  const { data: productSearchData, isLoading: productSearching } = useQuery(
-    ["productSearch", productSearch],
-    () => getAllProduct({ nameProduct: productSearch }),
-    { enabled: productSearch.length >= 2 }
-  );
-  const searchResults = (productSearchData?.data || productSearchData?.products || []).filter(
-    (p) => !supplierProducts.some((sp) => sp.id === (p._id || p.id))
-  );
 
   const excelImportMutation = useMutation(({ id, file }) => importSupplierProducts({ id, file }), {
     onSuccess: (data) => {
@@ -113,15 +102,14 @@ const AddSupplier = () => {
   });
 
   const handleAddManualProduct = () => {
-    if (!selectedProduct || !productPrice) return;
+    if (!newProductName.trim() || !productPrice) return;
     const newProduct = {
-      id: selectedProduct._id || selectedProduct.id,
-      name: selectedProduct.nameProduct || selectedProduct.name,
+      id: `manual_${Date.now()}`,
+      name: newProductName.trim(),
       price: Number(productPrice)
     };
     setSupplierProducts((prev) => [...prev, newProduct]);
-    setSelectedProduct(null);
-    setProductSearch("");
+    setNewProductName("");
     setProductPrice("");
     setShowManualAdd(false);
   };
@@ -413,46 +401,11 @@ const AddSupplier = () => {
 
                   {showManualAdd && (
                     <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
-                      <div className="relative">
-                        <Search
-                          size={14}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                        />
-                        <Input
-                          placeholder={t("page.supplier.products.searchPlaceholder")}
-                          className="pl-9"
-                          value={productSearch}
-                          onChange={(e) => {
-                            setProductSearch(e.target.value);
-                            setSelectedProduct(null);
-                          }}
-                        />
-                        {productSearch.length >= 2 && !selectedProduct && (
-                          <div className="absolute z-10 mt-1 w-full bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                            {productSearching ? (
-                              <div className="p-2 text-xs text-muted-foreground text-center">
-                                {t("common.loading")}
-                              </div>
-                            ) : searchResults.length === 0 ? (
-                              <div className="p-2 text-xs text-muted-foreground text-center">
-                                {t("common.noData")}
-                              </div>
-                            ) : (
-                              searchResults.slice(0, 10).map((p) => (
-                                <div
-                                  key={p._id || p.id}
-                                  className="px-3 py-2 text-sm cursor-pointer hover:bg-accent"
-                                  onClick={() => {
-                                    setSelectedProduct(p);
-                                    setProductSearch(p.nameProduct || p.name);
-                                  }}>
-                                  {p.nameProduct || p.name}
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        )}
-                      </div>
+                      <Input
+                        placeholder={t("page.supplier.products.searchPlaceholder")}
+                        value={newProductName}
+                        onChange={(e) => setNewProductName(e.target.value)}
+                      />
                       <Input
                         type="number"
                         placeholder={t("page.supplier.products.pricePlaceholder")}
@@ -462,7 +415,7 @@ const AddSupplier = () => {
                       <Button
                         type="button"
                         size="sm"
-                        disabled={!selectedProduct || !productPrice}
+                        disabled={!newProductName.trim() || !productPrice}
                         onClick={handleAddManualProduct}
                         className="w-full gap-1.5">
                         <Plus size={14} />
