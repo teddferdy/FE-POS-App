@@ -200,11 +200,11 @@ const AddExpense = () => {
                           isSuperAdmin={isSuperAdmin}
                           user={user}
                           t={t}
-                          title={t("page.category.form.storeSection.title")}
-                          description={t("page.category.form.storeSection.desc")}
-                          noStoreLabel={t("page.category.form.storeSection.noStore")}
-                          addStoreLabel={t("page.category.form.storeSection.addStore")}
-                          storeInfoLabel={t("page.category.form.storeStoreInfo")}
+                          title={t("page.expense.form.storeSection.title")}
+                          description={t("page.expense.form.storeSection.desc")}
+                          noStoreLabel={t("page.expense.form.storeSection.noStore")}
+                          addStoreLabel={t("page.expense.form.storeSection.addStore")}
+                          storeInfoLabel={t("page.expense.form.storeInfo")}
                           allStores={allStores}
                           onAllStoresChange={(val) => {
                             setAllStores(val);

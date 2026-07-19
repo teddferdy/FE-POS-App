@@ -46,14 +46,12 @@ const DetailDiscount = () => {
 
   const discount = data?.data || data;
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
-    
-  });
+  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {});
   const locations = locData?.data || [];
 
   const storeName = discount?.store
     ? locations.find((l) => l.id === discount.store)?.name || `Toko #${discount.store}`
-    : t("page.category.form.storeSection.allStores");
+    : t("page.discount.form.storeSection.allStores");
 
   if (!id)
     return (
@@ -141,15 +139,34 @@ const DetailDiscount = () => {
           <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
             <Skeleton className="h-4 w-32" />
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
-              <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
             </div>
           </Card>
           <div className="space-y-4">
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </Card>
           </div>
         </div>
       ) : (
@@ -167,7 +184,9 @@ const DetailDiscount = () => {
                 {statusBadge(discount.status, t)}
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{t("page.discount.table.store")}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.discount.table.store")}
+                </p>
                 <p className="font-medium flex items-center gap-1.5">
                   <Store size={14} className="text-muted-foreground" />
                   {storeName}
@@ -184,7 +203,9 @@ const DetailDiscount = () => {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.value")}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.discount.form.value")}
+                </p>
                 <p className="font-medium">
                   {discount.value}
                   {discount.type === "percent" ? "%" : ""}
@@ -201,7 +222,9 @@ const DetailDiscount = () => {
                   {t("page.discount.form.minPurchase")}
                 </p>
                 <p className="font-medium">
-                  {discount.minimumOrder ? `Rp${discount.minimumOrder.toLocaleString("id-ID")}` : "0"}
+                  {discount.minimumOrder
+                    ? `Rp${discount.minimumOrder.toLocaleString("id-ID")}`
+                    : "0"}
                 </p>
               </div>
               <div>

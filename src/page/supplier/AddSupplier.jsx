@@ -241,7 +241,7 @@ const AddSupplier = () => {
                                 description={t("page.supplier.form.storeSection.desc")}
                                 noStoreLabel={t("page.supplier.form.storeSection.noStore")}
                                 addStoreLabel={t("page.supplier.form.storeSection.addStore")}
-                                storeInfoLabel={t("page.category.form.storeInfo")}
+                                storeInfoLabel={t("page.supplier.form.storeInfo")}
                                 allStores={allStores}
                                 onAllStoresChange={(val) => {
                                   setAllStores(val);

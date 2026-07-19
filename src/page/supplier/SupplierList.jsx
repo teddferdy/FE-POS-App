@@ -127,7 +127,7 @@ const SupplierList = () => {
           <span className="text-sm text-muted-foreground">
             {stores.length > 0
               ? stores.map((s) => (typeof s === "object" ? s.name : s)).join(", ")
-              : t("page.category.form.storeSection.allStores") || "Semua Toko"}
+              : t("page.supplier.form.storeSection.allStores") || "Semua Toko"}
           </span>
         );
       }

@@ -202,7 +202,7 @@ const AddDiscount = () => {
   const discountFieldLabels = useMemo(
     () => ({
       name: t("page.discount.form.name"),
-      store: t("page.category.form.storeSection.title"),
+      store: t("page.discount.form.storeSection.title"),
       startDate: t("page.discount.form.startDateLabel"),
       type: t("page.discount.form.typeLabel"),
       value: t("page.discount.form.value"),
@@ -475,11 +475,11 @@ const AddDiscount = () => {
                           isSuperAdmin={isSuperAdmin}
                           user={user}
                           t={t}
-                          title={t("page.category.form.storeSection.title")}
-                          description={t("page.category.form.storeSection.desc")}
-                          noStoreLabel={t("page.category.form.storeSection.noStore")}
-                          addStoreLabel={t("page.category.form.storeSection.addStore")}
-                          storeInfoLabel={t("page.category.form.storeInfo")}
+                          title={t("page.discount.form.storeSection.title")}
+                          description={t("page.discount.form.storeSection.desc")}
+                          noStoreLabel={t("page.discount.form.storeSection.noStore")}
+                          addStoreLabel={t("page.discount.form.storeSection.addStore")}
+                          storeInfoLabel={t("page.discount.form.storeInfo")}
                           allStores={allStores}
                           onAllStoresChange={(val) => {
                             setAllStores(val);
