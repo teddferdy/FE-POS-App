@@ -212,471 +212,451 @@ const AddSupplier = () => {
 
       <div>
         <div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="p-6">
-                <Form {...form}>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                    }}
-                    className="space-y-6">
-                    {isSuperAdmin && (
-                      <FormField
-                        control={form.control}
-                        name="store"
-                        render={() => (
-                          <FormItem>
-                            <FormControl>
-                              <StoreSelectCard
-                                locations={locations}
-                                selectedStores={selectedStore}
-                                onChange={(stores) => {
-                                  setSelectedStore(stores);
-                                  form.clearErrors("store");
-                                }}
-                                isSuperAdmin={isSuperAdmin}
-                                user={user}
-                                t={t}
-                                title={t("page.supplier.form.storeSection.title")}
-                                description={t("page.supplier.form.storeSection.desc")}
-                                noStoreLabel={t("page.supplier.form.storeSection.noStore")}
-                                addStoreLabel={t("page.supplier.form.storeSection.addStore")}
-                                storeInfoLabel={t("page.supplier.form.storeInfo")}
-                                allStores={allStores}
-                                onAllStoresChange={(val) => {
-                                  setAllStores(val);
-                                  form.clearErrors("store");
-                                }}
-                                navigate={navigate}
-                                mandatory={true}
-                                locationsLoading={locsLoading || locsFetching}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {t("page.supplier.form.name")}{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <Input
-                              placeholder={t("page.supplier.form.namePlaceholder")}
-                              {...field}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="contactPerson"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.supplier.form.contactPerson")}</FormLabel>
-                            <Input
-                              placeholder={t("page.supplier.form.contactPersonPlaceholder")}
-                              {...field}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {t("page.supplier.form.phone")}{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <Input
-                              placeholder={t("page.supplier.form.phonePlaceholder")}
-                              inputMode="numeric"
-                              maxLength={14}
-                              {...field}
-                              onChange={(e) => {
-                                const v = e.target.value.replace(/\D/g, "").slice(0, 14);
-                                field.onChange(v);
-                              }}
-                            />
-                            <FormMessage />
-                            <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.supplier.form.email")}</FormLabel>
-                            <Input
-                              placeholder={t("page.supplier.form.emailPlaceholder")}
-                              {...field}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+          <div className="space-y-6">
+            <Card className="p-6">
+              <Form {...form}>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                  }}
+                  className="space-y-6">
+                  {isSuperAdmin && (
                     <FormField
                       control={form.control}
-                      name="address"
+                      name="store"
+                      render={() => (
+                        <FormItem>
+                          <FormControl>
+                            <StoreSelectCard
+                              locations={locations}
+                              selectedStores={selectedStore}
+                              onChange={(stores) => {
+                                setSelectedStore(stores);
+                                form.clearErrors("store");
+                              }}
+                              isSuperAdmin={isSuperAdmin}
+                              user={user}
+                              t={t}
+                              title={t("page.supplier.form.storeSection.title")}
+                              description={t("page.supplier.form.storeSection.desc")}
+                              noStoreLabel={t("page.supplier.form.storeSection.noStore")}
+                              addStoreLabel={t("page.supplier.form.storeSection.addStore")}
+                              storeInfoLabel={t("page.supplier.form.storeInfo")}
+                              allStores={allStores}
+                              onAllStoresChange={(val) => {
+                                setAllStores(val);
+                                form.clearErrors("store");
+                              }}
+                              navigate={navigate}
+                              mandatory={true}
+                              locationsLoading={locsLoading || locsFetching}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("page.supplier.form.address")}</FormLabel>
-                          <Textarea
-                            placeholder={t("page.supplier.form.addressPlaceholder")}
-                            rows={3}
+                          <FormLabel>
+                            {t("page.supplier.form.name")}{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <Input placeholder={t("page.supplier.form.namePlaceholder")} {...field} />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="contactPerson"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.supplier.form.contactPerson")}</FormLabel>
+                          <Input
+                            placeholder={t("page.supplier.form.contactPersonPlaceholder")}
                             {...field}
                           />
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-foreground">
-                        {t("page.supplier.form.status")}
-                      </h3>
-                      <div
-                        className={`flex items-center justify-between p-4 rounded-lg ${
-                          form.watch("isActive")
-                            ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                            : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                        }`}>
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              form.watch("isActive")
-                                ? "bg-green-600 text-secondary"
-                                : "bg-destructive/10 text-destructive"
-                            }`}>
-                            {form.watch("isActive") ? (
-                              <Check size={20} />
-                            ) : (
-                              <span className="text-lg font-bold">⏻</span>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">
-                              {form.watch("isActive") ? t("common.active") : t("common.inactive")}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {form.watch("isActive")
-                                ? t("page.supplier.form.activeDescription")
-                                : t("page.supplier.form.inactiveDescription")}
-                            </p>
-                          </div>
-                        </div>
-                        <FormField
-                          control={form.control}
-                          name="isActive"
-                          render={({ field }) => (
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </form>
-                </Form>
-                <Modal
-                  type="confirm"
-                  open={confirmSaveModal}
-                  onOpenChange={setConfirmSaveModal}
-                  title="Konfirmasi Simpan"
-                  description="Apakah Anda yakin ingin menyimpan data ini?"
-                  confirmText="Ya, Simpan"
-                  onConfirm={() => {
-                    setConfirmSaveModal(false);
-                    const values = form.getValues();
-                    onSubmit(values);
-                  }}
-                />
-                <MissingFieldsModal
-                  open={missingFieldsModal}
-                  onOpenChange={setMissingFieldsModal}
-                  fields={missingFieldsList}
-                />
-                <Modal
-                  type="confirm"
-                  open={!!deleteProductId}
-                  onOpenChange={() => setDeleteProductId(null)}
-                  title={t("page.supplier.products.confirmDelete")}
-                  description={t("page.supplier.products.confirmDeleteDesc")}
-                  confirmText={t("common.delete")}
-                  onConfirm={() => {
-                    handleRemoveProduct(deleteProductId);
-                    setDeleteProductId(null);
-                  }}
-                />
-              </Card>
-
-              {isSuperAdmin && (
-                <Card className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {t("page.supplier.products.title")}
-                    </h3>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5"
-                        onClick={() => {
-                          setShowManualAdd(!showManualAdd);
-                          setShowExcelImport(false);
-                        }}>
-                        <Plus size={14} />
-                        {t("page.supplier.products.addProduct")}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5"
-                        onClick={() => {
-                          setShowExcelImport(!showExcelImport);
-                          setShowManualAdd(false);
-                        }}>
-                        <Upload size={14} />
-                        {t("page.supplier.products.importExcel")}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5"
-                        onClick={handleDownloadTemplate}>
-                        <Download size={14} />
-                        {t("page.supplier.products.downloadTemplate")}
-                      </Button>
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t("page.supplier.form.phone")}{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <Input
+                            placeholder={t("page.supplier.form.phonePlaceholder")}
+                            inputMode="numeric"
+                            maxLength={14}
+                            {...field}
+                            onChange={(e) => {
+                              const v = e.target.value.replace(/\D/g, "").slice(0, 14);
+                              field.onChange(v);
+                            }}
+                          />
+                          <FormMessage />
+                          <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.supplier.form.email")}</FormLabel>
+                          <Input
+                            placeholder={t("page.supplier.form.emailPlaceholder")}
+                            {...field}
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-
-                  {showManualAdd && (
-                    <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
-                      <Input
-                        placeholder={t("page.supplier.products.searchPlaceholder")}
-                        value={newProductName}
-                        onChange={(e) => setNewProductName(e.target.value)}
-                      />
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                          Rp
-                        </span>
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="0"
-                          className="pl-9"
-                          value={productPrice ? Number(productPrice).toLocaleString("id-ID") : ""}
-                          onChange={(e) => {
-                            const raw = e.target.value.replace(/[^0-9]/g, "");
-                            setProductPrice(raw);
-                          }}
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("page.supplier.form.address")}</FormLabel>
+                        <Textarea
+                          placeholder={t("page.supplier.form.addressPlaceholder")}
+                          rows={3}
+                          {...field}
                         />
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        disabled={!newProductName.trim() || !productPrice}
-                        onClick={handleAddManualProduct}
-                        className="w-full gap-1.5">
-                        <Plus size={14} />
-                        {t("page.supplier.products.add")}
-                      </Button>
-                    </div>
-                  )}
-
-                  {showExcelImport && (
-                    <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="gap-1.5"
-                        onClick={handleDownloadTemplate}>
-                        <Download size={14} />
-                        {t("page.supplier.products.downloadTemplate")}
-                      </Button>
-                      <Input
-                        type="file"
-                        accept=".xlsx,.xls,.csv"
-                        onChange={(e) => setExcelFile(e.target.files?.[0] || null)}
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        disabled={!excelFile || excelImportMutation.isLoading}
-                        onClick={handleExcelImport}
-                        className="w-full gap-1.5">
-                        <Upload size={14} />
-                        {excelImportMutation.isLoading
-                          ? t("common.loading")
-                          : t("page.supplier.products.upload")}
-                      </Button>
-                    </div>
-                  )}
-
-                  {supplierProducts.length > 0 ? (
-                    <div className="border rounded-lg overflow-hidden">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="bg-muted/50 border-b">
-                            <th className="text-left px-3 py-2 font-medium text-muted-foreground">
-                              {t("page.supplier.products.table.name")}
-                            </th>
-                            <th className="text-left px-3 py-2 font-medium text-muted-foreground">
-                              {t("page.supplier.products.table.price")}
-                            </th>
-                            <th className="text-right px-3 py-2 font-medium text-muted-foreground">
-                              {t("page.supplier.products.table.action")}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {supplierProducts.map((p) => (
-                            <tr key={p.id} className="border-b last:border-b-0">
-                              <td className="px-3 py-2">{p.name}</td>
-                              <td className="px-3 py-2">
-                                {Number(p.price).toLocaleString("id-ID")}
-                              </td>
-                              <td className="px-3 py-2 text-right">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-destructive hover:text-destructive"
-                                  onClick={() => setDeleteProductId(p.id)}>
-                                  <Trash2 size={14} />
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="border border-dashed rounded-lg p-6 text-center">
-                      <p className="text-sm text-muted-foreground">
-                        {t("page.supplier.products.empty")}
-                      </p>
-                    </div>
-                  )}
-                </Card>
-              )}
-            </div>
-
-            <Card className="p-6 space-y-6">
-              <h3 className="text-sm font-semibold text-foreground mb-3">
-                {t("page.supplier.form.status")}
-              </h3>
-              <div
-                className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                  form.watch("isActive")
-                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                }`}>
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      form.watch("isActive")
-                        ? "bg-green-600 text-secondary"
-                        : "bg-destructive/10 text-destructive"
-                    }`}>
-                    {form.watch("isActive") ? (
-                      <Check size={20} />
-                    ) : (
-                      <span className="text-lg font-bold">⏻</span>
+                        <FormMessage />
+                      </FormItem>
                     )}
+                  />
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {t("page.supplier.form.status")}
+                    </h3>
+                    <div
+                      className={`flex items-center justify-between p-4 rounded-lg ${
+                        form.watch("isActive")
+                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                      }`}>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            form.watch("isActive")
+                              ? "bg-green-600 text-secondary"
+                              : "bg-destructive/10 text-destructive"
+                          }`}>
+                          {form.watch("isActive") ? (
+                            <Check size={20} />
+                          ) : (
+                            <span className="text-lg font-bold">⏻</span>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {form.watch("isActive") ? t("common.active") : t("common.inactive")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {form.watch("isActive")
+                              ? t("page.supplier.form.activeDescription")
+                              : t("page.supplier.form.inactiveDescription")}
+                          </p>
+                        </div>
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="isActive"
+                        render={({ field }) => (
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        )}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {form.watch("isActive") ? t("common.active") : t("common.inactive")}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {form.watch("isActive")
-                        ? t("page.supplier.form.activeDescription")
-                        : t("page.supplier.form.inactiveDescription")}
-                    </p>
+                </form>
+              </Form>
+              <Modal
+                type="confirm"
+                open={confirmSaveModal}
+                onOpenChange={setConfirmSaveModal}
+                title="Konfirmasi Simpan"
+                description="Apakah Anda yakin ingin menyimpan data ini?"
+                confirmText="Ya, Simpan"
+                onConfirm={() => {
+                  setConfirmSaveModal(false);
+                  const values = form.getValues();
+                  onSubmit(values);
+                }}
+              />
+              <MissingFieldsModal
+                open={missingFieldsModal}
+                onOpenChange={setMissingFieldsModal}
+                fields={missingFieldsList}
+              />
+              <Modal
+                type="confirm"
+                open={!!deleteProductId}
+                onOpenChange={() => setDeleteProductId(null)}
+                title={t("page.supplier.products.confirmDelete")}
+                description={t("page.supplier.products.confirmDeleteDesc")}
+                confirmText={t("common.delete")}
+                onConfirm={() => {
+                  handleRemoveProduct(deleteProductId);
+                  setDeleteProductId(null);
+                }}
+              />
+            </Card>
+
+            {isSuperAdmin && (
+              <Card className="p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {t("page.supplier.products.title")}
+                  </h3>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => {
+                        setShowManualAdd(!showManualAdd);
+                        setShowExcelImport(false);
+                      }}>
+                      <Plus size={14} />
+                      {t("page.supplier.products.addProduct")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => {
+                        setShowExcelImport(!showExcelImport);
+                        setShowManualAdd(false);
+                      }}>
+                      <Upload size={14} />
+                      {t("page.supplier.products.importExcel")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={handleDownloadTemplate}>
+                      <Download size={14} />
+                      {t("page.supplier.products.downloadTemplate")}
+                    </Button>
                   </div>
                 </div>
-                <FormField
-                  control={form.control}
-                  name="isActive"
-                  render={({ field }) => (
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+
+                {showManualAdd && (
+                  <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
+                    <Input
+                      placeholder={t("page.supplier.products.searchPlaceholder")}
+                      value={newProductName}
+                      onChange={(e) => setNewProductName(e.target.value)}
+                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        Rp
+                      </span>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0"
+                        className="pl-9"
+                        value={productPrice ? Number(productPrice).toLocaleString("id-ID") : ""}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/[^0-9]/g, "");
+                          setProductPrice(raw);
+                        }}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={!newProductName.trim() || !productPrice}
+                      onClick={handleAddManualProduct}
+                      className="w-full gap-1.5">
+                      <Plus size={14} />
+                      {t("page.supplier.products.add")}
+                    </Button>
+                  </div>
+                )}
+
+                {showExcelImport && (
+                  <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={handleDownloadTemplate}>
+                      <Download size={14} />
+                      {t("page.supplier.products.downloadTemplate")}
+                    </Button>
+                    <Input
+                      type="file"
+                      accept=".xlsx,.xls,.csv"
+                      onChange={(e) => setExcelFile(e.target.files?.[0] || null)}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={!excelFile || excelImportMutation.isLoading}
+                      onClick={handleExcelImport}
+                      className="w-full gap-1.5">
+                      <Upload size={14} />
+                      {excelImportMutation.isLoading
+                        ? t("common.loading")
+                        : t("page.supplier.products.upload")}
+                    </Button>
+                  </div>
+                )}
+
+                {supplierProducts.length > 0 ? (
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-muted/50 border-b">
+                          <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                            {t("page.supplier.products.table.name")}
+                          </th>
+                          <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                            {t("page.supplier.products.table.price")}
+                          </th>
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                            {t("page.supplier.products.table.action")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {supplierProducts.map((p) => (
+                          <tr key={p.id} className="border-b last:border-b-0">
+                            <td className="px-3 py-2">{p.name}</td>
+                            <td className="px-3 py-2">{Number(p.price).toLocaleString("id-ID")}</td>
+                            <td className="px-3 py-2 text-right">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-destructive hover:text-destructive"
+                                onClick={() => setDeleteProductId(p.id)}>
+                                <Trash2 size={14} />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="border border-dashed rounded-lg p-6 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.supplier.products.empty")}
+                    </p>
+                  </div>
+                )}
+              </Card>
+            )}
+          </div>
+
+          <Card className="p-6 space-y-6">
+            <h3 className="text-sm font-semibold text-foreground mb-3">
+              {t("page.supplier.form.status")}
+            </h3>
+            <div
+              className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                form.watch("isActive")
+                  ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                  : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+              }`}>
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    form.watch("isActive")
+                      ? "bg-green-600 text-secondary"
+                      : "bg-destructive/10 text-destructive"
+                  }`}>
+                  {form.watch("isActive") ? (
+                    <Check size={20} />
+                  ) : (
+                    <span className="text-lg font-bold">⏻</span>
                   )}
-                />
-              </div>
-              <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary text-base mt-0.5">
-                  info
-                </span>
+                </div>
                 <div>
-                  <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                    {t("page.supplier.form.tipsTitle")}
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("page.supplier.form.tipsContent")}
+                  <p className="text-sm font-semibold text-foreground">
+                    {form.watch("isActive") ? t("common.active") : t("common.inactive")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {form.watch("isActive")
+                      ? t("page.supplier.form.activeDescription")
+                      : t("page.supplier.form.inactiveDescription")}
                   </p>
                 </div>
               </div>
-            </Card>
-          </div>
-
-          <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-            <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-              <X size={18} />
-              {t("common.cancel")}
-            </Button>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setDraftModal(true)}
-                disabled={createMutation.isLoading}
-                className="gap-2">
-                <Save size={18} />
-                {t("page.supplier.form.saveAsDraft")}
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  const values = form.getValues();
-                  const extraErrors = [];
-                  if (isSuperAdmin && !allStores && selectedStore.length === 0) {
-                    extraErrors.push({ name: "store", message: "required" });
-                  }
-                  const missing = getMissingFields(
-                    values,
-                    formSchema,
-                    supplierFieldLabels,
-                    extraErrors
-                  );
-                  if (missing.length > 0) {
-                    setMissingFieldsList(missing);
-                    setMissingFieldsModal(true);
-                    return;
-                  }
-                  setConfirmSaveModal(true);
-                }}
-                disabled={createMutation.isLoading}
-                className="gap-2">
-                <Save size={18} />
-                {createMutation.isLoading ? t("common.saving") : t("common.save")}
-              </Button>
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                )}
+              />
             </div>
+          </Card>
+        </div>
+
+        <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+            <X size={18} />
+            {t("common.cancel")}
+          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={createMutation.isLoading}
+              className="gap-2">
+              <Save size={18} />
+              {t("page.supplier.form.saveAsDraft")}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                const values = form.getValues();
+                const extraErrors = [];
+                if (isSuperAdmin && !allStores && selectedStore.length === 0) {
+                  extraErrors.push({ name: "store", message: "required" });
+                }
+                const missing = getMissingFields(
+                  values,
+                  formSchema,
+                  supplierFieldLabels,
+                  extraErrors
+                );
+                if (missing.length > 0) {
+                  setMissingFieldsList(missing);
+                  setMissingFieldsModal(true);
+                  return;
+                }
+                setConfirmSaveModal(true);
+              }}
+              disabled={createMutation.isLoading}
+              className="gap-2">
+              <Save size={18} />
+              {createMutation.isLoading ? t("common.saving") : t("common.save")}
+            </Button>
           </div>
         </div>
       </div>
