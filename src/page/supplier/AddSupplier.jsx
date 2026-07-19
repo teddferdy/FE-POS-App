@@ -5,16 +5,25 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, Store, Check } from "lucide-react";
+import { X, Save, Store, Check, Plus, Trash2, Upload, Download, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { Switch } from "@/components/ui/switch";
 import { addSupplier } from "@/services/supplier";
+import { downloadSupplierProductTemplate, importSupplierProducts } from "@/services/supplier";
+import { getAllProduct } from "@/services/product";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormControl
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import PageHeader from "@/components/ui/PageHeader";
@@ -23,6 +32,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { Loading } from "@/components/ui/loading";
+
 const AddSupplier = () => {
   const { t } = useTranslation();
 
@@ -46,7 +56,7 @@ const AddSupplier = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const supplierFieldLabels = {
     name: t("page.supplier.form.name"),
-    phone: t("page.supplier.form.phone"),
+    phone: t("page.supplier.form.phone")
   };
 
   const [cancelModal, setCancelModal] = useState(false);
@@ -58,12 +68,85 @@ const AddSupplier = () => {
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
 
-  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  // --- Products Supplied state ---
+  const [supplierProducts, setSupplierProducts] = useState([]);
+  const [showManualAdd, setShowManualAdd] = useState(false);
+  const [showExcelImport, setShowExcelImport] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [productPrice, setProductPrice] = useState("");
+  const [excelFile, setExcelFile] = useState(null);
+
+  const {
+    data: locationsData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["allLocations"], () => getAllLocation(), { enabled: isSuperAdmin });
   const locations = locationsData?.data || locationsData?.locations || [];
+
+  const { data: productSearchData, isLoading: productSearching } = useQuery(
+    ["productSearch", productSearch],
+    () => getAllProduct({ nameProduct: productSearch }),
+    { enabled: productSearch.length >= 2 }
+  );
+  const searchResults = (productSearchData?.data || productSearchData?.products || []).filter(
+    (p) => !supplierProducts.some((sp) => sp.id === (p._id || p.id))
+  );
+
+  const excelImportMutation = useMutation(({ id, file }) => importSupplierProducts({ id, file }), {
+    onSuccess: (data) => {
+      const imported = (data?.data || data?.products || []).map((p) => ({
+        id: p.productId || p._id || p.id,
+        name: p.name || p.productName || p.product_name,
+        price: p.price || p.supplierPrice || 0
+      }));
+      setSupplierProducts((prev) => [...prev, ...imported]);
+      toast.success(t("page.supplier.products.importSuccess"));
+      setExcelFile(null);
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), {
+        description:
+          err?.response?.data?.message || err.message || t("page.supplier.products.importFailed")
+      });
+    }
+  });
+
+  const handleAddManualProduct = () => {
+    if (!selectedProduct || !productPrice) return;
+    const newProduct = {
+      id: selectedProduct._id || selectedProduct.id,
+      name: selectedProduct.nameProduct || selectedProduct.name,
+      price: Number(productPrice)
+    };
+    setSupplierProducts((prev) => [...prev, newProduct]);
+    setSelectedProduct(null);
+    setProductSearch("");
+    setProductPrice("");
+    setShowManualAdd(false);
+  };
+
+  const handleRemoveProduct = (id) => {
+    setSupplierProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      await downloadSupplierProductTemplate();
+      toast.success(t("common.success"), {
+        description: t("page.supplier.products.templateDownloaded")
+      });
+    } catch (err) {
+      toast.error(t("common.error"), {
+        description: err?.message || t("page.supplier.products.templateFailed")
+      });
+    }
+  };
+
+  const handleExcelImport = () => {
+    if (!excelFile) return;
+    excelImportMutation.mutate({ id: "preview", file: excelFile });
+  };
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -93,7 +176,9 @@ const AddSupplier = () => {
 
   const onSubmit = (values, saveAsDraft = false) => {
     if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
-      form.setError("store", { message: t("page.supplier.validation.storeRequired") || "Pilih minimal satu toko" });
+      form.setError("store", {
+        message: t("page.supplier.validation.storeRequired") || "Pilih minimal satu toko"
+      });
       return;
     }
     form.clearErrors("store");
@@ -106,7 +191,8 @@ const AddSupplier = () => {
     createMutation.mutate({
       ...values,
       status: statusValue,
-      store: selectedStore
+      store: selectedStore,
+      products: supplierProducts.map((p) => ({ id: p.id, price: p.price }))
     });
   };
 
@@ -140,160 +226,340 @@ const AddSupplier = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <Card className="p-6">
-              <Form {...form}>
-                <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-6">
-                  {isSuperAdmin && (
-                    <FormField
-                      control={form.control}
-                      name="store"
-                      render={() => (
-                        <FormItem>
-                          <FormControl>
-                            <StoreSelectCard
-                              locations={locations}
-                              selectedStores={selectedStore}
-                              onChange={(stores) => {
-                                setSelectedStore(stores);
-                                form.clearErrors("store");
-                              }}
-                              isSuperAdmin={isSuperAdmin}
-                              user={user}
-                              t={t}
-                              title={t("page.category.form.storeSection.title")}
-                              description={t("page.category.form.storeSection.desc")}
-                              noStoreLabel={t("page.category.form.storeSection.noStore")}
-                              addStoreLabel={t("page.category.form.storeSection.addStore")}
-                              storeInfoLabel={t("page.category.form.storeInfo")}
-                              allStores={allStores}
-                              onAllStoresChange={(val) => {
-                                setAllStores(val);
-                                form.clearErrors("store");
-                              }}
-                              navigate={navigate}
-                              mandatory={true}
-                              locationsLoading={locsLoading || locsFetching}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("page.supplier.form.name")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Input placeholder={t("page.supplier.form.namePlaceholder")} {...field} />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="contactPerson"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("page.supplier.form.contactPerson")}</FormLabel>
-                          <Input
-                            placeholder={t("page.supplier.form.contactPersonPlaceholder")}
-                            {...field}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("page.supplier.form.phone")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Input
-                            placeholder={t("page.supplier.form.phonePlaceholder")}
-                            inputMode="numeric"
-                            maxLength={14}
-                            {...field}
-                            onChange={(e) => {
-                              const v = e.target.value.replace(/\D/g, "").slice(0, 14);
-                              field.onChange(v);
-                            }}
-                          />
-                          <FormMessage />
-                          <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("page.supplier.form.email")}</FormLabel>
-                          <Input
-                            placeholder={t("page.supplier.form.emailPlaceholder")}
-                            {...field}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("page.supplier.form.address")}</FormLabel>
-                        <Textarea
-                          placeholder={t("page.supplier.form.addressPlaceholder")}
-                          rows={3}
-                          {...field}
-                        />
-                        <FormMessage />
-                      </FormItem>
+                <Form {...form}>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                    }}
+                    className="space-y-6">
+                    {isSuperAdmin && (
+                      <FormField
+                        control={form.control}
+                        name="store"
+                        render={() => (
+                          <FormItem>
+                            <FormControl>
+                              <StoreSelectCard
+                                locations={locations}
+                                selectedStores={selectedStore}
+                                onChange={(stores) => {
+                                  setSelectedStore(stores);
+                                  form.clearErrors("store");
+                                }}
+                                isSuperAdmin={isSuperAdmin}
+                                user={user}
+                                t={t}
+                                title={t("page.category.form.storeSection.title")}
+                                description={t("page.category.form.storeSection.desc")}
+                                noStoreLabel={t("page.category.form.storeSection.noStore")}
+                                addStoreLabel={t("page.category.form.storeSection.addStore")}
+                                storeInfoLabel={t("page.category.form.storeInfo")}
+                                allStores={allStores}
+                                onAllStoresChange={(val) => {
+                                  setAllStores(val);
+                                  form.clearErrors("store");
+                                }}
+                                navigate={navigate}
+                                mandatory={true}
+                                locationsLoading={locsLoading || locsFetching}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
-                </form>
-              </Form>
-              <Modal
-                type="confirm"
-                open={confirmSaveModal}
-                onOpenChange={setConfirmSaveModal}
-                title="Konfirmasi Simpan"
-                description="Apakah Anda yakin ingin menyimpan data ini?"
-                confirmText="Ya, Simpan"
-                onConfirm={() => {
-                  setConfirmSaveModal(false);
-                  const values = form.getValues();
-                  onSubmit(values);
-                }}
-              />
-              <MissingFieldsModal
-                open={missingFieldsModal}
-                onOpenChange={setMissingFieldsModal}
-                fields={missingFieldsList}
-              />
-            </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t("page.supplier.form.name")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Input
+                              placeholder={t("page.supplier.form.namePlaceholder")}
+                              {...field}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="contactPerson"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.supplier.form.contactPerson")}</FormLabel>
+                            <Input
+                              placeholder={t("page.supplier.form.contactPersonPlaceholder")}
+                              {...field}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t("page.supplier.form.phone")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Input
+                              placeholder={t("page.supplier.form.phonePlaceholder")}
+                              inputMode="numeric"
+                              maxLength={14}
+                              {...field}
+                              onChange={(e) => {
+                                const v = e.target.value.replace(/\D/g, "").slice(0, 14);
+                                field.onChange(v);
+                              }}
+                            />
+                            <FormMessage />
+                            <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.supplier.form.email")}</FormLabel>
+                            <Input
+                              placeholder={t("page.supplier.form.emailPlaceholder")}
+                              {...field}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.supplier.form.address")}</FormLabel>
+                          <Textarea
+                            placeholder={t("page.supplier.form.addressPlaceholder")}
+                            rows={3}
+                            {...field}
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </form>
+                </Form>
+                <Modal
+                  type="confirm"
+                  open={confirmSaveModal}
+                  onOpenChange={setConfirmSaveModal}
+                  title="Konfirmasi Simpan"
+                  description="Apakah Anda yakin ingin menyimpan data ini?"
+                  confirmText="Ya, Simpan"
+                  onConfirm={() => {
+                    setConfirmSaveModal(false);
+                    const values = form.getValues();
+                    onSubmit(values);
+                  }}
+                />
+                <MissingFieldsModal
+                  open={missingFieldsModal}
+                  onOpenChange={setMissingFieldsModal}
+                  fields={missingFieldsList}
+                />
+              </Card>
+
+              {isSuperAdmin && (
+                <Card className="p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {t("page.supplier.products.title")}
+                    </h3>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => {
+                          setShowManualAdd(!showManualAdd);
+                          setShowExcelImport(false);
+                        }}>
+                        <Plus size={14} />
+                        {t("page.supplier.products.addProduct")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => {
+                          setShowExcelImport(!showExcelImport);
+                          setShowManualAdd(false);
+                        }}>
+                        <Upload size={14} />
+                        {t("page.supplier.products.importExcel")}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {showManualAdd && (
+                    <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
+                      <div className="relative">
+                        <Search
+                          size={14}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        />
+                        <Input
+                          placeholder={t("page.supplier.products.searchPlaceholder")}
+                          className="pl-9"
+                          value={productSearch}
+                          onChange={(e) => {
+                            setProductSearch(e.target.value);
+                            setSelectedProduct(null);
+                          }}
+                        />
+                        {productSearch.length >= 2 && !selectedProduct && (
+                          <div className="absolute z-10 mt-1 w-full bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                            {productSearching ? (
+                              <div className="p-2 text-xs text-muted-foreground text-center">
+                                {t("common.loading")}
+                              </div>
+                            ) : searchResults.length === 0 ? (
+                              <div className="p-2 text-xs text-muted-foreground text-center">
+                                {t("common.noData")}
+                              </div>
+                            ) : (
+                              searchResults.slice(0, 10).map((p) => (
+                                <div
+                                  key={p._id || p.id}
+                                  className="px-3 py-2 text-sm cursor-pointer hover:bg-accent"
+                                  onClick={() => {
+                                    setSelectedProduct(p);
+                                    setProductSearch(p.nameProduct || p.name);
+                                  }}>
+                                  {p.nameProduct || p.name}
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <Input
+                        type="number"
+                        placeholder={t("page.supplier.products.pricePlaceholder")}
+                        value={productPrice}
+                        onChange={(e) => setProductPrice(e.target.value)}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={!selectedProduct || !productPrice}
+                        onClick={handleAddManualProduct}
+                        className="w-full gap-1.5">
+                        <Plus size={14} />
+                        {t("page.supplier.products.add")}
+                      </Button>
+                    </div>
+                  )}
+
+                  {showExcelImport && (
+                    <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={handleDownloadTemplate}>
+                        <Download size={14} />
+                        {t("page.supplier.products.downloadTemplate")}
+                      </Button>
+                      <Input
+                        type="file"
+                        accept=".xlsx,.xls,.csv"
+                        onChange={(e) => setExcelFile(e.target.files?.[0] || null)}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={!excelFile || excelImportMutation.isLoading}
+                        onClick={handleExcelImport}
+                        className="w-full gap-1.5">
+                        <Upload size={14} />
+                        {excelImportMutation.isLoading
+                          ? t("common.loading")
+                          : t("page.supplier.products.upload")}
+                      </Button>
+                    </div>
+                  )}
+
+                  {supplierProducts.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-muted/50 border-b">
+                            <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                              {t("page.supplier.products.table.name")}
+                            </th>
+                            <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                              {t("page.supplier.products.table.price")}
+                            </th>
+                            <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                              {t("page.supplier.products.table.action")}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {supplierProducts.map((p) => (
+                            <tr key={p.id} className="border-b last:border-b-0">
+                              <td className="px-3 py-2">{p.name}</td>
+                              <td className="px-3 py-2">
+                                {Number(p.price).toLocaleString("id-ID")}
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-destructive hover:text-destructive"
+                                  onClick={() => handleRemoveProduct(p.id)}>
+                                  <Trash2 size={14} />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="border border-dashed rounded-lg p-6 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        {t("page.supplier.products.empty")}
+                      </p>
+                    </div>
+                  )}
+                </Card>
+              )}
             </div>
 
             <Card className="p-6 space-y-6">
               <h3 className="text-sm font-semibold text-foreground mb-3">
                 {t("page.supplier.form.status")}
               </h3>
-              <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                form.watch("isActive")
-                  ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                  : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-              }`}>
+              <div
+                className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                  form.watch("isActive")
+                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                }`}>
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -364,7 +630,12 @@ const AddSupplier = () => {
                   if (isSuperAdmin && !allStores && selectedStore.length === 0) {
                     extraErrors.push({ name: "store", message: "required" });
                   }
-                  const missing = getMissingFields(values, formSchema, supplierFieldLabels, extraErrors);
+                  const missing = getMissingFields(
+                    values,
+                    formSchema,
+                    supplierFieldLabels,
+                    extraErrors
+                  );
                   if (missing.length > 0) {
                     setMissingFieldsList(missing);
                     setMissingFieldsModal(true);

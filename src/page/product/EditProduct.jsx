@@ -45,7 +45,6 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { getProductById, editProduct } from "@/services/product";
 import { getAllCategoryActive } from "@/services/category";
-import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
 
 import { getAllLocation } from "@/services/location";
@@ -86,7 +85,7 @@ const EditProduct = () => {
     nameProduct: "Nama Produk",
     category: "Kategori",
     price: "Harga",
-    store: "Toko",
+    store: "Toko"
   };
 
   const navigate = useNavigate();
@@ -154,14 +153,6 @@ const EditProduct = () => {
 
   const isSuperAdmin = role === "super_admin";
 
-  const editStore = selectedStores[0] || user?.store || "";
-  const { data: suppliersData } = useQuery(
-    ["suppliers-for-edit", editStore],
-    () => getAllSupplier({ limit: 100, store: editStore }),
-    { enabled: isSuperAdmin }
-  );
-  const supplierOptions = (suppliersData?.data || []).filter((s) => s.status === "active");
-
   const { data: taxData } = useQuery(
     ["tax-configs-for-edit"],
     () => getAllTaxConfig({ limit: 100 }),
@@ -200,7 +191,6 @@ const EditProduct = () => {
       sku: z.string().optional().or(z.literal("")),
       category: z.string().min(1, t("page.product.form.requiredCategory")),
       tipeProduk: z.string().default("menu"),
-      supplier: z.string().optional().or(z.literal("")),
       tax: z.string().optional().or(z.literal("")),
       description: z.string().optional().or(z.literal("")),
       price: z.coerce.number().min(1, t("page.product.form.requiredPrice")),
@@ -229,7 +219,6 @@ const EditProduct = () => {
       sku: "",
       category: "",
       tipeProduk: "menu",
-      supplier: "",
       tax: "",
       description: "",
       price: "",
@@ -273,7 +262,6 @@ const EditProduct = () => {
         sku: product.sku || "",
         category: parseJsonOrId(product.category),
         tipeProduk: product.tipeProduk || "menu",
-        supplier: parseJsonOrId(product.supplier),
         tax: parseJsonOrId(product.tax),
         description: product.description || "",
         price: product.price || "",
@@ -592,7 +580,6 @@ const EditProduct = () => {
     if (values.brand) payload.append("brand", values.brand);
     if (values.sku) payload.append("sku", values.sku);
     payload.append("category", values.category);
-    if (values.supplier) payload.append("supplier", values.supplier);
     if (values.tax) payload.append("tax", values.tax);
     payload.append("price", values.price);
     if (values.costPrice) payload.append("costPrice", values.costPrice);
@@ -984,28 +971,6 @@ const EditProduct = () => {
                               </FormItem>
                             )}
                           />
-                          {isSuperAdmin && (
-                            <FormField
-                              control={form.control}
-                              name="supplier"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{t("page.product.form.supplier")}</FormLabel>
-                                  <Combobox
-                                    options={supplierOptions.map((sOpt) => ({
-                                      value: String(sOpt.id),
-                                      label: sOpt.name
-                                    }))}
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    placeholder={t("page.product.form.supplierPlaceholder")}
-                                    searchPlaceholder={t("page.product.form.supplierSearch")}
-                                  />
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )}
                           {isSuperAdmin && (
                             <FormField
                               control={form.control}
@@ -1748,11 +1713,12 @@ const EditProduct = () => {
                             name="status"
                             render={({ field }) => (
                               <FormItem>
-                                <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                                  field.value
-                                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                                }`}>
+                                <div
+                                  className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                    field.value
+                                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                                  }`}>
                                   <div className="flex items-center gap-3">
                                     <div
                                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -1791,11 +1757,12 @@ const EditProduct = () => {
                             name="isAvailable"
                             render={({ field }) => (
                               <FormItem>
-                                <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                                  field.value
-                                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                                }`}>
+                                <div
+                                  className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                    field.value
+                                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                                  }`}>
                                   <div className="flex items-center gap-3">
                                     <div
                                       className={`w-10 h-10 rounded-full flex items-center justify-center ${

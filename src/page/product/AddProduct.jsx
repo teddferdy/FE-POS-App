@@ -47,7 +47,6 @@ import { addProduct } from "@/services/product";
 import { checkStockOpnameExists, getStockOpnameCompositionItems } from "@/services/stock";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
-import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
 
 import UserGuide from "@/components/organism/UserGuide";
@@ -87,7 +86,7 @@ const AddProduct = () => {
     nameProduct: "Nama Produk",
     category: "Kategori",
     price: "Harga",
-    store: "Toko",
+    store: "Toko"
   };
 
   const navigate = useNavigate();
@@ -140,13 +139,6 @@ const AddProduct = () => {
   );
   const categories = categoriesData?.data || categoriesData?.categories || [];
 
-  const { data: suppliersData } = useQuery(
-    ["suppliers-for-product", firstStore],
-    () => getAllSupplier({ limit: 100, store: firstStore }),
-    { enabled: isSuperAdmin }
-  );
-  const supplierOptions = (suppliersData?.data || []).filter((s) => s.status === "active");
-
   const { data: taxData } = useQuery(
     ["tax-configs-for-product"],
     () => getAllTaxConfig({ limit: 100 }),
@@ -162,7 +154,6 @@ const AddProduct = () => {
       brand: z.string().optional().or(z.literal("")),
       category: z.string().min(1, t("page.product.form.requiredCategory")),
       tipeProduk: z.string().default("menu"),
-      supplier: z.string().optional().or(z.literal("")),
       tax: z.string().optional().or(z.literal("")),
       price: z.coerce.number().min(1, t("page.product.form.requiredPrice")),
       costPrice: z.coerce.number().min(0).optional().or(z.literal("")),
@@ -189,7 +180,6 @@ const AddProduct = () => {
       brand: "",
       category: "",
       tipeProduk: "menu",
-      supplier: "",
       tax: "",
       description: "",
       price: "",
@@ -441,7 +431,6 @@ const AddProduct = () => {
     if (values.barcode) payload.append("barcode", values.barcode);
     if (values.brand) payload.append("brand", values.brand);
     payload.append("category", values.category);
-    if (values.supplier) payload.append("supplier", values.supplier);
     if (values.tax) payload.append("tax", values.tax);
     payload.append("stores", JSON.stringify(selectedStores));
     payload.append("price", values.price);
@@ -566,7 +555,10 @@ const AddProduct = () => {
           </div>
 
           <Form {...form}>
-            <form onSubmit={(e) => { e.preventDefault(); }}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+              }}>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
                   {currentStep === 1 && (
@@ -815,31 +807,6 @@ const AddProduct = () => {
                               </FormItem>
                             )}
                           />
-
-                          {isSuperAdmin && (
-                            <FormField
-                              control={form.control}
-                              name="supplier"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{t("page.product.form.supplier")}</FormLabel>
-                                  <Combobox
-                                    options={supplierOptions.map((s) => ({
-                                      value: String(s.id),
-                                      label: s.name
-                                    }))}
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    placeholder={t("page.product.form.supplierPlaceholder")}
-                                    searchPlaceholder={
-                                      t("page.product.form.supplierPlaceholder") + "..."
-                                    }
-                                  />
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )}
 
                           {isSuperAdmin && (
                             <FormField
@@ -1606,11 +1573,12 @@ const AddProduct = () => {
                             name="status"
                             render={({ field }) => (
                               <FormItem>
-                                <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                                  field.value
-                                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                                }`}>
+                                <div
+                                  className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                    field.value
+                                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                                  }`}>
                                   <div className="flex items-center gap-3">
                                     <div
                                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -1649,11 +1617,12 @@ const AddProduct = () => {
                             name="isAvailable"
                             render={({ field }) => (
                               <FormItem>
-                                <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                                  field.value
-                                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                                }`}>
+                                <div
+                                  className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                    field.value
+                                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                                  }`}>
                                   <div className="flex items-center gap-3">
                                     <div
                                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -1728,8 +1697,14 @@ const AddProduct = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         const values = form.getValues();
-                        const extraErrors = !allStores && selectedStores.length === 0 ? [{ name: "store" }] : [];
-                        const missing = getMissingFields(values, formSchema, productFieldLabels, extraErrors);
+                        const extraErrors =
+                          !allStores && selectedStores.length === 0 ? [{ name: "store" }] : [];
+                        const missing = getMissingFields(
+                          values,
+                          formSchema,
+                          productFieldLabels,
+                          extraErrors
+                        );
                         if (missing.length > 0) {
                           setMissingFieldsList(missing);
                           setMissingFieldsModal(true);

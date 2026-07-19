@@ -2,7 +2,20 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, Phone, Mail, MapPin, User, Plus, Edit3, Lightbulb, ShoppingCart } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  Phone,
+  Mail,
+  MapPin,
+  User,
+  Plus,
+  Edit3,
+  Lightbulb,
+  ShoppingCart,
+  Package
+} from "lucide-react";
+import { useCookies } from "react-cookie";
 import AbortController from "@/components/organism/abort-controller";
 import { useTranslation } from "react-i18next";
 import { getSupplierById } from "@/services/supplier";
@@ -13,6 +26,14 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell
+} from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
@@ -35,6 +56,9 @@ const DetailSupplier = () => {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
 
   const [paymentModal, setPaymentModal] = useState(false);
   const [payAmount, setPayAmount] = useState("");
@@ -100,15 +124,34 @@ const DetailSupplier = () => {
           <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
             <Skeleton className="h-4 w-32" />
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
-              <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
             </div>
           </Card>
           <div className="space-y-4">
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </Card>
           </div>
         </div>
       </div>
@@ -187,7 +230,9 @@ const DetailSupplier = () => {
           {t("page.supplier.detail.breadcrumb.list")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{isLoading ? "..." : supplier.name || "Detail"}</span>
+        <span className="text-primary font-semibold">
+          {isLoading ? "..." : supplier.name || "Detail"}
+        </span>
       </nav>
 
       <div className="flex items-center justify-between">
@@ -305,6 +350,49 @@ const DetailSupplier = () => {
           </div>
         </Card>
       </div>
+
+      {isSuperAdmin && supplier.products && supplier.products.length > 0 && (
+        <Card className="p-5">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            {t("page.supplier.products.availableProducts")}
+          </h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("page.supplier.products.name")}</TableHead>
+                <TableHead className="text-right">{t("page.supplier.products.price")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {supplier.products.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell className="text-right">
+                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(
+                      product.price
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+
+      {isSuperAdmin && supplier.products && supplier.products.length === 0 && (
+        <Card className="p-8 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
+              <Package size={24} className="text-muted-foreground/60" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {t("page.supplier.products.noProducts")}
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {loadingPayments ? (
         <div className="space-y-3">

@@ -133,6 +133,16 @@ const SupplierList = () => {
       }
     },
     {
+      header: t("page.supplier.products.title") || "Produk",
+      render: (item) => (
+        <button
+          onClick={() => navigate(`/product?supplier=${item.id}`)}
+          className="text-sm text-primary hover:underline font-medium cursor-pointer">
+          {item.productCount || 0} {t("page.supplier.products.title")?.toLowerCase() || "produk"}
+        </button>
+      )
+    },
+    {
       header: t("page.supplier.form.contactPerson"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">{item.contactPerson || "-"}</span>
@@ -455,7 +465,10 @@ const SupplierList = () => {
                           />
                           <select
                             value={statusFilter}
-                            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                            onChange={(e) => {
+                              setStatusFilter(e.target.value);
+                              setPage(1);
+                            }}
                             className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
                             <option value="all">{t("common.all")}</option>
                             <option value="active">{t("common.active")}</option>
@@ -464,7 +477,10 @@ const SupplierList = () => {
                           </select>
                           <SearchInput
                             value={search}
-                            onChange={(val) => { setSearch(val); setPage(1); }}
+                            onChange={(val) => {
+                              setSearch(val);
+                              setPage(1);
+                            }}
                             placeholder={t("page.supplier.list.search")}
                             isLoading={isFetching}
                           />

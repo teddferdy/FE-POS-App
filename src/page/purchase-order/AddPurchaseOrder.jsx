@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { z } from "zod";
 import { addPurchaseOrder } from "@/services/purchase-order";
-import { getAllSupplier, addSupplier } from "@/services/supplier";
+import { getAllSupplier, addSupplier, getSupplierById } from "@/services/supplier";
 import { getAllEmployee } from "@/services/employee";
 import { getAllIngredients } from "@/services/ingredient";
 import { getAllLocation } from "@/services/location";
@@ -30,7 +30,6 @@ const AddPurchaseOrder = () => {
 
   const poFieldLabels = {
     store: t("page.purchaseOrder.add.store"),
-    supplier: t("page.purchaseOrder.add.supplier"),
     pic: t("page.purchaseOrder.add.pic"),
     orderDate: t("page.purchaseOrder.add.poDate"),
     orderTime: t("page.purchaseOrder.add.time"),
@@ -40,7 +39,6 @@ const AddPurchaseOrder = () => {
 
   const poSchema = z.object({
     store: z.number().min(1, t("page.purchaseOrder.add.validation.store")),
-    supplier: z.number().min(1, t("page.purchaseOrder.add.validation.supplier")),
     pic: z.number().min(1, t("page.purchaseOrder.add.validation.pic")),
     orderDate: z.date({ required_error: t("page.purchaseOrder.add.validation.orderDate") }),
     orderTime: z.string().min(1, t("page.purchaseOrder.add.validation.orderTime")),
@@ -63,14 +61,10 @@ const AddPurchaseOrder = () => {
   const [selectedStore, setSelectedStore] = useState(user?.store || 0);
   const locationParam = selectedStore;
 
-  const [supplierSearch, setSupplierSearch] = useState("");
-  const [supplierId, setSupplierId] = useState(null);
-  const [showSupplierList, setShowSupplierList] = useState(false);
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState([
-    { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs" }
+    { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs", supplierId: null }
   ]);
-  // ponytail: pre-fill items from low-stock → PO flow
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const raw = searchParams.get("ingredients");
@@ -83,7 +77,8 @@ const AddPurchaseOrder = () => {
           ingredientId: null,
           qty: 1,
           price: 0,
-          unit: "pcs"
+          unit: "pcs",
+          supplierId: null
         }));
       if (names.length > 0) setItems(names);
     }
@@ -100,6 +95,7 @@ const AddPurchaseOrder = () => {
   const [picId, setPicId] = useState(null);
   const [showPicList, setShowPicList] = useState(false);
   const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
+  const [addSupplierItemIdx, setAddSupplierItemIdx] = useState(null);
   const [newSupplierName, setNewSupplierName] = useState("");
   const [newSupplierPhone, setNewSupplierPhone] = useState("");
 
@@ -118,10 +114,6 @@ const AddPurchaseOrder = () => {
     }
   );
   const employees = employeesData?.data || [];
-
-  const filteredSuppliers = suppliers.filter((s) =>
-    s.name?.toLowerCase().includes(supplierSearch.toLowerCase())
-  );
 
   const filteredEmployees = employees.filter((e) =>
     (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
@@ -143,9 +135,6 @@ const AddPurchaseOrder = () => {
   const activeIngredients = ingredients.filter((i) => i.status === "active");
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
 
-  const getFilteredIngredients = (search) =>
-    activeIngredients.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
-
   const headerReady = !suppliersLoading && !employeesLoading && !locationsLoading;
   const [ingredientsReady, setIngredientsReady] = useState(false);
   const prevStoreRef = useRef(selectedStore);
@@ -157,6 +146,59 @@ const AddPurchaseOrder = () => {
     if (ingredientsData) setIngredientsReady(true);
   }, [selectedStore, ingredientsData]);
   const itemsLoading = !!selectedStore && !ingredientsReady;
+
+  const supplierIdsKey = suppliers
+    .map((s) => String(s.id || s._id))
+    .sort()
+    .join(",");
+
+  const { data: allSupplierDetails = [] } = useQuery(
+    ["all-supplier-details", store, supplierIdsKey],
+    async () => {
+      if (suppliers.length === 0) return [];
+      const results = await Promise.allSettled(
+        suppliers.map((s) => getSupplierById({ id: s.id || s._id }))
+      );
+      return results
+        .filter((r) => r.status === "fulfilled")
+        .map((r, i) => ({
+          supplier: suppliers[i],
+          products: r.value?.data?.products || r.value?.data?.data?.products || []
+        }));
+    },
+    { enabled: suppliers.length > 0, staleTime: 60000 }
+  );
+
+  const supplierToIngredients = useMemo(() => {
+    const map = {};
+    for (const { supplier, products } of allSupplierDetails) {
+      map[supplier.id || supplier._id] = new Set(products.map((p) => String(p.id)));
+    }
+    return map;
+  }, [allSupplierDetails]);
+
+  const ingredientSuppliersMap = useMemo(() => {
+    const map = {};
+    for (const { supplier, products } of allSupplierDetails) {
+      const sid = supplier.id || supplier._id;
+      const sname = supplier.name;
+      for (const prod of products) {
+        const pid = String(prod.id);
+        if (!map[pid]) map[pid] = [];
+        map[pid].push({ supplierId: sid, supplierName: sname, price: prod.price });
+      }
+    }
+    return map;
+  }, [allSupplierDetails]);
+
+  const getFilteredIngredients = (search, itemSupplierId) => {
+    let filtered = activeIngredients;
+    if (itemSupplierId && supplierToIngredients[itemSupplierId]?.size > 0) {
+      const allowedIds = supplierToIngredients[itemSupplierId];
+      filtered = activeIngredients.filter((i) => allowedIds.has(String(i.id)));
+    }
+    return filtered.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
+  };
 
   const unitOptions = [
     { value: "pcs", label: t("page.product.form.unit.pcs") },
@@ -185,12 +227,14 @@ const AddPurchaseOrder = () => {
   const addSupplierMutation = useMutation(addSupplier, {
     onSuccess: (res) => {
       const newSupplier = res.data || res;
-      setSupplierSearch(newSupplier.name);
-      setSupplierId(newSupplier.id || newSupplier._id);
-      setShowSupplierList(false);
+      if (addSupplierItemIdx !== null) {
+        updateItem(addSupplierItemIdx, "supplierId", newSupplier.id || newSupplier._id);
+      }
       setShowAddSupplierModal(false);
+      setAddSupplierItemIdx(null);
       toast.success(t("page.purchaseOrder.add.toast.supplierAdded"));
       queryClient.invalidateQueries(["suppliers-dropdown"]);
+      queryClient.invalidateQueries(["all-supplier-details"]);
     },
     onError: (err) => {
       toast.error(t("page.purchaseOrder.add.toast.supplierAddFailed"), {
@@ -212,12 +256,6 @@ const AddPurchaseOrder = () => {
     }
   });
 
-  const selectSupplier = (s) => {
-    setSupplierSearch(s.name);
-    setSupplierId(s.id || s._id);
-    setShowSupplierList(false);
-  };
-
   const selectPic = (e) => {
     setPicSearch(e.fullName || e.userName);
     setPicId(e.id || e._id);
@@ -235,7 +273,10 @@ const AddPurchaseOrder = () => {
   };
 
   const addItem = () =>
-    setItems((prev) => [...prev, { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs" }]);
+    setItems((prev) => [
+      ...prev,
+      { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs", supplierId: null }
+    ]);
   const removeItem = (idx) => setItems((prev) => prev.filter((_, i) => i !== idx));
   const updateItem = (idx, field, value) =>
     setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
@@ -246,14 +287,32 @@ const AddPurchaseOrder = () => {
 
   const [errors, setErrors] = useState({});
 
+  const hasDuplicateItems = useMemo(() => {
+    return items.some((item, i) => {
+      if (!item.ingredientId) return false;
+      return items.some(
+        (other, j) =>
+          i !== j &&
+          other.ingredientId === item.ingredientId &&
+          (other.supplierId || null) === (item.supplierId || null)
+      );
+    });
+  }, [items]);
+
   const handleSubmit = (e, saveAsDraft = false) => {
     if (e?.preventDefault) e.preventDefault();
     setErrors({});
 
     if (!saveAsDraft) {
+      if (hasDuplicateItems) {
+        toast.error(t("page.purchaseOrder.add.validation.duplicateItems"), {
+          description: t("page.purchaseOrder.add.validation.duplicateItemsDesc")
+        });
+        return;
+      }
+
       const result = poSchema.safeParse({
         store: Number(selectedStore) || 0,
-        supplier: supplierId,
         pic: picId,
         orderDate,
         orderTime,
@@ -277,7 +336,6 @@ const AddPurchaseOrder = () => {
 
     createMutation.mutate({
       store: locationParam,
-      supplier: supplierId,
       notes,
       discount,
       status: saveAsDraft ? "draft" : "pending",
@@ -291,13 +349,14 @@ const AddPurchaseOrder = () => {
       })(),
       items: items
         .filter((i) => (saveAsDraft ? true : i.name?.trim()))
-        .map(({ name, ingredientId, qty, price, unit }) => ({
+        .map(({ name, ingredientId, qty, price, unit, supplierId }) => ({
           product: null,
           ingredient: ingredientId || null,
           ingredientName: name,
           quantity: qty,
           price,
-          unit: unit || "pcs"
+          unit: unit || "pcs",
+          supplier: supplierId || null
         })),
       createdBy: user?.id
     });
@@ -404,82 +463,6 @@ const AddPurchaseOrder = () => {
                       </select>
                       {errors.store && (
                         <p className="text-xs text-destructive mt-1">{errors.store}</p>
-                      )}
-                    </div>
-                    <div className="relative">
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">
-                        {t("page.purchaseOrder.add.supplier")}{" "}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder={t("page.purchaseOrder.add.supplierPlaceholder")}
-                          value={supplierSearch}
-                          onChange={(e) => {
-                            setSupplierSearch(e.target.value);
-                            setSupplierId(null);
-                            setShowSupplierList(true);
-                            setErrors((prev) => ({ ...prev, supplier: undefined }));
-                          }}
-                          onFocus={() => setShowSupplierList(true)}
-                          onBlur={() => setTimeout(() => setShowSupplierList(false), 200)}
-                          className={`h-10 flex-1 ${errors.supplier ? "border-destructive" : ""}`}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-10 w-10 shrink-0"
-                          onClick={() => {
-                            setNewSupplierName("");
-                            setNewSupplierPhone("");
-                            setShowAddSupplierModal(true);
-                          }}>
-                          <Plus size={16} />
-                        </Button>
-                      </div>
-                      {errors.supplier && (
-                        <p className="text-xs text-destructive mt-1">{errors.supplier}</p>
-                      )}
-                      {showSupplierList && (
-                        <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                          {filteredSuppliers.length > 0 ? (
-                            filteredSuppliers.map((s) => (
-                              <button
-                                key={s.id || s._id}
-                                type="button"
-                                onMouseDown={() => selectSupplier(s)}
-                                className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
-                                {s.name}
-                              </button>
-                            ))
-                          ) : supplierSearch ? (
-                            <p className="p-3 text-xs text-muted-foreground text-center">
-                              {t("page.purchaseOrder.add.noSupplierFound")}
-                            </p>
-                          ) : (
-                            <p className="p-3 text-xs text-muted-foreground text-center">
-                              {t("page.purchaseOrder.add.typeToSearchSupplier")}
-                            </p>
-                          )}
-                          {supplierSearch &&
-                            !filteredSuppliers.some((s) => s.name === supplierSearch) && (
-                              <button
-                                type="button"
-                                onMouseDown={() => {
-                                  addSupplierMutation.mutate({
-                                    name: supplierSearch,
-                                    isActive: true
-                                  });
-                                }}
-                                disabled={addSupplierMutation.isLoading}
-                                className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
-                                <Plus size={18} />
-                                {t("page.purchaseOrder.add.addSupplier")} &quot;{supplierSearch}
-                                &quot;
-                              </button>
-                            )}
-                        </div>
                       )}
                     </div>
                     <div className="relative">
@@ -645,6 +628,11 @@ const AddPurchaseOrder = () => {
                 </div>
                 <div className="p-6">
                   {errors.items && <p className="text-xs text-destructive mb-3">{errors.items}</p>}
+                  {hasDuplicateItems && (
+                    <p className="text-xs text-amber-600 mb-3">
+                      {t("page.purchaseOrder.add.validation.duplicateItems")}
+                    </p>
+                  )}
 
                   {!selectedStore ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -666,6 +654,7 @@ const AddPurchaseOrder = () => {
                         <div key={i} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
                           <Skeleton className="w-6 h-6 rounded-full shrink-0" />
                           <Skeleton className="h-9 flex-1" />
+                          <Skeleton className="h-9 w-32 shrink-0" />
                           <Skeleton className="h-9 w-20 shrink-0" />
                           <Skeleton className="h-9 w-20 shrink-0" />
                           <Skeleton className="h-9 w-36 shrink-0" />
@@ -682,98 +671,199 @@ const AddPurchaseOrder = () => {
                     </p>
                   ) : (
                     <div className="space-y-3">
-                      {items.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
-                          <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
-                            {idx + 1}
-                          </span>
-                          <div className="relative flex-1 min-w-0">
-                            <Input
-                              placeholder={t("page.purchaseOrder.add.itemNamePlaceholder")}
-                              value={item.name}
-                              onChange={(e) => {
-                                updateItem(idx, "name", e.target.value);
-                                updateItem(idx, "ingredientId", null);
-                                setIngredientFocusIdx(idx);
-                                setErrors((prev) => ({ ...prev, items: undefined }));
-                              }}
-                              onFocus={() => setIngredientFocusIdx(idx)}
-                              onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
-                              className="h-9 text-sm w-full"
-                            />
-                            {ingredientFocusIdx === idx && (
-                              <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                {getFilteredIngredients(item.name || "").length > 0 ? (
-                                  getFilteredIngredients(item.name || "").map((ing) => (
+                      {items.map((item, idx) => {
+                        const suppliersForItem = item.ingredientId
+                          ? ingredientSuppliersMap[String(item.ingredientId)] || []
+                          : [];
+                        const itemPrices = suppliersForItem.map((s) => s.price);
+                        const minPrice = itemPrices.length > 0 ? Math.min(...itemPrices) : 0;
+
+                        return (
+                          <div key={idx} className="bg-muted/30 rounded-lg p-3">
+                            <div className="flex items-center gap-3">
+                              <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+                                {idx + 1}
+                              </span>
+                              <div className="relative flex-1 min-w-0">
+                                <Input
+                                  placeholder={t("page.purchaseOrder.add.itemNamePlaceholder")}
+                                  value={item.name}
+                                  onChange={(e) => {
+                                    updateItem(idx, "name", e.target.value);
+                                    updateItem(idx, "ingredientId", null);
+                                    updateItem(idx, "supplierId", null);
+                                    setIngredientFocusIdx(idx);
+                                    setErrors((prev) => ({ ...prev, items: undefined }));
+                                  }}
+                                  onFocus={() => setIngredientFocusIdx(idx)}
+                                  onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
+                                  className="h-9 text-sm w-full"
+                                />
+                                {ingredientFocusIdx === idx && (
+                                  <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                    {getFilteredIngredients(item.name || "", item.supplierId)
+                                      .length > 0 ? (
+                                      getFilteredIngredients(item.name || "", item.supplierId).map(
+                                        (ing) => (
+                                          <button
+                                            key={ing.id}
+                                            type="button"
+                                            onMouseDown={() => {
+                                              updateItem(idx, "name", ing.name);
+                                              updateItem(idx, "ingredientId", ing.id);
+                                              updateItem(idx, "unit", ing.unit || "pcs");
+                                              updateItem(idx, "supplierId", null);
+                                              updateItem(idx, "price", 0);
+                                              setIngredientFocusIdx(null);
+                                            }}
+                                            className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
+                                            <span>{ing.name}</span>
+                                            <span className="text-xs text-muted-foreground ml-auto">
+                                              {ing.unit || "pcs"}
+                                            </span>
+                                          </button>
+                                        )
+                                      )
+                                    ) : (
+                                      <p className="p-3 text-xs text-muted-foreground text-center">
+                                        {t("page.purchaseOrder.add.noIngredientFound")}
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex shrink-0">
+                                <select
+                                  value={item.supplierId || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value || null;
+                                    updateItem(idx, "supplierId", val);
+                                    if (val && ingredientSuppliersMap[String(item.ingredientId)]) {
+                                      const match = ingredientSuppliersMap[
+                                        String(item.ingredientId)
+                                      ].find((s) => s.supplierId === val);
+                                      if (match) updateItem(idx, "price", match.price);
+                                    }
+                                  }}
+                                  disabled={!item.ingredientId}
+                                  className="h-9 text-sm w-32 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors rounded-r-none border-r-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                                  <option value="">
+                                    {t("page.purchaseOrder.add.selectSupplier")}
+                                  </option>
+                                  {suppliersForItem.map((sp) => (
+                                    <option key={sp.supplierId} value={sp.supplierId}>
+                                      {sp.supplierName}
+                                    </option>
+                                  ))}
+                                </select>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-9 w-9 shrink-0 rounded-l-none border-l-0"
+                                  onClick={() => {
+                                    setAddSupplierItemIdx(idx);
+                                    setNewSupplierName("");
+                                    setNewSupplierPhone("");
+                                    setShowAddSupplierModal(true);
+                                  }}>
+                                  <Plus size={14} />
+                                </Button>
+                              </div>
+                              <Input
+                                placeholder={t("page.purchaseOrder.add.qty")}
+                                value={item.qty || ""}
+                                onChange={(e) =>
+                                  updateItem(
+                                    idx,
+                                    "qty",
+                                    Number(e.target.value.replace(/[^0-9]/g, "")) || 0
+                                  )
+                                }
+                                className="h-9 text-sm w-20 shrink-0"
+                              />
+                              <select
+                                value={item.unit}
+                                onChange={(e) => updateItem(idx, "unit", e.target.value)}
+                                className="h-9 text-sm w-20 shrink-0 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors">
+                                {unitOptions.map((opt) => (
+                                  <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <Input
+                                placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                                value={item.price ? formatIDR(item.price) : ""}
+                                onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
+                                className="h-9 text-sm w-36 shrink-0"
+                              />
+                              <span className="text-sm font-medium text-foreground w-28 text-right shrink-0">
+                                Rp {(item.qty * item.price).toLocaleString("id-ID")}
+                              </span>
+                              {items.length > 1 && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive shrink-0"
+                                  onClick={() => removeItem(idx)}>
+                                  <Trash2 size={18} />
+                                </Button>
+                              )}
+                            </div>
+                            {item.ingredientId && (
+                              <div className="flex flex-wrap items-center gap-2 mt-2 ml-9">
+                                {suppliersForItem.length > 0 ? (
+                                  <>
+                                    <span className="text-xs text-muted-foreground font-medium shrink-0">
+                                      {t("page.purchaseOrder.add.supplierPrice")}:
+                                    </span>
+                                    {suppliersForItem.map((sp) => {
+                                      const isCheapest = sp.price === minPrice;
+                                      const isSelected = item.supplierId === sp.supplierId;
+                                      return (
+                                        <button
+                                          key={sp.supplierId}
+                                          type="button"
+                                          onClick={() => {
+                                            updateItem(idx, "supplierId", sp.supplierId);
+                                            updateItem(idx, "price", sp.price);
+                                          }}
+                                          className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                                            isSelected
+                                              ? "bg-primary/10 border-primary text-primary font-medium"
+                                              : isCheapest
+                                                ? "bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
+                                                : "bg-background border-border hover:bg-accent/50"
+                                          }`}>
+                                          {sp.supplierName}: {formatIDR(sp.price)}
+                                        </button>
+                                      );
+                                    })}
                                     <button
-                                      key={ing.id}
                                       type="button"
-                                      onMouseDown={() => {
-                                        updateItem(idx, "name", ing.name);
-                                        updateItem(idx, "ingredientId", ing.id);
-                                        updateItem(idx, "unit", ing.unit || "pcs");
-                                        setIngredientFocusIdx(null);
+                                      onClick={() => {
+                                        updateItem(idx, "supplierId", null);
                                       }}
-                                      className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
-                                      <span>{ing.name}</span>
-                                      <span className="text-xs text-muted-foreground ml-auto">
-                                        {ing.unit || "pcs"}
-                                      </span>
+                                      className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                                        !item.supplierId
+                                          ? "bg-primary/10 border-primary text-primary font-medium"
+                                          : "bg-background border-border hover:bg-accent/50"
+                                      }`}>
+                                      {t("page.purchaseOrder.add.customPrice")}
                                     </button>
-                                  ))
+                                  </>
                                 ) : (
-                                  <p className="p-3 text-xs text-muted-foreground text-center">
-                                    {t("page.purchaseOrder.add.noIngredientFound")}
-                                  </p>
+                                  <span className="text-xs text-muted-foreground">
+                                    {t("page.purchaseOrder.add.noSupplierForIngredient")}
+                                  </span>
                                 )}
                               </div>
                             )}
                           </div>
-                          <Input
-                            placeholder={t("page.purchaseOrder.add.qty")}
-                            value={item.qty || ""}
-                            onChange={(e) =>
-                              updateItem(
-                                idx,
-                                "qty",
-                                Number(e.target.value.replace(/[^0-9]/g, "")) || 0
-                              )
-                            }
-                            className="h-9 text-sm w-20 shrink-0"
-                          />
-                          <select
-                            value={item.unit}
-                            onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                            className="h-9 text-sm w-20 shrink-0 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors">
-                            {unitOptions.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                          <Input
-                            placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                            value={item.price ? formatIDR(item.price) : ""}
-                            onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
-                            className="h-9 text-sm w-36 shrink-0"
-                          />
-                          <span className="text-sm font-medium text-foreground w-28 text-right shrink-0">
-                            Rp {(item.qty * item.price).toLocaleString("id-ID")}
-                          </span>
-                          {items.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive shrink-0"
-                              onClick={() => removeItem(idx)}>
-                              <Trash2 size={18} />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
 
@@ -862,7 +952,6 @@ const AddPurchaseOrder = () => {
                         const missing = getMissingFields(
                           {
                             store: Number(selectedStore) || 0,
-                            supplier: supplierId,
                             pic: picId,
                             orderDate,
                             orderTime,

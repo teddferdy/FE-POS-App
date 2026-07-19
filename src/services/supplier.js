@@ -1,7 +1,8 @@
 import { axiosInstance } from ".";
 
 export const getAllSupplier = async (payload) => {
-  const statusParam = payload?.status && payload.status !== "all" ? `&status=${payload.status}` : "";
+  const statusParam =
+    payload?.status && payload.status !== "all" ? `&status=${payload.status}` : "";
   const { data, status } = await axiosInstance.get(
     `/supplier?page=${payload?.page || 1}&limit=${payload?.limit || 10}&search=${payload?.search || ""}&store=${payload?.store || ""}${statusParam}`
   );
@@ -68,6 +69,20 @@ export const uploadSupplierExcel = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
   const { data, status } = await axiosInstance.post("/supplier/import", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const downloadSupplierProductTemplate = async () => {
+  return downloadBlob("/supplier/product-template", `template-supplier-product.xlsx`);
+};
+
+export const importSupplierProducts = async ({ id, file }) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data, status } = await axiosInstance.post(`/supplier/${id}/import-products`, formData, {
     headers: { "Content-Type": "multipart/form-data" }
   });
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
