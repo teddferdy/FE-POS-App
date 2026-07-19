@@ -511,6 +511,7 @@
   "page.supplier.products.searchProduct": "Cari produk...",
   "page.supplier.products.enterPrice": "Masukkan harga",
   "page.supplier.products.confirmDelete": "Hapus produk ini?",
+  "page.supplier.products.confirmDeleteDesc": "Produk akan dihapus dari daftar produk supplier ini.",
   "page.supplier.products.importSuccess": "Berhasil import {count} produk",
   "page.supplier.products.importError": "Gagal import produk",
   "page.supplier.products.productCount": "{count} Produk",
