@@ -57,8 +57,8 @@ const AddPurchaseOrder = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
-  const store = user?.store || "";
-  const [selectedStore, setSelectedStore] = useState(user?.store || 0);
+  const isSuperAdmin = user?.roleType === "super_admin";
+  const [selectedStore, setSelectedStore] = useState(isSuperAdmin ? "" : user?.store || "");
   const locationParam = selectedStore;
 
   const [notes, setNotes] = useState("");
@@ -100,9 +100,9 @@ const AddPurchaseOrder = () => {
   const [newSupplierPhone, setNewSupplierPhone] = useState("");
 
   const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
-    ["suppliers-dropdown", store],
-    () => getAllSupplier({ limit: 999, store: store || undefined }),
-    { staleTime: 30000 }
+    ["suppliers-dropdown", selectedStore],
+    () => getAllSupplier({ limit: 999, store: selectedStore, status: "active" }),
+    { enabled: !!selectedStore, staleTime: 30000 }
   );
   const suppliers = suppliersData?.data || [];
 
@@ -128,11 +128,11 @@ const AddPurchaseOrder = () => {
 
   const { data: ingredientsData } = useQuery(
     ["ingredients-po", selectedStore],
-    () => getAllIngredients({ store: locationParam, limit: 999 }),
+    () => getAllIngredients({ store: locationParam, limit: 999, status: "active" }),
     { enabled: !!selectedStore, staleTime: 30000 }
   );
   const ingredients = ingredientsData?.data || [];
-  const activeIngredients = ingredients.filter((i) => i.status === "active");
+  const activeIngredients = ingredients;
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
 
   const headerReady = !suppliersLoading && !employeesLoading && !locationsLoading;
@@ -153,7 +153,7 @@ const AddPurchaseOrder = () => {
     .join(",");
 
   const { data: allSupplierDetails = [] } = useQuery(
-    ["all-supplier-details", store, supplierIdsKey],
+    ["all-supplier-details", selectedStore, supplierIdsKey],
     async () => {
       if (suppliers.length === 0) return [];
       const results = await Promise.allSettled(
@@ -163,7 +163,9 @@ const AddPurchaseOrder = () => {
         .filter((r) => r.status === "fulfilled")
         .map((r, i) => ({
           supplier: suppliers[i],
-          products: r.value?.data?.products || r.value?.data?.data?.products || []
+          products: (r.value?.data?.products || r.value?.data?.data?.products || []).filter(
+            (p) => !p.status || p.status === "active"
+          )
         }));
     },
     { enabled: suppliers.length > 0, staleTime: 60000 }
@@ -460,11 +462,12 @@ const AddPurchaseOrder = () => {
                           setSelectedStore(e.target.value);
                           setErrors((prev) => ({ ...prev, store: undefined }));
                         }}
+                        disabled={!isSuperAdmin}
                         className={`w-full h-10 px-3 rounded-lg border text-sm outline-none focus:ring-1 transition-colors ${
                           errors.store
                             ? "border-destructive focus:ring-destructive/20"
                             : "border-border focus:ring-primary/20 focus:border-primary"
-                        } bg-background`}>
+                        } bg-background ${!isSuperAdmin ? "opacity-60 cursor-not-allowed" : ""}`}>
                         <option value="">{t("page.purchaseOrder.add.selectStore")}</option>
                         {locations.map((loc) => (
                           <option key={loc.id} value={loc.id}>
@@ -693,6 +696,47 @@ const AddPurchaseOrder = () => {
                               <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
                                 {idx + 1}
                               </span>
+                              <div className="flex shrink-0">
+                                <select
+                                  value={item.supplierId || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value || null;
+                                    updateItem(idx, "supplierId", val);
+                                    if (
+                                      val &&
+                                      item.ingredientId &&
+                                      getSuppliersForIngredientName(item.ingredientId).length > 0
+                                    ) {
+                                      const match = getSuppliersForIngredientName(
+                                        item.ingredientId
+                                      ).find((s) => s.supplierId === val);
+                                      if (match) updateItem(idx, "price", match.price);
+                                    }
+                                  }}
+                                  className="h-9 text-sm w-36 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors rounded-r-none border-r-0">
+                                  <option value="">
+                                    {t("page.purchaseOrder.add.selectSupplier")}
+                                  </option>
+                                  {suppliers.map((sp) => (
+                                    <option key={sp.id || sp._id} value={sp.id || sp._id}>
+                                      {sp.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-9 w-9 shrink-0 rounded-l-none border-l-0"
+                                  onClick={() => {
+                                    setAddSupplierItemIdx(idx);
+                                    setNewSupplierName("");
+                                    setNewSupplierPhone("");
+                                    setShowAddSupplierModal(true);
+                                  }}>
+                                  <Plus size={14} />
+                                </Button>
+                              </div>
                               <div className="relative flex-1 min-w-0">
                                 <Input
                                   placeholder={t("page.purchaseOrder.add.itemNamePlaceholder")}
@@ -700,7 +744,6 @@ const AddPurchaseOrder = () => {
                                   onChange={(e) => {
                                     updateItem(idx, "name", e.target.value);
                                     updateItem(idx, "ingredientId", null);
-                                    updateItem(idx, "supplierId", null);
                                     setIngredientFocusIdx(idx);
                                     setErrors((prev) => ({ ...prev, items: undefined }));
                                   }}
@@ -721,8 +764,12 @@ const AddPurchaseOrder = () => {
                                               updateItem(idx, "name", ing.name);
                                               updateItem(idx, "ingredientId", ing.id);
                                               updateItem(idx, "unit", ing.unit || "pcs");
-                                              updateItem(idx, "supplierId", null);
-                                              updateItem(idx, "price", 0);
+                                              const match = item.supplierId
+                                                ? ingredientSuppliersMap[
+                                                    (ing.name || "").toLowerCase().trim()
+                                                  ]?.find((s) => s.supplierId === item.supplierId)
+                                                : null;
+                                              updateItem(idx, "price", match ? match.price : 0);
                                               setIngredientFocusIdx(null);
                                             }}
                                             className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
@@ -740,47 +787,6 @@ const AddPurchaseOrder = () => {
                                     )}
                                   </div>
                                 )}
-                              </div>
-                              <div className="flex shrink-0">
-                                <select
-                                  value={item.supplierId || ""}
-                                  onChange={(e) => {
-                                    const val = e.target.value || null;
-                                    updateItem(idx, "supplierId", val);
-                                    if (
-                                      val &&
-                                      getSuppliersForIngredientName(item.ingredientId).length > 0
-                                    ) {
-                                      const match = getSuppliersForIngredientName(
-                                        item.ingredientId
-                                      ).find((s) => s.supplierId === val);
-                                      if (match) updateItem(idx, "price", match.price);
-                                    }
-                                  }}
-                                  disabled={!item.ingredientId}
-                                  className="h-9 text-sm w-32 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors rounded-r-none border-r-0 disabled:opacity-50 disabled:cursor-not-allowed">
-                                  <option value="">
-                                    {t("page.purchaseOrder.add.selectSupplier")}
-                                  </option>
-                                  {suppliersForItem.map((sp) => (
-                                    <option key={sp.supplierId} value={sp.supplierId}>
-                                      {sp.supplierName}
-                                    </option>
-                                  ))}
-                                </select>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-9 w-9 shrink-0 rounded-l-none border-l-0"
-                                  onClick={() => {
-                                    setAddSupplierItemIdx(idx);
-                                    setNewSupplierName("");
-                                    setNewSupplierPhone("");
-                                    setShowAddSupplierModal(true);
-                                  }}>
-                                  <Plus size={14} />
-                                </Button>
                               </div>
                               <Input
                                 placeholder={t("page.purchaseOrder.add.qty")}

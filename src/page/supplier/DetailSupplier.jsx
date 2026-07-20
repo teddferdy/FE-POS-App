@@ -359,7 +359,7 @@ const DetailSupplier = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("page.supplier.products.name")}</TableHead>
+                <TableHead>{t("page.supplier.products.table.name")}</TableHead>
                 <TableHead className="text-right">{t("page.supplier.products.price")}</TableHead>
               </TableRow>
             </TableHeader>
