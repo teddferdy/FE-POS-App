@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { z } from "zod";
 import { addPurchaseOrder } from "@/services/purchase-order";
-import { getAllSupplier, addSupplier, getSupplierById } from "@/services/supplier";
+import { getAllSupplier, addSupplier } from "@/services/supplier";
 import { getAllEmployee } from "@/services/employee";
 import { getAllIngredients } from "@/services/ingredient";
 import { getAllLocation } from "@/services/location";
@@ -101,7 +101,7 @@ const AddPurchaseOrder = () => {
 
   const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
     ["suppliers-dropdown", selectedStore],
-    () => getAllSupplier({ limit: 999, store: selectedStore, status: "active" }),
+    () => getAllSupplier({ limit: 999, store: selectedStore, status: "active", includeProducts: true }),
     { enabled: !!selectedStore, staleTime: 30000 }
   );
   const suppliers = suppliersData?.data || [];
@@ -135,7 +135,7 @@ const AddPurchaseOrder = () => {
   const activeIngredients = ingredients;
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
 
-  const headerReady = !suppliersLoading && !employeesLoading && !locationsLoading;
+  const headerReady = !employeesLoading && !locationsLoading;
   const [ingredientsReady, setIngredientsReady] = useState(false);
   const prevStoreRef = useRef(selectedStore);
   useEffect(() => {
@@ -147,45 +147,27 @@ const AddPurchaseOrder = () => {
   }, [selectedStore, ingredientsData]);
   const itemsLoading = !!selectedStore && !ingredientsReady;
 
-  const supplierIdsKey = suppliers
-    .map((s) => String(s.id || s._id))
-    .sort()
-    .join(",");
-
-  const { data: allSupplierDetails = [] } = useQuery(
-    ["all-supplier-details", selectedStore, supplierIdsKey],
-    async () => {
-      if (suppliers.length === 0) return [];
-      const results = await Promise.allSettled(
-        suppliers.map((s) => getSupplierById({ id: s.id || s._id }))
-      );
-      return results
-        .filter((r) => r.status === "fulfilled")
-        .map((r, i) => ({
-          supplier: suppliers[i],
-          products: (r.value?.data?.products || r.value?.data?.data?.products || []).filter(
-            (p) => !p.status || p.status === "active"
-          )
-        }));
-    },
-    { enabled: suppliers.length > 0, staleTime: 60000 }
-  );
-
   const supplierToIngredients = useMemo(() => {
     const map = {};
-    for (const { supplier, products } of allSupplierDetails) {
-      map[supplier.id || supplier._id] = new Set(
+    for (const sp of suppliers) {
+      const products = (sp.products || []).filter(
+        (p) => !p.status || p.status === "active"
+      );
+      map[sp.id || sp._id] = new Set(
         products.map((p) => (p.name || "").toLowerCase().trim())
       );
     }
     return map;
-  }, [allSupplierDetails]);
+  }, [suppliers]);
 
   const ingredientSuppliersMap = useMemo(() => {
     const map = {};
-    for (const { supplier, products } of allSupplierDetails) {
-      const sid = supplier.id || supplier._id;
-      const sname = supplier.name;
+    for (const sp of suppliers) {
+      const sid = sp.id || sp._id;
+      const sname = sp.name;
+      const products = (sp.products || []).filter(
+        (p) => !p.status || p.status === "active"
+      );
       for (const prod of products) {
         const pname = (prod.name || "").toLowerCase().trim();
         if (!map[pname]) map[pname] = [];
@@ -193,7 +175,7 @@ const AddPurchaseOrder = () => {
       }
     }
     return map;
-  }, [allSupplierDetails]);
+  }, [suppliers]);
 
   const getSuppliersForIngredientName = (ingredientId) => {
     if (!ingredientId) return [];
