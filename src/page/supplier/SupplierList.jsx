@@ -14,7 +14,8 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
-  FileEdit
+  FileEdit,
+  Scale
 } from "lucide-react";
 import {
   getAllSupplier,
@@ -249,6 +250,16 @@ const SupplierList = () => {
               className="h-8 w-8 text-muted-foreground"
               onClick={() => navigate(`/detail-supplier?id=${item.id || item._id}`)}>
               <Eye size={18} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "view") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-amber-600 hover:text-amber-700"
+              title="Compare"
+              onClick={() => navigate("/supplier-comparison")}>
+              <Scale size={18} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "edit") && (

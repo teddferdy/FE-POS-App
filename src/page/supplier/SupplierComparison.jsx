@@ -14,16 +14,13 @@ import {
   TrendingUp,
   Scale,
   Filter,
-  ChevronDown,
   Info
 } from "lucide-react";
-import { compareSuppliers } from "@/services/supplier";
-import { getAllProduct } from "@/services/product";
+import { getAllSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import PageHeader from "@/components/ui/PageHeader";
 import {
   Table,
   TableHeader,
@@ -45,47 +42,94 @@ const SupplierComparison = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
-  const isSuperAdmin = user?.roleType === "super_admin";
 
-  const [selectedProductId, setSelectedProductId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("price");
+  const [selectedProduct, setSelectedProduct] = useState("all");
 
-  const { data: productsData } = useQuery(
-    ["products-comparison"],
-    () => getAllProduct({ limit: 999, status: "active" }),
+  const { data, isLoading } = useQuery(
+    ["suppliers-comparison"],
+    () => getAllSupplier({ page: 1, limit: 999, status: "active", includeProducts: true }),
     { staleTime: 30000 }
   );
-  const products = productsData?.data || [];
 
-  const { data: comparisonData, isLoading } = useQuery(
-    ["supplier-comparison", selectedProductId, searchQuery],
-    () => compareSuppliers({ productId: selectedProductId || undefined, search: searchQuery || undefined }),
-    { enabled: true, staleTime: 10000 }
-  );
+  const suppliers = data?.data || [];
 
-  const result = comparisonData?.data || {};
-  const suppliers = result.suppliers || [];
-  const summary = result.summary || {};
-  const product = result.product || null;
+  const allProducts = useMemo(() => {
+    const map = new Map();
+    for (const supplier of suppliers) {
+      const products = supplier.products || [];
+      for (const product of products) {
+        const key = product.name?.toLowerCase().trim();
+        if (!key) continue;
+        if (!map.has(key)) {
+          map.set(key, { name: product.name, entries: [] });
+        }
+        map.get(key).entries.push({
+          supplierId: supplier.id,
+          supplierName: supplier.name,
+          supplierPhone: supplier.phone,
+          productId: product.productId,
+          price: product.price || 0,
+          leadTime: product.leadTime || 0,
+          qualityRating: Number(product.qualityRating) || 0,
+          minOrderQty: product.minOrderQty || 1,
+          lastPrice: product.lastPrice || 0
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [suppliers]);
 
-  const sortedSuppliers = useMemo(() => {
-    const sorted = [...suppliers];
+  const productNames = useMemo(() => allProducts.map((p) => p.name), [allProducts]);
+
+  const filteredProducts = useMemo(() => {
+    let result = allProducts;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((p) => p.name.toLowerCase().includes(q));
+    }
+    if (selectedProduct && selectedProduct !== "all") {
+      result = result.filter((p) => p.name === selectedProduct);
+    }
+    return result;
+  }, [allProducts, searchQuery, selectedProduct]);
+
+  const allEntries = useMemo(() => {
+    const entries = [];
+    for (const product of filteredProducts) {
+      for (const entry of product.entries) {
+        entries.push({ ...entry, productName: product.name });
+      }
+    }
     switch (sortBy) {
       case "price":
-        return sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
+        return entries.sort((a, b) => a.price - b.price);
       case "price_desc":
-        return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+        return entries.sort((a, b) => b.price - a.price);
       case "quality":
-        return sorted.sort((a, b) => (b.qualityRating || 0) - (a.qualityRating || 0));
+        return entries.sort((a, b) => b.qualityRating - a.qualityRating);
       case "leadtime":
-        return sorted.sort((a, b) => (a.leadTime || 0) - (b.leadTime || 0));
+        return entries.sort((a, b) => a.leadTime - b.leadTime);
       case "name":
-        return sorted.sort((a, b) => (a.supplierName || "").localeCompare(b.supplierName || ""));
+        return entries.sort((a, b) => a.supplierName.localeCompare(b.supplierName));
       default:
-        return sorted;
+        return entries;
     }
-  }, [suppliers, sortBy]);
+  }, [filteredProducts, sortBy]);
+
+  const summary = useMemo(() => {
+    if (allEntries.length === 0) return {};
+    const prices = allEntries.map((e) => e.price).filter((p) => p > 0);
+    const uniqueSuppliers = new Set(allEntries.map((e) => e.supplierId));
+    return {
+      supplierCount: uniqueSuppliers.size,
+      lowestPrice: prices.length ? Math.min(...prices) : 0,
+      highestPrice: prices.length ? Math.max(...prices) : 0,
+      avgPrice: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
+      totalProducts: filteredProducts.length
+    };
+  }, [allEntries, filteredProducts]);
 
   const formatIDR = (num) => {
     if (!num && num !== 0) return "-";
@@ -98,17 +142,11 @@ const SupplierComparison = () => {
     const hasHalf = (rating || 0) % 1 >= 0.5;
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
-        stars.push(
-          <Star key={i} size={14} className="fill-yellow-400 text-yellow-400" />
-        );
+        stars.push(<Star key={i} size={14} className="fill-yellow-400 text-yellow-400" />);
       } else if (i === fullStars && hasHalf) {
-        stars.push(
-          <Star key={i} size={14} className="fill-yellow-400/50 text-yellow-400" />
-        );
+        stars.push(<Star key={i} size={14} className="fill-yellow-400/50 text-yellow-400" />);
       } else {
-        stars.push(
-          <Star key={i} size={14} className="text-gray-300" />
-        );
+        stars.push(<Star key={i} size={14} className="text-gray-300" />);
       }
     }
     return stars;
@@ -118,11 +156,11 @@ const SupplierComparison = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button onClick={() => navigate("/")} className="hover:text-foreground">
-          {t("page.supplier.detail.breadcrumb.dashboard")}
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button onClick={() => navigate("/supplier")} className="hover:text-foreground">
-          {t("page.supplier.detail.breadcrumb.list")}
+          {t("breadcrumb.supplier")}
         </button>
         <span className="text-xs">/</span>
         <span className="text-primary font-semibold">
@@ -154,19 +192,15 @@ const SupplierComparison = () => {
             <label className="text-xs font-medium text-muted-foreground">
               {t("page.supplier.comparison.selectProduct")}
             </label>
-            <Select
-              value={selectedProductId}
-              onValueChange={setSelectedProductId}>
+            <Select value={selectedProduct} onValueChange={setSelectedProduct}>
               <SelectTrigger>
                 <SelectValue placeholder={t("page.supplier.comparison.allProducts")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">
-                  {t("page.supplier.comparison.allProducts")}
-                </SelectItem>
-                {products.map((p) => (
-                  <SelectItem key={p.id} value={String(p.id)}>
-                    {p.nameProduct}
+                <SelectItem value="all">{t("page.supplier.comparison.allProducts")}</SelectItem>
+                {productNames.map((name) => (
+                  <SelectItem key={name} value={name}>
+                    {name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -206,49 +240,40 @@ const SupplierComparison = () => {
         </div>
       </Card>
 
-      {product && (
-        <Card className="p-4 bg-primary/5 border-primary/20">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Package size={16} className="text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">{product.name}</p>
-              <p className="text-xs text-muted-foreground">
-                SKU: {product.slope || "-"} | Unit: {product.unit || "-"}
-              </p>
-            </div>
-          </div>
-        </Card>
-      )}
-
       {summary.supplierCount > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
               <Scale size={14} />
-              <span className="text-xs font-medium">{t("page.supplier.comparison.supplierCount")}</span>
+              <span className="text-xs font-medium">{t("page.supplier.comparison.stats.supplierCount")}</span>
             </div>
             <p className="text-2xl font-bold">{summary.supplierCount}</p>
           </Card>
           <Card className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
+              <Package size={14} />
+              <span className="text-xs font-medium">{t("page.supplier.comparison.stats.totalProducts")}</span>
+            </div>
+            <p className="text-2xl font-bold">{summary.totalProducts}</p>
+          </Card>
+          <Card className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 text-green-600 mb-1">
               <TrendingDown size={14} />
-              <span className="text-xs font-medium">{t("page.supplier.comparison.lowestPrice")}</span>
+              <span className="text-xs font-medium">{t("page.supplier.comparison.stats.lowestPrice")}</span>
             </div>
             <p className="text-2xl font-bold text-green-600">{formatIDR(summary.lowestPrice)}</p>
           </Card>
           <Card className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 text-red-600 mb-1">
               <TrendingUp size={14} />
-              <span className="text-xs font-medium">{t("page.supplier.comparison.highestPrice")}</span>
+              <span className="text-xs font-medium">{t("page.supplier.comparison.stats.highestPrice")}</span>
             </div>
             <p className="text-2xl font-bold text-red-600">{formatIDR(summary.highestPrice)}</p>
           </Card>
           <Card className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
               <Info size={14} />
-              <span className="text-xs font-medium">{t("page.supplier.comparison.avgPrice")}</span>
+              <span className="text-xs font-medium">{t("page.supplier.comparison.stats.avgPrice")}</span>
             </div>
             <p className="text-2xl font-bold">{formatIDR(summary.avgPrice)}</p>
           </Card>
@@ -262,7 +287,7 @@ const SupplierComparison = () => {
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : sortedSuppliers.length === 0 ? (
+        ) : allEntries.length === 0 ? (
           <div className="p-12 text-center">
             <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-3">
               <Building2 size={24} className="text-muted-foreground/60" />
@@ -291,8 +316,8 @@ const SupplierComparison = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedSuppliers.map((s, idx) => (
-                  <TableRow key={s.supplierProductId} className={idx === 0 ? "bg-green-50/50" : ""}>
+                {allEntries.map((entry, idx) => (
+                  <TableRow key={`${entry.supplierId}-${entry.productName}`} className={idx === 0 ? "bg-green-50/50" : ""}>
                     <TableCell>
                       <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                         idx === 0
@@ -308,38 +333,38 @@ const SupplierComparison = () => {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium text-sm">{s.supplierName}</p>
-                        <p className="text-xs text-muted-foreground">{s.supplierPhone || "-"}</p>
+                        <p className="font-medium text-sm">{entry.supplierName}</p>
+                        <p className="text-xs text-muted-foreground">{entry.supplierPhone || "-"}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm">{s.productName}</TableCell>
+                    <TableCell className="text-sm">{entry.productName}</TableCell>
                     <TableCell className="text-right">
                       <span className={`font-semibold ${idx === 0 ? "text-green-600" : ""}`}>
-                        {formatIDR(s.price)}
+                        {formatIDR(entry.price)}
                       </span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-1">
-                        {getQualityStars(s.qualityRating)}
+                        {getQualityStars(entry.qualityRating)}
                         <span className="text-xs text-muted-foreground ml-1">
-                          {s.qualityRating || 0}
+                          {entry.qualityRating || 0}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Clock size={12} className="text-muted-foreground" />
-                        <span className="text-sm">{s.leadTime || 0} hari</span>
+                        <span className="text-sm">{entry.leadTime || 0} {t("page.supplier.comparison.stats.day")}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right text-sm">{s.minOrderQty || 1}</TableCell>
-                    <TableCell className="text-right text-sm">{formatIDR(s.lastPrice)}</TableCell>
+                    <TableCell className="text-right text-sm">{entry.minOrderQty || 1}</TableCell>
+                    <TableCell className="text-right text-sm">{formatIDR(entry.lastPrice)}</TableCell>
                     <TableCell className="text-center">
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-7 text-xs text-primary"
-                        onClick={() => navigate(`/detail-supplier?id=${s.supplierId}`)}>
+                        onClick={() => navigate(`/detail-supplier?id=${entry.supplierId}`)}>
                         {t("page.supplier.comparison.table.detail")}
                       </Button>
                     </TableCell>
