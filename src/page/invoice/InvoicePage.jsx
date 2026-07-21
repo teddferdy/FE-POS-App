@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { useStore } from "@/contexts/StoreContext";
 import { useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import {
@@ -22,6 +23,7 @@ import {
   Coins,
   RotateCcw,
   Printer,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -253,6 +255,7 @@ const InvoicePage = () => {
   const [cookie, setCookie] = useCookies();
   const queryClient = useQueryClient();
   const logoInputRef = useRef(null);
+  const { setActiveStore, isSuperAdmin: ctxSuperAdmin } = useStore();
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -347,6 +350,13 @@ const InvoicePage = () => {
     locationDetail?.village ||
     "";
   const postalCodeValue = postalCodes?.[0]?.kode_pos || locationDetail?.postalCode || "";
+
+  const hasAddress = !!locationDetail?.address;
+  const hasDetailLocation = !!locationDetail?.detailLocation;
+  const hasPhone = !!storePhone;
+  const hasEmail = !!storeEmail;
+  const hasPostalCode = !!postalCodeValue;
+  const hasSocialMedia = !!(locationDetail?.socialMedia?.length);
 
   const { data: invoiceSettings } = useQuery(
     ["invoice-settings", selectedStore],
@@ -604,8 +614,7 @@ const InvoicePage = () => {
                       onClick={() => {
                         setSelectedStore(String(s.id));
                         if (isSuperAdmin) {
-                          setCookie("activeStore", String(s.id), { path: "/" });
-                          setCookie("activeStoreName", s.name || "", { path: "/" });
+                          setActiveStore(String(s.id), s.name || "");
                         }
                       }}
                       className="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg transition-all text-left group">
@@ -770,35 +779,41 @@ const InvoicePage = () => {
                 {hasStore ? (
                   <div className="space-y-3">
                     {[
-                      { key: "storeName", icon: Store, label: t("page.invoice.storeName"), value: storeName },
-                      { key: "address", icon: MapPin, label: t("page.invoice.address"), value: locationDetail?.address },
-                      ...(locationDetail?.detailLocation ? [{ key: "locationDetail", icon: Globe, label: t("page.invoice.locationDetail"), value: locationDetail.detailLocation }] : []),
-                      { key: "province", icon: Building2, label: t("page.invoice.province"), value: provinceName },
-                      { key: "city", icon: Building2, label: t("page.invoice.city"), value: cityName },
-                      { key: "district", icon: Building2, label: t("page.invoice.district"), value: districtName },
-                      { key: "village", icon: Building2, label: t("page.invoice.village"), value: villageName },
-                      { key: "postalCode", icon: Hash, label: t("page.invoice.postalCode"), value: postalCodeValue },
-                      { key: "phone", icon: Phone, label: t("page.invoice.phone"), value: storePhone },
-                      { key: "email", icon: Mail, label: t("page.invoice.email"), value: storeEmail },
-                    ].map(({ key, icon: Icon, label, value }) => (
-                      <label
-                        key={key}
-                        className="flex items-center justify-between p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Icon size={16} className="text-muted-foreground shrink-0" />
-                          <div className="min-w-0">
-                            <span className="text-xs text-muted-foreground">{label}</span>
-                            <p className="text-sm font-medium truncate">{value || "-"}</p>
+                      { key: "storeName", icon: Store, label: t("page.invoice.storeName"), value: storeName, hasData: !!storeName },
+                      { key: "address", icon: MapPin, label: t("page.invoice.address"), value: locationDetail?.address, hasData: hasAddress },
+                      ...(locationDetail?.detailLocation ? [{ key: "locationDetail", icon: Globe, label: t("page.invoice.locationDetail"), value: locationDetail.detailLocation, hasData: hasDetailLocation }] : []),
+                      { key: "province", icon: Building2, label: t("page.invoice.province"), value: provinceName, hasData: !!provinceName },
+                      { key: "city", icon: Building2, label: t("page.invoice.city"), value: cityName, hasData: !!cityName },
+                      { key: "district", icon: Building2, label: t("page.invoice.district"), value: districtName, hasData: !!districtName },
+                      { key: "village", icon: Building2, label: t("page.invoice.village"), value: villageName, hasData: !!villageName },
+                      { key: "postalCode", icon: Hash, label: t("page.invoice.postalCode"), value: postalCodeValue, hasData: hasPostalCode },
+                      { key: "phone", icon: Phone, label: t("page.invoice.phone"), value: storePhone, hasData: hasPhone },
+                      { key: "email", icon: Mail, label: t("page.invoice.email"), value: storeEmail, hasData: hasEmail },
+                    ].map(({ key, icon: Icon, label, value, hasData }) => {
+                      const isEmpty = hasData === false;
+                      return (
+                        <label
+                          key={key}
+                          className={`flex items-center justify-between p-3 rounded-lg border border-border transition-colors ${
+                            isEmpty ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-muted/50"
+                          }`}>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Icon size={16} className="text-muted-foreground shrink-0" />
+                            <div className="min-w-0">
+                              <span className="text-xs text-muted-foreground">{label}</span>
+                              <p className="text-sm font-medium truncate">{value || "-"}</p>
+                            </div>
                           </div>
-                        </div>
-                        <Switch
-                          checked={addressFieldsVisible[key] ?? true}
-                          onCheckedChange={(v) =>
-                            setAddressFieldsVisible((prev) => ({ ...prev, [key]: v }))
-                          }
-                        />
-                      </label>
-                    ))}
+                          <Switch
+                            checked={addressFieldsVisible[key] ?? true}
+                            disabled={isEmpty}
+                            onCheckedChange={(v) =>
+                              setAddressFieldsVisible((prev) => ({ ...prev, [key]: v }))
+                            }
+                          />
+                        </label>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground italic">
@@ -872,11 +887,11 @@ const InvoicePage = () => {
                 data-tour="invoice-social"
                 className="bg-card rounded-xl border border-border p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
+                  <div className={`flex items-center gap-2 ${!hasSocialMedia ? "opacity-50" : ""}`}>
                     <Globe size={18} className="text-primary" />
                     <h3 className="text-base font-semibold">{t("page.invoice.socialMedia")}</h3>
                   </div>
-                  <Switch checked={showSocialMedia} onCheckedChange={setShowSocialMedia} />
+                  <Switch checked={showSocialMedia} onCheckedChange={setShowSocialMedia} disabled={!hasSocialMedia} />
                 </div>
                 {locationDetail?.socialMedia?.length ? (
                   <div className="space-y-3">

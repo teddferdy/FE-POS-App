@@ -579,7 +579,7 @@ const EditProduct = () => {
     if (values.barcode) payload.append("barcode", values.barcode);
     if (values.brand) payload.append("brand", values.brand);
     if (values.sku) payload.append("sku", values.sku);
-    payload.append("category", values.category);
+    if (values.category) payload.append("category", values.category);
     if (values.tax) payload.append("tax", values.tax);
     payload.append("price", values.price);
     if (values.costPrice) payload.append("costPrice", values.costPrice);

@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "react-query";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { useStore } from "@/contexts/StoreContext";
 import { Store, ArrowLeft, Pencil, Boxes, ChevronRight } from "lucide-react";
 import { getAllLocation } from "@/services/location";
 import { getProductByOutlet } from "@/services/product";
@@ -19,7 +20,8 @@ import NoStore from "@/components/ui/NoStore";
 const PriceStoreList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [cookie, setCookie] = useCookies();
+  const cookie = useCookies();
+  const { setActiveStore } = useStore();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
@@ -146,8 +148,7 @@ const PriceStoreList = () => {
                   onClick={() => {
                     setSelectedStore(String(s.id));
                     if (isSuperAdmin) {
-                      setCookie("activeStore", String(s.id), { path: "/" });
-                      setCookie("activeStoreName", s.name || "", { path: "/" });
+                      setActiveStore(String(s.id), s.name || "");
                     }
                   }}
                   className="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg transition-all text-left group">

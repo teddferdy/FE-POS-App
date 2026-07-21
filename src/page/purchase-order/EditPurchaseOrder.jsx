@@ -118,7 +118,8 @@ const EditPurchaseOrder = () => {
 
   const { data: suppliersData } = useQuery(
     ["suppliers-dropdown", selectedStore],
-    () => getAllSupplier({ limit: 999, store: selectedStore, status: "active", includeProducts: true }),
+    () =>
+      getAllSupplier({ limit: 999, store: selectedStore, status: "active", includeProducts: true }),
     { enabled: !!selectedStore, staleTime: 30000 }
   );
   const suppliers = suppliersData?.data || [];
@@ -163,12 +164,8 @@ const EditPurchaseOrder = () => {
   const supplierToIngredients = useMemo(() => {
     const map = {};
     for (const sp of suppliers) {
-      const products = (sp.products || []).filter(
-        (p) => !p.status || p.status === "active"
-      );
-      map[sp.id || sp._id] = new Set(
-        products.map((p) => (p.name || "").toLowerCase().trim())
-      );
+      const products = (sp.products || []).filter((p) => !p.status || p.status === "active");
+      map[sp.id || sp._id] = new Set(products.map((p) => (p.name || "").toLowerCase().trim()));
     }
     return map;
   }, [suppliers]);
@@ -178,9 +175,7 @@ const EditPurchaseOrder = () => {
     for (const sp of suppliers) {
       const sid = sp.id || sp._id;
       const sname = sp.name;
-      const products = (sp.products || []).filter(
-        (p) => !p.status || p.status === "active"
-      );
+      const products = (sp.products || []).filter((p) => !p.status || p.status === "active");
       for (const prod of products) {
         const pname = (prod.name || "").toLowerCase().trim();
         if (!map[pname]) map[pname] = [];

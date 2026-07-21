@@ -114,6 +114,7 @@ const AddReservation = () => {
 
   useEffect(() => {
     if (selectedStore) {
+      form.setValue("tableId", "none");
       loadTablesByStore();
       getLocationDetail({ id: selectedStore })
         .then((res) => setLocationDetail(res.data || null))

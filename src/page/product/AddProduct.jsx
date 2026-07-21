@@ -20,8 +20,6 @@ import {
   TrendingUp,
   ChevronLeft,
   ChevronRight,
-  CheckCircle2,
-  XCircle,
   Check
 } from "lucide-react";
 import { useCookies } from "react-cookie";
@@ -54,7 +52,6 @@ import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 
@@ -119,6 +116,7 @@ const AddProduct = () => {
   const [compositionOptions, setCompositionOptions] = useState([]);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
   const isSuperAdmin = role === "super_admin";
 
@@ -198,6 +196,8 @@ const AddProduct = () => {
   });
 
   useUnsavedChanges(form.formState.isDirty);
+
+  const onSubmit = (values) => handleSave(values, false);
 
   const isOption = form.watch("isOption");
   const hasModifiers = form.watch("hasModifiers");
@@ -430,7 +430,7 @@ const AddProduct = () => {
     if (values.sku) payload.append("sku", values.sku);
     if (values.barcode) payload.append("barcode", values.barcode);
     if (values.brand) payload.append("brand", values.brand);
-    payload.append("category", values.category);
+    if (values.category) payload.append("category", values.category);
     if (values.tax) payload.append("tax", values.tax);
     payload.append("stores", JSON.stringify(selectedStores));
     payload.append("price", values.price);
@@ -477,9 +477,6 @@ const AddProduct = () => {
 
     createMutation.mutate(payload);
   };
-
-  const onSubmit = (values) => handleSave(values, false);
-  const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
   const steps = [
     { num: 1, title: t("page.product.step.info"), desc: t("page.product.step.infoDesc") },
@@ -1694,8 +1691,7 @@ const AddProduct = () => {
                   ) : (
                     <Button
                       type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
+                      onClick={() => {
                         const values = form.getValues();
                         const extraErrors =
                           !allStores && selectedStores.length === 0 ? [{ name: "store" }] : [];
@@ -1731,9 +1727,9 @@ const AddProduct = () => {
         type="confirm"
         open={confirmSaveModal}
         onOpenChange={setConfirmSaveModal}
-        title="Konfirmasi Simpan"
-        description="Apakah Anda yakin ingin menyimpan data ini?"
-        confirmText="Ya, Simpan"
+        title={t("page.product.form.saveDraftTitle")}
+        description={t("page.product.form.saveDraftDesc")}
+        confirmText={t("page.product.form.saveDraftConfirm")}
         onConfirm={() => {
           setConfirmSaveModal(false);
           onSubmit(form.getValues());

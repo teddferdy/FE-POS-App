@@ -74,6 +74,9 @@ const AddSupplier = () => {
   const [showExcelImport, setShowExcelImport] = useState(false);
   const [newProductName, setNewProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
+  const [productLeadTime, setProductLeadTime] = useState("");
+  const [productQualityRating, setProductQualityRating] = useState("");
+  const [productMinOrderQty, setProductMinOrderQty] = useState("");
   const [excelFile, setExcelFile] = useState(null);
 
   const {
@@ -88,7 +91,10 @@ const AddSupplier = () => {
       const imported = (data?.data || data?.products || []).map((p) => ({
         id: p.id || `imported_${Date.now()}`,
         name: p.name || p.productName || "",
-        price: p.price || 0
+        price: p.price || 0,
+        leadTime: p.leadTime || 0,
+        qualityRating: p.qualityRating || 0,
+        minOrderQty: p.minOrderQty || 1
       }));
       setSupplierProducts((prev) => [...prev, ...imported]);
       toast.success(t("page.supplier.products.importSuccess"));
@@ -107,11 +113,17 @@ const AddSupplier = () => {
     const newProduct = {
       id: `manual_${Date.now()}`,
       name: newProductName.trim(),
-      price: Number(productPrice)
+      price: Number(productPrice),
+      leadTime: Number(productLeadTime) || 0,
+      qualityRating: Number(productQualityRating) || 0,
+      minOrderQty: Number(productMinOrderQty) || 1
     };
     setSupplierProducts((prev) => [...prev, newProduct]);
     setNewProductName("");
     setProductPrice("");
+    setProductLeadTime("");
+    setProductQualityRating("");
+    setProductMinOrderQty("");
     setShowManualAdd(false);
   };
 
@@ -181,7 +193,13 @@ const AddSupplier = () => {
       ...values,
       status: statusValue,
       store: selectedStore,
-      products: supplierProducts.map((p) => ({ name: p.name, price: p.price }))
+      products: supplierProducts.map((p) => ({
+        name: p.name,
+        price: p.price,
+        leadTime: p.leadTime || 0,
+        qualityRating: p.qualityRating || 0,
+        minOrderQty: p.minOrderQty || 1
+      }))
     });
   };
 
@@ -474,7 +492,7 @@ const AddSupplier = () => {
                       <Input
                         type="text"
                         inputMode="numeric"
-                        placeholder="0"
+                        placeholder="Harga"
                         className="pl-9"
                         value={productPrice ? Number(productPrice).toLocaleString("id-ID") : ""}
                         onChange={(e) => {
@@ -482,6 +500,39 @@ const AddSupplier = () => {
                           setProductPrice(raw);
                         }}
                       />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Lead Time (hari)</label>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          value={productLeadTime}
+                          onChange={(e) => setProductLeadTime(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Kualitas (0-5)</label>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          min="0"
+                          max="5"
+                          step="0.5"
+                          value={productQualityRating}
+                          onChange={(e) => setProductQualityRating(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Min Order</label>
+                        <Input
+                          type="number"
+                          placeholder="1"
+                          min="1"
+                          value={productMinOrderQty}
+                          onChange={(e) => setProductMinOrderQty(e.target.value)}
+                        />
+                      </div>
                     </div>
                     <Button
                       type="button"
@@ -533,8 +584,17 @@ const AddSupplier = () => {
                           <th className="text-left px-3 py-2 font-medium text-muted-foreground">
                             {t("page.supplier.products.table.name")}
                           </th>
-                          <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground">
                             {t("page.supplier.products.table.price")}
+                          </th>
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                            Lead Time
+                          </th>
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                            Kualitas
+                          </th>
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                            Min Order
                           </th>
                           <th className="text-right px-3 py-2 font-medium text-muted-foreground">
                             {t("page.supplier.products.table.action")}
@@ -545,7 +605,12 @@ const AddSupplier = () => {
                         {supplierProducts.map((p) => (
                           <tr key={p.id} className="border-b last:border-b-0">
                             <td className="px-3 py-2">{p.name}</td>
-                            <td className="px-3 py-2">{Number(p.price).toLocaleString("id-ID")}</td>
+                            <td className="px-3 py-2 text-right">
+                              {Number(p.price).toLocaleString("id-ID")}
+                            </td>
+                            <td className="px-3 py-2 text-right">{p.leadTime || 0} hari</td>
+                            <td className="px-3 py-2 text-right">{p.qualityRating || 0}</td>
+                            <td className="px-3 py-2 text-right">{p.minOrderQty || 1}</td>
                             <td className="px-3 py-2 text-right">
                               <Button
                                 type="button"

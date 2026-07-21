@@ -2,6 +2,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Save,
   X,
@@ -57,7 +60,6 @@ import {
 import UploadExcelModal from "./components/UploadExcelModal";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
-import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 
 const toInt = (val) => {
   if (val === null || val === undefined || val === "") return 0;
@@ -71,11 +73,7 @@ const calculateStockAkhir = (row) =>
   toInt(row.stokAwalJumlah) + toInt(row.barangMasukJumlah) - toInt(row.barangKeluarJumlah);
 
 const calculateStockFisik = (row) => {
-  if (
-    row.stokFisikJumlah === null ||
-    row.stokFisikJumlah === undefined ||
-    row.stokFisikJumlah === ""
-  )
+  if (row.stokFisikJumlah === null || row.stokFisikJumlah === undefined || row.stokFisikJumlah === "")
     return null;
   return toInt(row.stokFisikJumlah);
 };
@@ -110,28 +108,22 @@ const getAvailabilityStatus = (stock, t) => {
   };
 };
 
-let nextId = 1;
-
-const createRow = (overrides = {}) => {
-  const id = nextId++;
-  return {
-    id,
-    productId: overrides.productId || "",
-    kodeBarang: overrides.kodeBarang || "",
-    namaBarang: overrides.namaBarang || "",
-    satuan: overrides.satuan || "",
-    lokasiId: overrides.lokasiId || "",
-    lokasiLabel: overrides.lokasiLabel || "",
-    store: overrides.store || "",
-    stokAwalJumlah: overrides.stokAwalJumlah || "",
-    barangMasukJumlah: overrides.barangMasukJumlah || "",
-    barangKeluarJumlah: overrides.barangKeluarJumlah || "",
-    stokFisikJumlah: overrides.stokFisikJumlah || "",
-    keterangan: overrides.keterangan || ""
-  };
+const defaultItemValues = {
+  productId: "",
+  kodeBarang: "",
+  namaBarang: "",
+  satuan: "",
+  lokasiId: "",
+  lokasiLabel: "",
+  store: "",
+  stokAwalJumlah: "",
+  barangMasukJumlah: "",
+  barangKeluarJumlah: "",
+  stokFisikJumlah: "",
+  keterangan: ""
 };
 
-const LokasiSelect = ({ value, locations, loading, onChange, onAddNew, t }) => {
+const LokasiSelect = ({ value, locations, loading, onChange, onAddNew, t, hasError }) => {
   if (loading) return <Skeleton className="h-9 w-full" />;
 
   return (
@@ -144,7 +136,12 @@ const LokasiSelect = ({ value, locations, loading, onChange, onAddNew, t }) => {
         }
         onChange(val);
       }}>
-      <SelectTrigger className="h-9 border-0 border-b border-dashed border-muted-foreground/30 rounded-none focus:border-primary focus:border-solid shadow-none px-0 text-sm">
+      <SelectTrigger
+        className={`h-9 border-0 border-b rounded-none focus:border-primary focus:border-solid shadow-none px-0 text-sm ${
+          hasError
+            ? "border-destructive"
+            : "border-dashed border-muted-foreground/30"
+        }`}>
         <div className="flex items-center gap-2">
           <MapPin size={14} className="text-muted-foreground/40 shrink-0" />
           <SelectValue placeholder={t("page.stockOpname.form.selectLocation")} />
@@ -152,7 +149,7 @@ const LokasiSelect = ({ value, locations, loading, onChange, onAddNew, t }) => {
       </SelectTrigger>
       <SelectContent>
         {locations.map((loc) => (
-          <SelectItem key={loc.id || loc._id} value={loc.id || loc._id}>
+          <SelectItem key={loc.id || loc._id} value={String(loc.id || loc._id)}>
             {loc.name || loc.storeName}
           </SelectItem>
         ))}
@@ -164,6 +161,22 @@ const LokasiSelect = ({ value, locations, loading, onChange, onAddNew, t }) => {
         </SelectItem>
       </SelectContent>
     </Select>
+  );
+};
+
+const rowInputClass = (hasError) =>
+  `w-full bg-transparent border-0 border-b text-sm outline-none transition-colors px-0 py-1 ${
+    hasError
+      ? "border-destructive focus:border-solid"
+      : "border-dashed border-muted-foreground/20 focus:border-primary focus:border-solid"
+  }`;
+
+const FieldError = ({ error }) => {
+  if (!error) return null;
+  return (
+    <p className="text-destructive text-[10px] mt-0.5 animate-in fade-in slide-in-from-top-1">
+      {error.message}
+    </p>
   );
 };
 
@@ -180,33 +193,58 @@ const AddStockOpname = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [noLocationModal, setNoLocationModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
-  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
-  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
-  const [formMeta, setFormMeta] = useState({
-    tanggalAudit: new Date(),
-    auditor: ""
+  const stockOpnameSchema = z.object({
+    tanggalAudit: z.date({ required_error: t("page.stockOpname.validation.auditDateRequired") }),
+    auditor: z.string().trim().min(1, t("page.stockOpname.validation.auditorRequired")),
+    catatan: z.string().optional(),
+    items: z
+      .array(
+        z.object({
+          productId: z.string().optional(),
+          kodeBarang: z.string().trim().min(1, t("page.stockOpname.validation.kodeBarangRequired")),
+          namaBarang: z.string().trim().min(1, t("page.stockOpname.validation.namaBarangRequired")),
+          satuan: z.string().min(1, t("page.stockOpname.validation.satuanRequired")),
+          lokasiId: z.string().min(1, t("page.stockOpname.validation.lokasiRequired")),
+          lokasiLabel: z.string().optional(),
+          store: z.string().optional(),
+          stokAwalJumlah: z.string().min(1, t("page.stockOpname.validation.stokAwalRequired")),
+          barangMasukJumlah: z.string().min(1, t("page.stockOpname.validation.barangMasukRequired")),
+          barangKeluarJumlah: z.string().min(1, t("page.stockOpname.validation.barangKeluarRequired")),
+          stokFisikJumlah: z.string().min(1, t("page.stockOpname.validation.stokFisikRequired")),
+          keterangan: z.string().trim().min(1, t("page.stockOpname.validation.keteranganRequired"))
+        })
+      )
+      .min(1, t("page.stockOpname.validation.minOneProduct"))
   });
 
-  const [rows, setRows] = useState([createRow()]);
-  const [catatan, setCatatan] = useState("");
+  const form = useForm({
+    resolver: zodResolver(stockOpnameSchema),
+    mode: "onChange",
+    defaultValues: {
+      tanggalAudit: new Date(),
+      auditor: "",
+      catatan: "",
+      items: [defaultItemValues]
+    }
+  });
 
-  const fieldLabels = useMemo(
-    () => ({
-      tanggalAudit: t("page.stockOpname.form.auditDate"),
-      auditor: t("page.stockOpname.form.auditor"),
-      kodeBarang: t("page.stockOpname.table.kodeBarang"),
-      namaBarang: t("page.stockOpname.table.namaBarang"),
-      satuan: t("page.stockOpname.table.satuan"),
-      lokasiId: t("page.stockOpname.table.lokasi"),
-      stokAwalJumlah: t("page.stockOpname.table.stokAwal"),
-      barangMasukJumlah: t("page.stockOpname.table.barangMasuk"),
-      barangKeluarJumlah: t("page.stockOpname.table.barangKeluar"),
-      stokFisikJumlah: t("page.stockOpname.table.stockFisik"),
-      keterangan: t("page.stockOpname.table.keterangan")
-    }),
-    [t]
-  );
+  const {
+    control,
+    formState: { errors },
+    trigger,
+    getValues,
+    setValue,
+    watch,
+    reset
+  } = form;
+
+  const { fields, append, remove, replace } = useFieldArray({
+    control,
+    name: "items"
+  });
+
+  const watchedItems = watch("items");
 
   const { data: locationData, isLoading: locationLoading } = useQuery(
     ["locations-all"],
@@ -214,20 +252,27 @@ const AddStockOpname = () => {
   );
   const locations = locationData?.data || locationData?.locations || locationData || [];
 
-  // ponytail: filter product list by first row's location; falls back to all products
-  const activeLocationId = rows.find((r) => r.lokasiId)?.lokasiId || "";
+  const activeLocationId = useMemo(
+    () => watchedItems?.find((r) => r?.lokasiId)?.lokasiId || "",
+    [watchedItems]
+  );
 
   const { data: productsData } = useQuery(
     ["all-products-for-opname", activeLocationId],
     () => getAllProduct({ location: activeLocationId, nameProduct: "", category: "" }),
-    {  enabled: !!activeLocationId }
+    { enabled: !!activeLocationId }
   );
   const { data: productsFallback } = useQuery(
     ["all-products-for-opname-fallback"],
     () => getAllProduct({ location: "", nameProduct: "", category: "" }),
-    {  enabled: !activeLocationId }
+    { enabled: !activeLocationId }
   );
   const allProducts = activeLocationId ? productsData?.data || [] : productsFallback?.data || [];
+
+  const selectedProductIds = useMemo(
+    () => new Set(watchedItems?.filter((r) => r?.productId).map((r) => r.productId)),
+    [watchedItems]
+  );
 
   const unitOptions = [
     { value: "pcs", label: t("page.product.form.unit.pcs") },
@@ -251,73 +296,75 @@ const AddStockOpname = () => {
     { value: "porsi", label: t("page.product.form.unit.porsi") }
   ];
 
-  // Fetch existing stock opname if editing
   const {
     data: stockOpnameData,
     isError,
     refetch
-  } = useQuery(["stock-opname", id], () => getStockOpnameById(id), {
-    enabled: !!id
-  });
+  } = useQuery(["stock-opname", id], () => getStockOpnameById(id), { enabled: !!id });
 
-  // Populate form when editing
   useEffect(() => {
-    if (stockOpnameData && stockOpnameData.data) {
+    if (stockOpnameData?.data) {
       const opname = stockOpnameData.data;
-      setFormMeta({
+      reset({
         tanggalAudit: opname.auditDate ? new Date(opname.auditDate) : new Date(),
-        auditor: opname.auditor || ""
+        auditor: opname.auditor || "",
+        catatan: opname.notes || "",
+        items:
+          opname.items && opname.items.length > 0
+            ? opname.items.map((item) => ({
+                productId: item.productId || "",
+                kodeBarang: item.kodeBarang || "",
+                namaBarang: item.namaBarang || "",
+                satuan: item.satuan || "",
+                lokasiId: item.lokasiId || "",
+                lokasiLabel: item.lokasi || "",
+                store: item.store || "",
+                stokAwalJumlah: String(item.stokAwalJumlah ?? ""),
+                barangMasukJumlah: String(item.barangMasukJumlah ?? ""),
+                barangKeluarJumlah: String(item.barangKeluarJumlah ?? ""),
+                stokFisikJumlah: String(item.stokFisikJumlah ?? ""),
+                keterangan: item.keterangan || ""
+              }))
+            : [defaultItemValues]
       });
-      setCatatan(opname.notes || "");
-      // Map items to rows
-      if (opname.items && opname.items.length > 0) {
-        setRows(
-          opname.items.map((item) => ({
-            ...createRow(),
-            kodeBarang: item.kodeBarang,
-            namaBarang: item.namaBarang,
-            satuan: item.satuan,
-            lokasiId: item.lokasiId,
-            lokasiLabel: item.lokasi,
-            store: item.store,
-            stokAwalJumlah: item.stokAwalJumlah,
-            barangMasukJumlah: item.barangMasukJumlah,
-            barangKeluarJumlah: item.barangKeluarJumlah,
-            stokFisikJumlah: item.stokFisikJumlah,
-            keterangan: item.keterangan
-          }))
-        );
-      }
     }
-  }, [stockOpnameData]);
+  }, [stockOpnameData, reset]);
 
-  const updateRowField = (id, field, value) => {
-    setRows((prev) => prev.map((row) => (row.id !== id ? row : { ...row, [field]: value })));
-  };
-
-  const handleLokasiChange = (id, locationId) => {
-    const loc = locations.find((l) => (l.id || l._id) === locationId);
-    setRows((prev) =>
-      prev.map((row) => {
-        if (row.id !== id) return row;
-        return {
-          ...row,
-          lokasiId: locationId,
-          lokasiLabel: loc?.name || loc?.storeName || locationId,
-          store: loc?.store || loc?.id || ""
-        };
-      })
+  const totals = useMemo(() => {
+    return (watchedItems || []).reduce(
+      (acc, row) => {
+        const selisih = calculateSelisih(row);
+        return { selisihJumlah: acc.selisihJumlah + (selisih === null ? 0 : selisih) };
+      },
+      { selisihJumlah: 0 }
     );
+  }, [watchedItems]);
+
+  const addRow = () => append(defaultItemValues);
+  const removeRow = (index) => {
+    if (fields.length > 1) remove(index);
   };
 
-  const openAddLocation = () => {
-    navigate("/add-location");
+  const handleLokasiChange = (index, locationId) => {
+    const loc = locations.find((l) => String(l.id || l._id) === String(locationId));
+    setValue(`items.${index}.lokasiId`, String(locationId), { shouldValidate: true });
+    setValue(`items.${index}.lokasiLabel`, loc?.name || loc?.storeName || String(locationId));
+    setValue(`items.${index}.store`, loc?.store || String(loc?.id || ""));
   };
 
-  const addRow = () => setRows((prev) => [...prev, createRow()]);
-  const removeRow = (id) => {
-    if (rows.length > 1) setRows((prev) => prev.filter((r) => r.id !== id));
+  const handleProductSelect = (index, product) => {
+    setValue(`items.${index}.productId`, product.id || product._id, { shouldValidate: true });
+    setValue(`items.${index}.kodeBarang`, product.barcode || "", { shouldValidate: true });
+    setValue(`items.${index}.namaBarang`, product.nameProduct || product.name, {
+      shouldValidate: true
+    });
+    setValue(`items.${index}.satuan`, product.unit || "pcs", { shouldValidate: true });
+    setValue(`items.${index}.stokAwalJumlah`, String(product.stock ?? ""), {
+      shouldValidate: true
+    });
   };
+
+  const openAddLocation = () => navigate("/add-location");
 
   const handleDownloadTemplate = async () => {
     if (!locations || locations.length === 0) {
@@ -348,118 +395,77 @@ const AddStockOpname = () => {
       });
       return;
     }
-    const newRows = filled.map((r) => {
+    const newItems = filled.map((r) => {
       const match = locations.find(
         (l) => (l.name || l.storeName || "").toLowerCase() === (r.lokasi || "").toLowerCase()
       );
-      return createRow({
-        kodeBarang: r.kodeBarang,
-        namaBarang: r.namaBarang,
-        satuan: r.satuan,
-        lokasiId: match ? match.id || match._id : "",
-        lokasiLabel: match ? match.name || match.storeName : r.lokasi,
-        store: match?.store || match?.id || "",
-        stokAwalJumlah: r.stokAwalJumlah,
-        barangMasukJumlah: r.barangMasukJumlah,
-        barangKeluarJumlah: r.barangKeluarJumlah,
-        stokFisikJumlah: r.stokFisikJumlah,
-        keterangan: r.keterangan
-      });
+      return {
+        productId: "",
+        kodeBarang: r.kodeBarang || "",
+        namaBarang: r.namaBarang || "",
+        satuan: r.satuan || "",
+        lokasiId: match ? String(match.id || match._id) : "",
+        lokasiLabel: match ? match.name || match.storeName : r.lokasi || "",
+        store: match?.store || String(match?.id || ""),
+        stokAwalJumlah: r.stokAwalJumlah || "",
+        barangMasukJumlah: r.barangMasukJumlah || "",
+        barangKeluarJumlah: r.barangKeluarJumlah || "",
+        stokFisikJumlah: r.stokFisikJumlah || "",
+        keterangan: r.keterangan || ""
+      };
     });
-    setRows(newRows);
+    replace(newItems);
     toast.success(t("common.success"), {
-      description: t("page.stockOpname.toast.importSuccess", { count: newRows.length })
+      description: t("page.stockOpname.toast.importSuccess", { count: newItems.length })
     });
   };
 
-  const totals = useMemo(() => {
-    return rows.reduce(
-      (acc, row) => {
+  const buildPayload = (status) => {
+    const values = getValues();
+    return {
+      auditDate:
+        values.tanggalAudit instanceof Date
+          ? values.tanggalAudit.toISOString().split("T")[0]
+          : values.tanggalAudit,
+      auditor: values.auditor,
+      notes: values.catatan || "",
+      ...(status ? { status } : {}),
+      items: values.items.map((row) => {
+        const stokAkhir = calculateStockAkhir(row);
+        const fisik = calculateStockFisik(row);
         const selisih = calculateSelisih(row);
-        return { selisihJumlah: acc.selisihJumlah + (selisih === null ? 0 : selisih) };
-      },
-      { selisihJumlah: 0 }
-    );
-  }, [rows]);
-
-  const buildPayload = (status) => ({
-    auditDate:
-      formMeta.tanggalAudit instanceof Date
-        ? formMeta.tanggalAudit.toISOString().split("T")[0]
-        : formMeta.tanggalAudit,
-    auditor: formMeta.auditor,
-    notes: catatan,
-    ...(status ? { status } : {}),
-    items: rows.map((row) => {
-      const stokAkhir = calculateStockAkhir(row);
-      const fisik = calculateStockFisik(row);
-      const selisih = calculateSelisih(row);
-
-      return {
-        ...(row.productId ? { productId: row.productId } : {}),
-        kodeBarang: row.kodeBarang,
-        namaBarang: row.namaBarang,
-        satuan: row.satuan,
-        lokasiId: row.lokasiId,
-        lokasi: row.store || row.lokasiId,
-        stokAwalJumlah: toInt(row.stokAwalJumlah),
-        barangMasukJumlah: toInt(row.barangMasukJumlah),
-        barangKeluarJumlah: toInt(row.barangKeluarJumlah),
-        stokAkhirJumlah: stokAkhir,
-        stokFisikJumlah: fisik,
-        selisihJumlah: selisih,
-        keterangan: row.keterangan
-      };
-    })
-  });
-
-  const validate = () => {
-    const missing = [];
-
-    if (!formMeta.tanggalAudit) {
-      missing.push(fieldLabels.tanggalAudit);
-    }
-    if (!formMeta.auditor.trim()) {
-      missing.push(fieldLabels.auditor);
-    }
-
-    const rowFields = ["kodeBarang", "namaBarang", "satuan", "lokasiId", "stokAwalJumlah", "barangMasukJumlah", "barangKeluarJumlah", "stokFisikJumlah", "keterangan"];
-
-    rows.forEach((row, idx) => {
-      rowFields.forEach((key) => {
-        const val = row[key];
-        if (!val || (typeof val === "string" && !val.trim())) {
-          const label = `${t("page.stockOpname.table.row")} ${idx + 1} - ${fieldLabels[key]}`;
-          if (!missing.includes(label)) {
-            missing.push(label);
-          }
-        }
-      });
-    });
-
-    if (missing.length > 0) {
-      setMissingFieldsList(missing);
-      setMissingFieldsModal(true);
-      return false;
-    }
-
-    return true;
+        return {
+          ...(row.productId ? { productId: row.productId } : {}),
+          kodeBarang: row.kodeBarang,
+          namaBarang: row.namaBarang,
+          satuan: row.satuan,
+          lokasiId: row.lokasiId,
+          lokasi: row.store || row.lokasiId,
+          stokAwalJumlah: toInt(row.stokAwalJumlah),
+          barangMasukJumlah: toInt(row.barangMasukJumlah),
+          barangKeluarJumlah: toInt(row.barangKeluarJumlah),
+          stokAkhirJumlah: stokAkhir,
+          stokFisikJumlah: fisik,
+          selisihJumlah: selisih,
+          keterangan: row.keterangan
+        };
+      })
+    };
   };
 
   const handleSaveComplete = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    const valid = await trigger();
+    if (!valid) return;
     setIsSubmitting(true);
     try {
       const payload = buildPayload("completed");
       let newId;
       if (id) {
-        // Edit mode
         await updateStockOpname(id, payload);
         newId = id;
         await changeStockOpnameStatus(newId, "completed");
       } else {
-        // Create mode
         const created = await addStockOpname(payload);
         newId = created?.data?.id || created?.id;
         if (!newId) throw new Error(t("page.stockOpname.toast.getIdError"));
@@ -520,32 +526,34 @@ const AddStockOpname = () => {
 
       <div>
         <div>
-          {/* Meta */}
           <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
             <Card className="p-6 shadow-sm border-muted">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="tanggalAudit">
+                  <Label>
                     {t("page.stockOpname.form.auditDate")}{" "}
                     <span className="text-destructive">*</span>
                   </Label>
-                  <DatePicker
-                    date={formMeta.tanggalAudit}
-                    setDate={(date) =>
-                      setFormMeta((prev) => ({ ...prev, tanggalAudit: date || new Date() }))
-                    }
+                  <Controller
+                    control={control}
+                    name="tanggalAudit"
+                    render={({ field }) => (
+                      <DatePicker date={field.value} setDate={(date) => field.onChange(date || new Date())} />
+                    )}
                   />
+                  <FieldError error={errors.tanggalAudit} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="auditor">
-                    {t("page.stockOpname.form.auditor")} <span className="text-destructive">*</span>
+                  <Label>
+                    {t("page.stockOpname.form.auditor")}{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="auditor"
+                    {...form.register("auditor")}
                     placeholder={t("page.stockOpname.form.auditorPlaceholder")}
-                    value={formMeta.auditor}
-                    onChange={(e) => setFormMeta((prev) => ({ ...prev, auditor: e.target.value }))}
+                    className={errors.auditor ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  <FieldError error={errors.auditor} />
                 </div>
               </div>
             </Card>
@@ -600,7 +608,7 @@ const AddStockOpname = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.length === 0 ? (
+                    {fields.length === 0 ? (
                       <tr>
                         <td colSpan={13} className="px-3 py-12 text-center text-muted-foreground">
                           <div className="flex flex-col items-center gap-2">
@@ -610,107 +618,119 @@ const AddStockOpname = () => {
                         </td>
                       </tr>
                     ) : (
-                      rows.map((row) => {
+                      fields.map((field, index) => {
+                        const row = watchedItems[index] || {};
                         const stokAkhir = calculateStockAkhir(row);
                         const selisih = calculateSelisih(row);
                         const availability = getAvailabilityStatus(stokAkhir, t);
+                        const rowErrors = errors.items?.[index];
 
                         return (
                           <tr
-                            key={row.id}
+                            key={field.id}
                             className="border-b border-muted/30 transition-colors hover:bg-muted/15">
                             <td className="border-r border-muted/20 px-3 py-2">
                               <input
                                 type="text"
-                                value={row.kodeBarang}
-                                onChange={(e) =>
-                                  updateRowField(row.id, "kodeBarang", e.target.value)
-                                }
+                                {...form.register(`items.${index}.kodeBarang`)}
                                 placeholder={t("page.stockOpname.form.kodePlaceholder")}
-                                className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
+                                className={rowInputClass(!!rowErrors?.kodeBarang)}
                               />
+                              {rowErrors?.kodeBarang && (
+                                <p className="text-destructive text-[10px] mt-0.5">
+                                  {rowErrors.kodeBarang.message}
+                                </p>
+                              )}
                             </td>
                             <td className="border-r border-muted/20 px-3 py-2 min-w-[140px]">
                               <div className="flex items-center gap-1">
                                 <input
                                   type="text"
-                                  value={row.namaBarang}
-                                  onChange={(e) => {
-                                    updateRowField(row.id, "namaBarang", e.target.value);
-                                    updateRowField(row.id, "productId", "");
-                                  }}
+                                  {...form.register(`items.${index}.namaBarang`, {
+                                    onChange: () => {
+                                      setValue(`items.${index}.productId`, "", { shouldValidate: true });
+                                    }
+                                  })}
                                   placeholder={t("page.stockOpname.form.namaPlaceholder")}
-                                  className="flex-1 bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
+                                  className={`flex-1 bg-transparent border-0 border-b text-sm outline-none transition-colors px-0 py-1 ${
+                                    rowErrors?.namaBarang
+                                      ? "border-destructive focus:border-solid"
+                                      : "border-dashed border-muted-foreground/20 focus:border-primary focus:border-solid"
+                                  }`}
                                 />
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <button
                                       type="button"
-                                      className="shrink-0 p-1 text-muted-foreground/40 hover:text-primary transition-colors"
-                                      title={t("common.search")}>
+                                      disabled={!row.lokasiId}
+                                      title={
+                                        !row.lokasiId
+                                          ? t("page.stockOpname.form.selectLocationFirst")
+                                          : t("common.search")
+                                      }
+                                      className={`shrink-0 p-1 transition-colors ${
+                                        !row.lokasiId
+                                          ? "text-muted-foreground/20 cursor-not-allowed"
+                                          : "text-muted-foreground/40 hover:text-primary"
+                                      }`}>
                                       <Search size={14} />
                                     </button>
                                   </PopoverTrigger>
-                                  <PopoverContent
-                                    align="start"
-                                    side="bottom"
-                                    className="p-0 w-[280px]">
+                                  <PopoverContent align="start" side="bottom" className="p-0 w-[280px]">
                                     <Command>
                                       <CommandInput placeholder={t("common.search")} />
                                       <CommandList>
-                                        {allProducts.length === 0 && (
+                                        {allProducts.filter((p) => !selectedProductIds.has(p.id || p._id))
+                                          .length === 0 && (
                                           <CommandEmpty>
                                             {t("page.stockOpname.table.productNotFound")}
                                           </CommandEmpty>
                                         )}
-                                        {allProducts.map((p) => (
-                                          <CommandItem
-                                            key={p.id || p._id}
-                                            value={p.nameProduct || p.name}
-                                            onSelect={() => {
-                                              updateRowField(row.id, "productId", p.id || p._id);
-                                              updateRowField(row.id, "kodeBarang", p.barcode || "");
-                                              updateRowField(
-                                                row.id,
-                                                "namaBarang",
-                                                p.nameProduct || p.name
-                                              );
-                                              updateRowField(row.id, "satuan", p.unit || "pcs");
-                                              updateRowField(
-                                                row.id,
-                                                "stokAwalJumlah",
-                                                String(p.stock ?? "")
-                                              );
-                                            }}>
-                                            <div className="flex items-center gap-2">
-                                              <Package
-                                                size={14}
-                                                className="shrink-0 text-muted-foreground/40"
-                                              />
-                                              <div className="flex flex-col min-w-0">
-                                                <span className="text-sm truncate">
-                                                  {p.nameProduct || p.name}
-                                                </span>
-                                                {p.barcode && (
-                                                  <span className="text-[10px] text-muted-foreground truncate">
-                                                    {p.barcode}
+                                        {allProducts
+                                          .filter((p) => !selectedProductIds.has(p.id || p._id))
+                                          .map((p) => (
+                                            <CommandItem
+                                              key={p.id || p._id}
+                                              value={p.nameProduct || p.name}
+                                              onSelect={() => handleProductSelect(index, p)}>
+                                              <div className="flex items-center gap-2">
+                                                <Package
+                                                  size={14}
+                                                  className="shrink-0 text-muted-foreground/40"
+                                                />
+                                                <div className="flex flex-col min-w-0">
+                                                  <span className="text-sm truncate">
+                                                    {p.nameProduct || p.name}
+                                                  </span>
+                                                  {p.barcode && (
+                                                    <span className="text-[10px] text-muted-foreground truncate">
+                                                      {p.barcode}
+                                                    </span>
+                                                  )}
+                                                </div>
+                                                {selectedProductIds.has(p.id || p._id) && (
+                                                  <span className="ml-auto text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
+                                                    dipilih
                                                   </span>
                                                 )}
                                               </div>
-                                            </div>
-                                          </CommandItem>
-                                        ))}
+                                            </CommandItem>
+                                          ))}
                                       </CommandList>
                                     </Command>
                                   </PopoverContent>
                                 </Popover>
                               </div>
+                              {rowErrors?.namaBarang && (
+                                <p className="text-destructive text-[10px] mt-0.5">
+                                  {rowErrors.namaBarang.message}
+                                </p>
+                              )}
                             </td>
                             <td className="border-r border-muted/20 px-3 py-2">
                               <select
-                                value={row.satuan}
-                                onChange={(e) => updateRowField(row.id, "satuan", e.target.value)}
-                                className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1">
+                                {...form.register(`items.${index}.satuan`)}
+                                className={rowInputClass(!!rowErrors?.satuan)}>
                                 <option value="" disabled>
                                   {t("page.stockOpname.form.satuanPlaceholder")}
                                 </option>
@@ -720,37 +740,55 @@ const AddStockOpname = () => {
                                   </option>
                                 ))}
                               </select>
+                              {rowErrors?.satuan && (
+                                <p className="text-destructive text-[10px] mt-0.5">
+                                  {rowErrors.satuan.message}
+                                </p>
+                              )}
                             </td>
                             <td className="border-r border-muted/20 px-3 py-2 min-w-[150px]">
-                              <LokasiSelect
-                                value={row.lokasiId}
-                                locations={locations}
-                                loading={locationLoading}
-                                onChange={(val) => handleLokasiChange(row.id, val)}
-                                onAddNew={openAddLocation}
-                                t={t}
+                              <Controller
+                                control={control}
+                                name={`items.${index}.lokasiId`}
+                                render={({ field: lokasiField }) => (
+                                  <LokasiSelect
+                                    value={lokasiField.value}
+                                    onChange={(val) => handleLokasiChange(index, val)}
+                                    locations={locations}
+                                    loading={locationLoading}
+                                    onAddNew={openAddLocation}
+                                    t={t}
+                                    hasError={!!rowErrors?.lokasiId}
+                                  />
+                                )}
                               />
+                              {rowErrors?.lokasiId && (
+                                <p className="text-destructive text-[10px] mt-0.5">
+                                  {rowErrors.lokasiId.message}
+                                </p>
+                              )}
                             </td>
                             {[
                               "stokAwalJumlah",
                               "barangMasukJumlah",
                               "barangKeluarJumlah",
                               "stokFisikJumlah"
-                            ].map((field) => (
-                              <td key={field} className="border-r border-muted/20 px-3 py-2">
+                            ].map((fieldName) => (
+                              <td key={fieldName} className="border-r border-muted/20 px-3 py-2">
                                 <input
                                   type="text"
                                   inputMode="numeric"
-                                  value={row[field]}
-                                  onChange={(e) =>
-                                    updateRowField(
-                                      row.id,
-                                      field,
-                                      sanitizeNumberInput(e.target.value)
-                                    )
-                                  }
+                                  {...form.register(`items.${index}.${fieldName}`, {
+                                    onChange: (e) => {
+                                      e.target.value = sanitizeNumberInput(e.target.value);
+                                    }
+                                  })}
                                   placeholder="0"
-                                  className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm text-right outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1 tabular-nums"
+                                  className={`w-full bg-transparent border-0 border-b text-sm text-right outline-none transition-colors px-0 py-1 tabular-nums ${
+                                    rowErrors?.[fieldName]
+                                      ? "border-destructive focus:border-solid"
+                                      : "border-dashed border-muted-foreground/20 focus:border-primary focus:border-solid"
+                                  }`}
                                 />
                               </td>
                             ))}
@@ -770,19 +808,21 @@ const AddStockOpname = () => {
                             <td className="border-r border-muted/20 px-3 py-2">
                               <input
                                 type="text"
-                                value={row.keterangan}
-                                onChange={(e) =>
-                                  updateRowField(row.id, "keterangan", e.target.value)
-                                }
+                                {...form.register(`items.${index}.keterangan`)}
                                 placeholder={t("page.stockOpname.form.keteranganPlaceholder")}
-                                className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
+                                className={rowInputClass(!!rowErrors?.keterangan)}
                               />
+                              {rowErrors?.keterangan && (
+                                <p className="text-destructive text-[10px] mt-0.5">
+                                  {rowErrors.keterangan.message}
+                                </p>
+                              )}
                             </td>
                             <td className="px-3 py-2 text-center">
                               <button
                                 type="button"
-                                onClick={() => removeRow(row.id)}
-                                disabled={rows.length <= 1}
+                                onClick={() => removeRow(index)}
+                                disabled={fields.length <= 1}
                                 className="text-muted-foreground/30 hover:text-destructive transition-colors disabled:opacity-20">
                                 <X size={14} />
                               </button>
@@ -817,15 +857,13 @@ const AddStockOpname = () => {
             </Card>
 
             <div className="space-y-2">
-              <Label htmlFor="catatan">
+              <Label>
                 {t("page.stockOpname.form.auditNotes")}{" "}
                 <span className="text-muted-foreground font-normal">({t("common.optional")})</span>
               </Label>
               <Textarea
-                id="catatan"
+                {...form.register("catatan")}
                 rows={3}
-                value={catatan}
-                onChange={(e) => setCatatan(e.target.value)}
                 placeholder={t("page.stockOpname.form.auditNotesPlaceholder")}
               />
             </div>
@@ -916,21 +954,15 @@ const AddStockOpname = () => {
         }}
       />
 
-      <MissingFieldsModal
-        open={missingFieldsModal}
-        onOpenChange={setMissingFieldsModal}
-        fields={missingFieldsList}
-      />
-
       <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}
         onDataParsed={handleUploadParsed}
         onUploadSuccess={() => navigate("/stock-opname")}
         auditDate={
-          formMeta.tanggalAudit instanceof Date
-            ? formMeta.tanggalAudit.toISOString().split("T")[0]
-            : formMeta.tanggalAudit
+          watch("tanggalAudit") instanceof Date
+            ? watch("tanggalAudit").toISOString().split("T")[0]
+            : watch("tanggalAudit")
         }
       />
     </div>

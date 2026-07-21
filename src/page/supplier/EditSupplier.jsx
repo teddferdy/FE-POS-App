@@ -89,6 +89,9 @@ const EditSupplier = () => {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [newProductName, setNewProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
+  const [productLeadTime, setProductLeadTime] = useState("");
+  const [productQualityRating, setProductQualityRating] = useState("");
+  const [productMinOrderQty, setProductMinOrderQty] = useState("");
   const [showImportExcel, setShowImportExcel] = useState(false);
   const [importFile, setImportFile] = useState(null);
 
@@ -145,7 +148,15 @@ const EditSupplier = () => {
       }
       if (supplier.products && Array.isArray(supplier.products)) {
         setSupplierProducts(
-          supplier.products.map((p) => ({ id: p.id, name: p.name, price: p.price }))
+          supplier.products.map((p) => ({
+            id: p.id,
+            productId: p.productId,
+            name: p.name,
+            price: p.price,
+            leadTime: p.leadTime || 0,
+            qualityRating: p.qualityRating || 0,
+            minOrderQty: p.minOrderQty || 1
+          }))
         );
       }
     }
@@ -192,10 +203,20 @@ const EditSupplier = () => {
     }
     setSupplierProducts((prev) => [
       ...prev,
-      { id: `manual_${Date.now()}`, name: newProductName.trim(), price: Number(productPrice) }
+      {
+        id: `manual_${Date.now()}`,
+        name: newProductName.trim(),
+        price: Number(productPrice),
+        leadTime: Number(productLeadTime) || 0,
+        qualityRating: Number(productQualityRating) || 0,
+        minOrderQty: Number(productMinOrderQty) || 1
+      }
     ]);
     setNewProductName("");
     setProductPrice("");
+    setProductLeadTime("");
+    setProductQualityRating("");
+    setProductMinOrderQty("");
     setShowAddProduct(false);
   };
 
@@ -238,7 +259,13 @@ const EditSupplier = () => {
       ...values,
       status: statusValue,
       store: selectedStore,
-      products: supplierProducts.map((p) => ({ name: p.name, price: p.price }))
+      products: supplierProducts.map((p) => ({
+        name: p.name,
+        price: p.price,
+        leadTime: p.leadTime || 0,
+        qualityRating: p.qualityRating || 0,
+        minOrderQty: p.minOrderQty || 1
+      }))
     });
   };
 
@@ -562,6 +589,39 @@ const EditSupplier = () => {
                         />
                       </div>
                     </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">Lead Time (hari)</label>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          value={productLeadTime}
+                          onChange={(e) => setProductLeadTime(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">Kualitas (0-5)</label>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          min="0"
+                          max="5"
+                          step="0.5"
+                          value={productQualityRating}
+                          onChange={(e) => setProductQualityRating(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">Min Order</label>
+                        <Input
+                          type="number"
+                          placeholder="1"
+                          min="1"
+                          value={productMinOrderQty}
+                          onChange={(e) => setProductMinOrderQty(e.target.value)}
+                        />
+                      </div>
+                    </div>
                     <div className="flex gap-2 justify-end">
                       <Button
                         variant="outline"
@@ -570,6 +630,9 @@ const EditSupplier = () => {
                           setShowAddProduct(false);
                           setNewProductName("");
                           setProductPrice("");
+                          setProductLeadTime("");
+                          setProductQualityRating("");
+                          setProductMinOrderQty("");
                         }}>
                         {t("common.cancel")}
                       </Button>
@@ -636,6 +699,15 @@ const EditSupplier = () => {
                           <TableHead className="text-xs text-right">
                             {t("page.supplier.products.table.price")}
                           </TableHead>
+                          <TableHead className="text-xs text-right">
+                            Lead Time
+                          </TableHead>
+                          <TableHead className="text-xs text-right">
+                            Kualitas
+                          </TableHead>
+                          <TableHead className="text-xs text-right">
+                            Min Order
+                          </TableHead>
                           <TableHead className="text-xs text-center w-12">
                             {t("page.supplier.products.table.action")}
                           </TableHead>
@@ -647,6 +719,15 @@ const EditSupplier = () => {
                             <TableCell className="text-sm font-medium">{product.name}</TableCell>
                             <TableCell className="text-sm text-right">
                               Rp {Number(product.price).toLocaleString("id-ID")}
+                            </TableCell>
+                            <TableCell className="text-sm text-right">
+                              {product.leadTime || 0} hari
+                            </TableCell>
+                            <TableCell className="text-sm text-right">
+                              {product.qualityRating || 0}
+                            </TableCell>
+                            <TableCell className="text-sm text-right">
+                              {product.minOrderQty || 1}
                             </TableCell>
                             <TableCell className="text-center">
                               <Button

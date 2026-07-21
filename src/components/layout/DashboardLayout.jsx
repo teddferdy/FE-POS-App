@@ -11,6 +11,7 @@ import Header from "./Header";
 import CommandPalette from "./CommandPalette";
 import { TipsCard } from "@/components/ui/tips-card";
 import FloatingTourButton from "@/components/organism/FloatingTourButton";
+import { useStore } from "@/contexts/StoreContext";
 
 const tipsKeys = {
   "/product-list": ["tips.product", "tips.product2", "tips.product3"],
@@ -171,25 +172,24 @@ const DashboardLayout = () => {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [cookie, setCookie] = useCookies();
   const location = useLocation();
+  const { activeStoreId, setActiveStore, isSuperAdmin } = useStore();
 
   const user = cookie?.user;
   const role = user?.roleType || "";
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
-    enabled: role === "super_admin" && !cookie?.activeStore
+    enabled: role === "super_admin" && !activeStoreId
   });
   const locations = locationsData?.data || [];
 
   useEffect(() => {
-    if (role === "super_admin" && locations.length > 0 && !cookie?.activeStore) {
+    if (role === "super_admin" && locations.length > 0 && !activeStoreId) {
       const first = locations[0];
       const firstId = first.id || first._id;
       const firstName = first.name || first.storeName || "";
-      setCookie("activeStore", firstId, { path: "/" });
-      setCookie("activeStoreName", firstName, { path: "/" });
-      setCookie("user", { ...user, store: firstId, storeName: firstName }, { path: "/" });
+      setActiveStore(firstId, firstName);
     }
-  }, [locations]);
+  }, [locations, activeStoreId, role, setActiveStore]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {

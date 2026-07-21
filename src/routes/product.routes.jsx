@@ -16,6 +16,7 @@ const DetailCategory = React.lazy(() => import("@/page/category/DetailCategory")
 export const productRoutes = (
   <>
     <Route path="/product-list" element={<ProductList />} />
+    <Route path="/product" element={<ProductList />} />
     <Route path="/add-product" element={<AddProduct />} />
     <Route path="/edit-product" element={<EditProduct />} />
     <Route path="/detail-product/:id" element={<DetailProduct />} />

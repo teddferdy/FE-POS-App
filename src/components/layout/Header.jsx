@@ -34,10 +34,12 @@ import { useThemeStore } from "@/state/theme";
 import { logOut } from "@/services/auth";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useStore } from "@/contexts/StoreContext";
 
 const StoreSelector = ({ cookie, setCookie }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const { activeStoreId, activeStoreName: ctxStoreName, setActiveStore, isSuperAdmin } = useStore();
 
   const ref = useRef(null);
   const user = cookie?.user;
@@ -52,13 +54,13 @@ const StoreSelector = ({ cookie, setCookie }) => {
   });
   const locations = locationsData?.data || [];
 
-  const activeStoreId = cookie?.activeStore;
   const activeStore = locations.find((l) => (l.id || l._id) === activeStoreId);
   const storeName =
     locations.length === 0
       ? t("header.selectStore")
       : activeStore?.name ||
         activeStore?.storeName ||
+        ctxStoreName ||
         cookie?.activeStoreName ||
         t("header.selectStore");
 
@@ -75,10 +77,8 @@ const StoreSelector = ({ cookie, setCookie }) => {
   const handleSelect = (loc) => {
     const id = loc.id || loc._id;
     const name = loc.name || loc.storeName || "";
-    setCookie("activeStore", id, { path: "/" });
-    setCookie("activeStoreName", name, { path: "/" });
+    setActiveStore(id, name);
     setOpen(false);
-    window.location.reload();
   };
 
   return (

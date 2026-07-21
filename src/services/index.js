@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { ENDPOINT } from "@/utils/endpoints";
-import { getToken } from "@/utils/cookies";
+import { getToken, getCookie } from "@/utils/cookies";
 
 const axiosInstance = axios.create({
   baseURL: ENDPOINT.BASE_URL
@@ -12,6 +12,13 @@ axiosInstance.interceptors.request.use(
     if (token) {
       req.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Auto-inject activeStore as query param for store-scoped endpoints
+    const activeStore = getCookie("activeStore");
+    if (activeStore && !req.params?.store) {
+      req.params = { ...req.params, store: activeStore };
+    }
+
     return req;
   },
   (err) => err

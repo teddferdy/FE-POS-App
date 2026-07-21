@@ -279,7 +279,7 @@ flowchart LR
 
 | Menu                    | Fungsinya buat bisnis                                                                                             | Nyambung kemana                              |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| **Supplier**            | Data pemasok: nama, kontak, alamat. Siapa aja yang nyuplai barang.                                                | ➡ Purchase Order                            |
+| **Supplier**            | Data pemasok: nama, kontak, alamat, produk beserta harga/lead time/quality. Siapa aja yang nyuplai barang.       | ➡ Purchase Order ➡ Bandingkan Supplier       |
 | **Kategori Bahan Baku** | Grouping bahan baku (Sembako, Bumbu, Frozen, dll).                                                                | ➡ Bahan Baku                                |
 | **Bahan Baku**          | Daftar ingredient: nama, unit, minimal stok. Bahan baku yang dipake buat produksi.                                | ➡ Purchase Order ➡ BOM ➡ Production Order |
 | **Purchase Order**      | Bikin pesanan ke supplier. Pilih supplier & item. Ada status (draft/sent/completed/cancelled), due date, dan PIC. | ➡ Goods Receipt ➡ Riwayat Pembayaran       |
@@ -312,6 +312,7 @@ flowchart LR
 | Menu                     | Fungsinya buat bisnis                                                                       | Nyambung kemana                    |
 | ------------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------- |
 | **Supplier Performance** | Skor & grade supplier: on-time rate, defect rate, harga. Evaluasi otomatis dari PO & GR.    | ➡ Supplier ➡ Purchase Order       |
+| **Bandingkan Supplier**  | Bandingkan harga, lead time, & kualitas supplier per produk. Cari supplier terbaik.          | ➡ Supplier                        |
 
 ### 🏷️ Promosi (Promo)
 
@@ -764,10 +765,22 @@ flowchart LR
     LIST_SUPP -->|Hapus| DEL_SUPP{Konfirmasi}
     LIST_SUPP -->|Import| IMP_SUPP[Import Excel]
     LIST_SUPP -->|Export| EXP_SUPP[Export Excel]
+    LIST_SUPP -->|Bandingkan| COMPARE[Supplier Comparison<br/>Pilih produk → bandingkan<br/>harga, lead time, kualitas]
     ADD_SUPP --> SAVE_SUPP[Simpan]
     EDIT_SUPP --> SAVE_SUPP
     DETAIL_SUPP --> PO_HIST[Lihat PO History<br/>total pesanan, status]
 ```
+
+**Data Produk per Supplier:**
+
+| Field             | Fungsi                                                                 |
+| ----------------- | ---------------------------------------------------------------------- |
+| **Nama Produk**   | Nama produk yang disupplier                                            |
+| **Harga**         | Harga beli dari supplier ini                                           |
+| **Lead Time**     | Estimasi hari pengiriman dari supplier                                 |
+| **Quality Rating**| Rating kualitas (1-5), diisi dari review internal                      |
+| **Min Order Qty** | Jumlah minimal pesanan dari supplier ini                                |
+| **Last Price**    | Harga terakhir yang pernah dibeli (otomatis dari PO terakhir)         |
 
 #### 5.7.2 Kategori Bahan Baku & Bahan Baku
 
@@ -1266,6 +1279,7 @@ flowchart TD
 | **Atur pengiriman internal**        | Delivery Order → Driver Management       |
 | **Kelola antrian pelanggan**        | Queue Management → Tambah ke Antrian     |
 | **Cek performa supplier**           | Supplier Performance → Hitung Skor       |
+| **Bandingkan supplier per produk**  | Supplier Comparison → Pilih Produk       |
 | **Buat promo otomatis**             | Promo Campaign → Buat Kampanye           |
 | **Jualan di GoFood/GrabFood**       | Marketplace Integration → Produk Mapping |
 | **Terima pesanan marketplace**      | Marketplace → Webhook → Delivery Order   |
@@ -1547,7 +1561,46 @@ flowchart TD
 
 ---
 
-### 5.21 Promo Campaign — Promosi Otomatis
+### 5.21 Bandingkan Supplier — Pilih Supplier Terbaik
+
+> Bandingkan harga, lead time, dan kualitas supplier untuk produk tertentu. Bantu admin memilih supplier paling cocok.
+
+```mermaid
+flowchart TD
+    START([Admin buka<br/>Bandingkan Supplier]) --> PILIH_PROD[Pilih Produk<br/>cari / pilih dari daftar]
+    PILIH_PROD --> SEARCH[Search Supplier<br/>filter nama / kata kunci]
+    SEARCH --> SORT{Urutkan berdasarkan}
+    SORT -->|Harga| BY_PRICE[Urutkan Harga<br/>rendah → tinggi]
+    SORT -->|Kualitas| BY_QUALITY[Urutkan Rating<br/>tinggi → rendah]
+    SORT -->|Lead Time| BY_LEAD[Urutkan Lead Time<br/>cepat → lambat]
+
+    BY_PRICE --> TABLE[Tabel Perbandingan<br/>Nama | Harga | Lead Time<br/>Quality | Min Order]
+    BY_QUALITY --> TABLE
+    BY_LEAD --> TABLE
+
+    TABLE --> SUMMARY[Ringkasan:<br/>Harga Terendah<br/>Harga Tertinggi<br/>Rata-rata Harga<br/>Jumlah Supplier]
+    TABLE --> DETAIL[Klik Supplier<br/>→ Lihat Detail]
+```
+
+**Cara pakai:**
+
+1. Buka menu **Pengadaan → Bandingkan Supplier** (atau via Command Palette: "Bandingkan Supplier")
+2. **Pilih produk** yang ingin dibandingkan — bisa cari berdasarkan nama
+3. **Filter** supplier berdasarkan nama jika perlu
+4. **Urutkan** berdasarkan: Harga, Rating Kualitas, Lead Time, atau Nama
+5. Lihat **ringkasan**: harga terendah, tertinggi, rata-rata, jumlah supplier
+6. **Klik baris** supplier untuk lihat detail lengkap
+
+**Yang perlu kamu tau:**
+
+- **Hanya supplier aktif** yang tampil di perbandingan
+- **Data perbandingan**: Harga (`price`), Lead Time (`leadTime`), Quality Rating (`qualityRating`), Min Order Qty (`minOrderQty`)
+- **Ringkasan otomatis**: harga terendah, tertinggi, rata-rata — admin gak perlu hitung manual
+- **Perbandingan name-based dan FK-based**: sistem cari berdasarkan `productId` atau pencarian nama
+
+---
+
+### 5.22 Promo Campaign — Promosi Otomatis
 
 > Bikin kampanye promosi yang otomatis aktif berdasarkan waktu, event, atau kondisi tertentu.
 
@@ -1594,7 +1647,7 @@ flowchart TD
 
 ---
 
-### 5.22 Ringkasan Fitur Tambahan
+### 5.23 Ringkasan Fitur Tambahan
 
 | Fitur              | Input                                   | Proses                       | Output / Dampak                                       |
 | ------------------ | --------------------------------------- | ---------------------------- | ----------------------------------------------------- |
@@ -1614,7 +1667,7 @@ flowchart TD
 
 ---
 
-### 5.23 Marketplace Integration — GoFood / GrabFood / ShopeeFood
+### 5.24 Marketplace Integration — GoFood / GrabFood / ShopeeFood
 
 > Integrasi delivery eksternal via webhook. Pesanan dari marketplace masuk otomatis ke sistem, driver marketplace yang antar. Cocok buat bisnis yang jualan di beberapa platform sekaligus.
 
@@ -1692,7 +1745,7 @@ flowchart TD
 
 ---
 
-### 5.24 Auto Generate PO dari Low Stock
+### 5.25 Auto Generate PO dari Low Stock
 
 > Fitur untuk otomatis membuat draft PO berdasarkan bahan baku yang stoknya menipis. Hemat waktu admin — tinggal review dan kirim.
 
@@ -1742,7 +1795,7 @@ flowchart TD
 
 ---
 
-### 5.25 Bundle / Combo Product
+### 5.26 Bundle / Combo Product
 
 > Fitur untuk menjual paket produk dengan harga spesial. Misal: "Paket Hemat = Nasi + Ayam + Es Teh" dengan harga lebih murah dari beli satuan.
 
@@ -1964,7 +2017,7 @@ stateDiagram-v2
 | **Goods Receipt (GR)**                 | Penerimaan barang dari PO. Nyatain bahwa barang udah sampe dan diterima                   | "Barang gula udah dateng, bikin GR biar stok nambah"          |
 | **Purchase Return**                    | Retur/pengembalian barang ke supplier karena rusak, salah, atau cacat                     | "Gulanya basah, bikin Purchase Return"                        |
 | **Sales Return**                       | Retur dari pelanggan — barang dijual tapi dikembalikan                                    | "Pelanggan balikin minuman kadaluarsa"                        |
-| **Supplier**                           | Pemasok / vendor yang jual barang ke bisnis kita                                          | "Supplier gula: PT ABC"                                       |
+| **Supplier**                           | Pemasok / vendor yang jual barang ke bisnis kita. Punya data lead time, kualitas, min order per produk.           | "Supplier gula: PT ABC — lead time 3 hari, rating 4.5"         |
 | **Ingredient / Bahan Baku**            | Bahan mentah yang dipake buat produksi atau jualan                                        | "Tepung, gula, minyak"                                        |
 | **BOM (Bill of Materials)**            | Resep / komposisi / bill of material — daftar bahan & takaran buat bikin 1 produk         | "1 porsi Nasi Goreng = 200gr nasi + 3 siung bawang + 1 telur" |
 | **Production Order**                   | Perintah produksi — bikin barang jadi dari bahan baku                                     | "Produksi 50 porsi Nasi Goreng"                               |
@@ -2131,7 +2184,16 @@ stateDiagram-v2
 | 3   | **Grade: A(≥85) B(70-84) C(55-69) D(40-54) F(<40)**              | Penilaian berdasarkan overall score                                 |
 | 4   | **Catatan admin bisa ditambah**                                     | Untuk catatan qualitative per supplier per periode                   |
 
-### 8.14 Aturan Promo Campaign
+### 8.14 Aturan Bandingkan Supplier
+
+| #   | Aturan                                                              | Penjelasan                                                           |
+| --- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | **Hanya supplier aktif yang ditampilkan**                           | Supplier inactive gak masuk perbandingan                            |
+| 2   | **Pencarian berdasarkan productId atau nama**                       | Support nama produk yang sudah di-link via FK atau berbasis nama     |
+| 3   | **Ringkasan otomatis**                                              | Harga terendah, tertinggi, rata-rata, jumlah supplier — otomatis    |
+| 4   | **Perbandingan fleksibel**                                          | Bisa urutkan berdasarkan harga, kualitas, lead time, atau nama      |
+
+### 8.15 Aturan Promo Campaign
 
 | #   | Aturan                                                              | Penjelasan                                                           |
 | --- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
@@ -2140,7 +2202,7 @@ stateDiagram-v2
 | 3   | **Batas usage per total & per member**                              | Kontrol biaya promosi — promo gak bisa dipakai berlebihan           |
 | 4   | **Rules & rewards fleksibel**                                       | Bisa atur syarat & hadiah sesuai kebutuhan bisnis                   |
 
-### 8.15 Aturan Marketplace Integration
+### 8.16 Aturan Marketplace Integration
 
 | #   | Aturan                                                              | Penjelasan                                                           |
 | --- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
@@ -2391,6 +2453,14 @@ stateDiagram-v2
 | **Payment Tracking di Supplier** | Filter & cari pembayaran berdasarkan supplier                           |
 | **Laporan Piutang (AR Report)**  | Rekap piutang pelanggan, umur piutang, collection tracking              |
 | **Customer Self-Order (QR)**     | Pelanggan order via QR code di meja, tanpa perlu kasir                  |
+
+### 🔧 Fitur Baru (21 Juli 2026)
+
+| #  | Perubahan                                                                                                                                                                                                                                                                           | Dampak buat Bisnis                                                                                                                                                                                                                       |
+| -- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | **Multi-Supplier per Produk (Enhanced)** — tabel `supplier_product` sekarang punya field: `productId` (FK ke produk), `leadTime` (estimasi hari kirim), `qualityRating` (rating kualitas 1-5), `minOrderQty` (jumlah minimal pesanan), `lastPrice` (harga terakhir dari PO). Migrasi otomatis link nama produk via FK. | ✅ Data supplier-produk lebih kaya — admin tau lead time, kualitas, min order, dan harga terakhir per supplier. Keputusan pengadaan lebih informed                                                                  |
+| 2  | **Supplier Comparison** — halaman `/supplier-comparison` baru. Pilih produk → sistem tampilkan semua supplier yang menyediakan produk tersebut, urutkan berdasarkan harga, kualitas, atau lead time. Ringkasan: harga terendah, tertinggi, rata-rata.                                | ✅ Admin bisa langsung bandingkan supplier mana yang paling murah, tercepat, atau paling berkualitas untuk produk tertentu. Gak perlu buka satu-satu lagi                                                           |
+| 3  | **PO Item per-Supplier** — Purchase Order mendukung multiple supplier dalam satu PO. Setiap baris item punya supplier sendiri, bukan per-PO. Admin bisa pesan dari 3 supplier berbeda dalam satu PO.                                                                                | ✅ Fleksibilitas PO naik — admin bisa gabung pesanan dari beberapa supplier dalam satu dokumen, hemat waktu, kurangi duplikasi PO                                                                                                         |
 
 ---
 

@@ -1,0 +1,357 @@
+import React, { useState, useMemo } from "react";
+import { useQuery } from "react-query";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useCookies } from "react-cookie";
+import {
+  ArrowLeft,
+  Search,
+  Building2,
+  Star,
+  Clock,
+  Package,
+  TrendingDown,
+  TrendingUp,
+  Scale,
+  Filter,
+  ChevronDown,
+  Info
+} from "lucide-react";
+import { compareSuppliers } from "@/services/supplier";
+import { getAllProduct } from "@/services/product";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import PageHeader from "@/components/ui/PageHeader";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+
+const SupplierComparison = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
+
+  const [selectedProductId, setSelectedProductId] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("price");
+
+  const { data: productsData } = useQuery(
+    ["products-comparison"],
+    () => getAllProduct({ limit: 999, status: "active" }),
+    { staleTime: 30000 }
+  );
+  const products = productsData?.data || [];
+
+  const { data: comparisonData, isLoading } = useQuery(
+    ["supplier-comparison", selectedProductId, searchQuery],
+    () => compareSuppliers({ productId: selectedProductId || undefined, search: searchQuery || undefined }),
+    { enabled: true, staleTime: 10000 }
+  );
+
+  const result = comparisonData?.data || {};
+  const suppliers = result.suppliers || [];
+  const summary = result.summary || {};
+  const product = result.product || null;
+
+  const sortedSuppliers = useMemo(() => {
+    const sorted = [...suppliers];
+    switch (sortBy) {
+      case "price":
+        return sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
+      case "price_desc":
+        return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+      case "quality":
+        return sorted.sort((a, b) => (b.qualityRating || 0) - (a.qualityRating || 0));
+      case "leadtime":
+        return sorted.sort((a, b) => (a.leadTime || 0) - (b.leadTime || 0));
+      case "name":
+        return sorted.sort((a, b) => (a.supplierName || "").localeCompare(b.supplierName || ""));
+      default:
+        return sorted;
+    }
+  }, [suppliers, sortBy]);
+
+  const formatIDR = (num) => {
+    if (!num && num !== 0) return "-";
+    return `Rp ${Number(num).toLocaleString("id-ID")}`;
+  };
+
+  const getQualityStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating || 0);
+    const hasHalf = (rating || 0) % 1 >= 0.5;
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(
+          <Star key={i} size={14} className="fill-yellow-400 text-yellow-400" />
+        );
+      } else if (i === fullStars && hasHalf) {
+        stars.push(
+          <Star key={i} size={14} className="fill-yellow-400/50 text-yellow-400" />
+        );
+      } else {
+        stars.push(
+          <Star key={i} size={14} className="text-gray-300" />
+        );
+      }
+    }
+    return stars;
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <button onClick={() => navigate("/")} className="hover:text-foreground">
+          {t("page.supplier.detail.breadcrumb.dashboard")}
+        </button>
+        <span className="text-xs">/</span>
+        <button onClick={() => navigate("/supplier")} className="hover:text-foreground">
+          {t("page.supplier.detail.breadcrumb.list")}
+        </button>
+        <span className="text-xs">/</span>
+        <span className="text-primary font-semibold">
+          {t("page.supplier.comparison.title")}
+        </span>
+      </nav>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="icon" onClick={() => navigate("/supplier")}>
+            <ArrowLeft size={16} />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{t("page.supplier.comparison.title")}</h1>
+            <p className="text-sm text-muted-foreground">
+              {t("page.supplier.comparison.subtitle")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+          <Filter size={16} />
+          {t("page.supplier.comparison.filters")}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">
+              {t("page.supplier.comparison.selectProduct")}
+            </label>
+            <Select
+              value={selectedProductId}
+              onValueChange={setSelectedProductId}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("page.supplier.comparison.allProducts")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  {t("page.supplier.comparison.allProducts")}
+                </SelectItem>
+                {products.map((p) => (
+                  <SelectItem key={p.id} value={String(p.id)}>
+                    {p.nameProduct}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">
+              {t("page.supplier.comparison.searchProduct")}
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+              <Input
+                placeholder={t("page.supplier.comparison.searchPlaceholder")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">
+              {t("page.supplier.comparison.sortBy")}
+            </label>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="price">{t("page.supplier.comparison.sortPriceLow")}</SelectItem>
+                <SelectItem value="price_desc">{t("page.supplier.comparison.sortPriceHigh")}</SelectItem>
+                <SelectItem value="quality">{t("page.supplier.comparison.sortQuality")}</SelectItem>
+                <SelectItem value="leadtime">{t("page.supplier.comparison.sortLeadTime")}</SelectItem>
+                <SelectItem value="name">{t("page.supplier.comparison.sortName")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </Card>
+
+      {product && (
+        <Card className="p-4 bg-primary/5 border-primary/20">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Package size={16} className="text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">{product.name}</p>
+              <p className="text-xs text-muted-foreground">
+                SKU: {product.slope || "-"} | Unit: {product.unit || "-"}
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {summary.supplierCount > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
+              <Scale size={14} />
+              <span className="text-xs font-medium">{t("page.supplier.comparison.supplierCount")}</span>
+            </div>
+            <p className="text-2xl font-bold">{summary.supplierCount}</p>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2 text-green-600 mb-1">
+              <TrendingDown size={14} />
+              <span className="text-xs font-medium">{t("page.supplier.comparison.lowestPrice")}</span>
+            </div>
+            <p className="text-2xl font-bold text-green-600">{formatIDR(summary.lowestPrice)}</p>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2 text-red-600 mb-1">
+              <TrendingUp size={14} />
+              <span className="text-xs font-medium">{t("page.supplier.comparison.highestPrice")}</span>
+            </div>
+            <p className="text-2xl font-bold text-red-600">{formatIDR(summary.highestPrice)}</p>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
+              <Info size={14} />
+              <span className="text-xs font-medium">{t("page.supplier.comparison.avgPrice")}</span>
+            </div>
+            <p className="text-2xl font-bold">{formatIDR(summary.avgPrice)}</p>
+          </Card>
+        </div>
+      )}
+
+      <Card className="overflow-hidden">
+        {isLoading ? (
+          <div className="p-6 space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
+        ) : sortedSuppliers.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-3">
+              <Building2 size={24} className="text-muted-foreground/60" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">
+              {t("page.supplier.comparison.empty")}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("page.supplier.comparison.emptyDesc")}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="font-semibold">{t("page.supplier.comparison.table.rank")}</TableHead>
+                  <TableHead className="font-semibold">{t("page.supplier.comparison.table.supplier")}</TableHead>
+                  <TableHead className="font-semibold">{t("page.supplier.comparison.table.product")}</TableHead>
+                  <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.price")}</TableHead>
+                  <TableHead className="font-semibold text-center">{t("page.supplier.comparison.table.quality")}</TableHead>
+                  <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.leadTime")}</TableHead>
+                  <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.minOrder")}</TableHead>
+                  <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.lastPrice")}</TableHead>
+                  <TableHead className="font-semibold text-center">{t("page.supplier.comparison.table.action")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedSuppliers.map((s, idx) => (
+                  <TableRow key={s.supplierProductId} className={idx === 0 ? "bg-green-50/50" : ""}>
+                    <TableCell>
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                        idx === 0
+                          ? "bg-green-500 text-white"
+                          : idx === 1
+                            ? "bg-blue-500 text-white"
+                            : idx === 2
+                              ? "bg-orange-500 text-white"
+                              : "bg-muted text-muted-foreground"
+                      }`}>
+                        {idx + 1}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-sm">{s.supplierName}</p>
+                        <p className="text-xs text-muted-foreground">{s.supplierPhone || "-"}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm">{s.productName}</TableCell>
+                    <TableCell className="text-right">
+                      <span className={`font-semibold ${idx === 0 ? "text-green-600" : ""}`}>
+                        {formatIDR(s.price)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-1">
+                        {getQualityStars(s.qualityRating)}
+                        <span className="text-xs text-muted-foreground ml-1">
+                          {s.qualityRating || 0}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Clock size={12} className="text-muted-foreground" />
+                        <span className="text-sm">{s.leadTime || 0} hari</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right text-sm">{s.minOrderQty || 1}</TableCell>
+                    <TableCell className="text-right text-sm">{formatIDR(s.lastPrice)}</TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs text-primary"
+                        onClick={() => navigate(`/detail-supplier?id=${s.supplierId}`)}>
+                        {t("page.supplier.comparison.table.detail")}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+};
+
+export default SupplierComparison;

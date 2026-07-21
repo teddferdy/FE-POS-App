@@ -178,6 +178,17 @@ const EditPromoCampaign = () => {
   };
 
   const watchedType = form.watch("type");
+  const watchedDiscountType = form.watch("discountType");
+  const watchedApplicableTo = form.watch("applicableTo");
+
+  const isSpendGet = watchedType === "spend_get";
+  const isBuyXGetY = watchedType === "buy_x_get_y";
+  const isFreeItem = watchedDiscountType === "free_item";
+  const isPercentage = watchedDiscountType === "percentage";
+  const isHappyHour = watchedType === "happy_hour";
+  const isBirthday = watchedType === "birthday";
+  const isManual = watchedType === "manual";
+  const showDiscountSettings = !isManual;
 
   if (isLoading) {
     return (
@@ -278,14 +289,21 @@ const EditPromoCampaign = () => {
           </div>
 
           {/* Discount Settings */}
+          {showDiscountSettings && (
           <div className="bg-card rounded-xl border border-border p-6">
             <h3 className="font-semibold text-foreground mb-4">{t("page.promo.form.discountSettings")}</h3>
+            {isBirthday && (
+              <p className="text-xs text-muted-foreground mb-3">Tipe birthday menggunakan diskon otomatis sesuai rewards</p>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-foreground">{t("page.promo.form.discountType")}</label>
                 <select
                   {...form.register("discountType")}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                  disabled={isBirthday}
+                  className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
+                    isBirthday ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
+                  }`}>
                   <option value="percentage">Percentage</option>
                   <option value="fixed">Fixed Amount</option>
                   <option value="free_item">Free Item</option>
@@ -296,7 +314,11 @@ const EditPromoCampaign = () => {
                 <input
                   type="number"
                   {...form.register("discountValue", { valueAsNumber: true })}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                  disabled={isFreeItem || isBirthday}
+                  className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
+                    isFreeItem || isBirthday ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
+                  }`}
+                  placeholder={isFreeItem || isBirthday ? "N/A" : ""}
                 />
               </div>
               <div>
@@ -304,23 +326,36 @@ const EditPromoCampaign = () => {
                 <input
                   type="number"
                   {...form.register("maxDiscount", { valueAsNumber: true })}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                  disabled={!isPercentage}
+                  className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
+                    !isPercentage ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
+                  }`}
+                  placeholder={!isPercentage ? "N/A" : ""}
                 />
+                {!isPercentage && (
+                  <p className="text-[11px] text-muted-foreground mt-1">Hanya berlaku untuk tipe Percentage</p>
+                )}
               </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">{t("page.promo.form.minPurchase")}</label>
-                <input
-                  type="number"
-                  {...form.register("minPurchase", { valueAsNumber: true })}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-                />
-              </div>
+              {(isSpendGet || isBuyXGetY) && (
+                <div>
+                  <label className="text-sm font-medium text-foreground">{t("page.promo.form.minPurchase")}</label>
+                  <input
+                    type="number"
+                    {...form.register("minPurchase", { valueAsNumber: true })}
+                    className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                  />
+                </div>
+              )}
             </div>
           </div>
+          )}
 
           {/* Schedule */}
           <div className="bg-card rounded-xl border border-border p-6">
             <h3 className="font-semibold text-foreground mb-4">{t("page.promo.form.schedule")}</h3>
+            {isHappyHour && (
+              <p className="text-xs text-muted-foreground mb-3">Atur jam mulai dan akhir untuk periode Happy Hour</p>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-foreground">
@@ -342,7 +377,7 @@ const EditPromoCampaign = () => {
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
                 />
               </div>
-              {watchedType === "happy_hour" && (
+              {isHappyHour && (
                 <>
                   <div>
                     <label className="text-sm font-medium text-foreground">{t("page.promo.form.startTime")}</label>
@@ -368,7 +403,21 @@ const EditPromoCampaign = () => {
           {/* Rules */}
           <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-foreground">{t("page.promo.form.rules")}</h3>
+              <div>
+                <h3 className="font-semibold text-foreground">{t("page.promo.form.rules")}</h3>
+                {isHappyHour && (
+                  <p className="text-xs text-muted-foreground mt-0.5">Aturan waktu sudah ditentukan dari jadwal Happy Hour</p>
+                )}
+                {isBirthday && (
+                  <p className="text-xs text-muted-foreground mt-0.5">Otomas birthday akan aktif otomatis untuk member yang berulang tahun</p>
+                )}
+                {isBuyXGetY && (
+                  <p className="text-xs text-muted-foreground mt-0.5">Tambahkan aturan untuk menentukan produk X dan produk Y</p>
+                )}
+                {isSpendGet && (
+                  <p className="text-xs text-muted-foreground mt-0.5">Tambahkan aturan untuk menentukan threshold belanja</p>
+                )}
+              </div>
               <Button type="button" variant="outline" size="sm" onClick={addRule}>
                 <Plus size={14} className="mr-1" />
                 {t("page.promo.form.addRule")}
@@ -408,7 +457,15 @@ const EditPromoCampaign = () => {
           {/* Rewards */}
           <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-foreground">{t("page.promo.form.rewards")}</h3>
+              <div>
+                <h3 className="font-semibold text-foreground">{t("page.promo.form.rewards")}</h3>
+                {isBirthday && (
+                  <p className="text-xs text-muted-foreground mt-0.5">Tambahkan reward yang akan diberikan di hari ulang tahun member</p>
+                )}
+                {isFreeItem && (
+                  <p className="text-xs text-muted-foreground mt-0.5">Tipe free item, tambahkan produk yang akan diberikan sebagai reward</p>
+                )}
+              </div>
               <Button type="button" variant="outline" size="sm" onClick={addReward}>
                 <Plus size={14} className="mr-1" />
                 {t("page.promo.form.addReward")}
@@ -476,6 +533,27 @@ const EditPromoCampaign = () => {
                   <option value="specific_members">Specific Members</option>
                 </select>
               </div>
+              {watchedApplicableTo === "specific_products" && (
+                <div className="p-3 bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg">
+                  <p className="text-xs text-muted-foreground text-center">
+                    Pilih produk spesifik akan tersedia setelah campaign disimpan
+                  </p>
+                </div>
+              )}
+              {watchedApplicableTo === "specific_categories" && (
+                <div className="p-3 bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg">
+                  <p className="text-xs text-muted-foreground text-center">
+                    Pilih kategori spesifik akan tersedia setelah campaign disimpan
+                  </p>
+                </div>
+              )}
+              {watchedApplicableTo === "specific_members" && (
+                <div className="p-3 bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg">
+                  <p className="text-xs text-muted-foreground text-center">
+                    Pilih member spesifik akan tersedia setelah campaign disimpan
+                  </p>
+                </div>
+              )}
               <div>
                 <label className="text-sm font-medium text-foreground">{t("page.promo.form.maxUsageTotal")}</label>
                 <input
