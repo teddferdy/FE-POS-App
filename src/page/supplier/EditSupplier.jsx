@@ -285,6 +285,7 @@ const EditSupplier = () => {
 
   return (
     <div className="space-y-6">
+      {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       <div>
         <div>
           <PageHeader
