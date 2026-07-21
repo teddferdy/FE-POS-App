@@ -309,8 +309,7 @@ const AddIngredient = () => {
                     )}
                   />
                 )}
-                <div className="grid grid-cols-12 gap-6">
-                  <div className="col-span-12 lg:col-span-8 space-y-6">
+                <div className="space-y-6">
                     <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                       <h3 className="text-base font-semibold text-foreground mb-6">
                         {t("page.ingredient.add.sectionInformasi")}
@@ -472,6 +471,59 @@ const AddIngredient = () => {
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">{convLabel}</p>
                         </div>
+                        <div className="border-t border-border pt-4 mt-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="material-symbols-outlined text-primary text-base">
+                              swap_horiz
+                            </span>
+                            <span className="text-sm font-semibold text-foreground">
+                              {t("page.ingredient.form.sidebarKonversi")}
+                            </span>
+                          </div>
+                          <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
+                            <p>
+                              <span className="text-foreground font-medium">
+                                {t("page.ingredient.form.sidebarUnitPembelian")}
+                              </span>{" "}
+                              {t("page.ingredient.form.sidebarUnitPembelianDesc")}
+                            </p>
+                            <p>
+                              <span className="text-foreground font-medium">
+                                {t("page.ingredient.form.sidebarBaseUnit")}
+                              </span>{" "}
+                              {t("page.ingredient.form.sidebarBaseUnitDesc")}
+                            </p>
+                            <p>
+                              <span className="text-foreground font-medium">
+                                {t("page.ingredient.form.sidebarFaktor")}
+                              </span>{" "}
+                              {t("page.ingredient.form.sidebarFaktorDesc")}
+                            </p>
+                            <div className="bg-background rounded-lg p-3 border border-border mt-2">
+                              <p className="text-foreground font-medium mb-1">
+                                {t("page.ingredient.form.sidebarContoh")}
+                              </p>
+                              <p>
+                                {t("page.ingredient.form.sidebarContohKg")}{" "}
+                                <span className="text-muted-foreground">
+                                  ({t("page.ingredient.form.sidebarContohFaktor")}: 1000)
+                                </span>
+                              </p>
+                              <p>
+                                {t("page.ingredient.form.sidebarContohLusin")}{" "}
+                                <span className="text-muted-foreground">
+                                  ({t("page.ingredient.form.sidebarContohFaktor")}: 12)
+                                </span>
+                              </p>
+                              <p>
+                                {t("page.ingredient.form.sidebarContohKarton")}{" "}
+                                <span className="text-muted-foreground">
+                                  ({t("page.ingredient.form.sidebarContohFaktor")}: 50)
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -556,6 +608,25 @@ const AddIngredient = () => {
                           )}
                         />
                       </div>
+                      <div className="border-t border-border pt-4 mt-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="material-symbols-outlined text-primary text-base">
+                            inventory_2
+                          </span>
+                          <span className="text-sm font-semibold text-foreground">
+                            {t("page.ingredient.form.sidebarManajemenStok")}
+                          </span>
+                        </div>
+                        <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
+                          <p>
+                            {t("page.ingredient.form.sidebarStokDesc")}{" "}
+                            <span className="text-foreground font-medium">
+                              {t("page.ingredient.form.minStockLabel")}
+                            </span>{" "}
+                            {t("page.ingredient.form.sidebarStokDesc2")}
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -611,103 +682,6 @@ const AddIngredient = () => {
                       />
                     </div>
                   </div>
-
-                  <div className="col-span-12 lg:col-span-4 space-y-6">
-                    <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="material-symbols-outlined text-primary text-base">
-                          info
-                        </span>
-                        <span className="text-sm font-semibold text-primary">
-                          {t("page.ingredient.form.tipsTitle")}
-                        </span>
-                      </div>
-                      <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
-                        <p>
-                          {t("page.ingredient.form.tipsText1")}{" "}
-                          <span className="text-foreground font-medium">
-                            &quot;{t("page.ingredient.form.tipsExample")}&quot;
-                          </span>{" "}
-                          {t("page.ingredient.form.tipsText2")}
-                        </p>
-                        <p>{t("page.ingredient.form.tipsText3")}</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="material-symbols-outlined text-primary text-base">
-                          swap_horiz
-                        </span>
-                        <span className="text-sm font-semibold text-foreground">
-                          {t("page.ingredient.form.sidebarKonversi")}
-                        </span>
-                      </div>
-                      <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
-                        <p>
-                          <span className="text-foreground font-medium">
-                            {t("page.ingredient.form.sidebarUnitPembelian")}
-                          </span>{" "}
-                          {t("page.ingredient.form.sidebarUnitPembelianDesc")}
-                        </p>
-                        <p>
-                          <span className="text-foreground font-medium">
-                            {t("page.ingredient.form.sidebarBaseUnit")}
-                          </span>{" "}
-                          {t("page.ingredient.form.sidebarBaseUnitDesc")}
-                        </p>
-                        <p>
-                          <span className="text-foreground font-medium">
-                            {t("page.ingredient.form.sidebarFaktor")}
-                          </span>{" "}
-                          {t("page.ingredient.form.sidebarFaktorDesc")}
-                        </p>
-                        <div className="bg-background rounded-lg p-3 border border-border mt-2">
-                          <p className="text-foreground font-medium mb-1">
-                            {t("page.ingredient.form.sidebarContoh")}
-                          </p>
-                          <p>
-                            {t("page.ingredient.form.sidebarContohKg")}{" "}
-                            <span className="text-muted-foreground">
-                              ({t("page.ingredient.form.sidebarContohFaktor")}: 1000)
-                            </span>
-                          </p>
-                          <p>
-                            {t("page.ingredient.form.sidebarContohLusin")}{" "}
-                            <span className="text-muted-foreground">
-                              ({t("page.ingredient.form.sidebarContohFaktor")}: 12)
-                            </span>
-                          </p>
-                          <p>
-                            {t("page.ingredient.form.sidebarContohKarton")}{" "}
-                            <span className="text-muted-foreground">
-                              ({t("page.ingredient.form.sidebarContohFaktor")}: 50)
-                            </span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="material-symbols-outlined text-primary text-base">
-                          inventory_2
-                        </span>
-                        <span className="text-sm font-semibold text-foreground">
-                          {t("page.ingredient.form.sidebarManajemenStok")}
-                        </span>
-                      </div>
-                      <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
-                        <p>
-                          {t("page.ingredient.form.sidebarStokDesc")}{" "}
-                          <span className="text-foreground font-medium">
-                            {t("page.ingredient.form.minStockLabel")}
-                          </span>{" "}
-                          {t("page.ingredient.form.sidebarStokDesc2")}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="flex items-center justify-between gap-4 pt-6 mt-6 border-t">
@@ -745,6 +719,27 @@ const AddIngredient = () => {
                         ? t("page.ingredient.form.savingButton")
                         : t("page.ingredient.form.saveButton")}
                     </Button>
+                  </div>
+                </div>
+
+                <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 mt-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="material-symbols-outlined text-primary text-base">
+                      info
+                    </span>
+                    <span className="text-sm font-semibold text-primary">
+                      {t("page.ingredient.form.tipsTitle")}
+                    </span>
+                  </div>
+                  <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
+                    <p>
+                      {t("page.ingredient.form.tipsText1")}{" "}
+                      <span className="text-foreground font-medium">
+                        &quot;{t("page.ingredient.form.tipsExample")}&quot;
+                      </span>{" "}
+                      {t("page.ingredient.form.tipsText2")}
+                    </p>
+                    <p>{t("page.ingredient.form.tipsText3")}</p>
                   </div>
                 </div>
               </form>
