@@ -108,9 +108,10 @@ const AddPurchaseOrder = () => {
   const suppliers = suppliersData?.data || [];
 
   const { data: employeesData, isLoading: employeesLoading } = useQuery(
-    ["employees-dropdown"],
-    () => getAllEmployee({ limit: 999, status: "active" }),
+    ["employees-dropdown", selectedStore],
+    () => getAllEmployee({ limit: 999, status: "active", location: selectedStore || undefined }),
     {
+      enabled: !!selectedStore,
       staleTime: 30000
     }
   );
@@ -136,7 +137,13 @@ const AddPurchaseOrder = () => {
   const activeIngredients = ingredients;
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
 
-  const headerReady = !employeesLoading && !locationsLoading;
+  useEffect(() => {
+    setPicSearch("");
+    setPicId(null);
+    setShowPicList(false);
+  }, [selectedStore]);
+
+  const headerReady = !locationsLoading;
   const [ingredientsReady, setIngredientsReady] = useState(false);
   const prevStoreRef = useRef(selectedStore);
   useEffect(() => {
@@ -461,11 +468,28 @@ const AddPurchaseOrder = () => {
                         {t("page.purchaseOrder.add.pic")}{" "}
                         <span className="text-destructive">*</span>
                       </label>
-                      {employees.length === 0 ? (
+                      {!selectedStore ? (
                         <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
                           <div className="text-center">
                             <p className="text-sm font-medium text-foreground">
-                              {t("page.purchaseOrder.add.noEmployee")}
+                              {t("page.purchaseOrder.add.selectStoreFirst") || "Pilih toko terlebih dahulu"}
+                            </p>
+                          </div>
+                        </div>
+                      ) : employeesLoading ? (
+                        <Skeleton className="h-10 w-full" />
+                      ) : employees.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
+                          <div className="text-center">
+                            <p className="text-sm font-medium text-foreground">
+                              {t("page.purchaseOrder.add.noEmployee")}{" "}
+                              {selectedStore && locations.length > 0 && (
+                                <span className="text-muted-foreground">
+                                  {t("page.purchaseOrder.add.inStore", {
+                                    storeName: locations.find((l) => String(l.id) === String(selectedStore))?.name || ""
+                                  })}
+                                </span>
+                              )}
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {t("page.purchaseOrder.add.addEmployeeFirst")}

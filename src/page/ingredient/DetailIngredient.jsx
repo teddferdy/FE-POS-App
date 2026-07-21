@@ -127,7 +127,7 @@ const DetailIngredient = () => {
         </button>
         <span className="text-xs">/</span>
         <button
-          onClick={() => navigate("/ingredient-list")}
+          onClick={() => navigate("/ingredient")}
           className="hover:text-foreground transition-colors">
           {t("page.ingredient.list.title")}
         </button>
@@ -141,7 +141,7 @@ const DetailIngredient = () => {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/ingredient-list")}>
+          <Button variant="outline" size="icon" onClick={() => navigate("/ingredient")}>
             <ArrowLeft size={16} />
           </Button>
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
