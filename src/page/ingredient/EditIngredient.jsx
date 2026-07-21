@@ -97,7 +97,7 @@ const EditIngredient = () => {
 
   const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
     ["suppliers-dropdown", store],
-    () => getAllSupplier({ limit: 999, store: store || undefined })
+    () => getAllSupplier({ limit: 999, store: store || undefined, includeProducts: true })
   );
   const suppliers = suppliersData?.data || [];
 
@@ -146,28 +146,46 @@ const EditIngredient = () => {
 
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
-  useEffect(() => {
-    if (data?.data) {
-      const d = data.data;
-      form.reset({
-        name: d.name || "",
-        unit: d.unit || "pcs",
-        baseUnit: d.baseUnit || d.unit || "pcs",
-        conversionFactor: String(d.conversionFactor ?? 1),
-        stock: d.stock ?? 0,
-        minStock: d.minStock ?? 0,
-        costPrice: d.costPrice ?? 0,
-        supplier: d.supplier ? String(d.supplier) : null,
-        category: d.category ? String(d.category) : null,
-        isActive: d.status !== "inactive",
-        store: d.store ? String(d.store) : null
-      });
-    }
-  }, [data]);
-
+  const watchStore = form.watch("store");
+  const watchSupplier = form.watch("supplier");
   const watchUnit = form.watch("unit");
   const watchBaseUnit = form.watch("baseUnit");
   const watchConversionFactor = form.watch("conversionFactor");
+
+  const selectedSupplier = React.useMemo(
+    () => suppliers.find((s) => String(s.id) === String(watchSupplier)),
+    [suppliers, watchSupplier]
+  );
+
+  const supplierProductOptions = React.useMemo(() => {
+    if (!selectedSupplier?.products) return [];
+    return selectedSupplier.products.map((p) => ({
+      value: p.name,
+      label: p.name
+    }));
+  }, [selectedSupplier]);
+
+  const isSupplierDisabled = isSuperAdmin && !watchStore;
+
+  const isInitialLoad = React.useRef(true);
+
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+    if (isSuperAdmin) {
+      form.setValue("supplier", null);
+      form.setValue("name", "");
+    }
+  }, [watchStore, isSuperAdmin]);
+
+  useEffect(() => {
+    if (isInitialLoad.current) return;
+    if (watchSupplier) {
+      form.setValue("name", "");
+    }
+  }, [watchSupplier]);
 
   useEffect(() => {
     const hint = conversionHints[watchUnit];
@@ -345,10 +363,14 @@ const EditIngredient = () => {
                                 {t("page.ingredient.form.nameLabel")}{" "}
                                 <span className="text-destructive">*</span>
                               </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder={t("page.ingredient.form.namePlaceholder")}
-                                className="h-12"
+                              <Combobox
+                                options={supplierProductOptions}
+                                value={field.value || ""}
+                                onChange={(v) => field.onChange(v || "")}
+                                placeholder={watchSupplier ? t("page.ingredient.form.namePlaceholder") : t("page.ingredient.form.nameDisabledPlaceholder")}
+                                searchPlaceholder={t("page.ingredient.form.nameSearchPlaceholder")}
+                                disabled={!watchSupplier}
+                                loading={suppliersLoading}
                               />
                               <FormMessage />
                             </FormItem>
@@ -393,10 +415,12 @@ const EditIngredient = () => {
                                     .map((s) => ({ value: String(s.id), label: s.name }))}
                                   value={field.value || ""}
                                   onChange={(v) => field.onChange(v || null)}
-                                  placeholder={t("page.ingredient.form.supplierPlaceholder")}
+                                  placeholder={isSupplierDisabled ? t("page.ingredient.form.supplierDisabledPlaceholder") : t("page.ingredient.form.supplierPlaceholder")}
                                   searchPlaceholder={t(
                                     "page.ingredient.form.supplierSearchPlaceholder"
                                   )}
+                                  disabled={isSupplierDisabled}
+                                  loading={suppliersLoading}
                                 />
                                 <FormMessage />
                               </FormItem>
