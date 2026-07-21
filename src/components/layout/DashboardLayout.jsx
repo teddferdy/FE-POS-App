@@ -178,17 +178,16 @@ const DashboardLayout = () => {
   const role = user?.roleType || "";
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
-    enabled: role === "super_admin" && !activeStoreId
+    enabled: role !== "super_admin" && !activeStoreId
   });
   const locations = locationsData?.data || [];
 
   useEffect(() => {
-    if (role === "super_admin" && locations.length > 0 && !activeStoreId) {
-      const first = locations[0];
-      const firstId = first.id || first._id;
-      const firstName = first.name || first.storeName || "";
-      setActiveStore(firstId, firstName);
-    }
+    if (role === "super_admin" || !locations.length || activeStoreId) return;
+    const first = locations[0];
+    const firstId = first.id || first._id;
+    const firstName = first.name || first.storeName || "";
+    setActiveStore(firstId, firstName);
   }, [locations, activeStoreId, role, setActiveStore]);
 
   useEffect(() => {

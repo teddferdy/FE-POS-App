@@ -20,7 +20,11 @@ const pages = [
   { path: "/add-category", label: "Tambah Kategori", keywords: "tambah kategori add category" },
   { path: "/supplier", label: "Supplier", keywords: "supplier pemasok" },
   { path: "/add-supplier", label: "Tambah Supplier", keywords: "tambah supplier add" },
-  { path: "/supplier-comparison", label: "Bandingkan Supplier", keywords: "bandingkan supplier compare" },
+  {
+    path: "/supplier-comparison",
+    label: "Bandingkan Supplier",
+    keywords: "bandingkan supplier compare"
+  },
   { path: "/member-list", label: "Daftar Member", keywords: "member pelanggan customer" },
   { path: "/add-member", label: "Tambah Member", keywords: "tambah member add" },
   { path: "/member-tier", label: "Member Tier", keywords: "member tier level" },

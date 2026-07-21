@@ -13,10 +13,25 @@ axiosInstance.interceptors.request.use(
       req.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Auto-inject activeStore as query param for store-scoped endpoints
-    const activeStore = getCookie("activeStore");
-    if (activeStore && !req.params?.store) {
-      req.params = { ...req.params, store: activeStore };
+    const userRaw = getCookie("user");
+    const user = userRaw ? JSON.parse(decodeURIComponent(userRaw)) : null;
+    const isSuperAdmin = user?.roleType === "super_admin";
+    const urlHasStore = req.url?.includes("store=") || false;
+    const isGet = req.method?.toUpperCase() === "GET";
+
+    if (isGet) {
+      if (isSuperAdmin) {
+        if (urlHasStore) {
+          req.url = req.url.replace(/store=[^&]*/g, "store=");
+        } else {
+          req.params = { ...req.params, store: "" };
+        }
+      } else if (!req.params?.store && !urlHasStore) {
+        const activeStore = getCookie("activeStore");
+        if (activeStore) {
+          req.params = { ...req.params, store: activeStore };
+        }
+      }
     }
 
     return req;
@@ -40,7 +55,8 @@ axiosInstance.interceptors.response.use(
         window.dispatchEvent(new CustomEvent("auth:session-expired"));
       }
       return Promise.reject(err);
-    } else return err;
+    }
+    return Promise.reject(err);
   }
 );
 
