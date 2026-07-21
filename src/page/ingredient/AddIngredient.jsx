@@ -682,7 +682,6 @@ const AddIngredient = () => {
                       />
                     </div>
                   </div>
-                </div>
 
                 <div className="flex items-center justify-between gap-4 pt-6 mt-6 border-t">
                   <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
