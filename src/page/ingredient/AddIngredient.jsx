@@ -80,7 +80,7 @@ const AddIngredient = () => {
   const ingredientFieldLabels = {
     name: "Nama Bahan Baku",
     supplier: "Supplier",
-    store: "Toko",
+    store: "Toko"
   };
 
   const formSchema = z.object({
@@ -138,8 +138,6 @@ const AddIngredient = () => {
       store: null
     }
   });
-
-  const [confirmSaveModal, setConfirmSaveModal] = React.useState(false);
 
   const watchStore = form.watch("store");
   const watchSupplier = form.watch("supplier");
@@ -222,6 +220,8 @@ const AddIngredient = () => {
     });
   };
 
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
+
   const convLabel =
     watchUnit === "kg"
       ? t("page.ingredient.form.convKg")
@@ -287,7 +287,10 @@ const AddIngredient = () => {
         ) : (
           <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
             <Form {...form}>
-              <form onSubmit={(e) => { e.preventDefault(); }}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                }}>
                 {isSuperAdmin && (
                   <FormField
                     control={form.control}
@@ -310,378 +313,388 @@ const AddIngredient = () => {
                   />
                 )}
                 <div className="space-y-6">
-                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                      <h3 className="text-base font-semibold text-foreground mb-6">
-                        {t("page.ingredient.add.sectionInformasi")}
-                      </h3>
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="supplier"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                  {t("page.ingredient.form.supplierLabel")}{" "}
-                                  <span className="text-destructive">*</span>
-                                </FormLabel>
-                                <Combobox
-                                  options={suppliers
-                                    .filter((s) => s.status === "active")
-                                    .map((s) => ({ value: String(s.id), label: s.name }))}
-                                  value={field.value || ""}
-                                  onChange={(v) => field.onChange(v || null)}
-                                  placeholder={isSupplierDisabled ? t("page.ingredient.form.supplierDisabledPlaceholder") : t("page.ingredient.form.supplierPlaceholder")}
-                                  searchPlaceholder={t("page.ingredient.form.supplierSearchPlaceholder")}
-                                  disabled={isSupplierDisabled}
-                                  loading={suppliersLoading}
-                                />
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="category"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                  {t("page.ingredient.form.categoryLabel")}
-                                </FormLabel>
-                                <Combobox
-                                  options={categories
-                                    .filter((c) => c.status === "active")
-                                    .map((c) => ({ value: String(c.id), label: c.name }))}
-                                  value={field.value || ""}
-                                  onChange={(v) => field.onChange(v || null)}
-                                  placeholder={isCategoryDisabled ? t("page.ingredient.form.categoryDisabledPlaceholder") : t("page.ingredient.form.categoryPlaceholder")}
-                                  searchPlaceholder={t("page.ingredient.form.categorySearchPlaceholder")}
-                                  disabled={isCategoryDisabled}
-                                />
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                  {t("page.ingredient.form.nameLabel")}{" "}
-                                  <span className="text-destructive">*</span>
-                                </FormLabel>
-                                <Combobox
-                                  options={supplierProductOptions}
-                                  value={field.value || ""}
-                                  onChange={(v) => field.onChange(v || "")}
-                                  placeholder={isNameDisabled ? t("page.ingredient.form.nameDisabledPlaceholder") : t("page.ingredient.form.namePlaceholder")}
-                                  searchPlaceholder={t("page.ingredient.form.nameSearchPlaceholder")}
-                                  disabled={isNameDisabled}
-                                  loading={suppliersLoading}
-                                />
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                      <h3 className="text-base font-semibold text-foreground mb-6">
-                        {t("page.ingredient.form.sectionKonversi")}
-                      </h3>
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="unit"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                  {t("page.ingredient.form.unitLabel")}
-                                </FormLabel>
-                                <select
-                                  value={field.value}
-                                  onChange={(e) => field.onChange(e.target.value)}
-                                  className="w-full h-12 px-3 rounded-md border border-input bg-background text-sm">
-                                  {unitOptions.map((o) => (
-                                    <option key={o.value} value={o.value}>
-                                      {o.label}
-                                    </option>
-                                  ))}
-                                </select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="baseUnit"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                  {t("page.ingredient.form.baseUnitLabel")}
-                                </FormLabel>
-                                <select
-                                  value={field.value}
-                                  onChange={(e) => field.onChange(e.target.value)}
-                                  className="w-full h-12 px-3 rounded-md border border-input bg-background text-sm">
-                                  {baseUnitOptions.map((o) => (
-                                    <option key={o.value} value={o.value}>
-                                      {o.label}
-                                    </option>
-                                  ))}
-                                </select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="conversionFactor"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                  {t("page.ingredient.form.conversionLabel")}
-                                </FormLabel>
-                                <Input
-                                  type="text"
-                                  inputMode="numeric"
-                                  value={field.value}
-                                  onChange={(e) =>
-                                    field.onChange(
-                                      parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0
-                                    )
-                                  }
-                                  placeholder={t("page.ingredient.form.conversionPlaceholder")}
-                                  className="h-12"
-                                />
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
-                          <p className="text-sm text-muted-foreground">
-                            1 <span className="font-semibold text-foreground">{watchUnit}</span> ={" "}
-                            {watchConversionFactor}{" "}
-                            <span className="font-semibold text-foreground">{watchBaseUnit}</span>
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">{convLabel}</p>
-                        </div>
-                        <div className="border-t border-border pt-4 mt-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="material-symbols-outlined text-primary text-base">
-                              swap_horiz
-                            </span>
-                            <span className="text-sm font-semibold text-foreground">
-                              {t("page.ingredient.form.sidebarKonversi")}
-                            </span>
-                          </div>
-                          <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
-                            <p>
-                              <span className="text-foreground font-medium">
-                                {t("page.ingredient.form.sidebarUnitPembelian")}
-                              </span>{" "}
-                              {t("page.ingredient.form.sidebarUnitPembelianDesc")}
-                            </p>
-                            <p>
-                              <span className="text-foreground font-medium">
-                                {t("page.ingredient.form.sidebarBaseUnit")}
-                              </span>{" "}
-                              {t("page.ingredient.form.sidebarBaseUnitDesc")}
-                            </p>
-                            <p>
-                              <span className="text-foreground font-medium">
-                                {t("page.ingredient.form.sidebarFaktor")}
-                              </span>{" "}
-                              {t("page.ingredient.form.sidebarFaktorDesc")}
-                            </p>
-                            <div className="bg-background rounded-lg p-3 border border-border mt-2">
-                              <p className="text-foreground font-medium mb-1">
-                                {t("page.ingredient.form.sidebarContoh")}
-                              </p>
-                              <p>
-                                {t("page.ingredient.form.sidebarContohKg")}{" "}
-                                <span className="text-muted-foreground">
-                                  ({t("page.ingredient.form.sidebarContohFaktor")}: 1000)
-                                </span>
-                              </p>
-                              <p>
-                                {t("page.ingredient.form.sidebarContohLusin")}{" "}
-                                <span className="text-muted-foreground">
-                                  ({t("page.ingredient.form.sidebarContohFaktor")}: 12)
-                                </span>
-                              </p>
-                              <p>
-                                {t("page.ingredient.form.sidebarContohKarton")}{" "}
-                                <span className="text-muted-foreground">
-                                  ({t("page.ingredient.form.sidebarContohFaktor")}: 50)
-                                </span>
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                      <h3 className="text-base font-semibold text-foreground mb-6">
-                        {t("page.ingredient.form.sectionStok")}
-                      </h3>
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <h3 className="text-base font-semibold text-foreground mb-6">
+                      {t("page.ingredient.add.sectionInformasi")}
+                    </h3>
+                    <div className="space-y-6">
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <FormField
                           control={form.control}
-                          name="stock"
+                          name="supplier"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.ingredient.form.stockLabel")}
+                                {t("page.ingredient.form.supplierLabel")}{" "}
+                                <span className="text-destructive">*</span>
                               </FormLabel>
-                              <Input
-                                type="text"
-                                inputMode="numeric"
-                                className="h-12"
-                                value={field.value}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0
-                                  )
+                              <Combobox
+                                options={suppliers
+                                  .filter((s) => s.status === "active")
+                                  .map((s) => ({ value: String(s.id), label: s.name }))}
+                                value={field.value || ""}
+                                onChange={(v) => field.onChange(v || null)}
+                                placeholder={
+                                  isSupplierDisabled
+                                    ? t("page.ingredient.form.supplierDisabledPlaceholder")
+                                    : t("page.ingredient.form.supplierPlaceholder")
                                 }
+                                searchPlaceholder={t(
+                                  "page.ingredient.form.supplierSearchPlaceholder"
+                                )}
+                                disabled={isSupplierDisabled}
+                                loading={suppliersLoading}
                               />
-                              <p className="text-xs text-muted-foreground">
-                                {t("page.ingredient.form.stockDesc")}
-                              </p>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                         <FormField
                           control={form.control}
-                          name="minStock"
+                          name="category"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.ingredient.form.minStockLabel")}
+                                {t("page.ingredient.form.categoryLabel")}
                               </FormLabel>
-                              <Input
-                                type="text"
-                                inputMode="numeric"
-                                className="h-12"
-                                value={field.value}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0
-                                  )
+                              <Combobox
+                                options={categories
+                                  .filter((c) => c.status === "active")
+                                  .map((c) => ({ value: String(c.id), label: c.name }))}
+                                value={field.value || ""}
+                                onChange={(v) => field.onChange(v || null)}
+                                placeholder={
+                                  isCategoryDisabled
+                                    ? t("page.ingredient.form.categoryDisabledPlaceholder")
+                                    : t("page.ingredient.form.categoryPlaceholder")
                                 }
+                                searchPlaceholder={t(
+                                  "page.ingredient.form.categorySearchPlaceholder"
+                                )}
+                                disabled={isCategoryDisabled}
                               />
-                              <p className="text-xs text-muted-foreground">
-                                {t("page.ingredient.form.minStockDesc")}
-                              </p>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                         <FormField
                           control={form.control}
-                          name="costPrice"
+                          name="name"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.ingredient.form.priceLabel")}
+                                {t("page.ingredient.form.nameLabel")}{" "}
+                                <span className="text-destructive">*</span>
                               </FormLabel>
-                              <Input
-                                type="text"
-                                inputMode="numeric"
-                                className="h-12"
-                                value={field.value ? field.value.toLocaleString("id-ID") : "0"}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0
-                                  )
+                              <Combobox
+                                options={supplierProductOptions}
+                                value={field.value || ""}
+                                onChange={(v) => field.onChange(v || "")}
+                                placeholder={
+                                  isNameDisabled
+                                    ? t("page.ingredient.form.nameDisabledPlaceholder")
+                                    : t("page.ingredient.form.namePlaceholder")
                                 }
+                                searchPlaceholder={t("page.ingredient.form.nameSearchPlaceholder")}
+                                disabled={isNameDisabled}
+                                loading={suppliersLoading}
                               />
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <h3 className="text-base font-semibold text-foreground mb-6">
+                      {t("page.ingredient.form.sectionKonversi")}
+                    </h3>
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="unit"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.ingredient.form.unitLabel")}
+                              </FormLabel>
+                              <select
+                                value={field.value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                className="w-full h-12 px-3 rounded-md border border-input bg-background text-sm">
+                                {unitOptions.map((o) => (
+                                  <option key={o.value} value={o.value}>
+                                    {o.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="baseUnit"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.ingredient.form.baseUnitLabel")}
+                              </FormLabel>
+                              <select
+                                value={field.value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                className="w-full h-12 px-3 rounded-md border border-input bg-background text-sm">
+                                {baseUnitOptions.map((o) => (
+                                  <option key={o.value} value={o.value}>
+                                    {o.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="conversionFactor"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.ingredient.form.conversionLabel")}
+                              </FormLabel>
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                value={field.value}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0
+                                  )
+                                }
+                                placeholder={t("page.ingredient.form.conversionPlaceholder")}
+                                className="h-12"
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+                        <p className="text-sm text-muted-foreground">
+                          1 <span className="font-semibold text-foreground">{watchUnit}</span> ={" "}
+                          {watchConversionFactor}{" "}
+                          <span className="font-semibold text-foreground">{watchBaseUnit}</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">{convLabel}</p>
                       </div>
                       <div className="border-t border-border pt-4 mt-4">
                         <div className="flex items-center gap-2 mb-3">
                           <span className="material-symbols-outlined text-primary text-base">
-                            inventory_2
+                            swap_horiz
                           </span>
                           <span className="text-sm font-semibold text-foreground">
-                            {t("page.ingredient.form.sidebarManajemenStok")}
+                            {t("page.ingredient.form.sidebarKonversi")}
                           </span>
                         </div>
-                        <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
+                        <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
                           <p>
-                            {t("page.ingredient.form.sidebarStokDesc")}{" "}
                             <span className="text-foreground font-medium">
-                              {t("page.ingredient.form.minStockLabel")}
+                              {t("page.ingredient.form.sidebarUnitPembelian")}
                             </span>{" "}
-                            {t("page.ingredient.form.sidebarStokDesc2")}
+                            {t("page.ingredient.form.sidebarUnitPembelianDesc")}
                           </p>
+                          <p>
+                            <span className="text-foreground font-medium">
+                              {t("page.ingredient.form.sidebarBaseUnit")}
+                            </span>{" "}
+                            {t("page.ingredient.form.sidebarBaseUnitDesc")}
+                          </p>
+                          <p>
+                            <span className="text-foreground font-medium">
+                              {t("page.ingredient.form.sidebarFaktor")}
+                            </span>{" "}
+                            {t("page.ingredient.form.sidebarFaktorDesc")}
+                          </p>
+                          <div className="bg-background rounded-lg p-3 border border-border mt-2">
+                            <p className="text-foreground font-medium mb-1">
+                              {t("page.ingredient.form.sidebarContoh")}
+                            </p>
+                            <p>
+                              {t("page.ingredient.form.sidebarContohKg")}{" "}
+                              <span className="text-muted-foreground">
+                                ({t("page.ingredient.form.sidebarContohFaktor")}: 1000)
+                              </span>
+                            </p>
+                            <p>
+                              {t("page.ingredient.form.sidebarContohLusin")}{" "}
+                              <span className="text-muted-foreground">
+                                ({t("page.ingredient.form.sidebarContohFaktor")}: 12)
+                              </span>
+                            </p>
+                            <p>
+                              {t("page.ingredient.form.sidebarContohKarton")}{" "}
+                              <span className="text-muted-foreground">
+                                ({t("page.ingredient.form.sidebarContohFaktor")}: 50)
+                              </span>
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                      <h3 className="text-base font-semibold text-foreground mb-6">
-                        {t("page.ingredient.form.sectionStatus")}
-                      </h3>
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <h3 className="text-base font-semibold text-foreground mb-6">
+                      {t("page.ingredient.form.sectionStok")}
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <FormField
                         control={form.control}
-                        name="isActive"
+                        name="stock"
                         render={({ field }) => (
                           <FormItem>
-                            <div
-                              className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                                field.value
-                                  ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                  : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                              }`}
-                              onClick={(e) => {
-                                if (!e.isTrusted) return;
-                                field.onChange(!field.value);
-                              }}>
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                    field.value
-                                      ? "bg-green-600 text-secondary"
-                                      : "bg-destructive/10 text-destructive"
-                                  }`}>
-                                  {field.value ? (
-                                    <Check size={20} />
-                                  ) : (
-                                    <span className="text-lg font-bold">⏻</span>
-                                  )}
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-foreground">
-                                    {field.value
-                                      ? t("page.ingredient.form.statusActive")
-                                      : t("page.ingredient.form.statusInactive")}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {field.value
-                                      ? t("page.ingredient.form.statusActiveDesc")
-                                      : t("page.ingredient.form.statusInactiveDesc")}
-                                  </p>
-                                </div>
-                              </div>
-                              <Switch checked={field.value} onCheckedChange={field.onChange} />
-                            </div>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.stockLabel")}
+                            </FormLabel>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              className="h-12"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                              }
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              {t("page.ingredient.form.stockDesc")}
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="minStock"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.minStockLabel")}
+                            </FormLabel>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              className="h-12"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                              }
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              {t("page.ingredient.form.minStockDesc")}
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="costPrice"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.priceLabel")}
+                            </FormLabel>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              className="h-12"
+                              value={field.value ? field.value.toLocaleString("id-ID") : "0"}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                              }
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
+                    <div className="border-t border-border pt-4 mt-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="material-symbols-outlined text-primary text-base">
+                          inventory_2
+                        </span>
+                        <span className="text-sm font-semibold text-foreground">
+                          {t("page.ingredient.form.sidebarManajemenStok")}
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
+                        <p>
+                          {t("page.ingredient.form.sidebarStokDesc")}{" "}
+                          <span className="text-foreground font-medium">
+                            {t("page.ingredient.form.minStockLabel")}
+                          </span>{" "}
+                          {t("page.ingredient.form.sidebarStokDesc2")}
+                        </p>
+                      </div>
+                    </div>
                   </div>
+
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <h3 className="text-base font-semibold text-foreground mb-6">
+                      {t("page.ingredient.form.sectionStatus")}
+                    </h3>
+                    <FormField
+                      control={form.control}
+                      name="isActive"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div
+                            className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                              field.value
+                                ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                            }`}
+                            onClick={(e) => {
+                              if (!e.isTrusted) return;
+                              field.onChange(!field.value);
+                            }}>
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                  field.value
+                                    ? "bg-green-600 text-secondary"
+                                    : "bg-destructive/10 text-destructive"
+                                }`}>
+                                {field.value ? (
+                                  <Check size={20} />
+                                ) : (
+                                  <span className="text-lg font-bold">⏻</span>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">
+                                  {field.value
+                                    ? t("page.ingredient.form.statusActive")
+                                    : t("page.ingredient.form.statusInactive")}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {field.value
+                                    ? t("page.ingredient.form.statusActiveDesc")
+                                    : t("page.ingredient.form.statusInactiveDesc")}
+                                </p>
+                              </div>
+                            </div>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
 
                 <div className="flex items-center justify-between gap-4 pt-6 mt-6 border-t">
                   <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
@@ -704,13 +717,18 @@ const AddIngredient = () => {
                           ...(isSuperAdmin && !values.store ? [{ name: "store" }] : []),
                           ...(!values.supplier ? [{ name: "supplier" }] : [])
                         ];
-                        const missing = getMissingFields(values, formSchema, ingredientFieldLabels, extraErrors);
+                        const missing = getMissingFields(
+                          values,
+                          formSchema,
+                          ingredientFieldLabels,
+                          extraErrors
+                        );
                         if (missing.length > 0) {
                           setMissingFieldsList(missing);
                           setMissingFieldsModal(true);
                           return;
                         }
-                        setConfirmSaveModal(true);
+                        handleSubmit(e);
                       }}
                       disabled={mutation.isLoading}>
                       <Save size={16} className="mr-1" />{" "}
@@ -723,9 +741,7 @@ const AddIngredient = () => {
 
                 <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 mt-6">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="material-symbols-outlined text-primary text-base">
-                      info
-                    </span>
+                    <span className="material-symbols-outlined text-primary text-base">info</span>
                     <span className="text-sm font-semibold text-primary">
                       {t("page.ingredient.form.tipsTitle")}
                     </span>
@@ -775,18 +791,7 @@ const AddIngredient = () => {
             onSubmit(values, true);
           }}
         />
-        <Modal
-          type="confirm"
-          open={confirmSaveModal}
-          onOpenChange={setConfirmSaveModal}
-          title="Konfirmasi Simpan"
-          description="Apakah Anda yakin ingin menyimpan data ini?"
-          confirmText="Ya, Simpan"
-          onConfirm={() => {
-            setConfirmSaveModal(false);
-            onSubmit(form.getValues(), false);
-          }}
-        />
+        <Modal {...confirmModal()} />
         <MissingFieldsModal
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}
