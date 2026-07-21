@@ -3815,6 +3815,7 @@
   "page.ingredient.form.cancelButton": "Batal",
   "page.ingredient.form.categoryLabel": "Kategori",
   "page.ingredient.form.categoryPlaceholder": "Pilih kategori",
+  "page.ingredient.form.categoryDisabledPlaceholder": "Pilih supplier terlebih dahulu",
   "page.ingredient.form.categorySearchPlaceholder": "Cari kategori...",
   "page.ingredient.form.convBox": "1 box terkonversi otomatis",
   "page.ingredient.form.convKarton": "1 karton terkonversi otomatis",

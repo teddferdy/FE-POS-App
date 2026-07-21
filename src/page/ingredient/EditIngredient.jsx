@@ -77,7 +77,8 @@ const EditIngredient = () => {
   ];
 
   const ingredientFieldLabels = {
-    name: "Nama Ingredient",
+    name: "Nama Bahan Baku",
+    supplier: "Supplier",
     store: "Toko",
   };
 
@@ -148,6 +149,7 @@ const EditIngredient = () => {
 
   const watchStore = form.watch("store");
   const watchSupplier = form.watch("supplier");
+  const watchCategory = form.watch("category");
   const watchUnit = form.watch("unit");
   const watchBaseUnit = form.watch("baseUnit");
   const watchConversionFactor = form.watch("conversionFactor");
@@ -166,6 +168,8 @@ const EditIngredient = () => {
   }, [selectedSupplier]);
 
   const isSupplierDisabled = isSuperAdmin && !watchStore;
+  const isCategoryDisabled = !watchSupplier;
+  const isNameDisabled = !watchCategory;
 
   const isInitialLoad = React.useRef(true);
 
@@ -176,16 +180,21 @@ const EditIngredient = () => {
     }
     if (isSuperAdmin) {
       form.setValue("supplier", null);
+      form.setValue("category", null);
       form.setValue("name", "");
     }
   }, [watchStore, isSuperAdmin]);
 
   useEffect(() => {
     if (isInitialLoad.current) return;
-    if (watchSupplier) {
-      form.setValue("name", "");
-    }
+    form.setValue("category", null);
+    form.setValue("name", "");
   }, [watchSupplier]);
+
+  useEffect(() => {
+    if (isInitialLoad.current) return;
+    form.setValue("name", "");
+  }, [watchCategory]);
 
   useEffect(() => {
     const hint = conversionHints[watchUnit];
@@ -354,30 +363,31 @@ const EditIngredient = () => {
                         {t("page.ingredient.add.sectionInformasi")}
                       </h3>
                       <div className="space-y-6">
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.ingredient.form.nameLabel")}{" "}
-                                <span className="text-destructive">*</span>
-                              </FormLabel>
-                              <Combobox
-                                options={supplierProductOptions}
-                                value={field.value || ""}
-                                onChange={(v) => field.onChange(v || "")}
-                                placeholder={watchSupplier ? t("page.ingredient.form.namePlaceholder") : t("page.ingredient.form.nameDisabledPlaceholder")}
-                                searchPlaceholder={t("page.ingredient.form.nameSearchPlaceholder")}
-                                disabled={!watchSupplier}
-                                loading={suppliersLoading}
-                              />
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="supplier"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {t("page.ingredient.form.supplierLabel")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <Combobox
+                                  options={suppliers
+                                    .filter((s) => s.status === "active")
+                                    .map((s) => ({ value: String(s.id), label: s.name }))}
+                                  value={field.value || ""}
+                                  onChange={(v) => field.onChange(v || null)}
+                                  placeholder={isSupplierDisabled ? t("page.ingredient.form.supplierDisabledPlaceholder") : t("page.ingredient.form.supplierPlaceholder")}
+                                  searchPlaceholder={t("page.ingredient.form.supplierSearchPlaceholder")}
+                                  disabled={isSupplierDisabled}
+                                  loading={suppliersLoading}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                           <FormField
                             control={form.control}
                             name="category"
@@ -392,10 +402,9 @@ const EditIngredient = () => {
                                     .map((c) => ({ value: String(c.id), label: c.name }))}
                                   value={field.value || ""}
                                   onChange={(v) => field.onChange(v || null)}
-                                  placeholder={t("page.ingredient.form.categoryPlaceholder")}
-                                  searchPlaceholder={t(
-                                    "page.ingredient.form.categorySearchPlaceholder"
-                                  )}
+                                  placeholder={isCategoryDisabled ? t("page.ingredient.form.categoryDisabledPlaceholder") : t("page.ingredient.form.categoryPlaceholder")}
+                                  searchPlaceholder={t("page.ingredient.form.categorySearchPlaceholder")}
+                                  disabled={isCategoryDisabled}
                                 />
                                 <FormMessage />
                               </FormItem>
@@ -403,23 +412,20 @@ const EditIngredient = () => {
                           />
                           <FormField
                             control={form.control}
-                            name="supplier"
+                            name="name"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                  {t("page.ingredient.form.supplierLabel")}
+                                  {t("page.ingredient.form.nameLabel")}{" "}
+                                  <span className="text-destructive">*</span>
                                 </FormLabel>
                                 <Combobox
-                                  options={suppliers
-                                    .filter((s) => s.status === "active")
-                                    .map((s) => ({ value: String(s.id), label: s.name }))}
+                                  options={supplierProductOptions}
                                   value={field.value || ""}
-                                  onChange={(v) => field.onChange(v || null)}
-                                  placeholder={isSupplierDisabled ? t("page.ingredient.form.supplierDisabledPlaceholder") : t("page.ingredient.form.supplierPlaceholder")}
-                                  searchPlaceholder={t(
-                                    "page.ingredient.form.supplierSearchPlaceholder"
-                                  )}
-                                  disabled={isSupplierDisabled}
+                                  onChange={(v) => field.onChange(v || "")}
+                                  placeholder={isNameDisabled ? t("page.ingredient.form.nameDisabledPlaceholder") : t("page.ingredient.form.namePlaceholder")}
+                                  searchPlaceholder={t("page.ingredient.form.nameSearchPlaceholder")}
+                                  disabled={isNameDisabled}
                                   loading={suppliersLoading}
                                 />
                                 <FormMessage />
@@ -768,7 +774,10 @@ const EditIngredient = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         const values = form.getValues();
-                        const extraErrors = isSuperAdmin && !values.store ? [{ name: "store" }] : [];
+                        const extraErrors = [
+                          ...(isSuperAdmin && !values.store ? [{ name: "store" }] : []),
+                          ...(!values.supplier ? [{ name: "supplier" }] : [])
+                        ];
                         const missing = getMissingFields(values, formSchema, ingredientFieldLabels, extraErrors);
                         if (missing.length > 0) {
                           setMissingFieldsList(missing);
