@@ -352,76 +352,65 @@ const GoodsReceiptList = () => {
                   emptyIcon={FileText}
                   toolbar={
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      {isLoadingLocations || isLoading || isFetching ? (
-                        <>
-                          <Skeleton className="h-6 w-32" />
-                          <div className="flex items-center gap-3">
-                            <Skeleton className="h-9 w-48 rounded-md" />
-                            <Skeleton className="h-9 w-32 rounded-md" />
-                            <Skeleton className="h-9 w-64 rounded-md" />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <h4 className="text-base font-semibold text-foreground">
-                            {t("page.goodsReceipt.list.title")}
-                          </h4>
-                          <div className="flex items-center gap-3">
-                            {isSuperAdmin && (
-                              <select
-                                value={storeFilter}
-                                onChange={(e) => {
-                                  setGlobalStoreFilter(e.target.value);
-                                  setPage(1);
-                                }}
-                                className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                                <option value="all">
-                                  {t("page.goodsReceipt.list.filter.allStores")}
-                                </option>
-                                {(locData?.data || []).map((loc) => (
-                                  <option key={loc.id} value={loc.id}>
-                                    {loc.name}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
+                      <>
+                        <h4 className="text-base font-semibold text-foreground">
+                          {t("page.goodsReceipt.list.title")}
+                        </h4>
+                        <div className="flex items-center gap-3">
+                          {isSuperAdmin && (
                             <select
-                              value={statusFilter}
+                              value={storeFilter}
                               onChange={(e) => {
-                                setStatusFilter(e.target.value);
+                                setGlobalStoreFilter(e.target.value);
                                 setPage(1);
                               }}
                               className="h-9 px-3 rounded-md border border-input bg-background text-sm">
                               <option value="all">
-                                {t("page.goodsReceipt.list.filter.allStatuses")}
+                                {t("page.goodsReceipt.list.filter.allStores")}
                               </option>
-                              {Object.keys(statusMap).map((k) => (
-                                <option key={k} value={k}>
-                                  {t(`page.goodsReceipt.list.status.${k}`)}
+                              {(locData?.data || []).map((loc) => (
+                                <option key={loc.id} value={loc.id}>
+                                  {loc.name}
                                 </option>
                               ))}
                             </select>
-                            <SearchInput
-                              value={search}
-                              onChange={(val) => {
-                                setSearch(val);
-                                setPage(1);
-                              }}
-                              placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
-                              isLoading={isFetching}
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleExport}
-                              disabled={exportLoading}
-                              className="gap-1.5">
-                              <Download size={14} />
-                              {exportLoading ? "..." : t("common.export")}
-                            </Button>
-                          </div>
-                        </>
-                      )}
+                          )}
+                          <select
+                            value={statusFilter}
+                            onChange={(e) => {
+                              setStatusFilter(e.target.value);
+                              setPage(1);
+                            }}
+                            className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                            <option value="all">
+                              {t("page.goodsReceipt.list.filter.allStatuses")}
+                            </option>
+                            {Object.keys(statusMap).map((k) => (
+                              <option key={k} value={k}>
+                                {t(`page.goodsReceipt.list.status.${k}`)}
+                              </option>
+                            ))}
+                          </select>
+                          <SearchInput
+                            value={search}
+                            onChange={(val) => {
+                              setSearch(val);
+                              setPage(1);
+                            }}
+                            placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
+                            isLoading={isFetching}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleExport}
+                            disabled={exportLoading}
+                            className="gap-1.5">
+                            <Download size={14} />
+                            {exportLoading ? "..." : t("common.export")}
+                          </Button>
+                        </div>
+                      </>
                     </div>
                   }
                   pagination={{

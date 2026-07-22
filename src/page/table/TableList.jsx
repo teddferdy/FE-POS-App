@@ -385,42 +385,32 @@ const TableList = () => {
                   emptyMessage={t("page.table.list.empty")}
                   toolbar={
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      {isLoadingLocations || isLoading || isFetching ? (
-                        <>
-                          <Skeleton className="h-6 w-32" />
-                          <div className="flex items-center gap-3 w-full md:w-auto">
-                            <Skeleton className="h-9 w-48 rounded-md" />
-                            <Skeleton className="h-9 w-64 rounded-md" />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <h4 className="text-base font-semibold text-foreground">
-                            {t("page.table.list.title")}
-                          </h4>
-                          <div className="flex items-center gap-3 w-full md:w-auto">
-                            <StoreFilter
-                              locations={locData?.data || []}
-                              value={storeFilter}
-                              onChange={(val) => {
-                                setGlobalStoreFilter(val);
-                                setPage(1);
-                              }}
-                              isSuperAdmin={isSuperAdmin}
-                              t={t}
-                            />
-                            <SearchInput
-                              value={search}
-                              onChange={(val) => {
-                                setSearch(val);
-                                setPage(1);
-                              }}
-                              placeholder={t("page.table.list.search")}
-                              isLoading={isFetching}
-                            />
-                          </div>
-                        </>
-                      )}
+                      <>
+                        <h4 className="text-base font-semibold text-foreground">
+                          {t("page.table.list.title")}
+                        </h4>
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                          <StoreFilter
+                            locations={locData?.data || []}
+                            value={storeFilter}
+                            onChange={(val) => {
+                              setGlobalStoreFilter(val);
+                              setPage(1);
+                            }}
+                            isSuperAdmin={isSuperAdmin}
+                            t={t}
+                          />
+                          <SearchInput
+                            value={search}
+                            onChange={(val) => {
+                              setSearch(val);
+                              setPage(1);
+                            }}
+                            placeholder={t("page.table.list.search")}
+                            isLoading={isFetching}
+                          />
+                        </div>
+                      </>
                     </div>
                   }
                   pagination={{

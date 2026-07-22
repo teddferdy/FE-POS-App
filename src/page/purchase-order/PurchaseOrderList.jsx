@@ -715,78 +715,67 @@ const PurchaseOrderList = () => {
                 emptyIcon={Package}
                 toolbar={
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                    {isLoadingLocations || isLoading || isFetching ? (
-                      <>
-                        <Skeleton className="h-6 w-32" />
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Skeleton className="h-9 w-48 rounded-md" />
-                          <Skeleton className="h-9 w-32 rounded-md" />
-                          <Skeleton className="h-9 w-64 rounded-md" />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                          <h4 className="text-base font-semibold text-foreground shrink-0">
-                            {t("page.purchaseOrder.list.title")}
-                          </h4>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 h-9 lg:hidden"
-                            onClick={() => setShowFilters(!showFilters)}>
-                            <span className="material-symbols-outlined text-base">filter_list</span>
-                            {showFilters ? "Tutup" : "Filter"}
-                          </Button>
-                        </div>
-                        <div
-                          className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                          {isSuperAdmin && (
-                            <StoreFilter
-                              locations={locData?.data || []}
-                              value={storeFilter}
-                              onChange={(v) => {
-                                setGlobalStoreFilter(v);
-                                setPage(1);
-                              }}
-                              isSuperAdmin={isSuperAdmin}
-                              t={t}
-                            />
-                          )}
-                          <select
-                            value={statusFilter}
-                            onChange={(e) => {
-                              setStatusFilter(e.target.value);
+                    <>
+                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                        <h4 className="text-base font-semibold text-foreground shrink-0">
+                          {t("page.purchaseOrder.list.title")}
+                        </h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 h-9 lg:hidden"
+                          onClick={() => setShowFilters(!showFilters)}>
+                          <span className="material-symbols-outlined text-base">filter_list</span>
+                          {showFilters ? "Tutup" : "Filter"}
+                        </Button>
+                      </div>
+                      <div
+                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                        {isSuperAdmin && (
+                          <StoreFilter
+                            locations={locData?.data || []}
+                            value={storeFilter}
+                            onChange={(v) => {
+                              setGlobalStoreFilter(v);
                               setPage(1);
                             }}
-                            className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                            <option value="all">{t("common.all")}</option>
-                            <option value="draft">{t("page.purchaseOrder.status.draft")}</option>
-                            <option value="pending">
-                              {t("page.purchaseOrder.status.pending")}
-                            </option>
-                            <option value="ordered">
-                              {t("page.purchaseOrder.status.ordered")}
-                            </option>
-                            <option value="received">
-                              {t("page.purchaseOrder.status.received")}
-                            </option>
-                            <option value="cancelled">
-                              {t("page.purchaseOrder.status.cancelled")}
-                            </option>
-                          </select>
-                          <SearchInput
-                            value={search}
-                            onChange={(val) => {
-                              setSearch(val);
-                              setPage(1);
-                            }}
-                            placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
-                            isLoading={isFetching}
+                            isSuperAdmin={isSuperAdmin}
+                            t={t}
                           />
-                        </div>
-                      </>
-                    )}
+                        )}
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => {
+                            setStatusFilter(e.target.value);
+                            setPage(1);
+                          }}
+                          className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                          <option value="all">{t("common.all")}</option>
+                          <option value="draft">{t("page.purchaseOrder.status.draft")}</option>
+                          <option value="pending">
+                            {t("page.purchaseOrder.status.pending")}
+                          </option>
+                          <option value="ordered">
+                            {t("page.purchaseOrder.status.ordered")}
+                          </option>
+                          <option value="received">
+                            {t("page.purchaseOrder.status.received")}
+                          </option>
+                          <option value="cancelled">
+                            {t("page.purchaseOrder.status.cancelled")}
+                          </option>
+                        </select>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
+                          isLoading={isFetching}
+                        />
+                      </div>
+                    </>
                   </div>
                 }
                 pagination={{

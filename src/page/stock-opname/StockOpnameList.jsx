@@ -451,80 +451,69 @@ const StockOpnameList = () => {
                 }}
                 toolbar={
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                    {isLoadingLocations || isLoading || isFetching ? (
-                      <>
-                        <Skeleton className="h-6 w-32" />
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Skeleton className="h-9 w-48 rounded-md" />
-                          <Skeleton className="h-9 w-36 rounded-md" />
-                          <Skeleton className="h-9 w-64 rounded-md" />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                          <h4 className="text-base font-semibold text-foreground shrink-0">
-                            {t("page.stockOpname.list.title")}
-                          </h4>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 h-9 lg:hidden"
-                            onClick={() => setShowFilters(!showFilters)}>
-                            <span className="material-symbols-outlined text-base">filter_list</span>
-                            {showFilters ? "Tutup" : "Filter"}
-                          </Button>
-                        </div>
-                        <div
-                          className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {isSuperAdmin && (
-                              <StoreFilter
-                                locations={locData?.data || []}
-                                value={storeFilter}
-                                onChange={(val) => {
-                                  setGlobalStoreFilter(val);
-                                  setPage(1);
-                                }}
-                                isSuperAdmin={isSuperAdmin}
-                                t={t}
-                              />
-                            )}
-                            <div className="relative">
-                              <select
-                                value={statusFilter}
-                                onChange={(e) => {
-                                  setStatusFilter(e.target.value);
-                                  setPage(1);
-                                }}
-                                className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                                <option value="all">{t("page.stockOpname.list.allStatus")}</option>
-                                <option value="draft">{t("page.stockOpname.status.draft")}</option>
-                                <option value="completed">
-                                  {t("page.stockOpname.status.completed")}
-                                </option>
-                                <option value="cancelled">
-                                  {t("page.stockOpname.status.cancelled")}
-                                </option>
-                              </select>
-                              <ChevronLeft
-                                size={14}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
-                              />
-                            </div>
+                    <>
+                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                        <h4 className="text-base font-semibold text-foreground shrink-0">
+                          {t("page.stockOpname.list.title")}
+                        </h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 h-9 lg:hidden"
+                          onClick={() => setShowFilters(!showFilters)}>
+                          <span className="material-symbols-outlined text-base">filter_list</span>
+                          {showFilters ? "Tutup" : "Filter"}
+                        </Button>
+                      </div>
+                      <div
+                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {isSuperAdmin && (
+                            <StoreFilter
+                              locations={locData?.data || []}
+                              value={storeFilter}
+                              onChange={(val) => {
+                                setGlobalStoreFilter(val);
+                                setPage(1);
+                              }}
+                              isSuperAdmin={isSuperAdmin}
+                              t={t}
+                            />
+                          )}
+                          <div className="relative">
+                            <select
+                              value={statusFilter}
+                              onChange={(e) => {
+                                setStatusFilter(e.target.value);
+                                setPage(1);
+                              }}
+                              className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
+                              <option value="all">{t("page.stockOpname.list.allStatus")}</option>
+                              <option value="draft">{t("page.stockOpname.status.draft")}</option>
+                              <option value="completed">
+                                {t("page.stockOpname.status.completed")}
+                              </option>
+                              <option value="cancelled">
+                                {t("page.stockOpname.status.cancelled")}
+                              </option>
+                            </select>
+                            <ChevronLeft
+                              size={14}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
+                            />
                           </div>
-                          <SearchInput
-                            value={search}
-                            onChange={(val) => {
-                              setSearch(val);
-                              setPage(1);
-                            }}
-                            placeholder={t("page.stockOpname.list.searchPlaceholder")}
-                            isLoading={isFetching}
-                          />
                         </div>
-                      </>
-                    )}
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.stockOpname.list.searchPlaceholder")}
+                          isLoading={isFetching}
+                        />
+                      </div>
+                    </>
                   </div>
                 }
                 pagination={{

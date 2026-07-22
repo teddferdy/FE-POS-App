@@ -579,101 +579,89 @@ const ProductList = () => {
               emptyIcon={Package}
               toolbar={
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                  {isLoading || isFetching ? (
-                    <>
-                      <Skeleton className="h-6 w-32" />
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Skeleton className="h-9 w-48 rounded-md" />
-                        <Skeleton className="h-9 w-64 rounded-md" />
-                        <Skeleton className="h-9 w-32 rounded-md" />
-                        <Skeleton className="h-9 w-32 rounded-md" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                        <h4 className="text-base font-semibold text-foreground shrink-0">
-                          {t("page.product.list.title")}
-                        </h4>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 h-9 lg:hidden"
-                          onClick={() => setShowFilters(!showFilters)}>
-                          <Filter size={18} />
-                          {showFilters ? "Tutup" : "Filter"}
-                        </Button>
-                      </div>
-                      <div
-                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                        <StoreFilter
-                          locations={locData?.data || []}
-                          value={storeFilter}
-                          onChange={(v) => {
-                            setGlobalStoreFilter(v);
-                            setPage(1);
-                          }}
-                          isSuperAdmin={isSuperAdmin}
-                          t={t}
-                        />
-                        <select
-                          value={statusFilter}
-                          onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="all">{t("common.all")}</option>
-                          <option value="active">{t("common.active")}</option>
-                          <option value="inactive">{t("common.inactive")}</option>
-                          <option value="draft">{t("common.draft")}</option>
-                        </select>
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => {
-                            setSearch(val);
-                            setPage(1);
-                          }}
-                          placeholder={t("page.product.list.searchSku")}
-                          isLoading={isFetching}
-                        />
-                        <select
-                          value={categoryFilter}
-                          onChange={(e) => {
-                            setCategoryFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="">
-                            {t("common.all")} {t("page.product.table.category")}
+                  <>
+                    <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                      <h4 className="text-base font-semibold text-foreground shrink-0">
+                        {t("page.product.list.title")}
+                      </h4>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 h-9 lg:hidden"
+                        onClick={() => setShowFilters(!showFilters)}>
+                        <Filter size={18} />
+                        {showFilters ? "Tutup" : "Filter"}
+                      </Button>
+                    </div>
+                    <div
+                      className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                      <StoreFilter
+                        locations={locData?.data || []}
+                        value={storeFilter}
+                        onChange={(v) => {
+                          setGlobalStoreFilter(v);
+                          setPage(1);
+                        }}
+                        isSuperAdmin={isSuperAdmin}
+                        t={t}
+                      />
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                          setStatusFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                        <option value="all">{t("common.all")}</option>
+                        <option value="active">{t("common.active")}</option>
+                        <option value="inactive">{t("common.inactive")}</option>
+                        <option value="draft">{t("common.draft")}</option>
+                      </select>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.product.list.searchSku")}
+                        isLoading={isFetching}
+                      />
+                      <select
+                        value={categoryFilter}
+                        onChange={(e) => {
+                          setCategoryFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                        <option value="">
+                          {t("common.all")} {t("page.product.table.category")}
+                        </option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.name}>
+                            {cat.name}
                           </option>
-                          {categories.map((cat) => (
-                            <option key={cat.id} value={cat.name}>
-                              {cat.name}
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={sortFilter}
-                          onChange={(e) => {
-                            setSortFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="">{t("page.product.list.filter.newest")}</option>
-                          <option value="price-asc">
-                            {t("page.product.list.filter.priceLowHigh")}
-                          </option>
-                          <option value="price-desc">
-                            {t("page.product.list.filter.priceHighLow")}
-                          </option>
-                          <option value="stock-asc">
-                            {t("page.product.list.filter.stockLow")}
-                          </option>
-                        </select>
-                      </div>
-                    </>
-                  )}
+                        ))}
+                      </select>
+                      <select
+                        value={sortFilter}
+                        onChange={(e) => {
+                          setSortFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                        <option value="">{t("page.product.list.filter.newest")}</option>
+                        <option value="price-asc">
+                          {t("page.product.list.filter.priceLowHigh")}
+                        </option>
+                        <option value="price-desc">
+                          {t("page.product.list.filter.priceHighLow")}
+                        </option>
+                        <option value="stock-asc">
+                          {t("page.product.list.filter.stockLow")}
+                        </option>
+                      </select>
+                    </div>
+                  </>
                 </div>
               }
               pagination={{

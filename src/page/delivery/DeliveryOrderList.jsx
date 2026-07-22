@@ -259,16 +259,6 @@ const DeliveryOrderList = () => {
         emptyIcon={Package}
         toolbar={
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-            {isLoading || isFetching ? (
-              <>
-                <Skeleton className="h-6 w-32" />
-                <div className="flex flex-wrap items-center gap-2">
-                  <Skeleton className="h-9 w-48 rounded-md" />
-                  <Skeleton className="h-9 w-32 rounded-md" />
-                  <Skeleton className="h-9 w-32 rounded-md" />
-                </div>
-              </>
-            ) : (
               <>
                 <h4 className="text-base font-semibold text-foreground shrink-0">
                   {t("page.delivery.list.title")}
@@ -308,7 +298,6 @@ const DeliveryOrderList = () => {
                   />
                 </div>
               </>
-            )}
           </div>
         }
         pagination={{

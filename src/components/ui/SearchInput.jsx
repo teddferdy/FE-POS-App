@@ -15,12 +15,17 @@ export function SearchInput({
   const debouncedValue = useDebounce(localValue, debounceDelay);
   const inputRef = useRef(null);
   const onChangeRef = useRef(onChange);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
 
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     onChangeRef.current(debouncedValue);
   }, [debouncedValue]);
 

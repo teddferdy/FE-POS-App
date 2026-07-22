@@ -398,61 +398,50 @@ const LocationList = () => {
                 emptyMessage={t("page.location.list.empty")}
                 toolbar={
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                    {isLoading || isFetching ? (
-                      <>
-                        <Skeleton className="h-6 w-32" />
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Skeleton className="h-9 w-48 rounded-md" />
-                          <Skeleton className="h-9 w-32 rounded-md" />
-                          <Skeleton className="h-9 w-32 rounded-md" />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                          <h4 className="text-base font-semibold text-foreground shrink-0">
-                            {t("page.location.list.title")}
-                          </h4>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 h-9 lg:hidden"
-                            onClick={() => setShowFilters(!showFilters)}>
-                            <span className="material-symbols-outlined text-base">filter_list</span>
-                            {showFilters ? "Tutup" : "Filter"}
-                          </Button>
-                        </div>
-                        <div
-                          className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                          <SearchInput
-                            value={search}
-                            onChange={setSearch}
-                            placeholder={t("page.location.list.search")}
-                            isLoading={isFetching}
-                          />
-                          <select
-                            value={statusFilter}
-                            onChange={(e) => {
-                              setStatusFilter(e.target.value);
-                              setPage(1);
-                            }}
-                            className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                            <option value="all">{t("common.all")}</option>
-                            <option value="active">{t("common.active")}</option>
-                            <option value="inactive">{t("common.inactive")}</option>
-                            <option value="draft">{t("common.draft")}</option>
-                          </select>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-9 gap-1.5"
-                            onClick={() => navigate("/store-geospatial")}>
-                            <Map size={14} />
-                            {t("page.location.button.viewMap")}
-                          </Button>
-                        </div>
-                      </>
-                    )}
+                    <>
+                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                        <h4 className="text-base font-semibold text-foreground shrink-0">
+                          {t("page.location.list.title")}
+                        </h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 h-9 lg:hidden"
+                          onClick={() => setShowFilters(!showFilters)}>
+                          <span className="material-symbols-outlined text-base">filter_list</span>
+                          {showFilters ? "Tutup" : "Filter"}
+                        </Button>
+                      </div>
+                      <div
+                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                        <SearchInput
+                          value={search}
+                          onChange={setSearch}
+                          placeholder={t("page.location.list.search")}
+                          isLoading={isFetching}
+                        />
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => {
+                            setStatusFilter(e.target.value);
+                            setPage(1);
+                          }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="all">{t("common.all")}</option>
+                          <option value="active">{t("common.active")}</option>
+                          <option value="inactive">{t("common.inactive")}</option>
+                          <option value="draft">{t("common.draft")}</option>
+                        </select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 gap-1.5"
+                          onClick={() => navigate("/store-geospatial")}>
+                          <Map size={14} />
+                          {t("page.location.button.viewMap")}
+                        </Button>
+                      </div>
+                    </>
                   </div>
                 }
                 pagination={{

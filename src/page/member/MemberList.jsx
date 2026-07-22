@@ -552,37 +552,29 @@ const MemberList = () => {
                     isLoading={isLoading}
                     emptyMessage={t("page.member.list.empty")}
                     toolbar={
-                      isLoadingLocations || isLoading ? (
-                        <div className="flex items-center justify-between w-full">
-                          <Skeleton className="h-6 w-32" />
-                          <Skeleton className="h-9 w-48 rounded-md" />
-                          <Skeleton className="h-9 w-72 rounded-md" />
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between w-full">
-                          <h4 className="text-base font-semibold text-foreground">
-                            {t("page.member.list.title")}
-                          </h4>
-                          {isSuperAdmin && (
-                            <StoreFilter
-                              locations={locData?.data || []}
-                              value={storeFilter}
-                              onChange={(v) => {
-                                setGlobalStoreFilter(v);
-                                setPage(1);
-                              }}
-                              isSuperAdmin={isSuperAdmin}
-                              t={t}
-                            />
-                          )}
-                          <SearchInput
-                            value={search}
-                            onChange={(val) => { setSearch(val); setPage(1); }}
-                            placeholder={t("page.member.list.search")}
-                            isLoading={isFetching}
-                          />
-                        </div>
-                      )
+                    <div className="flex items-center justify-between w-full">
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.member.list.title")}
+                      </h4>
+                      {isSuperAdmin && (
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => {
+                            setGlobalStoreFilter(v);
+                            setPage(1);
+                          }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                      )}
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => { setSearch(val); setPage(1); }}
+                        placeholder={t("page.member.list.search")}
+                        isLoading={isFetching}
+                      />
+                    </div>
                     }
                     pagination={{
                       page,
