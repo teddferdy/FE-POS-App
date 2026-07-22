@@ -102,7 +102,7 @@ const CategoryList = () => {
               : ""
             : user?.store || "")
       }),
-    {}
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteCategory, {

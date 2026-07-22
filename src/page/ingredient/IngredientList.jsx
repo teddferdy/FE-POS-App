@@ -71,7 +71,7 @@ const IngredientList = () => {
         limit: pageSize,
         status: statusFilter
       }),
-    { }
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteIngredient, {

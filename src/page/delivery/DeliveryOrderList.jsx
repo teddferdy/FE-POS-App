@@ -87,7 +87,7 @@ const DeliveryOrderList = () => {
         status: statusFilter,
         source: sourceFilter
       }),
-    { retry: 1 }
+    { retry: 1, keepPreviousData: true }
   );
 
   const cancelMutation = useMutation(

@@ -63,6 +63,7 @@ const BundleList = () => {
         store: storeFilter !== "all" ? storeFilter : undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,
         search: search || undefined
+      , { keepPreviousData: true }
       })
   );
 

@@ -102,7 +102,7 @@ const DriverList = () => {
         search,
         status: statusFilter
       }),
-    { retry: 1 }
+    { retry: 1, keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteDriver, {

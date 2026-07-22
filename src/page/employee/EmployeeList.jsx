@@ -53,6 +53,7 @@ const EmployeeList = () => {
     ["employees", page, limit, search, locationFilter, positionFilter],
     () =>
       getAllEmployee({ page, limit, search, location: locationFilter, position: positionFilter }),
+    { keepPreviousData: true }
   );
 
   const { data: locData } = useQuery(["locations-employees"], () => getAllLocation(), {

@@ -53,7 +53,7 @@ const LocationList = () => {
         search: search || undefined,
         statusLocation: statusFilter
       }),
-    { retry: 1 }
+    { retry: 1, keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteLocation, {

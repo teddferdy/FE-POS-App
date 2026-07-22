@@ -102,7 +102,7 @@ const QueueList = () => {
         status: statusFilter,
         priority: priorityFilter
       }),
-    { retry: 1 }
+    { retry: 1, keepPreviousData: true }
   );
 
   const { data: statsData } = useQuery(

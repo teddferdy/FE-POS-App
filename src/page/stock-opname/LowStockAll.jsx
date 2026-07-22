@@ -55,6 +55,7 @@ const LowStockAll = () => {
         store: storeFilter !== "all" ? storeFilter : undefined,
         type: typeFilter !== "all" ? typeFilter : undefined,
         search: search || undefined
+      , { keepPreviousData: true }
       })
   );
 

@@ -66,7 +66,7 @@ const GoodsReceiptList = () => {
         status: statusFilter !== "all" ? statusFilter : undefined,
         store: storeFilter !== "all" ? storeFilter : undefined
       }),
-    { }
+    { keepPreviousData: true }
   );
 
   const items = data?.data || [];

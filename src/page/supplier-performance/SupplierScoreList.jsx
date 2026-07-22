@@ -87,7 +87,7 @@ const SupplierScoreList = () => {
         period: periodFilter,
         grade: gradeFilter
       }),
-    { retry: 1 }
+    { retry: 1, keepPreviousData: true }
   );
 
   const { data: topData } = useQuery(

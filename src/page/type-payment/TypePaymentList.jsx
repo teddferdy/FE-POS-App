@@ -77,7 +77,7 @@ const TypePaymentList = () => {
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["type-payments", page, limit, search, statusFilter, effectiveStore],
     () => getAllTypePaymentListActive({ page: 1, limit: 9999, store: effectiveStore }),
-    { }
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteTypePayment, {

@@ -71,7 +71,7 @@ const DepartmentList = () => {
   const { data, isLoading, isFetching } = useQuery(
     ["departments", page, limit, search, statusFilter],
     () => getAllDepartmentTable({ page, limit, statusRole: statusFilter, search }),
-    { }
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteDepartment, {

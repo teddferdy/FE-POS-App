@@ -94,6 +94,7 @@ const ProductionOrderList = () => {
         limit,
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
+      , { keepPreviousData: true }
       })
   );
 

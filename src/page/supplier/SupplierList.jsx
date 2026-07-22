@@ -79,7 +79,7 @@ const SupplierList = () => {
           : user?.store || "",
         status: statusFilter
       }),
-    {}
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteSupplier, {

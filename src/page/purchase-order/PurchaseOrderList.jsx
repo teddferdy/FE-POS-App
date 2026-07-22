@@ -168,7 +168,8 @@ const PurchaseOrderList = () => {
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["purchase-orders", page, limit, search, storeFilter, statusFilter],
     () =>
-      getAllPurchaseOrder({ location: locationParam, page, limit, search, status: statusFilter })
+      getAllPurchaseOrder({ location: locationParam, page, limit, search, status: statusFilter }),
+    { keepPreviousData: true }
   );
 
   const returnMutation = useMutation(

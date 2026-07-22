@@ -62,6 +62,7 @@ const AccountsReceivableList = () => {
             ? storeFilter
             : ""
           : user?.store
+      , { keepPreviousData: true }
       })
   );
 

@@ -63,7 +63,7 @@ const DiscountList = () => {
   const { data, isLoading, isFetching } = useQuery(
     ["discounts", page, limit, search, storeFilter, statusFilter],
     () => getAllDiscount({ location: locationParam, page, limit, status: statusFilter }),
-    { }
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteDiscount, {

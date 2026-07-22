@@ -82,7 +82,8 @@ const PositionList = () => {
       limit,
       statusRole: statusFilter,
       search
-    })
+    }),
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deletePosition, {

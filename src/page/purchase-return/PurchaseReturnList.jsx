@@ -66,6 +66,7 @@ const PurchaseReturnList = () => {
         search: search || undefined,
         store: locationParam,
         status: statusFilter !== "all" ? statusFilter : undefined
+      , { keepPreviousData: true }
       })
   );
 

@@ -104,7 +104,7 @@ const MemberList = () => {
         tier: tierFilter != null ? tierFilter : undefined,
         statusMember: statusFilter || undefined
       }),
-    {}
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteMember, {

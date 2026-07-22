@@ -85,7 +85,8 @@ const TableList = () => {
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["tables", locationParam, page, limit, search],
-    () => getTablesByStore({ location: locationParam, page, limit, search })
+    () => getTablesByStore({ location: locationParam, page, limit, search }),
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteTable, {

@@ -98,7 +98,7 @@ const ProductList = () => {
         category: categoryFilter,
         sort: sortFilter
       }),
-    {}
+    { keepPreviousData: true }
   );
 
   const { data: categoriesData } = useQuery(

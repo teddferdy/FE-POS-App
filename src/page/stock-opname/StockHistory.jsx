@@ -77,6 +77,7 @@ const StockHistory = () => {
         referenceType: referenceFilter || undefined,
         startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
         endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined
+      , { keepPreviousData: true }
       })
   );
 

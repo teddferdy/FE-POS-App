@@ -51,7 +51,7 @@ const ExpenseList = () => {
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
-    { }
+    { keepPreviousData: true }
   );
 
   const approveMutation = useMutation(approveExpense, {

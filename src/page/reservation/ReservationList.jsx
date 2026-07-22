@@ -98,6 +98,7 @@ const ReservationList = () => {
         date: dateFilter ? format(dateFilter, "yyyy-MM-dd") : undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,
         store: storeFilter !== "all" ? storeFilter : undefined
+      , { keepPreviousData: true }
       })
   );
 

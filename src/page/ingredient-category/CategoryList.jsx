@@ -72,7 +72,8 @@ const CategoryList = () => {
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["ingredient-categories", page, search, statusFilter],
-    () => getAllIngredientCategoryTable({ page, limit, search, status: statusFilter })
+    () => getAllIngredientCategoryTable({ page, limit, search, status: statusFilter }),
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteIngredientCategory, {

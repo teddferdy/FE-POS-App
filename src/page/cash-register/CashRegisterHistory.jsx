@@ -45,7 +45,7 @@ const CashRegisterHistory = () => {
         search: search || undefined,
         store: storeFilter === "all" ? undefined : storeFilter
       }),
-    {}
+    { keepPreviousData: true }
   );
 
   const items = data?.data || [];

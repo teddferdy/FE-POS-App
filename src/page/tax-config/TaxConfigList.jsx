@@ -74,7 +74,8 @@ const TaxConfigList = () => {
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["tax-configs", page, limit, search, statusFilter],
-    () => getAllTaxConfig({ location: locationParam, page, limit, search, status: statusFilter })
+    () => getAllTaxConfig({ location: locationParam, page, limit, search, status: statusFilter }),
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteTaxConfig, {

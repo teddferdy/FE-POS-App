@@ -105,7 +105,7 @@ const PromoCampaignList = () => {
         status: statusFilter,
         type: typeFilter
       }),
-    { retry: 1 }
+    { retry: 1, keepPreviousData: true }
   );
 
   const { data: statsData } = useQuery(

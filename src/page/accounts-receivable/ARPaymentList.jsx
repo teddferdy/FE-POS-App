@@ -33,7 +33,7 @@ const ARPaymentList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["ar-payment-list", page, limit, statusFilter],
     () => getARList({ page, limit, status: statusFilter || undefined }),
-    {}
+    { keepPreviousData: true }
   );
 
   const { data: agingData } = useQuery(["ar-aging-payment"], () => getARAging(), {
