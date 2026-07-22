@@ -2,7 +2,7 @@ import { axiosInstance } from ".";
 
 export const getAllShift = async ({ store, page, limit, statusShift }) => {
   const { data, status } = await axiosInstance.get(
-    `/shift/get-shift?store=${store}&page=${page}&limit=${limit}&status=${statusShift}`
+    `/shift/get-shift?store=${store}&page=${page}&pageSize=${limit}&status=${statusShift}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

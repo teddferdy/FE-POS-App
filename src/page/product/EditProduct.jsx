@@ -85,7 +85,8 @@ const EditProduct = () => {
     nameProduct: "Nama Produk",
     category: "Kategori",
     price: "Harga",
-    store: "Toko"
+    store: "Toko",
+    estimationTime: "Estimasi Waktu"
   };
 
   const navigate = useNavigate();
@@ -202,6 +203,7 @@ const EditProduct = () => {
       conversionFactor: z.coerce.number().min(1).default(1),
       point: z.coerce.number().min(0).optional().or(z.literal("")),
       redeemPoints: z.coerce.number().min(0).optional().or(z.literal("")),
+      estimationTime: z.coerce.number().min(0).optional().or(z.literal("")),
       status: z.boolean().default(true),
       isAvailable: z.boolean().default(true),
       isOption: z.boolean().default(false),
@@ -230,6 +232,7 @@ const EditProduct = () => {
       conversionFactor: 1,
       point: "",
       redeemPoints: "",
+      estimationTime: "",
       status: true,
       isAvailable: true,
       isOption: false,
@@ -273,6 +276,7 @@ const EditProduct = () => {
         conversionFactor: product.conversionFactor ?? 1,
         point: product.point ?? "",
         redeemPoints: product.redeemPoints ?? "",
+        estimationTime: product.estimationTime ?? "",
         status: product.status === "active" || product.status === true,
         isAvailable: product.isAvailable ?? true,
         isOption: !!product.isOption,
@@ -593,6 +597,7 @@ const EditProduct = () => {
     payload.append("conversionFactor", values.conversionFactor || 1);
     if (values.point) payload.append("point", values.point);
     if (values.redeemPoints) payload.append("redeemPoints", values.redeemPoints);
+    if (values.estimationTime) payload.append("estimationTime", values.estimationTime);
     if (values.description) payload.append("description", values.description);
     payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
     payload.append("isAvailable", values.isAvailable);
@@ -735,44 +740,44 @@ const EditProduct = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
+                  <FormField
+                    control={form.control}
+                    name="store"
+                    render={() => (
+                      <FormItem>
+                        <FormControl>
+                          <StoreSelectCard
+                            locations={locations}
+                            selectedStores={selectedStores}
+                            onChange={(stores) => {
+                              setSelectedStores(stores);
+                              form.clearErrors("store");
+                            }}
+                            isSuperAdmin={isSuperAdmin}
+                            user={user}
+                            t={t}
+                            title={t("page.product.add.storeSection.title")}
+                            description={t("page.product.add.storeSection.desc")}
+                            noStoreLabel={t("page.product.add.storeSection.noStore")}
+                            addStoreLabel={t("page.product.add.storeSection.addStore")}
+                            storeInfoLabel={t("page.product.add.storeInfo")}
+                            allStores={allStores}
+                            onAllStoresChange={(val) => {
+                              setAllStores(val);
+                              form.clearErrors("store");
+                            }}
+                            navigate={navigate}
+                            mandatory={true}
+                            locationsLoading={locsLoading || locsFetching}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   {currentStep === 1 && (
                     <div className="grid grid-cols-1 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="store"
-                        render={() => (
-                          <FormItem>
-                            <FormControl>
-                              <StoreSelectCard
-                                locations={locations}
-                                selectedStores={selectedStores}
-                                onChange={(stores) => {
-                                  setSelectedStores(stores);
-                                  form.clearErrors("store");
-                                }}
-                                isSuperAdmin={isSuperAdmin}
-                                user={user}
-                                t={t}
-                                title={t("page.product.add.storeSection.title")}
-                                description={t("page.product.add.storeSection.desc")}
-                                noStoreLabel={t("page.product.add.storeSection.noStore")}
-                                addStoreLabel={t("page.product.add.storeSection.addStore")}
-                                storeInfoLabel={t("page.product.add.storeInfo")}
-                                allStores={allStores}
-                                onAllStoresChange={(val) => {
-                                  setAllStores(val);
-                                  form.clearErrors("store");
-                                }}
-                                navigate={navigate}
-                                mandatory={true}
-                                locationsLoading={locsLoading || locsFetching}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
                       {/* Informasi Produk */}
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
@@ -870,6 +875,38 @@ const EditProduct = () => {
                                 />
                                 <p className="text-[11px] text-muted-foreground mt-1">
                                   {t("page.product.form.brandOptional")}
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="estimationTime"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.estimationTime")}</FormLabel>
+                                <div className="relative">
+                                  <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    value={
+                                      field.value !== undefined && field.value !== ""
+                                        ? Number(field.value).toLocaleString("id-ID")
+                                        : ""
+                                    }
+                                    onChange={(e) => {
+                                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                                      field.onChange(raw ? Number(raw) : "");
+                                    }}
+                                  />
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                                    {t("page.product.form.minutes")}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground mt-1">
+                                  {t("page.product.form.estimationTimeDesc")}
                                 </p>
                                 <FormMessage />
                               </FormItem>
@@ -1207,7 +1244,20 @@ const EditProduct = () => {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>{t("page.product.form.stock")}</FormLabel>
-                                <Input type="number" placeholder="0" {...field} />
+                                <Input
+                                  type="text"
+                                  inputMode="numeric"
+                                  placeholder="0"
+                                  value={
+                                    field.value !== undefined && field.value !== ""
+                                      ? Number(field.value).toLocaleString("id-ID")
+                                      : ""
+                                  }
+                                  onChange={(e) => {
+                                    const raw = e.target.value.replace(/[^0-9]/g, "");
+                                    field.onChange(raw ? Number(raw) : "");
+                                  }}
+                                />
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -1218,7 +1268,20 @@ const EditProduct = () => {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>{t("page.product.form.minStock")}</FormLabel>
-                                <Input type="number" placeholder="0" {...field} />
+                                <Input
+                                  type="text"
+                                  inputMode="numeric"
+                                  placeholder="0"
+                                  value={
+                                    field.value !== undefined && field.value !== ""
+                                      ? Number(field.value).toLocaleString("id-ID")
+                                      : ""
+                                  }
+                                  onChange={(e) => {
+                                    const raw = e.target.value.replace(/[^0-9]/g, "");
+                                    field.onChange(raw ? Number(raw) : "");
+                                  }}
+                                />
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -1229,7 +1292,20 @@ const EditProduct = () => {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>{t("page.product.form.point")}</FormLabel>
-                                <Input type="number" placeholder="0" {...field} />
+                                <Input
+                                  type="text"
+                                  inputMode="numeric"
+                                  placeholder="0"
+                                  value={
+                                    field.value !== undefined && field.value !== ""
+                                      ? Number(field.value).toLocaleString("id-ID")
+                                      : ""
+                                  }
+                                  onChange={(e) => {
+                                    const raw = e.target.value.replace(/[^0-9]/g, "");
+                                    field.onChange(raw ? Number(raw) : "");
+                                  }}
+                                />
                                 <p className="text-[11px] text-muted-foreground mt-1">
                                   {t("page.product.form.pointInfo")}
                                 </p>
@@ -1243,7 +1319,20 @@ const EditProduct = () => {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>{t("page.product.form.redeemPoints")}</FormLabel>
-                                <Input type="number" placeholder="0" {...field} />
+                                <Input
+                                  type="text"
+                                  inputMode="numeric"
+                                  placeholder="0"
+                                  value={
+                                    field.value !== undefined && field.value !== ""
+                                      ? Number(field.value).toLocaleString("id-ID")
+                                      : ""
+                                  }
+                                  onChange={(e) => {
+                                    const raw = e.target.value.replace(/[^0-9]/g, "");
+                                    field.onChange(raw ? Number(raw) : "");
+                                  }}
+                                />
                                 <p className="text-[11px] text-muted-foreground mt-1">
                                   {t("page.product.form.redeemPointsInfo")}
                                 </p>
@@ -1263,8 +1352,16 @@ const EditProduct = () => {
                           </h3>
                         </div>
                         <div className="space-y-3">
-                          {priceTiers.map((tier) => (
+                          {priceTiers.map((tier, tierIdx) => (
                             <div key={tier.id} className="bg-muted/30 rounded-lg p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-semibold text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">
+                                  {tierIdx + 1}
+                                </span>
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  {t("page.product.form.tierSection")} {tierIdx + 1}
+                                </span>
+                              </div>
                               <div className="flex items-center gap-2">
                                 <Input
                                   placeholder={t("page.product.form.tierNamePlaceholder")}
@@ -1408,10 +1505,18 @@ const EditProduct = () => {
                           </div>
                           {isOption && (
                             <div className="space-y-3 pl-4 border-l-2 border-primary/20">
-                              {variantGroups.map((group) => (
+                              {variantGroups.map((group, groupIdx) => (
                                 <div
                                   key={group.id}
                                   className="bg-muted/30 rounded-lg p-4 space-y-3">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-xs font-semibold text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">
+                                      {groupIdx + 1}
+                                    </span>
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                      {t("page.product.form.variantSection")} {groupIdx + 1}
+                                    </span>
+                                  </div>
                                   <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2 flex-1">
                                       <GripVertical
@@ -1439,6 +1544,9 @@ const EditProduct = () => {
                                   <div className="space-y-2">
                                     {group.options.map((opt, idx) => (
                                       <div key={idx} className="flex items-center gap-2">
+                                        <span className="text-[10px] font-semibold text-muted-foreground bg-muted rounded px-1 py-0.5 shrink-0">
+                                          {String.fromCharCode(65 + idx)}
+                                        </span>
                                         <Input
                                           placeholder={t("page.product.form.optionPlaceholder", {
                                             number: idx + 1
@@ -1580,8 +1688,16 @@ const EditProduct = () => {
                                   </select>
                                 </div>
                               )}
-                              {modifierItems.map((mod) => (
+                              {modifierItems.map((mod, modIdx) => (
                                 <div key={mod.id} className="bg-muted/30 rounded-lg p-4">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-xs font-semibold text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">
+                                      {modIdx + 1}
+                                    </span>
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                      {t("page.product.form.modifierSection")} {modIdx + 1}
+                                    </span>
+                                  </div>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <Input
                                       placeholder={t("page.product.form.modifierNamePlaceholder")}

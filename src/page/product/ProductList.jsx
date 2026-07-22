@@ -293,6 +293,17 @@ const ProductList = () => {
       }
     },
     {
+      header: t("page.product.table.estimationTime"),
+      render: (product) => {
+        const minutes = product.estimationTime || 0;
+        return (
+          <span className="text-sm text-foreground">
+            {minutes > 0 ? `${minutes} ${t("page.product.form.minutes")}` : "-"}
+          </span>
+        );
+      }
+    },
+    {
       header: t("page.product.table.tax"),
       render: (product) => <span className="text-sm text-foreground">{renderTax(product.tax)}</span>
     },

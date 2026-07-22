@@ -1,8 +1,13 @@
 import { axiosInstance } from ".";
 
 export const getTablesByStore = async (payload) => {
+  const params = new URLSearchParams();
+  params.append("store", payload?.location || "");
+  if (payload?.page) params.append("page", payload.page);
+  if (payload?.limit) params.append("limit", payload.limit);
+  if (payload?.search) params.append("search", payload.search);
   const { data, status } = await axiosInstance.get(
-    `/table/get-tables?store=${payload?.location || ""}`
+    `/table/get-tables?${params.toString()}`
   );
   if (status !== 200) throw Error(`${data?.message}`);
   return data;

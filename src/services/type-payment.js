@@ -22,6 +22,9 @@ export const getAllTypePayment = async (payload = {}) => {
   const params = new URLSearchParams();
   if (payload.store) params.append("store", payload.store);
   if (payload.status) params.append("status", payload.status);
+  if (payload.page) params.append("page", payload.page);
+  if (payload.limit) params.append("limit", payload.limit);
+  if (payload.search) params.append("search", payload.search);
   const query = params.toString();
   const { data, status } = await axiosInstance.get(
     `/type-payment/get-list-type-payment${query ? `?${query}` : ""}`
