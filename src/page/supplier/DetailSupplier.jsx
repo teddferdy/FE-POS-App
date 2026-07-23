@@ -377,7 +377,6 @@ const DetailSupplier = () => {
               {supplier.products.length} {t("page.supplier.products.productCount", { count: supplier.products.length }).split(" ").pop()}
             </span>
           </div>
-          </div>
           {(() => {
             const totalItems = supplier.products.length;
             const totalPages = Math.ceil(totalItems / productPageSize);
