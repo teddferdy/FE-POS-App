@@ -14,7 +14,8 @@ import {
   TrendingUp,
   Scale,
   Filter,
-  Info
+  Info,
+  Eye
 } from "lucide-react";
 import { getAllSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
@@ -154,8 +155,22 @@ const SupplierComparison = () => {
     return stars;
   };
 
+  const RankBadge = ({ idx }) => (
+    <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+      idx === 0
+        ? "bg-green-500 text-white"
+        : idx === 1
+          ? "bg-blue-500 text-white"
+          : idx === 2
+            ? "bg-orange-500 text-white"
+            : "bg-muted text-muted-foreground"
+    }`}>
+      {idx + 1}
+    </span>
+  );
+
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+    <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button onClick={() => navigate("/")} className="hover:text-foreground">
           {t("breadcrumb.home")}
@@ -170,27 +185,27 @@ const SupplierComparison = () => {
         </span>
       </nav>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="icon" onClick={() => navigate("/supplier")}>
             <ArrowLeft size={16} />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{t("page.supplier.comparison.title")}</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-lg sm:text-2xl font-bold">{t("page.supplier.comparison.title")}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {t("page.supplier.comparison.subtitle")}
             </p>
           </div>
         </div>
       </div>
 
-      <Card className="p-5 space-y-4">
+      <Card className="p-4 md:p-5 space-y-3 md:space-y-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
           <Filter size={16} />
           {t("page.supplier.comparison.filters")}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
               {t("page.supplier.comparison.selectProduct")}
             </label>
@@ -208,7 +223,7 @@ const SupplierComparison = () => {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
               {t("page.supplier.comparison.searchProduct")}
             </label>
@@ -222,7 +237,7 @@ const SupplierComparison = () => {
               />
             </div>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:col-span-2 md:col-span-1">
             <label className="text-xs font-medium text-muted-foreground">
               {t("page.supplier.comparison.sortBy")}
             </label>
@@ -243,55 +258,55 @@ const SupplierComparison = () => {
       </Card>
 
       {summary.supplierCount > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Card className="p-4 text-center">
-            <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+          <Card className="p-3 md:p-4 text-center">
+            <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
               <Scale size={14} />
               <span className="text-xs font-medium">{t("page.supplier.comparison.stats.supplierCount")}</span>
             </div>
-            <p className="text-2xl font-bold">{summary.supplierCount}</p>
+            <p className="text-xl md:text-2xl font-bold">{summary.supplierCount}</p>
           </Card>
-          <Card className="p-4 text-center">
-            <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
+          <Card className="p-3 md:p-4 text-center">
+            <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
               <Package size={14} />
               <span className="text-xs font-medium">{t("page.supplier.comparison.stats.totalProducts")}</span>
             </div>
-            <p className="text-2xl font-bold">{summary.totalProducts}</p>
+            <p className="text-xl md:text-2xl font-bold">{summary.totalProducts}</p>
           </Card>
-          <Card className="p-4 text-center">
-            <div className="flex items-center justify-center gap-2 text-green-600 mb-1">
+          <Card className="p-3 md:p-4 text-center">
+            <div className="flex items-center justify-center gap-1.5 text-green-600 mb-1">
               <TrendingDown size={14} />
               <span className="text-xs font-medium">{t("page.supplier.comparison.stats.lowestPrice")}</span>
             </div>
-            <p className="text-2xl font-bold text-green-600">{formatIDR(summary.lowestPrice)}</p>
+            <p className="text-xl md:text-2xl font-bold text-green-600">{formatIDR(summary.lowestPrice)}</p>
           </Card>
-          <Card className="p-4 text-center">
-            <div className="flex items-center justify-center gap-2 text-red-600 mb-1">
+          <Card className="p-3 md:p-4 text-center">
+            <div className="flex items-center justify-center gap-1.5 text-red-600 mb-1">
               <TrendingUp size={14} />
               <span className="text-xs font-medium">{t("page.supplier.comparison.stats.highestPrice")}</span>
             </div>
-            <p className="text-2xl font-bold text-red-600">{formatIDR(summary.highestPrice)}</p>
+            <p className="text-xl md:text-2xl font-bold text-red-600">{formatIDR(summary.highestPrice)}</p>
           </Card>
-          <Card className="p-4 text-center">
-            <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
+          <Card className="p-3 md:p-4 text-center col-span-2 sm:col-span-1">
+            <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
               <Info size={14} />
               <span className="text-xs font-medium">{t("page.supplier.comparison.stats.avgPrice")}</span>
             </div>
-            <p className="text-2xl font-bold">{formatIDR(summary.avgPrice)}</p>
+            <p className="text-xl md:text-2xl font-bold">{formatIDR(summary.avgPrice)}</p>
           </Card>
         </div>
       )}
 
       <Card className="overflow-hidden">
         {isLoading ? (
-          <div className="p-6 space-y-4">
+          <div className="p-4 md:p-6 space-y-3 md:space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         ) : allEntries.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-3">
+          <div className="p-8 md:p-12 text-center">
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-3">
               <Building2 size={24} className="text-muted-foreground/60" />
             </div>
             <p className="text-sm font-semibold text-foreground">
@@ -302,79 +317,130 @@ const SupplierComparison = () => {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="font-semibold">{t("page.supplier.comparison.table.rank")}</TableHead>
-                  <TableHead className="font-semibold">{t("page.supplier.comparison.table.supplier")}</TableHead>
-                  <TableHead className="font-semibold">{t("page.supplier.comparison.table.product")}</TableHead>
-                  <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.price")}</TableHead>
-                  <TableHead className="font-semibold text-center">{t("page.supplier.comparison.table.quality")}</TableHead>
-                  <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.leadTime")}</TableHead>
-                  <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.minOrder")}</TableHead>
-                  <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.lastPrice")}</TableHead>
-                  <TableHead className="font-semibold text-center">{t("page.supplier.comparison.table.action")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {allEntries.map((entry, idx) => (
-                  <TableRow key={`${entry.supplierId}-${entry.productName}`} className={idx === 0 ? "bg-green-50/50" : ""}>
-                    <TableCell>
-                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                        idx === 0
-                          ? "bg-green-500 text-white"
-                          : idx === 1
-                            ? "bg-blue-500 text-white"
-                            : idx === 2
-                              ? "bg-orange-500 text-white"
-                              : "bg-muted text-muted-foreground"
-                      }`}>
-                        {idx + 1}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-sm">{entry.supplierName}</p>
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="w-12 font-semibold">#</TableHead>
+                    <TableHead className="font-semibold">{t("page.supplier.comparison.table.supplier")}</TableHead>
+                    <TableHead className="font-semibold">{t("page.supplier.comparison.table.product")}</TableHead>
+                    <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.price")}</TableHead>
+                    <TableHead className="font-semibold text-center">{t("page.supplier.comparison.table.quality")}</TableHead>
+                    <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.leadTime")}</TableHead>
+                    <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.minOrder")}</TableHead>
+                    <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.lastPrice")}</TableHead>
+                    <TableHead className="font-semibold text-center sticky right-0 bg-muted/50 z-10">{t("page.supplier.comparison.table.action")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {allEntries.map((entry, idx) => (
+                    <TableRow key={`${entry.supplierId}-${entry.productName}`} className={idx === 0 ? "bg-green-50/50" : ""}>
+                      <TableCell><RankBadge idx={idx} /></TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium text-sm">{entry.supplierName}</p>
+                          <p className="text-xs text-muted-foreground">{entry.supplierPhone || "-"}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm">{entry.productName}</TableCell>
+                      <TableCell className="text-right">
+                        <span className={`font-semibold ${idx === 0 ? "text-green-600" : ""}`}>
+                          {formatIDR(entry.price)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-1">
+                          {getQualityStars(entry.qualityRating)}
+                          <span className="text-xs text-muted-foreground ml-1">
+                            {entry.qualityRating || 0}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Clock size={12} className="text-muted-foreground" />
+                          <span className="text-sm">{entry.leadTime || 0} {entry.leadTimeUnit || t("page.supplier.comparison.stats.day")}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right text-sm">{entry.minOrderQty || 1}</TableCell>
+                      <TableCell className="text-right text-sm">{formatIDR(entry.lastPrice)}</TableCell>
+                      <TableCell className="text-center sticky right-0 bg-white z-10">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-primary hover:text-primary/80"
+                          onClick={() => navigate(`/detail-supplier?id=${entry.supplierId}`)}>
+                          <Eye size={16} />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="md:hidden divide-y">
+              {allEntries.map((entry, idx) => (
+                <div key={`${entry.supplierId}-${entry.productName}`} className={`p-4 space-y-3 ${idx === 0 ? "bg-green-50/50" : ""}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      <RankBadge idx={idx} />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm truncate">{entry.supplierName}</p>
                         <p className="text-xs text-muted-foreground">{entry.supplierPhone || "-"}</p>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm">{entry.productName}</TableCell>
-                    <TableCell className="text-right">
-                      <span className={`font-semibold ${idx === 0 ? "text-green-600" : ""}`}>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-primary hover:text-primary/80"
+                      onClick={() => navigate(`/detail-supplier?id=${entry.supplierId}`)}>
+                      <Eye size={16} />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{t("page.supplier.comparison.table.product")}</span>
+                    <span className="text-sm font-medium">{entry.productName}</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
+                      <span className="text-xs text-muted-foreground">{t("page.supplier.comparison.table.price")}</span>
+                      <span className={`text-sm font-semibold ${idx === 0 ? "text-green-600" : ""}`}>
                         {formatIDR(entry.price)}
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-1">
+                    </div>
+                    <div className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
+                      <span className="text-xs text-muted-foreground">{t("page.supplier.comparison.table.lastPrice")}</span>
+                      <span className="text-sm font-medium">{formatIDR(entry.lastPrice)}</span>
+                    </div>
+                    <div className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
+                      <span className="text-xs text-muted-foreground">{t("page.supplier.comparison.table.quality")}</span>
+                      <div className="flex items-center gap-1">
                         {getQualityStars(entry.qualityRating)}
-                        <span className="text-xs text-muted-foreground ml-1">
-                          {entry.qualityRating || 0}
-                        </span>
+                        <span className="text-xs text-muted-foreground ml-0.5">{entry.qualityRating || 0}</span>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
+                    </div>
+                    <div className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
+                      <span className="text-xs text-muted-foreground">{t("page.supplier.comparison.table.leadTime")}</span>
+                      <div className="flex items-center gap-1">
                         <Clock size={12} className="text-muted-foreground" />
                         <span className="text-sm">{entry.leadTime || 0} {entry.leadTimeUnit || t("page.supplier.comparison.stats.day")}</span>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-right text-sm">{entry.minOrderQty || 1}</TableCell>
-                    <TableCell className="text-right text-sm">{formatIDR(entry.lastPrice)}</TableCell>
-                    <TableCell className="text-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs text-primary"
-                        onClick={() => navigate(`/detail-supplier?id=${entry.supplierId}`)}>
-                        {t("page.supplier.comparison.table.detail")}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{t("page.supplier.comparison.table.minOrder")}: <span className="font-medium text-foreground">{entry.minOrderQty || 1}</span></span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </Card>
     </div>
