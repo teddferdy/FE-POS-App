@@ -77,7 +77,7 @@ const DetailSupplier = () => {
   const [payRef, setPayRef] = useState("");
   const [payNotes, setPayNotes] = useState("");
   const [productPage, setProductPage] = useState(1);
-  const [productPageSize, setProductPageSize] = useState(5);
+  const [productPageSize, setProductPageSize] = useState(10);
 
   const {
     data: supplierData,
@@ -381,9 +381,13 @@ const DetailSupplier = () => {
                 value={productPageSize}
                 onChange={(e) => { setProductPageSize(Number(e.target.value)); setProductPage(1); }}
                 className="h-7 text-xs rounded-md border border-input bg-background px-2">
+                <option value={2}>2</option>
                 <option value={5}>5</option>
                 <option value={10}>10</option>
+                <option value={20}>20</option>
                 <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
               </select>
             </div>
           </div>
