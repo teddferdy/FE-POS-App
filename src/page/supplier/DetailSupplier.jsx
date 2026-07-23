@@ -72,6 +72,7 @@ const DetailSupplier = () => {
   const {
     data: supplierData,
     isLoading,
+    isFetching,
     isError,
     refetch
   } = useQuery(["supplier-detail", id], () => getSupplierById({ id }), { enabled: !!id });
@@ -109,7 +110,7 @@ const DetailSupplier = () => {
 
   if (isError) return <AbortController refetch={refetch} />;
 
-  if (isLoading) {
+  if (isFetching) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
