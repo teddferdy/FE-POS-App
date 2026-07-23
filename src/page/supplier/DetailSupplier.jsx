@@ -38,6 +38,14 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext
+} from "@/components/ui/pagination";
 import { format } from "date-fns";
 const statusMap = {
   pending: { class: "bg-yellow-100 text-yellow-800" },
@@ -68,6 +76,8 @@ const DetailSupplier = () => {
   const [payMethod, setPayMethod] = useState("cash");
   const [payRef, setPayRef] = useState("");
   const [payNotes, setPayNotes] = useState("");
+  const [productPage, setProductPage] = useState(1);
+  const [productPageSize, setProductPageSize] = useState(5);
 
   const {
     data: supplierData,
@@ -363,90 +373,163 @@ const DetailSupplier = () => {
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               {t("page.supplier.products.availableProducts")}
             </h3>
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-              {supplier.products.length} {t("page.supplier.products.productCount", { count: supplier.products.length }).split(" ").pop()}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                {supplier.products.length} {t("page.supplier.products.productCount", { count: supplier.products.length }).split(" ").pop()}
+              </span>
+              <select
+                value={productPageSize}
+                onChange={(e) => { setProductPageSize(Number(e.target.value)); setProductPage(1); }}
+                className="h-7 text-xs rounded-md border border-input bg-background px-2">
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+              </select>
+            </div>
           </div>
-          {/* Desktop table */}
-          <div className="hidden md:block overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="font-semibold">{t("page.supplier.products.table.name")}</TableHead>
-                  <TableHead className="font-semibold text-right">{t("page.supplier.products.price")}</TableHead>
-                  <TableHead className="font-semibold text-center">{t("page.supplier.products.table.unit")}</TableHead>
-                  <TableHead className="font-semibold text-right">{t("page.supplier.products.table.leadTime")}</TableHead>
-                  <TableHead className="font-semibold text-center">{t("page.supplier.products.table.quality")}</TableHead>
-                  <TableHead className="font-semibold text-right">{t("page.supplier.products.table.minOrder")}</TableHead>
-                  <TableHead className="font-semibold">{t("page.supplier.products.table.notes")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {supplier.products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(product.price)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-muted">{product.unit || "pcs"}</span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Clock size={12} className="text-muted-foreground" />
-                        <span className="text-sm">{product.leadTime || 0} {product.leadTimeUnit || "hari"}</span>
+          {(() => {
+            const totalItems = supplier.products.length;
+            const totalPages = Math.ceil(totalItems / productPageSize);
+            const startIdx = (productPage - 1) * productPageSize;
+            const pagedProducts = supplier.products.slice(startIdx, startIdx + productPageSize);
+
+            return (
+              <>
+                {/* Desktop table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 font-semibold">#</TableHead>
+                        <TableHead className="font-semibold">{t("page.supplier.products.table.name")}</TableHead>
+                        <TableHead className="font-semibold text-right">{t("page.supplier.products.price")}</TableHead>
+                        <TableHead className="font-semibold text-center">{t("page.supplier.products.table.unit")}</TableHead>
+                        <TableHead className="font-semibold text-right">{t("page.supplier.products.table.leadTime")}</TableHead>
+                        <TableHead className="font-semibold text-center">{t("page.supplier.products.table.quality")}</TableHead>
+                        <TableHead className="font-semibold text-right">{t("page.supplier.products.table.minOrder")}</TableHead>
+                        <TableHead className="font-semibold">{t("page.supplier.products.table.notes")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pagedProducts.map((product, idx) => (
+                        <TableRow key={product.id}>
+                          <TableCell className="text-xs text-muted-foreground">{startIdx + idx + 1}</TableCell>
+                          <TableCell className="font-medium">{product.name}</TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(product.price)}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-muted">{product.unit || "pcs"}</span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Clock size={12} className="text-muted-foreground" />
+                              <span className="text-sm">{product.leadTime || 0} {product.leadTimeUnit || "hari"}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-0.5">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star key={i} size={12} className={i < Math.floor(Number(product.qualityRating) || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
+                              ))}
+                              <span className="text-xs text-muted-foreground ml-1">{Number(product.qualityRating) || 0}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right text-sm">{product.minOrderQty || 1}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{product.notes || "-"}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                {/* Mobile card list */}
+                <div className="md:hidden divide-y">
+                  {pagedProducts.map((product, idx) => (
+                    <div key={product.id} className="py-3 space-y-2.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2.5 min-w-0">
+                          <span className="text-xs text-muted-foreground mt-0.5 shrink-0">{startIdx + idx + 1}.</span>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-sm truncate">{product.name}</p>
+                            <p className="text-lg font-bold text-primary mt-0.5">
+                              {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(product.price)}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-muted">{product.unit || "pcs"}</span>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-0.5">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} size={12} className={i < Math.floor(Number(product.qualityRating) || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                        ))}
-                        <span className="text-xs text-muted-foreground ml-1">{Number(product.qualityRating) || 0}</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-2.5 py-1.5">
+                          <Clock size={12} className="text-muted-foreground shrink-0" />
+                          <span className="text-xs">{product.leadTime || 0} {product.leadTimeUnit || "hari"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-2.5 py-1.5">
+                          <span className="text-xs text-muted-foreground shrink-0">{t("page.supplier.products.table.minOrder")}:</span>
+                          <span className="text-xs font-medium">{product.minOrderQty || 1}</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-muted/30 rounded-lg px-2.5 py-1.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} size={10} className={i < Math.floor(Number(product.qualityRating) || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
+                          ))}
+                          <span className="text-xs text-muted-foreground ml-0.5">{Number(product.qualityRating) || 0}</span>
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-right text-sm">{product.minOrderQty || 1}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{product.notes || "-"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          {/* Mobile card list */}
-          <div className="md:hidden divide-y">
-            {supplier.products.map((product) => (
-              <div key={product.id} className="py-3 space-y-2.5">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm truncate">{product.name}</p>
-                    <p className="text-lg font-bold text-primary mt-0.5">
-                      {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(product.price)}
+                      {product.notes && (
+                        <p className="text-xs text-muted-foreground italic">{product.notes}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <p className="text-xs text-muted-foreground">
+                      {startIdx + 1}–{Math.min(startIdx + productPageSize, totalItems)} dari {totalItems}
                     </p>
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => setProductPage((p) => Math.max(1, p - 1))}
+                            className={productPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          />
+                        </PaginationItem>
+                        {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (productPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (productPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = productPage - 2 + i;
+                          }
+                          return (
+                            <PaginationItem key={pageNum}>
+                              <PaginationLink
+                                isActive={pageNum === productPage}
+                                onClick={() => setProductPage(pageNum)}
+                                className="cursor-pointer">
+                                {pageNum}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        })}
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => setProductPage((p) => Math.min(totalPages, p + 1))}
+                            className={productPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   </div>
-                  <span className="shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-muted">{product.unit || "pcs"}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-2.5 py-1.5">
-                    <Clock size={12} className="text-muted-foreground shrink-0" />
-                    <span className="text-xs">{product.leadTime || 0} {product.leadTimeUnit || "hari"}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-2.5 py-1.5">
-                    <span className="text-xs text-muted-foreground shrink-0">{t("page.supplier.products.table.minOrder")}:</span>
-                    <span className="text-xs font-medium">{product.minOrderQty || 1}</span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-muted/30 rounded-lg px-2.5 py-1.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} size={10} className={i < Math.floor(Number(product.qualityRating) || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                    ))}
-                    <span className="text-xs text-muted-foreground ml-0.5">{Number(product.qualityRating) || 0}</span>
-                  </div>
-                </div>
-                {product.notes && (
-                  <p className="text-xs text-muted-foreground italic">{product.notes}</p>
                 )}
-              </div>
-            ))}
-          </div>
+              </>
+            );
+          })()}
         </Card>
       )}
 
