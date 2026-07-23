@@ -487,7 +487,7 @@ const DetailSupplier = () => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                  <div className="flex items-center justify-between w-full pt-4 border-t mt-4">
                     <p className="text-xs text-muted-foreground">
                       {startIdx + 1}–{Math.min(startIdx + productPageSize, totalItems)} dari {totalItems}
                     </p>
