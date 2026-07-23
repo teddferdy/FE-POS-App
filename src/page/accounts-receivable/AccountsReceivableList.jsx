@@ -62,8 +62,8 @@ const AccountsReceivableList = () => {
             ? storeFilter
             : ""
           : user?.store
-      , { keepPreviousData: true }
       })
+    , { keepPreviousData: true }
   );
 
   const { data: agingData } = useQuery(["ar-aging"], () => getARAging(), {

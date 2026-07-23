@@ -84,8 +84,8 @@ const StockOpnameList = () => {
         search: search || undefined,
         location: storeFilter !== "all" ? storeFilter : undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
-      , { keepPreviousData: true }
       })
+    , { keepPreviousData: true }
   );
 
   const items = data?.data || data?.stockOpname || [];
