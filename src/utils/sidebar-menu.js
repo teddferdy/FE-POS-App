@@ -191,6 +191,7 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
+        activePaths: ["/supplier-comparison"],
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
@@ -696,6 +697,7 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
+        activePaths: ["/supplier-comparison"],
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
