@@ -533,7 +533,7 @@ const DetailSupplier = () => {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex flex-col items-center gap-3 pt-4 border-t mt-4">
+                <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 pt-4 border-t mt-4">
                   <div className="flex items-center gap-3">
                     <p className="text-xs text-muted-foreground whitespace-nowrap">
                       Menampilkan {startIdx + 1}–{Math.min(startIdx + productPageSize, totalItems)}{" "}
@@ -556,7 +556,7 @@ const DetailSupplier = () => {
                     </select>
                   </div>
 
-                  <Pagination>
+                  <Pagination className="sm:justify-end justify-center">
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious
