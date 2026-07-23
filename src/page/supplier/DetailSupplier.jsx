@@ -374,7 +374,10 @@ const DetailSupplier = () => {
               {t("page.supplier.products.availableProducts")}
             </h3>
             <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-              {supplier.products.length} {t("page.supplier.products.productCount", { count: supplier.products.length }).split(" ").pop()}
+              {supplier.products.length}{" "}
+              {t("page.supplier.products.productCount", { count: supplier.products.length })
+                .split(" ")
+                .pop()}
             </span>
           </div>
           {(() => {
@@ -530,10 +533,11 @@ const DetailSupplier = () => {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between w-full pt-4 border-t mt-4">
+                <div className="flex flex-col items-center gap-3 pt-4 border-t mt-4">
                   <div className="flex items-center gap-3">
                     <p className="text-xs text-muted-foreground whitespace-nowrap">
-                      Menampilkan {startIdx + 1}–{Math.min(startIdx + productPageSize, totalItems)} dari {totalItems}
+                      Menampilkan {startIdx + 1}–{Math.min(startIdx + productPageSize, totalItems)}{" "}
+                      dari {totalItems}
                     </p>
                     <select
                       value={productPageSize}
@@ -557,7 +561,9 @@ const DetailSupplier = () => {
                       <PaginationItem>
                         <PaginationPrevious
                           onClick={() => setProductPage((p) => Math.max(1, p - 1))}
-                          className={productPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          className={
+                            productPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                          }
                         />
                       </PaginationItem>
                       {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
@@ -585,7 +591,11 @@ const DetailSupplier = () => {
                       <PaginationItem>
                         <PaginationNext
                           onClick={() => setProductPage((p) => Math.min(totalPages, p + 1))}
-                          className={productPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          className={
+                            productPage >= totalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>
