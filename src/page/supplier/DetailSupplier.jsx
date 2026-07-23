@@ -375,7 +375,6 @@ const DetailSupplier = () => {
                   <TableHead className="font-semibold text-right">{t("page.supplier.products.table.leadTime")}</TableHead>
                   <TableHead className="font-semibold text-center">{t("page.supplier.products.table.quality")}</TableHead>
                   <TableHead className="font-semibold text-right">{t("page.supplier.products.table.minOrder")}</TableHead>
-                  <TableHead className="font-semibold text-right">{t("page.supplier.products.table.lastPrice")}</TableHead>
                   <TableHead className="font-semibold">{t("page.supplier.products.table.notes")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -404,12 +403,6 @@ const DetailSupplier = () => {
                       </div>
                     </TableCell>
                     <TableCell className="text-right text-sm">{product.minOrderQty || 1}</TableCell>
-                    <TableCell className="text-right text-sm">
-                      {product.lastPrice > 0
-                        ? new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(product.lastPrice)
-                        : <span className="text-muted-foreground">-</span>
-                      }
-                    </TableCell>
                     <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{product.notes || "-"}</TableCell>
                   </TableRow>
                 ))}
@@ -444,14 +437,7 @@ const DetailSupplier = () => {
                     ))}
                     <span className="text-xs text-muted-foreground ml-0.5">{Number(product.qualityRating) || 0}</span>
                   </div>
-                  {product.lastPrice > 0 && (
-                    <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-2.5 py-1.5">
-                      <span className="text-xs text-muted-foreground shrink-0">{t("page.supplier.products.table.lastPrice")}:</span>
-                      <span className="text-xs font-medium">
-                        {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(product.lastPrice)}
-                      </span>
-                    </div>
-                  )}
+                </div>
                 </div>
                 {product.notes && (
                   <p className="text-xs text-muted-foreground italic">{product.notes}</p>

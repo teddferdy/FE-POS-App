@@ -330,7 +330,6 @@ const SupplierComparison = () => {
                     <TableHead className="font-semibold text-center">{t("page.supplier.comparison.table.quality")}</TableHead>
                     <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.leadTime")}</TableHead>
                     <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.minOrder")}</TableHead>
-                    <TableHead className="font-semibold text-right">{t("page.supplier.comparison.table.lastPrice")}</TableHead>
                     <TableHead className="font-semibold text-center sticky right-0 bg-muted/50 z-10">{t("page.supplier.comparison.table.action")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -365,7 +364,6 @@ const SupplierComparison = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right text-sm">{entry.minOrderQty || 1}</TableCell>
-                      <TableCell className="text-right text-sm">{formatIDR(entry.lastPrice)}</TableCell>
                       <TableCell className="text-center sticky right-0 bg-white z-10">
                         <Button
                           variant="ghost"
@@ -413,10 +411,6 @@ const SupplierComparison = () => {
                       <span className={`text-sm font-semibold ${idx === 0 ? "text-green-600" : ""}`}>
                         {formatIDR(entry.price)}
                       </span>
-                    </div>
-                    <div className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
-                      <span className="text-xs text-muted-foreground">{t("page.supplier.comparison.table.lastPrice")}</span>
-                      <span className="text-sm font-medium">{formatIDR(entry.lastPrice)}</span>
                     </div>
                     <div className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
                       <span className="text-xs text-muted-foreground">{t("page.supplier.comparison.table.quality")}</span>
