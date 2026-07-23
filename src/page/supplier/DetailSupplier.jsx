@@ -257,7 +257,10 @@ const DetailSupplier = () => {
             {t("page.supplier.detail.editSupplier")}
           </Button>
           {supplier.status !== "inactive" && supplier.status !== "draft" && (
-            <Button onClick={() => setPaymentModal(true)} className="gap-1.5">
+            <Button
+              onClick={() => setPaymentModal(true)}
+              className="gap-1.5"
+              disabled={(summary.balance || 0) <= 0}>
               <Plus size={18} /> {t("page.supplier.detail.catatPembayaran")}
             </Button>
           )}
@@ -437,7 +440,6 @@ const DetailSupplier = () => {
                     ))}
                     <span className="text-xs text-muted-foreground ml-0.5">{Number(product.qualityRating) || 0}</span>
                   </div>
-                </div>
                 </div>
                 {product.notes && (
                   <p className="text-xs text-muted-foreground italic">{product.notes}</p>
