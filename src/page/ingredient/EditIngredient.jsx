@@ -65,7 +65,8 @@ const EditIngredient = () => {
     { value: "lusin", label: t("page.ingredient.form.unitLusin") },
     { value: "pack", label: t("page.ingredient.form.unitPack") },
     { value: "box", label: t("page.ingredient.form.unitBox") },
-    { value: "karton", label: t("page.ingredient.form.unitKarton") }
+    { value: "karton", label: t("page.ingredient.form.unitKarton") },
+    { value: "krat", label: t("page.ingredient.form.unitKrat") }
   ];
 
   const baseUnitOptions = [

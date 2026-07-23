@@ -71,7 +71,9 @@ const SupplierComparison = () => {
           supplierPhone: supplier.phone,
           productId: product.productId,
           price: product.price || 0,
+          unit: product.unit || "pcs",
           leadTime: product.leadTime || 0,
+          leadTimeUnit: product.leadTimeUnit || "hari",
           qualityRating: Number(product.qualityRating) || 0,
           minOrderQty: product.minOrderQty || 1,
           lastPrice: product.lastPrice || 0
@@ -354,7 +356,7 @@ const SupplierComparison = () => {
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Clock size={12} className="text-muted-foreground" />
-                        <span className="text-sm">{entry.leadTime || 0} {t("page.supplier.comparison.stats.day")}</span>
+                        <span className="text-sm">{entry.leadTime || 0} {entry.leadTimeUnit || t("page.supplier.comparison.stats.day")}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right text-sm">{entry.minOrderQty || 1}</TableCell>

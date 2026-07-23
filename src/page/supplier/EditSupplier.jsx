@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, Check, Plus, Trash2, Upload, Download } from "lucide-react";
+import { X, Save, Check, Plus, Trash2, Upload, Download, Pencil } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -89,9 +89,13 @@ const EditSupplier = () => {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [newProductName, setNewProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
+  const [productUnit, setProductUnit] = useState("pcs");
   const [productLeadTime, setProductLeadTime] = useState("");
+  const [productLeadTimeUnit, setProductLeadTimeUnit] = useState("hari");
   const [productQualityRating, setProductQualityRating] = useState("");
   const [productMinOrderQty, setProductMinOrderQty] = useState("");
+  const [productNotes, setProductNotes] = useState("");
+  const [editingProductId, setEditingProductId] = useState(null);
   const [showImportExcel, setShowImportExcel] = useState(false);
   const [importFile, setImportFile] = useState(null);
 
@@ -153,9 +157,12 @@ const EditSupplier = () => {
             productId: p.productId,
             name: p.name,
             price: p.price,
+            unit: p.unit || "pcs",
             leadTime: p.leadTime || 0,
+            leadTimeUnit: p.leadTimeUnit || "hari",
             qualityRating: p.qualityRating || 0,
-            minOrderQty: p.minOrderQty || 1
+            minOrderQty: p.minOrderQty || 1,
+            notes: p.notes || ""
           }))
         );
       }
@@ -192,6 +199,36 @@ const EditSupplier = () => {
     }
   });
 
+  const unitOptions = [
+    { value: "pcs", label: t("page.ingredient.form.unitPcs") },
+    { value: "buah", label: t("page.ingredient.form.unitBuah") },
+    { value: "kg", label: t("page.ingredient.form.unitKg") },
+    { value: "gram", label: t("page.ingredient.form.unitGram") },
+    { value: "liter", label: t("page.ingredient.form.unitLiter") },
+    { value: "ml", label: t("page.ingredient.form.unitMl") },
+    { value: "meter", label: t("page.ingredient.form.unitMeter") },
+    { value: "cm", label: t("page.ingredient.form.unitCm") },
+    { value: "lusin", label: t("page.ingredient.form.unitLusin") },
+    { value: "pack", label: t("page.ingredient.form.unitPack") },
+    { value: "box", label: t("page.ingredient.form.unitBox") },
+    { value: "karton", label: t("page.ingredient.form.unitKarton") },
+    { value: "krat", label: t("page.ingredient.form.unitKrat") }
+  ];
+
+  const handleEditProduct = (product) => {
+    setNewProductName(product.name);
+    setProductPrice(String(product.price));
+    setProductUnit(product.unit || "pcs");
+    setProductLeadTime(String(product.leadTime || ""));
+    setProductLeadTimeUnit(product.leadTimeUnit || "hari");
+    setProductQualityRating(String(product.qualityRating || ""));
+    setProductMinOrderQty(String(product.minOrderQty || ""));
+    setProductNotes(product.notes || "");
+    setEditingProductId(product.id);
+    setShowAddProduct(true);
+    setShowImportExcel(false);
+  };
+
   const handleAddProduct = () => {
     if (!newProductName.trim()) {
       toast.error(t("common.error"), { description: t("page.supplier.products.enterProductName") });
@@ -201,22 +238,39 @@ const EditSupplier = () => {
       toast.error(t("common.error"), { description: t("page.supplier.products.enterValidPrice") });
       return;
     }
-    setSupplierProducts((prev) => [
-      ...prev,
-      {
-        id: `manual_${Date.now()}`,
-        name: newProductName.trim(),
-        price: Number(productPrice),
-        leadTime: Number(productLeadTime) || 0,
-        qualityRating: Number(productQualityRating) || 0,
-        minOrderQty: Number(productMinOrderQty) || 1
-      }
-    ]);
+    if (editingProductId) {
+      setSupplierProducts((prev) =>
+        prev.map((p) =>
+          p.id === editingProductId
+            ? { ...p, name: newProductName.trim(), price: Number(productPrice), unit: productUnit || "pcs", leadTime: Number(productLeadTime) || 0, leadTimeUnit: productLeadTimeUnit || "hari", qualityRating: Number(productQualityRating) || 0, minOrderQty: Number(productMinOrderQty) || 1, notes: productNotes.trim() || "" }
+            : p
+        )
+      );
+    } else {
+      setSupplierProducts((prev) => [
+        ...prev,
+        {
+          id: `manual_${Date.now()}`,
+          name: newProductName.trim(),
+          price: Number(productPrice),
+          unit: productUnit || "pcs",
+          leadTime: Number(productLeadTime) || 0,
+          leadTimeUnit: productLeadTimeUnit || "hari",
+          qualityRating: Number(productQualityRating) || 0,
+          minOrderQty: Number(productMinOrderQty) || 1,
+          notes: productNotes.trim() || ""
+        }
+      ]);
+    }
     setNewProductName("");
     setProductPrice("");
+    setProductUnit("pcs");
     setProductLeadTime("");
+    setProductLeadTimeUnit("hari");
     setProductQualityRating("");
     setProductMinOrderQty("");
+    setProductNotes("");
+    setEditingProductId(null);
     setShowAddProduct(false);
   };
 
@@ -262,9 +316,12 @@ const EditSupplier = () => {
       products: supplierProducts.map((p) => ({
         name: p.name,
         price: p.price,
+        unit: p.unit || "pcs",
         leadTime: p.leadTime || 0,
+        leadTimeUnit: p.leadTimeUnit || "hari",
         qualityRating: p.qualityRating || 0,
-        minOrderQty: p.minOrderQty || 1
+        minOrderQty: p.minOrderQty || 1,
+        notes: p.notes || ""
       }))
     });
   };
@@ -520,9 +577,14 @@ const EditSupplier = () => {
             {isSuperAdmin && (
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-foreground">
-                    {t("page.supplier.products.title")}
-                  </h3>
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {t("page.supplier.products.title")}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t("page.supplier.products.description")}
+                    </p>
+                  </div>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -559,89 +621,137 @@ const EditSupplier = () => {
 
                 {showAddProduct && (
                   <div className="flex flex-col gap-3 p-4 bg-muted/50 rounded-lg mb-4">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs font-medium text-muted-foreground">
-                        {t("page.supplier.products.productName")}
-                      </label>
-                      <Input
-                        placeholder={t("page.supplier.products.searchPlaceholder")}
-                        value={newProductName}
-                        onChange={(e) => setNewProductName(e.target.value)}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs font-medium text-muted-foreground">
-                        {t("page.supplier.products.price")}
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                          Rp
-                        </span>
+                    <div className="grid grid-cols-12 gap-2">
+                      <div className="col-span-12 space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          {t("page.supplier.products.productName")}
+                        </label>
+                        <Input
+                          placeholder={t("page.supplier.products.searchPlaceholder")}
+                          value={newProductName}
+                          onChange={(e) => setNewProductName(e.target.value)}
+                        />
+                      </div>
+                      <div className="col-span-6 space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          {t("page.supplier.products.price")}
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                            Rp
+                          </span>
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="0"
+                            className="pl-9"
+                            value={productPrice ? Number(productPrice).toLocaleString("id-ID") : ""}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^0-9]/g, "");
+                              setProductPrice(raw);
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="col-span-6 space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">Satuan</label>
+                        <select
+                          value={productUnit}
+                          onChange={(e) => setProductUnit(e.target.value)}
+                          className="w-full h-10 px-2 rounded-md border border-input bg-background text-sm">
+                          {unitOptions.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col-span-4 space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">{t("page.supplier.comparison.table.leadTime")}</label>
+                        <div className="flex gap-1">
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="0"
+                            value={productLeadTime}
+                            onChange={(e) => {
+                              const v = e.target.value.replace(/[^0-9]/g, "");
+                              setProductLeadTime(v);
+                            }}
+                            className="flex-1"
+                          />
+                          <select
+                            value={productLeadTimeUnit}
+                            onChange={(e) => setProductLeadTimeUnit(e.target.value)}
+                            className="border rounded-md px-2 py-1 text-xs bg-background text-foreground border-input min-w-[70px]">
+                            <option value="hari">Hari</option>
+                            <option value="jam">Jam</option>
+                            <option value="menit">Menit</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="col-span-4 space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">Kualitas (0-5)</label>
                         <Input
                           type="text"
                           inputMode="numeric"
                           placeholder="0"
-                          className="pl-9"
-                          value={productPrice ? Number(productPrice).toLocaleString("id-ID") : ""}
+                          maxLength={1}
+                          value={productQualityRating}
                           onChange={(e) => {
-                            const raw = e.target.value.replace(/[^0-9]/g, "");
-                            setProductPrice(raw);
+                            const v = e.target.value.replace(/[^0-5]/g, "").slice(0, 1);
+                            setProductQualityRating(v);
                           }}
                         />
                       </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-muted-foreground">Lead Time (hari)</label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={productLeadTime}
-                          onChange={(e) => setProductLeadTime(e.target.value)}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-muted-foreground">Kualitas (0-5)</label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          min="0"
-                          max="5"
-                          step="0.5"
-                          value={productQualityRating}
-                          onChange={(e) => setProductQualityRating(e.target.value)}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
+                      <div className="col-span-4 space-y-1">
                         <label className="text-xs font-medium text-muted-foreground">Min Order</label>
                         <Input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           placeholder="1"
-                          min="1"
                           value={productMinOrderQty}
-                          onChange={(e) => setProductMinOrderQty(e.target.value)}
+                          onChange={(e) => {
+                            const v = e.target.value.replace(/[^0-9]/g, "");
+                            setProductMinOrderQty(v);
+                          }}
+                        />
+                      </div>
+                      <div className="col-span-12 space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">{t("page.supplier.products.notes")}</label>
+                        <Textarea
+                          placeholder="Catatan opsional..."
+                          rows={2}
+                          value={productNotes}
+                          onChange={(e) => setProductNotes(e.target.value)}
                         />
                       </div>
                     </div>
-                    <div className="flex gap-2 justify-end">
+                    <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setShowAddProduct(false);
+                          setEditingProductId(null);
                           setNewProductName("");
                           setProductPrice("");
+                          setProductUnit("pcs");
                           setProductLeadTime("");
+                          setProductLeadTimeUnit("hari");
                           setProductQualityRating("");
                           setProductMinOrderQty("");
-                        }}>
+                          setProductNotes("");
+                          setShowAddProduct(false);
+                        }}
+                        className="flex-1">
                         {t("common.cancel")}
                       </Button>
                       <Button
                         size="sm"
                         disabled={!newProductName.trim() || !productPrice}
-                        onClick={handleAddProduct}>
-                        {t("page.supplier.products.add")}
+                        onClick={handleAddProduct}
+                        className="flex-1">
+                        {editingProductId ? t("common.save") : t("page.supplier.products.add")}
                       </Button>
                     </div>
                   </div>
@@ -694,11 +804,17 @@ const EditSupplier = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="text-center w-10">
+                            #
+                          </TableHead>
                           <TableHead className="text-xs">
                             {t("page.supplier.products.table.name")}
                           </TableHead>
                           <TableHead className="text-xs text-right">
                             {t("page.supplier.products.table.price")}
+                          </TableHead>
+                          <TableHead className="text-xs text-center">
+                            Satuan
                           </TableHead>
                           <TableHead className="text-xs text-right">
                             Lead Time
@@ -709,20 +825,27 @@ const EditSupplier = () => {
                           <TableHead className="text-xs text-right">
                             Min Order
                           </TableHead>
+                          <TableHead className="text-xs">
+                            Catatan
+                          </TableHead>
                           <TableHead className="text-xs text-center w-12">
                             {t("page.supplier.products.table.action")}
                           </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {supplierProducts.map((product) => (
-                          <TableRow key={product.id}>
+                        {supplierProducts.map((product, index) => (
+                          <TableRow key={product.id} className={editingProductId === product.id ? "bg-blue-50 dark:bg-blue-900/20" : ""}>
+                            <TableCell className="text-center text-xs text-muted-foreground">{index + 1}</TableCell>
                             <TableCell className="text-sm font-medium">{product.name}</TableCell>
                             <TableCell className="text-sm text-right">
                               Rp {Number(product.price).toLocaleString("id-ID")}
                             </TableCell>
+                            <TableCell className="text-sm text-center text-xs">
+                              {product.unit || "pcs"}
+                            </TableCell>
                             <TableCell className="text-sm text-right">
-                              {product.leadTime || 0} hari
+                              {product.leadTime || 0} {product.leadTimeUnit || "hari"}
                             </TableCell>
                             <TableCell className="text-sm text-right">
                               {product.qualityRating || 0}
@@ -730,7 +853,17 @@ const EditSupplier = () => {
                             <TableCell className="text-sm text-right">
                               {product.minOrderQty || 1}
                             </TableCell>
+                            <TableCell className="text-sm text-left text-muted-foreground max-w-[150px] truncate">
+                              {product.notes || "-"}
+                            </TableCell>
                             <TableCell className="text-center">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+                                onClick={() => handleEditProduct(product)}>
+                                <Pencil size={14} />
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
