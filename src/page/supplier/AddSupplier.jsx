@@ -611,13 +611,16 @@ const AddSupplier = () => {
                         <label className="text-xs text-muted-foreground">Kualitas (0-5)</label>
                         <Input
                           type="text"
-                          inputMode="numeric"
+                          inputMode="decimal"
                           placeholder="0"
-                          maxLength={1}
+                          maxLength={3}
                           value={productQualityRating}
                           onChange={(e) => {
-                            const v = e.target.value.replace(/[^0-5]/g, "").slice(0, 1);
-                            setProductQualityRating(v);
+                            const v = e.target.value.replace(/[^0-5.]/g, "");
+                            const num = parseFloat(v);
+                            if (v === "" || v === "." || (num >= 0 && num <= 5 && v.length <= 3)) {
+                              setProductQualityRating(v);
+                            }
                           }}
                         />
                       </div>
