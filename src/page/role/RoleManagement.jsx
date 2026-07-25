@@ -39,8 +39,7 @@ const RoleManagement = () => {
   };
 
   const { data, isLoading, isError, refetch } = useQuery(["roles-table", page], () =>
-    getAllRoleTable({ page, limit: 10 }),
-    { keepPreviousData: true }
+    getAllRoleTable({ page, limit: 10 })
   );
 
   const roles = data?.data || [];
