@@ -38,7 +38,7 @@ const RoleManagement = () => {
     return PROTECTED_ROLE_NAMES.includes(role.name || "");
   };
 
-  const { data, isLoading, isError, refetch } = useQuery(["roles-table", page], () =>
+  const { data, isFetching, isError, refetch } = useQuery(["roles-table", page], () =>
     getAllRoleTable({ page, limit: 10 })
   );
 
@@ -117,7 +117,7 @@ const RoleManagement = () => {
             <AbortController refetch={refetch} />
           ) : (
             <>
-              {isLoading ? (
+              {isFetching ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -315,7 +315,7 @@ const RoleManagement = () => {
                     }
                   ]}
                   data={roles}
-                  isLoading={isLoading}
+                  isLoading={isFetching}
                   emptyIcon={Shield}
                   emptyMessage={t("page.globalSetting.roleManagement.empty")}
                   toolbar={
