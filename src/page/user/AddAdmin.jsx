@@ -179,6 +179,7 @@ const AddAdmin = () => {
                       </span>
                     </button>
                   </div>
+                  <p className="text-xs text-muted-foreground">{t("common.passwordMin6")}</p>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -194,6 +195,7 @@ const AddAdmin = () => {
                     maxLength={14}
                   />
                   <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
+                  <p className="text-xs text-muted-foreground">{t("common.optionalField")}</p>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">

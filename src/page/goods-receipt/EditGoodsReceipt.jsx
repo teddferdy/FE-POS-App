@@ -277,6 +277,7 @@ const EditGoodsReceipt = () => {
           title={t("page.goodsReceipt.edit.title")}
           description={t("page.goodsReceipt.edit.description")}
           backLink="/goods-receipt"
+          onBack={() => setCancelModal(true)}
         />
 
         <form

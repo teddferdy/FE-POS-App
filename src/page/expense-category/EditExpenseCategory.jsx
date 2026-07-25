@@ -151,6 +151,7 @@ const EditExpenseCategory = () => {
           title={t("page.expenseCategory.edit.title")}
           description={t("page.expenseCategory.edit.description")}
           backLink="/expense-category"
+          onBack={() => setCancelModal(true)}
         />
 
         <Card className="p-6">
@@ -269,9 +270,9 @@ const EditExpenseCategory = () => {
           type="confirm"
           open={cancelModal}
           onOpenChange={setCancelModal}
-          title={t("page.expenseCategory.edit.modalCancelTitle")}
-          description={t("page.expenseCategory.edit.modalCancelDesc")}
-          confirmText={t("page.expenseCategory.edit.modalCancelConfirm")}
+          title={t("modal.cancelTitle")}
+          description={t("modal.cancelDescription")}
+          confirmText={t("modal.yesCancel")}
           onConfirm={() => navigate("/expense-category")}
         />
         <Modal

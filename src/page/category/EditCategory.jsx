@@ -515,7 +515,8 @@ const EditCategory = () => {
             ]}
             title={t("page.category.edit.title")}
             description={t("page.category.edit.description")}
-            backLink="/category-list">
+            backLink="/category-list"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="edit-category" />
           </PageHeader>
         </div>

@@ -25,7 +25,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormControl
+  FormControl,
+  FormDescription
 } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
@@ -52,7 +53,7 @@ const EditSupplier = () => {
   const formSchema = z.object({
     name: z.string().min(1, t("page.supplier.validation.nameRequired")),
     contactPerson: z.string().optional().or(z.literal("")),
-    phone: z.string().min(1, t("page.supplier.validation.phoneRequired")).max(14),
+    phone: z.string().min(1, t("page.supplier.validation.phoneRequired")).max(16),
     email: z
       .string()
       .email(t("page.supplier.validation.emailInvalid"))
@@ -361,7 +362,8 @@ const EditSupplier = () => {
             ]}
             title={t("page.supplier.edit.title")}
             description={t("page.supplier.edit.description")}
-            backLink="/supplier">
+            backLink="/supplier"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-supplier" />
           </PageHeader>
         </div>
@@ -440,6 +442,7 @@ const EditSupplier = () => {
                             {...field}
                           />
                           <FormMessage />
+                          <FormDescription>{t("common.optionalField")}</FormDescription>
                         </FormItem>
                       )}
                     />
@@ -455,15 +458,15 @@ const EditSupplier = () => {
                           <Input
                             placeholder={t("page.supplier.form.phonePlaceholder")}
                             inputMode="numeric"
-                            maxLength={14}
+                            maxLength={16}
                             {...field}
                             onChange={(e) => {
-                              const v = e.target.value.replace(/\D/g, "").slice(0, 14);
+                              const v = e.target.value.replace(/\D/g, "").slice(0, 16);
                               field.onChange(v);
                             }}
                           />
                           <FormMessage />
-                          <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
+                          <FormDescription>{t("common.phoneHintMin")}</FormDescription>
                         </FormItem>
                       )}
                     />
@@ -478,6 +481,7 @@ const EditSupplier = () => {
                             {...field}
                           />
                           <FormMessage />
+                          <FormDescription>{t("common.optionalField")}</FormDescription>
                         </FormItem>
                       )}
                     />
@@ -494,6 +498,7 @@ const EditSupplier = () => {
                           {...field}
                         />
                         <FormMessage />
+                        <FormDescription>{t("common.optionalField")}</FormDescription>
                       </FormItem>
                     )}
                   />

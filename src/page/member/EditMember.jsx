@@ -20,7 +20,7 @@ import { getMissingFields } from "@/lib/validation";
 
 const editSchema = z.object({
   name: z.string().min(1),
-  phoneNumber: z.string().min(1).max(14, "Max 14 characters"),
+  phoneNumber: z.string().min(1).max(16, "Max 16 characters"),
   email: z.string().email().optional().or(z.literal("")),
   birthDate: z.date().optional(),
   gender: z.enum(["male", "female"]),
@@ -145,7 +145,8 @@ const EditMember = () => {
             ]}
             title={t("breadcrumb.edit")}
             description={t("page.member.edit.description")}
-            backLink="/member">
+            backLink="/member"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-member" />
           </PageHeader>
         </div>
@@ -187,6 +188,7 @@ const EditMember = () => {
                         className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                         placeholder={t("page.member.edit.emailPlaceholder")}
                       />
+                      <p className="text-xs text-muted-foreground">{t("common.optionalField")}</p>
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -200,9 +202,9 @@ const EditMember = () => {
                         onChange={handleChange}
                         className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                         placeholder={t("page.member.edit.phonePlaceholder")}
-                        maxLength={14}
+                        maxLength={16}
                       />
-                      <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
+                      <p className="text-xs text-muted-foreground">{t("common.phoneHintMin")}</p>
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -457,8 +459,9 @@ const EditMember = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title={t("page.member.edit.cancelModalTitle")}
-        confirmText={t("page.member.edit.cancelModalConfirm")}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/member-list")}
       />
       <Modal

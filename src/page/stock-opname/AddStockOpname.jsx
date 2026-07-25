@@ -495,7 +495,9 @@ const AddStockOpname = () => {
               { i18nKey: id ? "breadcrumb.edit" : "breadcrumb.add" }
             ]}
             title={id ? t("page.stockOpname.edit.title") : t("page.stockOpname.add.title")}
-            description={t("page.stockOpname.add.description")}>
+            description={t("page.stockOpname.add.description")}
+            backLink="/stock-opname"
+            onBack={() => setCancelModal(true)}>
             <Button
               variant="outline"
               size="sm"

@@ -106,7 +106,8 @@ const EditCategory = () => {
         ]}
         title={t("page.ingredientCategory.add.titleEdit")}
         description={t("page.ingredientCategory.add.subtitleEdit")}
-        backLink="/ingredient-category">
+        backLink="/ingredient-category"
+        onBack={() => setShowCancel(true)}>
         <UserGuide guideKey="edit-ingredient-category" />
       </PageHeader>
 
@@ -282,9 +283,9 @@ const EditCategory = () => {
         type="confirm"
         open={showCancel}
         onOpenChange={setShowCancel}
-        title={t("page.ingredientCategory.add.cancelModalTitle")}
-        description={t("page.ingredientCategory.add.cancelModalDesc")}
-        confirmText={t("page.ingredientCategory.add.cancelModalConfirm")}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/ingredient-category")}
       />
       <Modal

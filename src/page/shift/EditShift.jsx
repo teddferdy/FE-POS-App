@@ -180,7 +180,8 @@ const EditShift = () => {
           ]}
           title={t("page.shift.edit.title")}
           description={t("page.shift.edit.subtitle")}
-          backLink="/shift"></PageHeader>
+          backLink="/shift"
+          onBack={() => setCancelModal(true)}></PageHeader>
 
         <div className="flex items-center justify-between">
           <div></div>
@@ -327,9 +328,9 @@ const EditShift = () => {
           type="confirm"
           open={cancelModal}
           onOpenChange={setCancelModal}
-          title={t("page.shift.edit.modal.cancelTitle")}
-          description={t("page.shift.edit.modal.cancelDesc")}
-          confirmText={t("page.shift.edit.modal.cancelConfirm")}
+          title={t("modal.cancelTitle")}
+          description={t("modal.cancelDescription")}
+          confirmText={t("modal.yesCancel")}
           onConfirm={() => navigate("/shift")}
         />
         <Modal

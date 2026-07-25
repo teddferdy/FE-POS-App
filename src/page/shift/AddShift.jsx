@@ -158,7 +158,9 @@ const AddShift = () => {
               { i18nKey: "page.shift.add.title" }
             ]}
             title={t("page.shift.add.title")}
-            description={t("page.shift.list.description")}>
+            description={t("page.shift.list.description")}
+            backLink="/shift"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-shift" />
           </PageHeader>
         </div>

@@ -36,6 +36,7 @@ const AddDepartment = () => {
   const [saveConfirm, setSaveConfirm] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
+  const [cancelModal, setCancelModal] = useState(false);
 
   const departmentFieldLabels = useMemo(
     () => ({
@@ -87,7 +88,9 @@ const AddDepartment = () => {
           { i18nKey: "page.department.add.title" }
         ]}
         title={t("page.department.add.title")}
-        description={t("page.department.add.description")}>
+        description={t("page.department.add.description")}
+        backLink="/department-list"
+        onBack={() => setCancelModal(true)}>
         <UserGuide guideKey="add-department" />
       </PageHeader>
 
@@ -189,7 +192,7 @@ const AddDepartment = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/department-list")}
+                onClick={() => setCancelModal(true)}
                 className="gap-2">
                 <span className="material-symbols-outlined text-lg">close</span>
                 {t("common.cancel")}
@@ -254,6 +257,19 @@ const AddDepartment = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFields}
+      />
+
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
+        onConfirm={() => {
+          setCancelModal(false);
+          navigate("/department-list");
+        }}
       />
     </div>
   );

@@ -5,9 +5,17 @@ import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const PageHeader = ({ breadcrumbs = [], title, description, children, backLink }) => {
+const PageHeader = ({ breadcrumbs = [], title, description, children, backLink, onBack }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else if (backLink) {
+      navigate(backLink);
+    }
+  };
 
   return (
     <header className="space-y-4">
@@ -43,7 +51,7 @@ const PageHeader = ({ breadcrumbs = [], title, description, children, backLink }
               variant="outline"
               size="icon"
               className="h-10 w-10 shrink-0"
-              onClick={() => navigate(backLink)}>
+              onClick={handleBack}>
               <ArrowLeft size={16} />
             </Button>
           )}

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, Check } from "lucide-react";
+import { X, Save, Check, ArrowLeft } from "lucide-react";
 import { addExpenseCategory } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,7 +80,15 @@ const AddExpenseCategory = () => {
   return (
     <div>
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 shrink-0"
+            onClick={() => setCancelModal(true)}>
+            <ArrowLeft size={16} />
+          </Button>
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
             className="hover:text-foreground transition-colors">
@@ -95,6 +103,7 @@ const AddExpenseCategory = () => {
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
         </nav>
+        </div>
 
         <div>
           <h1 className="text-2xl font-bold text-foreground">
@@ -221,9 +230,9 @@ const AddExpenseCategory = () => {
           type="confirm"
           open={cancelModal}
           onOpenChange={setCancelModal}
-          title={t("page.expenseCategory.add.cancelTitle")}
-          description={t("page.expenseCategory.add.cancelDescription")}
-          confirmText={t("page.expenseCategory.add.cancelConfirm")}
+          title={t("modal.cancelTitle")}
+          description={t("modal.cancelDescription")}
+          confirmText={t("modal.yesCancel")}
           onConfirm={() => navigate("/expense-category")}
         />
         <Modal

@@ -13,7 +13,7 @@ import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
@@ -116,7 +116,9 @@ const AddTaxConfig = () => {
               { i18nKey: "page.taxConfig.add.title" }
             ]}
             title={t("page.taxConfig.add.title")}
-            description={t("page.taxConfig.add.description")}>
+            description={t("page.taxConfig.add.description")}
+            backLink="/tax-list"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-tax" />
           </PageHeader>
         </div>
@@ -182,6 +184,7 @@ const AddTaxConfig = () => {
                           {...field}
                         />
                         <FormMessage />
+                        <FormDescription>{t("common.percentageHint")}</FormDescription>
                       </FormItem>
                     )}
                   />

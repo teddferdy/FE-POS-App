@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Combobox } from "@/components/ui/combobox";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -321,6 +321,7 @@ const EditIngredient = () => {
           title={t("page.ingredient.edit.title")}
           description={form.watch("name")}
           backLink="/ingredient"
+          onBack={() => setCancelModal(true)}
         />
 
         {dropdownsLoading || loadingData ? (
@@ -425,6 +426,7 @@ const EditIngredient = () => {
                                 )}
                                 disabled={isCategoryDisabled}
                               />
+                              <FormDescription>{t("page.ingredient.form.categoryHint")}</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}

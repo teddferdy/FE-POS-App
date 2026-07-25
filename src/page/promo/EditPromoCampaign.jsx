@@ -15,6 +15,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { FormDescription } from "@/components/ui/form";
 
 const EditPromoCampaign = () => {
   const { t } = useTranslation();
@@ -229,7 +230,9 @@ const EditPromoCampaign = () => {
           { i18nKey: "page.promo.edit.title" }
         ]}
         title={t("page.promo.edit.title")}
-        description={t("page.promo.edit.description")}>
+        description={t("page.promo.edit.description")}
+        backLink="/promo-list"
+        onBack={() => setCancelModalOpen(true)}>
         <Button variant="outline" onClick={() => setCancelModalOpen(true)}>
           {t("common.cancel")}
         </Button>
@@ -269,6 +272,7 @@ const EditPromoCampaign = () => {
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none uppercase"
                   placeholder={t("page.promo.form.codePlaceholder")}
                 />
+                <FormDescription>{t("common.optionalField")}</FormDescription>
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">
@@ -335,6 +339,7 @@ const EditPromoCampaign = () => {
                 {!isPercentage && (
                   <p className="text-[11px] text-muted-foreground mt-1">Hanya berlaku untuk tipe Percentage</p>
                 )}
+                <FormDescription>{t("common.optionalField")}</FormDescription>
               </div>
               {(isSpendGet || isBuyXGetY) && (
                 <div>
@@ -562,6 +567,7 @@ const EditPromoCampaign = () => {
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
                   placeholder="Unlimited"
                 />
+                <FormDescription>{t("common.optionalField")}</FormDescription>
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">{t("page.promo.form.maxUsagePerMember")}</label>
@@ -571,6 +577,7 @@ const EditPromoCampaign = () => {
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
                   placeholder="Unlimited"
                 />
+                <FormDescription>{t("common.optionalField")}</FormDescription>
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">{t("page.promo.form.priority")}</label>

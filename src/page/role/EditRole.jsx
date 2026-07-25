@@ -326,9 +326,7 @@ const EditRole = () => {
             <h2 className="text-2xl font-bold text-foreground tracking-tight">
               {`${t("page.role.edit.title")}: ${name}`}
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.role.edit.description")}
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.role.edit.description")}</p>
           </div>
         </div>
 
@@ -510,16 +508,17 @@ const EditRole = () => {
             {t("common.cancel")}
           </Button>
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setDraftModal(true)}
-              disabled={isSubmitting}>
+            <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
               {t("common.saveAsDraft")}
             </Button>
             <Button
               data-tour="role-save"
               onClick={() => {
-                const missing = getMissingFields({ name, description }, roleFormSchema, roleFieldLabels);
+                const missing = getMissingFields(
+                  { name, description },
+                  roleFormSchema,
+                  roleFieldLabels
+                );
                 if (missing.length > 0) {
                   setMissingFieldsList(missing);
                   setMissingFieldsModal(true);

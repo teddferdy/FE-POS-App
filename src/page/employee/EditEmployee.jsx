@@ -41,7 +41,14 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form";
 import PageHeader from "@/components/ui/PageHeader";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
@@ -95,7 +102,7 @@ const EditEmployee = () => {
         .string()
         .regex(/^\d+$/, t("page.employee.edit.validation.phoneOnlyNumbers"))
         .min(8, t("page.employee.edit.validation.phoneMinDigits"))
-        .max(14, t("page.employee.edit.validation.phoneMaxDigits")),
+        .max(16, t("page.employee.edit.validation.phoneMaxDigits")),
       placeOfBirth: z.string().min(2, t("page.employee.edit.validation.placeOfBirthMin")),
       address: z.string().min(5, t("page.employee.edit.validation.addressMin")),
       gender: z.string().min(1, t("page.employee.edit.validation.genderRequired")),
@@ -283,19 +290,13 @@ const EditEmployee = () => {
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || locationsData?.locations || [];
 
-  const { data: positionsData } = useQuery(["positions-all"], () => getAllPosition(), {
-    
-  });
+  const { data: positionsData } = useQuery(["positions-all"], () => getAllPosition(), {});
   const positions = positionsData?.data || positionsData?.positions || [];
 
-  const { data: departmentsData } = useQuery(["departments-all"], () => getAllDepartment(), {
-    
-  });
+  const { data: departmentsData } = useQuery(["departments-all"], () => getAllDepartment(), {});
   const departments = departmentsData?.data || departmentsData?.departments || [];
 
-  const { data: rolesData } = useQuery(["roles"], getAllRole, {
-    
-  });
+  const { data: rolesData } = useQuery(["roles"], getAllRole, {});
   const roles = rolesData?.data || rolesData?.roles || [];
 
   const selectedRoleIdForAccess =
@@ -305,8 +306,7 @@ const EditEmployee = () => {
     ["role-detail", selectedRoleIdForAccess],
     () => getRoleById(selectedRoleIdForAccess),
     {
-      enabled: !!selectedRoleIdForAccess,
-      
+      enabled: !!selectedRoleIdForAccess
     }
   );
   const selectedRoleAccessMenu =
@@ -318,7 +318,6 @@ const EditEmployee = () => {
     ["shifts-all", selectedStore],
     () => getShiftDropdown({ store: selectedStore, statusShift: "active" }),
     {
-      
       enabled: !!selectedStore
     }
   );
@@ -499,13 +498,17 @@ const EditEmployee = () => {
             title={t("page.employee.edit.title")}
             description={t("page.employee.edit.description")}
             backLink="/employee-list"
+            onBack={() => setCancelModal(true)}
           />
         </div>
       </div>
       <div>
         <div>
           <Form {...form}>
-            <form onSubmit={(e) => { e.preventDefault(); }}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+              }}>
               <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8 space-y-6">
                   {/* Section 1: Informasi Pribadi */}
@@ -595,6 +598,7 @@ const EditEmployee = () => {
                                   placeholder={t("page.employee.form.emailPlaceholder")}
                                 />
                                 <FormMessage />
+                                <FormDescription>{t("common.emailHint")}</FormDescription>
                               </FormItem>
                             )}
                           />
@@ -613,16 +617,14 @@ const EditEmployee = () => {
                                   {...field}
                                   type="tel"
                                   placeholder={t("page.employee.form.phonePlaceholder")}
-                                  maxLength={14}
+                                  maxLength={16}
                                   onChange={(e) => {
-                                    const value = e.target.value.replace(/\D/g, "").slice(0, 14);
+                                    const value = e.target.value.replace(/\D/g, "").slice(0, 16);
                                     field.onChange(value);
                                   }}
                                 />
                                 <FormMessage />
-                                <p className="text-xs text-muted-foreground">
-                                  {t("common.phoneHint")}
-                                </p>
+                                <FormDescription>{t("common.phoneHintMin")}</FormDescription>
                               </FormItem>
                             )}
                           />
@@ -1054,24 +1056,25 @@ const EditEmployee = () => {
                           control={form.control}
                           name="isActive"
                           render={({ field }) => (
-                              <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                            <div
+                              className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
                                 field.value
                                   ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
                                   : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
                               }`}>
-                                <div className="flex items-center gap-3">
-                                  <div
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                      field.value
-                                        ? "bg-green-600 text-secondary"
-                                        : "bg-destructive/10 text-destructive"
-                                    }`}>
-                                    {field.value ? (
-                                      <Check size={20} />
-                                    ) : (
-                                      <span className="text-lg font-bold">⏻</span>
-                                    )}
-                                  </div>
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                    field.value
+                                      ? "bg-green-600 text-secondary"
+                                      : "bg-destructive/10 text-destructive"
+                                  }`}>
+                                  {field.value ? (
+                                    <Check size={20} />
+                                  ) : (
+                                    <span className="text-lg font-bold">⏻</span>
+                                  )}
+                                </div>
                                 <div>
                                   <p className="text-sm font-semibold text-foreground">
                                     {t("common.status")}{" "}
@@ -1207,6 +1210,9 @@ const EditEmployee = () => {
                               {t("page.employee.form.passwordHint")}
                             </p>
                             <FormMessage />
+                            <FormDescription>
+                              {t("common.optionalField")} — {t("common.passwordMin6")}
+                            </FormDescription>
                           </FormItem>
                         )}
                       />
@@ -1511,8 +1517,9 @@ const EditEmployee = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title={t("page.employee.edit.cancelTitle")}
-        confirmText={t("common.confirm")}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/employee-list")}
       />
       <Modal

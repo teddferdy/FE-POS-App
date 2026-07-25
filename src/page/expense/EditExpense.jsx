@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -171,6 +171,7 @@ const EditExpense = () => {
           title={t("page.expense.edit.title")}
           description={t("page.expense.edit.description")}
           backLink="/expense"
+          onBack={() => setCancelModal(true)}
         />
 
         <Card className="p-6">
@@ -204,6 +205,7 @@ const EditExpense = () => {
                           )}
                         </SelectContent>
                       </Select>
+                      <FormDescription>{t("page.expense.form.categoryHint")}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -326,9 +328,9 @@ const EditExpense = () => {
           type="confirm"
           open={cancelModal}
           onOpenChange={setCancelModal}
-          title={t("page.expense.edit.modalCancelTitle")}
-          description={t("page.expense.edit.modalCancelDesc")}
-          confirmText={t("page.expense.edit.modalCancelConfirm")}
+          title={t("modal.cancelTitle")}
+          description={t("modal.cancelDescription")}
+          confirmText={t("modal.yesCancel")}
           onConfirm={() => navigate("/expense")}
         />
         <Modal

@@ -14,7 +14,7 @@ import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
@@ -198,6 +198,7 @@ const EditTaxConfig = () => {
           title={t("page.taxConfig.edit.title")}
           description={t("page.taxConfig.edit.description")}
           backLink="/tax-list"
+          onBack={() => setCancelModal(true)}
         />
       </div>
 
@@ -259,6 +260,7 @@ const EditTaxConfig = () => {
                       {...field}
                     />
                     <FormMessage />
+                    <FormDescription>{t("common.percentageHint")}</FormDescription>
                   </FormItem>
                 )}
               />

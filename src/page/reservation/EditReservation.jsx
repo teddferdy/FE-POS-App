@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -49,7 +49,7 @@ const EditReservation = () => {
   const { t } = useTranslation();
   const formSchema = z.object({
     customerName: z.string().min(1, t("page.reservation.edit.validation.customerName")),
-    customerPhone: z.string().max(14).optional().or(z.literal("")),
+    customerPhone: z.string().max(16).optional().or(z.literal("")),
     customerEmail: z.string().optional().or(z.literal("")),
     guestCount: z.coerce.number().min(1),
     reservationDate: z.date({
@@ -248,7 +248,8 @@ const EditReservation = () => {
           ]}
           title={t("page.reservation.edit.title")}
           description={t("page.reservation.edit.subtitle")}
-          backLink="/reservation"></PageHeader>
+          backLink="/reservation"
+          onBack={() => setCancelModal(true)}></PageHeader>
 
         <Card className="p-6">
           <Form {...form}>
@@ -370,9 +371,9 @@ const EditReservation = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("page.reservation.edit.form.customerPhone")}</FormLabel>
-                      <Input maxLength={14} {...field} />
+                      <Input maxLength={16} {...field} />
                       <FormMessage />
-                      <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
+                      <FormDescription>{t("common.phoneHint")}</FormDescription>
                     </FormItem>
                   )}
                 />
@@ -384,6 +385,7 @@ const EditReservation = () => {
                       <FormLabel>{t("page.reservation.edit.form.customerEmail")}</FormLabel>
                       <Input type="email" {...field} />
                       <FormMessage />
+                      <FormDescription>{t("common.optionalField")}</FormDescription>
                     </FormItem>
                   )}
                 />
@@ -504,9 +506,9 @@ const EditReservation = () => {
           type="confirm"
           open={cancelModal}
           onOpenChange={setCancelModal}
-          title={t("page.reservation.edit.modal.cancelTitle")}
-          description={t("page.reservation.edit.modal.cancelDesc")}
-          confirmText={t("page.reservation.edit.modal.cancelConfirm")}
+          title={t("modal.cancelTitle")}
+          description={t("modal.cancelDescription")}
+          confirmText={t("modal.yesCancel")}
           onConfirm={() => navigate("/reservation")}
         />
         <Modal

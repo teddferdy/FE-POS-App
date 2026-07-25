@@ -125,7 +125,9 @@ const AddDriver = () => {
           { i18nKey: "page.delivery.driver.add.title" }
         ]}
         title={t("page.delivery.driver.add.title")}
-        description={t("page.delivery.driver.add.description")}>
+        description={t("page.delivery.driver.add.description")}
+        backLink="/driver-list"
+        onBack={() => setCancelModalOpen(true)}>
         <Button variant="outline" onClick={() => setCancelModalOpen(true)}>
           {t("common.cancel")}
         </Button>
@@ -170,6 +172,7 @@ const AddDriver = () => {
                     {form.formState.errors.phone.message}
                   </p>
                 )}
+                <p className="text-xs text-muted-foreground mt-1">{t("common.phoneHint")}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">
@@ -180,6 +183,7 @@ const AddDriver = () => {
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
                   placeholder={t("page.delivery.driver.form.emailPlaceholder")}
                 />
+                <p className="text-xs text-muted-foreground mt-1">{t("common.optionalField")}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">

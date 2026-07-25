@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save } from "lucide-react";
+import { X, Save, ArrowLeft } from "lucide-react";
 import { createReservation } from "@/services/reservation";
 import { getAllLocation, getLocationDetail } from "@/services/location";
 import { getTablesByStore } from "@/services/table";
@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
@@ -48,7 +48,7 @@ const AddReservation = () => {
   const { t } = useTranslation();
   const formSchema = z.object({
     customerName: z.string().min(1, t("page.reservation.edit.validation.customerName")),
-    customerPhone: z.string().max(14).optional().or(z.literal("")),
+    customerPhone: z.string().max(16).optional().or(z.literal("")),
     customerEmail: z.string().optional().or(z.literal("")),
     guestCount: z.coerce.number().min(1, t("page.reservation.add.validation.guestCount")),
     store: z.string().min(1, t("page.ingredientCategory.add.storeRequired")),
@@ -196,7 +196,15 @@ const AddReservation = () => {
   return (
     <div>
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 shrink-0"
+            onClick={() => setCancelModal(true)}>
+            <ArrowLeft size={16} />
+          </Button>
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
             className="hover:text-foreground transition-colors">
@@ -211,6 +219,7 @@ const AddReservation = () => {
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">Tambah Reservasi</span>
         </nav>
+        </div>
 
         <div>
           <h1 className="text-2xl font-bold text-foreground">Tambah Reservasi</h1>
@@ -326,9 +335,9 @@ const AddReservation = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>No. Telepon</FormLabel>
-                      <Input placeholder="08123456789" maxLength={14} {...field} />
+                      <Input placeholder="08123456789" maxLength={16} {...field} />
                       <FormMessage />
-                      <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
+                      <FormDescription>{t("common.phoneHint")}</FormDescription>
                     </FormItem>
                   )}
                 />
@@ -340,6 +349,7 @@ const AddReservation = () => {
                       <FormLabel>Email</FormLabel>
                       <Input type="email" placeholder="email@example.com" {...field} />
                       <FormMessage />
+                      <FormDescription>{t("common.optionalField")}</FormDescription>
                     </FormItem>
                   )}
                 />

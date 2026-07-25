@@ -378,7 +378,9 @@ const AddPurchaseOrder = () => {
               { label: t("page.purchaseOrder.add.title"), i18nKey: "page.purchaseOrder.add.title" }
             ]}
             title={t("page.purchaseOrder.add.title")}
-            description={t("page.purchaseOrder.add.description")}>
+            description={t("page.purchaseOrder.add.description")}
+            backLink="/purchase-order"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-purchase-order" />
           </PageHeader>
         </div>
@@ -1007,10 +1009,9 @@ const AddPurchaseOrder = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title={t("page.purchaseOrder.add.cancelModalTitle")}
-        description={t("page.purchaseOrder.add.cancelModalDesc")}
-        confirmText={t("page.purchaseOrder.add.cancelModalConfirm")}
-        cancelText={t("page.purchaseOrder.add.cancelModalBack")}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/purchase-order")}
       />
 

@@ -371,9 +371,9 @@ const AddStockTransfer = () => {
           type="confirm"
           open={cancelModal}
           onOpenChange={(o) => !o && setCancelModal(false)}
-          title={t("page.stockTransfer.add.modal.cancelTitle")}
-          description={t("page.stockTransfer.add.modal.cancelDesc")}
-          confirmText={t("page.stockTransfer.add.modal.cancelConfirm")}
+          title={t("modal.cancelTitle")}
+          description={t("modal.cancelDescription")}
+          confirmText={t("modal.yesCancel")}
           onConfirm={() => {
             setCancelModal(false);
             navigate("/stock-transfer");

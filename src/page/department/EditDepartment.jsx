@@ -38,6 +38,7 @@ const EditDepartment = () => {
   const [saveConfirm, setSaveConfirm] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
+  const [cancelModal, setCancelModal] = useState(false);
 
   const departmentFieldLabels = useMemo(
     () => ({
@@ -139,6 +140,7 @@ const EditDepartment = () => {
         title={t("page.department.edit.title")}
         description={t("page.department.edit.description")}
         backLink="/department-list"
+        onBack={() => setCancelModal(true)}
       />
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
@@ -238,7 +240,7 @@ const EditDepartment = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/department-list")}
+                onClick={() => setCancelModal(true)}
                 className="gap-2">
                 <span className="material-symbols-outlined text-lg">close</span>
                 {t("common.cancel")}
@@ -302,6 +304,19 @@ const EditDepartment = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFields}
+      />
+
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
+        onConfirm={() => {
+          setCancelModal(false);
+          navigate("/department-list");
+        }}
       />
     </div>
   );

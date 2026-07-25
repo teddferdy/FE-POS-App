@@ -26,6 +26,7 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 
@@ -35,12 +36,17 @@ const AddTypePayment = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locationsData } = useQuery(
-    ["allLocations-type-payment"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  const {
+    data: locationsData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["allLocations-type-payment"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || [];
+
+  const [selectedStore, setSelectedStore] = useState([]);
+  const [allStores, setAllStores] = useState(false);
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.typePayment.validation.nameRequired")),
@@ -91,10 +97,15 @@ const AddTypePayment = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const { status, store, ...rest } = values;
+    if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
+      form.setError("store", { message: t("page.ingredientCategory.add.storeRequired") });
+      return;
+    }
+    form.clearErrors("store");
+    const { status, ...rest } = values;
     createMutation.mutate({
       ...rest,
-      store: isSuperAdmin && store ? Number(store) : undefined,
+      store: isSuperAdmin ? JSON.stringify(allStores ? "all" : selectedStore) : undefined,
       status: saveAsDraft ? "draft" : status ? "active" : "inactive"
     });
   };
@@ -110,7 +121,9 @@ const AddTypePayment = () => {
               { i18nKey: "page.typePayment.add.title" }
             ]}
             title={t("page.typePayment.add.title")}
-            description={t("page.typePayment.add.description")}>
+            description={t("page.typePayment.add.description")}
+            backLink="/type-payment-list"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-type-payment" />
           </PageHeader>
         </div>
@@ -121,6 +134,33 @@ const AddTypePayment = () => {
           <Card className="p-6">
             <Form {...form}>
               <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+                <StoreSelectCard
+                  locations={locations}
+                  selectedStores={selectedStore}
+                  onChange={(stores) => {
+                    setSelectedStore(stores);
+                    form.clearErrors("store");
+                  }}
+                  isSuperAdmin={isSuperAdmin}
+                  user={user}
+                  t={t}
+                  title={t("page.typePayment.form.storeSection.title")}
+                  description={t("page.typePayment.form.storeSection.desc")}
+                  noStoreLabel={t("page.typePayment.form.storeSection.noStore")}
+                  addStoreLabel={t("page.typePayment.form.storeSection.addStore")}
+                  storeInfoLabel={t("page.typePayment.form.storeInfo")}
+                  allStores={allStores}
+                  onAllStoresChange={(val) => {
+                    setAllStores(val);
+                    form.clearErrors("store");
+                  }}
+                  navigate={navigate}
+                  mandatory={true}
+                  locationsLoading={locsLoading || locsFetching}
+                />
+                {form.formState.errors.store && (
+                  <p className="text-sm text-destructive">{form.formState.errors.store.message}</p>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
@@ -164,40 +204,18 @@ const AddTypePayment = () => {
                       </FormItem>
                     )}
                   />
-                  {isSuperAdmin && (
-                    <FormField
-                      control={form.control}
-                      name="store"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("page.typePayment.form.store")}</FormLabel>
-                          <select
-                            value={field.value}
-                            onChange={field.onChange}
-                            className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
-                            <option value="">{t("page.typePayment.form.allStores")}</option>
-                            {locations.map((loc) => (
-                              <option key={loc.id} value={loc.id}>
-                                {loc.name}
-                              </option>
-                            ))}
-                          </select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
                 </div>
                 <FormField
                   control={form.control}
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                        field.value
-                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                      }`}>
+                      <div
+                        className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                          field.value
+                            ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                            : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                        }`}>
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-10 h-10 rounded-full flex items-center justify-center ${

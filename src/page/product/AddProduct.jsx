@@ -33,6 +33,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
   FormControl
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -499,7 +500,9 @@ const AddProduct = () => {
               { i18nKey: "breadcrumb.add" }
             ]}
             title={t("page.product.add.title")}
-            description={t("page.product.add.description")}>
+            description={t("page.product.add.description")}
+            backLink="/product-list"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-product" />
           </PageHeader>
         </div>
@@ -648,6 +651,7 @@ const AddProduct = () => {
                                     t("page.product.form.categoryPlaceholder") + "..."
                                   }
                                 />
+                                <FormDescription>{t("page.product.form.categoryHint")}</FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -755,6 +759,7 @@ const AddProduct = () => {
                                   {t("page.product.form.barcodeOptional")}
                                 </p>
                                 <FormMessage />
+                                <FormDescription>{t("common.optionalField")}</FormDescription>
                               </FormItem>
                             )}
                           />
@@ -773,6 +778,7 @@ const AddProduct = () => {
                                   {t("page.product.form.skuOptional")}
                                 </p>
                                 <FormMessage />
+                                <FormDescription>{t("common.optionalField")}</FormDescription>
                               </FormItem>
                             )}
                           />
@@ -1886,10 +1892,9 @@ const AddProduct = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title={t("page.product.form.cancelTitle")}
-        description={t("page.product.form.cancelDesc")}
-        confirmText={t("page.product.form.cancelConfirm")}
-        cancelText={t("page.product.form.cancelBack")}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/product-list")}
       />
 

@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
-import { X, Save } from "lucide-react";
+import { X, Save, ArrowLeft } from "lucide-react";
 import { addExpense, getExpenseCategories } from "@/services/expense";
 import { getAllLocation } from "@/services/location";
 import { Loading } from "@/components/ui/loading";
@@ -28,7 +28,8 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormMessage
+  FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
@@ -148,7 +149,15 @@ const AddExpense = () => {
   return (
     <div>
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 shrink-0"
+            onClick={() => setCancelModal(true)}>
+            <ArrowLeft size={16} />
+          </Button>
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
             className="hover:text-foreground transition-colors">
@@ -163,6 +172,7 @@ const AddExpense = () => {
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
         </nav>
+        </div>
 
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t("page.expense.add.title")}</h1>
@@ -249,6 +259,7 @@ const AddExpense = () => {
                             )}
                           </SelectContent>
                         </Select>
+                        <FormDescription>{t("page.expense.form.categoryHint")}</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -368,9 +379,9 @@ const AddExpense = () => {
           type="confirm"
           open={cancelModal}
           onOpenChange={setCancelModal}
-          title={t("page.expense.add.cancelTitle")}
-          description={t("page.expense.add.cancelDescription")}
-          confirmText={t("page.expense.add.cancelConfirm")}
+          title={t("modal.cancelTitle")}
+          description={t("modal.cancelDescription")}
+          confirmText={t("modal.yesCancel")}
           onConfirm={() => navigate("/expense")}
         />
         <Modal

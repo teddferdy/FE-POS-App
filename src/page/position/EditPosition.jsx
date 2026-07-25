@@ -47,6 +47,7 @@ const EditPosition = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.position.validation.nameRequired")),
@@ -190,6 +191,7 @@ const EditPosition = () => {
         title={t("page.position.edit.title")}
         description={t("page.position.edit.description")}
         backLink="/position-list"
+        onBack={() => setCancelModal(true)}
       />
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
@@ -362,7 +364,7 @@ const EditPosition = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/position-list")}
+                onClick={() => setCancelModal(true)}
                 className="gap-2">
                 <span className="material-symbols-outlined text-lg">close</span>
                 {t("common.cancel")}
@@ -443,6 +445,19 @@ const EditPosition = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
+        onConfirm={() => {
+          setCancelModal(false);
+          navigate("/position-list");
+        }}
       />
     </div>
   );

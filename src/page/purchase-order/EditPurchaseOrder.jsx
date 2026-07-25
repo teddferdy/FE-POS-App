@@ -453,7 +453,9 @@ const EditPurchaseOrder = () => {
               }
             ]}
             title={`${t("page.purchaseOrder.edit.editLabel")} ${po.orderNumber || `PO-${po.id}`}`}
-            description={t("page.purchaseOrder.edit.description")}>
+            description={t("page.purchaseOrder.edit.description")}
+            backLink="/purchase-order"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="edit-purchase-order" />
           </PageHeader>
         </div>
@@ -971,10 +973,9 @@ const EditPurchaseOrder = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title={t("page.purchaseOrder.edit.cancelModalTitle")}
-        description={t("page.purchaseOrder.edit.cancelModalDesc")}
-        confirmText={t("page.purchaseOrder.edit.cancelModalConfirm")}
-        cancelText={t("page.purchaseOrder.edit.cancelModalCancel")}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/purchase-order")}
       />
       <Modal

@@ -45,6 +45,7 @@ const AddPosition = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.position.validation.nameRequired")),
@@ -102,7 +103,9 @@ const AddPosition = () => {
           { i18nKey: "page.position.add.title" }
         ]}
         title={t("page.position.add.title")}
-        description={t("page.position.add.description")}>
+        description={t("page.position.add.description")}
+        backLink="/position-list"
+        onBack={() => setCancelModal(true)}>
         <UserGuide guideKey="add-position" />
       </PageHeader>
 
@@ -316,7 +319,7 @@ const AddPosition = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate("/position-list")}
+                    onClick={() => setCancelModal(true)}
                     className="gap-2">
                     <span className="material-symbols-outlined text-lg">close</span>
                     {t("common.cancel")}
@@ -387,6 +390,19 @@ const AddPosition = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
+        onConfirm={() => {
+          setCancelModal(false);
+          navigate("/position-list");
+        }}
       />
     </div>
   );

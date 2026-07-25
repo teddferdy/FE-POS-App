@@ -29,7 +29,7 @@ import {
   UserPlus
 } from "lucide-react";
 import { toast } from "sonner";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -189,7 +189,7 @@ const EditLocation = () => {
         .string()
         .min(1, "Nomor Telepon harus diisi")
         .regex(/^\d*$/, "Nomor Telepon hanya boleh angka")
-        .max(14, "Nomor Telepon maksimal 14 digit"),
+        .max(16, "Nomor Telepon maksimal 16 digit"),
       email: z.string().optional(),
       address: z.string().min(1, "Alamat Lengkap harus diisi"),
       detailLocation: z.string().optional(),
@@ -647,7 +647,8 @@ const EditLocation = () => {
             ]}
             title={t("page.location.edit.title")}
             description={t("page.location.edit.description")}
-            backLink="/location-list">
+            backLink="/location-list"
+            onBack={() => setCancelModal(true)}>
             <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
               <span className="material-symbols-outlined text-lg">arrow_back</span>
               {t("breadcrumb.back")}
@@ -740,17 +741,15 @@ const EditLocation = () => {
                                   placeholder={t("page.location.form.phonePlaceholder")}
                                   className="pl-9"
                                   inputMode="numeric"
-                                  maxLength={14}
+                                  maxLength={16}
                                   onChange={(e) => {
-                                    const value = e.target.value.replace(/\D/g, "").slice(0, 14);
+                                    const value = e.target.value.replace(/\D/g, "").slice(0, 16);
                                     field.onChange(value);
                                   }}
                                 />
                               </div>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {t("page.location.form.phoneHint")}
-                              </p>
                               <FormMessage />
+                              <FormDescription>{t("common.phoneHint")}</FormDescription>
                             </FormItem>
                           )}
                         />
@@ -776,6 +775,7 @@ const EditLocation = () => {
                                 />
                               </div>
                               <FormMessage />
+                              <FormDescription>{t("common.emailHint")}</FormDescription>
                             </FormItem>
                           )}
                         />
@@ -823,7 +823,7 @@ const EditLocation = () => {
                               placeholder={t("page.location.form.detailPlaceholder")}
                               className="min-h-[80px]"
                             />
-                            <p className="text-xs text-muted-foreground mt-1">Optional</p>
+                            <p className="text-xs text-muted-foreground mt-1">{t("page.location.form.detailLocationHint")}</p>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1049,7 +1049,7 @@ const EditLocation = () => {
                       )}
                     />
 
-                    {/* Category */}
+                    {/* Category & Manager */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -1069,50 +1069,93 @@ const EditLocation = () => {
                                 </option>
                               ))}
                             </select>
+                            <FormDescription>{t("page.location.form.categoryHint")}</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Manager Name */}
+                      <FormField
+                        control={form.control}
+                        name="managerName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.location.form.managerLabel")}
+                            </FormLabel>
+                            <div className="relative">
+                              <div
+                                className="cursor-pointer"
+                                onClick={() => setManagerModalOpen(true)}>
+                                <User
+                                  size={16}
+                                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                                />
+                                <Input
+                                  {...field}
+                                  placeholder={t("page.location.form.clickSelectManager")}
+                                  className="pl-9 pr-10 cursor-pointer"
+                                  readOnly
+                                />
+                              </div>
+                              {field.value && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    form.setValue("managerName", "");
+                                  }}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-destructive transition-colors">
+                                  <X size={16} />
+                                </button>
+                              )}
+                            </div>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
 
-                    {/* Manager Name */}
+                    {/* Status */}
                     <FormField
                       control={form.control}
-                      name="managerName"
+                      name="isActive"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.managerLabel")}
-                          </FormLabel>
-                          <div className="relative">
+                        <div
+                          className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                            field.value
+                              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                          }`}>
+                          <div className="flex items-center gap-3">
                             <div
-                              className="cursor-pointer"
-                              onClick={() => setManagerModalOpen(true)}>
-                              <User
-                                size={16}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                              />
-                              <Input
-                                {...field}
-                                placeholder={t("page.location.form.clickSelectManager")}
-                                className="pl-9 pr-10 cursor-pointer"
-                                readOnly
-                              />
+                              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                field.value
+                                  ? "bg-green-600 text-secondary"
+                                  : "bg-destructive/10 text-destructive"
+                              }`}>
+                              {field.value ? (
+                                <Check size={20} />
+                              ) : (
+                                <span className="text-lg font-bold">⏻</span>
+                              )}
                             </div>
-                            {field.value && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  form.setValue("managerName", "");
-                                }}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-destructive transition-colors">
-                                <X size={16} />
-                              </button>
-                            )}
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">
+                                {field.value
+                                  ? t("page.location.form.active")
+                                  : t("page.location.form.inactive")}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {field.value
+                                  ? t("page.location.form.activeDesc")
+                                  : t("page.location.form.inactiveDesc")}
+                              </p>
+                            </div>
                           </div>
-                          <FormMessage />
-                        </FormItem>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </div>
                       )}
                     />
 
@@ -1290,46 +1333,6 @@ const EditLocation = () => {
 
                   {/* Right Column - Cards */}
                   <div className="lg:col-span-1 space-y-6">
-                    {/* Status Toggle */}
-                    <div
-                      className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                        form.watch("isActive")
-                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                      }`}>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            form.watch("isActive")
-                              ? "bg-green-600 text-secondary"
-                              : "bg-destructive/10 text-destructive"
-                          }`}>
-                          {form.watch("isActive") ? (
-                            <Check size={20} />
-                          ) : (
-                            <span className="text-lg font-bold">⏻</span>
-                          )}
-                        </div>
-
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {t("page.location.form.statusOperational")}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {t("page.location.form.statusOperationalDesc")}
-                          </p>
-                        </div>
-                      </div>
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <div className="flex items-center gap-2">
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </div>
-                        )}
-                      />
-                    </div>
                     {/* Foto Toko Card */}
                     <div className="bg-card rounded-xl border border-border p-5 space-y-4">
                       <div className="flex items-center gap-2">
@@ -1646,8 +1649,9 @@ const EditLocation = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title={t("page.location.form.cancelModalTitle")}
-        confirmText={t("page.location.form.cancelModalConfirm")}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/location-list")}
       />
       <Modal

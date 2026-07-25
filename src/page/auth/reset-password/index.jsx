@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "react-query";
 import { toast } from "sonner";
 
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
@@ -235,6 +235,7 @@ const ResetPasswordPage = () => {
                         {form?.formState?.errors?.newPassword && (
                           <FormMessage>{form?.formState?.errors?.newPassword}</FormMessage>
                         )}
+                        <FormDescription>{t("common.passwordMin6")}</FormDescription>
                       </FormItem>
                     )}
                   />
@@ -269,6 +270,7 @@ const ResetPasswordPage = () => {
                         {form?.formState?.errors?.confirmPassword && (
                           <FormMessage>{form?.formState?.errors?.confirmPassword}</FormMessage>
                         )}
+                        <FormDescription>{t("common.passwordMatch")}</FormDescription>
                       </FormItem>
                     )}
                   />

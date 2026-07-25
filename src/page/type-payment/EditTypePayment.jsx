@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,6 +14,8 @@ import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -23,8 +25,8 @@ import {
 } from "@/components/ui/select";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
@@ -35,12 +37,17 @@ const EditTypePayment = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locationsData } = useQuery(
-    ["allLocations-type-payment-edit"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  const {
+    data: locationsData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["allLocations-type-payment-edit"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || [];
+
+  const [selectedStore, setSelectedStore] = useState([]);
+  const [allStores, setAllStores] = useState(false);
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.typePayment.validation.nameRequired")),
@@ -76,6 +83,7 @@ const EditTypePayment = () => {
   });
 
   const item = detailData?.data || {};
+  const isDataLoading = isLoading || (!detailData && !isError);
 
   useEffect(() => {
     if (item?.isSystem) {
@@ -107,8 +115,23 @@ const EditTypePayment = () => {
         name: item.name || "",
         type: item.type || "",
         status: statusValue,
-        store: item.store ? String(item.store) : ""
+        store: ""
       });
+      if (item.store) {
+        try {
+          const parsed = typeof item.store === "string" ? JSON.parse(item.store) : item.store;
+          if (parsed === "all") {
+            setAllStores(true);
+            setSelectedStore([]);
+          } else {
+            setSelectedStore(
+              Array.isArray(parsed) ? parsed.map((s) => (typeof s === "object" ? s.id : s)) : []
+            );
+          }
+        } catch {
+          setSelectedStore([]);
+        }
+      }
     }
   }, [item, form]);
 
@@ -125,11 +148,16 @@ const EditTypePayment = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const { status, store, ...rest } = values;
+    if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
+      form.setError("store", { message: t("page.ingredientCategory.add.storeRequired") });
+      return;
+    }
+    form.clearErrors("store");
+    const { status, ...rest } = values;
     updateMutation.mutate({
       id: paymentId,
       ...rest,
-      store: isSuperAdmin && store ? Number(store) : undefined,
+      store: isSuperAdmin ? JSON.stringify(allStores ? "all" : selectedStore) : undefined,
       status: saveAsDraft ? "draft" : status
     });
   };
@@ -142,231 +170,261 @@ const EditTypePayment = () => {
     );
   }
 
-  if (isLoading) {
-    return <Loading fullscreen size="lg" label={t("common.loadingData")} />;
-  }
-
   if (isError) {
     return <AbortController refetch={refetch} />;
   }
 
   return (
-    <div>
-      <div className="space-y-6">
-        <PageHeader
-          breadcrumbs={[
-            {
-              label: t("breadcrumb.home"),
-              href: "/dashboard-super-admin",
-              i18nKey: "breadcrumb.home"
-            },
-            {
-              label: t("breadcrumb.payment"),
-              href: "/type-payment-list",
-              i18nKey: "breadcrumb.payment"
-            },
-            { label: t("page.typePayment.edit.title"), i18nKey: "page.typePayment.edit.title" }
-          ]}
-          title={t("page.typePayment.edit.title")}
-          description={t("page.typePayment.edit.description")}
-          backLink="/type-payment-list">
-        </PageHeader>
-
-        <div className="flex items-center justify-between">
-          <div></div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-              <X size={18} />
-              {t("common.cancel")}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setDraftModal(true)}
-              disabled={updateMutation.isLoading}
-              className="gap-2">
-              {t("common.saveAsDraft")}
-            </Button>
-            <Button
-              type="button"
-              disabled={updateMutation.isLoading}
-              onClick={() => {
-                const data = form.getValues();
-                const missing = getMissingFields(data, formSchema, fieldLabels);
-                if (missing.length > 0) {
-                  setMissingFieldsList(missing);
-                  setMissingFieldsModal(true);
-                  return;
-                }
-                setSaveConfirm(true);
-              }}
-              className="gap-2">
-              <Save size={18} />
-              {updateMutation.isLoading ? t("common.saving") : t("common.save")}
-            </Button>
-          </div>
+    <div className="space-y-6">
+      <div>
+        <div>
+          <PageHeader
+            breadcrumbs={[
+              { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
+              { i18nKey: "breadcrumb.payment", href: "/type-payment-list" },
+              { i18nKey: "page.typePayment.edit.title" }
+            ]}
+            title={t("page.typePayment.edit.title")}
+            description={t("page.typePayment.edit.description")}
+            backLink="/type-payment-list"
+            onBack={() => setCancelModal(true)}
+          />
         </div>
+      </div>
 
-        <Card className="p-6">
-          <Form {...form}>
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t("page.typePayment.form.name")}{" "}
-                        <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input placeholder={t("page.typePayment.form.namePlaceholder")} {...field} />
-                      <FormMessage />
-                    </FormItem>
+      <div>
+        <div>
+          <Card className="p-6">
+            {isDataLoading ? (
+              <div className="space-y-6">
+                <Skeleton className="h-[120px] w-full rounded-lg" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                </div>
+                <Skeleton className="h-[72px] w-full rounded-lg" />
+                <div className="flex justify-end gap-3">
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-10 w-24" />
+                </div>
+              </div>
+            ) : (
+              <Form {...form}>
+                <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+                  <StoreSelectCard
+                    locations={locations}
+                    selectedStores={selectedStore}
+                    onChange={(stores) => {
+                      setSelectedStore(stores);
+                      form.clearErrors("store");
+                    }}
+                    isSuperAdmin={isSuperAdmin}
+                    user={user}
+                    t={t}
+                    title={t("page.typePayment.form.storeSection.title")}
+                    description={t("page.typePayment.form.storeSection.desc")}
+                    noStoreLabel={t("page.typePayment.form.storeSection.noStore")}
+                    addStoreLabel={t("page.typePayment.form.storeSection.addStore")}
+                    storeInfoLabel={t("page.typePayment.form.storeInfo")}
+                    allStores={allStores}
+                    onAllStoresChange={(val) => {
+                      setAllStores(val);
+                      form.clearErrors("store");
+                    }}
+                    navigate={navigate}
+                    mandatory={true}
+                    locationsLoading={locsLoading || locsFetching}
+                  />
+                  {form.formState.errors.store && (
+                    <p className="text-sm text-destructive">
+                      {form.formState.errors.store.message}
+                    </p>
                   )}
-                />
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t("page.typePayment.form.type")}{" "}
-                        <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("page.typePayment.form.typePlaceholder")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cash">Tunai</SelectItem>
-                          <SelectItem value="debit">Non-Tunai</SelectItem>
-                          <SelectItem value="credit">Kartu Kredit</SelectItem>
-                          <SelectItem value="e-wallet">E-Wallet</SelectItem>
-                          <SelectItem value="other">Lainnya</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {isSuperAdmin && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t("page.typePayment.form.name")}{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <Input
+                            placeholder={t("page.typePayment.form.namePlaceholder")}
+                            {...field}
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t("page.typePayment.form.type")}{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={t("page.typePayment.form.typePlaceholder")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="cash">Tunai</SelectItem>
+                              <SelectItem value="debit">Non-Tunai</SelectItem>
+                              <SelectItem value="credit">Kartu Kredit</SelectItem>
+                              <SelectItem value="e-wallet">E-Wallet</SelectItem>
+                              <SelectItem value="other">Lainnya</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <FormField
                     control={form.control}
-                    name="store"
+                    name="status"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("page.typePayment.form.store")}</FormLabel>
-                        <select
-                          value={field.value}
-                          onChange={field.onChange}
-                          className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
-                          <option value="">{t("page.typePayment.form.allStores")}</option>
-                          {locations.map((loc) => (
-                            <option key={loc.id} value={loc.id}>
-                              {loc.name}
-                            </option>
-                          ))}
-                        </select>
+                        <div
+                          className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                            field.value
+                              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                          }`}>
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                field.value
+                                  ? "bg-green-600 text-secondary"
+                                  : "bg-destructive/10 text-destructive"
+                              }`}>
+                              {field.value ? (
+                                <Check size={20} />
+                              ) : (
+                                <span className="text-lg font-bold">⏻</span>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">
+                                {t("common.status")}{" "}
+                                {field.value ? t("common.active") : t("common.inactive")}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {field.value
+                                  ? t("page.typePayment.form.statusActive")
+                                  : t("page.typePayment.form.statusInactive")}
+                              </p>
+                            </div>
+                          </div>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                )}
-              </div>
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                      field.value
-                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                    }`}>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            field.value
-                              ? "bg-green-600 text-secondary"
-                              : "bg-destructive/10 text-destructive"
-                          }`}>
-                          {field.value ? (
-                            <Check size={20} />
-                          ) : (
-                            <span className="text-lg font-bold">⏻</span>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {t("common.status")}{" "}
-                            {field.value ? t("common.active") : t("common.inactive")}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {field.value
-                              ? t("page.typePayment.form.statusActive")
-                              : t("page.typePayment.form.statusInactive")}
-                          </p>
-                        </div>
-                      </div>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCancelModal(true)}
+                      className="gap-2">
+                      <X size={18} />
+                      {t("common.cancel")}
+                    </Button>
+                    <div className="flex gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => setDraftModal(true)}
+                        disabled={updateMutation.isLoading}>
+                        {t("page.typePayment.form.saveAsDraft")}
+                      </Button>
+                      <Button
+                        type="button"
+                        disabled={updateMutation.isLoading}
+                        onClick={() => {
+                          const data = form.getValues();
+                          const missing = getMissingFields(data, formSchema, fieldLabels);
+                          if (missing.length > 0) {
+                            setMissingFieldsList(missing);
+                            setMissingFieldsModal(true);
+                            return;
+                          }
+                          setSaveConfirm(true);
+                        }}
+                        className="gap-2">
+                        <Save size={18} />
+                        {updateMutation.isLoading ? t("common.saving") : t("common.save")}
+                      </Button>
                     </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </form>
-          </Form>
-          <Modal
-            type="confirm"
-            open={saveConfirm}
-            onOpenChange={setSaveConfirm}
-            title={t("common.confirmSave")}
-            description={t("common.confirmSaveDesc")}
-            confirmText={t("common.yesSave")}
-            onConfirm={() => {
-              setSaveConfirm(false);
-              onSubmit(form.getValues(), false);
-            }}
-          />
-        </Card>
-
-        <Modal
-          type="confirm"
-          open={cancelModal}
-          onOpenChange={setCancelModal}
-          title={t("modal.cancelTitle")}
-          description={t("modal.cancelDescription")}
-          confirmText={t("modal.yesCancel")}
-          onConfirm={() => navigate("/type-payment-list")}
-        />
-        <Modal
-          type="success"
-          open={successModal}
-          onOpenChange={setSuccessModal}
-          title={t("common.success")}
-          description={t("page.typePayment.toast.updateSuccess")}
-          confirmText={t("modal.backToList")}
-          onConfirm={() => navigate("/type-payment-list")}
-        />
-        <Modal
-          type="confirm"
-          open={draftModal}
-          onOpenChange={setDraftModal}
-          title={t("common.saveAsDraftTitle")}
-          description={t("common.saveAsDraftDesc")}
-          confirmText={t("common.yesSaveDraft")}
-          onConfirm={() => {
-            setDraftModal(false);
-            const values = form.getValues();
-            onSubmit(values, true);
-          }}
-        />
-        <MissingFieldsModal
-          open={missingFieldsModal}
-          onOpenChange={setMissingFieldsModal}
-          fields={missingFieldsList}
-        />
+                  </div>
+                </form>
+              </Form>
+            )}
+            <Modal
+              type="confirm"
+              open={saveConfirm}
+              onOpenChange={setSaveConfirm}
+              title={t("common.confirmSave")}
+              description={t("common.confirmSaveDesc")}
+              confirmText={t("common.yesSave")}
+              onConfirm={() => {
+                setSaveConfirm(false);
+                onSubmit(form.getValues(), false);
+              }}
+            />
+          </Card>
+        </div>
       </div>
+
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
+        onConfirm={() => navigate("/type-payment-list")}
+      />
+      <Modal
+        type="success"
+        open={successModal}
+        onOpenChange={setSuccessModal}
+        title={t("common.success")}
+        description={t("page.typePayment.toast.updateSuccess")}
+        confirmText={t("modal.backToList")}
+        onConfirm={() => navigate("/type-payment-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title={t("common.saveAsDraftTitle")}
+        description={t("common.saveAsDraftDesc")}
+        confirmText={t("common.yesSaveDraft")}
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
+      />
+      {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
+      />
     </div>
   );
 };

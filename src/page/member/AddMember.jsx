@@ -21,7 +21,7 @@ import { getMissingFields } from "@/lib/validation";
 const formSchema = z.object({
   name: z.string().min(1),
   email: z.string().email().optional().or(z.literal("")),
-  phoneNumber: z.string().min(1).max(14, "Max 14 characters"),
+  phoneNumber: z.string().min(1).max(16, "Max 16 characters"),
   birthDate: z.date(),
   gender: z.enum(["male", "female"]),
   address: z.string().optional().default(""),
@@ -134,7 +134,9 @@ const AddMember = () => {
               { label: t("breadcrumb.add") }
             ]}
             title={t("breadcrumb.add")}
-            description={t("page.member.add.description")}>
+            description={t("page.member.add.description")}
+            backLink="/member"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-member" />
           </PageHeader>
         </div>
@@ -179,6 +181,7 @@ const AddMember = () => {
                           className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                           placeholder={t("page.member.add.emailPlaceholder")}
                         />
+                        <p className="text-xs text-muted-foreground">{t("common.optionalField")}</p>
                       </div>
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -192,10 +195,10 @@ const AddMember = () => {
                           onChange={handleChange}
                           className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                           placeholder={t("page.member.add.phonePlaceholder")}
-                          maxLength={14}
+                          maxLength={16}
                           required
                         />
-                        <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
+                        <p className="text-xs text-muted-foreground">{t("common.phoneHintMin")}</p>
                       </div>
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -475,8 +478,9 @@ const AddMember = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title={t("page.member.add.cancelModalTitle")}
-        confirmText={t("page.member.add.cancelModalConfirm")}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/member-list")}
       />
       <Modal

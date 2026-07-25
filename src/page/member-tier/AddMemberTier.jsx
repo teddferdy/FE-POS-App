@@ -14,6 +14,7 @@ import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { FormDescription } from "@/components/ui/form";
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -165,7 +166,9 @@ const AddMemberTier = () => {
               { i18nKey: "page.memberTier.add.title" }
             ]}
             title={t("page.memberTier.add.title")}
-            description={t("page.memberTier.add.description")}>
+            description={t("page.memberTier.add.description")}
+            backLink="/member-tier"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-member-tier" />
           </PageHeader>
         </div>
@@ -267,6 +270,7 @@ const AddMemberTier = () => {
                           %
                         </span>
                       </div>
+                      <FormDescription>{t("common.percentageHint")}</FormDescription>
                     </div>
                   </div>
                 </div>
@@ -498,9 +502,9 @@ const AddMemberTier = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title={t("page.memberTier.add.cancelTitle")}
-        description={t("page.memberTier.add.cancelDesc")}
-        confirmText={t("page.memberTier.add.cancelConfirm")}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/member-tier")}
       />
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
-import { Save, X, Plus, Trash2, Package, Search } from "lucide-react";
+import { Save, X, Plus, Trash2, Package, Search, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { addGoodsReceipt } from "@/services/goods-receipt";
 import { getAllPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
@@ -170,7 +170,15 @@ const AddGoodsReceipt = () => {
   return (
     <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 shrink-0"
+            onClick={() => setCancelModal(true)}>
+            <ArrowLeft size={16} />
+          </Button>
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
             className="hover:text-foreground">
@@ -183,6 +191,7 @@ const AddGoodsReceipt = () => {
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
         </nav>
+        </div>
 
         <div>
           <h1 className="text-2xl font-bold">{t("page.goodsReceipt.add.title")}</h1>

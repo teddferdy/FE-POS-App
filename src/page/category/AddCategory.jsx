@@ -467,7 +467,9 @@ const AddCategory = () => {
               { label: t("page.category.add.title") }
             ]}
             title={t("page.category.add.title")}
-            description={t("page.category.add.description")}>
+            description={t("page.category.add.description")}
+            backLink="/category-list"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-category" />
           </PageHeader>
         </div>

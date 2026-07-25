@@ -258,9 +258,9 @@ const AddProductionOrder = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={(o) => !o && setCancelModal(false)}
-        title={t("page.productionOrder.add.cancelModalTitle")}
-        description={t("page.productionOrder.add.cancelModalDesc")}
-        confirmText={t("page.productionOrder.add.cancelModalConfirm")}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => {
           setCancelModal(false);
           navigate("/production-order");

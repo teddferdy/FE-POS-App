@@ -13,7 +13,8 @@ import {
   Smartphone,
   RefreshCw,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from "lucide-react";
 import { openCashRegister } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
@@ -21,6 +22,7 @@ import { getWhatsAppStatus, restartWhatsApp } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Modal from "@/components/organism/modal";
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
   return "Rp " + Number(num).toLocaleString("id-ID");
@@ -49,6 +51,7 @@ const CashRegisterOpenClose = () => {
   const [selectedStore, setSelectedStore] = useState(cookie?.activeStore || user?.store || "");
   const [rawBalance, setRawBalance] = useState("0");
   const [notes, setNotes] = useState("");
+  const [cancelModal, setCancelModal] = useState(false);
 
   const numericBalance = parseIDR(rawBalance);
 
@@ -100,7 +103,15 @@ const CashRegisterOpenClose = () => {
   return (
     <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 shrink-0"
+            onClick={() => setCancelModal(true)}>
+            <ArrowLeft size={16} />
+          </Button>
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
             className="hover:text-foreground transition-colors">
@@ -111,6 +122,7 @@ const CashRegisterOpenClose = () => {
             {t("page.cashRegister.openClose.breadcrumb")}
           </span>
         </nav>
+        </div>
 
         <div className="flex items-center justify-between">
           <div>
@@ -315,6 +327,15 @@ const CashRegisterOpenClose = () => {
           </div>
         </div>
       </div>
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
+        onConfirm={() => navigate("/dashboard-super-admin")}
+      />
     </>
   );
 };

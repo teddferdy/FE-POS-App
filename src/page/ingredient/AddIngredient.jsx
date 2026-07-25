@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Save, X, Check } from "lucide-react";
+import { Save, X, Check, ArrowLeft } from "lucide-react";
 import { addIngredient } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllIngredientCategory } from "@/services/ingredientCategory";
@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Combobox } from "@/components/ui/combobox";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -244,7 +244,15 @@ const AddIngredient = () => {
     <div>
       <div>
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
+          <div className="flex items-start gap-3">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 shrink-0 mt-0.5"
+              onClick={() => setCancelModal(true)}>
+              <ArrowLeft size={16} />
+            </Button>
+            <div>
             <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
               <button
                 onClick={() => navigate("/dashboard-super-admin")}
@@ -268,6 +276,7 @@ const AddIngredient = () => {
             <p className="text-sm text-muted-foreground mt-1">
               {t("page.ingredient.add.subtitle")}
             </p>
+            </div>
           </div>
           <UserGuide guideKey="add-ingredient" />
         </div>
@@ -374,6 +383,7 @@ const AddIngredient = () => {
                                 )}
                                 disabled={isCategoryDisabled}
                               />
+                              <FormDescription>{t("page.ingredient.form.categoryHint")}</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}

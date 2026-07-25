@@ -21,7 +21,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { toast } from "sonner";
 
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
@@ -243,6 +243,7 @@ const RegisterPage = () => {
                         {form?.formState?.errors?.userName && (
                           <FormMessage>{form?.formState?.errors?.userName}</FormMessage>
                         )}
+                        <FormDescription>{t("common.passwordMin4")}</FormDescription>
                       </FormItem>
                     )}
                   />
@@ -266,6 +267,7 @@ const RegisterPage = () => {
                         {form?.formState?.errors?.email && (
                           <FormMessage>{form?.formState?.errors?.email}</FormMessage>
                         )}
+                        <FormDescription>{t("common.emailHint")}</FormDescription>
                       </FormItem>
                     )}
                   />
@@ -354,6 +356,7 @@ const RegisterPage = () => {
                           {form?.formState?.errors?.password && (
                             <FormMessage>{form?.formState?.errors?.password}</FormMessage>
                           )}
+                          <FormDescription>{t("common.passwordMin4")}</FormDescription>
                         </FormItem>
                       )}
                     />
@@ -388,6 +391,7 @@ const RegisterPage = () => {
                           {form?.formState?.errors?.confirmPassword && (
                             <FormMessage>{form?.formState?.errors?.confirmPassword}</FormMessage>
                           )}
+                          <FormDescription>{t("common.passwordMatch")}</FormDescription>
                         </FormItem>
                       )}
                     />

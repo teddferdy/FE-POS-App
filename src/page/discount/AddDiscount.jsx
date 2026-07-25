@@ -33,7 +33,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormControl
+  FormControl,
+  FormDescription
 } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -448,6 +449,7 @@ const AddDiscount = () => {
           title={t("breadcrumb.add")}
           description={t("page.discount.add.description")}
           backLink="/discount"
+          onBack={() => setCancelModal(true)}
         />
 
         <Form {...form}>
@@ -614,6 +616,7 @@ const AddDiscount = () => {
                           }
                         />
                         <FormMessage />
+                        <FormDescription>{t("common.optionalField")}</FormDescription>
                       </FormItem>
                     )}
                   />
@@ -636,6 +639,7 @@ const AddDiscount = () => {
                           }
                         />
                         <FormMessage />
+                        <FormDescription>{t("common.optionalField")}</FormDescription>
                       </FormItem>
                     )}
                   />
@@ -675,6 +679,7 @@ const AddDiscount = () => {
                           />
                         </div>
                         <FormMessage />
+                        <FormDescription>{t("common.optionalField")}</FormDescription>
                       </FormItem>
                     )}
                   />
@@ -917,6 +922,7 @@ const AddDiscount = () => {
                             }}
                           />
                           <FormMessage />
+                          <FormDescription>{t("common.optionalField")}</FormDescription>
                         </FormItem>
                       )}
                     />
@@ -934,6 +940,7 @@ const AddDiscount = () => {
                         onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                       />
                       <FormMessage />
+                      <FormDescription>{t("common.optionalField")}</FormDescription>
                     </FormItem>
                   )}
                 />
@@ -950,6 +957,7 @@ const AddDiscount = () => {
                       {...field}
                     />
                     <FormMessage />
+                    <FormDescription>{t("common.optionalField")}</FormDescription>
                   </FormItem>
                 )}
               />
@@ -1031,9 +1039,9 @@ const AddDiscount = () => {
           type="confirm"
           open={cancelModal}
           onOpenChange={setCancelModal}
-          title={t("page.discount.add.cancelTitle")}
-          description={t("page.discount.add.cancelDescription")}
-          confirmText={t("page.discount.add.cancelConfirm")}
+          title={t("modal.cancelTitle")}
+          description={t("modal.cancelDescription")}
+          confirmText={t("modal.yesCancel")}
           onConfirm={() => navigate("/discount-list")}
         />
         <Modal
