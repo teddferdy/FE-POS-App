@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient, useQuery } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { X, Save, Check } from "lucide-react";
+import { useCookies } from "react-cookie";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import { addTypePayment } from "@/services/type-payment";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -29,10 +31,22 @@ import { getMissingFields } from "@/lib/validation";
 
 const AddTypePayment = () => {
   const { t } = useTranslation();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
+
+  const { data: locationsData } = useQuery(
+    ["allLocations-type-payment"],
+    () => getAllLocation(),
+    { enabled: isSuperAdmin }
+  );
+  const locations = locationsData?.data || [];
+
   const formSchema = z.object({
     name: z.string().min(1, t("page.typePayment.validation.nameRequired")),
     type: z.string().min(1, t("page.typePayment.validation.typeRequired")),
-    status: z.boolean().default(true)
+    status: z.boolean().default(true),
+    store: z.string().optional()
   });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -57,7 +71,8 @@ const AddTypePayment = () => {
     defaultValues: {
       name: "",
       type: "",
-      status: true
+      status: true,
+      store: ""
     }
   });
 
@@ -76,9 +91,10 @@ const AddTypePayment = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const { status, ...rest } = values;
+    const { status, store, ...rest } = values;
     createMutation.mutate({
       ...rest,
+      store: isSuperAdmin && store ? Number(store) : undefined,
       status: saveAsDraft ? "draft" : status ? "active" : "inactive"
     });
   };
@@ -148,6 +164,29 @@ const AddTypePayment = () => {
                       </FormItem>
                     )}
                   />
+                  {isSuperAdmin && (
+                    <FormField
+                      control={form.control}
+                      name="store"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.typePayment.form.store")}</FormLabel>
+                          <select
+                            value={field.value}
+                            onChange={field.onChange}
+                            className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+                            <option value="">{t("page.typePayment.form.allStores")}</option>
+                            {locations.map((loc) => (
+                              <option key={loc.id} value={loc.id}>
+                                {loc.name}
+                              </option>
+                            ))}
+                          </select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
                 <FormField
                   control={form.control}
