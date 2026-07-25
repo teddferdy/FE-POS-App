@@ -141,7 +141,6 @@ const AddRole = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(["roles-all"]);
       queryClient.invalidateQueries(["roles-table"]);
-      setIsSubmitting(false);
       setSuccessModal(true);
     },
     onError: (err) => {
@@ -427,7 +426,10 @@ const AddRole = () => {
           open={successModal}
           onOpenChange={setSuccessModal}
           title={t("page.role.add.successTitle")}
-          onConfirm={() => navigate("/role-management")}
+          onConfirm={() => {
+            setIsSubmitting(false);
+            navigate("/role-management");
+          }}
         />
         <Modal
           type="confirm"

@@ -180,7 +180,6 @@ const EditRole = () => {
       queryClient.invalidateQueries(["roles-all"]);
       queryClient.invalidateQueries(["roles-table"]);
       queryClient.invalidateQueries(["role-by-id", id]);
-      setIsSubmitting(false);
       setSuccessModal(true);
     },
     onError: (err) => {
@@ -541,7 +540,10 @@ const EditRole = () => {
           open={successModal}
           onOpenChange={setSuccessModal}
           title={t("page.role.edit.successTitle")}
-          onConfirm={() => navigate("/role-management")}
+          onConfirm={() => {
+            setIsSubmitting(false);
+            navigate("/role-management");
+          }}
         />
         <Modal
           type="confirm"
