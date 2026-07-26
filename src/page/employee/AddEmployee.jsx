@@ -410,7 +410,10 @@ const AddEmployee = () => {
               </div>
             ) : (
               <Form {...form}>
-                <form onSubmit={(e) => { e.preventDefault(); }}>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                  }}>
                   <div className="grid grid-cols-12 gap-6">
                     <div className="col-span-12 lg:col-span-8 space-y-6">
                       {/* Section 1: Informasi Pribadi */}
@@ -975,11 +978,12 @@ const AddEmployee = () => {
                               control={form.control}
                               name="isActive"
                               render={({ field }) => (
-                                <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                                  field.value
-                                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                                }`}>
+                                <div
+                                  className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                    field.value
+                                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                                  }`}>
                                   <div className="flex items-center gap-3">
                                     <div
                                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -1284,32 +1288,44 @@ const AddEmployee = () => {
                       <div className="bg-primary/10 text-primary-foreground p-6 rounded-xl shadow-sm border border-primary/20 overflow-hidden relative">
                         <div className="relative z-10">
                           <span className="material-symbols-outlined text-3xl text-primary mb-3">
-                            badge
+                            tips_and_updates
                           </span>
                           <h3 className="text-base font-semibold text-primary mb-2">
-                            {t("page.employee.add.guidance")}
+                            {t("page.employee.add.tips")}
                           </h3>
                           <p className="text-sm text-muted-foreground mb-4">
-                            {t("page.employee.add.guidanceDescription")}
+                            {t("page.employee.add.tipsDescription")}
                           </p>
                           <ul className="space-y-3">
                             <li className="flex items-center gap-3 text-sm text-foreground">
                               <span className="material-symbols-outlined text-primary text-base">
                                 check_circle
                               </span>
-                              <span>{t("page.employee.edit.guidanceRequired")}</span>
+                              <span>{t("page.employee.add.tipsRequired")}</span>
                             </li>
                             <li className="flex items-center gap-3 text-sm text-foreground">
                               <span className="material-symbols-outlined text-primary text-base">
                                 check_circle
                               </span>
-                              <span>{t("page.employee.add.guidanceOptional")}</span>
+                              <span>{t("page.employee.add.tipsOptional")}</span>
                             </li>
                             <li className="flex items-center gap-3 text-sm text-foreground">
                               <span className="material-symbols-outlined text-primary text-base">
                                 check_circle
                               </span>
-                              <span>{t("page.employee.edit.guidanceRole")}</span>
+                              <span>{t("page.employee.add.tipsRole")}</span>
+                            </li>
+                            <li className="flex items-center gap-3 text-sm text-foreground">
+                              <span className="material-symbols-outlined text-primary text-base">
+                                check_circle
+                              </span>
+                              <span>{t("tips.employee")}</span>
+                            </li>
+                            <li className="flex items-center gap-3 text-sm text-foreground">
+                              <span className="material-symbols-outlined text-primary text-base">
+                                check_circle
+                              </span>
+                              <span>{t("tips.employee2")}</span>
                             </li>
                           </ul>
                         </div>
@@ -1346,7 +1362,11 @@ const AddEmployee = () => {
                             onClick={(e) => {
                               e.preventDefault();
                               const values = form.getValues();
-                              const missing = getMissingFields(values, formSchema, employeeFieldLabels);
+                              const missing = getMissingFields(
+                                values,
+                                formSchema,
+                                employeeFieldLabels
+                              );
                               if (missing.length > 0) {
                                 setMissingFieldsList(missing);
                                 setMissingFieldsModal(true);
