@@ -318,8 +318,16 @@ const EmployeeList = () => {
           <>
             <div>
               {isFetching || isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  {[...Array(4)].map((_, i) => (
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <div className="col-span-1 md:col-span-3 lg:col-span-1 bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                  {[...Array(3)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
                       <div className="flex items-start justify-between mb-3">
                         <Skeleton className="h-3 w-24" />
@@ -331,13 +339,14 @@ const EmployeeList = () => {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   <StatCard
                     label={t("page.employee.table.total")}
                     value={total.toLocaleString() || "0"}
                     icon={Users}
                     variant="default"
                     subtitle={t("page.employee.list.subtitle")}
+                    className="col-span-1 md:col-span-3 lg:col-span-1"
                   />
                   <StatCard
                     label={t("page.employee.table.active")}
