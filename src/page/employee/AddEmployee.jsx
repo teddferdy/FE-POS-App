@@ -1283,57 +1283,30 @@ const AddEmployee = () => {
                       </div>
                     </div>
 
-                    {/* Sidebar */}
-                    <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
-                      <div className="bg-primary/10 text-primary-foreground p-6 rounded-xl shadow-sm border border-primary/20 overflow-hidden relative">
-                        <div className="relative z-10">
-                          <span className="material-symbols-outlined text-3xl text-primary mb-3">
+                    <div className="col-span-12">
+                      <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="material-symbols-outlined text-xl text-primary">
                             tips_and_updates
                           </span>
-                          <h3 className="text-base font-semibold text-primary mb-2">
+                          <h4 className="text-sm font-semibold text-primary">
                             {t("page.employee.add.tips")}
-                          </h3>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {t("page.employee.add.tipsDescription")}
-                          </p>
-                          <ul className="space-y-3">
-                            <li className="flex items-center gap-3 text-sm text-foreground">
-                              <span className="material-symbols-outlined text-primary text-base">
-                                check_circle
-                              </span>
-                              <span>{t("page.employee.add.tipsRequired")}</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-foreground">
-                              <span className="material-symbols-outlined text-primary text-base">
-                                check_circle
-                              </span>
-                              <span>{t("page.employee.add.tipsOptional")}</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-foreground">
-                              <span className="material-symbols-outlined text-primary text-base">
-                                check_circle
-                              </span>
-                              <span>{t("page.employee.add.tipsRole")}</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-foreground">
-                              <span className="material-symbols-outlined text-primary text-base">
-                                check_circle
-                              </span>
-                              <span>{t("tips.employee")}</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-foreground">
-                              <span className="material-symbols-outlined text-primary text-base">
-                                check_circle
-                              </span>
-                              <span>{t("tips.employee2")}</span>
-                            </li>
-                          </ul>
+                          </h4>
                         </div>
-                        <div className="absolute -right-10 -bottom-10 opacity-10">
-                          <span className="material-symbols-outlined text-[200px] text-primary">
-                            admin_panel_settings
-                          </span>
-                        </div>
+                        <ul className="space-y-2">
+                          <li className="flex items-center gap-2 text-sm text-foreground">
+                            <span className="material-symbols-outlined text-primary text-base">
+                              check_circle
+                            </span>
+                            <span>{t("tips.employee")}</span>
+                          </li>
+                          <li className="flex items-center gap-2 text-sm text-foreground">
+                            <span className="material-symbols-outlined text-primary text-base">
+                              check_circle
+                            </span>
+                            <span>{t("tips.employee2")}</span>
+                          </li>
+                        </ul>
                       </div>
                     </div>
 
