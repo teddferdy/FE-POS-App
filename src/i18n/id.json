@@ -3410,6 +3410,8 @@
   "page.employee.add.documentTypes": "PDF, JPG, PNG. Maks 5MB",
   "page.employee.add.documents": "Dokumen",
   "page.employee.add.documentsDescription": "Unggah minimal 1 dokumen pendukung seperti KTP, SIM, atau dokumen resmi lainnya.",
+  "page.employee.add.roleHint": "Role menentukan hak akses dan menu yang bisa diakses karyawan di sistem.",
+  "page.employee.add.accessMenuHint": "Atur akses menu tambahan di luar role untuk menyesuaikan hak akses karyawan.",
   "page.employee.add.draftConfirm": "Ya, Simpan Draft",
   "page.employee.add.draftDescription": "Data yang belum lengkap bisa dilengkapi nanti",
   "page.employee.add.draftTitle": "Simpan sebagai Draft?",

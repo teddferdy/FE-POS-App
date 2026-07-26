@@ -1160,6 +1160,7 @@ const AddEmployee = () => {
                                     ))}
                                   </SelectContent>
                                   <FormMessage />
+                                  <FormDescription>{t("page.employee.add.roleHint")}</FormDescription>
                                 </Select>
                               </FormItem>
                             )}
@@ -1197,6 +1198,7 @@ const AddEmployee = () => {
                                         : t("page.employee.form.accessMenuButton")}
                                   </Button>
                                   <FormMessage />
+                                  <FormDescription>{t("page.employee.add.accessMenuHint")}</FormDescription>
                                 </FormItem>
                               );
                             }}
