@@ -40,7 +40,14 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
@@ -389,7 +396,9 @@ const AddEmployee = () => {
               { i18nKey: "page.employee.add.title" }
             ]}
             title={t("page.employee.add.title")}
-            description={t("page.employee.add.description")}>
+            description={t("page.employee.add.description")}
+            backLink="/employee-list"
+            onBack={() => setCancelModal(true)}>
             <UserGuide guideKey="add-employee" />
           </PageHeader>
         </div>
@@ -1160,7 +1169,9 @@ const AddEmployee = () => {
                                     ))}
                                   </SelectContent>
                                   <FormMessage />
-                                  <FormDescription>{t("page.employee.add.roleHint")}</FormDescription>
+                                  <FormDescription>
+                                    {t("page.employee.add.roleHint")}
+                                  </FormDescription>
                                 </Select>
                               </FormItem>
                             )}
@@ -1198,7 +1209,9 @@ const AddEmployee = () => {
                                         : t("page.employee.form.accessMenuButton")}
                                   </Button>
                                   <FormMessage />
-                                  <FormDescription>{t("page.employee.add.accessMenuHint")}</FormDescription>
+                                  <FormDescription>
+                                    {t("page.employee.add.accessMenuHint")}
+                                  </FormDescription>
                                 </FormItem>
                               );
                             }}
