@@ -28,8 +28,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import AccessMenuModal from "@/components/organism/AccessMenuModal";
+import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
 import {
   Select,
@@ -532,8 +534,9 @@ const EditEmployee = () => {
             title={t("page.employee.edit.title")}
             description={t("page.employee.edit.description")}
             backLink="/employee-list"
-            onBack={() => setCancelModal(true)}
-          />
+            onBack={() => setCancelModal(true)}>
+            <UserGuide guideKey="add-employee" />
+          </PageHeader>
         </div>
       </div>
       <div>
@@ -1276,6 +1279,7 @@ const EditEmployee = () => {
                                 ))}
                               </SelectContent>
                             </Select>
+                            <FormDescription>{t("page.employee.add.roleHint")}</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1314,6 +1318,7 @@ const EditEmployee = () => {
                                       : t("page.employee.form.accessMenuButton")}
                                 </Button>
                               </div>
+                              <FormDescription>{t("page.employee.add.accessMenuHint")}</FormDescription>
                               <FormMessage />
                             </FormItem>
                           );
@@ -1335,8 +1340,10 @@ const EditEmployee = () => {
                       <span className="material-symbols-outlined text-primary">description</span>
                       <h4 className="text-base font-semibold text-foreground">
                         {t("page.employee.edit.documents")}
+                        <span className="text-destructive">*</span>
                       </h4>
                     </div>
+                    <p className="text-xs text-muted-foreground mb-4">{t("page.employee.add.documentsDescription")}</p>
 
                     <input
                       ref={documentInputRef}

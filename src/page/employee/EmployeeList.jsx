@@ -318,7 +318,7 @@ const EmployeeList = () => {
           <>
             <div>
               {isFetching || isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
                   <div className="col-span-1 md:col-span-3 lg:col-span-1 bg-card rounded-xl border border-border p-4">
                     <div className="flex items-start justify-between mb-3">
                       <Skeleton className="h-3 w-24" />
@@ -339,7 +339,7 @@ const EmployeeList = () => {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
                   <StatCard
                     label={t("page.employee.table.total")}
                     value={total.toLocaleString() || "0"}
