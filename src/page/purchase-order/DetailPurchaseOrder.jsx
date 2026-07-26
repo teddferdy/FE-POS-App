@@ -383,6 +383,46 @@ export default function DetailPurchaseOrder() {
                     </span>
                   </div>
                 )}
+                <div className="flex items-center gap-2 text-sm">
+                  <CreditCard size={14} className="text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.paymentMethod")}:
+                  </span>
+                  <span className="font-medium capitalize">
+                    {po.paymentMethod === "credit"
+                      ? t("page.purchaseOrder.add.paymentMethodCredit")
+                      : t("page.purchaseOrder.add.paymentMethodCash")}
+                  </span>
+                </div>
+                {po.paymentMethod === "credit" && po.tenor && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock size={14} className="text-muted-foreground shrink-0" />
+                    <span className="text-muted-foreground">
+                      {t("page.purchaseOrder.add.tenor")}:
+                    </span>
+                    <span className="font-medium">{po.tenor} hari</span>
+                  </div>
+                )}
+                {po.paymentMethod === "credit" && po.dpPercent > 0 && (
+                  <>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Banknote size={14} className="text-muted-foreground shrink-0" />
+                      <span className="text-muted-foreground">
+                        {t("page.purchaseOrder.add.dpPercent")}:
+                      </span>
+                      <span className="font-medium">{po.dpPercent}%</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Banknote size={14} className="text-muted-foreground shrink-0" />
+                      <span className="text-muted-foreground">
+                        {t("page.purchaseOrder.add.dpAmount")}:
+                      </span>
+                      <span className="font-medium">
+                        {formatIDR(Math.round((po.finalAmount || 0) * (po.dpPercent / 100)))}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
               {po.notes && (
                 <div className="mt-4 p-3 bg-muted/30 rounded-lg text-sm">

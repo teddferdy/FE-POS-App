@@ -379,7 +379,7 @@ const CashierPage = () => {
 
           {/* Desktop cart sidebar */}
           {store && (
-            <div className="hidden lg:flex lg:w-[380px] xl:w-[420px] lg:h-full border-l border-border/50 bg-card/50 backdrop-blur-sm">
+            <div className="hidden lg:flex lg:w-[380px] xl:w-[420px] shrink-0 h-full border-l border-border/50 bg-card/50 backdrop-blur-sm">
               <CartPanel
                 items={cart.order}
                 subtotal={subtotal}

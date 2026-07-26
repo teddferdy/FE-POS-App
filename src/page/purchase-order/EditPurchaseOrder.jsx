@@ -75,6 +75,9 @@ const EditPurchaseOrder = () => {
   const [orderDate, setOrderDate] = useState(null);
   const [orderTime, setOrderTime] = useState("");
   const [dueDate, setDueDate] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [tenor, setTenor] = useState(0);
+  const [dpPercent, setDpPercent] = useState(0);
   const [picSearch, setPicSearch] = useState("");
   const [picId, setPicId] = useState(null);
   const [showPicList, setShowPicList] = useState(false);
@@ -102,6 +105,9 @@ const EditPurchaseOrder = () => {
       po.orderDate ? format(new Date(po.orderDate), "HH:mm") : format(new Date(), "HH:mm")
     );
     setDueDate(po.dueDate ? new Date(po.dueDate) : null);
+    setPaymentMethod(po.paymentMethod || "cash");
+    setTenor(po.tenor || 0);
+    setDpPercent(po.dpPercent || 0);
     if (po.items) {
       setItems(
         po.items.map((item) => ({
@@ -346,6 +352,9 @@ const EditPurchaseOrder = () => {
       pic: picId,
       discount,
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
+      paymentMethod,
+      tenor: paymentMethod === "credit" ? tenor : 0,
+      dpPercent: paymentMethod === "credit" ? dpPercent : 0,
       orderDate: (() => {
         const d = new Date(orderDate);
         const [hours, minutes] = (orderTime || "00:00").split(":");
@@ -583,6 +592,71 @@ const EditPurchaseOrder = () => {
                     </label>
                     <DatePicker date={dueDate} setDate={setDueDate} />
                   </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.paymentMethod")}{" "}
+                      <span className="text-destructive">*</span>
+                    </label>
+                    <select
+                      value={paymentMethod}
+                      onChange={(e) => {
+                        setPaymentMethod(e.target.value);
+                        if (e.target.value === "cash") {
+                          setTenor(0);
+                          setDpPercent(0);
+                        }
+                      }}
+                      className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors">
+                      <option value="cash">{t("page.purchaseOrder.add.paymentMethodCash")}</option>
+                      <option value="credit">{t("page.purchaseOrder.add.paymentMethodCredit")}</option>
+                    </select>
+                  </div>
+                  {paymentMethod === "credit" && (
+                    <>
+                      <div>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">
+                          {t("page.purchaseOrder.add.tenor")}{" "}
+                          <span className="text-destructive">*</span>
+                        </label>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder={t("page.purchaseOrder.add.tenorPlaceholder")}
+                          value={tenor || ""}
+                          onChange={(e) => setTenor(Number(e.target.value) || 0)}
+                          className="h-10"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("page.purchaseOrder.add.tenorHint")}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">
+                          {t("page.purchaseOrder.add.dpPercent")}
+                        </label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          placeholder={t("page.purchaseOrder.add.dpPercentPlaceholder")}
+                          value={dpPercent || ""}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            if (val >= 0 && val <= 100) setDpPercent(val);
+                          }}
+                          className="h-10"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("page.purchaseOrder.add.dpPercentHint")}
+                        </p>
+                        {dpPercent > 0 && (
+                          <p className="text-xs text-primary font-medium mt-1">
+                            {t("page.purchaseOrder.add.dpAmount")}: Rp {((finalAmount * dpPercent) / 100).toLocaleString("id-ID")}
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
                       {t("page.purchaseOrder.add.notes")}

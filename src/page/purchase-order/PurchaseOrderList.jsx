@@ -254,10 +254,7 @@ const PurchaseOrderList = () => {
       header: t("page.purchaseOrder.list.columns.supplier"),
       render: (po) => (
         <div>
-          <p className="font-medium">{po.supplierData?.name || "-"}</p>
-          {po.supplierData?.phone && (
-            <p className="text-xs text-muted-foreground">{po.supplierData.phone}</p>
-          )}
+          <p className="font-medium">{po.supplierNames || "-"}</p>
         </div>
       )
     },
