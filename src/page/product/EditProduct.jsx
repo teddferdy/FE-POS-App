@@ -480,7 +480,6 @@ const EditProduct = () => {
   const canGoNext = () => {
     if (currentStep === 1) {
       const values = form.getValues();
-      if (values.tipeProduk === "bahan_baku" && composition.length === 0) return false;
       return !!values.nameProduct && !!values.category;
     }
     if (currentStep === 2) {
@@ -497,9 +496,6 @@ const EditProduct = () => {
         currentStep === 1
           ? t("page.product.form.requiredStep1Edit")
           : t("page.product.form.requiredStep2Edit");
-      if (currentStep === 1 && values.tipeProduk === "bahan_baku" && composition.length === 0) {
-        msg = t("page.product.form.requiredComposition");
-      }
       toast.error(t("page.product.form.completeData"), { description: msg });
       return;
     }
@@ -556,12 +552,6 @@ const EditProduct = () => {
     }
     form.clearErrors("store");
     if (values.tipeProduk === "bahan_baku" && !saveAsDraft) {
-      if (composition.length === 0) {
-        toast.error(t("page.product.form.compositionRequired"), {
-          description: t("page.product.form.compositionRequiredDesc")
-        });
-        return;
-      }
       try {
         const storeId = selectedStores[0] || null;
         if (storeId) {
@@ -1083,8 +1073,7 @@ const EditProduct = () => {
                           <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                             <Package size={18} className="text-primary" />
                             <h3 className="text-base font-semibold text-foreground">
-                              {t("page.product.form.composition")}{" "}
-                              <span className="text-destructive">*</span>
+                              {t("page.product.form.composition")}
                             </h3>
                           </div>
                           <div className="space-y-3">
