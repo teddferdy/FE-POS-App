@@ -141,15 +141,26 @@ const PurchasePaymentDetail = () => {
           <div className="lg:col-span-2 space-y-4">
             <Card className="p-6 space-y-4">
               <Skeleton className="h-4 w-32" />
-              <div className="space-y-3"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-1/2" /></div>
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
             </Card>
             <Card className="p-6 space-y-4">
               <Skeleton className="h-4 w-32" />
-              <div className="space-y-3"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></div>
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
             </Card>
           </div>
           <div className="space-y-4">
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
           </div>
         </div>
       ) : !payment ? (
@@ -158,134 +169,135 @@ const PurchasePaymentDetail = () => {
           <Skeleton className="h-4 w-48" />
         </div>
       ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Wallet size={16} className="text-muted-foreground" />
-              {t("page.purchasePayment.detail.paymentInfo")}
-            </h3>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-border">
-                <Row label={t("page.purchasePayment.detail.amount")}>
-                  <span className="text-lg font-bold">
-                    Rp {Number(payment.amount).toLocaleString("id-ID")}
-                  </span>
-                </Row>
-                <Row label={t("page.purchasePayment.detail.paymentMethod")}>
-                  <span className="capitalize">
-                    {t(`page.purchaseOrder.paymentMethod.${payment.paymentMethod}`)}
-                  </span>
-                </Row>
-                <Row label={t("page.purchasePayment.detail.paymentDate")}>
-                  {payment.paymentDate
-                    ? new Date(payment.paymentDate).toLocaleDateString("id-ID", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric"
-                      })
-                    : "-"}
-                </Row>
-                <Row label={t("page.purchasePayment.detail.reference")}>
-                  {payment.reference || "-"}
-                </Row>
-                <Row label={t("page.purchasePayment.detail.notes")}>{payment.notes || "-"}</Row>
-              </tbody>
-            </table>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <FileText size={16} className="text-muted-foreground" />
-              {t("page.purchasePayment.detail.poInfo")}
-            </h3>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-border">
-                <Row label={t("page.purchasePayment.detail.poNumber")}>
-                  {payment.purchaseOrderData?.orderNumber || `PO-${payment.purchaseOrder}`}
-                </Row>
-                <Row label={t("page.purchasePayment.detail.supplier")}>
-                  <div className="flex items-center gap-2">
-                    <Building2 size={14} className="text-muted-foreground" />
-                    {payment.supplierData?.name || "-"}
-                  </div>
-                </Row>
-                <Row label={t("page.purchasePayment.detail.poStatus")}>
-                  {(() => {
-                    const s =
-                      poStatusBadge[payment.purchaseOrderData?.status] || poStatusBadge.pending;
-                    return (
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${s.class}`}>
-                        {s.label}
-                      </span>
-                    );
-                  })()}
-                </Row>
-                <Row label={t("page.purchasePayment.detail.poAmount")}>
-                  <span className="font-medium">
-                    Rp {Number(payment.purchaseOrderData?.finalAmount || 0).toLocaleString("id-ID")}
-                  </span>
-                </Row>
-              </tbody>
-            </table>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <User size={16} className="text-muted-foreground" />
-              {t("page.purchasePayment.detail.system")}
-            </h3>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-border">
-                <tr>
-                  <td className="py-2 text-muted-foreground">
-                    {t("page.purchasePayment.detail.createdBy")}
-                  </td>
-                  <td className="py-2 text-right font-medium">
-                    {payment.createdByUser?.fullName || "-"}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2 text-muted-foreground">
-                    {t("page.purchasePayment.detail.created")}
-                  </td>
-                  <td className="py-2 text-right">
-                    {payment.createdAt
-                      ? new Date(payment.createdAt).toLocaleDateString("id-ID", {
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Wallet size={16} className="text-muted-foreground" />
+                {t("page.purchasePayment.detail.paymentInfo")}
+              </h3>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-border">
+                  <Row label={t("page.purchasePayment.detail.amount")}>
+                    <span className="text-lg font-bold">
+                      Rp {Number(payment.amount).toLocaleString("id-ID")}
+                    </span>
+                  </Row>
+                  <Row label={t("page.purchasePayment.detail.paymentMethod")}>
+                    <span className="capitalize">
+                      {t(`page.purchaseOrder.paymentMethod.${payment.paymentMethod}`)}
+                    </span>
+                  </Row>
+                  <Row label={t("page.purchasePayment.detail.paymentDate")}>
+                    {payment.paymentDate
+                      ? new Date(payment.paymentDate).toLocaleDateString("id-ID", {
+                          weekday: "long",
                           year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit"
+                          month: "long",
+                          day: "numeric"
                         })
                       : "-"}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2 text-muted-foreground">
-                    {t("page.purchasePayment.detail.updated")}
-                  </td>
-                  <td className="py-2 text-right">
-                    {payment.updatedAt
-                      ? new Date(payment.updatedAt).toLocaleDateString("id-ID", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })
-                      : "-"}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </Card>
+                  </Row>
+                  <Row label={t("page.purchasePayment.detail.reference")}>
+                    {payment.reference || "-"}
+                  </Row>
+                  <Row label={t("page.purchasePayment.detail.notes")}>{payment.notes || "-"}</Row>
+                </tbody>
+              </table>
+            </Card>
+
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <FileText size={16} className="text-muted-foreground" />
+                {t("page.purchasePayment.detail.poInfo")}
+              </h3>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-border">
+                  <Row label={t("page.purchasePayment.detail.poNumber")}>
+                    {payment.purchaseOrderData?.orderNumber || `PO-${payment.purchaseOrder}`}
+                  </Row>
+                  <Row label={t("page.purchasePayment.detail.supplier")}>
+                    <div className="flex items-center gap-2">
+                      <Building2 size={14} className="text-muted-foreground" />
+                      {payment.supplierData?.name || "-"}
+                    </div>
+                  </Row>
+                  <Row label={t("page.purchasePayment.detail.poStatus")}>
+                    {(() => {
+                      const s =
+                        poStatusBadge[payment.purchaseOrderData?.status] || poStatusBadge.pending;
+                      return (
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${s.class}`}>
+                          {s.label}
+                        </span>
+                      );
+                    })()}
+                  </Row>
+                  <Row label={t("page.purchasePayment.detail.poAmount")}>
+                    <span className="font-medium">
+                      Rp{" "}
+                      {Number(payment.purchaseOrderData?.finalAmount || 0).toLocaleString("id-ID")}
+                    </span>
+                  </Row>
+                </tbody>
+              </table>
+            </Card>
+          </div>
+
+          <div className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <User size={16} className="text-muted-foreground" />
+                {t("page.purchasePayment.detail.system")}
+              </h3>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-border">
+                  <tr>
+                    <td className="py-2 text-muted-foreground">
+                      {t("page.purchasePayment.detail.createdBy")}
+                    </td>
+                    <td className="py-2 text-right font-medium">
+                      {payment.createdByUser?.fullName || "-"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-muted-foreground">
+                      {t("page.purchasePayment.detail.created")}
+                    </td>
+                    <td className="py-2 text-right">
+                      {payment.createdAt
+                        ? new Date(payment.createdAt).toLocaleDateString("id-ID", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })
+                        : "-"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-muted-foreground">
+                      {t("page.purchasePayment.detail.updated")}
+                    </td>
+                    <td className="py-2 text-right">
+                      {payment.updatedAt
+                        ? new Date(payment.updatedAt).toLocaleDateString("id-ID", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })
+                        : "-"}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </Card>
+          </div>
         </div>
-      </div>
       )}
     </div>
   );

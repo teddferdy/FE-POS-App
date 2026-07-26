@@ -752,12 +752,8 @@ const PurchaseOrderList = () => {
                           className="h-9 px-3 rounded-md border border-input bg-background text-sm">
                           <option value="all">{t("common.all")}</option>
                           <option value="draft">{t("page.purchaseOrder.status.draft")}</option>
-                          <option value="pending">
-                            {t("page.purchaseOrder.status.pending")}
-                          </option>
-                          <option value="ordered">
-                            {t("page.purchaseOrder.status.ordered")}
-                          </option>
+                          <option value="pending">{t("page.purchaseOrder.status.pending")}</option>
+                          <option value="ordered">{t("page.purchaseOrder.status.ordered")}</option>
                           <option value="received">
                             {t("page.purchaseOrder.status.received")}
                           </option>

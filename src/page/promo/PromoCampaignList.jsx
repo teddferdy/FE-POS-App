@@ -57,11 +57,16 @@ const typeOptions = [
 
 const statusBadge = (status) => {
   const map = {
-    draft: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800",
-    active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
-    paused: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800",
-    expired: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
-    cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+    draft:
+      "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800",
+    active:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
+    paused:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800",
+    expired:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
+    cancelled:
+      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
   };
   return map[status] || "bg-gray-100 text-gray-800";
 };
@@ -114,23 +119,20 @@ const PromoCampaignList = () => {
     { retry: 1 }
   );
 
-  const statusMutation = useMutation(
-    ({ id, status }) => updateCampaignStatus(id, { status }),
-    {
-      onSuccess: () => {
-        toast.success(t("common.success"), {
-          description: t("page.promo.toast.statusUpdated")
-        });
-        queryClient.invalidateQueries(["promo-campaigns"]);
-        queryClient.invalidateQueries(["promo-stats"]);
-      },
-      onError: (err) => {
-        toast.error(t("common.error"), {
-          description: err?.response?.data?.message || err.message
-        });
-      }
+  const statusMutation = useMutation(({ id, status }) => updateCampaignStatus(id, { status }), {
+    onSuccess: () => {
+      toast.success(t("common.success"), {
+        description: t("page.promo.toast.statusUpdated")
+      });
+      queryClient.invalidateQueries(["promo-campaigns"]);
+      queryClient.invalidateQueries(["promo-stats"]);
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
-  );
+  });
 
   const deleteMutation = useMutation(deleteCampaign, {
     onSuccess: () => {
@@ -185,7 +187,8 @@ const PromoCampaignList = () => {
         const type = row.original.discountType;
         const val = row.original.discountValue;
         if (type === "percentage") return <span className="font-semibold">{val}%</span>;
-        if (type === "fixed") return <span className="font-semibold">Rp{val?.toLocaleString()}</span>;
+        if (type === "fixed")
+          return <span className="font-semibold">Rp{val?.toLocaleString()}</span>;
         if (type === "free_item") return <span className="font-semibold">Free Item</span>;
         return <span className="font-semibold">{val}</span>;
       }
@@ -196,7 +199,9 @@ const PromoCampaignList = () => {
       cell: ({ row }) => (
         <div className="text-xs">
           <div>{new Date(row.original.startDate).toLocaleDateString()}</div>
-          <div className="text-muted-foreground">to {new Date(row.original.endDate).toLocaleDateString()}</div>
+          <div className="text-muted-foreground">
+            to {new Date(row.original.endDate).toLocaleDateString()}
+          </div>
         </div>
       )
     },
@@ -216,7 +221,8 @@ const PromoCampaignList = () => {
       header: t("page.promo.list.status"),
       accessorKey: "status",
       cell: ({ row }) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge(row.original.status)}`}>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge(row.original.status)}`}>
           {row.original.status?.toUpperCase()}
         </span>
       )
@@ -346,7 +352,9 @@ const PromoCampaignList = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
             {statusOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
           <select
@@ -354,7 +362,9 @@ const PromoCampaignList = () => {
             onChange={(e) => setTypeFilter(e.target.value)}
             className="h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
             {typeOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </div>

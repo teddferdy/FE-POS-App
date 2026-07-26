@@ -33,15 +33,19 @@ const EditPromoCampaign = () => {
     name: "Nama Campaign",
     type: "Tipe Campaign",
     startDate: "Tanggal Mulai",
-    endDate: "Tanggal Akhir",
+    endDate: "Tanggal Akhir"
   };
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
 
-  const { data: campaign, isLoading } = useQuery(["promo-campaign", id], () => getCampaignById(id), {
-    enabled: !!id
-  });
+  const { data: campaign, isLoading } = useQuery(
+    ["promo-campaign", id],
+    () => getCampaignById(id),
+    {
+      enabled: !!id
+    }
+  );
 
   const schema = z.object({
     name: z.string().min(1, t("page.promo.validation.nameRequired")),
@@ -100,7 +104,9 @@ const EditPromoCampaign = () => {
         discountValue: campaign.discountValue || 0,
         maxDiscount: campaign.maxDiscount || null,
         minPurchase: campaign.minPurchase || 0,
-        startDate: campaign.startDate ? new Date(campaign.startDate).toISOString().slice(0, 16) : "",
+        startDate: campaign.startDate
+          ? new Date(campaign.startDate).toISOString().slice(0, 16)
+          : "",
         endDate: campaign.endDate ? new Date(campaign.endDate).toISOString().slice(0, 16) : "",
         startTime: campaign.startTime || "",
         endTime: campaign.endTime || "",
@@ -165,7 +171,10 @@ const EditPromoCampaign = () => {
   };
 
   const addReward = () => {
-    setRewards([...rewards, { rewardType: "discount_percentage", rewardValue: 0, quantity: 1, priority: 0 }]);
+    setRewards([
+      ...rewards,
+      { rewardType: "discount_percentage", rewardValue: 0, quantity: 1, priority: 0 }
+    ]);
   };
 
   const removeReward = (index) => {
@@ -254,11 +263,15 @@ const EditPromoCampaign = () => {
                   placeholder={t("page.promo.form.namePlaceholder")}
                 />
                 {form.formState.errors.name && (
-                  <p className="text-xs text-destructive mt-1">{form.formState.errors.name.message}</p>
+                  <p className="text-xs text-destructive mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
                 )}
               </div>
               <div className="md:col-span-2">
-                <label className="text-sm font-medium text-foreground">{t("page.promo.form.description")}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {t("page.promo.form.description")}
+                </label>
                 <textarea
                   {...form.register("description")}
                   className="mt-1 w-full h-20 px-3 py-2 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none resize-none"
@@ -266,7 +279,9 @@ const EditPromoCampaign = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">{t("page.promo.form.code")}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {t("page.promo.form.code")}
+                </label>
                 <input
                   {...form.register("code")}
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none uppercase"
@@ -294,72 +309,94 @@ const EditPromoCampaign = () => {
 
           {/* Discount Settings */}
           {showDiscountSettings && (
-          <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-foreground mb-4">{t("page.promo.form.discountSettings")}</h3>
-            {isBirthday && (
-              <p className="text-xs text-muted-foreground mb-3">Tipe birthday menggunakan diskon otomatis sesuai rewards</p>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-foreground">{t("page.promo.form.discountType")}</label>
-                <select
-                  {...form.register("discountType")}
-                  disabled={isBirthday}
-                  className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
-                    isBirthday ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
-                  }`}>
-                  <option value="percentage">Percentage</option>
-                  <option value="fixed">Fixed Amount</option>
-                  <option value="free_item">Free Item</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">{t("page.promo.form.discountValue")}</label>
-                <input
-                  type="number"
-                  {...form.register("discountValue", { valueAsNumber: true })}
-                  disabled={isFreeItem || isBirthday}
-                  className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
-                    isFreeItem || isBirthday ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
-                  }`}
-                  placeholder={isFreeItem || isBirthday ? "N/A" : ""}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">{t("page.promo.form.maxDiscount")}</label>
-                <input
-                  type="number"
-                  {...form.register("maxDiscount", { valueAsNumber: true })}
-                  disabled={!isPercentage}
-                  className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
-                    !isPercentage ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
-                  }`}
-                  placeholder={!isPercentage ? "N/A" : ""}
-                />
-                {!isPercentage && (
-                  <p className="text-[11px] text-muted-foreground mt-1">Hanya berlaku untuk tipe Percentage</p>
-                )}
-                <FormDescription>{t("common.optionalField")}</FormDescription>
-              </div>
-              {(isSpendGet || isBuyXGetY) && (
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h3 className="font-semibold text-foreground mb-4">
+                {t("page.promo.form.discountSettings")}
+              </h3>
+              {isBirthday && (
+                <p className="text-xs text-muted-foreground mb-3">
+                  Tipe birthday menggunakan diskon otomatis sesuai rewards
+                </p>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground">{t("page.promo.form.minPurchase")}</label>
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.discountType")}
+                  </label>
+                  <select
+                    {...form.register("discountType")}
+                    disabled={isBirthday}
+                    className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
+                      isBirthday
+                        ? "bg-muted text-muted-foreground cursor-not-allowed"
+                        : "bg-background"
+                    }`}>
+                    <option value="percentage">Percentage</option>
+                    <option value="fixed">Fixed Amount</option>
+                    <option value="free_item">Free Item</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.discountValue")}
+                  </label>
                   <input
                     type="number"
-                    {...form.register("minPurchase", { valueAsNumber: true })}
-                    className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                    {...form.register("discountValue", { valueAsNumber: true })}
+                    disabled={isFreeItem || isBirthday}
+                    className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
+                      isFreeItem || isBirthday
+                        ? "bg-muted text-muted-foreground cursor-not-allowed"
+                        : "bg-background"
+                    }`}
+                    placeholder={isFreeItem || isBirthday ? "N/A" : ""}
                   />
                 </div>
-              )}
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.maxDiscount")}
+                  </label>
+                  <input
+                    type="number"
+                    {...form.register("maxDiscount", { valueAsNumber: true })}
+                    disabled={!isPercentage}
+                    className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
+                      !isPercentage
+                        ? "bg-muted text-muted-foreground cursor-not-allowed"
+                        : "bg-background"
+                    }`}
+                    placeholder={!isPercentage ? "N/A" : ""}
+                  />
+                  {!isPercentage && (
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Hanya berlaku untuk tipe Percentage
+                    </p>
+                  )}
+                  <FormDescription>{t("common.optionalField")}</FormDescription>
+                </div>
+                {(isSpendGet || isBuyXGetY) && (
+                  <div>
+                    <label className="text-sm font-medium text-foreground">
+                      {t("page.promo.form.minPurchase")}
+                    </label>
+                    <input
+                      type="number"
+                      {...form.register("minPurchase", { valueAsNumber: true })}
+                      className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
           )}
 
           {/* Schedule */}
           <div className="bg-card rounded-xl border border-border p-6">
             <h3 className="font-semibold text-foreground mb-4">{t("page.promo.form.schedule")}</h3>
             {isHappyHour && (
-              <p className="text-xs text-muted-foreground mb-3">Atur jam mulai dan akhir untuk periode Happy Hour</p>
+              <p className="text-xs text-muted-foreground mb-3">
+                Atur jam mulai dan akhir untuk periode Happy Hour
+              </p>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -385,7 +422,9 @@ const EditPromoCampaign = () => {
               {isHappyHour && (
                 <>
                   <div>
-                    <label className="text-sm font-medium text-foreground">{t("page.promo.form.startTime")}</label>
+                    <label className="text-sm font-medium text-foreground">
+                      {t("page.promo.form.startTime")}
+                    </label>
                     <input
                       type="time"
                       {...form.register("startTime")}
@@ -393,7 +432,9 @@ const EditPromoCampaign = () => {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-foreground">{t("page.promo.form.endTime")}</label>
+                    <label className="text-sm font-medium text-foreground">
+                      {t("page.promo.form.endTime")}
+                    </label>
                     <input
                       type="time"
                       {...form.register("endTime")}
@@ -411,16 +452,24 @@ const EditPromoCampaign = () => {
               <div>
                 <h3 className="font-semibold text-foreground">{t("page.promo.form.rules")}</h3>
                 {isHappyHour && (
-                  <p className="text-xs text-muted-foreground mt-0.5">Aturan waktu sudah ditentukan dari jadwal Happy Hour</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Aturan waktu sudah ditentukan dari jadwal Happy Hour
+                  </p>
                 )}
                 {isBirthday && (
-                  <p className="text-xs text-muted-foreground mt-0.5">Otomas birthday akan aktif otomatis untuk member yang berulang tahun</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Otomas birthday akan aktif otomatis untuk member yang berulang tahun
+                  </p>
                 )}
                 {isBuyXGetY && (
-                  <p className="text-xs text-muted-foreground mt-0.5">Tambahkan aturan untuk menentukan produk X dan produk Y</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Tambahkan aturan untuk menentukan produk X dan produk Y
+                  </p>
                 )}
                 {isSpendGet && (
-                  <p className="text-xs text-muted-foreground mt-0.5">Tambahkan aturan untuk menentukan threshold belanja</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Tambahkan aturan untuk menentukan threshold belanja
+                  </p>
                 )}
               </div>
               <Button type="button" variant="outline" size="sm" onClick={addRule}>
@@ -433,7 +482,9 @@ const EditPromoCampaign = () => {
             ) : (
               <div className="space-y-3">
                 {rules.map((rule, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
                     <select
                       value={rule.ruleType}
                       onChange={(e) => updateRule(index, "ruleType", e.target.value)}
@@ -465,10 +516,14 @@ const EditPromoCampaign = () => {
               <div>
                 <h3 className="font-semibold text-foreground">{t("page.promo.form.rewards")}</h3>
                 {isBirthday && (
-                  <p className="text-xs text-muted-foreground mt-0.5">Tambahkan reward yang akan diberikan di hari ulang tahun member</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Tambahkan reward yang akan diberikan di hari ulang tahun member
+                  </p>
                 )}
                 {isFreeItem && (
-                  <p className="text-xs text-muted-foreground mt-0.5">Tipe free item, tambahkan produk yang akan diberikan sebagai reward</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Tipe free item, tambahkan produk yang akan diberikan sebagai reward
+                  </p>
                 )}
               </div>
               <Button type="button" variant="outline" size="sm" onClick={addReward}>
@@ -481,7 +536,9 @@ const EditPromoCampaign = () => {
             ) : (
               <div className="space-y-3">
                 {rewards.map((reward, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
                     <select
                       value={reward.rewardType}
                       onChange={(e) => updateReward(index, "rewardType", e.target.value)}
@@ -496,7 +553,9 @@ const EditPromoCampaign = () => {
                     <input
                       type="number"
                       value={reward.rewardValue}
-                      onChange={(e) => updateReward(index, "rewardValue", parseInt(e.target.value) || 0)}
+                      onChange={(e) =>
+                        updateReward(index, "rewardValue", parseInt(e.target.value) || 0)
+                      }
                       className="h-8 w-24 px-2 bg-background border border-input rounded text-sm"
                       placeholder="Value"
                     />
@@ -520,7 +579,9 @@ const EditPromoCampaign = () => {
           <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-2 mb-3">
               <Info size={16} className="text-primary" />
-              <h4 className="text-sm font-semibold text-foreground">{t("page.promo.form.tipsTitle")}</h4>
+              <h4 className="text-sm font-semibold text-foreground">
+                {t("page.promo.form.tipsTitle")}
+              </h4>
             </div>
             <p className="text-xs text-muted-foreground">{t("page.promo.form.tipsContent")}</p>
           </div>
@@ -528,7 +589,9 @@ const EditPromoCampaign = () => {
           <div className="bg-card rounded-xl border border-border p-6">
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-foreground">{t("page.promo.form.applicableTo")}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {t("page.promo.form.applicableTo")}
+                </label>
                 <select
                   {...form.register("applicableTo")}
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
@@ -560,7 +623,9 @@ const EditPromoCampaign = () => {
                 </div>
               )}
               <div>
-                <label className="text-sm font-medium text-foreground">{t("page.promo.form.maxUsageTotal")}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {t("page.promo.form.maxUsageTotal")}
+                </label>
                 <input
                   type="number"
                   {...form.register("maxUsageTotal", { valueAsNumber: true })}
@@ -570,7 +635,9 @@ const EditPromoCampaign = () => {
                 <FormDescription>{t("common.optionalField")}</FormDescription>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">{t("page.promo.form.maxUsagePerMember")}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {t("page.promo.form.maxUsagePerMember")}
+                </label>
                 <input
                   type="number"
                   {...form.register("maxUsagePerMember", { valueAsNumber: true })}
@@ -580,7 +647,9 @@ const EditPromoCampaign = () => {
                 <FormDescription>{t("common.optionalField")}</FormDescription>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">{t("page.promo.form.priority")}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {t("page.promo.form.priority")}
+                </label>
                 <input
                   type="number"
                   {...form.register("priority", { valueAsNumber: true })}
@@ -588,20 +657,16 @@ const EditPromoCampaign = () => {
                 />
               </div>
               <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  {...form.register("isCombinable")}
-                  className="h-4 w-4"
-                />
-                <label className="text-sm text-foreground">{t("page.promo.form.isCombinable")}</label>
+                <input type="checkbox" {...form.register("isCombinable")} className="h-4 w-4" />
+                <label className="text-sm text-foreground">
+                  {t("page.promo.form.isCombinable")}
+                </label>
               </div>
               <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  {...form.register("autoActivate")}
-                  className="h-4 w-4"
-                />
-                <label className="text-sm text-foreground">{t("page.promo.form.autoActivate")}</label>
+                <input type="checkbox" {...form.register("autoActivate")} className="h-4 w-4" />
+                <label className="text-sm text-foreground">
+                  {t("page.promo.form.autoActivate")}
+                </label>
               </div>
             </div>
           </div>
@@ -615,10 +680,7 @@ const EditPromoCampaign = () => {
                 onClick={() => setCancelModalOpen(true)}>
                 {t("common.cancel")}
               </Button>
-              <Button
-                type="submit"
-                className="flex-1"
-                disabled={updateMutation?.isLoading}>
+              <Button type="submit" className="flex-1" disabled={updateMutation?.isLoading}>
                 {updateMutation?.isLoading ? (
                   <Skeleton className="h-4 w-16" />
                 ) : (

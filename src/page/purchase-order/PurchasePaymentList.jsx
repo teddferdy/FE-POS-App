@@ -25,8 +25,9 @@ const PurchasePaymentList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(["purchase-payments", page, limit], () =>
-    getAllPayments({ page, limit }),
+  const { data, isLoading, isError, refetch } = useQuery(
+    ["purchase-payments", page, limit],
+    () => getAllPayments({ page, limit }),
     { keepPreviousData: true }
   );
 

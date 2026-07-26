@@ -474,7 +474,8 @@ const AddPurchaseOrder = () => {
                         <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
                           <div className="text-center">
                             <p className="text-sm font-medium text-foreground">
-                              {t("page.purchaseOrder.add.selectStoreFirst") || "Pilih toko terlebih dahulu"}
+                              {t("page.purchaseOrder.add.selectStoreFirst") ||
+                                "Pilih toko terlebih dahulu"}
                             </p>
                           </div>
                         </div>
@@ -488,7 +489,9 @@ const AddPurchaseOrder = () => {
                               {selectedStore && locations.length > 0 && (
                                 <span className="text-muted-foreground">
                                   {t("page.purchaseOrder.add.inStore", {
-                                    storeName: locations.find((l) => String(l.id) === String(selectedStore))?.name || ""
+                                    storeName:
+                                      locations.find((l) => String(l.id) === String(selectedStore))
+                                        ?.name || ""
                                   })}
                                 </span>
                               )}

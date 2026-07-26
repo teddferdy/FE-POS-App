@@ -34,28 +34,29 @@ const PromoCampaignDetail = () => {
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [statusAction, setStatusAction] = useState(null);
 
-  const { data: campaign, isLoading } = useQuery(["promo-campaign", id], () => getCampaignById(id), {
-    enabled: !!id
-  });
-
-  const statusMutation = useMutation(
-    ({ status }) => updateCampaignStatus(id, { status }),
+  const { data: campaign, isLoading } = useQuery(
+    ["promo-campaign", id],
+    () => getCampaignById(id),
     {
-      onSuccess: () => {
-        toast.success(t("common.success"), {
-          description: t("page.promo.toast.statusUpdated")
-        });
-        queryClient.invalidateQueries(["promo-campaigns"]);
-        queryClient.invalidateQueries(["promo-campaign", id]);
-        setStatusModalOpen(false);
-      },
-      onError: (err) => {
-        toast.error(t("common.error"), {
-          description: err?.response?.data?.message || err.message
-        });
-      }
+      enabled: !!id
     }
   );
+
+  const statusMutation = useMutation(({ status }) => updateCampaignStatus(id, { status }), {
+    onSuccess: () => {
+      toast.success(t("common.success"), {
+        description: t("page.promo.toast.statusUpdated")
+      });
+      queryClient.invalidateQueries(["promo-campaigns"]);
+      queryClient.invalidateQueries(["promo-campaign", id]);
+      setStatusModalOpen(false);
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
 
   const handleStatusChange = (action) => {
     setStatusAction(action);
@@ -75,7 +76,8 @@ const PromoCampaignDetail = () => {
       expired: "bg-red-100 text-red-800"
     };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || styles.draft}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || styles.draft}`}>
         {status?.charAt(0).toUpperCase() + status?.slice(1)}
       </span>
     );
@@ -190,7 +192,9 @@ const PromoCampaignDetail = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* Campaign Info */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-foreground mb-4">{t("page.promo.detail.campaignInfo")}</h3>
+            <h3 className="font-semibold text-foreground mb-4">
+              {t("page.promo.detail.campaignInfo")}
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
                 <Tag size={16} className="text-muted-foreground" />
@@ -211,7 +215,9 @@ const PromoCampaignDetail = () => {
               <div className="flex items-center gap-3">
                 <Percent size={16} className="text-muted-foreground" />
                 <div>
-                  <p className="text-xs text-muted-foreground">{t("page.promo.form.discountType")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.promo.form.discountType")}
+                  </p>
                   <p className="text-sm font-medium text-foreground capitalize">
                     {campaign.discountType?.replace(/_/g, " ")}
                   </p>
@@ -220,7 +226,9 @@ const PromoCampaignDetail = () => {
               <div className="flex items-center gap-3">
                 <Users size={16} className="text-muted-foreground" />
                 <div>
-                  <p className="text-xs text-muted-foreground">{t("page.promo.form.applicableTo")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.promo.form.applicableTo")}
+                  </p>
                   <p className="text-sm font-medium text-foreground capitalize">
                     {campaign.applicableTo?.replace(/_/g, " ")}
                   </p>
@@ -231,20 +239,26 @@ const PromoCampaignDetail = () => {
 
           {/* Schedule */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-foreground mb-4">{t("page.promo.detail.schedule")}</h3>
+            <h3 className="font-semibold text-foreground mb-4">
+              {t("page.promo.detail.schedule")}
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
                 <Calendar size={16} className="text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground">{t("page.promo.form.startDate")}</p>
-                  <p className="text-sm font-medium text-foreground">{formatDate(campaign.startDate)}</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {formatDate(campaign.startDate)}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Calendar size={16} className="text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground">{t("page.promo.form.endDate")}</p>
-                  <p className="text-sm font-medium text-foreground">{formatDate(campaign.endDate)}</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {formatDate(campaign.endDate)}
+                  </p>
                 </div>
               </div>
               {campaign.type === "happy_hour" && campaign.startTime && (
@@ -252,14 +266,18 @@ const PromoCampaignDetail = () => {
                   <div className="flex items-center gap-3">
                     <Clock size={16} className="text-muted-foreground" />
                     <div>
-                      <p className="text-xs text-muted-foreground">{t("page.promo.form.startTime")}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("page.promo.form.startTime")}
+                      </p>
                       <p className="text-sm font-medium text-foreground">{campaign.startTime}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Clock size={16} className="text-muted-foreground" />
                     <div>
-                      <p className="text-xs text-muted-foreground">{t("page.promo.form.endTime")}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("page.promo.form.endTime")}
+                      </p>
                       <p className="text-sm font-medium text-foreground">{campaign.endTime}</p>
                     </div>
                   </div>
@@ -325,27 +343,37 @@ const PromoCampaignDetail = () => {
         <div className="space-y-6">
           {/* Status */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h4 className="text-sm font-semibold text-foreground mb-3">{t("page.promo.detail.status")}</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-3">
+              {t("page.promo.detail.status")}
+            </h4>
             {getStatusBadge(campaign.status)}
           </div>
 
           {/* Discount Settings */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h4 className="text-sm font-semibold text-foreground mb-3">{t("page.promo.detail.discountSettings")}</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-3">
+              {t("page.promo.detail.discountSettings")}
+            </h4>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-muted-foreground">{t("page.promo.form.discountValue")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.promo.form.discountValue")}
+                </p>
                 <p className="text-sm font-medium text-foreground">{campaign.discountValue || 0}</p>
               </div>
               {campaign.maxDiscount && (
                 <div>
-                  <p className="text-xs text-muted-foreground">{t("page.promo.form.maxDiscount")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.promo.form.maxDiscount")}
+                  </p>
                   <p className="text-sm font-medium text-foreground">{campaign.maxDiscount}</p>
                 </div>
               )}
               {campaign.minPurchase > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground">{t("page.promo.form.minPurchase")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.promo.form.minPurchase")}
+                  </p>
                   <p className="text-sm font-medium text-foreground">{campaign.minPurchase}</p>
                 </div>
               )}
@@ -354,22 +382,30 @@ const PromoCampaignDetail = () => {
 
           {/* Usage Limits */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h4 className="text-sm font-semibold text-foreground mb-3">{t("page.promo.detail.usageLimits")}</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-3">
+              {t("page.promo.detail.usageLimits")}
+            </h4>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-muted-foreground">{t("page.promo.form.maxUsageTotal")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.promo.form.maxUsageTotal")}
+                </p>
                 <p className="text-sm font-medium text-foreground">
                   {campaign.maxUsageTotal || t("common.unlimited")}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{t("page.promo.form.maxUsagePerMember")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.promo.form.maxUsagePerMember")}
+                </p>
                 <p className="text-sm font-medium text-foreground">
                   {campaign.maxUsagePerMember || t("common.unlimited")}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{t("page.promo.detail.currentUsage")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.promo.detail.currentUsage")}
+                </p>
                 <p className="text-sm font-medium text-foreground">{campaign.currentUsage || 0}</p>
               </div>
             </div>
@@ -377,7 +413,9 @@ const PromoCampaignDetail = () => {
 
           {/* Settings */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h4 className="text-sm font-semibold text-foreground mb-3">{t("page.promo.detail.settings")}</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-3">
+              {t("page.promo.detail.settings")}
+            </h4>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 {campaign.isCombinable ? (
