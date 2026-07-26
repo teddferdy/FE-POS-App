@@ -391,8 +391,16 @@ const PositionList = () => {
           <div>
             <div>
               {isFetching || isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-                  {[...Array(4)].map((_, i) => (
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                  <div className="col-span-1 md:col-span-3 lg:col-span-1 bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                  {[...Array(3)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
                       <div className="flex items-start justify-between mb-3">
                         <Skeleton className="h-3 w-24" />
@@ -404,14 +412,14 @@ const PositionList = () => {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
                   <StatCard
                     label={t("page.position.stats.total")}
                     value={total.toLocaleString()}
                     icon={Briefcase}
                     variant="default"
                     subtitle={t("page.position.stats.totalSub")}
-                    className="col-span-1 md:col-span-4 lg:col-span-1"
+                    className="col-span-1 md:col-span-3 lg:col-span-1"
                   />
                   <StatCard
                     label={t("page.position.stats.active")}
