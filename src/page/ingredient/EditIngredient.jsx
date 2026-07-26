@@ -123,6 +123,7 @@ const EditIngredient = () => {
     suppliersLoading || categoriesLoading || (isSuperAdmin && locationsLoading);
 
   const {
+    data: ingredientData,
     isLoading: loadingData,
     isError,
     refetch
@@ -145,6 +146,24 @@ const EditIngredient = () => {
       store: null
     }
   });
+
+  useEffect(() => {
+    const d = ingredientData?.data;
+    if (!d) return;
+    form.reset({
+      name: d.name || "",
+      supplier: d.supplier ? String(d.supplier) : null,
+      category: d.category ? String(d.category) : null,
+      unit: d.unit || "pcs",
+      baseUnit: d.baseUnit || "pcs",
+      conversionFactor: String(d.conversionFactor || "1"),
+      stock: d.stock || 0,
+      minStock: d.minStock || 0,
+      costPrice: d.costPrice || 0,
+      isActive: d.status === "active",
+      store: d.store ? String(d.store) : null
+    });
+  }, [ingredientData]);
 
   const watchStore = form.watch("store");
   const watchSupplier = form.watch("supplier");
