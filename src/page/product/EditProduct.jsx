@@ -43,6 +43,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { getProductById, editProduct } from "@/services/product";
 import { getAllCategoryActive } from "@/services/category";
@@ -149,7 +150,7 @@ const EditProduct = () => {
   const { data: categoriesData } = useQuery(
     ["categories-for-edit", productStore],
     () => getAllCategoryActive({ location: productStore }),
-    { enabled: !!productStore }
+    { enabled: true }
   );
   const categories = categoriesData?.data || categoriesData?.categories || [];
 
@@ -624,7 +625,37 @@ const EditProduct = () => {
   if (isError) return <AbortController refetch={refetch} />;
 
   if (loadingProduct) {
-    return <Loading fullscreen size="lg" label={t("common.loading")} />;
+    return (
+      <div className="space-y-6">
+        <div>
+          <PageHeader
+            breadcrumbs={[
+              { label: t("breadcrumb.dashboard"), href: "/dashboard-super-admin" },
+              { label: t("page.product.form.productList"), href: "/product-list" },
+              { label: t("page.product.form.editTitle") }
+            ]}
+            title={t("page.product.form.editTitle")}
+            description={t("common.loading")}
+            backLink="/product-list"
+            onBack={() => setCancelModal(true)}
+          />
+        </div>
+        <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
+          <Skeleton className="h-10 w-full" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-10 w-full" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </div>
+    );
   }
 
   if (!productId || (!loadingProduct && !product.id)) {
