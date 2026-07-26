@@ -411,6 +411,7 @@ const PositionList = () => {
                     icon={Briefcase}
                     variant="default"
                     subtitle={t("page.position.stats.totalSub")}
+                    className="col-span-1 md:col-span-4 lg:col-span-1"
                   />
                   <StatCard
                     label={t("page.position.stats.active")}

@@ -75,13 +75,13 @@ const variantStyles = {
   }
 };
 
-const StatCard = ({ label, value, icon, subtitle, variant = "default", "data-tour": dataTour }) => {
+const StatCard = ({ label, value, icon, subtitle, variant = "default", "data-tour": dataTour, className = "" }) => {
   const s = variantStyles[variant] || variantStyles.default;
   const isLucide = typeof icon !== "string";
   return (
     <div
       data-tour={dataTour}
-      className={`${s.card} p-6 rounded-xl shadow-sm flex justify-between items-center group hover:shadow-md transition-shadow`}>
+      className={`${s.card} p-6 rounded-xl shadow-sm flex justify-between items-center group hover:shadow-md transition-shadow ${className}`}>
       <div>
         <p className={`text-xs font-semibold ${s.label} uppercase tracking-wider mb-1`}>{label}</p>
         <h3 className={`text-3xl font-bold ${s.value}`}>{value}</h3>
