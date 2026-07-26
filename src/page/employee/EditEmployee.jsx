@@ -462,7 +462,41 @@ const EditEmployee = () => {
   };
 
   if (isEmployeeLoading) {
-    return <Loading fullscreen size="lg" label={t("page.employee.edit.loading")} />;
+    return (
+      <div className="space-y-6">
+        <div>
+          <div>
+            <PageHeader
+              breadcrumbs={[
+                { label: t("breadcrumb.hrm") },
+                { label: t("breadcrumb.employee"), href: "/employee-list" },
+                { label: t("breadcrumb.edit") }
+              ]}
+              title={t("page.employee.edit.title")}
+              description={t("page.employee.edit.description")}
+              backLink="/employee-list"
+              onBack={() => setCancelModal(true)}
+            />
+          </div>
+        </div>
+        <div>
+          <div>
+            <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
+              <div className="grid grid-cols-12 gap-6">
+                <div className="col-span-12 lg:col-span-8 space-y-6">
+                  <Skeleton className="h-64 w-full rounded-xl" />
+                  <Skeleton className="h-48 w-full rounded-xl" />
+                  <Skeleton className="h-40 w-full rounded-xl" />
+                </div>
+                <div className="col-span-12 lg:col-span-4">
+                  <Skeleton className="h-64 w-full rounded-xl" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (isError) {
