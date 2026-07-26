@@ -3468,6 +3468,7 @@
   "page.employee.add.departmentPlaceholder": "Select Department",
   "page.employee.add.documentTypes": "PDF, JPG, PNG. Max 5MB",
   "page.employee.add.documents": "Documents",
+  "page.employee.add.documentsDescription": "Upload at least 1 supporting document such as ID card, driver's license, or other official documents.",
   "page.employee.add.draftConfirm": "Yes, Save Draft",
   "page.employee.add.draftDescription": "Incomplete data can be completed later",
   "page.employee.add.draftTitle": "Save as Draft?",

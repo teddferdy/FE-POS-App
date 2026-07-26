@@ -399,12 +399,12 @@ const AddEmployee = () => {
           <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
             {dropdownsLoading ? (
               <div className="grid grid-cols-12 gap-6">
-                <div className="col-span-12 lg:col-span-8 space-y-6">
+                <div className="col-span-12 space-y-6">
                   <Skeleton className="h-64 w-full rounded-xl" />
                   <Skeleton className="h-48 w-full rounded-xl" />
                   <Skeleton className="h-40 w-full rounded-xl" />
                 </div>
-                <div className="col-span-12 lg:col-span-4">
+                <div className="col-span-12">
                   <Skeleton className="h-64 w-full rounded-xl" />
                 </div>
               </div>
@@ -415,7 +415,7 @@ const AddEmployee = () => {
                     e.preventDefault();
                   }}>
                   <div className="grid grid-cols-12 gap-6">
-                    <div className="col-span-12 lg:col-span-8 space-y-6">
+                    <div className="col-span-12 space-y-6">
                       {/* Section 1: Informasi Pribadi */}
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
@@ -973,48 +973,48 @@ const AddEmployee = () => {
                               />
                             </>
                           )}
-                          <div className="flex flex-col gap-1.5 justify-end">
-                            <FormField
-                              control={form.control}
-                              name="isActive"
-                              render={({ field }) => (
-                                <div
-                                  className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                                    field.value
-                                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                                  }`}>
-                                  <div className="flex items-center gap-3">
-                                    <div
-                                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                        field.value
-                                          ? "bg-green-600 text-secondary"
-                                          : "bg-destructive/10 text-destructive"
-                                      }`}>
-                                      {field.value ? (
-                                        <Check size={20} />
-                                      ) : (
-                                        <span className="text-lg font-bold">⏻</span>
-                                      )}
-                                    </div>
-                                    <div>
-                                      <p className="text-sm font-semibold text-foreground">
-                                        {t("page.employee.form.statusLabel", {
-                                          status: field.value ? "active" : "inactive"
-                                        })}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {field.value
-                                          ? t("page.employee.add.statusActiveDescription")
-                                          : t("page.employee.add.statusInactiveDescription")}
-                                      </p>
-                                    </div>
+                        </div>
+                        <div className="flex flex-col gap-1.5 justify-end mt-6">
+                          <FormField
+                            control={form.control}
+                            name="isActive"
+                            render={({ field }) => (
+                              <div
+                                className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                  field.value
+                                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                                }`}>
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                      field.value
+                                        ? "bg-green-600 text-secondary"
+                                        : "bg-destructive/10 text-destructive"
+                                    }`}>
+                                    {field.value ? (
+                                      <Check size={20} />
+                                    ) : (
+                                      <span className="text-lg font-bold">⏻</span>
+                                    )}
                                   </div>
-                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  <div>
+                                    <p className="text-sm font-semibold text-foreground">
+                                      {t("page.employee.form.statusLabel", {
+                                        status: field.value ? "active" : "inactive"
+                                      })}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {field.value
+                                        ? t("page.employee.add.statusActiveDescription")
+                                        : t("page.employee.add.statusInactiveDescription")}
+                                    </p>
+                                  </div>
                                 </div>
-                              )}
-                            />
-                          </div>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                              </div>
+                            )}
+                          />
                         </div>
                       </div>
 
@@ -1219,9 +1219,13 @@ const AddEmployee = () => {
                             description
                           </span>
                           <h4 className="text-base font-semibold text-foreground">
-                            {t("page.employee.add.documents")}
+                            {t("page.employee.add.documents")}{" "}
+                            <span className="text-destructive">*</span>
                           </h4>
                         </div>
+                        <p className="text-xs text-muted-foreground mb-4">
+                          {t("page.employee.add.documentsDescription")}
+                        </p>
 
                         <input
                           ref={documentInputRef}
@@ -1280,33 +1284,6 @@ const AddEmployee = () => {
                             </div>
                           )}
                         </div>
-                      </div>
-                    </div>
-
-                    <div className="col-span-12">
-                      <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="material-symbols-outlined text-xl text-primary">
-                            tips_and_updates
-                          </span>
-                          <h4 className="text-sm font-semibold text-primary">
-                            {t("page.employee.add.tips")}
-                          </h4>
-                        </div>
-                        <ul className="space-y-2">
-                          <li className="flex items-center gap-2 text-sm text-foreground">
-                            <span className="material-symbols-outlined text-primary text-base">
-                              check_circle
-                            </span>
-                            <span>{t("tips.employee")}</span>
-                          </li>
-                          <li className="flex items-center gap-2 text-sm text-foreground">
-                            <span className="material-symbols-outlined text-primary text-base">
-                              check_circle
-                            </span>
-                            <span>{t("tips.employee2")}</span>
-                          </li>
-                        </ul>
                       </div>
                     </div>
 
