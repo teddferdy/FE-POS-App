@@ -279,14 +279,17 @@ const PositionList = () => {
       </div>
 
       <div>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-          <div>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold text-foreground">{t("page.position.list.title")}</h1>
             <p className="text-sm text-muted-foreground mt-1">
               {t("page.position.list.description")}
             </p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div
+            className="overflow-x-auto shrink-0"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            <div className="flex items-center gap-2 flex-nowrap">
             {canAccess(user, MENU_KEY, "export") && (
               <Button
                 data-tour="position-download-template"
@@ -376,6 +379,7 @@ const PositionList = () => {
                 {t("page.position.button.add")}
               </Button>
             )}
+          </div>
           </div>
         </div>
       </div>
