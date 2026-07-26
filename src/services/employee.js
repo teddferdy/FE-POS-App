@@ -25,7 +25,7 @@ const buildFormData = (payload) => {
       if (Array.isArray(value)) {
         value.forEach((item) => formData.append(key, item));
       } else {
-        formData.append(key, String(value));
+        formData.append(key, value instanceof Blob ? value : String(value));
       }
     }
   });
