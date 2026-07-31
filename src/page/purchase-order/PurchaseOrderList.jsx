@@ -1177,7 +1177,7 @@ const PurchaseOrderList = () => {
         returPo &&
         createPortal(
           <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
-            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-[80vw] max-h-[90vh] overflow-y-auto">
               <div className="px-6 py-4 border-b border-border flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
                   <Package size={18} className="text-amber-600 dark:text-amber-400" />
@@ -1217,7 +1217,16 @@ const PurchaseOrderList = () => {
                           <p className="text-xs text-muted-foreground">
                             {t("page.purchaseOrder.list.returInfo.supplier")}
                           </p>
-                          <p className="text-sm font-medium">{returPo.supplierData?.name || "-"}</p>
+                          <p className="text-sm font-medium">
+                            {returPo.supplierNames ||
+                              returPo.supplierData?.name ||
+                              returPo.items
+                                ?.map((i) => i.supplierData?.name)
+                                .filter(Boolean)
+                                .filter((v, idx, arr) => arr.indexOf(v) === idx)
+                                .join(", ") ||
+                              "-"}
+                          </p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground">
@@ -1273,6 +1282,9 @@ const PurchaseOrderList = () => {
                                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground">
                                   {t("page.purchaseOrder.list.returInfo.itemHeader")}
                                 </th>
+                                <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground min-w-32">
+                                  {t("page.purchaseOrder.list.returInfo.supplier")}
+                                </th>
                                 <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-16">
                                   {t("page.purchaseOrder.list.returInfo.qtyPo")}
                                 </th>
@@ -1281,6 +1293,9 @@ const PurchaseOrderList = () => {
                                 </th>
                                 <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-20">
                                   {t("page.purchaseOrder.list.returInfo.return")}
+                                </th>
+                                <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-16">
+                                  {t("page.purchaseOrder.list.returInfo.remaining")}
                                 </th>
                                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground w-40">
                                   {t("page.purchaseOrder.list.returInfo.notes")}
@@ -1294,6 +1309,9 @@ const PurchaseOrderList = () => {
                                   className="hover:bg-muted/20 transition-colors">
                                   <td className="px-3 py-2.5 text-sm font-medium">
                                     {item.productData?.nameProduct || item.ingredientName || "-"}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-sm text-muted-foreground">
+                                    {item.supplierData?.name || "-"}
                                   </td>
                                   <td className="px-3 py-2.5 text-center text-sm text-muted-foreground">
                                     {item.quantity || 0}
@@ -1330,6 +1348,12 @@ const PurchaseOrderList = () => {
                                       }`}
                                       placeholder="0"
                                     />
+                                  </td>
+                                  <td className="px-3 py-2.5 text-center text-sm font-semibold">
+                                    {Math.max(
+                                      0,
+                                      (item.quantity || 0) - (parseFloat(item.returnQty) || 0)
+                                    )}
                                   </td>
                                   <td className="px-3 py-2.5">
                                     <input

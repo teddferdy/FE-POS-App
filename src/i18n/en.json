@@ -4975,6 +4975,7 @@
   "page.purchaseOrder.list.returInfo.poNumber": "PO Number",
   "page.purchaseOrder.list.returInfo.poTime": "PO Time",
   "page.purchaseOrder.list.returInfo.qtyPo": "PO Qty",
+  "page.purchaseOrder.list.returInfo.remaining": "Remaining",
   "page.purchaseOrder.list.returInfo.reasonLabel": "Return Reason",
   "page.purchaseOrder.list.returInfo.reasonPlaceholder": "Enter return reason...",
   "page.purchaseOrder.list.returInfo.return": "Return Qty",
