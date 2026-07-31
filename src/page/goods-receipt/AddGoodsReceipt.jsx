@@ -61,6 +61,21 @@ const AddGoodsReceipt = () => {
     items: z.array(z.any()).min(1)
   });
 
+  const unitOptions = [
+    { value: "pcs", label: t("unit.pcs") },
+    { value: "buah", label: t("unit.buah") },
+    { value: "kg", label: t("unit.kg") },
+    { value: "gram", label: t("unit.gram") },
+    { value: "liter", label: t("unit.liter") },
+    { value: "ml", label: t("unit.ml") },
+    { value: "meter", label: t("unit.meter") },
+    { value: "cm", label: t("unit.cm") },
+    { value: "lusin", label: t("unit.lusin") },
+    { value: "box", label: t("unit.box") },
+    { value: "pack", label: t("unit.pack") },
+    { value: "karton", label: t("unit.karton") }
+  ];
+
   const { data: poData, isLoading: loadingPOs } = useQuery(
     ["pos-for-gr"],
     () => getAllPurchaseOrder({ limit: 9999, status: "pending,ordered" }),
@@ -228,7 +243,7 @@ const AddGoodsReceipt = () => {
             e.preventDefault();
             doSubmit(false);
           }}
-          className="bg-card p-6 rounded-xl border border-border space-y-6">
+          className="bg-card p-4 sm:p-6 rounded-xl border border-border space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>
@@ -366,66 +381,52 @@ const AddGoodsReceipt = () => {
                 <Skeleton className="h-8 w-full" />
               </div>
             ) : poId ? (
-              <div className="overflow-x-auto border rounded-lg">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-muted/60 border-b">
-                      <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                        {t("page.goodsReceipt.add.table.name")}
-                      </th>
-                      <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                        {t("page.goodsReceipt.add.table.qtyPo")}
-                      </th>
-                      <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                        {t("page.goodsReceipt.add.table.remaining")}
-                      </th>
-                      <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                        {t("page.goodsReceipt.add.table.unit")}
-                      </th>
-                      <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                        {t("page.goodsReceipt.add.table.conversion")}
-                      </th>
-                      <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
-                        {t("page.goodsReceipt.add.table.qtyReceived")}
-                      </th>
-                      <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
-                        {t("page.goodsReceipt.add.table.costPrice")}
-                      </th>
-                      <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                        {t("page.goodsReceipt.add.table.notes")}
-                      </th>
-                      <th className="w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item, idx) => (
-                      <tr key={idx} className="border-b border-muted/20">
-                        <td className="px-3 py-2">
+              <>
+                <div className="md:hidden space-y-3">
+                  {items.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-xl border border-border bg-background overflow-hidden">
+                      <div className="flex items-start justify-between gap-2 px-4 py-3 bg-muted/40 border-b border-border/60">
+                        {item.isFromPo ? (
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Package size={14} className="text-muted-foreground shrink-0" />
+                            <span className="text-sm font-medium truncate">
+                              {item.ingredientName}
+                            </span>
+                          </div>
+                        ) : (
+                          <Input
+                            type="text"
+                            value={item.ingredientName}
+                            onChange={(e) => updateItem(idx, "ingredientName", e.target.value)}
+                            className="h-9 text-sm flex-1"
+                            placeholder={t("page.goodsReceipt.add.placeholder.name")}
+                          />
+                        )}
+                        {!item.isFromPo && (
+                          <button
+                            type="button"
+                            onClick={() => removeItem(idx)}
+                            className="text-muted-foreground/40 hover:text-destructive shrink-0">
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                      <div className="p-4 grid grid-cols-2 gap-x-4 gap-y-4">
+                        <div>
+                          <span className="block text-[11px] font-medium text-muted-foreground mb-1.5">
+                            {t("page.goodsReceipt.add.table.qtyPo")}
+                          </span>
                           {item.isFromPo ? (
-                            <div className="flex items-center gap-2">
-                              <Package size={14} className="text-muted-foreground shrink-0" />
-                              <span className="text-sm font-medium">{item.ingredientName}</span>
-                            </div>
-                          ) : (
-                            <Input
-                              type="text"
-                              value={item.ingredientName}
-                              onChange={(e) => updateItem(idx, "ingredientName", e.target.value)}
-                              className="h-8 text-xs"
-                              placeholder={t("page.goodsReceipt.add.placeholder.name")}
-                            />
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          {item.isFromPo ? (
-                            <span className="text-sm text-muted-foreground">
+                            <div className="text-sm font-semibold">
                               {Math.max(0, item.qty - item.returnedQty)}
                               {item.returnedQty > 0 && (
-                                <span className="text-xs text-muted-foreground/60 ml-1">
+                                <span className="text-xs font-normal text-muted-foreground ml-1">
                                   ({t("page.goodsReceipt.add.label.returned")}: {item.returnedQty})
                                 </span>
                               )}
-                            </span>
+                            </div>
                           ) : (
                             <Input
                               type="text"
@@ -434,69 +435,73 @@ const AddGoodsReceipt = () => {
                               onChange={(e) =>
                                 updateItem(idx, "qty", e.target.value.replace(/[^0-9]/g, ""))
                               }
-                              className="h-8 text-xs text-center w-16 mx-auto"
+                              className="h-9 text-sm"
                               placeholder={t("page.goodsReceipt.add.placeholder.qty")}
                             />
                           )}
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          {(() => {
-                            const remaining = Math.max(
-                              0,
-                              item.qty - item.returnedQty - (item.receivedQuantity || 0)
-                            );
-                            const receivedAlready = item.receivedQuantity || 0;
-                            return (
-                              <span
-                                className={`text-sm ${remaining === 0 ? "text-red-500" : receivedAlready > 0 ? "text-amber-600" : "text-green-600"}`}>
-                                {remaining}
-                                {receivedAlready > 0 && (
-                                  <span className="text-xs text-muted-foreground ml-1">
-                                    (prev: {receivedAlready})
-                                  </span>
-                                )}
-                              </span>
-                            );
-                          })()}
-                        </td>
-                        <td className="px-3 py-2">
-                          <div className="flex justify-center">
-                            {item.isFromPo ? (
-                              <span className="inline-flex px-2 py-0.5 rounded text-xs bg-muted capitalize">
-                                {item.unit}
-                              </span>
-                            ) : (
-                              <Combobox
-                                options={[
-                                  { value: "pcs", label: t("unit.pcs") },
-                                  { value: "buah", label: t("unit.buah") },
-                                  { value: "kg", label: t("unit.kg") },
-                                  { value: "gram", label: t("unit.gram") },
-                                  { value: "liter", label: t("unit.liter") },
-                                  { value: "ml", label: t("unit.ml") },
-                                  { value: "meter", label: t("unit.meter") },
-                                  { value: "cm", label: t("unit.cm") },
-                                  { value: "lusin", label: t("unit.lusin") },
-                                  { value: "box", label: t("unit.box") },
-                                  { value: "pack", label: t("unit.pack") },
-                                  { value: "karton", label: t("unit.karton") }
-                                ]}
-                                value={item.unit}
-                                onChange={(val) => updateItem(idx, "unit", val)}
-                                placeholder={t("unit.pcs")}
-                                searchPlaceholder={t("common.search")}
-                              />
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-3 py-2">
+                        </div>
+                        <div>
+                          <span className="block text-[11px] font-medium text-muted-foreground mb-1.5">
+                            {t("page.goodsReceipt.add.table.remaining")}
+                          </span>
                           {item.isFromPo ? (
-                            <div className="text-center">
-                              <span className="inline-flex px-2 py-0.5 rounded text-xs bg-muted">
+                            (() => {
+                              const remaining = Math.max(
+                                0,
+                                item.qty - item.returnedQty - (item.receivedQuantity || 0)
+                              );
+                              const receivedAlready = item.receivedQuantity || 0;
+                              return (
+                                <div
+                                  className={`text-sm font-semibold ${
+                                    remaining === 0
+                                      ? "text-red-500"
+                                      : receivedAlready > 0
+                                        ? "text-amber-600"
+                                        : "text-green-600"
+                                  }`}>
+                                  {remaining}
+                                  {receivedAlready > 0 && (
+                                    <span className="text-xs font-normal text-muted-foreground ml-1">
+                                      (prev: {receivedAlready})
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })()
+                          ) : (
+                            <span className="text-sm text-muted-foreground">-</span>
+                          )}
+                        </div>
+                        <div>
+                          <span className="block text-[11px] font-medium text-muted-foreground mb-1.5">
+                            {t("page.goodsReceipt.add.table.unit")}
+                          </span>
+                          {item.isFromPo ? (
+                            <span className="inline-flex px-2 py-1 rounded text-xs bg-muted capitalize">
+                              {item.unit}
+                            </span>
+                          ) : (
+                            <Combobox
+                              options={unitOptions}
+                              value={item.unit}
+                              onChange={(val) => updateItem(idx, "unit", val)}
+                              placeholder={t("unit.pcs")}
+                              searchPlaceholder={t("common.search")}
+                            />
+                          )}
+                        </div>
+                        <div>
+                          <span className="block text-[11px] font-medium text-muted-foreground mb-1.5">
+                            {t("page.goodsReceipt.add.table.conversion")}
+                          </span>
+                          {item.isFromPo ? (
+                            <div>
+                              <span className="inline-flex px-2 py-1 rounded text-xs bg-muted">
                                 {item.conversionToBase || 1}
                               </span>
                               {parseFloat(item.qtyReceived) > 0 && (
-                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                <p className="text-[10px] text-muted-foreground mt-1">
                                   ={" "}
                                   {(
                                     parseFloat(item.qtyReceived) * (item.conversionToBase || 1)
@@ -506,25 +511,26 @@ const AddGoodsReceipt = () => {
                               )}
                             </div>
                           ) : (
-                            <div className="flex justify-center">
-                              <Input
-                                type="text"
-                                inputMode="decimal"
-                                value={item.conversionToBase ? String(item.conversionToBase) : "1"}
-                                onChange={(e) =>
-                                  updateItem(
-                                    idx,
-                                    "conversionToBase",
-                                    Number(e.target.value.replace(/[^0-9.]/g, "")) || 1
-                                  )
-                                }
-                                className="h-8 text-xs text-center w-16"
-                                placeholder="1"
-                              />
-                            </div>
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              value={item.conversionToBase ? String(item.conversionToBase) : "1"}
+                              onChange={(e) =>
+                                updateItem(
+                                  idx,
+                                  "conversionToBase",
+                                  Number(e.target.value.replace(/[^0-9.]/g, "")) || 1
+                                )
+                              }
+                              className="h-9 text-sm"
+                              placeholder="1"
+                            />
                           )}
-                        </td>
-                        <td className="px-3 py-2">
+                        </div>
+                        <div>
+                          <span className="block text-[11px] font-medium text-muted-foreground mb-1.5">
+                            {t("page.goodsReceipt.add.table.qtyReceived")}
+                          </span>
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -537,11 +543,14 @@ const AddGoodsReceipt = () => {
                                 e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
                               )
                             }
-                            className="h-8 text-xs text-right w-24 ml-auto"
+                            className="h-9 text-sm"
                             placeholder={t("page.goodsReceipt.add.placeholder.qty")}
                           />
-                        </td>
-                        <td className="px-3 py-2">
+                        </div>
+                        <div>
+                          <span className="block text-[11px] font-medium text-muted-foreground mb-1.5">
+                            {t("page.goodsReceipt.add.table.costPrice")}
+                          </span>
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -554,43 +563,265 @@ const AddGoodsReceipt = () => {
                                 e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
                               )
                             }
-                            className="h-8 text-xs text-right w-28 ml-auto"
+                            className="h-9 text-sm"
                             placeholder={t("page.goodsReceipt.add.placeholder.costPrice")}
                           />
                           {(() => {
                             const landed = poItemLanded[item.purchaseOrderItem] || 0;
                             return landed > 0 ? (
-                              <p className="text-[10px] text-emerald-600 mt-0.5 text-right">
+                              <p className="text-[10px] text-emerald-600 mt-1">
                                 {t("page.goodsReceipt.add.table.landed")} + Rp{" "}
                                 {landed.toLocaleString("id-ID")}
                               </p>
                             ) : null;
                           })()}
-                        </td>
-                        <td className="px-3 py-2">
+                        </div>
+                        <div className="col-span-2">
+                          <span className="block text-[11px] font-medium text-muted-foreground mb-1.5">
+                            {t("page.goodsReceipt.add.table.notes")}
+                          </span>
                           <Input
                             type="text"
                             value={item.conditionNotes}
                             onChange={(e) => updateItem(idx, "conditionNotes", e.target.value)}
-                            className="h-8 text-xs"
+                            className="h-9 text-sm"
                             placeholder={t("page.goodsReceipt.add.placeholder.condition")}
                           />
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          {!item.isFromPo && (
-                            <button
-                              type="button"
-                              onClick={() => removeItem(idx)}
-                              className="text-muted-foreground/30 hover:text-destructive">
-                              <Trash2 size={14} />
-                            </button>
-                          )}
-                        </td>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="hidden md:block overflow-x-auto border rounded-lg">
+                  <table className="w-full text-sm min-w-[900px]">
+                    <thead>
+                      <tr className="bg-muted/60 border-b">
+                        <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsReceipt.add.table.name")}
+                        </th>
+                        <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsReceipt.add.table.qtyPo")}
+                        </th>
+                        <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsReceipt.add.table.remaining")}
+                        </th>
+                        <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsReceipt.add.table.unit")}
+                        </th>
+                        <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsReceipt.add.table.conversion")}
+                        </th>
+                        <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsReceipt.add.table.qtyReceived")}
+                        </th>
+                        <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsReceipt.add.table.costPrice")}
+                        </th>
+                        <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsReceipt.add.table.notes")}
+                        </th>
+                        <th className="w-10"></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {items.map((item, idx) => (
+                        <tr key={idx} className="border-b border-muted/20">
+                          <td className="px-3 py-2">
+                            {item.isFromPo ? (
+                              <div className="flex items-center gap-2">
+                                <Package size={14} className="text-muted-foreground shrink-0" />
+                                <span className="text-sm font-medium">{item.ingredientName}</span>
+                              </div>
+                            ) : (
+                              <Input
+                                type="text"
+                                value={item.ingredientName}
+                                onChange={(e) => updateItem(idx, "ingredientName", e.target.value)}
+                                className="h-8 text-xs"
+                                placeholder={t("page.goodsReceipt.add.placeholder.name")}
+                              />
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            {item.isFromPo ? (
+                              <span className="text-sm text-muted-foreground">
+                                {Math.max(0, item.qty - item.returnedQty)}
+                                {item.returnedQty > 0 && (
+                                  <span className="text-xs text-muted-foreground/60 ml-1">
+                                    ({t("page.goodsReceipt.add.label.returned")}: {item.returnedQty}
+                                    )
+                                  </span>
+                                )}
+                              </span>
+                            ) : (
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                value={item.qty || ""}
+                                onChange={(e) =>
+                                  updateItem(idx, "qty", e.target.value.replace(/[^0-9]/g, ""))
+                                }
+                                className="h-8 text-xs text-center w-16 mx-auto"
+                                placeholder={t("page.goodsReceipt.add.placeholder.qty")}
+                              />
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            {(() => {
+                              const remaining = Math.max(
+                                0,
+                                item.qty - item.returnedQty - (item.receivedQuantity || 0)
+                              );
+                              const receivedAlready = item.receivedQuantity || 0;
+                              return (
+                                <span
+                                  className={`text-sm ${remaining === 0 ? "text-red-500" : receivedAlready > 0 ? "text-amber-600" : "text-green-600"}`}>
+                                  {remaining}
+                                  {receivedAlready > 0 && (
+                                    <span className="text-xs text-muted-foreground ml-1">
+                                      (prev: {receivedAlready})
+                                    </span>
+                                  )}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                          <td className="px-3 py-2">
+                            <div className="flex justify-center">
+                              {item.isFromPo ? (
+                                <span className="inline-flex px-2 py-0.5 rounded text-xs bg-muted capitalize">
+                                  {item.unit}
+                                </span>
+                              ) : (
+                                <Combobox
+                                  options={[
+                                    { value: "pcs", label: t("unit.pcs") },
+                                    { value: "buah", label: t("unit.buah") },
+                                    { value: "kg", label: t("unit.kg") },
+                                    { value: "gram", label: t("unit.gram") },
+                                    { value: "liter", label: t("unit.liter") },
+                                    { value: "ml", label: t("unit.ml") },
+                                    { value: "meter", label: t("unit.meter") },
+                                    { value: "cm", label: t("unit.cm") },
+                                    { value: "lusin", label: t("unit.lusin") },
+                                    { value: "box", label: t("unit.box") },
+                                    { value: "pack", label: t("unit.pack") },
+                                    { value: "karton", label: t("unit.karton") }
+                                  ]}
+                                  value={item.unit}
+                                  onChange={(val) => updateItem(idx, "unit", val)}
+                                  placeholder={t("unit.pcs")}
+                                  searchPlaceholder={t("common.search")}
+                                />
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-3 py-2">
+                            {item.isFromPo ? (
+                              <div className="text-center">
+                                <span className="inline-flex px-2 py-0.5 rounded text-xs bg-muted">
+                                  {item.conversionToBase || 1}
+                                </span>
+                                {parseFloat(item.qtyReceived) > 0 && (
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                                    ={" "}
+                                    {(
+                                      parseFloat(item.qtyReceived) * (item.conversionToBase || 1)
+                                    ).toLocaleString("id-ID")}{" "}
+                                    stok
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="flex justify-center">
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={
+                                    item.conversionToBase ? String(item.conversionToBase) : "1"
+                                  }
+                                  onChange={(e) =>
+                                    updateItem(
+                                      idx,
+                                      "conversionToBase",
+                                      Number(e.target.value.replace(/[^0-9.]/g, "")) || 1
+                                    )
+                                  }
+                                  className="h-8 text-xs text-center w-16"
+                                  placeholder="1"
+                                />
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-3 py-2">
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              value={item.qtyReceived === "0" ? "" : item.qtyReceived}
+                              onFocus={(e) => e.target.select()}
+                              onChange={(e) =>
+                                updateItem(
+                                  idx,
+                                  "qtyReceived",
+                                  e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
+                                )
+                              }
+                              className="h-8 text-xs text-right w-24 ml-auto"
+                              placeholder={t("page.goodsReceipt.add.placeholder.qty")}
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              value={item.costPrice ? String(item.costPrice) : ""}
+                              onFocus={(e) => e.target.select()}
+                              onChange={(e) =>
+                                updateItem(
+                                  idx,
+                                  "costPrice",
+                                  e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
+                                )
+                              }
+                              className="h-8 text-xs text-right w-28 ml-auto"
+                              placeholder={t("page.goodsReceipt.add.placeholder.costPrice")}
+                            />
+                            {(() => {
+                              const landed = poItemLanded[item.purchaseOrderItem] || 0;
+                              return landed > 0 ? (
+                                <p className="text-[10px] text-emerald-600 mt-0.5 text-right">
+                                  {t("page.goodsReceipt.add.table.landed")} + Rp{" "}
+                                  {landed.toLocaleString("id-ID")}
+                                </p>
+                              ) : null;
+                            })()}
+                          </td>
+                          <td className="px-3 py-2">
+                            <Input
+                              type="text"
+                              value={item.conditionNotes}
+                              onChange={(e) => updateItem(idx, "conditionNotes", e.target.value)}
+                              className="h-8 text-xs"
+                              placeholder={t("page.goodsReceipt.add.placeholder.condition")}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            {!item.isFromPo && (
+                              <button
+                                type="button"
+                                onClick={() => removeItem(idx)}
+                                className="text-muted-foreground/30 hover:text-destructive">
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ) : (
               <div className="text-center py-8 text-sm text-muted-foreground">
                 {t("page.goodsReceipt.add.form.noPO")}
@@ -617,20 +848,26 @@ const AddGoodsReceipt = () => {
             )}
           </div>
 
-          <div className="flex items-center justify-between gap-4 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto justify-center"
+              onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.goodsReceipt.add.form.cancel")}
             </Button>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
               <Button
                 type="button"
                 variant="outline"
+                className="w-full sm:w-auto justify-center"
                 onClick={() => setDraftModal(true)}
                 disabled={isSubmitting}>
                 Simpan sebagai Draft
               </Button>
               <Button
                 type="button"
+                className="w-full sm:w-auto justify-center"
                 disabled={isSubmitting || items.length === 0}
                 onClick={() => {
                   const missing = getMissingFields({ poId, items }, formSchema, fieldLabels);
