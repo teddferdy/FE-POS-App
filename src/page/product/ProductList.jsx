@@ -42,6 +42,7 @@ import { uploadProductExcel } from "@/services/product";
 import DataTable from "@/components/ui/DataTable";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { canAccess } from "@/utils/permission";
+import { Combobox } from "@/components/ui/combobox";
 
 const ProductList = () => {
   const { t } = useTranslation();
