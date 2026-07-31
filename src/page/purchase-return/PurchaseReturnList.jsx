@@ -63,6 +63,7 @@ const PurchaseReturnList = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
+  const [resolution, setResolution] = useState("credit");
 
   const { data: locData } = useQuery(["locations-purchase-return"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -97,6 +98,8 @@ const PurchaseReturnList = () => {
       });
       queryClient.invalidateQueries(["purchase-returns"]);
       setActionTarget(null);
+      setActionType(null);
+      setResolution("credit");
     },
     onError: (err) =>
       toast.error(t("page.purchaseReturn.list.toast.error"), {
@@ -111,6 +114,7 @@ const PurchaseReturnList = () => {
       });
       queryClient.invalidateQueries(["purchase-returns"]);
       setActionTarget(null);
+      setActionType(null);
     },
     onError: (err) =>
       toast.error(t("page.purchaseReturn.list.toast.error"), {
@@ -151,11 +155,24 @@ const PurchaseReturnList = () => {
       align: "center",
       render: (item) => {
         const sc = statusCfg[item.status] || statusCfg.pending;
+        const res = item.resolution;
         return (
-          <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${sc.class}`}>
-            {t(`page.purchaseReturn.status.${item.status}`)}
-          </span>
+          <div className="inline-flex flex-col items-center gap-1">
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${sc.class}`}>
+              {t(`page.purchaseReturn.status.${item.status}`)}
+            </span>
+            {res && (
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                  res === "replacement"
+                    ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
+                    : "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400"
+                }`}>
+                {t(`page.purchaseReturn.resolution.${res}`)}
+              </span>
+            )}
+          </div>
         );
       }
     },
@@ -222,6 +239,7 @@ const PurchaseReturnList = () => {
                 size="icon"
                 className="h-8 w-8 text-green-500"
                 onClick={() => {
+                  setResolution("credit");
                   setActionTarget(item.id);
                   setActionType("approve");
                 }}>
@@ -440,31 +458,73 @@ const PurchaseReturnList = () => {
             </div>
           )}
 
-          <Modal
-            type="confirm"
-            open={!!actionTarget}
-            onOpenChange={(o) => !o && setActionTarget(null)}
-            title={
-              actionType === "approve"
-                ? t("page.purchaseReturn.list.modal.approveTitle")
-                : t("page.purchaseReturn.list.modal.rejectTitle")
-            }
-            description={
-              actionType === "approve"
-                ? t("page.purchaseReturn.list.modal.approveDesc")
-                : t("page.purchaseReturn.list.modal.rejectDesc")
-            }
-            confirmText={
-              actionType === "approve"
-                ? t("page.purchaseReturn.list.modal.approveConfirm")
-                : t("page.purchaseReturn.list.modal.rejectConfirm")
-            }
-            confirmVariant={actionType === "approve" ? "default" : "destructive"}
-            onConfirm={() => {
-              if (actionType === "approve") approveMut.mutate(actionTarget);
-              else rejectMut.mutate(actionTarget);
-            }}
-          />
+          {actionType === "approve" && (
+            <Modal
+              type="form"
+              open={!!actionTarget}
+              onOpenChange={(o) =>
+                !o && (setActionTarget(null), setActionType(null), setResolution("credit"))
+              }
+              title={t("page.purchaseReturn.list.modal.approveTitle")}
+              description={t("page.purchaseReturn.list.modal.approveResolutionSub")}
+              confirmText={t("page.purchaseReturn.list.modal.approveConfirm")}
+              loading={approveMut.isLoading}
+              onConfirm={() => approveMut.mutate({ id: actionTarget, resolution })}
+              className="sm:max-w-[520px]">
+              <div className="grid grid-cols-1 gap-3">
+                {[
+                  {
+                    value: "credit",
+                    label: t("page.purchaseReturn.resolution.credit"),
+                    desc: t("page.purchaseReturn.list.modal.approveCreditDesc")
+                  },
+                  {
+                    value: "replacement",
+                    label: t("page.purchaseReturn.resolution.replacement"),
+                    desc: t("page.purchaseReturn.list.modal.approveReplacementDesc")
+                  }
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setResolution(opt.value)}
+                    className={`w-full text-left rounded-xl border-2 p-3.5 transition-colors ${
+                      resolution === opt.value
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40"
+                    }`}>
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`mt-0.5 h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          resolution === opt.value ? "border-primary" : "border-muted-foreground/40"
+                        }`}>
+                        {resolution === opt.value && (
+                          <span className="h-2 w-2 rounded-full bg-primary" />
+                        )}
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{opt.label}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Modal>
+          )}
+
+          {actionType === "reject" && (
+            <Modal
+              type="confirm"
+              open={!!actionTarget}
+              onOpenChange={(o) => !o && (setActionTarget(null), setActionType(null))}
+              title={t("page.purchaseReturn.list.modal.rejectTitle")}
+              description={t("page.purchaseReturn.list.modal.rejectDesc")}
+              confirmText={t("page.purchaseReturn.list.modal.rejectConfirm")}
+              confirmVariant="destructive"
+              onConfirm={() => rejectMut.mutate(actionTarget)}
+            />
+          )}
         </>
       )}
     </div>

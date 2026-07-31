@@ -319,6 +319,18 @@ const DetailPurchaseReturn = () => {
                 <StatusIcon size={16} />
                 {st.label}
               </div>
+              {ret.resolution && (
+                <div className="mt-3">
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                      ret.resolution === "replacement"
+                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
+                        : "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400"
+                    }`}>
+                    {t(`page.purchaseReturn.resolution.${ret.resolution}`)}
+                  </span>
+                </div>
+              )}
             </Card>
 
             <Card className="p-6">
