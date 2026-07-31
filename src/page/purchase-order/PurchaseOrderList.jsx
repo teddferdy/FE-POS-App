@@ -1734,7 +1734,16 @@ const PurchaseOrderList = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="px-6 py-4 border-t border-border flex justify-end gap-3">
+                  <div className="px-6 py-4 border-t border-border flex justify-between gap-3">
+                    <Button
+                      variant="outline"
+                      className="h-11 px-6 min-w-[120px]"
+                      onClick={() => {
+                        setPayModal(false);
+                        setPayPo(null);
+                      }}>
+                      {t("common.cancel")}
+                    </Button>
                     <Button
                       className="h-11 px-6 min-w-[120px]"
                       onClick={() => {
@@ -1761,7 +1770,7 @@ const PurchaseOrderList = () => {
                           {t("common.processing")}
                         </span>
                       ) : (
-                        t("common.save")
+                        t("page.purchaseOrder.detail.pay")
                       )}
                     </Button>
                   </div>
