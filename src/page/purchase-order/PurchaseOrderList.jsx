@@ -1421,6 +1421,7 @@ const PurchaseOrderList = () => {
                         .map((it) => ({
                           productId: it.product,
                           ingredient: it.ingredient,
+                          ingredientName: it.ingredientName || null,
                           qty: parseFloat(it.returnQty),
                           unit: it.unit || "pcs",
                           notes: it.notes || ""

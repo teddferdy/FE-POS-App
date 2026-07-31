@@ -142,183 +142,209 @@ const DetailPurchaseReturn = () => {
             <Card className="p-6 space-y-4">
               <Skeleton className="h-4 w-32" />
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
-                <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
               </div>
             </Card>
           </div>
           <div className="space-y-4">
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </Card>
           </div>
         </div>
       ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <FileText size={16} className="text-muted-foreground" />
-              {t("page.purchaseReturn.detail.section.informasiRetur")}
-            </h3>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-border">
-                <Row label={t("page.purchaseReturn.detail.field.returnNo")}>{ret.returnNumber}</Row>
-                <Row label={t("page.purchaseReturn.detail.field.store")}>
-                  <div className="flex items-center gap-2">
-                    <Store size={14} className="text-muted-foreground" />
-                    {ret.storeData?.name || "-"}
-                  </div>
-                </Row>
-                <Row label={t("page.purchaseReturn.detail.field.reason")}>{ret.reason || "-"}</Row>
-                <Row label={t("page.purchaseReturn.detail.field.returnedBy")}>
-                  <div className="flex items-center gap-2">
-                    <User size={14} className="text-muted-foreground" />
-                    {ret.returnedBy?.name || "-"}
-                  </div>
-                </Row>
-                <Row label={t("page.purchaseReturn.detail.field.date")}>
-                  {ret.createdAt
-                    ? new Date(ret.createdAt).toLocaleDateString("id-ID", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit"
-                      })
-                    : "-"}
-                </Row>
-              </tbody>
-            </table>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <ShoppingBag size={16} className="text-muted-foreground" />
-              {t("page.purchaseReturn.detail.section.items")}
-            </h3>
-            <div className="overflow-x-auto border border-border rounded-lg">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <FileText size={16} className="text-muted-foreground" />
+                {t("page.purchaseReturn.detail.section.informasiRetur")}
+              </h3>
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/50 border-b border-border">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {t("page.purchaseReturn.detail.table.product")}
-                    </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
-                      {t("page.purchaseReturn.detail.table.qty")}
-                    </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
-                      {t("page.purchaseReturn.detail.table.unit")}
-                    </th>
-                    <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-28">
-                      {t("page.purchaseReturn.detail.table.price")}
-                    </th>
-                    <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-28">
-                      {t("page.purchaseReturn.detail.table.subtotal")}
-                    </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {t("page.purchaseReturn.detail.table.notes")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {ret.items?.length > 0 ? (
-                    ret.items.map((item, i) => (
-                      <tr key={i} className="hover:bg-muted/20 transition-colors">
-                        <td className="py-3 px-4 font-medium">
-                          {item.product?.name || item.ingredient?.name || "-"}
-                        </td>
-                        <td className="py-3 px-4 text-center font-mono">{item.qty}</td>
-                        <td className="py-3 px-4 text-center text-muted-foreground">
-                          {item.unit || "pcs"}
-                        </td>
-                        <td className="py-3 px-4 text-right font-mono text-muted-foreground">
-                          Rp {Number(item.price || 0).toLocaleString("id-ID")}
-                        </td>
-                        <td className="py-3 px-4 text-right font-mono font-medium">
-                          Rp {Number(item.subtotal || 0).toLocaleString("id-ID")}
-                        </td>
-                        <td className="py-3 px-4 text-muted-foreground">{item.notes || "-"}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-muted-foreground">
-                        {t("page.purchaseReturn.detail.table.noItems")}
-                      </td>
-                    </tr>
-                  )}
+                <tbody className="divide-y divide-border">
+                  <Row label={t("page.purchaseReturn.detail.field.returnNo")}>
+                    {ret.returnNumber}
+                  </Row>
+                  <Row label={t("page.purchaseReturn.detail.field.store")}>
+                    <div className="flex items-center gap-2">
+                      <Store size={14} className="text-muted-foreground" />
+                      {ret.storeData?.name || "-"}
+                    </div>
+                  </Row>
+                  <Row label={t("page.purchaseReturn.detail.field.reason")}>
+                    {ret.reason || "-"}
+                  </Row>
+                  <Row label={t("page.purchaseReturn.detail.field.returnedBy")}>
+                    <div className="flex items-center gap-2">
+                      <User size={14} className="text-muted-foreground" />
+                      {ret.returnedBy?.name || "-"}
+                    </div>
+                  </Row>
+                  <Row label={t("page.purchaseReturn.detail.field.date")}>
+                    {ret.createdAt
+                      ? new Date(ret.createdAt).toLocaleDateString("id-ID", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })
+                      : "-"}
+                  </Row>
                 </tbody>
               </table>
-            </div>
+            </Card>
 
-            {ret.items?.length > 0 && (
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="p-4 bg-muted/20 border-border/50">
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {t("page.purchaseReturn.detail.table.totalItems")}
-                  </p>
-                  <p className="text-lg font-bold text-foreground">{ret.items.length}</p>
-                </Card>
-                <Card className="p-4 bg-muted/20 border-border/50">
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {t("page.purchaseReturn.detail.table.totalQty")}
-                  </p>
-                  <p className="text-lg font-bold text-foreground font-mono">
-                    {ret.items.reduce((s, i) => s + (parseInt(i.qty) || 0), 0)}
-                  </p>
-                </Card>
-                <Card className="p-4 bg-muted/20 border-border/50">
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {t("page.purchaseReturn.detail.table.totalAmount")}
-                  </p>
-                  <p className="text-lg font-bold font-mono text-primary">
-                    Rp {Number(ret.totalAmount || 0).toLocaleString("id-ID")}
-                  </p>
-                </Card>
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <ShoppingBag size={16} className="text-muted-foreground" />
+                {t("page.purchaseReturn.detail.section.items")}
+              </h3>
+              <div className="overflow-x-auto border border-border rounded-lg">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-muted/50 border-b border-border">
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {t("page.purchaseReturn.detail.table.product")}
+                      </th>
+                      <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
+                        {t("page.purchaseReturn.detail.table.qty")}
+                      </th>
+                      <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
+                        {t("page.purchaseReturn.detail.table.unit")}
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-28">
+                        {t("page.purchaseReturn.detail.table.price")}
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-28">
+                        {t("page.purchaseReturn.detail.table.subtotal")}
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {t("page.purchaseReturn.detail.table.notes")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {ret.items?.length > 0 ? (
+                      ret.items.map((item, i) => (
+                        <tr key={i} className="hover:bg-muted/20 transition-colors">
+                          <td className="py-3 px-4 font-medium">
+                            {item.product?.name ||
+                              item.ingredient?.name ||
+                              item.ingredientName ||
+                              "-"}
+                          </td>
+                          <td className="py-3 px-4 text-center font-mono">{item.qty}</td>
+                          <td className="py-3 px-4 text-center text-muted-foreground">
+                            {item.unit || "pcs"}
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono text-muted-foreground">
+                            Rp {Number(item.price || 0).toLocaleString("id-ID")}
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono font-medium">
+                            Rp {Number(item.subtotal || 0).toLocaleString("id-ID")}
+                          </td>
+                          <td className="py-3 px-4 text-muted-foreground">{item.notes || "-"}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                          {t("page.purchaseReturn.detail.table.noItems")}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
-            )}
-          </Card>
-        </div>
 
-        <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <ShoppingBag size={16} className="text-muted-foreground" />
-              {t("page.purchaseReturn.detail.section.status")}
-            </h3>
-            <div
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${st.class}`}>
-              <StatusIcon size={16} />
-              {st.label}
-            </div>
-          </Card>
+              {ret.items?.length > 0 && (
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Card className="p-4 bg-muted/20 border-border/50">
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {t("page.purchaseReturn.detail.table.totalItems")}
+                    </p>
+                    <p className="text-lg font-bold text-foreground">{ret.items.length}</p>
+                  </Card>
+                  <Card className="p-4 bg-muted/20 border-border/50">
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {t("page.purchaseReturn.detail.table.totalQty")}
+                    </p>
+                    <p className="text-lg font-bold text-foreground font-mono">
+                      {ret.items.reduce((s, i) => s + (parseInt(i.qty) || 0), 0)}
+                    </p>
+                  </Card>
+                  <Card className="p-4 bg-muted/20 border-border/50">
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {t("page.purchaseReturn.detail.table.totalAmount")}
+                    </p>
+                    <p className="text-lg font-bold font-mono text-primary">
+                      Rp {Number(ret.totalAmount || 0).toLocaleString("id-ID")}
+                    </p>
+                  </Card>
+                </div>
+              )}
+            </Card>
+          </div>
 
-          <Card className="p-6">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Building2 size={16} className="text-muted-foreground" />
-              {t("page.purchaseReturn.detail.section.poInfo")}
-            </h3>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-border">
-                <tr>
-                  <td className="py-2 text-muted-foreground">
-                    {t("page.purchaseReturn.detail.field.poNumber")}
-                  </td>
-                  <td className="py-2 text-right font-medium">
-                    {ret.purchaseOrder?.orderNumber
-                      ? ret.purchaseOrder.orderNumber
-                      : ret.purchaseOrder
-                        ? `PO-${ret.purchaseOrder}`
-                        : "-"}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </Card>
+          <div className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <ShoppingBag size={16} className="text-muted-foreground" />
+                {t("page.purchaseReturn.detail.section.status")}
+              </h3>
+              <div
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${st.class}`}>
+                <StatusIcon size={16} />
+                {st.label}
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Building2 size={16} className="text-muted-foreground" />
+                {t("page.purchaseReturn.detail.section.poInfo")}
+              </h3>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-border">
+                  <tr>
+                    <td className="py-2 text-muted-foreground">
+                      {t("page.purchaseReturn.detail.field.poNumber")}
+                    </td>
+                    <td className="py-2 text-right font-medium">
+                      {ret.purchaseOrder?.orderNumber
+                        ? ret.purchaseOrder.orderNumber
+                        : ret.purchaseOrder
+                          ? `PO-${ret.purchaseOrder}`
+                          : "-"}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </Card>
+          </div>
         </div>
-      </div>
       )}
     </div>
   );
