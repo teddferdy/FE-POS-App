@@ -1471,7 +1471,7 @@ const PurchaseOrderList = () => {
 
             return (
               <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
-                <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+                <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-[80vw] max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
                   <div className="px-6 py-4 border-b border-border flex items-center justify-between">
                     <h3 className="text-base font-bold">
                       {t("page.purchaseOrder.detail.recordPaymentTitle")}
@@ -1573,6 +1573,66 @@ const PurchaseOrderList = () => {
                               ).toLocaleString("id-ID")}
                             </p>
                           </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {Array.isArray(payPo.items) && payPo.items.length > 0 && (
+                      <div>
+                        <p className="text-sm font-semibold text-foreground mb-2">
+                          {t("page.purchaseOrder.list.returInfo.itemTitle")}
+                        </p>
+                        <div className="overflow-x-auto border border-border rounded-lg">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-muted/50 border-b border-border">
+                                <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground w-10">
+                                  No
+                                </th>
+                                <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground min-w-40">
+                                  {t("page.purchaseOrder.list.returInfo.itemHeader")}
+                                </th>
+                                <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground min-w-32">
+                                  {t("page.purchaseOrder.list.returInfo.supplier")}
+                                </th>
+                                <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground">
+                                  {t("page.purchaseOrder.list.returInfo.qtyPo")}
+                                </th>
+                                <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground">
+                                  {t("page.purchaseOrder.list.returInfo.unit")}
+                                </th>
+                                <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">
+                                  {t("page.purchaseOrder.detail.price")}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border/50">
+                              {payPo.items.map((item, idx) => (
+                                <tr
+                                  key={item.id || idx}
+                                  className="hover:bg-muted/20 transition-colors">
+                                  <td className="px-3 py-2.5 text-sm text-muted-foreground">
+                                    {idx + 1}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-sm font-medium">
+                                    {item.ingredientName || "-"}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-sm text-muted-foreground">
+                                    {item.supplierData?.name || "-"}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-center text-sm text-muted-foreground">
+                                    {item.quantity ?? 0}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-center text-sm text-muted-foreground">
+                                    {item.unit || "pcs"}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-right text-sm text-muted-foreground">
+                                    Rp {Number(item.price || 0).toLocaleString("id-ID")}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     )}
