@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { getAllLocationTable, deleteLocation, editLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
@@ -420,18 +421,18 @@ const LocationList = () => {
                           placeholder={t("page.location.list.search")}
                           isLoading={isFetching}
                         />
-                        <select
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("common.all") },
+                            { value: "active", label: t("common.active") },
+                            { value: "inactive", label: t("common.inactive") },
+                            { value: "draft", label: t("common.draft") },
+                          ]}
                           value={statusFilter}
-                          onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="all">{t("common.all")}</option>
-                          <option value="active">{t("common.active")}</option>
-                          <option value="inactive">{t("common.inactive")}</option>
-                          <option value="draft">{t("common.draft")}</option>
-                        </select>
+                          onChange={(val) => { setStatusFilter(val); setPage(1); }}
+                          placeholder={t("common.all")}
+                          searchPlaceholder={t("common.all")}
+                        />
                         <Button
                           variant="outline"
                           size="sm"

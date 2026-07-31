@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { X, Save } from "lucide-react";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { getExpenseById, editExpense, getExpenseCategories } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,14 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -118,14 +126,14 @@ const EditExpense = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const store = cookie?.user?.store || "";
-    const payload = {
+    const data = {
       id,
       ...values,
-      store,
+      store: cookie?.user?.store || "",
       date: values.date ? format(values.date, "yyyy-MM-dd") : "",
       status: saveAsDraft ? "draft" : "pending"
     };
+    const payload = normalizePayload(data, { isFormData: false });
     updateMutation.mutate(payload);
   };
 

@@ -8,6 +8,7 @@ import { getAllPositionTable } from "@/services/position";
 import { getAllDepartmentTable } from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
@@ -60,15 +61,13 @@ const EmployeeList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data: positionData } = useQuery(
-    ["positions-active"],
-    () => getAllPositionTable({ page: 1, limit: 100, statusRole: "active", search: "" })
+  const { data: positionData } = useQuery(["positions-active"], () =>
+    getAllPositionTable({ page: 1, limit: 100, statusRole: "active", search: "" })
   );
   const positions = positionData?.data || positionData?.positions || [];
 
-  const { data: departmentData } = useQuery(
-    ["departments-active"],
-    () => getAllDepartmentTable({ page: 1, limit: 100, statusRole: "active", search: "" })
+  const { data: departmentData } = useQuery(["departments-active"], () =>
+    getAllDepartmentTable({ page: 1, limit: 100, statusRole: "active", search: "" })
   );
   const departments = departmentData?.data || departmentData?.departments || [];
 
@@ -385,52 +384,61 @@ const EmployeeList = () => {
                       <div className="flex flex-wrap items-center gap-2">
                         <SearchInput
                           value={search}
-                          onChange={(val) => { setSearch(val); setPage(1); }}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
                           placeholder={t("page.employee.list.searchPlaceholder")}
                           isLoading={isFetching}
                         />
-                        <select
+                        <Combobox
+                          options={[
+                            { value: "", label: t("page.employee.list.allStores") },
+                            ...(locData?.data || []).map((loc) => ({
+                              value: loc.id,
+                              label: loc.name
+                            }))
+                          ]}
                           value={locationFilter}
-                          onChange={(e) => {
-                            setLocationFilter(e.target.value);
+                          onChange={(v) => {
+                            setLocationFilter(v);
                             setPage(1);
                           }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="">{t("page.employee.list.allStores")}</option>
-                          {(locData?.data || []).map((loc) => (
-                            <option key={loc.id} value={loc.id}>
-                              {loc.name}
-                            </option>
-                          ))}
-                        </select>
-                        <select
+                          placeholder={t("page.employee.list.allStores")}
+                          searchPlaceholder="Cari toko..."
+                        />
+                        <Combobox
+                          options={[
+                            { value: "", label: t("page.employee.list.allPositions") },
+                            ...positions.map((pos) => ({
+                              value: pos.name || pos.id,
+                              label: pos.name
+                            }))
+                          ]}
                           value={positionFilter}
-                          onChange={(e) => {
-                            setPositionFilter(e.target.value);
+                          onChange={(v) => {
+                            setPositionFilter(v);
                             setPage(1);
                           }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="">{t("page.employee.list.allPositions")}</option>
-                          {positions.map((pos) => (
-                            <option key={pos.id || pos._id} value={pos.name || pos.id}>
-                              {pos.name}
-                            </option>
-                          ))}
-                        </select>
-                        <select
+                          placeholder={t("page.employee.list.allPositions")}
+                          searchPlaceholder="Cari posisi..."
+                        />
+                        <Combobox
+                          options={[
+                            {
+                              value: "",
+                              label: `${t("common.all")} ${t("page.employee.form.department")}`
+                            },
+                            ...departments.map((dept) => ({ value: dept.name, label: dept.name }))
+                          ]}
                           value={departmentFilter}
-                          onChange={(e) => {
-                            setDepartmentFilter(e.target.value);
+                          onChange={(v) => {
+                            setDepartmentFilter(v);
                             setPage(1);
                           }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="">{t("common.all")} {t("page.employee.form.department")}</option>
-                          {departments.map((dept) => (
-                            <option key={dept.id || dept._id} value={dept.name}>
-                              {dept.name}
-                            </option>
-                          ))}
-                        </select>
+                          placeholder={`${t("common.all")} ${t("page.employee.form.department")}`}
+                          searchPlaceholder="Cari departemen..."
+                        />
                       </div>
                     </div>
                   }

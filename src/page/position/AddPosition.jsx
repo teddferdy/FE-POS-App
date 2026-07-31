@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { addPosition } from "@/services/position";
 import { getAllDepartment } from "@/services/department";
 import { sanitizeInput } from "@/utils/inputSanitizer";
@@ -86,12 +87,14 @@ const AddPosition = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    createMutation.mutate({
+    const data = {
       name: sanitizeInput(values.name),
       departmentId: values.department ? Number(values.department) : null,
       description: sanitizeInput(values.description),
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
-    });
+    };
+    const payload = normalizePayload(data, { isFormData: false });
+    createMutation.mutate(payload);
   };
 
   return (

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { createOrder } from "@/services/order";
 import { getAllCustomer, addCustomer } from "@/services/customer";
 import { getAllDiscount, lookupDiscountByCode } from "@/services/discount";
@@ -123,13 +124,11 @@ const CheckoutModal = ({
     () => getAllDiscount({ page: 1, limit: 999, location: store }),
     { enabled: !!store }
   );
-  const { data: tiersData } = useQuery(
-    ["member-tiers-active"],
-    () => getAllMemberTier({ status: "active" })
+  const { data: tiersData } = useQuery(["member-tiers-active"], () =>
+    getAllMemberTier({ status: "active" })
   );
-  const { data: paymentMethodsData } = useQuery(
-    ["payment-methods-active"],
-    () => getAllTypePayment({ store, status: "active" })
+  const { data: paymentMethodsData } = useQuery(["payment-methods-active"], () =>
+    getAllTypePayment({ store, status: "active" })
   );
   const { data: tablesData } = useQuery(
     ["table-availability", store],
@@ -514,7 +513,9 @@ const CheckoutModal = ({
                   <span className="font-medium">Rp {formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{t("page.cashier.tax")} ({Math.round(taxRate * 100)}%)</span>
+                  <span className="text-muted-foreground">
+                    {t("page.cashier.tax")} ({Math.round(taxRate * 100)}%)
+                  </span>
                   <span className="font-medium">Rp {formatPrice(taxAmount)}</span>
                 </div>
                 {totalDiscount > 0 && (
@@ -588,20 +589,22 @@ const CheckoutModal = ({
                 </div>
                 {orderType === "dine-in" && (
                   <div className="mt-2">
-                    <select
-                      value={selectedTable?.id || ""}
-                      onChange={(e) => {
-                        const t = availableTables.find((tbl) => tbl.id === Number(e.target.value));
+                    <Combobox
+                      options={[
+                        { value: "", label: t("page.cashier.selectTable", "Pilih Meja") },
+                        ...availableTables.map((tbl) => ({
+                          value: String(tbl.id),
+                          label: `${tbl.name} (${t("page.cashier.capacity", "Kapasitas")}: ${tbl.capacity})`
+                        }))
+                      ]}
+                      value={String(selectedTable?.id || "")}
+                      onChange={(v) => {
+                        const t = availableTables.find((tbl) => String(tbl.id) === v);
                         setSelectedTable(t || null);
                       }}
-                      className="w-full h-10 px-3 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors">
-                      <option value="">{t("page.cashier.selectTable", "Pilih Meja")}</option>
-                      {availableTables.map((tbl) => (
-                        <option key={tbl.id} value={tbl.id}>
-                          {tbl.name} ({t("page.cashier.capacity", "Kapasitas")}: {tbl.capacity})
-                        </option>
-                      ))}
-                    </select>
+                      placeholder={t("page.cashier.selectTable", "Pilih Meja")}
+                      searchPlaceholder="Cari meja..."
+                    />
                   </div>
                 )}
               </div>
@@ -1071,16 +1074,26 @@ const CheckoutModal = ({
                                 ? `${tier.discountPercent}% ${t("page.cashier.discount")}`
                                 : "-"}
                             </span>
-                            {isSelected && (Array.isArray(tier.benefits) ? tier.benefits : (tier.benefits || "").split("\n").filter(Boolean)).length > 0 && (
-                              <div className="mt-2 pt-2 border-t border-border/40 space-y-1">
-                                {(Array.isArray(tier.benefits) ? tier.benefits : (tier.benefits || "").split("\n").filter(Boolean)).map((b, i) => (
-                                  <div key={i} className="flex items-start gap-1.5">
-                                    <Check size={10} className="text-emerald-500 mt-0.5 shrink-0" />
-                                    <span className="text-[11px] text-muted-foreground">{b}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                            {isSelected &&
+                              (Array.isArray(tier.benefits)
+                                ? tier.benefits
+                                : (tier.benefits || "").split("\n").filter(Boolean)
+                              ).length > 0 && (
+                                <div className="mt-2 pt-2 border-t border-border/40 space-y-1">
+                                  {(Array.isArray(tier.benefits)
+                                    ? tier.benefits
+                                    : (tier.benefits || "").split("\n").filter(Boolean)
+                                  ).map((b, i) => (
+                                    <div key={i} className="flex items-start gap-1.5">
+                                      <Check
+                                        size={10}
+                                        className="text-emerald-500 mt-0.5 shrink-0"
+                                      />
+                                      <span className="text-[11px] text-muted-foreground">{b}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                           </button>
                         );
                       })

@@ -36,6 +36,7 @@ import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
+import { Combobox } from "@/components/ui/combobox";
 import { getAllLocation } from "@/services/location";
 
 const SupplierList = () => {
@@ -57,13 +58,9 @@ const SupplierList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/supplier";
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-suppliers"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData } = useQuery(["locations-suppliers"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["suppliers", page, limit, search, storeFilter, statusFilter],
@@ -136,11 +133,9 @@ const SupplierList = () => {
     {
       header: t("page.supplier.products.title") || "Produk",
       render: (item) => (
-        <button
-          onClick={() => navigate(`/product?supplier=${item.id}`)}
-          className="text-sm text-primary hover:underline font-medium cursor-pointer">
+        <span className="text-sm text-muted-foreground">
           {item.productCount || 0} {t("page.supplier.products.title")?.toLowerCase() || "produk"}
-        </button>
+        </span>
       )
     },
     {
@@ -464,18 +459,21 @@ const SupplierList = () => {
                         isSuperAdmin={isSuperAdmin}
                         t={t}
                       />
-                      <select
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("common.all") },
+                          { value: "active", label: t("common.active") },
+                          { value: "inactive", label: t("common.inactive") },
+                          { value: "draft", label: t("common.draft") }
+                        ]}
                         value={statusFilter}
-                        onChange={(e) => {
-                          setStatusFilter(e.target.value);
+                        onChange={(v) => {
+                          setStatusFilter(v);
                           setPage(1);
                         }}
-                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                        <option value="all">{t("common.all")}</option>
-                        <option value="active">{t("common.active")}</option>
-                        <option value="inactive">{t("common.inactive")}</option>
-                        <option value="draft">{t("common.draft")}</option>
-                      </select>
+                        placeholder={t("common.all")}
+                        searchPlaceholder="Cari status..."
+                      />
                       <SearchInput
                         value={search}
                         onChange={(val) => {

@@ -4,9 +4,20 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Edit, Tag, DollarSign, CheckCircle, XCircle, Eye, Wallet, FileEdit } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Tag,
+  DollarSign,
+  CheckCircle,
+  XCircle,
+  Eye,
+  Wallet,
+  FileEdit
+} from "lucide-react";
 import { getAllExpenses, approveExpense, rejectExpense } from "@/services/expense";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
@@ -16,7 +27,6 @@ import StatCard from "@/components/ui/StatCard";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
-import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ExpenseList = () => {
@@ -36,10 +46,13 @@ const ExpenseList = () => {
   const MENU_KEY = "/expense";
   const locationParam = storeFilter !== "all" ? storeFilter : user?.store || "";
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-expense"], () => getAllLocation(), {
-    
-    enabled: isSuperAdmin
-  });
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-expense"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["expenses", page, limit, search, statusFilter, storeFilter],
@@ -350,52 +363,58 @@ const ExpenseList = () => {
                   <Skeleton className="h-9 w-32 rounded-md" />
                 </div>
               ) : (
-              <div className="flex flex-wrap items-center gap-2">
-                <SearchInput
-                  value={search}
-                  onChange={(val) => { setSearch(val); setPage(1); }}
-                  placeholder={t("page.expense.list.search")}
-                  isLoading={isFetching}
-                />
-                {isSuperAdmin && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 h-9 lg:hidden"
-                      onClick={() => setShowFilters(!showFilters)}>
-                      <span className="material-symbols-outlined text-base">filter_list</span>
-                      {showFilters ? "Tutup" : "Filter"}
-                    </Button>
-                    <div
-                      className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                      <StoreFilter
-                        locations={locData?.data || []}
-                        value={storeFilter}
-                        onChange={(v) => {
-                          setGlobalStoreFilter(v);
-                          setPage(1);
-                        }}
-                        isSuperAdmin={isSuperAdmin}
-                        t={t}
-                      />
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => {
-                          setStatusFilter(e.target.value);
-                          setPage(1);
-                        }}
-                        className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                        <option value="all">{t("common.all")}</option>
-                        <option value="draft">{t("page.expense.list.statusDraft")}</option>
-                        <option value="pending">{t("page.expense.list.statusPending")}</option>
-                        <option value="approved">{t("page.expense.list.statusApproved")}</option>
-                        <option value="rejected">{t("page.expense.list.statusRejected")}</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-              </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <SearchInput
+                    value={search}
+                    onChange={(val) => {
+                      setSearch(val);
+                      setPage(1);
+                    }}
+                    placeholder={t("page.expense.list.search")}
+                    isLoading={isFetching}
+                  />
+                  {isSuperAdmin && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 h-9 lg:hidden"
+                        onClick={() => setShowFilters(!showFilters)}>
+                        <span className="material-symbols-outlined text-base">filter_list</span>
+                        {showFilters ? "Tutup" : "Filter"}
+                      </Button>
+                      <div
+                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => {
+                            setGlobalStoreFilter(v);
+                            setPage(1);
+                          }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("common.all") },
+                            { value: "draft", label: t("page.expense.list.statusDraft") },
+                            { value: "pending", label: t("page.expense.list.statusPending") },
+                            { value: "approved", label: t("page.expense.list.statusApproved") },
+                            { value: "rejected", label: t("page.expense.list.statusRejected") }
+                          ]}
+                          value={statusFilter}
+                          onChange={(v) => {
+                            setStatusFilter(v);
+                            setPage(1);
+                          }}
+                          placeholder={t("common.all")}
+                          searchPlaceholder="Cari..."
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
 
               <div>

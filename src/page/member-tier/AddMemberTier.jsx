@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import { z } from "zod";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { addMemberTier } from "@/services/member-tier";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";

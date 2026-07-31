@@ -31,6 +31,7 @@ import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 
 const AddSupplier = () => {
@@ -152,7 +153,17 @@ const AddSupplier = () => {
       setSupplierProducts((prev) =>
         prev.map((p) =>
           p.id === editingProductId
-            ? { ...p, name: newProductName.trim(), price: Number(productPrice), unit: productUnit || "pcs", leadTime: Number(productLeadTime) || 0, leadTimeUnit: productLeadTimeUnit || "hari", qualityRating: Number(productQualityRating) || 0, minOrderQty: Number(productMinOrderQty) || 1, notes: productNotes.trim() || "" }
+            ? {
+                ...p,
+                name: newProductName.trim(),
+                price: Number(productPrice),
+                unit: productUnit || "pcs",
+                leadTime: Number(productLeadTime) || 0,
+                leadTimeUnit: productLeadTimeUnit || "hari",
+                qualityRating: Number(productQualityRating) || 0,
+                minOrderQty: productMinOrderQty || "1",
+                notes: productNotes.trim() || ""
+              }
             : p
         )
       );
@@ -165,7 +176,7 @@ const AddSupplier = () => {
         leadTime: Number(productLeadTime) || 0,
         leadTimeUnit: productLeadTimeUnit || "hari",
         qualityRating: Number(productQualityRating) || 0,
-        minOrderQty: Number(productMinOrderQty) || 1,
+        minOrderQty: productMinOrderQty || "1",
         notes: productNotes.trim() || ""
       };
       setSupplierProducts((prev) => [...prev, newProduct]);
@@ -550,7 +561,9 @@ const AddSupplier = () => {
                   <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
                     <div className="grid grid-cols-12 gap-2">
                       <div className="col-span-12 space-y-1">
-                        <label className="text-xs text-muted-foreground">{t("page.supplier.products.productName")}</label>
+                        <label className="text-xs text-muted-foreground">
+                          {t("page.supplier.products.productName")}
+                        </label>
                         <Input
                           placeholder={t("page.supplier.products.searchPlaceholder")}
                           value={newProductName}
@@ -558,7 +571,9 @@ const AddSupplier = () => {
                         />
                       </div>
                       <div className="col-span-6 space-y-1">
-                        <label className="text-xs text-muted-foreground">{t("page.supplier.products.table.price")}</label>
+                        <label className="text-xs text-muted-foreground">
+                          {t("page.supplier.products.table.price")}
+                        </label>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                             Rp
@@ -578,19 +593,18 @@ const AddSupplier = () => {
                       </div>
                       <div className="col-span-6 space-y-1">
                         <label className="text-xs text-muted-foreground">Satuan</label>
-                        <select
+                        <Combobox
+                          options={unitOptions}
                           value={productUnit}
-                          onChange={(e) => setProductUnit(e.target.value)}
-                          className="w-full h-10 px-2 rounded-md border border-input bg-background text-sm">
-                          {unitOptions.map((o) => (
-                            <option key={o.value} value={o.value}>
-                              {o.label}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(v) => setProductUnit(v)}
+                          placeholder="Pilih satuan..."
+                          searchPlaceholder="Cari satuan..."
+                        />
                       </div>
                       <div className="col-span-4 space-y-1">
-                        <label className="text-xs text-muted-foreground">{t("page.supplier.comparison.table.leadTime")}</label>
+                        <label className="text-xs text-muted-foreground">
+                          {t("page.supplier.comparison.table.leadTime")}
+                        </label>
                         <div className="flex gap-1">
                           <Input
                             type="text"
@@ -603,14 +617,17 @@ const AddSupplier = () => {
                             }}
                             className="flex-1"
                           />
-                          <select
+                          <Combobox
+                            options={[
+                              { value: "hari", label: "Hari" },
+                              { value: "jam", label: "Jam" },
+                              { value: "menit", label: "Menit" }
+                            ]}
                             value={productLeadTimeUnit}
-                            onChange={(e) => setProductLeadTimeUnit(e.target.value)}
-                            className="border rounded-md px-2 py-1 text-xs bg-background text-foreground border-input min-w-[70px]">
-                            <option value="hari">Hari</option>
-                            <option value="jam">Jam</option>
-                            <option value="menit">Menit</option>
-                          </select>
+                            onChange={(v) => setProductLeadTimeUnit(v)}
+                            placeholder="Pilih..."
+                            searchPlaceholder="Cari..."
+                          />
                         </div>
                       </div>
                       <div className="col-span-4 space-y-1">
@@ -634,17 +651,15 @@ const AddSupplier = () => {
                         <label className="text-xs text-muted-foreground">Min Order</label>
                         <Input
                           type="text"
-                          inputMode="numeric"
                           placeholder="1"
                           value={productMinOrderQty}
-                          onChange={(e) => {
-                            const v = e.target.value.replace(/[^0-9]/g, "");
-                            setProductMinOrderQty(v);
-                          }}
+                          onChange={(e) => setProductMinOrderQty(e.target.value)}
                         />
                       </div>
                       <div className="col-span-12 space-y-1">
-                        <label className="text-xs text-muted-foreground">{t("page.supplier.products.notes")}</label>
+                        <label className="text-xs text-muted-foreground">
+                          {t("page.supplier.products.notes")}
+                        </label>
                         <Textarea
                           placeholder="Catatan opsional..."
                           rows={2}
@@ -679,7 +694,14 @@ const AddSupplier = () => {
                         disabled={!newProductName.trim() || !productPrice}
                         onClick={handleAddManualProduct}
                         className="flex-1 gap-1.5">
-                        {editingProductId ? t("common.save") : <><Plus size={14} />{t("page.supplier.products.add")}</>}
+                        {editingProductId ? (
+                          t("common.save")
+                        ) : (
+                          <>
+                            <Plus size={14} />
+                            {t("page.supplier.products.add")}
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -751,17 +773,25 @@ const AddSupplier = () => {
                       </thead>
                       <tbody>
                         {supplierProducts.map((p, index) => (
-                          <tr key={p.id} className={`border-b last:border-b-0 ${editingProductId === p.id ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}>
-                            <td className="px-3 py-2 text-center text-xs text-muted-foreground">{index + 1}</td>
+                          <tr
+                            key={p.id}
+                            className={`border-b last:border-b-0 ${editingProductId === p.id ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}>
+                            <td className="px-3 py-2 text-center text-xs text-muted-foreground">
+                              {index + 1}
+                            </td>
                             <td className="px-3 py-2">{p.name}</td>
                             <td className="px-3 py-2 text-right">
                               {Number(p.price).toLocaleString("id-ID")}
                             </td>
                             <td className="px-3 py-2 text-center text-xs">{p.unit || "pcs"}</td>
-                            <td className="px-3 py-2 text-right">{p.leadTime || 0} {p.leadTimeUnit || "hari"}</td>
+                            <td className="px-3 py-2 text-right">
+                              {p.leadTime || 0} {p.leadTimeUnit || "hari"}
+                            </td>
                             <td className="px-3 py-2 text-right">{p.qualityRating || 0}</td>
                             <td className="px-3 py-2 text-right">{p.minOrderQty || 1}</td>
-                            <td className="px-3 py-2 text-left text-xs text-muted-foreground max-w-[150px] truncate">{p.notes || "-"}</td>
+                            <td className="px-3 py-2 text-left text-xs text-muted-foreground max-w-[150px] truncate">
+                              {p.notes || "-"}
+                            </td>
                             <td className="px-3 py-2 text-right">
                               <Button
                                 type="button"

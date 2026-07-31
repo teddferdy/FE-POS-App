@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/form";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 
@@ -433,16 +434,22 @@ const AddCategory = () => {
     }
     form.clearErrors("store");
     setIsSubmitting(true);
-    const payload = new FormData();
-    payload.append("name", values.name);
-    payload.append("description", values.description || "");
-    payload.append("status", saveAsDraft ? "draft" : values.isActive ? "active" : "inactive");
-    payload.append("store", JSON.stringify(selectedStore));
-    if (selectedIcon) {
-      payload.append("image", selectedIcon);
-    } else if (selectedImage) {
-      payload.append("image", selectedImage);
-    }
+
+    const data = {
+      name: values.name,
+      description: values.description || "",
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
+      store: selectedStore
+    };
+
+    if (selectedIcon) data.image = selectedIcon;
+    else if (selectedImage) data.image = selectedImage;
+
+    const payload = normalizePayload(data, {
+      isFormData: true,
+      jsonFields: ["store"] // Ensure store array is stringified
+    });
+
     createMutation.mutate(payload);
   };
 

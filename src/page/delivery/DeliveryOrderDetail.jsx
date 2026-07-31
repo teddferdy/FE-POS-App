@@ -31,12 +31,18 @@ import { canAccess } from "@/utils/permission";
 
 const statusBadge = (status) => {
   const map = {
-    pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800",
-    assigned: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800",
-    picked_up: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800",
-    in_transit: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800",
-    delivered: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
-    cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+    pending:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800",
+    assigned:
+      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800",
+    picked_up:
+      "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800",
+    in_transit:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800",
+    delivered:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
+    cancelled:
+      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
   };
   return map[status] || "bg-gray-100 text-gray-800";
 };
@@ -60,11 +66,9 @@ const DeliveryOrderDetail = () => {
 
   const MENU_KEY = "/delivery-orders";
 
-  const { data, isLoading } = useQuery(
-    ["delivery-order", id],
-    () => getDeliveryOrderById(id),
-    { enabled: !!id }
-  );
+  const { data, isLoading } = useQuery(["delivery-order", id], () => getDeliveryOrderById(id), {
+    enabled: !!id
+  });
 
   const { data: driversData } = useQuery(
     ["drivers-active"],
@@ -122,7 +126,7 @@ const DeliveryOrderDetail = () => {
   };
 
   const canUpdateStatus = order && nextStatusMap[order.status];
-  const canAssignDriver = order && (order.status === "pending");
+  const canAssignDriver = order && order.status === "pending";
 
   if (isLoading) {
     return (
@@ -187,56 +191,83 @@ const DeliveryOrderDetail = () => {
           <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-2 mb-4">
               <Truck size={18} className="text-primary" />
-              <h3 className="font-semibold text-foreground">{t("page.delivery.detail.deliveryInfo")}</h3>
+              <h3 className="font-semibold text-foreground">
+                {t("page.delivery.detail.deliveryInfo")}
+              </h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.orderNumber")}</p>
-                <p className="text-sm font-mono font-semibold text-foreground">{order.orderNumber}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.delivery.detail.orderNumber")}
+                </p>
+                <p className="text-sm font-mono font-semibold text-foreground">
+                  {order.orderNumber}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.status")}</p>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${statusBadge(order.status)}`}>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.delivery.detail.status")}
+                </p>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${statusBadge(order.status)}`}>
                   {t(`page.delivery.status.${order.status}`)}
                 </span>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.customer")}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.delivery.detail.customer")}
+                </p>
                 <p className="text-sm font-medium text-foreground">{order.customerName || "-"}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.phone")}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.delivery.detail.phone")}
+                </p>
                 <p className="text-sm text-foreground">{order.customerPhone || "-"}</p>
               </div>
               <div className="col-span-2">
-                <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.address")}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.delivery.detail.address")}
+                </p>
                 <p className="text-sm text-foreground">{order.deliveryAddress || "-"}</p>
               </div>
               {order.deliveryNotes && (
                 <div className="col-span-2">
-                  <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.notes")}</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {t("page.delivery.detail.notes")}
+                  </p>
                   <p className="text-sm text-foreground">{order.deliveryNotes}</p>
                 </div>
               )}
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.deliveryFee")}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.delivery.detail.deliveryFee")}
+                </p>
                 <p className="text-sm font-semibold text-foreground">
                   {formatCurrencyRupiah(order.deliveryFee || 0)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.distance")}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.delivery.detail.distance")}
+                </p>
                 <p className="text-sm text-foreground">
-                  {order.totalDistance ? `${order.totalDistance} ${t("page.delivery.detail.distanceUnit")}` : "-"}
+                  {order.totalDistance
+                    ? `${order.totalDistance} ${t("page.delivery.detail.distanceUnit")}`
+                    : "-"}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.source")}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.delivery.detail.source")}
+                </p>
                 <p className="text-sm uppercase text-foreground">{order.source || "-"}</p>
               </div>
               {order.cancellationReason && (
                 <div className="col-span-2">
-                  <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.cancelReason")}</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {t("page.delivery.detail.cancelReason")}
+                  </p>
                   <p className="text-sm text-destructive">{order.cancellationReason}</p>
                 </div>
               )}
@@ -247,22 +278,27 @@ const DeliveryOrderDetail = () => {
           <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-2 mb-4">
               <Clock size={18} className="text-primary" />
-              <h3 className="font-semibold text-foreground">{t("page.delivery.detail.statusHistory")}</h3>
+              <h3 className="font-semibold text-foreground">
+                {t("page.delivery.detail.statusHistory")}
+              </h3>
             </div>
             <div className="space-y-4">
               {(order.statusHistory || []).map((history, idx) => (
                 <div key={history.id || idx} className="flex gap-3">
                   <div className="flex flex-col items-center">
-                    <div className={`w-3 h-3 rounded-full mt-1 ${
-                      idx === 0 ? "bg-primary" : "bg-muted-foreground/30"
-                    }`} />
+                    <div
+                      className={`w-3 h-3 rounded-full mt-1 ${
+                        idx === 0 ? "bg-primary" : "bg-muted-foreground/30"
+                      }`}
+                    />
                     {idx < (order.statusHistory || []).length - 1 && (
                       <div className="w-0.5 flex-1 bg-border mt-1" />
                     )}
                   </div>
                   <div className="pb-4">
                     <div className="flex items-center gap-2">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${statusBadge(history.status)}`}>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${statusBadge(history.status)}`}>
                         {t(`page.delivery.status.${history.status}`)}
                       </span>
                       <span className="text-xs text-muted-foreground">
@@ -293,29 +329,43 @@ const DeliveryOrderDetail = () => {
           <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-2 mb-4">
               <User size={18} className="text-primary" />
-              <h3 className="font-semibold text-foreground">{t("page.delivery.detail.driverInfo")}</h3>
+              <h3 className="font-semibold text-foreground">
+                {t("page.delivery.detail.driverInfo")}
+              </h3>
             </div>
             {order.driver ? (
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.detail.driver")}</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {t("page.delivery.detail.driver")}
+                  </p>
                   <p className="text-sm font-medium text-foreground">{order.driver.name}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.driver.detail.phone")}</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {t("page.delivery.driver.detail.phone")}
+                  </p>
                   <p className="text-sm text-foreground">{order.driver.phone || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.driver.detail.vehicleType")}</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {t("page.delivery.driver.detail.vehicleType")}
+                  </p>
                   <p className="text-sm text-foreground">{order.driver.vehicleType || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">{t("page.delivery.driver.detail.vehiclePlate")}</p>
-                  <p className="text-sm font-mono text-foreground">{order.driver.vehiclePlate || "-"}</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {t("page.delivery.driver.detail.vehiclePlate")}
+                  </p>
+                  <p className="text-sm font-mono text-foreground">
+                    {order.driver.vehiclePlate || "-"}
+                  </p>
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground italic">{t("page.delivery.detail.noDriver")}</p>
+              <p className="text-sm text-muted-foreground italic">
+                {t("page.delivery.detail.noDriver")}
+              </p>
             )}
           </div>
 
@@ -324,9 +374,7 @@ const DeliveryOrderDetail = () => {
             <h3 className="font-semibold text-foreground mb-4">Actions</h3>
             <div className="space-y-2">
               {canAssignDriver && canAccess(user, MENU_KEY, "edit") && (
-                <Button
-                  className="w-full"
-                  onClick={() => setAssignModalOpen(true)}>
+                <Button className="w-full" onClick={() => setAssignModalOpen(true)}>
                   <User size={16} className="mr-1" />
                   {t("page.delivery.detail.assignDriver")}
                 </Button>
@@ -374,7 +422,9 @@ const DeliveryOrderDetail = () => {
                   : "border-border hover:border-primary/50"
               }`}>
               <p className="text-sm font-medium text-foreground">{driver.name}</p>
-              <p className="text-xs text-muted-foreground">{driver.vehicleType} - {driver.vehiclePlate}</p>
+              <p className="text-xs text-muted-foreground">
+                {driver.vehicleType} - {driver.vehiclePlate}
+              </p>
             </div>
           ))}
           {drivers.length === 0 && (

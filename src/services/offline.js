@@ -128,19 +128,48 @@ export const syncOfflineData = async () => {
 
   for (const item of queue) {
     try {
-      const response = await fetch(item.url, {
+      const fetchOptions = {
         method: item.method,
-        headers: item.headers || { "Content-Type": "application/json" },
-        body: item.body ? JSON.stringify(item.body) : undefined
-      });
+        headers: item.headers || {},
+      };
+
+      if (item.body) {
+        if (item.isFormData) {
+          // If it was FormData, we need to reconstruct it 
+          // Note: This assumes body is an object of key-values stored in IndexedDB
+          const formData = new FormData();
+          Object.entries(item.body).forEach(([key, value]) => {
+            if (value instanceof Blob) {
+              formData.append(key, value, value.name);
+            } else {
+              formData.append(key, typeof value === 'object' ? JSON.stringify(value) : value);
+            }
+          });
+          fetchOptions.body = formData;
+          // Don't set Content-Type header for FormData, let the browser set it with boundary
+          if (fetchOptions.headers['Content-Type']) {
+            delete fetchOptions.headers['Content-Type'];
+          }
+        } else {
+          fetchOptions.body = JSON.stringify(item.body);
+          if (!fetchOptions.headers['Content-Type']) {
+            fetchOptions.headers['Content-Type'] = 'application/json';
+          }
+        }
+      }
+
+      const response = await fetch(item.url, fetchOptions);
 
       if (response.ok) {
         await removeFromSyncQueue(item.id);
         synced++;
       } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error(`Sync failed for ${item.url}:`, response.status, errorData);
         failed++;
       }
-    } catch {
+    } catch (err) {
+      console.error(`Sync error for ${item.url}:`, err);
       failed++;
     }
   }

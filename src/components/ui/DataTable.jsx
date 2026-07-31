@@ -1,10 +1,16 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Combobox } from "@/components/ui/combobox";
 
 const DataTable = ({
   columns = [],
@@ -24,16 +30,55 @@ const DataTable = ({
   rowKey,
   // ponytail: single prop for bulk action bar, called with (selectedIds, clearSelection)
   // e.g. bulkActions={(ids, clear) => <button onClick={() => { deleteItems(ids); clear(); }}>Delete</button>}
-  bulkActions
+  bulkActions,
+  // expandable rows: render a row beneath each row when expanded
+  renderExpandedRow,
+  getRowCanExpand
 }) => {
   const { t } = useTranslation();
   const emptyMessage = emptyMessageProp ?? t("common.noData");
+  const [expandedRows, setExpandedRows] = React.useState(new Set());
+  const scrollRef = React.useRef(null);
+  const roRef = React.useRef(null);
+  const stickyThRefs = React.useRef({});
+  const [stickyLeftOffsets, setStickyLeftOffsets] = React.useState({});
+  const [containerWidth, setContainerWidth] = React.useState(0);
+
+  const getCellStyle = (col, colIndex) => {
+    const style = col.width ? { width: col.width } : {};
+    if (col.stickyLeft) style.left = stickyLeftOffsets[colIndex] ?? col.stickyLeftOffset ?? 0;
+    return style;
+  };
+
+  const scrollRefCallback = React.useCallback((node) => {
+    if (roRef.current) roRef.current.disconnect();
+    scrollRef.current = node;
+    if (node) {
+      const ro = new ResizeObserver((entries) => {
+        for (const entry of entries) setContainerWidth(entry.contentRect.width);
+      });
+      ro.observe(node);
+      roRef.current = ro;
+    }
+  }, []);
+
+  const toggleRowExpanded = (rowId) => {
+    if (scrollRef.current) setContainerWidth(scrollRef.current.clientWidth);
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(rowId)) next.delete(rowId);
+      else next.add(rowId);
+      return next;
+    });
+  };
+
   const getRowId = (row) => {
     if (rowKey) return typeof rowKey === "function" ? rowKey(row) : row[rowKey];
     return row.id || row._id;
   };
 
   const isRowSelectable = (row) => (isSelectable ? isSelectable(row) : true);
+  const isExpandedCheck = (rowId) => expandedRows.has(rowId);
 
   const currentPageSelectableIds = data.filter(isRowSelectable).map(getRowId);
   const isAllSelected =
@@ -61,33 +106,90 @@ const DataTable = ({
     );
   };
 
-  const allColumns = selectable
-    ? [
-        {
-          header: (
-            <Checkbox
-              checked={
-                currentPageSelectableIds.length === 0
-                  ? false
-                  : isSomeSelected
-                    ? "indeterminate"
-                    : isAllSelected
-              }
-              disabled={currentPageSelectableIds.length === 0}
-              onCheckedChange={toggleSelectAll}
-            />
-          ),
-          render: (row) =>
-            isRowSelectable(row) ? (
-              <Checkbox
-                checked={selectedIds.includes(getRowId(row))}
-                onCheckedChange={() => toggleSelectRow(row)}
+  const expandCol = renderExpandedRow
+    ? {
+        header: "",
+        className: "w-10 px-2",
+        stickyLeft: true,
+        render: (row) => {
+          const canExpand = getRowCanExpand ? getRowCanExpand(row) : true;
+          if (!canExpand) return null;
+          const rowId = getRowId(row);
+          const isExpanded = expandedRows.has(rowId);
+          return (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleRowExpanded(rowId);
+              }}
+              className="p-1 hover:bg-accent rounded transition-colors">
+              <ChevronRight
+                size={14}
+                className={cn(
+                  "transition-transform duration-200",
+                  isExpanded && "rotate-90"
+                )}
               />
-            ) : null
-        },
-        ...columns
-      ]
-    : columns;
+            </button>
+          );
+        }
+      }
+    : null;
+
+  const allColumns = [
+    ...(expandCol ? [expandCol] : []),
+    ...(selectable
+      ? [
+          {
+            header: (
+              <Checkbox
+                checked={
+                  currentPageSelectableIds.length === 0
+                    ? false
+                    : isSomeSelected
+                      ? "indeterminate"
+                      : isAllSelected
+                }
+                disabled={currentPageSelectableIds.length === 0}
+                onCheckedChange={toggleSelectAll}
+              />
+            ),
+            render: (row) =>
+              isRowSelectable(row) ? (
+                <Checkbox
+                  checked={selectedIds.includes(getRowId(row))}
+                  onCheckedChange={() => toggleSelectRow(row)}
+                />
+              ) : null
+          },
+          ...columns
+        ]
+      : columns)
+  ];
+
+  const measureStickyLeft = React.useCallback(() => {
+    const offsets = {};
+    let cumulative = 0;
+    allColumns.forEach((col, i) => {
+      if (!col.stickyLeft) return;
+      offsets[i] = cumulative;
+      const el = stickyThRefs.current[i];
+      cumulative += el ? el.getBoundingClientRect().width : 0;
+    });
+    setStickyLeftOffsets((prev) =>
+      JSON.stringify(prev) === JSON.stringify(offsets) ? prev : offsets
+    );
+  }, [allColumns]);
+
+  React.useEffect(() => {
+    measureStickyLeft();
+    const els = Object.values(stickyThRefs.current).filter(Boolean);
+    if (els.length === 0) return;
+    const ro = new ResizeObserver(measureStickyLeft);
+    els.forEach((el) => ro.observe(el));
+    return () => ro.disconnect();
+  }, [measureStickyLeft]);
 
   const renderTable = () => {
     if (data.length === 0) {
@@ -100,19 +202,25 @@ const DataTable = ({
     }
 
     return (
-      <div className="overflow-x-auto">
+      <div ref={scrollRefCallback} className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-muted/50 text-muted-foreground">
               {allColumns.map((col, i) => (
                 <th
                   key={i}
+                  ref={(el) => {
+                    stickyThRefs.current[i] = el;
+                  }}
+                  style={getCellStyle(col, i)}
                   className={cn(
                     "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap",
                     col.align === "right" && "text-right",
                     col.align === "center" && "text-center",
                     col.stickyRight &&
                       "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                    col.stickyLeft &&
+                      "sticky left-0 bg-card shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] z-10",
                     col.hideOn && `hidden ${col.hideOn}:table-cell`,
                     col.className
                   )}>
@@ -122,9 +230,9 @@ const DataTable = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {data.map((row, rowIndex) => {
+            {data.flatMap((row, rowIndex) => {
               const rowId = getRowId(row);
-              return (
+              const rows = [
                 <tr
                   key={rowId !== undefined && rowId !== null ? rowId : rowIndex}
                   onClick={() => onRowClick?.(row)}
@@ -134,16 +242,22 @@ const DataTable = ({
                     rowClassName?.(row, rowIndex)
                   )}>
                   {allColumns.map((col, colIndex) => {
-                    const isCheckboxCol = selectable && colIndex === 0;
+                    const isCheckboxCol = selectable && !expandCol && colIndex === 0;
                     return (
                       <td
                         key={colIndex}
-                        onClick={isCheckboxCol ? (e) => e.stopPropagation() : undefined}
+                        style={getCellStyle(col, colIndex)}
+                        onClick={
+                          isCheckboxCol ? (e) => e.stopPropagation() : undefined
+                        }
                         className={cn(
-                          "px-6 py-3.5 text-xs font-semibold tracking-wider whitespace-nowrap text-center",
+                          "px-6 py-3.5 text-xs font-semibold tracking-wider whitespace-nowrap",
                           col.align === "right" && "text-right",
+                          col.align === "center" && "text-center",
                           col.stickyRight &&
                             "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                          col.stickyLeft &&
+                            "sticky left-0 bg-card shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] z-10",
                           col.hideOn && `hidden ${col.hideOn}:table-cell`,
                           col.className
                         )}>
@@ -156,7 +270,19 @@ const DataTable = ({
                     );
                   })}
                 </tr>
-              );
+              ]
+              if (isExpandedCheck(rowId) && renderExpandedRow) {
+                rows.push(
+                  <tr key={`expanded-${rowId}`}>
+                    <td colSpan={allColumns.length} className="px-0 py-0">
+                      <div className="sticky left-0 bg-muted/20 px-6 py-4" style={{ width: containerWidth || '100vw', overflow: 'hidden' }}>
+                        {renderExpandedRow(row)}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              }
+              return rows
             })}
           </tbody>
         </table>
@@ -189,16 +315,13 @@ const DataTable = ({
           {onPageSizeChange && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>Show</span>
-              <select
-                value={pageSize || 10}
-                onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                className="h-8 rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
-                {pageSizeOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
+              <Combobox
+                options={pageSizeOptions.map((opt) => ({ value: String(opt), label: String(opt) }))}
+                value={String(pageSize || 10)}
+                onChange={(v) => onPageSizeChange(Number(v))}
+                placeholder="10"
+                searchPlaceholder="Cari..."
+              />
               <span>entries</span>
             </div>
           )}
@@ -290,12 +413,18 @@ const DataTable = ({
                   {allColumns.map((col, i) => (
                     <th
                       key={i}
+                      ref={(el) => {
+                        stickyThRefs.current[i] = el;
+                      }}
+                      style={getCellStyle(col, i)}
                       className={cn(
                         "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap",
                         col.align === "right" && "text-right",
                         col.align === "center" && "text-center",
                         col.stickyRight &&
                           "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                        col.stickyLeft &&
+                          "sticky left-0 bg-card shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] z-10",
                         col.hideOn && `hidden ${col.hideOn}:table-cell`
                       )}>
                       {col.header}
@@ -314,6 +443,8 @@ const DataTable = ({
                           col.align === "right" && "text-right",
                           col.stickyRight &&
                             "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                          col.stickyLeft &&
+                            "sticky left-0 bg-card shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] z-10",
                           col.hideOn && `hidden ${col.hideOn}:table-cell`,
                           col.className
                         )}>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -359,7 +359,7 @@ const EditCategory = () => {
   const [allStores, setAllStores] = useState(false);
 
   const categoryFieldLabels = {
-    name: "Nama Kategori",
+    name: "Nama Kategori"
   };
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -398,9 +398,7 @@ const EditCategory = () => {
           try {
             const parsed = typeof d.store === "string" ? JSON.parse(d.store) : d.store;
             setSelectedStore(
-              Array.isArray(parsed)
-                ? parsed.map((s) => (typeof s === "object" ? s.id : s))
-                : [],
+              Array.isArray(parsed) ? parsed.map((s) => (typeof s === "object" ? s.id : s)) : []
             );
           } catch {
             setSelectedStore([]);
@@ -609,11 +607,12 @@ const EditCategory = () => {
                         name="isActive"
                         render={({ field }) => (
                           <FormItem>
-                            <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                              field.value
-                                ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                            }`}>
+                            <div
+                              className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                field.value
+                                  ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                  : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                              }`}>
                               <div className="flex items-center gap-3">
                                 <div
                                   className={`w-10 h-10 rounded-full flex items-center justify-center ${

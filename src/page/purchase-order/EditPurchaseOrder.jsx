@@ -7,6 +7,7 @@ import { Save, X, Plus, Trash2, ShoppingCart, Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { z } from "zod";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { editPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
 import { getAllSupplier, addSupplier } from "@/services/supplier";
 import { getAllEmployee } from "@/services/employee";
@@ -20,12 +21,32 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
+import { Combobox } from "@/components/ui/combobox";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
+
+const COMMON_CONVERSION = {
+  "kg->gram": 1000,
+  "gram->kg": 0.001,
+  "liter->ml": 1000,
+  "ml->liter": 0.001,
+  "meter->cm": 100,
+  "cm->meter": 0.01,
+  "meter->mm": 1000,
+  "cm->mm": 10,
+  "lusin->pcs": 12,
+  "pcs->lusin": 1 / 12
+};
+
+const getSuggestedConversion = (from, to) => {
+  const key = `${from}->${to}`;
+  if (COMMON_CONVERSION[key] !== undefined) return COMMON_CONVERSION[key];
+  return 1;
+};
 
 const EditPurchaseOrder = () => {
   const { t } = useTranslation();
@@ -66,6 +87,8 @@ const EditPurchaseOrder = () => {
   const [selectedStore, setSelectedStore] = useState("");
   const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
+  const [additionalCost, setAdditionalCost] = useState(0);
+  const [overDeliveryTolerance, setOverDeliveryTolerance] = useState(10);
   const [items, setItems] = useState([]);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
@@ -100,6 +123,8 @@ const EditPurchaseOrder = () => {
     setPicId(po.pic);
     setNotes(po.notes || "");
     setDiscount(po.discount || 0);
+    setAdditionalCost(po.additionalCost || 0);
+    setOverDeliveryTolerance(po.overDeliveryTolerance ?? 10);
     setOrderDate(po.orderDate ? new Date(po.orderDate) : new Date());
     setOrderTime(
       po.orderDate ? format(new Date(po.orderDate), "HH:mm") : format(new Date(), "HH:mm")
@@ -116,6 +141,7 @@ const EditPurchaseOrder = () => {
           qty: item.quantity,
           price: item.price,
           unit: item.unit || "pcs",
+          conversionToBase: item.conversionToBase || 1,
           supplierId: item.supplier || null
         }))
       );
@@ -281,14 +307,22 @@ const EditPurchaseOrder = () => {
   const addItem = () =>
     setItems((prev) => [
       ...prev,
-      { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs", supplierId: null }
+      {
+        name: "",
+        ingredientId: null,
+        qty: 1,
+        price: 0,
+        unit: "pcs",
+        supplierId: null,
+        conversionToBase: 1
+      }
     ]);
   const removeItem = (idx) => setItems((prev) => prev.filter((_, i) => i !== idx));
   const updateItem = (idx, field, value) =>
     setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
 
   const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
-  const finalAmount = totalAmount - discount;
+  const finalAmount = totalAmount - discount + additionalCost;
 
   const hasDuplicateItems = useMemo(() => {
     return items.some((item, i) => {
@@ -346,11 +380,14 @@ const EditPurchaseOrder = () => {
       });
       return;
     }
-    updateMutation.mutate({
+
+    const payload = {
       store: selectedStore,
       notes,
       pic: picId,
       discount,
+      additionalCost,
+      overDeliveryTolerance,
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       paymentMethod,
       tenor: paymentMethod === "credit" ? tenor : 0,
@@ -361,17 +398,22 @@ const EditPurchaseOrder = () => {
         d.setHours(parseInt(hours), parseInt(minutes), 0, 0);
         return d;
       })(),
-      items: items.map(({ name, ingredientId, qty, price, unit, supplierId }) => ({
-        product: null,
-        ingredient: ingredientId || null,
-        ingredientName: name,
-        quantity: qty,
-        price,
-        unit: unit || "pcs",
-        supplier: supplierId || null
-      })),
+      items: items.map(
+        ({ name, ingredientId, qty, price, unit, supplierId, conversionToBase }) => ({
+          product: null,
+          ingredient: ingredientId || null,
+          ingredientName: name,
+          quantity: qty,
+          price,
+          unit: unit || "pcs",
+          conversionToBase: conversionToBase || 1,
+          supplier: supplierId || null
+        })
+      ),
       status: saveAsDraft ? "draft" : po.status
-    });
+    };
+
+    updateMutation.mutate(normalizePayload(payload, { isFormData: false }));
   };
 
   if (!id) {
@@ -496,18 +538,17 @@ const EditPurchaseOrder = () => {
                       {t("page.purchaseOrder.add.store")}{" "}
                       <span className="text-destructive">*</span>
                     </label>
-                    <select
+                    <Combobox
+                      options={[
+                        { value: "", label: t("page.purchaseOrder.add.selectStore") },
+                        ...locations.map((loc) => ({ value: loc.id, label: loc.name }))
+                      ]}
                       value={selectedStore}
-                      onChange={(e) => setSelectedStore(e.target.value)}
+                      onChange={(val) => setSelectedStore(val)}
                       disabled={!isSuperAdmin}
-                      className={`w-full h-10 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors ${!isSuperAdmin ? "opacity-60 cursor-not-allowed" : ""}`}>
-                      <option value="">{t("page.purchaseOrder.add.selectStore")}</option>
-                      {locations.map((loc) => (
-                        <option key={loc.id} value={loc.id}>
-                          {loc.name}
-                        </option>
-                      ))}
-                    </select>
+                      placeholder={t("page.purchaseOrder.add.selectStore")}
+                      searchPlaceholder={t("page.purchaseOrder.add.selectStore")}
+                    />
                   </div>
                   <div className="relative">
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
@@ -597,19 +638,22 @@ const EditPurchaseOrder = () => {
                       {t("page.purchaseOrder.add.paymentMethod")}{" "}
                       <span className="text-destructive">*</span>
                     </label>
-                    <select
+                    <Combobox
+                      options={[
+                        { value: "cash", label: t("page.purchaseOrder.add.paymentMethodCash") },
+                        { value: "credit", label: t("page.purchaseOrder.add.paymentMethodCredit") }
+                      ]}
                       value={paymentMethod}
-                      onChange={(e) => {
-                        setPaymentMethod(e.target.value);
-                        if (e.target.value === "cash") {
+                      onChange={(val) => {
+                        setPaymentMethod(val);
+                        if (val === "cash") {
                           setTenor(0);
                           setDpPercent(0);
                         }
                       }}
-                      className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors">
-                      <option value="cash">{t("page.purchaseOrder.add.paymentMethodCash")}</option>
-                      <option value="credit">{t("page.purchaseOrder.add.paymentMethodCredit")}</option>
-                    </select>
+                      placeholder={t("page.purchaseOrder.add.paymentMethodCash")}
+                      searchPlaceholder={t("page.purchaseOrder.add.paymentMethodCash")}
+                    />
                   </div>
                   {paymentMethod === "credit" && (
                     <>
@@ -651,7 +695,8 @@ const EditPurchaseOrder = () => {
                         </p>
                         {dpPercent > 0 && (
                           <p className="text-xs text-primary font-medium mt-1">
-                            {t("page.purchaseOrder.add.dpAmount")}: Rp {((finalAmount * dpPercent) / 100).toLocaleString("id-ID")}
+                            {t("page.purchaseOrder.add.dpAmount")}: Rp{" "}
+                            {((finalAmount * dpPercent) / 100).toLocaleString("id-ID")}
                           </p>
                         )}
                       </div>
@@ -742,33 +787,33 @@ const EditPurchaseOrder = () => {
                             <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
                               {idx + 1}
                             </span>
-                            <div className="flex shrink-0">
-                              <select
+                            <div className="w-36 shrink-0">
+                              <Combobox
+                                options={[
+                                  { value: "", label: t("page.purchaseOrder.add.selectSupplier") },
+                                  ...suppliers.map((sp) => ({
+                                    value: sp.id || sp._id,
+                                    label: sp.name
+                                  }))
+                                ]}
                                 value={item.supplierId || ""}
-                                onChange={(e) => {
-                                  const val = e.target.value || null;
-                                  updateItem(idx, "supplierId", val);
+                                onChange={(val) => {
+                                  const newVal = val || null;
+                                  updateItem(idx, "supplierId", newVal);
                                   if (
-                                    val &&
+                                    newVal &&
                                     item.ingredientId &&
                                     getSuppliersForIngredientName(item.ingredientId).length > 0
                                   ) {
                                     const match = getSuppliersForIngredientName(
                                       item.ingredientId
-                                    ).find((s) => s.supplierId === val);
+                                    ).find((s) => s.supplierId === newVal);
                                     if (match) updateItem(idx, "price", match.price);
                                   }
                                 }}
-                                className="h-9 text-sm w-36 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors rounded-r-none border-r-0">
-                                <option value="">
-                                  {t("page.purchaseOrder.add.selectSupplier")}
-                                </option>
-                                {suppliers.map((sp) => (
-                                  <option key={sp.id || sp._id} value={sp.id || sp._id}>
-                                    {sp.name}
-                                  </option>
-                                ))}
-                              </select>
+                                placeholder={t("page.purchaseOrder.add.selectSupplier")}
+                                searchPlaceholder={t("page.purchaseOrder.add.selectSupplier")}
+                              />
                               <Button
                                 type="button"
                                 variant="outline"
@@ -845,16 +890,40 @@ const EditPurchaseOrder = () => {
                               }
                               className="h-9 text-sm w-20 shrink-0"
                             />
-                            <select
-                              value={item.unit}
-                              onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                              className="h-9 text-sm w-20 shrink-0 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors">
-                              {unitOptions.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </option>
-                              ))}
-                            </select>
+                            <div className="w-20 shrink-0">
+                              <Combobox
+                                options={unitOptions.map((opt) => ({
+                                  value: opt.value,
+                                  label: opt.label
+                                }))}
+                                value={item.unit}
+                                onChange={(val) => {
+                                  const prevUnit = item.unit;
+                                  updateItem(idx, "unit", val);
+                                  const suggested = getSuggestedConversion(val, prevUnit);
+                                  if (suggested !== 1) {
+                                    updateItem(idx, "conversionToBase", suggested);
+                                  }
+                                }}
+                                placeholder={t("page.product.form.unitPlaceholder")}
+                                searchPlaceholder={t("page.product.form.unitPlaceholder")}
+                              />
+                            </div>
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              value={item.conversionToBase ? String(item.conversionToBase) : "1"}
+                              onChange={(e) =>
+                                updateItem(
+                                  idx,
+                                  "conversionToBase",
+                                  Number(e.target.value.replace(/[^0-9.]/g, "")) || 1
+                                )
+                              }
+                              className="h-9 text-sm w-16 shrink-0 text-center"
+                              title={`1 ${item.unit || "pcs"} = ? satuan stok`}
+                              aria-label={`1 ${item.unit || "pcs"} = ? satuan stok`}
+                            />
                             <Input
                               placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
                               value={item.price ? formatIDR(item.price) : ""}
@@ -949,6 +1018,33 @@ const EditPurchaseOrder = () => {
                           className="h-9 text-sm w-36 text-right"
                         />
                       </div>
+                      <div className="flex items-center gap-3">
+                        <label className="text-sm text-muted-foreground font-medium">
+                          {t("page.purchaseOrder.add.additionalCost")}
+                        </label>
+                        <Input
+                          placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                          value={additionalCost ? formatIDR(additionalCost) : ""}
+                          onChange={(e) => setAdditionalCost(parseIDR(e.target.value))}
+                          className="h-9 text-sm w-36 text-right"
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <label className="text-sm text-muted-foreground font-medium">
+                          {t("page.purchaseOrder.add.overDeliveryTolerance")}
+                        </label>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={overDeliveryTolerance || ""}
+                          onChange={(e) =>
+                            setOverDeliveryTolerance(
+                              Number(e.target.value.replace(/[^0-9.]/g, "")) || 0
+                            )
+                          }
+                          className="h-9 text-sm w-20 text-right"
+                        />
+                      </div>
                       <div className="text-right">
                         <p className="text-sm text-muted-foreground">
                           {t("page.purchaseOrder.add.totalPrice")}
@@ -957,14 +1053,22 @@ const EditPurchaseOrder = () => {
                           Rp {totalAmount.toLocaleString("id-ID")}
                         </p>
                       </div>
-                      {discount > 0 && (
+                      {(discount > 0 || additionalCost > 0) && (
                         <>
                           <div className="w-full border-t border-border my-1" />
                           <div className="text-right">
-                            <p className="text-sm font-medium text-red-500">
-                              {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
-                              {discount.toLocaleString("id-ID")}
-                            </p>
+                            {discount > 0 && (
+                              <p className="text-sm font-medium text-red-500">
+                                {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
+                                {discount.toLocaleString("id-ID")}
+                              </p>
+                            )}
+                            {additionalCost > 0 && (
+                              <p className="text-sm font-medium text-emerald-600">
+                                {t("page.purchaseOrder.add.additionalCostLabel")} + Rp{" "}
+                                {additionalCost.toLocaleString("id-ID")}
+                              </p>
+                            )}
                             <p className="text-xl font-bold text-foreground">
                               Rp {finalAmount.toLocaleString("id-ID")}
                             </p>
@@ -995,7 +1099,11 @@ const EditPurchaseOrder = () => {
                     <Skeleton className="h-4 w-28 ml-auto" />
                   ) : (
                     <p className="text-sm font-semibold">
-                      Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
+                      Rp{" "}
+                      {(discount > 0 || additionalCost > 0
+                        ? finalAmount
+                        : totalAmount
+                      ).toLocaleString("id-ID")}
                     </p>
                   )}
                 </div>

@@ -14,11 +14,13 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
 import { z } from "zod";
+import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { Loading } from "@/components/ui/loading";
 
 const EditGoodsReceipt = () => {
   const navigate = useNavigate();
@@ -34,6 +36,7 @@ const EditGoodsReceipt = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -56,9 +59,11 @@ const EditGoodsReceipt = () => {
     refetch
   } = useQuery(["goods-receipt-edit", id], () => getGoodsReceiptById(id), { enabled: !!id });
 
-  const { data: poData } = useQuery(["pos-for-gr-edit"], () => getAllPurchaseOrder({ limit: 50 }), {
-    
-  });
+  const { data: poData } = useQuery(
+    ["pos-for-gr-edit"],
+    () => getAllPurchaseOrder({ limit: 50 }),
+    {}
+  );
   const purchaseOrders = poData?.data || [];
 
   const selectedPO = purchaseOrders.find((po) => po.id === parseInt(poId));
@@ -85,6 +90,7 @@ const EditGoodsReceipt = () => {
       setItems(
         receipt.items.map((item) => ({
           id: item.id,
+          purchaseOrderItem: item.purchaseOrderItem || null,
           ingredient: item.product || null,
           ingredientName: item.ingredientName || item.productData?.nameProduct || "",
           product: item.product || null,
@@ -92,6 +98,8 @@ const EditGoodsReceipt = () => {
           unit: item.unit || "pcs",
           qtyReceived: String(item.qtyReceived || 0),
           conditionNotes: item.conditionNotes || "",
+          costPrice: item.costPrice || 0,
+          conversionToBase: item.conversionToBase || 1,
           isFromPo: true
         }))
       );
@@ -111,6 +119,7 @@ const EditGoodsReceipt = () => {
     if (items.length === 0 && !loaded) {
       setItems(
         poItems.map((item) => ({
+          purchaseOrderItem: item.id,
           ingredient: item.ingredient || null,
           ingredientName: item.ingredientName || item.ingredientData?.name || "",
           product: item.product || null,
@@ -118,6 +127,8 @@ const EditGoodsReceipt = () => {
           unit: item.unit || "pcs",
           qtyReceived: "0",
           conditionNotes: "",
+          costPrice: item.price || 0,
+          conversionToBase: item.conversionToBase || 1,
           isFromPo: true
         }))
       );
@@ -146,6 +157,8 @@ const EditGoodsReceipt = () => {
         unit: "pcs",
         qtyReceived: "0",
         conditionNotes: "",
+        costPrice: 0,
+        conversionToBase: 1,
         isFromPo: false
       }
     ]);
@@ -182,12 +195,15 @@ const EditGoodsReceipt = () => {
         notes,
         status: saveAsDraft ? "draft" : "completed",
         items: validItems.map((it) => ({
+          purchaseOrderItem: it.purchaseOrderItem || null,
           ingredient: it.ingredient,
           ingredientName: it.ingredientName,
           product: it.product,
           qtyReceived: parseFloat(it.qtyReceived),
           unit: it.unit,
-          conditionNotes: it.conditionNotes
+          conditionNotes: it.conditionNotes,
+          costPrice: parseFloat(it.costPrice) || 0,
+          conversionToBase: parseFloat(it.conversionToBase) || 1
         }))
       });
       toast.success(t("page.goodsReceipt.edit.toast.success"), {
@@ -292,17 +308,19 @@ const EditGoodsReceipt = () => {
                 {t("page.goodsReceipt.edit.form.purchaseOrder")}{" "}
                 <span className="text-destructive">*</span>
               </Label>
-              <select
+              <Combobox
+                options={[
+                  { value: "", label: t("page.goodsReceipt.edit.form.selectPO") },
+                  ...purchaseOrders.map((po) => ({
+                    value: po.id,
+                    label: po.orderNumber
+                  }))
+                ]}
                 value={poId}
                 disabled
-                className="w-full h-10 px-3 rounded-md border border-input bg-muted text-sm cursor-not-allowed opacity-70">
-                <option value="">{t("page.goodsReceipt.edit.form.selectPO")}</option>
-                {purchaseOrders.map((po) => (
-                  <option key={po.id} value={po.id}>
-                    {po.orderNumber}
-                  </option>
-                ))}
-              </select>
+                placeholder={t("page.goodsReceipt.edit.form.selectPO")}
+                searchPlaceholder={t("common.search")}
+              />
               {selectedPO && (
                 <div className="flex items-center gap-3 mt-1">
                   <span className="text-xs text-muted-foreground">
@@ -341,8 +359,14 @@ const EditGoodsReceipt = () => {
                       <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
                         {t("page.goodsReceipt.edit.table.unit")}
                       </th>
+                      <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                        {t("page.goodsReceipt.add.table.conversion")}
+                      </th>
                       <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
                         {t("page.goodsReceipt.edit.table.qtyReceived")}
+                      </th>
+                      <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                        {t("page.goodsReceipt.add.table.costPrice")}
                       </th>
                       <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
                         {t("page.goodsReceipt.edit.table.notes")}
@@ -396,7 +420,8 @@ const EditGoodsReceipt = () => {
                                     ))
                                   ) : (
                                     <p className="p-3 text-xs text-muted-foreground text-center">
-                                      {t("page.goodsReceipt.edit.placeholder.noIngredient") || "Tidak ada bahan ditemukan"}
+                                      {t("page.goodsReceipt.edit.placeholder.noIngredient") ||
+                                        "Tidak ada bahan ditemukan"}
                                     </p>
                                   )}
                                 </div>
@@ -427,25 +452,63 @@ const EditGoodsReceipt = () => {
                                 {item.unit}
                               </span>
                             ) : (
-                              <select
+                              <Combobox
+                                options={[
+                                  { value: "pcs", label: t("unit.pcs") },
+                                  { value: "buah", label: t("unit.buah") },
+                                  { value: "kg", label: t("unit.kg") },
+                                  { value: "gram", label: t("unit.gram") },
+                                  { value: "liter", label: t("unit.liter") },
+                                  { value: "ml", label: t("unit.ml") },
+                                  { value: "meter", label: t("unit.meter") },
+                                  { value: "cm", label: t("unit.cm") },
+                                  { value: "lusin", label: t("unit.lusin") },
+                                  { value: "box", label: t("unit.box") },
+                                  { value: "pack", label: t("unit.pack") },
+                                  { value: "karton", label: t("unit.karton") }
+                                ]}
                                 value={item.unit}
-                                onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                                className="h-8 px-2 rounded border border-input bg-background text-xs">
-                                <option value="pcs">{t("unit.pcs")}</option>
-                                <option value="buah">{t("unit.buah")}</option>
-                                <option value="kg">{t("unit.kg")}</option>
-                                <option value="gram">{t("unit.gram")}</option>
-                                <option value="liter">{t("unit.liter")}</option>
-                                <option value="ml">{t("unit.ml")}</option>
-                                <option value="meter">{t("unit.meter")}</option>
-                                <option value="cm">{t("unit.cm")}</option>
-                                <option value="lusin">{t("unit.lusin")}</option>
-                                <option value="box">{t("unit.box")}</option>
-                                <option value="pack">{t("unit.pack")}</option>
-                                <option value="karton">{t("unit.karton")}</option>
-                              </select>
+                                onChange={(val) => updateItem(idx, "unit", val)}
+                                placeholder={t("unit.pcs")}
+                                searchPlaceholder={t("common.search")}
+                              />
                             )}
                           </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          {item.isFromPo ? (
+                            <div className="text-center">
+                              <span className="inline-flex px-2 py-0.5 rounded text-xs bg-muted">
+                                {item.conversionToBase || 1}
+                              </span>
+                              {parseFloat(item.qtyReceived) > 0 && (
+                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                  ={" "}
+                                  {(
+                                    parseFloat(item.qtyReceived) * (item.conversionToBase || 1)
+                                  ).toLocaleString("id-ID")}{" "}
+                                  stok
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex justify-center">
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={item.conversionToBase ? String(item.conversionToBase) : "1"}
+                                onChange={(e) =>
+                                  updateItem(
+                                    idx,
+                                    "conversionToBase",
+                                    Number(e.target.value.replace(/[^0-9.]/g, "")) || 1
+                                  )
+                                }
+                                className="h-8 text-xs text-center w-16"
+                                placeholder="1"
+                              />
+                            </div>
+                          )}
                         </td>
                         <td className="px-3 py-2">
                           <Input
@@ -462,6 +525,23 @@ const EditGoodsReceipt = () => {
                             }
                             className="h-8 text-xs text-right w-24 ml-auto"
                             placeholder={t("page.goodsReceipt.edit.placeholder.qty")}
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            value={item.costPrice ? String(item.costPrice) : ""}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) =>
+                              updateItem(
+                                idx,
+                                "costPrice",
+                                e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
+                              )
+                            }
+                            className="h-8 text-xs text-right w-28 ml-auto"
+                            placeholder={t("page.goodsReceipt.add.placeholder.costPrice")}
                           />
                         </td>
                         <td className="px-3 py-2">
@@ -532,7 +612,7 @@ const EditGoodsReceipt = () => {
                     setMissingFieldsModal(true);
                     return;
                   }
-                  doSubmit(false);
+                  setConfirmModal(true);
                 }}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting
@@ -569,6 +649,18 @@ const EditGoodsReceipt = () => {
           onConfirm={() => {
             setDraftModal(false);
             doSubmit(true);
+          }}
+        />
+        <Modal
+          type="confirm"
+          open={confirmModal}
+          onOpenChange={setConfirmModal}
+          title={t("page.goodsReceipt.edit.confirmModal.title")}
+          description={t("page.goodsReceipt.edit.confirmModal.description")}
+          confirmText={t("page.goodsReceipt.edit.confirmModal.confirm")}
+          onConfirm={() => {
+            setConfirmModal(false);
+            doSubmit(false);
           }}
         />
         <MissingFieldsModal

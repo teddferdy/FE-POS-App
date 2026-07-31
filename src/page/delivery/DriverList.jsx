@@ -4,20 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
-import {
-  Users,
-  Plus,
-  Eye,
-  Edit,
-  Trash2,
-  Truck,
-  Bike,
-  Car,
-  FileEdit
-} from "lucide-react";
+import { Users, Plus, Eye, Edit, Trash2, Truck, Bike, Car, FileEdit } from "lucide-react";
 import { toast } from "sonner";
 import { getDrivers, deleteDriver } from "@/services/delivery";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
@@ -60,11 +51,15 @@ const statusOptions = [
 
 const statusBadge = (status) => {
   const map = {
-    active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
+    active:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
     busy: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
-    offline: "bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800",
-    inactive: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
-    draft: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400 border border-slate-200 dark:border-slate-800"
+    offline:
+      "bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800",
+    inactive:
+      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
+    draft:
+      "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400 border border-slate-200 dark:border-slate-800"
   };
   return map[status] || "bg-gray-100 text-gray-800";
 };
@@ -158,7 +153,8 @@ const DriverList = () => {
     {
       header: t("page.delivery.driver.detail.status"),
       render: (driver) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${statusBadge(driver.status)}`}>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${statusBadge(driver.status)}`}>
           {t(`page.delivery.driver.status.${driver.status}`)}
         </span>
       )
@@ -320,37 +316,42 @@ const DriverList = () => {
         emptyIcon={Users}
         toolbar={
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-              <>
-                <h4 className="text-base font-semibold text-foreground shrink-0">
-                  {t("page.delivery.driver.list.title")}
-                </h4>
-                <div className="flex flex-wrap items-center gap-2">
-                  <StoreFilter
-                    locations={[]}
-                    value={storeFilter}
-                    onChange={(v) => {
-                      setGlobalStoreFilter(v);
-                      setPage(1);
-                    }}
-                    isSuperAdmin={user?.roleType === "super_admin"}
-                    t={t}
-                  />
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                    className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                    {statusOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                  <SearchInput
-                    value={search}
-                    onChange={(val) => { setSearch(val); setPage(1); }}
-                    placeholder={t("page.delivery.driver.list.search")}
-                    isLoading={isFetching}
-                  />
-                </div>
-              </>
+            <>
+              <h4 className="text-base font-semibold text-foreground shrink-0">
+                {t("page.delivery.driver.list.title")}
+              </h4>
+              <div className="flex flex-wrap items-center gap-2">
+                <StoreFilter
+                  locations={[]}
+                  value={storeFilter}
+                  onChange={(v) => {
+                    setGlobalStoreFilter(v);
+                    setPage(1);
+                  }}
+                  isSuperAdmin={user?.roleType === "super_admin"}
+                  t={t}
+                />
+                <Combobox
+                  options={statusOptions}
+                  value={statusFilter}
+                  onChange={(val) => {
+                    setStatusFilter(val);
+                    setPage(1);
+                  }}
+                  placeholder={t("common.all")}
+                  searchPlaceholder={t("common.all")}
+                />
+                <SearchInput
+                  value={search}
+                  onChange={(val) => {
+                    setSearch(val);
+                    setPage(1);
+                  }}
+                  placeholder={t("page.delivery.driver.list.search")}
+                  isLoading={isFetching}
+                />
+              </div>
+            </>
           </div>
         }
         pagination={{

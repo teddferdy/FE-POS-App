@@ -1318,7 +1318,9 @@ const EditEmployee = () => {
                                       : t("page.employee.form.accessMenuButton")}
                                 </Button>
                               </div>
-                              <FormDescription>{t("page.employee.add.accessMenuHint")}</FormDescription>
+                              <FormDescription>
+                                {t("page.employee.add.accessMenuHint")}
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           );
@@ -1343,7 +1345,9 @@ const EditEmployee = () => {
                         <span className="text-destructive">*</span>
                       </h4>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-4">{t("page.employee.add.documentsDescription")}</p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      {t("page.employee.add.documentsDescription")}
+                    </p>
 
                     <input
                       ref={documentInputRef}

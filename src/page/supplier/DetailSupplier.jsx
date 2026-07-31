@@ -46,6 +46,7 @@ import {
   PaginationPrevious,
   PaginationNext
 } from "@/components/ui/pagination";
+import { Combobox } from "@/components/ui/combobox";
 import { format } from "date-fns";
 const statusMap = {
   pending: { class: "bg-yellow-100 text-yellow-800" },
@@ -539,21 +540,24 @@ const DetailSupplier = () => {
                       Menampilkan {startIdx + 1}–{Math.min(startIdx + productPageSize, totalItems)}{" "}
                       dari {totalItems}
                     </p>
-                    <select
-                      value={productPageSize}
-                      onChange={(e) => {
-                        setProductPageSize(Number(e.target.value));
+                    <Combobox
+                      options={[
+                        { value: "2", label: "2" },
+                        { value: "5", label: "5" },
+                        { value: "10", label: "10" },
+                        { value: "20", label: "20" },
+                        { value: "25", label: "25" },
+                        { value: "50", label: "50" },
+                        { value: "100", label: "100" }
+                      ]}
+                      value={String(productPageSize)}
+                      onChange={(v) => {
+                        setProductPageSize(Number(v));
                         setProductPage(1);
                       }}
-                      className="h-7 text-xs rounded-md border border-input bg-background px-2 w-auto">
-                      <option value={2}>2</option>
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
+                      placeholder="10"
+                      searchPlaceholder="Cari..."
+                    />
                   </div>
 
                   <Pagination className="sm:justify-end justify-center">
@@ -730,15 +734,18 @@ const DetailSupplier = () => {
             </div>
             <div className="space-y-2">
               <Label>{t("page.supplier.detail.modal.methodLabel")}</Label>
-              <select
+              <Combobox
+                options={[
+                  { value: "cash", label: t("page.supplier.detail.modal.methodCash") },
+                  { value: "transfer", label: t("page.supplier.detail.modal.methodTransfer") },
+                  { value: "cheque", label: t("page.supplier.detail.modal.methodCheque") },
+                  { value: "credit", label: t("page.supplier.detail.modal.methodCredit") }
+                ]}
                 value={payMethod}
-                onChange={(e) => setPayMethod(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-                <option value="cash">{t("page.supplier.detail.modal.methodCash")}</option>
-                <option value="transfer">{t("page.supplier.detail.modal.methodTransfer")}</option>
-                <option value="cheque">{t("page.supplier.detail.modal.methodCheque")}</option>
-                <option value="credit">{t("page.supplier.detail.modal.methodCredit")}</option>
-              </select>
+                onChange={(v) => setPayMethod(v)}
+                placeholder="Pilih metode..."
+                searchPlaceholder="Cari metode..."
+              />
             </div>
           </div>
           <div className="space-y-2">

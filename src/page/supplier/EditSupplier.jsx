@@ -15,6 +15,7 @@ import {
   downloadSupplierProductTemplate,
   importSupplierProducts
 } from "@/services/supplier";
+import { Combobox } from "@/components/ui/combobox";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -240,25 +241,25 @@ const EditSupplier = () => {
       return;
     }
     if (editingProductId) {
-      setSupplierProducts((prev) =>
-        prev.map((p) =>
-          p.id === editingProductId
-            ? { ...p, name: newProductName.trim(), price: Number(productPrice), unit: productUnit || "pcs", leadTime: Number(productLeadTime) || 0, leadTimeUnit: productLeadTimeUnit || "hari", qualityRating: Number(productQualityRating) || 0, minOrderQty: Number(productMinOrderQty) || 1, notes: productNotes.trim() || "" }
-            : p
-        )
-      );
-    } else {
-      setSupplierProducts((prev) => [
-        ...prev,
-        {
-          id: `manual_${Date.now()}`,
-          name: newProductName.trim(),
-          price: Number(productPrice),
-          unit: productUnit || "pcs",
-          leadTime: Number(productLeadTime) || 0,
-          leadTimeUnit: productLeadTimeUnit || "hari",
-          qualityRating: Number(productQualityRating) || 0,
-          minOrderQty: Number(productMinOrderQty) || 1,
+          setSupplierProducts((prev) =>
+            prev.map((p) =>
+              p.id === editingProductId
+                ? { ...p, name: newProductName.trim(), price: Number(productPrice), unit: productUnit || "pcs", leadTime: Number(productLeadTime) || 0, leadTimeUnit: productLeadTimeUnit || "hari", qualityRating: Number(productQualityRating) || 0, minOrderQty: productMinOrderQty || "1", notes: productNotes.trim() || "" }
+                : p
+            )
+          );
+        } else {
+          setSupplierProducts((prev) => [
+            ...prev,
+            {
+              id: `manual_${Date.now()}`,
+              name: newProductName.trim(),
+              price: Number(productPrice),
+              unit: productUnit || "pcs",
+              leadTime: Number(productLeadTime) || 0,
+              leadTimeUnit: productLeadTimeUnit || "hari",
+              qualityRating: Number(productQualityRating) || 0,
+              minOrderQty: productMinOrderQty || "1",
           notes: productNotes.trim() || ""
         }
       ]);
@@ -281,7 +282,7 @@ const EditSupplier = () => {
 
   const handleDownloadTemplate = async () => {
     try {
-      await downloadSupplierProductTemplate();
+      await downloadSupplierProductTemplate(supplierId);
     } catch (err) {
       toast.error(t("common.error"), { description: t("page.supplier.products.templateFailed") });
     }
@@ -660,16 +661,13 @@ const EditSupplier = () => {
                       </div>
                       <div className="col-span-6 space-y-1">
                         <label className="text-xs font-medium text-muted-foreground">Satuan</label>
-                        <select
-                          value={productUnit}
-                          onChange={(e) => setProductUnit(e.target.value)}
-                          className="w-full h-10 px-2 rounded-md border border-input bg-background text-sm">
-                          {unitOptions.map((o) => (
-                            <option key={o.value} value={o.value}>
-                              {o.label}
-                            </option>
-                          ))}
-                        </select>
+                          <Combobox
+                            options={unitOptions}
+                            value={productUnit}
+                            onChange={(v) => setProductUnit(v)}
+                            placeholder="Pilih satuan..."
+                            searchPlaceholder="Cari satuan..."
+                          />
                       </div>
                       <div className="col-span-4 space-y-1">
                         <label className="text-xs font-medium text-muted-foreground">{t("page.supplier.comparison.table.leadTime")}</label>
@@ -685,14 +683,17 @@ const EditSupplier = () => {
                             }}
                             className="flex-1"
                           />
-                          <select
+                          <Combobox
+                            options={[
+                              { value: "hari", label: "Hari" },
+                              { value: "jam", label: "Jam" },
+                              { value: "menit", label: "Menit" }
+                            ]}
                             value={productLeadTimeUnit}
-                            onChange={(e) => setProductLeadTimeUnit(e.target.value)}
-                            className="border rounded-md px-2 py-1 text-xs bg-background text-foreground border-input min-w-[70px]">
-                            <option value="hari">Hari</option>
-                            <option value="jam">Jam</option>
-                            <option value="menit">Menit</option>
-                          </select>
+                            onChange={(v) => setProductLeadTimeUnit(v)}
+                            placeholder="Pilih..."
+                            searchPlaceholder="Cari..."
+                          />
                         </div>
                       </div>
                       <div className="col-span-4 space-y-1">
@@ -716,13 +717,9 @@ const EditSupplier = () => {
                         <label className="text-xs font-medium text-muted-foreground">Min Order</label>
                         <Input
                           type="text"
-                          inputMode="numeric"
                           placeholder="1"
                           value={productMinOrderQty}
-                          onChange={(e) => {
-                            const v = e.target.value.replace(/[^0-9]/g, "");
-                            setProductMinOrderQty(v);
-                          }}
+                          onChange={(e) => setProductMinOrderQty(e.target.value)}
                         />
                       </div>
                       <div className="col-span-12 space-y-1">

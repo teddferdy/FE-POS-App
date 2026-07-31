@@ -19,6 +19,12 @@ export const getSalesReturnById = async (id) => {
   return data;
 };
 
+export const returnOrder = async (orderId, payload) => {
+  const { data, status } = await axiosInstance.post(`/pos/order/${orderId}/return`, payload);
+  if (status !== 201 && status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
 export const approveSalesReturn = async (id) => {
   const { data, status } = await axiosInstance.patch(`/sales-return/approve/${id}`);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);

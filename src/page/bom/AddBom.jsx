@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Save, X, Plus, Trash2 } from "lucide-react";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { addBom } from "@/services/bom";
 import { getAllProduct } from "@/services/product";
 import { getAllIngredients } from "@/services/ingredient";
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
@@ -153,18 +155,20 @@ const AddBom = () => {
               <Label>
                 {t("page.bom.add.form.product")} <span className="text-destructive">*</span>
               </Label>
-              <select
+              <Combobox
+                options={[
+                  { value: "", label: t("page.bom.add.form.selectProduct") },
+                  ...products.map((p) => ({
+                    value: p.id,
+                    label: `${p.nameProduct} (${p.sku || "-"})`
+                  }))
+                ]}
                 value={productId}
+                onChange={setProductId}
                 disabled={disabledProduct}
-                onChange={(e) => setProductId(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm disabled:opacity-60 disabled:cursor-not-allowed">
-                <option value="">{t("page.bom.add.form.selectProduct")}</option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nameProduct} ({p.sku || "-"})
-                  </option>
-                ))}
-              </select>
+                placeholder={t("page.bom.add.form.selectProduct")}
+                searchPlaceholder={t("common.search")}
+              />
             </div>
             <div className="space-y-2">
               <Label>{t("page.bom.add.form.name")}</Label>
@@ -201,18 +205,19 @@ const AddBom = () => {
                   {lines.map((line, idx) => (
                     <tr key={idx} className="border-b border-muted/20">
                       <td className="px-3 py-2">
-                        <select
+                        <Combobox
+                          options={[
+                            { value: "", label: t("page.bom.add.form.selectIngredient") },
+                            ...ingredients.map((ing) => ({
+                              value: ing.id,
+                              label: `${ing.name}${ing.stock === 0 ? " (kosong)" : ""}`
+                            }))
+                          ]}
                           value={line.ingredientId}
-                          onChange={(e) => updateLine(idx, "ingredientId", e.target.value)}
-                          className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
-                          <option value="">{t("page.bom.add.form.selectIngredient")}</option>
-                          {ingredients.map((ing) => (
-                            <option key={ing.id} value={ing.id} disabled={ing.stock === 0}>
-                              {ing.name}
-                              {ing.stock === 0 ? " (kosong)" : ""}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => updateLine(idx, "ingredientId", val)}
+                          placeholder={t("page.bom.add.form.selectIngredient")}
+                          searchPlaceholder={t("common.search")}
+                        />
                       </td>
                       <td className="px-3 py-2">
                         <Input
@@ -225,15 +230,18 @@ const AddBom = () => {
                         />
                       </td>
                       <td className="px-3 py-2">
-                        <select
+                        <Combobox
+                          options={[
+                            { value: "pcs", label: t("unit.pcs") },
+                            { value: "kg", label: t("unit.kg") },
+                            { value: "liter", label: t("unit.liter") },
+                            { value: "box", label: t("unit.box") }
+                          ]}
                           value={line.unit}
-                          onChange={(e) => updateLine(idx, "unit", e.target.value)}
-                          className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
-                          <option value="pcs">{t("unit.pcs")}</option>
-                          <option value="kg">{t("unit.kg")}</option>
-                          <option value="liter">{t("unit.liter")}</option>
-                          <option value="box">{t("unit.box")}</option>
-                        </select>
+                          onChange={(val) => updateLine(idx, "unit", val)}
+                          placeholder={t("unit.pcs")}
+                          searchPlaceholder={t("common.search")}
+                        />
                       </td>
                       <td className="px-3 py-2">
                         <Input

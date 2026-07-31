@@ -13,6 +13,7 @@ import {
   downloadExcel
 } from "@/services/category";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -82,7 +83,7 @@ const CategoryList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [showFilters, setShowFilters] = useState(false);
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-cat"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-cat"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -493,21 +494,27 @@ const CategoryList = () => {
                           )}
                           <SearchInput
                             value={search}
-                            onChange={(val) => { setSearch(val); setPage(1); }}
+                            onChange={(val) => {
+                              setSearch(val);
+                              setPage(1);
+                            }}
                             placeholder={t("page.category.list.search")}
                             isLoading={isFetching}
                           />
-                          <select
+                          <Combobox
+                            options={[
+                              { value: "", label: t("page.category.list.statusAll") },
+                              { value: "active", label: t("common.active") },
+                              { value: "inactive", label: t("common.inactive") }
+                            ]}
                             value={statusFilter}
-                            onChange={(e) => {
-                              setStatusFilter(e.target.value);
+                            onChange={(v) => {
+                              setStatusFilter(v);
                               setPage(1);
                             }}
-                            className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                            <option value="">{t("page.category.list.statusAll")}</option>
-                            <option value="active">{t("common.active")}</option>
-                            <option value="inactive">{t("common.inactive")}</option>
-                          </select>
+                            placeholder={t("page.category.list.statusAll")}
+                            searchPlaceholder="Cari..."
+                          />
                         </div>
                       </>
                     </div>

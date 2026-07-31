@@ -7,6 +7,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Save, X, Check } from "lucide-react";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import {
   addIngredientCategory,
   getIngredientCategoryById,
@@ -41,7 +42,7 @@ const AddCategory = () => {
   const [draftModal, setDraftModal] = useState(false);
 
   const categoryFieldLabels = {
-    name: "Nama Kategori",
+    name: "Nama Kategori"
   };
 
   const form = useForm({
@@ -100,10 +101,11 @@ const AddCategory = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const payload = {
+    const data = {
       name: values.name.trim(),
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
     };
+    const payload = normalizePayload(data, { isFormData: false });
     if (isEdit) {
       editMutation.mutate({ ...payload, id: editId });
     } else {
@@ -180,11 +182,12 @@ const AddCategory = () => {
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                           {t("page.ingredientCategory.add.status")}
                         </FormLabel>
-                        <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                          form.watch("isActive")
-                            ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                            : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                        }`}>
+                        <div
+                          className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                            form.watch("isActive")
+                              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                          }`}>
                           <div className="flex items-center gap-3">
                             <div
                               className={`w-10 h-10 rounded-full flex items-center justify-center ${

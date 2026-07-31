@@ -76,8 +76,9 @@ export const uploadSupplierExcel = async (file) => {
   return data;
 };
 
-export const downloadSupplierProductTemplate = async () => {
-  return downloadBlob("/supplier/product-template", `template-supplier-product.xlsx`);
+export const downloadSupplierProductTemplate = async (supplierId) => {
+  const params = supplierId ? `?supplier=${supplierId}` : ''
+  return downloadBlob(`/supplier/product-template${params}`, `template-supplier-product.xlsx`);
 };
 
 export const importSupplierProducts = async ({ id, file }) => {

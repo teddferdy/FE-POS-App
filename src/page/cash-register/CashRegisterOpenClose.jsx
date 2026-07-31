@@ -20,6 +20,7 @@ import { openCashRegister } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
 import { getWhatsAppStatus, restartWhatsApp } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/organism/modal";
@@ -112,16 +113,16 @@ const CashRegisterOpenClose = () => {
             <ArrowLeft size={16} />
           </Button>
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("page.cashRegister.openClose.breadcrumbDashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.cashRegister.openClose.breadcrumb")}
-          </span>
-        </nav>
+            <button
+              onClick={() => navigate("/dashboard-super-admin")}
+              className="hover:text-foreground transition-colors">
+              {t("page.cashRegister.openClose.breadcrumbDashboard")}
+            </button>
+            <span className="text-xs">/</span>
+            <span className="text-primary font-semibold">
+              {t("page.cashRegister.openClose.breadcrumb")}
+            </span>
+          </nav>
         </div>
 
         <div className="flex items-center justify-between">
@@ -155,19 +156,13 @@ const CashRegisterOpenClose = () => {
               </div>
               {isSuperAdmin && (
                 <div className="shrink-0 w-full sm:w-56">
-                  <select
+                  <Combobox
+                    options={locations?.map((loc) => ({ value: loc.id, label: loc.name })) || []}
                     value={selectedStore}
-                    onChange={(e) => setSelectedStore(e.target.value)}
-                    className="w-full h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat pr-8">
-                    <option value="" disabled>
-                      {t("page.cashRegister.openClose.selectStore")}
-                    </option>
-                    {locations?.map((loc) => (
-                      <option key={loc.id} value={loc.id}>
-                        {loc.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setSelectedStore}
+                    placeholder={t("page.cashRegister.openClose.selectStore")}
+                    searchPlaceholder="Cari toko..."
+                  />
                 </div>
               )}
             </div>

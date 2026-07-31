@@ -18,6 +18,7 @@ import DataTable from "@/components/ui/DataTable";
 import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import { Combobox } from "@/components/ui/combobox";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -282,20 +283,19 @@ const StockTransferList = () => {
                               t={t}
                             />
                           )}
-                          <select
+                          <Combobox
+                            options={[
+                              { value: "all", label: t("page.stockTransfer.list.filter.allStatus") },
+                              ...Object.entries(statusCfg).map(([k, v]) => ({
+                                value: k,
+                                label: v.label
+                              }))
+                            ]}
                             value={statusFilter}
-                            onChange={(e) => {
-                              setStatusFilter(e.target.value);
-                              setPage(1);
-                            }}
-                            className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                            <option value="all">{t("page.stockTransfer.list.filter.allStatus")}</option>
-                            {Object.entries(statusCfg).map(([k, v]) => (
-                              <option key={k} value={k}>
-                                {v.label}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={(val) => { setStatusFilter(val); setPage(1); }}
+                            placeholder={t("page.stockTransfer.list.filter.allStatus")}
+                            searchPlaceholder={t("common.search")}
+                          />
                         </div>
                         <SearchInput
                           value={search}

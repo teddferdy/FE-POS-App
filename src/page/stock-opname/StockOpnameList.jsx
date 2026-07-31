@@ -32,6 +32,7 @@ import StatCard from "@/components/ui/StatCard";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
+import { Combobox } from "@/components/ui/combobox";
 
 const StockOpnameList = () => {
   const { t } = useTranslation();
@@ -480,28 +481,18 @@ const StockOpnameList = () => {
                               t={t}
                             />
                           )}
-                          <div className="relative">
-                            <select
-                              value={statusFilter}
-                              onChange={(e) => {
-                                setStatusFilter(e.target.value);
-                                setPage(1);
-                              }}
-                              className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                              <option value="all">{t("page.stockOpname.list.allStatus")}</option>
-                              <option value="draft">{t("page.stockOpname.status.draft")}</option>
-                              <option value="completed">
-                                {t("page.stockOpname.status.completed")}
-                              </option>
-                              <option value="cancelled">
-                                {t("page.stockOpname.status.cancelled")}
-                              </option>
-                            </select>
-                            <ChevronLeft
-                              size={14}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
-                            />
-                          </div>
+                          <Combobox
+                            options={[
+                              { value: "all", label: t("page.stockOpname.list.allStatus") },
+                              { value: "draft", label: t("page.stockOpname.status.draft") },
+                              { value: "completed", label: t("page.stockOpname.status.completed") },
+                              { value: "cancelled", label: t("page.stockOpname.status.cancelled") }
+                            ]}
+                            value={statusFilter}
+                            onChange={(val) => { setStatusFilter(val); setPage(1); }}
+                            placeholder={t("page.stockOpname.list.allStatus")}
+                            searchPlaceholder={t("common.search")}
+                          />
                         </div>
                         <SearchInput
                           value={search}

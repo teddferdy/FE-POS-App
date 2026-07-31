@@ -25,6 +25,7 @@ import {
   deleteQueue
 } from "@/services/queue";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
@@ -332,22 +333,20 @@ const QueueList = () => {
             className="w-full md:w-64"
           />
           <StoreFilter value={storeFilter} onChange={setGlobalStoreFilter} />
-          <select
+          <Combobox
+            options={statusOptions}
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-            {statusOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <select
+            onChange={setStatusFilter}
+            placeholder="Filter Status"
+            searchPlaceholder="Cari..."
+          />
+          <Combobox
+            options={priorityOptions}
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-            {priorityOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
+            onChange={setPriorityFilter}
+            placeholder="Filter Priority"
+            searchPlaceholder="Cari..."
+          />
         </div>
 
         <DataTable

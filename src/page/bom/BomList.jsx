@@ -12,6 +12,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
+import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import NoStore from "@/components/ui/NoStore";
@@ -172,15 +173,18 @@ const BomList = () => {
                       {t("page.bom.list.title")}
                     </h4>
                     <div className="flex items-center gap-3 w-full md:w-auto">
-                      <select
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("common.all") },
+                          { value: "active", label: t("common.active") },
+                          { value: "inactive", label: t("common.inactive") },
+                          { value: "draft", label: t("common.draft") }
+                        ]}
                         value={statusFilter}
-                        onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                        <option value="all">{t("common.all")}</option>
-                        <option value="active">{t("common.active")}</option>
-                        <option value="inactive">{t("common.inactive")}</option>
-                        <option value="draft">{t("common.draft")}</option>
-                      </select>
+                        onChange={(val) => { setStatusFilter(val); setPage(1); }}
+                        placeholder={t("common.all")}
+                        searchPlaceholder={t("common.search")}
+                      />
                       <SearchInput
                         value={search}
                         onChange={(val) => { setSearch(val); setPage(1); }}

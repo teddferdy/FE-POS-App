@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import PolicyDialog from "@/components/organism/policy-dialog";
 
@@ -282,21 +283,16 @@ const RegisterPage = () => {
                         </FormLabel>
                         <div className="relative group">
                           <MapPin className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground/60 group-focus-within:text-foreground transition-colors pointer-events-none z-10" />
-                          <select
-                            {...field}
-                            className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300 appearance-none cursor-pointer"
+                          <Combobox
+                            options={locations.map((loc) => ({
+                              value: loc._id || loc.id,
+                              label: loc.location_name || loc.name || loc
+                            }))}
                             value={field.value || ""}
-                            onChange={(e) => field.onChange(e.target.value)}>
-                            <option value="" disabled>
-                              {translationMemo.selectLocation}
-                            </option>
-                            {locations.map((loc) => (
-                              <option key={loc._id || loc.id} value={loc._id || loc.id}>
-                                {loc.location_name || loc.name || loc}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown className="absolute right-3.5 md:right-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground/60 pointer-events-none" />
+                            onChange={field.onChange}
+                            placeholder={translationMemo.selectLocation}
+                            searchPlaceholder="Cari lokasi..."
+                          />
                         </div>
                         {form?.formState?.errors?.store && (
                           <FormMessage>{form?.formState?.errors?.store}</FormMessage>

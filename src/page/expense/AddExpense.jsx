@@ -8,6 +8,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save, ArrowLeft } from "lucide-react";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { addExpense, getExpenseCategories } from "@/services/expense";
 import { getAllLocation } from "@/services/location";
 import { Loading } from "@/components/ui/loading";
@@ -137,12 +138,13 @@ const AddExpense = () => {
         ? ""
         : selectedStore[0] || ""
       : cookie?.user?.store || "";
-    const payload = {
+    const data = {
       ...Object.fromEntries(Object.entries(values).filter(([_, v]) => v !== "" && v !== undefined)),
       store: storeValue ? Number(storeValue) : undefined,
       date: values.date ? format(values.date, "yyyy-MM-dd") : "",
       status: saveAsDraft ? "draft" : "pending"
     };
+    const payload = normalizePayload(data, { isFormData: false });
     createMutation.mutate(payload);
   };
 
@@ -158,20 +160,20 @@ const AddExpense = () => {
             <ArrowLeft size={16} />
           </Button>
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/expense")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.management")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
-        </nav>
+            <button
+              onClick={() => navigate("/dashboard-super-admin")}
+              className="hover:text-foreground transition-colors">
+              {t("breadcrumb.home")}
+            </button>
+            <span className="text-xs">/</span>
+            <button
+              onClick={() => navigate("/expense")}
+              className="hover:text-foreground transition-colors">
+              {t("breadcrumb.management")}
+            </button>
+            <span className="text-xs">/</span>
+            <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
+          </nav>
         </div>
 
         <div>

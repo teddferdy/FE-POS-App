@@ -4,10 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Tags, Gift, Eye, Percent, CheckCircle, XCircle, FileEdit } from "lucide-react";
+import { Plus, Edit, Trash2, Tags, Gift, Eye, CheckCircle, XCircle, FileEdit } from "lucide-react";
 import { getAllDiscount, deleteDiscount } from "@/services/discount";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { SearchInput } from "@/components/ui/SearchInput";
 import StatCard from "@/components/ui/StatCard";
@@ -57,7 +58,7 @@ const DiscountList = () => {
       : ""
     : user?.store;
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-discounts"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-discounts"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
   const { data, isLoading, isFetching } = useQuery(
@@ -326,21 +327,27 @@ const DiscountList = () => {
                         isSuperAdmin={isSuperAdmin}
                         t={t}
                       />
-                      <select
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("common.all") },
+                          { value: "active", label: t("common.active") },
+                          { value: "inactive", label: t("common.inactive") },
+                          { value: "draft", label: t("common.draft") }
+                        ]}
                         value={statusFilter}
-                        onChange={(e) => {
-                          setStatusFilter(e.target.value);
+                        onChange={(v) => {
+                          setStatusFilter(v);
                           setPage(1);
                         }}
-                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                        <option value="all">{t("common.all")}</option>
-                        <option value="active">{t("common.active")}</option>
-                        <option value="inactive">{t("common.inactive")}</option>
-                        <option value="draft">{t("common.draft")}</option>
-                      </select>
+                        placeholder={t("common.all")}
+                        searchPlaceholder="Cari..."
+                      />
                       <SearchInput
                         value={search}
-                        onChange={(val) => { setSearch(val); setPage(1); }}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
                         placeholder={t("page.discount.list.search")}
                         isLoading={isFetching}
                       />

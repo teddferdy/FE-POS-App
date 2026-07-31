@@ -5,7 +5,17 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Plus, Eye, Trash2, FileText, Download, Package, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import {
+  Plus,
+  Eye,
+  Trash2,
+  FileText,
+  Download,
+  Package,
+  CheckCircle,
+  FileEdit,
+  XCircle
+} from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import {
   getAllGoodsReceipt,
@@ -20,6 +30,7 @@ import DataTable from "@/components/ui/DataTable";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
+import { Combobox } from "@/components/ui/combobox";
 import * as XLSX from "xlsx";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
@@ -52,7 +63,7 @@ const GoodsReceiptList = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-goods-receipt"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-goods-receipt"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -358,39 +369,45 @@ const GoodsReceiptList = () => {
                         </h4>
                         <div className="flex items-center gap-3">
                           {isSuperAdmin && (
-                            <select
+                            <Combobox
+                              options={[
+                                {
+                                  value: "all",
+                                  label: t("page.goodsReceipt.list.filter.allStores")
+                                },
+                                ...(locData?.data || []).map((loc) => ({
+                                  value: loc.id,
+                                  label: loc.name
+                                }))
+                              ]}
                               value={storeFilter}
-                              onChange={(e) => {
-                                setGlobalStoreFilter(e.target.value);
+                              onChange={(val) => {
+                                setGlobalStoreFilter(val);
                                 setPage(1);
                               }}
-                              className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                              <option value="all">
-                                {t("page.goodsReceipt.list.filter.allStores")}
-                              </option>
-                              {(locData?.data || []).map((loc) => (
-                                <option key={loc.id} value={loc.id}>
-                                  {loc.name}
-                                </option>
-                              ))}
-                            </select>
+                              placeholder={t("page.goodsReceipt.list.filter.allStores")}
+                              searchPlaceholder={t("common.search")}
+                            />
                           )}
-                          <select
+                          <Combobox
+                            options={[
+                              {
+                                value: "all",
+                                label: t("page.goodsReceipt.list.filter.allStatuses")
+                              },
+                              ...Object.keys(statusMap).map((k) => ({
+                                value: k,
+                                label: t(`page.goodsReceipt.list.status.${k}`)
+                              }))
+                            ]}
                             value={statusFilter}
-                            onChange={(e) => {
-                              setStatusFilter(e.target.value);
+                            onChange={(val) => {
+                              setStatusFilter(val);
                               setPage(1);
                             }}
-                            className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                            <option value="all">
-                              {t("page.goodsReceipt.list.filter.allStatuses")}
-                            </option>
-                            {Object.keys(statusMap).map((k) => (
-                              <option key={k} value={k}>
-                                {t(`page.goodsReceipt.list.status.${k}`)}
-                              </option>
-                            ))}
-                          </select>
+                            placeholder={t("page.goodsReceipt.list.filter.allStatuses")}
+                            searchPlaceholder={t("common.search")}
+                          />
                           <SearchInput
                             value={search}
                             onChange={(val) => {

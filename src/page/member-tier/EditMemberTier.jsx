@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import { z } from "zod";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { getDetailMemberTier, editMemberTier } from "@/services/member-tier";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
@@ -163,7 +164,8 @@ const EditMemberTier = () => {
         return;
       }
     }
-    editMutation.mutate({
+    
+    const payload = {
       id: Number(id),
       name: formData.tierName,
       minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
@@ -175,7 +177,9 @@ const EditMemberTier = () => {
         .join("\n"),
       status: saveAsDraft ? "draft" : formData.isActive ? "active" : "inactive",
       color: formData.selectedColor
-    });
+    };
+    
+    editMutation.mutate(normalizePayload(payload, { isFormData: false }));
   };
 
   if (isLoading)

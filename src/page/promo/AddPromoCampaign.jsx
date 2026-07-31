@@ -16,6 +16,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { FormDescription } from "@/components/ui/form";
+import { Combobox } from "@/components/ui/combobox";
 
 const AddPromoCampaign = () => {
   const { t } = useTranslation();
@@ -241,16 +242,20 @@ const AddPromoCampaign = () => {
                 <label className="text-sm font-medium text-foreground">
                   {t("page.promo.form.type")} <span className="text-destructive">*</span>
                 </label>
-                <select
-                  {...form.register("type")}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                  <option value="happy_hour">Happy Hour</option>
-                  <option value="birthday">Birthday</option>
-                  <option value="buy_x_get_y">Buy X Get Y</option>
-                  <option value="spend_get">Spend & Get</option>
-                  <option value="manual">Manual</option>
-                  <option value="automatic">Automatic</option>
-                </select>
+                <Combobox
+                  options={[
+                    { value: "happy_hour", label: "Happy Hour" },
+                    { value: "birthday", label: "Birthday" },
+                    { value: "buy_x_get_y", label: "Buy X Get Y" },
+                    { value: "spend_get", label: "Spend & Get" },
+                    { value: "manual", label: "Manual" },
+                    { value: "automatic", label: "Automatic" }
+                  ]}
+                  value={form.watch("type")}
+                  onChange={(v) => form.setValue("type", v)}
+                  placeholder={t("page.promo.form.typePlaceholder") || "Pilih tipe campaign"}
+                  searchPlaceholder="Cari tipe..."
+                />
               </div>
             </div>
           </div>
@@ -271,18 +276,18 @@ const AddPromoCampaign = () => {
                   <label className="text-sm font-medium text-foreground">
                     {t("page.promo.form.discountType")}
                   </label>
-                  <select
-                    {...form.register("discountType")}
+                  <Combobox
+                    options={[
+                      { value: "percentage", label: "Percentage" },
+                      { value: "fixed", label: "Fixed Amount" },
+                      { value: "free_item", label: "Free Item" }
+                    ]}
+                    value={form.watch("discountType")}
+                    onChange={(v) => form.setValue("discountType", v)}
                     disabled={isBirthday}
-                    className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
-                      isBirthday
-                        ? "bg-muted text-muted-foreground cursor-not-allowed"
-                        : "bg-background"
-                    }`}>
-                    <option value="percentage">Percentage</option>
-                    <option value="fixed">Fixed Amount</option>
-                    <option value="free_item">Free Item</option>
-                  </select>
+                    placeholder="Pilih tipe diskon"
+                    searchPlaceholder="Cari tipe diskon..."
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground">
@@ -433,17 +438,20 @@ const AddPromoCampaign = () => {
                   <div
                     key={index}
                     className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
-                    <select
+                    <Combobox
+                      options={[
+                        { value: "time", label: "Time" },
+                        { value: "birthday", label: "Birthday" },
+                        { value: "buy_x_get_y", label: "Buy X Get Y" },
+                        { value: "spend_threshold", label: "Spend Threshold" },
+                        { value: "member_tier", label: "Member Tier" },
+                        { value: "first_purchase", label: "First Purchase" }
+                      ]}
                       value={rule.ruleType}
-                      onChange={(e) => updateRule(index, "ruleType", e.target.value)}
-                      className="h-8 px-2 bg-background border border-input rounded text-sm">
-                      <option value="time">Time</option>
-                      <option value="birthday">Birthday</option>
-                      <option value="buy_x_get_y">Buy X Get Y</option>
-                      <option value="spend_threshold">Spend Threshold</option>
-                      <option value="member_tier">Member Tier</option>
-                      <option value="first_purchase">First Purchase</option>
-                    </select>
+                      onChange={(v) => updateRule(index, "ruleType", v)}
+                      placeholder="Pilih rule"
+                      searchPlaceholder="Cari rule..."
+                    />
                     <Button
                       type="button"
                       variant="ghost"
@@ -487,17 +495,20 @@ const AddPromoCampaign = () => {
                   <div
                     key={index}
                     className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
-                    <select
+                    <Combobox
+                      options={[
+                        { value: "discount_percentage", label: "Discount %" },
+                        { value: "discount_fixed", label: "Discount Fixed" },
+                        { value: "free_item", label: "Free Item" },
+                        { value: "buy_x_get_y", label: "Buy X Get Y" },
+                        { value: "points_multiplier", label: "Points Multiplier" },
+                        { value: "cashback", label: "Cashback" }
+                      ]}
                       value={reward.rewardType}
-                      onChange={(e) => updateReward(index, "rewardType", e.target.value)}
-                      className="h-8 px-2 bg-background border border-input rounded text-sm">
-                      <option value="discount_percentage">Discount %</option>
-                      <option value="discount_fixed">Discount Fixed</option>
-                      <option value="free_item">Free Item</option>
-                      <option value="buy_x_get_y">Buy X Get Y</option>
-                      <option value="points_multiplier">Points Multiplier</option>
-                      <option value="cashback">Cashback</option>
-                    </select>
+                      onChange={(v) => updateReward(index, "rewardType", v)}
+                      placeholder="Pilih reward"
+                      searchPlaceholder="Cari reward..."
+                    />
                     <input
                       type="number"
                       value={reward.rewardValue}
@@ -540,14 +551,18 @@ const AddPromoCampaign = () => {
                 <label className="text-sm font-medium text-foreground">
                   {t("page.promo.form.applicableTo")}
                 </label>
-                <select
-                  {...form.register("applicableTo")}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                  <option value="all">All Products</option>
-                  <option value="specific_products">Specific Products</option>
-                  <option value="specific_categories">Specific Categories</option>
-                  <option value="specific_members">Specific Members</option>
-                </select>
+                <Combobox
+                  options={[
+                    { value: "all", label: "All Products" },
+                    { value: "specific_products", label: "Specific Products" },
+                    { value: "specific_categories", label: "Specific Categories" },
+                    { value: "specific_members", label: "Specific Members" }
+                  ]}
+                  value={form.watch("applicableTo")}
+                  onChange={(v) => form.setValue("applicableTo", v)}
+                  placeholder="Pilih penerapan"
+                  searchPlaceholder="Cari penerapan..."
+                />
               </div>
               {watchedApplicableTo === "specific_products" && (
                 <div className="p-3 bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg">

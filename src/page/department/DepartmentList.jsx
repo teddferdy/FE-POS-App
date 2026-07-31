@@ -21,6 +21,7 @@ import { uploadDepartmentExcel } from "@/services/department";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { Combobox } from "@/components/ui/combobox";
 import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
 
@@ -64,11 +65,10 @@ const DepartmentList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
 
   const { data: locData } = useQuery(["locations-departments"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isFetching } = useQuery(
     ["departments", page, limit, search, statusFilter],
     () => getAllDepartmentTable({ page, limit, statusRole: statusFilter, search }),
     { keepPreviousData: true }
@@ -256,92 +256,92 @@ const DepartmentList = () => {
             className="overflow-x-auto shrink-0"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <div className="flex items-center gap-2 flex-nowrap">
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                data-tour="department-download-template"
-                variant="outline"
-                disabled={isDownloadingTemplate}
-                onClick={async () => {
-                  setIsDownloadingTemplate(true);
-                  try {
-                    await downloadDepartmentTemplate();
-                    toast.success(t("common.success"), {
-                      description: t("page.department.toast.templateSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.department.toast.templateError")
-                    });
-                  } finally {
-                    setIsDownloadingTemplate(false);
-                  }
-                }}>
-                {isDownloadingTemplate ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-                )}
-                {isDownloadingTemplate
-                  ? t("page.department.button.downloading")
-                  : t("page.department.button.downloadTemplate")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                data-tour="department-download-data"
-                variant="outline"
-                disabled={isDownloadingData}
-                onClick={async () => {
-                  setIsDownloadingData(true);
-                  try {
-                    await downloadDepartmentExcel();
-                    toast.success(t("common.success"), {
-                      description: t("page.department.toast.dataSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.department.toast.dataError")
-                    });
-                  } finally {
-                    setIsDownloadingData(false);
-                  }
-                }}>
-                {isDownloadingData ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">download</span>
-                )}
-                {isDownloadingData
-                  ? t("page.department.button.downloading")
-                  : t("page.department.button.downloadData")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "import") && (
-              <Button
-                data-tour="department-upload"
-                variant="default"
-                onClick={() => setUploadModalOpen(true)}>
-                <span className="material-symbols-outlined text-lg">upload</span>
-                {t("page.department.button.upload")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                data-tour="department-add"
-                variant="default"
-                onClick={() => navigate("/add-department")}
-                className="shadow-md">
-                <span className="material-symbols-outlined text-lg">add</span>
-                {t("page.department.button.add")}
-              </Button>
-            )}
-          </div>
+              {canAccess(user, MENU_KEY, "export") && (
+                <Button
+                  data-tour="department-download-template"
+                  variant="outline"
+                  disabled={isDownloadingTemplate}
+                  onClick={async () => {
+                    setIsDownloadingTemplate(true);
+                    try {
+                      await downloadDepartmentTemplate();
+                      toast.success(t("common.success"), {
+                        description: t("page.department.toast.templateSuccess")
+                      });
+                    } catch (err) {
+                      toast.error(t("common.error"), {
+                        description:
+                          err?.response?.data?.message ||
+                          err.message ||
+                          t("page.department.toast.templateError")
+                      });
+                    } finally {
+                      setIsDownloadingTemplate(false);
+                    }
+                  }}>
+                  {isDownloadingTemplate ? (
+                    <Loader2 size={16} className="mr-1 animate-spin" />
+                  ) : (
+                    <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                  )}
+                  {isDownloadingTemplate
+                    ? t("page.department.button.downloading")
+                    : t("page.department.button.downloadTemplate")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "export") && (
+                <Button
+                  data-tour="department-download-data"
+                  variant="outline"
+                  disabled={isDownloadingData}
+                  onClick={async () => {
+                    setIsDownloadingData(true);
+                    try {
+                      await downloadDepartmentExcel();
+                      toast.success(t("common.success"), {
+                        description: t("page.department.toast.dataSuccess")
+                      });
+                    } catch (err) {
+                      toast.error(t("common.error"), {
+                        description:
+                          err?.response?.data?.message ||
+                          err.message ||
+                          t("page.department.toast.dataError")
+                      });
+                    } finally {
+                      setIsDownloadingData(false);
+                    }
+                  }}>
+                  {isDownloadingData ? (
+                    <Loader2 size={16} className="mr-1 animate-spin" />
+                  ) : (
+                    <span className="material-symbols-outlined text-lg mr-1">download</span>
+                  )}
+                  {isDownloadingData
+                    ? t("page.department.button.downloading")
+                    : t("page.department.button.downloadData")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "import") && (
+                <Button
+                  data-tour="department-upload"
+                  variant="default"
+                  onClick={() => setUploadModalOpen(true)}>
+                  <span className="material-symbols-outlined text-lg">upload</span>
+                  {t("page.department.button.upload")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "add") && (
+                <Button
+                  data-tour="department-add"
+                  variant="default"
+                  onClick={() => navigate("/add-department")}
+                  className="shadow-md">
+                  <span className="material-symbols-outlined text-lg">add</span>
+                  {t("page.department.button.add")}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -454,18 +454,27 @@ const DepartmentList = () => {
                         {t("page.department.list.title")}
                       </h4>
                       <div className="flex flex-wrap items-center gap-2">
-                        <select
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("common.all") },
+                            { value: "active", label: t("common.active") },
+                            { value: "inactive", label: t("common.inactive") },
+                            { value: "draft", label: t("common.draft") }
+                          ]}
                           value={statusFilter}
-                          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="all">{t("common.all")}</option>
-                          <option value="active">{t("common.active")}</option>
-                          <option value="inactive">{t("common.inactive")}</option>
-                          <option value="draft">{t("common.draft")}</option>
-                        </select>
+                          onChange={(v) => {
+                            setStatusFilter(v);
+                            setPage(1);
+                          }}
+                          placeholder={t("common.all")}
+                          searchPlaceholder="Cari status..."
+                        />
                         <SearchInput
                           value={search}
-                          onChange={(val) => { setSearch(val); setPage(1); }}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
                           placeholder={t("page.department.list.search")}
                           isLoading={isFetching}
                         />

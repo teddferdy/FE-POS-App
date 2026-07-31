@@ -33,6 +33,7 @@ import DataTable from "@/components/ui/DataTable";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
 import StoreFilter from "@/components/ui/StoreFilter";
+import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
 
@@ -347,26 +348,20 @@ const PromoCampaignList = () => {
             className="w-full md:w-64"
           />
           <StoreFilter value={storeFilter} onChange={setGlobalStoreFilter} />
-          <select
+          <Combobox
+            options={statusOptions}
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-            {statusOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <select
+            onChange={(v) => setStatusFilter(v)}
+            placeholder="Filter Status"
+            searchPlaceholder="Cari status..."
+          />
+          <Combobox
+            options={typeOptions}
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-            {typeOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setTypeFilter(v)}
+            placeholder="Filter Tipe"
+            searchPlaceholder="Cari tipe..."
+          />
         </div>
 
         <DataTable

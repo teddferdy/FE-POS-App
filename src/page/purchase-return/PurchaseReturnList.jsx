@@ -22,6 +22,7 @@ import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Combobox } from "@/components/ui/combobox";
 
 const statusCfg = {
   pending: {
@@ -324,20 +325,19 @@ const PurchaseReturnList = () => {
                             t={t}
                           />
                         )}
-                        <select
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("page.purchaseReturn.list.filter.allStatus") },
+                            ...Object.keys(statusCfg).map((k) => ({
+                              value: k,
+                              label: t(`page.purchaseReturn.status.${k}`)
+                            }))
+                          ]}
                           value={statusFilter}
-                          onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                          <option value="all">{t("page.purchaseReturn.list.filter.allStatus")}</option>
-                          {Object.keys(statusCfg).map((k) => (
-                            <option key={k} value={k}>
-                              {t(`page.purchaseReturn.status.${k}`)}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => { setStatusFilter(val); setPage(1); }}
+                          placeholder={t("page.purchaseReturn.list.filter.allStatus")}
+                          searchPlaceholder={t("common.search")}
+                        />
                         <SearchInput
                           value={search}
                           onChange={(val) => {

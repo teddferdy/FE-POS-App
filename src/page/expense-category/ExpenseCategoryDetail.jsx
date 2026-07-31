@@ -120,101 +120,122 @@ const ExpenseCategoryDetail = () => {
             <Card className="p-6 space-y-4">
               <Skeleton className="h-4 w-32" />
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
-                <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
-                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
               </div>
             </Card>
           </div>
           <div className="space-y-4">
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </Card>
           </div>
         </div>
       ) : !category ? (
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">{t("page.expenseCategory.detail.categoryNotFound")}</p>
+          <p className="text-muted-foreground">
+            {t("page.expenseCategory.detail.categoryNotFound")}
+          </p>
         </div>
       ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6">
-            <div className="flex items-center gap-3 pb-4 border-b border-border">
-              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                <Tag size={20} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center gap-3 pb-4 border-b border-border">
+                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  <Tag size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-foreground">Informasi Kategori</h3>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-semibold text-foreground">Informasi Kategori</h3>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Nama
+                  </p>
+                  <p className="text-sm font-semibold text-foreground mt-1">{category.name}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Status
+                  </p>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${statusStyle}`}>
+                    {statusLabel}
+                  </span>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Deskripsi
+                  </p>
+                  <p className="text-sm text-foreground mt-1">{category.description || "-"}</p>
+                </div>
               </div>
-            </div>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Nama
-                </p>
-                <p className="text-sm font-semibold text-foreground mt-1">{category.name}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Status
-                </p>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${statusStyle}`}>
-                  {statusLabel}
-                </span>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Deskripsi
-                </p>
-                <p className="text-sm text-foreground mt-1">{category.description || "-"}</p>
-              </div>
-            </div>
-          </Card>
-        </div>
+            </Card>
+          </div>
 
-        <div className="space-y-6">
-          <Card className="p-6">
-            <div className="flex items-center gap-2 pb-4 border-b border-border">
-              <Clock size={18} className="text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-foreground">Sistem Informasi</h3>
-            </div>
-            <div className="mt-4 space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                <span className="text-xs font-medium text-muted-foreground">Dibuat Pada</span>
-                <span className="text-xs font-semibold text-foreground text-right">
-                  {formatDate(category.createdAt)}
-                </span>
+          <div className="space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center gap-2 pb-4 border-b border-border">
+                <Clock size={18} className="text-muted-foreground" />
+                <h3 className="text-sm font-semibold text-foreground">Sistem Informasi</h3>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                <span className="text-xs font-medium text-muted-foreground">Diperbarui Pada</span>
-                <span className="text-xs font-semibold text-foreground text-right">
-                  {formatDate(category.updatedAt)}
-                </span>
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                  <span className="text-xs font-medium text-muted-foreground">Dibuat Pada</span>
+                  <span className="text-xs font-semibold text-foreground text-right">
+                    {formatDate(category.createdAt)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                  <span className="text-xs font-medium text-muted-foreground">Diperbarui Pada</span>
+                  <span className="text-xs font-semibold text-foreground text-right">
+                    {formatDate(category.updatedAt)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                  <span className="text-xs font-medium text-muted-foreground">Dibuat Oleh</span>
+                  <span className="text-xs font-semibold text-foreground text-right">
+                    {category.createdByUser?.fullName ||
+                      category.createdByUser?.userName ||
+                      category.createdBy ||
+                      "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                  <span className="text-xs font-medium text-muted-foreground">Diubah Oleh</span>
+                  <span className="text-xs font-semibold text-foreground text-right">
+                    {category.modifiedByUser?.fullName ||
+                      category.modifiedByUser?.userName ||
+                      category.modifiedBy ||
+                      "-"}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                <span className="text-xs font-medium text-muted-foreground">Dibuat Oleh</span>
-                <span className="text-xs font-semibold text-foreground text-right">
-                  {category.createdByUser?.fullName ||
-                    category.createdByUser?.userName ||
-                    category.createdBy ||
-                    "-"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                <span className="text-xs font-medium text-muted-foreground">Diubah Oleh</span>
-                <span className="text-xs font-semibold text-foreground text-right">
-                  {category.modifiedByUser?.fullName ||
-                    category.modifiedByUser?.userName ||
-                    category.modifiedBy ||
-                    "-"}
-                </span>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
-      </div>
       )}
     </div>
   );

@@ -480,6 +480,11 @@ export default function DetailPurchaseOrder() {
                           <span className="text-xs text-muted-foreground ml-1">
                             {item.unit || ""}
                           </span>
+                          {item.conversionToBase && Number(item.conversionToBase) !== 1 && (
+                            <p className="text-[10px] text-muted-foreground">
+                              1 {item.unit || "pcs"} = {item.conversionToBase} stok
+                            </p>
+                          )}
                         </td>
                         <td className="py-3 px-4 text-right">
                           Rp {Number(item.price || 0).toLocaleString("id-ID")}
@@ -692,6 +697,16 @@ export default function DetailPurchaseOrder() {
                     </span>
                     <span className="font-medium text-red-500">
                       - Rp {Number(po.discount).toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                )}
+                {po.additionalCost > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {t("page.purchaseOrder.detail.additionalCost")}
+                    </span>
+                    <span className="font-medium text-emerald-600">
+                      + Rp {Number(po.additionalCost).toLocaleString("id-ID")}
                     </span>
                   </div>
                 )}

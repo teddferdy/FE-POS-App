@@ -7,6 +7,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Save, X, Check } from "lucide-react";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { getIngredientCategoryById, editIngredientCategory } from "@/services/ingredientCategory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,12 +84,12 @@ const EditCategory = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const payload = {
+    const data = {
       name: values.name.trim(),
-      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
-      id
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
     };
-    editMutation.mutate(payload);
+    const payload = normalizePayload(data, { isFormData: false });
+    editMutation.mutate({ ...payload, id });
   };
 
   if (isError) return <AbortController refetch={refetch} />;

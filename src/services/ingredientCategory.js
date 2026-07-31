@@ -1,7 +1,10 @@
 import { axiosInstance } from ".";
 
-export const getAllIngredientCategory = async () => {
-  const { data, status } = await axiosInstance.get("/ingredient-category/get-all?limit=999");
+export const getAllIngredientCategory = async (params = {}) => {
+  const queryParams = new URLSearchParams({ limit: 999 });
+  if (params.store) queryParams.append("store", params.store);
+  if (params.supplier) queryParams.append("supplier", params.supplier);
+  const { data, status } = await axiosInstance.get(`/ingredient-category/get-all?${queryParams.toString()}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

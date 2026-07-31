@@ -89,20 +89,20 @@ const AddExpenseCategory = () => {
             <ArrowLeft size={16} />
           </Button>
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/expense-category")}
-            className="hover:text-foreground transition-colors">
-            {t("page.expenseCategory.list.title")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
-        </nav>
+            <button
+              onClick={() => navigate("/dashboard-super-admin")}
+              className="hover:text-foreground transition-colors">
+              {t("breadcrumb.home")}
+            </button>
+            <span className="text-xs">/</span>
+            <button
+              onClick={() => navigate("/expense-category")}
+              className="hover:text-foreground transition-colors">
+              {t("page.expenseCategory.list.title")}
+            </button>
+            <span className="text-xs">/</span>
+            <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
+          </nav>
         </div>
 
         <div>
@@ -156,11 +156,12 @@ const AddExpenseCategory = () => {
                 name="isActive"
                 render={({ field }) => (
                   <FormItem>
-                    <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                      field.value
-                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                    }`}>
+                    <div
+                      className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                        field.value
+                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                      }`}>
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -208,7 +209,11 @@ const AddExpenseCategory = () => {
                     disabled={createMutation.isLoading}
                     onClick={() => {
                       const data = form.getValues();
-                      const missing = getMissingFields(data, formSchema, expenseCategoryFieldLabels);
+                      const missing = getMissingFields(
+                        data,
+                        formSchema,
+                        expenseCategoryFieldLabels
+                      );
                       if (missing.length > 0) {
                         setMissingFields(missing);
                         setMissingFieldsModal(true);

@@ -1,9 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
-import { Wallet, Building2, Clock, Eye, DollarSign, AlertTriangle } from "lucide-react";
+import {
+  Wallet,
+  Building2,
+  Clock,
+  Eye,
+  DollarSign,
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight
+} from "lucide-react";
 import { getAPDashboard } from "@/services/purchase-payment";
 import { getAllLocation } from "@/services/location";
 import { Card } from "@/components/ui/card";
@@ -44,6 +53,45 @@ const DashboardUtang = () => {
   const supplierPOs = selectedSupplier
     ? outstandingPOs.filter((po) => po.supplierId === selectedSupplier.supplierId)
     : [];
+
+  const [expandedPoId, setExpandedPoId] = useState(null);
+
+  const poGroups = useMemo(() => {
+    const map = {};
+    for (const po of outstandingPOs) {
+      const key = po.id;
+      if (!map[key]) {
+        map[key] = {
+          id: po.id,
+          orderNumber: po.orderNumber,
+          orderDate: po.orderDate,
+          dueDate: po.dueDate,
+          status: po.status,
+          daysOverdue: po.daysOverdue,
+          totalFinalAmount: 0,
+          totalPaid: 0,
+          totalOutstanding: 0,
+          suppliers: []
+        };
+      }
+      map[key].suppliers.push({
+        supplierId: po.supplierId,
+        supplierName: po.supplierName,
+        finalAmount: po.finalAmount,
+        totalPaid: po.totalPaid,
+        outstanding: po.outstanding
+      });
+      map[key].totalFinalAmount += po.finalAmount;
+      map[key].totalPaid += po.totalPaid;
+      map[key].totalOutstanding += po.outstanding;
+    }
+    return Object.values(map).sort((a, b) => {
+      if (a.dueDate && b.dueDate) return new Date(a.dueDate) - new Date(b.dueDate);
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+      return 0;
+    });
+  }, [outstandingPOs]);
 
   const supplierColumns = [
     {
@@ -251,13 +299,118 @@ const DashboardUtang = () => {
               </Card>
               <Card className="p-5">
                 <h3 className="text-lg font-semibold mb-4">{t("page.apDashboard.poTitle")}</h3>
-                <DataTable
-                  columns={poColumns}
-                  data={outstandingPOs}
-                  isLoading={false}
-                  emptyMessage={t("page.apDashboard.emptyPOs")}
-                  emptyIcon={Wallet}
-                />
+                {poGroups.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <Wallet size={40} className="mb-3 opacity-40" />
+                    <p className="text-sm">{t("page.apDashboard.emptyPOs")}</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
+                          <th className="text-left py-3 px-2 w-8"></th>
+                          <th className="text-left py-3 px-2">{t("page.apDashboard.po.noPO")}</th>
+                          <th className="text-right py-3 px-2">{t("page.apDashboard.po.total")}</th>
+                          <th className="text-right py-3 px-2">{t("page.apDashboard.po.paid")}</th>
+                          <th className="text-right py-3 px-2">
+                            {t("page.apDashboard.po.outstanding")}
+                          </th>
+                          <th className="text-left py-3 px-2">
+                            {t("page.apDashboard.po.dueDate")}
+                          </th>
+                          <th className="text-center py-3 px-2">
+                            {t("page.apDashboard.po.overdue")}
+                          </th>
+                          <th className="text-left py-3 px-2">{t("page.apDashboard.po.status")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {poGroups.map((group) => (
+                          <React.Fragment key={group.id}>
+                            <tr
+                              className="border-b border-border/50 hover:bg-accent/30 cursor-pointer transition-colors"
+                              onClick={() =>
+                                setExpandedPoId(expandedPoId === group.id ? null : group.id)
+                              }>
+                              <td className="py-2.5 px-2">
+                                {expandedPoId === group.id ? (
+                                  <ChevronDown size={16} className="text-muted-foreground" />
+                                ) : (
+                                  <ChevronRight size={16} className="text-muted-foreground" />
+                                )}
+                              </td>
+                              <td className="py-2.5 px-2">
+                                <span
+                                  className="font-medium text-primary cursor-pointer hover:underline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/purchase-order/detail?id=${group.id}`);
+                                  }}>
+                                  {group.orderNumber || `PO-${group.id}`}
+                                </span>
+                              </td>
+                              <td className="py-2.5 px-2 text-right font-medium">
+                                Rp {group.totalFinalAmount.toLocaleString("id-ID")}
+                              </td>
+                              <td className="py-2.5 px-2 text-right text-green-600">
+                                Rp {group.totalPaid.toLocaleString("id-ID")}
+                              </td>
+                              <td className="py-2.5 px-2 text-right font-semibold text-red-600">
+                                Rp {group.totalOutstanding.toLocaleString("id-ID")}
+                              </td>
+                              <td className="py-2.5 px-2">
+                                {group.dueDate
+                                  ? new Date(group.dueDate).toLocaleDateString("id")
+                                  : "-"}
+                              </td>
+                              <td className="py-2.5 px-2 text-center">
+                                {group.daysOverdue > 0 ? (
+                                  <span className="inline-flex items-center gap-1 text-xs font-bold text-red-600">
+                                    <Clock size={12} />
+                                    {group.daysOverdue} {t("page.apDashboard.po.days")}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-green-600">-</span>
+                                )}
+                              </td>
+                              <td className="py-2.5 px-2">
+                                <span
+                                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${
+                                    statusStyles[group.status] || "bg-gray-100"
+                                  }`}>
+                                  {group.status}
+                                </span>
+                              </td>
+                            </tr>
+                            {expandedPoId === group.id &&
+                              group.suppliers.map((sup) => (
+                                <tr
+                                  key={`${group.id}-${sup.supplierId}`}
+                                  className="border-b border-border/30 bg-accent/10">
+                                  <td className="py-2 px-2"></td>
+                                  <td className="py-2 px-2 pl-8 text-muted-foreground text-xs">
+                                    <Building2 size={12} className="inline mr-1" />
+                                    {sup.supplierName}
+                                  </td>
+                                  <td className="py-2 px-2 text-right text-xs">
+                                    Rp {sup.finalAmount.toLocaleString("id-ID")}
+                                  </td>
+                                  <td className="py-2 px-2 text-right text-xs text-green-600">
+                                    Rp {sup.totalPaid.toLocaleString("id-ID")}
+                                  </td>
+                                  <td className="py-2 px-2 text-right text-xs font-medium text-red-600">
+                                    Rp {sup.outstanding.toLocaleString("id-ID")}
+                                  </td>
+                                  <td className="py-2 px-2" colSpan={3}></td>
+                                </tr>
+                              ))}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </Card>
             </>
           )}

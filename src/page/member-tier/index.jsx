@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -358,18 +359,18 @@ const MemberTier = () => {
                           {t("page.memberTier.list.tableTitle")}
                         </h4>
                         <div className="flex flex-wrap items-center gap-2">
-                          <select
+                          <Combobox
+                            options={[
+                              { value: "all", label: t("common.all") },
+                              { value: "active", label: t("common.active") },
+                              { value: "draft", label: t("common.draft") },
+                              { value: "inactive", label: t("common.inactive") }
+                            ]}
                             value={statusFilter}
-                            onChange={(e) => {
-                              setStatusFilter(e.target.value);
-                              setCurrentPage(1);
-                            }}
-                            className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                            <option value="all">{t("common.all")}</option>
-                            <option value="active">{t("common.active")}</option>
-                            <option value="draft">{t("common.draft")}</option>
-                            <option value="inactive">{t("common.inactive")}</option>
-                          </select>
+                            onChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}
+                            placeholder={t("common.all")}
+                            searchPlaceholder="Cari..."
+                          />
                           <SearchInput
                             value={search}
                             onChange={(val) => { setSearch(val); setCurrentPage(1); }}

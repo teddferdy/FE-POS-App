@@ -11,6 +11,7 @@ import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
@@ -518,17 +519,17 @@ const MemberList = () => {
                             <span className="text-xs text-muted-foreground hidden sm:inline">
                               {t("page.member.list.sort")}
                             </span>
-                            <select
+                            <Combobox
+                              options={[
+                                { value: "terbaru", label: t("page.member.list.sortNewest") },
+                                { value: "poin", label: t("page.member.list.sortPoints") },
+                                { value: "nama", label: t("page.member.list.sortName") }
+                              ]}
                               value={sortBy}
-                              onChange={(e) => {
-                                setSortBy(e.target.value);
-                                setPage(1);
-                              }}
-                              className="h-8 px-2 bg-background border border-border rounded-lg text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                              <option value="terbaru">{t("page.member.list.sortNewest")}</option>
-                              <option value="poin">{t("page.member.list.sortPoints")}</option>
-                              <option value="nama">{t("page.member.list.sortName")}</option>
-                            </select>
+                              onChange={(v) => { setSortBy(v); setPage(1); }}
+                              placeholder={t("page.member.list.sortNewest")}
+                              searchPlaceholder="Cari..."
+                            />
                           </div>
                           <div className="flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-muted-foreground text-sm">

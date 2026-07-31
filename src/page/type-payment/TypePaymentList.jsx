@@ -13,6 +13,7 @@ import {
 } from "@/services/type-payment";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import StatCard from "@/components/ui/StatCard";
 import { Loading } from "@/components/ui/loading";
@@ -416,27 +417,29 @@ const TypePaymentList = () => {
                       </h4>
                       <div className="flex flex-wrap items-center gap-2">
                         {isSuperAdmin && (
-                          <select
+                          <Combobox
+                            options={[
+                              { value: "", label: t("page.employee.list.allStores") },
+                              ...(locData?.data || []).map((loc) => ({ value: loc.id, label: loc.name }))
+                            ]}
                             value={storeFilter}
-                            onChange={(e) => { setStoreFilter(e.target.value); setPage(1); }}
-                            className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                            <option value="">{t("page.employee.list.allStores")}</option>
-                            {(locData?.data || []).map((loc) => (
-                              <option key={loc.id} value={loc.id}>
-                                {loc.name}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={(v) => { setStoreFilter(v); setPage(1); }}
+                            placeholder={t("page.employee.list.allStores")}
+                            searchPlaceholder="Cari toko..."
+                          />
                         )}
-                        <select
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("common.all") },
+                            { value: "active", label: t("common.active") },
+                            { value: "inactive", label: t("common.inactive") },
+                            { value: "draft", label: t("common.draft") }
+                          ]}
                           value={statusFilter}
-                          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="all">{t("common.all")}</option>
-                          <option value="active">{t("common.active")}</option>
-                          <option value="inactive">{t("common.inactive")}</option>
-                          <option value="draft">{t("common.draft")}</option>
-                        </select>
+                          onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                          placeholder={t("common.all")}
+                          searchPlaceholder="Cari..."
+                        />
                         <SearchInput
                           value={search}
                           onChange={(val) => { setSearch(val); setPage(1); }}

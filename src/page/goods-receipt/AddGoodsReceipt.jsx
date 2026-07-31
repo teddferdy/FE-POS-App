@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
-import { Save, X, Plus, Trash2, Package, Search, ArrowLeft } from "lucide-react";
+import { Save, X, Plus, Trash2, Package, Search, ArrowLeft, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { addGoodsReceipt } from "@/services/goods-receipt";
 import { getAllPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Combobox } from "@/components/ui/combobox";
 import { z } from "zod";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
@@ -25,12 +26,14 @@ const AddGoodsReceipt = () => {
   const { t } = useTranslation();
 
   const [poId, setPoId] = useState(searchParams.get("poId") || "");
+  const isPoFromUrl = !!searchParams.get("poId");
   const [receivedDate, setReceivedDate] = useState(new Date());
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
   const [poSearch, setPoSearch] = useState("");
@@ -60,9 +63,9 @@ const AddGoodsReceipt = () => {
 
   const { data: poData, isLoading: loadingPOs } = useQuery(
     ["pos-for-gr"],
-    () => getAllPurchaseOrder({ limit: 9999, status: "received" }),
+    () => getAllPurchaseOrder({ limit: 9999, status: "pending,ordered" }),
     {
-      
+      enabled: !isPoFromUrl
     }
   );
   const purchaseOrders = poData?.data || [];
@@ -83,11 +86,15 @@ const AddGoodsReceipt = () => {
         ingredient: item.ingredient || null,
         ingredientName: item.ingredientName || item.productData?.nameProduct || "",
         product: item.product || null,
+        purchaseOrderItem: item.id,
         qty: item.quantity,
         returnedQty: item.returnedQty || 0,
+        receivedQuantity: item.receivedQuantity || 0,
         unit: item.unit || "pcs",
         qtyReceived: "0",
         conditionNotes: "",
+        costPrice: item.price || 0,
+        conversionToBase: item.conversionToBase || 1,
         isFromPo: true
       }));
       setItems(mapped);
@@ -95,6 +102,17 @@ const AddGoodsReceipt = () => {
   }, [poDetail]);
 
   const selectedPO = purchaseOrders.find((po) => po.id === parseInt(poId));
+
+  const poItemLanded = useMemo(() => {
+    const poItems = poDetail?.data?.items || [];
+    const totalValue = poItems.reduce((sum, it) => sum + (it.price || 0) * (it.quantity || 0), 0);
+    const addCost = poDetail?.data?.additionalCost || 0;
+    const map = {};
+    poItems.forEach((it) => {
+      map[it.id] = totalValue > 0 ? Math.round((addCost * (it.price || 0)) / totalValue) : 0;
+    });
+    return map;
+  }, [poDetail]);
 
   const addItem = () =>
     setItems((prev) => [
@@ -107,6 +125,8 @@ const AddGoodsReceipt = () => {
         unit: "pcs",
         qtyReceived: "0",
         conditionNotes: "",
+        costPrice: 0,
+        conversionToBase: 1,
         isFromPo: false
       }
     ]);
@@ -144,12 +164,15 @@ const AddGoodsReceipt = () => {
         notes,
         status: saveAsDraft ? "draft" : "completed",
         items: validItems.map((it) => ({
+          purchaseOrderItem: it.purchaseOrderItem,
           ingredient: it.ingredient,
           ingredientName: it.ingredientName,
           product: it.product,
           qtyReceived: parseFloat(it.qtyReceived),
           unit: it.unit,
-          conditionNotes: it.conditionNotes
+          conditionNotes: it.conditionNotes,
+          costPrice: parseFloat(it.costPrice) || 0,
+          conversionToBase: parseFloat(it.conversionToBase) || 1
         }))
       };
       await addGoodsReceipt(payload);
@@ -179,18 +202,18 @@ const AddGoodsReceipt = () => {
             <ArrowLeft size={16} />
           </Button>
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button onClick={() => navigate("/goods-receipt")} className="hover:text-foreground">
-            {t("breadcrumb.goodsReceipt")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
-        </nav>
+            <button
+              onClick={() => navigate("/dashboard-super-admin")}
+              className="hover:text-foreground">
+              {t("breadcrumb.dashboard")}
+            </button>
+            <span className="text-xs">/</span>
+            <button onClick={() => navigate("/goods-receipt")} className="hover:text-foreground">
+              {t("breadcrumb.goodsReceipt")}
+            </button>
+            <span className="text-xs">/</span>
+            <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
+          </nav>
         </div>
 
         <div>
@@ -212,8 +235,27 @@ const AddGoodsReceipt = () => {
                 {t("page.goodsReceipt.add.form.purchaseOrder")}{" "}
                 <span className="text-destructive">*</span>
               </Label>
-              {loadingPOs ? (
+              {loadingPOs || (isPoFromUrl && loadingPo) ? (
                 <Skeleton className="h-10 w-full" />
+              ) : isPoFromUrl && poDetail?.data ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-10 px-3 rounded-md border border-input bg-muted/50 text-sm flex items-center text-muted-foreground cursor-not-allowed">
+                    <Package size={14} className="mr-2 shrink-0" />
+                    {poDetail.data.orderNumber}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-muted-foreground"
+                    onClick={() => window.open(`/purchase-order/detail?id=${poId}`, "_blank")}>
+                    <Eye size={14} className="mr-1" /> {t("page.goodsReceipt.add.form.viewPO")}
+                  </Button>
+                </div>
+              ) : isPoFromUrl ? (
+                <div className="h-10 px-3 rounded-md border border-destructive/50 bg-destructive/5 text-sm flex items-center text-destructive">
+                  {t("page.goodsReceipt.add.form.poNotFound")}
+                </div>
               ) : purchaseOrders.length === 0 ? (
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-muted-foreground">
@@ -271,7 +313,7 @@ const AddGoodsReceipt = () => {
                   )}
                 </div>
               )}
-              {selectedPO && (
+              {!isPoFromUrl && selectedPO && (
                 <div className="flex items-center gap-3 mt-1">
                   <span className="text-xs text-muted-foreground">
                     {t("page.goodsReceipt.add.form.status")}: {selectedPO.status}
@@ -288,6 +330,32 @@ const AddGoodsReceipt = () => {
               <DatePicker date={receivedDate} setDate={setReceivedDate} />
             </div>
           </div>
+
+          {(() => {
+            const po = selectedPO || poDetail?.data;
+            if (!po || po.paymentMethod !== "credit") return null;
+            const dpPct = Number(po.dpPercent || 0);
+            const total = Number(po.finalAmount || po.totalAmount || 0);
+            const dpAmount = (dpPct / 100) * total;
+            const paid = Number(po.totalPaid || 0);
+            if (paid >= dpAmount) return null;
+            return (
+              <div className="flex items-start gap-3 p-4 rounded-lg border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20">
+                <div className="w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-red-600 dark:text-red-400">!</span>
+                </div>
+                <div className="text-sm text-red-700 dark:text-red-300">
+                  <p className="font-semibold">{t("page.goodsReceipt.add.dpWarning.title")}</p>
+                  <p className="mt-1 text-red-600 dark:text-red-400">
+                    {t("page.goodsReceipt.add.dpWarning.description", {
+                      dp: dpAmount.toLocaleString("id-ID"),
+                      paid: paid.toLocaleString("id-ID")
+                    })}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="space-y-2">
             <Label>{t("page.goodsReceipt.add.form.items")}</Label>
@@ -309,10 +377,19 @@ const AddGoodsReceipt = () => {
                         {t("page.goodsReceipt.add.table.qtyPo")}
                       </th>
                       <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                        {t("page.goodsReceipt.add.table.remaining")}
+                      </th>
+                      <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
                         {t("page.goodsReceipt.add.table.unit")}
+                      </th>
+                      <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                        {t("page.goodsReceipt.add.table.conversion")}
                       </th>
                       <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
                         {t("page.goodsReceipt.add.table.qtyReceived")}
+                      </th>
+                      <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                        {t("page.goodsReceipt.add.table.costPrice")}
                       </th>
                       <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
                         {t("page.goodsReceipt.add.table.notes")}
@@ -362,6 +439,26 @@ const AddGoodsReceipt = () => {
                             />
                           )}
                         </td>
+                        <td className="px-3 py-2 text-center">
+                          {(() => {
+                            const remaining = Math.max(
+                              0,
+                              item.qty - item.returnedQty - (item.receivedQuantity || 0)
+                            );
+                            const receivedAlready = item.receivedQuantity || 0;
+                            return (
+                              <span
+                                className={`text-sm ${remaining === 0 ? "text-red-500" : receivedAlready > 0 ? "text-amber-600" : "text-green-600"}`}>
+                                {remaining}
+                                {receivedAlready > 0 && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    (prev: {receivedAlready})
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          })()}
+                        </td>
                         <td className="px-3 py-2">
                           <div className="flex justify-center">
                             {item.isFromPo ? (
@@ -369,25 +466,63 @@ const AddGoodsReceipt = () => {
                                 {item.unit}
                               </span>
                             ) : (
-                              <select
+                              <Combobox
+                                options={[
+                                  { value: "pcs", label: t("unit.pcs") },
+                                  { value: "buah", label: t("unit.buah") },
+                                  { value: "kg", label: t("unit.kg") },
+                                  { value: "gram", label: t("unit.gram") },
+                                  { value: "liter", label: t("unit.liter") },
+                                  { value: "ml", label: t("unit.ml") },
+                                  { value: "meter", label: t("unit.meter") },
+                                  { value: "cm", label: t("unit.cm") },
+                                  { value: "lusin", label: t("unit.lusin") },
+                                  { value: "box", label: t("unit.box") },
+                                  { value: "pack", label: t("unit.pack") },
+                                  { value: "karton", label: t("unit.karton") }
+                                ]}
                                 value={item.unit}
-                                onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                                className="h-8 px-2 rounded border border-input bg-background text-xs">
-                                <option value="pcs">{t("unit.pcs")}</option>
-                                <option value="buah">{t("unit.buah")}</option>
-                                <option value="kg">{t("unit.kg")}</option>
-                                <option value="gram">{t("unit.gram")}</option>
-                                <option value="liter">{t("unit.liter")}</option>
-                                <option value="ml">{t("unit.ml")}</option>
-                                <option value="meter">{t("unit.meter")}</option>
-                                <option value="cm">{t("unit.cm")}</option>
-                                <option value="lusin">{t("unit.lusin")}</option>
-                                <option value="box">{t("unit.box")}</option>
-                                <option value="pack">{t("unit.pack")}</option>
-                                <option value="karton">{t("unit.karton")}</option>
-                              </select>
+                                onChange={(val) => updateItem(idx, "unit", val)}
+                                placeholder={t("unit.pcs")}
+                                searchPlaceholder={t("common.search")}
+                              />
                             )}
                           </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          {item.isFromPo ? (
+                            <div className="text-center">
+                              <span className="inline-flex px-2 py-0.5 rounded text-xs bg-muted">
+                                {item.conversionToBase || 1}
+                              </span>
+                              {parseFloat(item.qtyReceived) > 0 && (
+                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                  ={" "}
+                                  {(
+                                    parseFloat(item.qtyReceived) * (item.conversionToBase || 1)
+                                  ).toLocaleString("id-ID")}{" "}
+                                  stok
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex justify-center">
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={item.conversionToBase ? String(item.conversionToBase) : "1"}
+                                onChange={(e) =>
+                                  updateItem(
+                                    idx,
+                                    "conversionToBase",
+                                    Number(e.target.value.replace(/[^0-9.]/g, "")) || 1
+                                  )
+                                }
+                                className="h-8 text-xs text-center w-16"
+                                placeholder="1"
+                              />
+                            </div>
+                          )}
                         </td>
                         <td className="px-3 py-2">
                           <Input
@@ -405,6 +540,32 @@ const AddGoodsReceipt = () => {
                             className="h-8 text-xs text-right w-24 ml-auto"
                             placeholder={t("page.goodsReceipt.add.placeholder.qty")}
                           />
+                        </td>
+                        <td className="px-3 py-2">
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            value={item.costPrice ? String(item.costPrice) : ""}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) =>
+                              updateItem(
+                                idx,
+                                "costPrice",
+                                e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
+                              )
+                            }
+                            className="h-8 text-xs text-right w-28 ml-auto"
+                            placeholder={t("page.goodsReceipt.add.placeholder.costPrice")}
+                          />
+                          {(() => {
+                            const landed = poItemLanded[item.purchaseOrderItem] || 0;
+                            return landed > 0 ? (
+                              <p className="text-[10px] text-emerald-600 mt-0.5 text-right">
+                                {t("page.goodsReceipt.add.table.landed")} + Rp{" "}
+                                {landed.toLocaleString("id-ID")}
+                              </p>
+                            ) : null;
+                          })()}
                         </td>
                         <td className="px-3 py-2">
                           <Input
@@ -447,12 +608,12 @@ const AddGoodsReceipt = () => {
             {loadingPo && poId ? (
               <Skeleton className="h-16 w-full" />
             ) : (
-            <Textarea
-              rows={2}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t("page.goodsReceipt.add.placeholder.notes")}
-            />
+              <Textarea
+                rows={2}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t("page.goodsReceipt.add.placeholder.notes")}
+              />
             )}
           </div>
 
@@ -478,7 +639,7 @@ const AddGoodsReceipt = () => {
                     setMissingFieldsModal(true);
                     return;
                   }
-                  doSubmit(false);
+                  setConfirmModal(true);
                 }}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting
@@ -515,6 +676,18 @@ const AddGoodsReceipt = () => {
           onConfirm={() => {
             setDraftModal(false);
             doSubmit(true);
+          }}
+        />
+        <Modal
+          type="confirm"
+          open={confirmModal}
+          onOpenChange={setConfirmModal}
+          title={t("page.goodsReceipt.add.confirmModal.title")}
+          description={t("page.goodsReceipt.add.confirmModal.description")}
+          confirmText={t("page.goodsReceipt.add.confirmModal.confirm")}
+          onConfirm={() => {
+            setConfirmModal(false);
+            doSubmit(false);
           }}
         />
         <MissingFieldsModal

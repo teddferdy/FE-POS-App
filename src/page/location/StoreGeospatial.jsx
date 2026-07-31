@@ -7,6 +7,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { ArrowLeft, Store, MapPin, Navigation, Building2 } from "lucide-react";
+import { Combobox } from "@/components/ui/combobox";
 import { getAllLocation, getAllLocationTable } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -167,29 +168,35 @@ const StoreGeospatial = () => {
                 <span className="text-xs font-semibold text-muted-foreground">
                   {t("common.status")}:
                 </span>
-                <select
+                <Combobox
+                  options={[
+                    { value: "all", label: t("common.all") },
+                    { value: "active", label: t("common.active") },
+                    { value: "inactive", label: t("common.inactive") },
+                  ]}
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                  <option value="all">{t("common.all")}</option>
-                  <option value="active">{t("common.active")}</option>
-                  <option value="inactive">{t("common.inactive")}</option>
-                </select>
+                  onChange={(val) => setStatusFilter(val)}
+                  placeholder={t("common.all")}
+                  searchPlaceholder={t("common.all")}
+                />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-muted-foreground">
                   {t("common.category")}:
                 </span>
-                <select
+                <Combobox
+                  options={[
+                    { value: "all", label: t("common.all") },
+                    { value: "Main Branch", label: t("page.location.category.mainBranch") },
+                    { value: "Branch", label: t("page.location.category.branch") },
+                    { value: "Warehouse", label: t("page.location.category.warehouse") },
+                    { value: "Office", label: t("page.location.category.office") },
+                  ]}
                   value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                  <option value="all">{t("common.all")}</option>
-                  <option value="Main Branch">{t("page.location.category.mainBranch")}</option>
-                  <option value="Branch">{t("page.location.category.branch")}</option>
-                  <option value="Warehouse">{t("page.location.category.warehouse")}</option>
-                  <option value="Office">{t("page.location.category.office")}</option>
-                </select>
+                  onChange={(val) => setCategoryFilter(val)}
+                  placeholder={t("common.all")}
+                  searchPlaceholder={t("common.category")}
+                />
               </div>
               <p className="text-xs text-muted-foreground self-center ml-auto">
                 {t("page.location.map.showing", {

@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import { getAllSalesReturn, approveSalesReturn, rejectSalesReturn } from "@/services/sales-return";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import NoStore from "@/components/ui/NoStore";
 import DataTable from "@/components/ui/DataTable";
@@ -115,6 +116,15 @@ const SalesReturnList = () => {
       header: t("page.salesReturn.list.header.items"),
       align: "center",
       render: (item) => <span className="font-mono text-sm">{item.items?.length || 0}</span>
+    },
+    {
+      header: "Refund Amount",
+      align: "right",
+      render: (item) => (
+        <span className="font-mono text-sm font-semibold">
+          Rp {(item.refundAmount || 0).toLocaleString("id-ID")}
+        </span>
+      )
     },
     {
       header: t("page.salesReturn.list.header.reason"),
@@ -242,13 +252,21 @@ const SalesReturnList = () => {
         </nav>
       </div>
       <div>
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.salesReturn.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.salesReturn.list.subtitle")}
-          </p>
-        </div>
-      </div>
+         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+           <div>
+             <h1 className="text-2xl font-bold text-foreground">{t("page.salesReturn.list.title")}</h1>
+             <p className="text-sm text-muted-foreground mt-1">
+               {t("page.salesReturn.list.subtitle")}
+             </p>
+           </div>
+           <Button 
+             onClick={() => navigate("/sales-return/create")}
+             className="w-full md:w-auto"
+           >
+             {t("common.create")} Return
+           </Button>
+         </div>
+       </div>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />
@@ -282,20 +300,16 @@ const SalesReturnList = () => {
                             t={t}
                           />
                         )}
-                        <select
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("page.salesReturn.list.filter.allStatus") },
+                            ...Object.entries(statusCfg).map(([k, v]) => ({ value: k, label: v.label }))
+                          ]}
                           value={statusFilter}
-                          onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                          <option value="all">{t("page.salesReturn.list.filter.allStatus")}</option>
-                          {Object.entries(statusCfg).map(([k, v]) => (
-                            <option key={k} value={k}>
-                              {v.label}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                          placeholder={t("page.salesReturn.list.filter.allStatus")}
+                          searchPlaceholder="Cari..."
+                        />
                         <SearchInput
                           value={search}
                           onChange={(val) => {

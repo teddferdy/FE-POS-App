@@ -44,6 +44,7 @@ import {
   CommandItem,
   CommandList
 } from "@/components/ui/command";
+import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -730,18 +731,25 @@ const AddStockOpname = () => {
                               )}
                             </td>
                             <td className="border-r border-muted/20 px-3 py-2">
-                              <select
-                                {...form.register(`items.${index}.satuan`)}
-                                className={rowInputClass(!!rowErrors?.satuan)}>
-                                <option value="" disabled>
-                                  {t("page.stockOpname.form.satuanPlaceholder")}
-                                </option>
-                                {unitOptions.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </select>
+                              <Controller
+                                control={control}
+                                name={`items.${index}.satuan`}
+                                render={({ field }) => (
+                                  <Combobox
+                                    options={[
+                                      { value: "", label: t("page.stockOpname.form.satuanPlaceholder") },
+                                      ...unitOptions.map((opt) => ({
+                                        value: opt.value,
+                                        label: opt.label
+                                      }))
+                                    ]}
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    placeholder={t("page.stockOpname.form.satuanPlaceholder")}
+                                    searchPlaceholder={t("common.search")}
+                                  />
+                                )}
+                              />
                               {rowErrors?.satuan && (
                                 <p className="text-destructive text-[10px] mt-0.5">
                                   {rowErrors.satuan.message}

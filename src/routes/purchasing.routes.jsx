@@ -28,6 +28,7 @@ const DetailPurchaseReturn = React.lazy(
 // Sales Return
 const SalesReturnList = React.lazy(() => import("@/page/sales-return/SalesReturnList"));
 const DetailSalesReturn = React.lazy(() => import("@/page/sales-return/DetailSalesReturn"));
+const CreateSalesReturn = React.lazy(() => import("@/page/sales-return/CreateSalesReturn"));
 
 export const purchasingRoutes = (
   <>
@@ -50,5 +51,6 @@ export const purchasingRoutes = (
 
     <Route path="/sales-return" element={<SalesReturnList />} />
     <Route path="/sales-return/detail" element={<DetailSalesReturn />} />
+    <Route path="/sales-return/create" element={<CreateSalesReturn />} />
   </>
 );

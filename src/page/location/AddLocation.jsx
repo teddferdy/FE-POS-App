@@ -931,16 +931,13 @@ const AddLocation = () => {
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                               {t("page.location.form.categoryLabel")}
                             </FormLabel>
-                            <select
+                            <Combobox
                               value={field.value || ""}
                               onChange={field.onChange}
-                              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                              {categoryOptions.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                  {t(opt.labelKey)}
-                                </option>
-                              ))}
-                            </select>
+                              placeholder={t("page.location.form.categoryLabel")}
+                              searchPlaceholder={t("page.location.form.categoryLabel")}
+                              options={categoryOptions.map((opt) => ({ value: opt.value, label: t(opt.labelKey) }))}
+                            />
                             <FormDescription>{t("page.location.form.categoryHint")}</FormDescription>
                             <FormMessage />
                           </FormItem>

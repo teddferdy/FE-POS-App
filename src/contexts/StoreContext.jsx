@@ -14,15 +14,29 @@ export function StoreProvider({ children }) {
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
 
-  const [activeStoreId, setActiveStoreIdState] = useState(() => cookies?.activeStore || null);
-  const [activeStoreName, setActiveStoreNameState] = useState(() => cookies?.activeStoreName || "");
+  const [activeStoreId, setActiveStoreIdState] = useState(() => {
+    if (isSuperAdmin) return null;
+    return cookies?.activeStore || null;
+  });
+  const [activeStoreName, setActiveStoreNameState] = useState(() => {
+    if (isSuperAdmin) return "";
+    return cookies?.activeStoreName || "";
+  });
 
   const setActiveStore = useCallback(
     (id, name) => {
-      const storeValue = isSuperAdmin ? "" : user?.store;
+      // If super_admin, we use the passed ID (could be empty for global, or specific ID)
+      // If not super_admin, we use the user's assigned store
+      const storeValue = isSuperAdmin ? id : user?.store;
+
       setCookie("activeStore", storeValue, { path: "/" });
       setCookie("activeStoreName", name || "", { path: "/" });
-      setCookie("user", { ...user, store: storeValue, storeName: name }, { path: "/" });
+
+      // Update user cookie to keep UI in sync if needed
+      if (user) {
+        setCookie("user", { ...user, store: storeValue, storeName: name }, { path: "/" });
+      }
+
       setActiveStoreIdState(storeValue);
       setActiveStoreNameState(name || "");
 

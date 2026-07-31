@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { getReservations, deleteReservation, updateReservation } from "@/services/reservation";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
@@ -428,26 +429,20 @@ const ReservationList = () => {
                                 }}
                               />
                             </div>
-                            <select
+                            <Combobox
+                              options={[
+                                { value: "all", label: t("page.reservation.filter.allStatus") },
+                                { value: "pending", label: t("page.reservation.status.pending") },
+                                { value: "confirmed", label: t("page.reservation.status.confirmed") },
+                                { value: "cancelled", label: t("page.reservation.status.cancelled") },
+                                { value: "completed", label: t("page.reservation.status.completed") },
+                                { value: "no_show", label: t("page.reservation.status.noShow") }
+                              ]}
                               value={statusFilter}
-                              onChange={(e) => {
-                                setStatusFilter(e.target.value);
-                                setPage(1);
-                              }}
-                              className="h-9 px-3 rounded-lg border border-input bg-background text-sm">
-                              <option value="all">{t("page.reservation.filter.allStatus")}</option>
-                              <option value="pending">{t("page.reservation.status.pending")}</option>
-                              <option value="confirmed">
-                                {t("page.reservation.status.confirmed")}
-                              </option>
-                              <option value="cancelled">
-                                {t("page.reservation.status.cancelled")}
-                              </option>
-                              <option value="completed">
-                                {t("page.reservation.status.completed")}
-                              </option>
-                              <option value="no_show">{t("page.reservation.status.noShow")}</option>
-                            </select>
+                              onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                              placeholder={t("page.reservation.filter.allStatus")}
+                              searchPlaceholder="Cari..."
+                            />
                           </div>
                         </>
                       )}

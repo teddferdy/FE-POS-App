@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { editPosition, getPositionById } from "@/services/position";
 import { getAllDepartment } from "@/services/department";
 import { sanitizeInput } from "@/utils/inputSanitizer";

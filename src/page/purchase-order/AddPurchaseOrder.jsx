@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
+import { useStore } from "@/contexts/StoreContext";
 import { toast } from "sonner";
-import { Save, X, Plus, Trash2, ShoppingCart, Package } from "lucide-react";
+import { Save, X, Plus, ShoppingCart } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { z } from "zod";
@@ -20,10 +21,12 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
+import { Combobox } from "@/components/ui/combobox";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import OrderItemsCard from "@/components/organism/OrderItemsCard";
 import { getMissingFields } from "@/lib/validation";
 const AddPurchaseOrder = () => {
   const { t } = useTranslation();
@@ -42,7 +45,7 @@ const AddPurchaseOrder = () => {
     pic: z.number().min(1, t("page.purchaseOrder.add.validation.pic")),
     orderDate: z.date({ required_error: t("page.purchaseOrder.add.validation.orderDate") }),
     orderTime: z.string().min(1, t("page.purchaseOrder.add.validation.orderTime")),
-    dueDate: z.date({ required_error: t("page.purchaseOrder.add.validation.dueDate") }),
+    dueDate: z.date().nullable().optional(),
     items: z
       .array(
         z.object({
@@ -88,6 +91,7 @@ const AddPurchaseOrder = () => {
   const [confirmModal, setConfirmModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [orderDate, setOrderDate] = useState(new Date());
   const [orderTime, setOrderTime] = useState(format(new Date(), "HH:mm"));
   const [dueDate, setDueDate] = useState(null);
@@ -138,8 +142,6 @@ const AddPurchaseOrder = () => {
   );
   const ingredients = ingredientsData?.data || [];
   const activeIngredients = ingredients;
-  const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
-
   useEffect(() => {
     setPicSearch("");
     setPicId(null);
@@ -158,15 +160,6 @@ const AddPurchaseOrder = () => {
   }, [selectedStore, ingredientsData]);
   const itemsLoading = !!selectedStore && !ingredientsReady;
 
-  const supplierToIngredients = useMemo(() => {
-    const map = {};
-    for (const sp of suppliers) {
-      const products = (sp.products || []).filter((p) => !p.status || p.status === "active");
-      map[sp.id || sp._id] = new Set(products.map((p) => (p.name || "").toLowerCase().trim()));
-    }
-    return map;
-  }, [suppliers]);
-
   const ingredientSuppliersMap = useMemo(() => {
     const map = {};
     for (const sp of suppliers) {
@@ -182,22 +175,20 @@ const AddPurchaseOrder = () => {
     return map;
   }, [suppliers]);
 
+  const supplierProductsMap = useMemo(() => {
+    const map = {};
+    for (const sp of suppliers) {
+      const sid = sp.id || sp._id;
+      map[sid] = (sp.products || []).filter((p) => !p.status || p.status === "active");
+    }
+    return map;
+  }, [suppliers]);
+
   const getSuppliersForIngredientName = (ingredientId) => {
     if (!ingredientId) return [];
     const ing = activeIngredients.find((i) => i.id === ingredientId);
     if (!ing) return [];
     return ingredientSuppliersMap[(ing.name || "").toLowerCase().trim()] || [];
-  };
-
-  const getFilteredIngredients = (search, itemSupplierId) => {
-    let filtered = activeIngredients;
-    if (itemSupplierId && supplierToIngredients[itemSupplierId]?.size > 0) {
-      const allowedNames = supplierToIngredients[itemSupplierId];
-      filtered = activeIngredients.filter((i) =>
-        allowedNames.has((i.name || "").toLowerCase().trim())
-      );
-    }
-    return filtered.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
   };
 
   const unitOptions = [
@@ -223,6 +214,7 @@ const AddPurchaseOrder = () => {
   ];
 
   const queryClient = useQueryClient();
+  const { setActiveStore } = useStore();
 
   const addSupplierMutation = useMutation(addSupplier, {
     onSuccess: (res) => {
@@ -246,10 +238,7 @@ const AddPurchaseOrder = () => {
   const createMutation = useMutation(addPurchaseOrder, {
     onSuccess: () => {
       queryClient.invalidateQueries(["purchase-orders"]);
-      toast.success(t("common.success"), {
-        description: t("page.purchaseOrder.add.toast.poCreated")
-      });
-      navigate("/purchase-order");
+      setShowSuccessModal(true);
     },
     onError: (err) => {
       toast.error(t("common.failed"), { description: err?.response?.data?.message || err.message });
@@ -275,15 +264,25 @@ const AddPurchaseOrder = () => {
   const addItem = () =>
     setItems((prev) => [
       ...prev,
-      { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs", supplierId: null }
+      {
+        name: "",
+        ingredientId: null,
+        qty: 1,
+        price: 0,
+        unit: "pcs",
+        supplierId: null,
+        conversionToBase: 1
+      }
     ]);
   const removeItem = (idx) => setItems((prev) => prev.filter((_, i) => i !== idx));
   const updateItem = (idx, field, value) =>
     setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
 
   const [discount, setDiscount] = useState(0);
+  const [additionalCost, setAdditionalCost] = useState(0);
+  const [overDeliveryTolerance, setOverDeliveryTolerance] = useState(10);
   const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
-  const finalAmount = totalAmount - discount;
+  const finalAmount = totalAmount - discount + additionalCost;
 
   const [errors, setErrors] = useState({});
 
@@ -307,6 +306,14 @@ const AddPurchaseOrder = () => {
       if (hasDuplicateItems) {
         toast.error(t("page.purchaseOrder.add.validation.duplicateItems"), {
           description: t("page.purchaseOrder.add.validation.duplicateItemsDesc")
+        });
+        return;
+      }
+
+      if (paymentMethod === "credit" && !dueDate) {
+        setErrors((prev) => ({ ...prev, dueDate: t("page.purchaseOrder.add.validation.dueDate") }));
+        toast.error(t("page.purchaseOrder.add.validation.validationFailed"), {
+          description: t("page.purchaseOrder.add.validation.dueDate")
         });
         return;
       }
@@ -338,6 +345,8 @@ const AddPurchaseOrder = () => {
       store: locationParam,
       notes,
       discount,
+      additionalCost,
+      overDeliveryTolerance,
       status: saveAsDraft ? "draft" : "pending",
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       pic: picId,
@@ -352,13 +361,14 @@ const AddPurchaseOrder = () => {
       })(),
       items: items
         .filter((i) => (saveAsDraft ? true : i.name?.trim()))
-        .map(({ name, ingredientId, qty, price, unit, supplierId }) => ({
+        .map(({ name, ingredientId, qty, price, unit, supplierId, conversionToBase }) => ({
           product: null,
           ingredient: ingredientId || null,
           ingredientName: name,
           quantity: qty,
           price,
           unit: unit || "pcs",
+          conversionToBase: conversionToBase || 1,
           supplier: supplierId || null
         })),
       createdBy: user?.id
@@ -448,25 +458,20 @@ const AddPurchaseOrder = () => {
                         {t("page.purchaseOrder.add.store")}{" "}
                         <span className="text-destructive">*</span>
                       </label>
-                      <select
+                      <Combobox
+                        options={[
+                          { value: "", label: t("page.purchaseOrder.add.selectStore") },
+                          ...locations.map((loc) => ({ value: loc.id, label: loc.name }))
+                        ]}
                         value={selectedStore}
-                        onChange={(e) => {
-                          setSelectedStore(e.target.value);
+                        onChange={(val) => {
+                          setSelectedStore(val);
                           setErrors((prev) => ({ ...prev, store: undefined }));
                         }}
                         disabled={!isSuperAdmin}
-                        className={`w-full h-10 px-3 rounded-lg border text-sm outline-none focus:ring-1 transition-colors ${
-                          errors.store
-                            ? "border-destructive focus:ring-destructive/20"
-                            : "border-border focus:ring-primary/20 focus:border-primary"
-                        } bg-background ${!isSuperAdmin ? "opacity-60 cursor-not-allowed" : ""}`}>
-                        <option value="">{t("page.purchaseOrder.add.selectStore")}</option>
-                        {locations.map((loc) => (
-                          <option key={loc.id} value={loc.id}>
-                            {loc.name}
-                          </option>
-                        ))}
-                      </select>
+                        placeholder={t("page.purchaseOrder.add.selectStore")}
+                        searchPlaceholder={t("page.purchaseOrder.add.selectStore")}
+                      />
                       {errors.store && (
                         <p className="text-xs text-destructive mt-1">{errors.store}</p>
                       )}
@@ -594,84 +599,94 @@ const AddPurchaseOrder = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground mb-1.5 block">
-                        {t("page.purchaseOrder.add.dueDate")}{" "}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <DatePicker
-                        date={dueDate}
-                        setDate={(d) => {
-                          setDueDate(d);
-                          setErrors((prev) => ({ ...prev, dueDate: undefined }));
-                        }}
-                      />
-                      {errors.dueDate && (
-                        <p className="text-xs text-destructive mt-1">{errors.dueDate}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">
                         {t("page.purchaseOrder.add.paymentMethod")}{" "}
                         <span className="text-destructive">*</span>
                       </label>
-                      <select
+                      <Combobox
+                        options={[
+                          { value: "cash", label: t("page.purchaseOrder.add.paymentMethodCash") },
+                          {
+                            value: "credit",
+                            label: t("page.purchaseOrder.add.paymentMethodCredit")
+                          }
+                        ]}
                         value={paymentMethod}
-                        onChange={(e) => {
-                          setPaymentMethod(e.target.value);
-                          if (e.target.value === "cash") {
+                        onChange={(val) => {
+                          setPaymentMethod(val);
+                          if (val === "cash") {
                             setTenor(0);
                             setDpPercent(0);
+                            setDueDate(null);
                           }
                         }}
-                        className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors">
-                        <option value="cash">{t("page.purchaseOrder.add.paymentMethodCash")}</option>
-                        <option value="credit">{t("page.purchaseOrder.add.paymentMethodCredit")}</option>
-                      </select>
+                        placeholder={t("page.purchaseOrder.add.paymentMethodCash")}
+                        searchPlaceholder={t("page.purchaseOrder.add.paymentMethodCash")}
+                      />
                     </div>
                     {paymentMethod === "credit" && (
-                      <>
-                        <div>
-                          <label className="text-sm font-medium text-foreground mb-1.5 block">
-                            {t("page.purchaseOrder.add.tenor")}{" "}
-                            <span className="text-destructive">*</span>
-                          </label>
-                          <Input
-                            type="number"
-                            min="1"
-                            placeholder={t("page.purchaseOrder.add.tenorPlaceholder")}
-                            value={tenor || ""}
-                            onChange={(e) => setTenor(Number(e.target.value) || 0)}
-                            className="h-10"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {t("page.purchaseOrder.add.tenorHint")}
+                      <div>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">
+                          {t("page.purchaseOrder.add.dpPercent")}
+                        </label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          placeholder={t("page.purchaseOrder.add.dpPercentPlaceholder")}
+                          value={dpPercent || ""}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            if (val >= 0 && val <= 100) setDpPercent(val);
+                          }}
+                          className="h-10"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("page.purchaseOrder.add.dpPercentHint")}
+                        </p>
+                        {dpPercent > 0 && (
+                          <p className="text-xs text-primary font-medium mt-1">
+                            {t("page.purchaseOrder.add.dpAmount")}: Rp{" "}
+                            {((finalAmount * dpPercent) / 100).toLocaleString("id-ID")}
                           </p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-foreground mb-1.5 block">
-                            {t("page.purchaseOrder.add.dpPercent")}
-                          </label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            placeholder={t("page.purchaseOrder.add.dpPercentPlaceholder")}
-                            value={dpPercent || ""}
-                            onChange={(e) => {
-                              const val = Number(e.target.value);
-                              if (val >= 0 && val <= 100) setDpPercent(val);
-                            }}
-                            className="h-10"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {t("page.purchaseOrder.add.dpPercentHint")}
-                          </p>
-                          {dpPercent > 0 && (
-                            <p className="text-xs text-primary font-medium mt-1">
-                              {t("page.purchaseOrder.add.dpAmount")}: Rp {((finalAmount * dpPercent) / 100).toLocaleString("id-ID")}
-                            </p>
-                          )}
-                        </div>
-                      </>
+                        )}
+                      </div>
+                    )}
+                    {paymentMethod === "credit" && (
+                      <div>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">
+                          {t("page.purchaseOrder.add.dueDate")}{" "}
+                          <span className="text-destructive">*</span>
+                        </label>
+                        <DatePicker
+                          date={dueDate}
+                          setDate={(d) => {
+                            setDueDate(d);
+                            setErrors((prev) => ({ ...prev, dueDate: undefined }));
+                          }}
+                        />
+                        {errors.dueDate && (
+                          <p className="text-xs text-destructive mt-1">{errors.dueDate}</p>
+                        )}
+                      </div>
+                    )}
+                    {paymentMethod === "credit" && (
+                      <div>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">
+                          {t("page.purchaseOrder.add.tenor")}{" "}
+                          <span className="text-destructive">*</span>
+                        </label>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder={t("page.purchaseOrder.add.tenorPlaceholder")}
+                          value={tenor || ""}
+                          onChange={(e) => setTenor(Number(e.target.value) || 0)}
+                          className="h-10"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("page.purchaseOrder.add.tenorHint")}
+                        </p>
+                      </div>
                     )}
                     <div className="md:col-span-2">
                       <label className="text-sm font-medium text-foreground mb-1.5 block">
@@ -688,326 +703,31 @@ const AddPurchaseOrder = () => {
                 </div>
               </Card>
 
-              <Card className="overflow-hidden border-0 shadow-md rounded-xl">
-                <div className="bg-gradient-to-r from-emerald-600/90 to-emerald-700/90 px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
-                        <Package size={18} className="text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-semibold text-white">
-                          {t("page.purchaseOrder.add.itemSection")}
-                        </h3>
-                        <p className="text-xs text-emerald-100">
-                          {t("page.purchaseOrder.add.itemSectionDesc")}
-                        </p>
-                      </div>
-                    </div>
-                    {!itemsLoading && selectedStore && (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
-                        onClick={addItem}>
-                        <Plus size={18} />
-                        {t("page.purchaseOrder.add.addItem")}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <div className="p-6">
-                  {errors.items && <p className="text-xs text-destructive mb-3">{errors.items}</p>}
-                  {hasDuplicateItems && (
-                    <p className="text-xs text-amber-600 mb-3">
-                      {t("page.purchaseOrder.add.validation.duplicateItems")}
-                    </p>
-                  )}
-
-                  {!selectedStore ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                        <ShoppingCart size={20} className="text-muted-foreground" />
-                      </div>
-                      <p className="text-sm font-medium text-foreground">
-                        {t("page.purchaseOrder.add.selectStoreFirst") ||
-                          "Pilih store terlebih dahulu"}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t("page.purchaseOrder.add.selectStoreHint") ||
-                          "Item pesanan akan muncul setelah store dipilih"}
-                      </p>
-                    </div>
-                  ) : itemsLoading ? (
-                    <div className="space-y-3">
-                      {Array.from({ length: 3 }).map((_, i) => (
-                        <div key={i} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
-                          <Skeleton className="w-6 h-6 rounded-full shrink-0" />
-                          <Skeleton className="h-9 flex-1" />
-                          <Skeleton className="h-9 w-32 shrink-0" />
-                          <Skeleton className="h-9 w-20 shrink-0" />
-                          <Skeleton className="h-9 w-20 shrink-0" />
-                          <Skeleton className="h-9 w-36 shrink-0" />
-                          <Skeleton className="h-5 w-28 shrink-0" />
-                        </div>
-                      ))}
-                      <p className="text-xs text-muted-foreground text-center pt-2">
-                        {t("page.purchaseOrder.add.loadingIngredients") || "Memuat data bahan..."}
-                      </p>
-                    </div>
-                  ) : items.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">
-                      {t("page.purchaseOrder.add.noItem")}
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {items.map((item, idx) => {
-                        const suppliersForItem = getSuppliersForIngredientName(item.ingredientId);
-                        const itemPrices = suppliersForItem.map((s) => s.price);
-                        const minPrice = itemPrices.length > 0 ? Math.min(...itemPrices) : 0;
-
-                        return (
-                          <div key={idx} className="bg-muted/30 rounded-lg p-3">
-                            <div className="flex items-center gap-3">
-                              <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
-                                {idx + 1}
-                              </span>
-                              <div className="flex shrink-0">
-                                <select
-                                  value={item.supplierId || ""}
-                                  onChange={(e) => {
-                                    const val = e.target.value || null;
-                                    updateItem(idx, "supplierId", val);
-                                    if (
-                                      val &&
-                                      item.ingredientId &&
-                                      getSuppliersForIngredientName(item.ingredientId).length > 0
-                                    ) {
-                                      const match = getSuppliersForIngredientName(
-                                        item.ingredientId
-                                      ).find((s) => s.supplierId === val);
-                                      if (match) updateItem(idx, "price", match.price);
-                                    }
-                                  }}
-                                  className="h-9 text-sm w-36 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors rounded-r-none border-r-0">
-                                  <option value="">
-                                    {t("page.purchaseOrder.add.selectSupplier")}
-                                  </option>
-                                  {suppliers.map((sp) => (
-                                    <option key={sp.id || sp._id} value={sp.id || sp._id}>
-                                      {sp.name}
-                                    </option>
-                                  ))}
-                                </select>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-9 w-9 shrink-0 rounded-l-none border-l-0"
-                                  onClick={() => {
-                                    setAddSupplierItemIdx(idx);
-                                    setNewSupplierName("");
-                                    setNewSupplierPhone("");
-                                    setShowAddSupplierModal(true);
-                                  }}>
-                                  <Plus size={14} />
-                                </Button>
-                              </div>
-                              <div className="relative flex-1 min-w-0">
-                                <Input
-                                  placeholder={t("page.purchaseOrder.add.itemNamePlaceholder")}
-                                  value={item.name}
-                                  onChange={(e) => {
-                                    updateItem(idx, "name", e.target.value);
-                                    updateItem(idx, "ingredientId", null);
-                                    setIngredientFocusIdx(idx);
-                                    setErrors((prev) => ({ ...prev, items: undefined }));
-                                  }}
-                                  onFocus={() => setIngredientFocusIdx(idx)}
-                                  onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
-                                  className="h-9 text-sm w-full"
-                                />
-                                {ingredientFocusIdx === idx && (
-                                  <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                    {getFilteredIngredients(item.name || "", item.supplierId)
-                                      .length > 0 ? (
-                                      getFilteredIngredients(item.name || "", item.supplierId).map(
-                                        (ing) => (
-                                          <button
-                                            key={ing.id}
-                                            type="button"
-                                            onMouseDown={() => {
-                                              updateItem(idx, "name", ing.name);
-                                              updateItem(idx, "ingredientId", ing.id);
-                                              updateItem(idx, "unit", ing.unit || "pcs");
-                                              const match = item.supplierId
-                                                ? ingredientSuppliersMap[
-                                                    (ing.name || "").toLowerCase().trim()
-                                                  ]?.find((s) => s.supplierId === item.supplierId)
-                                                : null;
-                                              updateItem(idx, "price", match ? match.price : 0);
-                                              setIngredientFocusIdx(null);
-                                            }}
-                                            className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
-                                            <span>{ing.name}</span>
-                                            <span className="text-xs text-muted-foreground ml-auto">
-                                              {ing.unit || "pcs"}
-                                            </span>
-                                          </button>
-                                        )
-                                      )
-                                    ) : (
-                                      <p className="p-3 text-xs text-muted-foreground text-center">
-                                        {t("page.purchaseOrder.add.noIngredientFound")}
-                                      </p>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                              <Input
-                                placeholder={t("page.purchaseOrder.add.qty")}
-                                value={item.qty || ""}
-                                onChange={(e) =>
-                                  updateItem(
-                                    idx,
-                                    "qty",
-                                    Number(e.target.value.replace(/[^0-9]/g, "")) || 0
-                                  )
-                                }
-                                className="h-9 text-sm w-20 shrink-0"
-                              />
-                              <select
-                                value={item.unit}
-                                onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                                className="h-9 text-sm w-20 shrink-0 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors">
-                                {unitOptions.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </select>
-                              <Input
-                                placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                                value={item.price ? formatIDR(item.price) : ""}
-                                onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
-                                className="h-9 text-sm w-36 shrink-0"
-                              />
-                              <span className="text-sm font-medium text-foreground w-28 text-right shrink-0">
-                                Rp {(item.qty * item.price).toLocaleString("id-ID")}
-                              </span>
-                              {items.length > 1 && (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive shrink-0"
-                                  onClick={() => removeItem(idx)}>
-                                  <Trash2 size={18} />
-                                </Button>
-                              )}
-                            </div>
-                            {item.ingredientId && (
-                              <div className="flex flex-wrap items-center gap-2 mt-2 ml-9">
-                                {suppliersForItem.length > 0 ? (
-                                  <>
-                                    <span className="text-xs text-muted-foreground font-medium shrink-0">
-                                      {t("page.purchaseOrder.add.supplierPrice")}:
-                                    </span>
-                                    {suppliersForItem.map((sp) => {
-                                      const isCheapest = sp.price === minPrice;
-                                      const isSelected = item.supplierId === sp.supplierId;
-                                      return (
-                                        <button
-                                          key={sp.supplierId}
-                                          type="button"
-                                          onClick={() => {
-                                            updateItem(idx, "supplierId", sp.supplierId);
-                                            updateItem(idx, "price", sp.price);
-                                          }}
-                                          className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
-                                            isSelected
-                                              ? "bg-primary/10 border-primary text-primary font-medium"
-                                              : isCheapest
-                                                ? "bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
-                                                : "bg-background border-border hover:bg-accent/50"
-                                          }`}>
-                                          {sp.supplierName}: {formatIDR(sp.price)}
-                                        </button>
-                                      );
-                                    })}
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        updateItem(idx, "supplierId", null);
-                                      }}
-                                      className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
-                                        !item.supplierId
-                                          ? "bg-primary/10 border-primary text-primary font-medium"
-                                          : "bg-background border-border hover:bg-accent/50"
-                                      }`}>
-                                      {t("page.purchaseOrder.add.customPrice")}
-                                    </button>
-                                  </>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">
-                                    {t("page.purchaseOrder.add.noSupplierForIngredient")}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  <div className="bg-muted/40 rounded-xl p-5 mt-4">
-                    {itemsLoading ? (
-                      <div className="space-y-3 flex flex-col items-end">
-                        <Skeleton className="h-9 w-36" />
-                        <Skeleton className="h-8 w-48" />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-end space-y-2">
-                        <div className="flex items-center gap-3">
-                          <label className="text-sm text-muted-foreground font-medium">
-                            {t("page.purchaseOrder.add.discount")}
-                          </label>
-                          <Input
-                            placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                            value={discount ? formatIDR(discount) : ""}
-                            onChange={(e) => setDiscount(parseIDR(e.target.value))}
-                            className="h-9 text-sm w-36 text-right"
-                          />
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">
-                            {t("page.purchaseOrder.add.totalPrice")}
-                          </p>
-                          <p className="text-2xl font-bold text-foreground">
-                            Rp {totalAmount.toLocaleString("id-ID")}
-                          </p>
-                        </div>
-                        {discount > 0 && (
-                          <>
-                            <div className="w-full border-t border-border my-1" />
-                            <div className="text-right">
-                              <p className="text-sm font-medium text-red-500">
-                                {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
-                                {discount.toLocaleString("id-ID")}
-                              </p>
-                              <p className="text-xl font-bold text-foreground">
-                                Rp {finalAmount.toLocaleString("id-ID")}
-                              </p>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
+              <OrderItemsCard
+                items={items}
+                suppliers={suppliers}
+                supplierProductsMap={supplierProductsMap}
+                getSuppliersForIngredientName={getSuppliersForIngredientName}
+                unitOptions={unitOptions}
+                discount={discount}
+                totalAmount={totalAmount}
+                finalAmount={finalAmount}
+                additionalCost={additionalCost}
+                overDeliveryTolerance={overDeliveryTolerance}
+                errors={errors}
+                hasDuplicateItems={hasDuplicateItems}
+                itemsLoading={itemsLoading}
+                selectedStore={selectedStore}
+                onAddItem={addItem}
+                onRemoveItem={removeItem}
+                onUpdateItem={updateItem}
+                onDiscountChange={(val) => setDiscount(val)}
+                onAdditionalCostChange={(val) => setAdditionalCost(val)}
+                onOverDeliveryToleranceChange={(val) => setOverDeliveryTolerance(val)}
+                formatIDR={formatIDR}
+                parseIDR={parseIDR}
+                t={t}
+              />
 
               <div className="sticky bottom-4 flex justify-between items-center gap-4 bg-card border border-border/60 shadow-lg rounded-xl p-4 backdrop-blur-sm">
                 <Button
@@ -1027,7 +747,11 @@ const AddPurchaseOrder = () => {
                       <Skeleton className="h-4 w-28 ml-auto" />
                     ) : (
                       <p className="text-sm font-semibold">
-                        Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
+                        Rp{" "}
+                        {(discount > 0 || additionalCost > 0
+                          ? finalAmount
+                          : totalAmount
+                        ).toLocaleString("id-ID")}
                       </p>
                     )}
                   </div>
@@ -1168,6 +892,22 @@ const AddPurchaseOrder = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+
+      <Modal
+        type="success"
+        open={showSuccessModal}
+        onOpenChange={setShowSuccessModal}
+        title={t("common.success")}
+        description={t("page.purchaseOrder.add.toast.poCreated")}
+        onConfirm={() => {
+          if (isSuperAdmin && selectedStore) {
+            const storeName =
+              locations.find((l) => String(l.id) === String(selectedStore))?.name || "";
+            setActiveStore(selectedStore, storeName);
+          }
+          navigate("/purchase-order");
+        }}
       />
     </div>
   );

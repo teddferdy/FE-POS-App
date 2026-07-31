@@ -306,15 +306,18 @@ const AddStockTransfer = () => {
                           />
                         </td>
                         <td className="px-4 py-3 w-[100px]">
-                          <select
+                          <Combobox
+                            options={[
+                              { value: "pcs", label: "pcs" },
+                              { value: "kg", label: "kg" },
+                              { value: "liter", label: "liter" },
+                              { value: "box", label: "box" }
+                            ]}
                             value={item.unit}
-                            onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                            className="w-full h-9 px-2 rounded-lg border border-input bg-background text-xs">
-                            <option value="pcs">pcs</option>
-                            <option value="kg">kg</option>
-                            <option value="liter">liter</option>
-                            <option value="box">box</option>
-                          </select>
+                            onChange={(val) => updateItem(idx, "unit", val)}
+                            placeholder="pcs"
+                            searchPlaceholder={t("common.search")}
+                          />
                         </td>
                         <td className="px-4 py-3 min-w-[140px]">
                           <Input

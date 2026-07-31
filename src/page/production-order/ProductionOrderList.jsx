@@ -28,6 +28,7 @@ import {
 } from "@/services/production-order";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
@@ -404,20 +405,16 @@ const ProductionOrderList = () => {
                   emptyIcon={ClipboardList}
                   toolbar={
                     <div className="flex items-center gap-3">
-                      <select
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("page.productionOrder.list.filterAll") },
+                          ...Object.entries(statusConfig).map(([k, v]) => ({ value: k, label: v.label }))
+                        ]}
                         value={statusFilter}
-                        onChange={(e) => {
-                          setStatusFilter(e.target.value);
-                          setPage(1);
-                        }}
-                        className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                        <option value="all">{t("page.productionOrder.list.filterAll")}</option>
-                        {Object.entries(statusConfig).map(([k, v]) => (
-                          <option key={k} value={k}>
-                            {v.label}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                        placeholder={t("page.productionOrder.list.filterAll")}
+                        searchPlaceholder="Cari..."
+                      />
                       <SearchInput
                         value={search}
                         onChange={(val) => { setSearch(val); setPage(1); }}

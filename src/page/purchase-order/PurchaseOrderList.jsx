@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState, useEffect } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { createPortal } from "react-dom";
@@ -23,7 +24,10 @@ import {
   FileEdit,
   CircleDollarSign,
   Ban,
-  Trash2
+  Trash2,
+  ChevronRight,
+  X,
+  Send
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -35,6 +39,7 @@ import {
   cancelPurchaseOrder,
   deletePurchaseOrder,
   returnPurchaseOrder,
+  sendToSupplierPurchaseOrder,
   uploadPurchaseOrderExcel,
   downloadPurchaseOrderExcel
 } from "@/services/purchase-order";
@@ -44,6 +49,7 @@ import { recordPayment } from "@/services/purchase-payment";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -57,8 +63,63 @@ import {
 } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+
+const IconAction = ({ label, children, ...props }) => (
+  <Tooltip delayDuration={0}>
+    <TooltipTrigger asChild>
+      <Button {...props}>{children}</Button>
+    </TooltipTrigger>
+    <TooltipContent side="top">{label}</TooltipContent>
+  </Tooltip>
+);
+
+const SupplierExpandableRow = ({ supplier, renderSupplierItems }) => {
+  const [open, setOpen] = useState(false);
+  const total = supplier.items.reduce((sum, it) => sum + (it.quantity || 0) * (it.price || 0), 0);
+  return (
+    <div className="border border-border rounded-xl overflow-hidden bg-card shadow-sm hover:shadow-md transition-shadow">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-3 px-5 py-3 text-sm text-foreground hover:bg-accent/20 transition-colors text-left group">
+        <div
+          className={cn(
+            "flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-colors",
+            open
+              ? "bg-primary text-primary-foreground"
+              : "bg-primary/10 text-primary group-hover:bg-primary/20"
+          )}>
+          <ChevronRight
+            size={14}
+            className={cn("transition-transform duration-200", open && "rotate-90")}
+          />
+        </div>
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white shrink-0">
+            <Package size={14} />
+          </div>
+          <div className="min-w-0">
+            <span className="font-semibold text-foreground">{supplier.supplierName}</span>
+            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+              {supplier.items.length} {supplier.items.length > 1 ? "items" : "item"}
+            </span>
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <span className="text-xs text-muted-foreground">Total</span>
+          <div className="text-sm font-semibold text-foreground font-mono">
+            Rp {total.toLocaleString("id-ID")}
+          </div>
+        </div>
+      </button>
+      {open && <div className="px-5 pb-4">{renderSupplierItems(supplier.items)}</div>}
+    </div>
+  );
+};
 
 const PurchaseOrderList = () => {
   const { t } = useTranslation();
@@ -93,6 +154,7 @@ const PurchaseOrderList = () => {
   const [search, setSearch] = useState("");
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState(undefined);
   const [showFilters, setShowFilters] = useState(false);
   const [returModal, setReturModal] = useState(false);
   const [returPo, setReturPo] = useState(null);
@@ -102,6 +164,8 @@ const PurchaseOrderList = () => {
   const [payModal, setPayModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [cancelPoId, setCancelPoId] = useState(null);
+  const [sendModal, setSendModal] = useState(false);
+  const [sendPoId, setSendPoId] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deletePoId, setDeletePoId] = useState(null);
   const [payPo, setPayPo] = useState(null);
@@ -154,16 +218,12 @@ const PurchaseOrderList = () => {
 
   const user = cookie?.user;
   const MENU_KEY = "/purchase-order";
-  const locationParam = storeFilter !== "all" ? storeFilter : user?.store || "";
   const isSuperAdmin = user?.roleType === "super_admin";
+  const locationParam = storeFilter !== "all" ? storeFilter : isSuperAdmin ? "" : user?.store || "";
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-purchase-orders"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData } = useQuery(["locations-purchase-orders"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["purchase-orders", page, limit, search, storeFilter, statusFilter],
@@ -212,6 +272,20 @@ const PurchaseOrderList = () => {
     }
   });
 
+  const sendMutation = useMutation(sendToSupplierPurchaseOrder, {
+    onSuccess: () => {
+      toast.success(t("page.purchaseOrder.list.sendSuccess"));
+      queryClient.invalidateQueries(["purchase-orders"]);
+      setSendModal(false);
+      setSendPoId(null);
+    },
+    onError: (err) => {
+      toast.error(t("common.failed"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
+
   const deleteMutation = useMutation(deletePurchaseOrder, {
     onSuccess: () => {
       toast.success(t("common.success"));
@@ -228,6 +302,89 @@ const PurchaseOrderList = () => {
 
   const orders = data?.data || [];
   const pagination = data?.pagination || {};
+
+  const renderSupplierItems = (items) => {
+    if (items.length === 0) return null;
+    const grandTotal = items.reduce((sum, it) => sum + (it.quantity || 0) * (it.price || 0), 0);
+    return (
+      <div className="rounded-xl border border-border">
+        <table className="w-full text-sm table-fixed">
+          <colgroup>
+            <col className="w-[44%]" />
+            <col className="w-[12%]" />
+            <col className="w-[12%]" />
+            <col className="w-[16%]" />
+            <col className="w-[16%]" />
+          </colgroup>
+          <thead>
+            <tr className="bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-blue-950/20">
+              <th className="text-left px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Item
+              </th>
+              <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Qty
+              </th>
+              <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Satuan
+              </th>
+              <th className="text-right px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Harga
+              </th>
+              <th className="text-right px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Subtotal
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/40">
+            {items.map((it, i) => {
+              const subtotal = (it.quantity || 0) * (it.price || 0);
+              return (
+                <tr
+                  key={it.id || i}
+                  className={cn(
+                    "transition-colors",
+                    i % 2 === 0
+                      ? "bg-white dark:bg-slate-950"
+                      : "bg-slate-50/50 dark:bg-slate-900/50",
+                    "hover:bg-blue-50/50 dark:hover:bg-blue-950/20"
+                  )}>
+                  <td
+                    className="px-4 py-2.5 font-medium text-foreground truncate"
+                    title={it.ingredientName || "-"}>
+                    {it.ingredientName || "-"}
+                  </td>
+                  <td className="px-4 py-2.5 text-center font-medium text-foreground">
+                    {it.quantity || 0}
+                  </td>
+                  <td className="px-4 py-2.5 text-center text-muted-foreground">
+                    {it.unit || "pcs"}
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono text-muted-foreground">
+                    Rp {Number(it.price).toLocaleString("id-ID")}
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono font-semibold text-foreground">
+                    Rp {Number(subtotal).toLocaleString("id-ID")}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="bg-gradient-to-r from-slate-100 to-blue-50/40 dark:from-slate-800 dark:to-blue-950/30 border-t-2 border-border">
+              <td
+                colSpan={4}
+                className="px-4 py-2.5 text-right text-sm font-semibold text-foreground">
+                Grand Total
+              </td>
+              <td className="px-4 py-2.5 text-right font-mono text-sm font-bold text-foreground">
+                Rp {Number(grandTotal).toLocaleString("id-ID")}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    );
+  };
 
   const handleDownloadExcel = async () => {
     try {
@@ -246,21 +403,34 @@ const PurchaseOrderList = () => {
   const columns = [
     {
       header: t("page.purchaseOrder.list.columns.poNumber"),
+      width: 150,
+      stickyLeft: true,
+      stickyLeftOffset: 40,
       render: (po) => (
-        <span className="font-medium text-foreground">{po.orderNumber || `PO-${po.id}`}</span>
+        <span
+          className="font-medium text-foreground truncate block"
+          title={po.orderNumber || `PO-${po.id}`}>
+          {po.orderNumber || `PO-${po.id}`}
+        </span>
       )
     },
     {
       header: t("page.purchaseOrder.list.columns.supplier"),
+      width: 200,
       render: (po) => (
-        <div>
-          <p className="font-medium">{po.supplierNames || "-"}</p>
+        <div className="truncate" title={po.supplierNames || "-"}>
+          <span className="font-medium">{po.supplierNames || "-"}</span>
         </div>
       )
     },
     {
       header: t("page.purchaseOrder.list.columns.pic"),
-      render: (po) => po.picData?.fullName || "-"
+      width: 130,
+      render: (po) => (
+        <span className="truncate block" title={po.picData?.fullName || "-"}>
+          {po.picData?.fullName || "-"}
+        </span>
+      )
     },
     {
       header: t("page.purchaseOrder.list.columns.poDate"),
@@ -279,28 +449,59 @@ const PurchaseOrderList = () => {
     {
       header: t("page.purchaseOrder.list.columns.dueDate"),
       render: (po) => {
-        const isOverdue =
-          po.dueDate &&
-          po.status !== "received" &&
-          po.status !== "cancelled" &&
-          new Date(po.dueDate) < new Date(new Date().toDateString());
+        if (!po.dueDate) return <span className="text-muted-foreground">-</span>;
+        const due = new Date(po.dueDate);
+        const today = new Date(new Date().toDateString());
+        const diffDays = Math.ceil((today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
+        const isOverdue = po.status !== "received" && po.status !== "cancelled" && diffDays > 0;
         return (
-          <span className={isOverdue ? "text-red-600 font-medium" : "text-muted-foreground"}>
-            {po.dueDate
-              ? new Date(po.dueDate).toLocaleDateString("id-ID", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric"
-                })
-              : "-"}
-            {isOverdue && " ⚠️"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={isOverdue ? "text-red-600 font-medium" : "text-muted-foreground"}>
+              {due.toLocaleDateString("id-ID", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+              })}
+            </span>
+            {isOverdue && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                +{diffDays} {t("page.purchaseOrder.list.overdueDays")}
+              </span>
+            )}
+          </div>
         );
       }
     },
     {
       header: t("page.purchaseOrder.list.columns.store"),
       render: (po) => <span className="text-sm">{po.storeData?.name || "-"}</span>
+    },
+    {
+      header: t("page.purchaseOrder.list.columns.paymentMethod"),
+      render: (po) => {
+        const isCredit = po.paymentMethod === "credit";
+        const dpAmount = isCredit
+          ? (Number(po.dpPercent || 0) / 100) * Number(po.finalAmount || po.totalAmount || 0)
+          : 0;
+        const dpPaid = isCredit ? (po.totalPaid || 0) >= dpAmount : false;
+        return (
+          <div className="flex flex-col gap-0.5">
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium w-fit ${
+                isCredit
+                  ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                  : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+              }`}>
+              {isCredit ? "Kredit" : "Tunai"}
+            </span>
+            {isCredit && (
+              <span className="text-[10px] text-muted-foreground">
+                DP {po.dpPercent}%{dpPaid ? " (lunas)" : ""}
+              </span>
+            )}
+          </div>
+        );
+      }
     },
     {
       header: t("page.purchaseOrder.list.columns.total"),
@@ -349,10 +550,9 @@ const PurchaseOrderList = () => {
     },
     {
       header: t("page.purchaseOrder.list.columns.notes"),
+      width: 150,
       render: (po) => (
-        <span
-          className="text-muted-foreground text-xs max-w-[150px] block truncate"
-          title={po.notes || ""}>
+        <span className="text-muted-foreground text-xs truncate block" title={po.notes || ""}>
           {po.notes || "-"}
         </span>
       )
@@ -426,25 +626,32 @@ const PurchaseOrderList = () => {
       stickyRight: true,
       render: (po) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
+          <IconAction
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-muted-foreground"
             onClick={() => navigate(`/purchase-order/detail?id=${po.id}`)}
-            title={t("page.purchaseOrder.list.action.detail")}>
+            label={t("page.purchaseOrder.list.action.detail")}>
             <Eye size={18} />
-          </Button>
+          </IconAction>
           {po.status !== "cancelled" &&
             po.status !== "draft" &&
-            (po.totalPaid || 0) < (po.finalAmount || po.totalAmount || 0) && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-600"
+            (po.totalPaid || 0) < (po.finalAmount || po.totalAmount || 0) &&
+            (po.paymentMethod === "credit" &&
+            (po.totalPaid || 0) <
+              (Number(po.dpPercent || 0) / 100) * Number(po.finalAmount || po.totalAmount || 0) ? (
+              <IconAction
+                variant="default"
+                size="sm"
+                className="h-8 gap-1.5 bg-purple-600 hover:bg-purple-700 text-white"
                 onClick={() => {
                   setPayPo(po);
                   setPayForm({
-                    amount: "",
+                    amount: String(
+                      (Number(po.dpPercent || 0) / 100) *
+                        Number(po.finalAmount || po.totalAmount || 0) -
+                        (po.totalPaid || 0)
+                    ),
                     paymentDate: undefined,
                     paymentMethod: "cash",
                     reference: "",
@@ -452,17 +659,39 @@ const PurchaseOrderList = () => {
                   });
                   setPayModal(true);
                 }}
-                title={t("page.purchaseOrder.list.action.pay")}>
+                label={t("page.purchaseOrder.list.action.payDP")}>
+                <Wallet size={16} />
+                <span className="text-xs font-semibold">DP</span>
+              </IconAction>
+            ) : (
+              <IconAction
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-green-600"
+                onClick={() => {
+                  setPayPo(po);
+                  const remaining =
+                    Number(po.finalAmount || po.totalAmount || 0) - (po.totalPaid || 0);
+                  setPayForm({
+                    amount: String(remaining),
+                    paymentDate: undefined,
+                    paymentMethod: "cash",
+                    reference: "",
+                    notes: ""
+                  });
+                  setPayModal(true);
+                }}
+                label={t("page.purchaseOrder.list.action.pay")}>
                 <Wallet size={18} />
-              </Button>
-            )}
+              </IconAction>
+            ))}
           {po.status === "draft" && (
-            <Button
+            <IconAction
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-blue-600"
               onClick={() => navigate(`/edit-purchase-order?id=${po.id}`)}
-              title={t("page.purchaseOrder.list.action.edit")}>
+              label={t("page.purchaseOrder.list.action.edit")}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="15"
@@ -476,10 +705,10 @@ const PurchaseOrderList = () => {
                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                 <path d="m15 5 4 4" />
               </svg>
-            </Button>
+            </IconAction>
           )}
           {(po.status === "draft" || po.status === "pending") && (
-            <Button
+            <IconAction
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-red-600"
@@ -487,12 +716,12 @@ const PurchaseOrderList = () => {
                 setCancelPoId(po.id);
                 setCancelModal(true);
               }}
-              title={t("common.cancel")}>
+              label={t("page.purchaseOrder.list.action.cancel")}>
               <XCircle size={18} />
-            </Button>
+            </IconAction>
           )}
           {(po.status === "draft" || po.status === "cancelled") && (
-            <Button
+            <IconAction
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-red-600"
@@ -500,18 +729,41 @@ const PurchaseOrderList = () => {
                 setDeletePoId(po.id);
                 setDeleteModal(true);
               }}
-              title={t("common.delete")}>
+              label={t("page.purchaseOrder.list.action.delete")}>
               <Trash2 size={18} />
-            </Button>
+            </IconAction>
           )}
           {po.status === "pending" && (
             <>
-              <Button
+              <IconAction
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-amber-600"
+                onClick={() => {
+                  setSendPoId(po.id);
+                  setSendModal(true);
+                }}
+                label={t("page.purchaseOrder.list.action.sendToSupplier")}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
+                  <path d="M22 2 11 13" />
+                  <path d="m22 2-7 20-4-9-9-4Z" />
+                </svg>
+              </IconAction>
+              <IconAction
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-blue-600"
                 onClick={() => navigate(`/edit-purchase-order?id=${po.id}`)}
-                title={t("page.purchaseOrder.list.action.edit")}>
+                label={t("page.purchaseOrder.list.action.edit")}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="15"
@@ -525,19 +777,19 @@ const PurchaseOrderList = () => {
                   <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                   <path d="m15 5 4 4" />
                 </svg>
-              </Button>
-              <Button
+              </IconAction>
+              <IconAction
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-green-600"
                 onClick={() => navigate(`/add-goods-receipt?poId=${po.id}`)}
-                title={t("page.purchaseOrder.list.action.receive")}>
+                label={t("page.purchaseOrder.list.action.receive")}>
                 <RefreshCw size={18} />
-              </Button>
+              </IconAction>
             </>
           )}
           {(po.status === "ordered" || po.status === "received") && (
-            <Button
+            <IconAction
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-amber-600"
@@ -546,9 +798,9 @@ const PurchaseOrderList = () => {
                 setReturReason("");
                 setReturModal(true);
               }}
-              title={t("page.purchaseOrder.list.action.return")}>
+              label={t("page.purchaseOrder.list.action.return")}>
               <Undo2 size={18} />
-            </Button>
+            </IconAction>
           )}
         </div>
       )
@@ -703,87 +955,209 @@ const PurchaseOrderList = () => {
           {isError ? (
             <AbortController refetch={refetch} />
           ) : (
-            <div data-tour="purchase-order-table" className="mt-6">
-              <DataTable
-                columns={columns}
-                data={orders}
-                isLoading={isLoading || isFetching}
-                emptyMessage={t("page.purchaseOrder.list.empty")}
-                emptyIcon={Package}
-                toolbar={
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                    <>
-                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+            <TooltipProvider>
+              <div data-tour="purchase-order-table" className="mt-6">
+                <DataTable
+                  columns={columns}
+                  data={orders}
+                  isLoading={isLoading || isFetching}
+                  emptyMessage={t("page.purchaseOrder.list.empty")}
+                  emptyIcon={Package}
+                  toolbar={
+                    <div className="flex flex-col gap-4 w-full">
+                      <div className="flex items-center justify-between gap-3">
                         <h4 className="text-base font-semibold text-foreground shrink-0">
                           {t("page.purchaseOrder.list.title")}
                         </h4>
                         <Button
-                          variant="outline"
+                          variant={showFilters ? "default" : "outline"}
                           size="sm"
                           className="gap-2 h-9 lg:hidden"
                           onClick={() => setShowFilters(!showFilters)}>
                           <span className="material-symbols-outlined text-base">filter_list</span>
-                          {showFilters ? "Tutup" : "Filter"}
+                          Filter
                         </Button>
                       </div>
                       <div
-                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                        {isSuperAdmin && (
-                          <StoreFilter
-                            locations={locData?.data || []}
-                            value={storeFilter}
-                            onChange={(v) => {
-                              setGlobalStoreFilter(v);
-                              setPage(1);
-                            }}
-                            isSuperAdmin={isSuperAdmin}
-                            t={t}
-                          />
-                        )}
-                        <select
-                          value={statusFilter}
-                          onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                          <option value="all">{t("common.all")}</option>
-                          <option value="draft">{t("page.purchaseOrder.status.draft")}</option>
-                          <option value="pending">{t("page.purchaseOrder.status.pending")}</option>
-                          <option value="ordered">{t("page.purchaseOrder.status.ordered")}</option>
-                          <option value="received">
-                            {t("page.purchaseOrder.status.received")}
-                          </option>
-                          <option value="cancelled">
-                            {t("page.purchaseOrder.status.cancelled")}
-                          </option>
-                        </select>
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => {
-                            setSearch(val);
-                            setPage(1);
-                          }}
-                          placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
-                          isLoading={isFetching}
-                        />
+                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-col sm:flex-row sm:items-end gap-3 w-full`}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 flex-1 w-full">
+                          {isSuperAdmin && (
+                            <div className="flex flex-col gap-1.5">
+                              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Store
+                              </label>
+                              <StoreFilter
+                                locations={locData?.data || []}
+                                value={storeFilter}
+                                onChange={(v) => {
+                                  setGlobalStoreFilter(v);
+                                  setPage(1);
+                                }}
+                                isSuperAdmin={isSuperAdmin}
+                                t={t}
+                              />
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              {t("page.purchaseOrder.list.columns.status")}
+                            </label>
+                            <Combobox
+                              options={[
+                                { value: "all", label: t("common.all") },
+                                { value: "draft", label: t("page.purchaseOrder.status.draft") },
+                                { value: "pending", label: t("page.purchaseOrder.status.pending") },
+                                { value: "ordered", label: t("page.purchaseOrder.status.ordered") },
+                                {
+                                  value: "received",
+                                  label: t("page.purchaseOrder.status.received")
+                                },
+                                {
+                                  value: "cancelled",
+                                  label: t("page.purchaseOrder.status.cancelled")
+                                }
+                              ]}
+                              value={statusFilter}
+                              onChange={(val) => {
+                                setStatusFilter(val);
+                                setPage(1);
+                              }}
+                              placeholder={t("common.all")}
+                              searchPlaceholder={t("common.all")}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              {t("page.purchaseOrder.list.columns.poDate")}
+                            </label>
+                            <DatePicker
+                              date={dateFilter}
+                              setDate={(date) => {
+                                setDateFilter(date);
+                                setPage(1);
+                              }}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              Cari
+                            </label>
+                            <SearchInput
+                              value={search}
+                              onChange={(val) => {
+                                setSearch(val);
+                                setPage(1);
+                              }}
+                              placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
+                              isLoading={isFetching}
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </>
-                  </div>
-                }
-                pagination={{
-                  page,
-                  totalPages,
-                  total,
-                  onPageChange: setPage,
-                  pageSize: limit,
-                  onPageSizeChange: (v) => {
-                    setLimit(v);
-                    setPage(1);
+                    </div>
                   }
-                }}
-              />
-            </div>
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
+                  }}
+                  renderExpandedRow={(po) => {
+                    const items = po.items || [];
+                    const supplierMap = {};
+                    items.forEach((it) => {
+                      const sid = it.supplier;
+                      if (!sid) return;
+                      if (!supplierMap[sid]) {
+                        supplierMap[sid] = {
+                          supplierId: sid,
+                          supplierName: it.supplierData?.name || `Supplier #${sid}`,
+                          items: []
+                        };
+                      }
+                      supplierMap[sid].items.push(it);
+                    });
+                    const suppliers = Object.values(supplierMap);
+
+                    if (suppliers.length === 0) {
+                      return (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          Tidak ada item
+                        </p>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-2">
+                        {suppliers.map((sup) => (
+                          <SupplierExpandableRow
+                            key={sup.supplierId}
+                            supplier={sup}
+                            renderSupplierItems={renderSupplierItems}
+                          />
+                        ))}
+                      </div>
+                    );
+                  }}
+                  getRowCanExpand={(po) => (po.items || []).length > 0}
+                />
+              </div>
+
+              <div className="mt-4 rounded-xl border border-border bg-card p-4">
+                <h4 className="text-sm font-semibold text-foreground mb-1">
+                  {t("page.purchaseOrder.list.legend.title")}
+                </h4>
+                <p className="text-xs text-muted-foreground mb-3">
+                  {t("page.purchaseOrder.list.legend.description")}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                  {[
+                    { icon: <Eye size={15} />, label: t("page.purchaseOrder.list.legend.detail") },
+                    { icon: <Wallet size={15} />, label: t("page.purchaseOrder.list.legend.pay") },
+                    {
+                      icon: <Wallet size={15} className="text-purple-600" />,
+                      label: t("page.purchaseOrder.list.legend.payDP")
+                    },
+                    {
+                      icon: <Undo2 size={15} />,
+                      label: t("page.purchaseOrder.list.legend.return")
+                    },
+                    {
+                      icon: <RefreshCw size={15} />,
+                      label: t("page.purchaseOrder.list.legend.receive")
+                    },
+                    {
+                      icon: <XCircle size={15} />,
+                      label: t("page.purchaseOrder.list.legend.cancel")
+                    },
+                    {
+                      icon: <Trash2 size={15} />,
+                      label: t("page.purchaseOrder.list.legend.delete")
+                    },
+                    {
+                      icon: <Send size={15} />,
+                      label: t("page.purchaseOrder.list.legend.sendToSupplier")
+                    },
+                    {
+                      icon: <FileEdit size={15} />,
+                      label: t("page.purchaseOrder.list.legend.edit")
+                    }
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/60 bg-muted/40 text-xs text-muted-foreground">
+                      <span className="shrink-0">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TooltipProvider>
           )}
 
           <div>
@@ -1062,167 +1436,254 @@ const PurchaseOrderList = () => {
       {payModal &&
         payPo &&
         createPortal(
-          <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
-            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md max-h-[90vh] overflow-y-auto">
-              <div className="px-6 py-4 border-b border-border">
-                <h3 className="text-lg font-semibold">
-                  {t("page.purchaseOrder.detail.recordPaymentTitle")}
-                </h3>
-              </div>
-              <div className="p-6 space-y-5">
-                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.purchaseOrder.list.payInfo.poNumber")}
-                    </p>
-                    <p className="font-medium">{payPo.orderNumber || `PO-${payPo.id}`}</p>
+          (() => {
+            const isCredit = payPo.paymentMethod === "credit";
+            const dpTotal = isCredit
+              ? (Number(payPo.dpPercent || 0) / 100) *
+                Number(payPo.finalAmount || payPo.totalAmount || 0)
+              : 0;
+            const isDpPayment = isCredit && (payPo.totalPaid || 0) < dpTotal;
+
+            return (
+              <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
+                <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+                  <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                    <h3 className="text-base font-bold">
+                      {t("page.purchaseOrder.detail.recordPaymentTitle")}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      {isDpPayment ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-600 text-white">
+                          DP {payPo.dpPercent}%
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border border-green-300 text-green-600 bg-green-50 dark:bg-green-950/30 dark:border-green-700">
+                          {t("page.purchaseOrder.add.paymentMethodCash")}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPayModal(false);
+                          setPayPo(null);
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+                        <X size={18} />
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.purchaseOrder.list.payInfo.supplier")}
-                    </p>
-                    <p className="font-medium">{payPo.supplierData?.name || "-"}</p>
+                  <div className="p-6 space-y-5">
+                    <div className="bg-muted/40 rounded-xl p-4 border border-border/50">
+                      <div className="grid grid-cols-2 gap-y-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-0.5">
+                            {t("page.purchaseOrder.list.payInfo.poNumber")}
+                          </p>
+                          <p className="text-sm font-semibold">
+                            {payPo.orderNumber || `PO-${payPo.id}`}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-0.5">
+                            {t("page.purchaseOrder.list.payInfo.supplier")}
+                          </p>
+                          <p className="text-sm font-semibold">
+                            {payPo.supplierNames || payPo.items?.[0]?.supplierData?.name || "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-0.5">
+                            {t("page.purchaseOrder.list.payInfo.total")}
+                          </p>
+                          <p className="text-sm font-semibold">
+                            Rp{" "}
+                            {Number(payPo.finalAmount || payPo.totalAmount || 0).toLocaleString(
+                              "id-ID"
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-0.5">
+                            {t("page.purchaseOrder.list.payInfo.remaining")}
+                          </p>
+                          <p className="text-sm font-semibold text-red-500">
+                            Rp{" "}
+                            {Number(
+                              (payPo.finalAmount || payPo.totalAmount || 0) - (payPo.totalPaid || 0)
+                            ).toLocaleString("id-ID")}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {isDpPayment && (
+                      <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-xl p-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-purple-200 dark:bg-purple-700 flex items-center justify-center">
+                            <span className="text-xs font-bold text-purple-700 dark:text-purple-200">
+                              DP
+                            </span>
+                          </div>
+                          <p className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                            {t("page.purchaseOrder.detail.dpPaymentTitle")}
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs text-purple-600 dark:text-purple-400">
+                          <div>
+                            <span className="text-purple-500 dark:text-purple-500">
+                              DP {payPo.dpPercent}%
+                            </span>
+                            <p className="font-semibold text-purple-700 dark:text-purple-300">
+                              Rp {Number(dpTotal).toLocaleString("id-ID")}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-purple-500 dark:text-purple-500">
+                              {t("page.purchaseOrder.detail.remainingBill")}
+                            </span>
+                            <p className="font-semibold text-purple-700 dark:text-purple-300">
+                              Rp{" "}
+                              {Number(
+                                Number(payPo.finalAmount || payPo.totalAmount || 0) - dpTotal
+                              ).toLocaleString("id-ID")}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-background rounded-xl border border-border p-4 space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium flex items-center gap-1">
+                          {isDpPayment
+                            ? t("page.purchaseOrder.detail.dpPaymentAmount")
+                            : t("page.purchaseOrder.detail.paymentAmount")}
+                          <span className="text-destructive">*</span>
+                        </Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium z-10">
+                            Rp
+                          </span>
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="0"
+                            disabled
+                            value={
+                              payForm.amount ? Number(payForm.amount).toLocaleString("id-ID") : ""
+                            }
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^0-9]/g, "");
+                              setPayForm({ ...payForm, amount: raw ? Number(raw) : "" });
+                            }}
+                            className="pl-10 h-12 text-base bg-muted/50 cursor-not-allowed"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">
+                            {t("page.purchaseOrder.detail.paymentDate")}
+                          </Label>
+                          <DatePicker
+                            date={payForm.paymentDate}
+                            setDate={(date) => setPayForm({ ...payForm, paymentDate: date })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">
+                            {t("page.purchaseOrder.detail.paymentMethod")}
+                          </Label>
+                          <Select
+                            value={payForm.paymentMethod}
+                            onValueChange={(value) =>
+                              setPayForm({ ...payForm, paymentMethod: value })
+                            }>
+                            <SelectTrigger className="h-11">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="z-[90]">
+                              <SelectItem value="cash">
+                                {t("page.purchaseOrder.paymentMethod.cash")}
+                              </SelectItem>
+                              <SelectItem value="transfer">
+                                {t("page.purchaseOrder.paymentMethod.transfer")}
+                              </SelectItem>
+                              <SelectItem value="giro">
+                                {t("page.purchaseOrder.paymentMethod.giro")}
+                              </SelectItem>
+                              <SelectItem value="other">
+                                {t("page.purchaseOrder.paymentMethod.other")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <hr className="border-t border-border -mx-4" />
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">
+                            {t("page.purchaseOrder.detail.reference")}
+                          </Label>
+                          <Input
+                            placeholder={t("page.purchaseOrder.detail.referencePlaceholder")}
+                            value={payForm.reference}
+                            onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })}
+                            className="h-11"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">
+                            {t("page.purchaseOrder.detail.notes")}
+                          </Label>
+                          <Input
+                            placeholder={t("page.purchaseOrder.detail.notesPlaceholder")}
+                            value={payForm.notes}
+                            onChange={(e) => setPayForm({ ...payForm, notes: e.target.value })}
+                            className="h-11"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.purchaseOrder.list.payInfo.total")}
-                    </p>
-                    <p className="font-medium">
-                      Rp{" "}
-                      {Number(payPo.finalAmount || payPo.totalAmount || 0).toLocaleString("id-ID")}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.purchaseOrder.list.payInfo.remaining")}
-                    </p>
-                    <p className="font-medium text-red-500">
-                      Rp{" "}
-                      {Number(
-                        (payPo.finalAmount || payPo.totalAmount || 0) - (payPo.totalPaid || 0)
-                      ).toLocaleString("id-ID")}
-                    </p>
-                  </div>
-                </div>
-                <hr className="border-t border-border" />
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {t("page.purchaseOrder.detail.paymentAmount")}{" "}
-                    <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                      Rp
-                    </span>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0"
-                      value={payForm.amount ? Number(payForm.amount).toLocaleString("id-ID") : ""}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^0-9]/g, "");
-                        setPayForm({ ...payForm, amount: raw ? Number(raw) : "" });
+                  <div className="px-6 py-4 border-t border-border flex justify-end gap-3">
+                    <Button
+                      className="h-11 px-6 min-w-[120px]"
+                      onClick={() => {
+                        if (!payForm.amount || Number(payForm.amount) <= 0) {
+                          toast.error(t("page.purchaseOrder.detail.validation.paymentRequired"));
+                          return;
+                        }
+                        payMutation.mutate({
+                          purchaseOrder: payPo.id,
+                          supplier: payPo.items?.[0]?.supplier,
+                          amount: Number(payForm.amount),
+                          paymentDate: payForm.paymentDate
+                            ? format(payForm.paymentDate, "yyyy-MM-dd")
+                            : format(new Date(), "yyyy-MM-dd"),
+                          paymentMethod: payForm.paymentMethod,
+                          reference: payForm.reference,
+                          notes: payForm.notes
+                        });
                       }}
-                      className="pl-10 h-11 text-base"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      {t("page.purchaseOrder.detail.paymentDate")}
-                    </Label>
-                    <DatePicker
-                      date={payForm.paymentDate}
-                      setDate={(date) => setPayForm({ ...payForm, paymentDate: date })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      {t("page.purchaseOrder.detail.paymentMethod")}
-                    </Label>
-                    <Select
-                      value={payForm.paymentMethod}
-                      onValueChange={(value) => setPayForm({ ...payForm, paymentMethod: value })}>
-                      <SelectTrigger className="h-11">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="z-[90]">
-                        <SelectItem value="cash">
-                          {t("page.purchaseOrder.paymentMethod.cash")}
-                        </SelectItem>
-                        <SelectItem value="transfer">
-                          {t("page.purchaseOrder.paymentMethod.transfer")}
-                        </SelectItem>
-                        <SelectItem value="giro">
-                          {t("page.purchaseOrder.paymentMethod.giro")}
-                        </SelectItem>
-                        <SelectItem value="other">
-                          {t("page.purchaseOrder.paymentMethod.other")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <hr className="border-t border-border" />
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      {t("page.purchaseOrder.detail.reference")}
-                    </Label>
-                    <Input
-                      placeholder={t("page.purchaseOrder.detail.referencePlaceholder")}
-                      value={payForm.reference}
-                      onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })}
-                      className="h-11"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      {t("page.purchaseOrder.detail.notes")}
-                    </Label>
-                    <Input
-                      placeholder={t("page.purchaseOrder.detail.notesPlaceholder")}
-                      value={payForm.notes}
-                      onChange={(e) => setPayForm({ ...payForm, notes: e.target.value })}
-                      className="h-11"
-                    />
+                      disabled={payMutation.isLoading}>
+                      {payMutation.isLoading ? (
+                        <span className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          {t("common.processing")}
+                        </span>
+                      ) : (
+                        t("common.save")
+                      )}
+                    </Button>
                   </div>
                 </div>
               </div>
-              <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setPayModal(false);
-                    setPayPo(null);
-                  }}>
-                  {t("common.cancel")}
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (!payForm.amount || Number(payForm.amount) <= 0) {
-                      toast.error(t("page.purchaseOrder.detail.validation.paymentRequired"));
-                      return;
-                    }
-                    payMutation.mutate({
-                      purchaseOrder: payPo.id,
-                      supplier: payPo.supplier,
-                      amount: Number(payForm.amount),
-                      paymentDate: payForm.paymentDate
-                        ? format(payForm.paymentDate, "yyyy-MM-dd")
-                        : format(new Date(), "yyyy-MM-dd"),
-                      paymentMethod: payForm.paymentMethod,
-                      reference: payForm.reference,
-                      notes: payForm.notes
-                    });
-                  }}
-                  disabled={payMutation.isLoading}>
-                  {payMutation.isLoading ? t("common.processing") : t("common.save")}
-                </Button>
-              </div>
-            </div>
-          </div>,
+            );
+          })(),
           document.body
         )}
 
@@ -1254,6 +1715,41 @@ const PurchaseOrderList = () => {
                   onClick={() => cancelMutation.mutate(cancelPoId)}
                   disabled={cancelMutation.isLoading}>
                   {cancelMutation.isLoading ? t("common.processing") : t("common.yes")}
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+      {sendModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
+            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-sm">
+              <div className="px-6 py-4 border-b border-border">
+                <h3 className="text-lg font-semibold">
+                  {t("page.purchaseOrder.list.sendConfirmTitle")}
+                </h3>
+              </div>
+              <div className="p-6">
+                <p className="text-muted-foreground">
+                  {t("page.purchaseOrder.list.sendConfirmBody")}
+                </p>
+              </div>
+              <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSendModal(false);
+                    setSendPoId(null);
+                  }}>
+                  {t("common.no")}
+                </Button>
+                <Button
+                  variant="default"
+                  className="bg-amber-600 hover:bg-amber-700"
+                  onClick={() => sendMutation.mutate(sendPoId)}
+                  disabled={sendMutation.isLoading}>
+                  {sendMutation.isLoading ? t("common.processing") : t("common.yes")}
                 </Button>
               </div>
             </div>

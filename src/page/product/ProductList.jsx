@@ -605,18 +605,21 @@ const ProductList = () => {
                         isSuperAdmin={isSuperAdmin}
                         t={t}
                       />
-                      <select
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("common.all") },
+                          { value: "active", label: t("common.active") },
+                          { value: "inactive", label: t("common.inactive") },
+                          { value: "draft", label: t("common.draft") }
+                        ]}
                         value={statusFilter}
-                        onChange={(e) => {
-                          setStatusFilter(e.target.value);
+                        onChange={(v) => {
+                          setStatusFilter(v);
                           setPage(1);
                         }}
-                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                        <option value="all">{t("common.all")}</option>
-                        <option value="active">{t("common.active")}</option>
-                        <option value="inactive">{t("common.inactive")}</option>
-                        <option value="draft">{t("common.draft")}</option>
-                      </select>
+                        placeholder={t("common.all")}
+                        searchPlaceholder="Cari status..."
+                      />
                       <SearchInput
                         value={search}
                         onChange={(val) => {
@@ -626,40 +629,34 @@ const ProductList = () => {
                         placeholder={t("page.product.list.searchSku")}
                         isLoading={isFetching}
                       />
-                      <select
+                      <Combobox
+                        options={[
+                          { value: "", label: `${t("common.all")} ${t("page.product.table.category")}` },
+                          ...categories.map((cat) => ({ value: cat.name, label: cat.name }))
+                        ]}
                         value={categoryFilter}
-                        onChange={(e) => {
-                          setCategoryFilter(e.target.value);
+                        onChange={(v) => {
+                          setCategoryFilter(v);
                           setPage(1);
                         }}
-                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                        <option value="">
-                          {t("common.all")} {t("page.product.table.category")}
-                        </option>
-                        {categories.map((cat) => (
-                          <option key={cat.id} value={cat.name}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
-                      <select
+                        placeholder={`${t("common.all")} ${t("page.product.table.category")}`}
+                        searchPlaceholder="Cari kategori..."
+                      />
+                      <Combobox
+                        options={[
+                          { value: "", label: t("page.product.list.filter.newest") },
+                          { value: "price-asc", label: t("page.product.list.filter.priceLowHigh") },
+                          { value: "price-desc", label: t("page.product.list.filter.priceHighLow") },
+                          { value: "stock-asc", label: t("page.product.list.filter.stockLow") }
+                        ]}
                         value={sortFilter}
-                        onChange={(e) => {
-                          setSortFilter(e.target.value);
+                        onChange={(v) => {
+                          setSortFilter(v);
                           setPage(1);
                         }}
-                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                        <option value="">{t("page.product.list.filter.newest")}</option>
-                        <option value="price-asc">
-                          {t("page.product.list.filter.priceLowHigh")}
-                        </option>
-                        <option value="price-desc">
-                          {t("page.product.list.filter.priceHighLow")}
-                        </option>
-                        <option value="stock-asc">
-                          {t("page.product.list.filter.stockLow")}
-                        </option>
-                      </select>
+                        placeholder={t("page.product.list.filter.newest")}
+                        searchPlaceholder="Cari..."
+                      />
                     </div>
                   </>
                 </div>

@@ -12,6 +12,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import { editTaxConfig, getTaxConfigById } from "@/services/tax-config";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
@@ -229,16 +230,13 @@ const EditTaxConfig = () => {
                       {t("page.taxConfig.form.type")}{" "}
                       <span className="text-destructive">*</span>
                     </FormLabel>
-                    <select
+                    <Combobox
                       value={field.value}
                       onChange={field.onChange}
-                      className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
-                      {taxTypes.map((t) => (
-                        <option key={t.value} value={t.value}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
+                      placeholder={t("page.taxConfig.form.type")}
+                      searchPlaceholder={t("page.taxConfig.form.type")}
+                      options={taxTypes}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -271,17 +269,16 @@ const EditTaxConfig = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("page.taxConfig.form.store")}</FormLabel>
-                      <select
+                      <Combobox
                         value={field.value}
                         onChange={field.onChange}
-                        className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
-                        <option value="">{t("page.taxConfig.form.allStores")}</option>
-                        {locations.map((loc) => (
-                          <option key={loc.id} value={loc.id}>
-                            {loc.name}
-                          </option>
-                        ))}
-                      </select>
+                        placeholder={t("page.taxConfig.form.allStores")}
+                        searchPlaceholder={t("page.taxConfig.form.store")}
+                        options={[
+                          { value: "", label: t("page.taxConfig.form.allStores") },
+                          ...locations.map((loc) => ({ value: loc.id, label: loc.name })),
+                        ]}
+                      />
                       <p className="text-xs text-muted-foreground">
                         {t("page.taxConfig.form.storeHint")}
                       </p>

@@ -10,6 +10,7 @@ import { Save, FileEdit, Info, X } from "lucide-react";
 import { toast } from "sonner";
 import { getDriverById, updateDriver } from "@/services/delivery";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
@@ -192,13 +193,17 @@ const EditDriver = () => {
                 <label className="text-sm font-medium text-foreground">
                   {t("page.delivery.driver.form.status")}
                 </label>
-                <select
-                  {...form.register("status")}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                  <option value="active">{t("page.delivery.driver.status.active")}</option>
-                  <option value="inactive">{t("page.delivery.driver.status.inactive")}</option>
-                  <option value="draft">{t("page.delivery.driver.status.draft")}</option>
-                </select>
+                <Combobox
+                  value={form.watch("status")}
+                  onChange={(val) => form.setValue("status", val)}
+                  placeholder={t("page.delivery.driver.form.status")}
+                  searchPlaceholder={t("page.delivery.driver.form.status")}
+                  options={[
+                    { value: "active", label: t("page.delivery.driver.status.active") },
+                    { value: "inactive", label: t("page.delivery.driver.status.inactive") },
+                    { value: "draft", label: t("page.delivery.driver.status.draft") }
+                  ]}
+                />
               </div>
             </div>
           </div>

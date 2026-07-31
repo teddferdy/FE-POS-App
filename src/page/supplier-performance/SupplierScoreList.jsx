@@ -19,6 +19,7 @@ import {
   calculateSupplierScore
 } from "@/services/supplierPerformance";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
@@ -275,22 +276,20 @@ const SupplierScoreList = () => {
             className="w-full md:w-64"
           />
           <StoreFilter value={storeFilter} onChange={setGlobalStoreFilter} />
-          <select
+          <Combobox
+            options={periodOptions}
             value={periodFilter}
-            onChange={(e) => setPeriodFilter(e.target.value)}
-            className="h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-            {periodOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <select
+            onChange={setPeriodFilter}
+            placeholder="Filter Period"
+            searchPlaceholder="Cari..."
+          />
+          <Combobox
+            options={gradeOptions}
             value={gradeFilter}
-            onChange={(e) => setGradeFilter(e.target.value)}
-            className="h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-            {gradeOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
+            onChange={setGradeFilter}
+            placeholder="Filter Grade"
+            searchPlaceholder="Cari..."
+          />
         </div>
 
         <DataTable
@@ -340,14 +339,13 @@ const SupplierScoreList = () => {
           </div>
           <div>
             <label className="text-sm font-medium text-foreground">Period</label>
-            <select
+            <Combobox
+              options={periodOptions.filter(o => o.value !== "all")}
               value={calculateForm.period}
-              onChange={(e) => setCalculateForm({ ...calculateForm, period: e.target.value })}
-              className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-              {periodOptions.filter(o => o.value !== "all").map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+              onChange={(v) => setCalculateForm({ ...calculateForm, period: v })}
+              placeholder="Pilih periode"
+              searchPlaceholder="Cari..."
+            />
           </div>
         </div>
       </Modal>

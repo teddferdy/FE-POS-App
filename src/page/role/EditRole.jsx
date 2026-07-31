@@ -6,6 +6,7 @@ import { useCookies } from "react-cookie";
 import { z } from "zod";
 import { toast } from "sonner";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { editRole, getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 import {
@@ -241,14 +242,17 @@ const EditRole = () => {
         : currentStatus === true || currentStatus === undefined
           ? "active"
           : "inactive";
-    editMutation.mutate({
+    
+    const payload = {
       id: Number(id),
       name: name.trim(),
       description: description.trim(),
       status: saveAsDraft ? "draft" : statusStr,
       modifiedBy: user?.id || user?.userId || null,
       accessMenu
-    });
+    };
+
+    editMutation.mutate(normalizePayload(payload, { isFormData: false }));
   };
 
   const toggleGroup = (idx) => {

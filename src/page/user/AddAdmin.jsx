@@ -9,9 +9,11 @@ import { getAllLocation } from "@/services/location";
 import { getAllRole } from "@/services/role";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { normalizePayload } from "@/lib/payload-normalizer";
 
 const AddAdmin = () => {
   const { t } = useTranslation();
@@ -91,16 +93,20 @@ const AddAdmin = () => {
       return;
     }
     setIsSubmitting(true);
-    createMutation.mutate({
+    
+    const payload = normalizePayload({
       userName: form.name,
       email: form.email,
       password: form.password,
       confirmPassword: form.password,
       phoneNumber: form.phoneNumber,
       store: form.locationId ? Number(form.locationId) : null,
+      role: form.role, // Added role field
       userType: "admin",
       status: saveAsDraft ? "draft" : "active"
-    });
+    }, { isFormData: false });
+
+    createMutation.mutate(payload);
   };
 
   return (
@@ -201,48 +207,37 @@ const AddAdmin = () => {
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.user.form.location")}
                   </label>
-                  <div className="relative">
-                    <select
-                      name="locationId"
-                      value={form.locationId}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all appearance-none bg-background text-sm">
-                      <option value="">{t("page.user.form.locationPlaceholder")}</option>
-                      {locations.map((loc) => (
-                        <option key={loc.id || loc._id} value={loc.id || loc._id}>
-                          {loc.name}
-                        </option>
-                      ))}
-                      <option value="all">{t("page.user.form.locationAll")}</option>
-                    </select>
-                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                      expand_more
-                    </span>
-                  </div>
+                  <Combobox
+                    options={[
+                      { value: "", label: t("page.user.form.locationPlaceholder") },
+                      ...locations.map((loc) => ({ value: loc.id || loc._id, label: loc.name })),
+                      { value: "all", label: t("page.user.form.locationAll") }
+                    ]}
+                    value={form.locationId}
+                    onChange={(v) => setForm((prev) => ({ ...prev, locationId: v }))}
+                    placeholder={t("page.user.form.locationPlaceholder")}
+                    searchPlaceholder="Cari lokasi..."
+                  />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.user.form.role")}
                   </label>
-                  <div className="relative">
-                    <select
-                      name="role"
-                      value={form.role}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all appearance-none bg-background text-sm">
-                      <option value="">{t("page.user.form.rolePlaceholder")}</option>
-                      {roles.map((role) => (
-                        <option key={role.id || role._id} value={role.name || role.role}>
-                          {(role.name || role.role)
-                            .replace(/_/g, " ")
-                            .replace(/\b\w/g, (l) => l.toUpperCase())}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                      expand_more
-                    </span>
-                  </div>
+                  <Combobox
+                    options={[
+                      { value: "", label: t("page.user.form.rolePlaceholder") },
+                      ...roles.map((role) => ({
+                        value: role.name || role.role,
+                        label: (role.name || role.role)
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())
+                      }))
+                    ]}
+                    value={form.role}
+                    onChange={(v) => setForm((prev) => ({ ...prev, role: v }))}
+                    placeholder={t("page.user.form.rolePlaceholder")}
+                    searchPlaceholder="Cari role..."
+                  />
                 </div>
               </div>
 

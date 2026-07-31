@@ -89,7 +89,9 @@ const DetailExpense = () => {
                 </>
               ) : (
                 <>
-                  <h1 className="text-2xl font-bold">{item?.description || t("page.expense.detail.fallbackTitle")}</h1>
+                  <h1 className="text-2xl font-bold">
+                    {item?.description || t("page.expense.detail.fallbackTitle")}
+                  </h1>
                   <p className="text-sm text-muted-foreground">
                     {item?.expenseNumber} &mdash; {fmtDate(item?.date)}
                   </p>
@@ -133,7 +135,9 @@ const DetailExpense = () => {
             </div>
           </div>
         ) : !item ? (
-          <p className="text-center text-muted-foreground py-12">{t("page.expense.detail.notFound")}</p>
+          <p className="text-center text-muted-foreground py-12">
+            {t("page.expense.detail.notFound")}
+          </p>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
@@ -259,7 +263,10 @@ const DetailExpense = () => {
                     onClick={() => navigate(`/edit-expense?id=${item.id}`)}>
                     {t("page.expense.detail.editBtn")}
                   </Button>
-                  <Button className="w-full" variant="outline" onClick={() => navigate("/expense-list")}>
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => navigate("/expense-list")}>
                     {t("page.expense.detail.backToList")}
                   </Button>
                 </div>

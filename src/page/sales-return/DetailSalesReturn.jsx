@@ -116,6 +116,12 @@ const DetailSalesReturn = () => {
                   {[
                     [t("page.salesReturn.detail.field.returnNo"), ret.returnNumber],
                     [t("page.salesReturn.detail.field.store"), ret.storeData?.name || "-"],
+                    [
+                      "Refund Amount",
+                      <span className="font-mono font-semibold text-green-600 dark:text-green-400">
+                        Rp {(ret.refundAmount || 0).toLocaleString("id-ID")}
+                      </span>
+                    ],
                     [t("page.salesReturn.detail.field.reason"), ret.reason || "-"],
                     [
                       t("page.salesReturn.detail.field.returnedBy"),
@@ -143,9 +149,11 @@ const DetailSalesReturn = () => {
                 <thead>
                   <tr className="border-b text-left text-muted-foreground">
                     <th className="pb-2">{t("page.salesReturn.detail.table.product")}</th>
+                    <th className="pb-2 text-right">Price</th>
                     <th className="pb-2 text-right">{t("page.salesReturn.detail.table.qty")}</th>
                     <th className="pb-2 text-center">{t("page.salesReturn.detail.table.unit")}</th>
-                    <th className="pb-2">{t("page.salesReturn.detail.table.notes")}</th>
+                    <th className="pb-2 text-right">Total Refund</th>
+                    <th className="pb-2 pl-4">{t("page.salesReturn.detail.table.notes")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -153,14 +161,18 @@ const DetailSalesReturn = () => {
                     ret.items.map((item, i) => (
                       <tr key={i} className="border-b border-muted/20">
                         <td className="py-2">{item.productData?.nameProduct || "-"}</td>
+                        <td className="py-2 text-right font-mono">Rp {(item.price || 0).toLocaleString("id-ID")}</td>
                         <td className="py-2 text-right font-mono">{item.qty}</td>
                         <td className="py-2 text-center">{item.unit || "pcs"}</td>
-                        <td className="py-2">{item.notes || "-"}</td>
+                        <td className="py-2 text-right font-mono font-semibold">
+                          Rp {((item.qty || 0) * (item.price || 0)).toLocaleString("id-ID")}
+                        </td>
+                        <td className="py-2 pl-4">{item.notes || "-"}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="py-4 text-center text-muted-foreground">
+                      <td colSpan={6} className="py-4 text-center text-muted-foreground">
                         {t("page.salesReturn.detail.table.noItems")}
                       </td>
                     </tr>

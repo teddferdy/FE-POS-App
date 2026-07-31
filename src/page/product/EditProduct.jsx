@@ -22,8 +22,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CloudUpload,
-  CheckCircle2,
-  XCircle,
   Check
 } from "lucide-react";
 import { useCookies } from "react-cookie";
@@ -46,6 +44,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { getProductById, editProduct } from "@/services/product";
+import { normalizePayload } from "@/lib/payload-normalizer";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllTaxConfig } from "@/services/tax-config";
 
@@ -56,8 +55,6 @@ import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import UserGuide from "@/components/organism/UserGuide";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import AbortController from "@/components/organism/abort-controller";
-import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
-import { getMissingFields } from "@/lib/validation";
 
 const EditProduct = () => {
   const { t } = useTranslation();
@@ -83,13 +80,13 @@ const EditProduct = () => {
     { value: "porsi", label: t("page.product.form.unit.porsi") }
   ];
 
-  const productFieldLabels = {
-    nameProduct: "Nama Produk",
-    category: "Kategori",
-    price: "Harga",
-    store: "Toko",
-    estimationTime: "Estimasi Waktu"
-  };
+  // const productFieldLabels = {
+  //   nameProduct: "Nama Produk",
+  //   category: "Kategori",
+  //   price: "Harga",
+  //   store: "Toko",
+  //   estimationTime: "Estimasi Waktu"
+  // };
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -101,11 +98,13 @@ const EditProduct = () => {
 
   const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [deleteImageModal, setDeleteImageModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [variantGroups, setVariantGroups] = useState([]);
   const [modifierItems, setModifierItems] = useState([]);
+  const [modifierPickerValue, setModifierPickerValue] = useState("");
   const [priceTiers, setPriceTiers] = useState([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [storePrices, setStorePrices] = useState([]);
@@ -492,7 +491,6 @@ const EditProduct = () => {
 
   const handleNext = () => {
     if (!canGoNext()) {
-      const values = form.getValues();
       let msg =
         currentStep === 1
           ? t("page.product.form.requiredStep1Edit")
@@ -569,52 +567,45 @@ const EditProduct = () => {
     }
 
     setIsSubmitting(true);
-    const payload = new FormData();
-    payload.append("id", productId);
-    payload.append("nameProduct", values.nameProduct);
-    if (values.barcode) payload.append("barcode", values.barcode);
-    if (values.brand) payload.append("brand", values.brand);
-    if (values.sku) payload.append("sku", values.sku);
-    if (values.category) payload.append("category", values.category);
-    if (values.tax) payload.append("tax", values.tax);
-    payload.append("price", values.price);
-    if (values.costPrice) payload.append("costPrice", values.costPrice);
-    if (priceTiers.length > 0) {
-      payload.append("priceTiers", JSON.stringify(priceTiers));
-    }
-    if (values.stock) payload.append("stock", values.stock);
-    if (values.minStock) payload.append("minStock", values.minStock);
-    payload.append("unit", values.unit);
-    payload.append("baseUnit", values.baseUnit);
-    payload.append("conversionFactor", values.conversionFactor || 1);
-    if (values.point) payload.append("point", values.point);
-    if (values.redeemPoints) payload.append("redeemPoints", values.redeemPoints);
-    if (values.estimationTime) payload.append("estimationTime", values.estimationTime);
-    if (values.description) payload.append("description", values.description);
-    payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
-    payload.append("isAvailable", values.isAvailable);
-    payload.append("tipeProduk", values.tipeProduk);
-    payload.append("isOption", !!isOption);
-    payload.append("hasModifiers", !!hasModifiers);
+    const data = {
+      id: productId,
+      nameProduct: values.nameProduct,
+      barcode: values.barcode,
+      brand: values.brand,
+      sku: values.sku,
+      category: values.category,
+      tax: values.tax,
+      price: values.price,
+      costPrice: values.costPrice,
+      priceTiers: priceTiers.length > 0 ? priceTiers : null,
+      stock: values.stock,
+      minStock: values.minStock,
+      unit: values.unit,
+      baseUnit: values.baseUnit,
+      conversionFactor: values.conversionFactor || 1,
+      point: values.point,
+      redeemPoints: values.redeemPoints,
+      estimationTime: values.estimationTime,
+      description: values.description,
+      status: saveAsDraft ? "draft" : values.status ? "active" : "inactive",
+      isAvailable: values.isAvailable,
+      tipeProduk: values.tipeProduk,
+      isOption: !!isOption,
+      hasModifiers: !!hasModifiers,
+      options: isOption && variantGroups.length > 0 ? variantGroups : null,
+      modifiers: hasModifiers && modifierItems.length > 0 ? modifierItems : null,
+      composition: composition.length > 0 ? composition : null,
+      stores: selectedStores,
+      createdBy: user?.id,
+      modifiedBy: user?.id
+    };
 
-    if (isOption && variantGroups.length > 0) {
-      payload.append("options", JSON.stringify(variantGroups));
-    }
-    if (hasModifiers && modifierItems.length > 0) {
-      payload.append("modifiers", JSON.stringify(modifierItems));
-    }
+    if (imageFile) data.image = imageFile;
 
-    if (composition.length > 0) {
-      payload.append("composition", JSON.stringify(composition));
-    }
-
-    if (imageFile) payload.append("image", imageFile);
-
-    payload.append("stores", JSON.stringify(selectedStores));
-    if (user?.id) {
-      payload.append("createdBy", user.id);
-      payload.append("modifiedBy", user.id);
-    }
+    const payload = normalizePayload(data, {
+      isFormData: true,
+      jsonFields: ["stores", "options", "modifiers", "priceTiers", "composition"]
+    });
 
     editMutation.mutate(payload);
   };
@@ -846,7 +837,9 @@ const EditProduct = () => {
                                   placeholder={t("page.product.form.categoryPlaceholder")}
                                   searchPlaceholder={t("page.product.form.categorySearch")}
                                 />
-                                <FormDescription>{t("page.product.form.categoryHint")}</FormDescription>
+                                <FormDescription>
+                                  {t("page.product.form.categoryHint")}
+                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -857,17 +850,16 @@ const EditProduct = () => {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>{t("page.product.form.tipeProduk")}</FormLabel>
-                                <select
+                                <Combobox
+                                  options={[
+                                    { value: "menu", label: t("page.product.form.tipeProdukMenu") },
+                                    { value: "bahan_baku", label: t("page.product.form.tipeProdukBahanBaku") }
+                                  ]}
                                   value={field.value}
                                   onChange={field.onChange}
-                                  className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
-                                  <option value="menu">
-                                    {t("page.product.form.tipeProdukMenu")}
-                                  </option>
-                                  <option value="bahan_baku">
-                                    {t("page.product.form.tipeProdukBahanBaku")}
-                                  </option>
-                                </select>
+                                  placeholder={t("page.product.form.tipeProduk")}
+                                  searchPlaceholder="Cari..."
+                                />
                                 <FormMessage />
                                 {noStockOpname && (
                                   <div className="flex items-start gap-2.5 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
@@ -1021,18 +1013,39 @@ const EditProduct = () => {
                           <FormField
                             control={form.control}
                             name="conversionFactor"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
-                                <Input type="number" min="1" {...field} />
-                                <p className="text-xs text-muted-foreground">
-                                  {t("page.product.form.conversionFactorHelper", {
-                                    value: field.value
-                                  })}
-                                </p>
-                                <FormMessage />
-                              </FormItem>
-                            )}
+                            render={({ field }) => {
+                              const unit = form.watch("unit");
+                              const baseUnit = form.watch("baseUnit");
+                              const factor = field.value || 1;
+                              const isSameUnit = unit === baseUnit;
+
+                              // Automatically set to 1 if same unit
+                              useEffect(() => {
+                                if (isSameUnit && field.value !== 1) {
+                                  field.onChange(1);
+                                }
+                              }, [isSameUnit, field.value]);
+
+                              return (
+                                <FormItem>
+                                  <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    {...field}
+                                    disabled={isSameUnit}
+                                    placeholder="1"
+                                  />
+                                  <p className="text-xs font-medium text-primary mt-1.5 flex items-center gap-1.5 bg-primary/5 p-2 rounded-md border border-primary/10">
+                                    <Info size={14} />
+                                    {isSameUnit
+                                      ? t("page.product.form.sameUnitHelper")
+                                      : `1 ${unit || "Satuan"} = ${factor} ${baseUnit || "Satuan Dasar"}`}
+                                  </p>
+                                  <FormMessage />
+                                </FormItem>
+                              );
+                            }}
                           />
                           {isSuperAdmin && (
                             <FormField
@@ -1113,21 +1126,19 @@ const EditProduct = () => {
                                 <div key={c.id} className="bg-muted/30 rounded-lg p-4">
                                   <div className="flex items-center gap-2">
                                     <div className="flex-1">
-                                      <select
+                                      <Combobox
+                                        options={[
+                                          { value: "", label: t("page.product.form.selectIngredient") },
+                                          ...compositionOptions.map((opt, i) => ({
+                                            value: opt.name,
+                                            label: `${opt.name} ${opt.unit ? `(${opt.unit})` : ""}`
+                                          }))
+                                        ]}
                                         value={c.name}
-                                        onChange={(e) =>
-                                          handleCompositionSelect(c.id, e.target.value)
-                                        }
-                                        className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                                        <option value="">
-                                          {t("page.product.form.selectIngredient")}
-                                        </option>
-                                        {compositionOptions.map((opt, i) => (
-                                          <option key={i} value={opt.name}>
-                                            {opt.name} {opt.unit ? `(${opt.unit})` : ""}
-                                          </option>
-                                        ))}
-                                      </select>
+                                        onChange={(v) => handleCompositionSelect(c.id, v)}
+                                        placeholder={t("page.product.form.selectIngredient")}
+                                        searchPlaceholder="Cari bahan..."
+                                      />
                                     </div>
                                     <div className="w-24 shrink-0">
                                       <Input
@@ -1207,61 +1218,89 @@ const EditProduct = () => {
                           <FormField
                             control={form.control}
                             name="price"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>
-                                  {t("page.product.form.price")}{" "}
-                                  <span className="text-destructive">*</span>
-                                </FormLabel>
-                                <div className="relative">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                                    Rp
-                                  </span>
-                                  <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="0"
-                                    className="pl-10"
-                                    value={
-                                      field.value ? Number(field.value).toLocaleString("id-ID") : ""
-                                    }
-                                    onChange={(e) => {
-                                      const raw = e.target.value.replace(/[^0-9]/g, "");
-                                      field.onChange(raw ? Number(raw) : "");
-                                    }}
-                                  />
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
+                            render={({ field }) => {
+                              const costPrice = form.watch("costPrice");
+                              const price = field.value;
+                              const margin =
+                                price && costPrice ? ((price - costPrice) / price) * 100 : 0;
+
+                              return (
+                                <FormItem>
+                                  <FormLabel>
+                                    {t("page.product.form.price")}{" "}
+                                    <span className="text-destructive">*</span>
+                                  </FormLabel>
+                                  <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                                      Rp
+                                    </span>
+                                    <Input
+                                      type="text"
+                                      inputMode="numeric"
+                                      placeholder="0"
+                                      className="pl-10"
+                                      value={
+                                        field.value
+                                          ? Number(field.value).toLocaleString("id-ID")
+                                          : ""
+                                      }
+                                      onChange={(e) => {
+                                        const raw = e.target.value.replace(/[^0-9]/g, "");
+                                        field.onChange(raw ? Number(raw) : "");
+                                      }}
+                                    />
+                                    {margin > 0 && (
+                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                        Margin {margin.toFixed(0)}%
+                                      </span>
+                                    )}
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              );
+                            }}
                           />
                           <FormField
                             control={form.control}
                             name="costPrice"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.costPrice")}</FormLabel>
-                                <div className="relative">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                                    Rp
-                                  </span>
-                                  <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="0"
-                                    className="pl-10"
-                                    value={
-                                      field.value ? Number(field.value).toLocaleString("id-ID") : ""
-                                    }
-                                    onChange={(e) => {
-                                      const raw = e.target.value.replace(/[^0-9]/g, "");
-                                      field.onChange(raw ? Number(raw) : "");
-                                    }}
-                                  />
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
+                            render={({ field }) => {
+                              const price = form.watch("price");
+                              const costPrice = field.value;
+                              const markup =
+                                price && costPrice ? ((price - costPrice) / costPrice) * 100 : 0;
+
+                              return (
+                                <FormItem>
+                                  <FormLabel>{t("page.product.form.costPrice")}</FormLabel>
+                                  <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                                      Rp
+                                    </span>
+                                    <Input
+                                      type="text"
+                                      inputMode="numeric"
+                                      placeholder="0"
+                                      className="pl-10"
+                                      value={
+                                        field.value
+                                          ? Number(field.value).toLocaleString("id-ID")
+                                          : ""
+                                      }
+                                      onChange={(e) => {
+                                        const raw = e.target.value.replace(/[^0-9]/g, "");
+                                        field.onChange(raw ? Number(raw) : "");
+                                      }}
+                                    />
+                                    {markup > 0 && (
+                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                        Markup {markup.toFixed(0)}%
+                                      </span>
+                                    )}
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              );
+                            }}
                           />
                           <FormField
                             control={form.control}
@@ -1687,30 +1726,28 @@ const EditProduct = () => {
                             <div className="space-y-3 mt-4">
                               {compositionOptions.length > 0 && (
                                 <div className="bg-muted/30 rounded-lg p-4">
-                                  <select
-                                    onChange={(e) => {
-                                      const opt = compositionOptions.find(
-                                        (o) => o.name === e.target.value
-                                      );
-                                      if (opt) {
-                                        setModifierItems((prev) => [
-                                          ...prev,
-                                          { id: Date.now(), name: opt.name, price: 0 }
-                                        ]);
-                                        form.setValue("hasModifiers", true);
+                                  <Combobox
+                                    options={compositionOptions.map((opt, i) => ({
+                                      value: opt.name,
+                                      label: `${opt.name} ${opt.unit ? `(${opt.unit})` : ""}`
+                                    }))}
+                                    value={modifierPickerValue}
+                                    onChange={(v) => {
+                                      if (v) {
+                                        const opt = compositionOptions.find((o) => o.name === v);
+                                        if (opt) {
+                                          setModifierItems((prev) => [
+                                            ...prev,
+                                            { id: Date.now(), name: opt.name, price: 0 }
+                                          ]);
+                                          form.setValue("hasModifiers", true);
+                                        }
+                                        setModifierPickerValue("");
                                       }
-                                      e.target.value = "";
                                     }}
-                                    className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                                    <option value="">
-                                      {t("page.product.form.fromStockOpname")}
-                                    </option>
-                                    {compositionOptions.map((opt, i) => (
-                                      <option key={i} value={opt.name}>
-                                        {opt.name} {opt.unit ? `(${opt.unit})` : ""}
-                                      </option>
-                                    ))}
-                                  </select>
+                                    placeholder={t("page.product.form.fromStockOpname")}
+                                    searchPlaceholder="Cari bahan..."
+                                  />
                                 </div>
                               )}
                               {modifierItems.map((mod, modIdx) => (
@@ -1812,7 +1849,7 @@ const EditProduct = () => {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                clearImage();
+                                setDeleteImageModal(true);
                               }}
                               className="absolute top-2 right-2 w-8 h-8 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors">
                               <X size={16} />
@@ -2010,6 +2047,19 @@ const EditProduct = () => {
         title={t("page.product.form.successEditTitle")}
         description={t("page.product.form.successEditDesc")}
         onConfirm={() => navigate("/product-list")}
+      />
+
+      <Modal
+        type="confirm"
+        open={deleteImageModal}
+        onOpenChange={setDeleteImageModal}
+        title={t("page.product.form.deleteImageTitle")}
+        description={t("page.product.form.deleteImageDesc")}
+        confirmText={t("page.product.form.deleteImageConfirm")}
+        onConfirm={() => {
+          setDeleteImageModal(false);
+          clearImage();
+        }}
       />
 
       <Modal

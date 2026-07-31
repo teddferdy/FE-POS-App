@@ -22,6 +22,7 @@ import { uploadPositionExcel } from "@/services/position";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { Combobox } from "@/components/ui/combobox";
 import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
 
@@ -456,26 +457,28 @@ const PositionList = () => {
                         {t("page.position.list.title")}
                       </h4>
                       <div className="flex flex-wrap items-center gap-2">
-                        <select
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("common.all") },
+                            { value: "active", label: t("common.active") },
+                            { value: "inactive", label: t("common.inactive") },
+                            { value: "draft", label: t("common.draft") }
+                          ]}
                           value={statusFilter}
-                          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="all">{t("common.all")}</option>
-                          <option value="active">{t("common.active")}</option>
-                          <option value="inactive">{t("common.inactive")}</option>
-                          <option value="draft">{t("common.draft")}</option>
-                        </select>
-                        <select
+                          onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                          placeholder={t("common.all")}
+                          searchPlaceholder="Cari status..."
+                        />
+                        <Combobox
+                          options={[
+                            { value: "", label: `${t("common.all")} ${t("page.position.table.department")}` },
+                            ...departments.map((dept) => ({ value: dept.name, label: dept.name }))
+                          ]}
                           value={departmentFilter}
-                          onChange={(e) => { setDepartmentFilter(e.target.value); setPage(1); }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="">{t("common.all")} {t("page.position.table.department")}</option>
-                          {departments.map((dept) => (
-                            <option key={dept.id || dept._id} value={dept.name}>
-                              {dept.name}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(v) => { setDepartmentFilter(v); setPage(1); }}
+                          placeholder={`${t("common.all")} ${t("page.position.table.department")}`}
+                          searchPlaceholder="Cari departemen..."
+                        />
                         <SearchInput
                           value={search}
                           onChange={(val) => { setSearch(val); setPage(1); }}

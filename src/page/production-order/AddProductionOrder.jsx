@@ -12,6 +12,7 @@ import {
 } from "@/services/production-order";
 import { getAllProduct } from "@/services/product";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -153,17 +154,16 @@ const AddProductionOrder = () => {
               {t("page.productionOrder.add.labelProduk")}{" "}
               <span className="text-destructive">*</span>
             </Label>
-            <select
+            <Combobox
+              options={[
+                { value: "", label: t("page.productionOrder.add.placeholderPilihProduk") },
+                ...products.map((p) => ({ value: p.id, label: `${p.nameProduct} (${p.sku || "-"})` }))
+              ]}
               value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="">{t("page.productionOrder.add.placeholderPilihProduk")}</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nameProduct} ({p.sku || "-"})
-                </option>
-              ))}
-            </select>
+              onChange={setProductId}
+              placeholder={t("page.productionOrder.add.placeholderPilihProduk")}
+              searchPlaceholder="Cari produk..."
+            />
           </div>
 
           <div className="space-y-2">

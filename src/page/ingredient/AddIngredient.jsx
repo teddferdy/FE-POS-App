@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Save, X, Check, ArrowLeft } from "lucide-react";
-import { addIngredient } from "@/services/ingredient";
+import { addIngredient, getProductNamesByFilters } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllIngredientCategory } from "@/services/ingredientCategory";
 import { getAllLocation } from "@/services/location";
@@ -16,7 +16,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Combobox } from "@/components/ui/combobox";
-import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -49,6 +56,7 @@ const AddIngredient = () => {
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
   const [cancelModal, setCancelModal] = React.useState(false);
+  const [successModal, setSuccessModal] = React.useState(false);
   const [draftModal, setDraftModal] = React.useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = React.useState(false);
   const [missingFieldsList, setMissingFieldsList] = React.useState([]);
@@ -98,30 +106,6 @@ const AddIngredient = () => {
     store: z.string().nullable()
   });
 
-  const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
-    ["suppliers-dropdown", store],
-    () => getAllSupplier({ limit: 999, store: store || undefined, includeProducts: true })
-  );
-  const suppliers = suppliersData?.data || [];
-
-  const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
-    ["ingredient-categories-dropdown"],
-    () => getAllIngredientCategory()
-  );
-  const categories = categoriesData?.data || [];
-
-  const { data: locationsData, isLoading: locationsLoading } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
-  const locations = locationsData?.data || locationsData?.locations || [];
-
-  const dropdownsLoading =
-    suppliersLoading || categoriesLoading || (isSuperAdmin && locationsLoading);
-
   const form = useForm({
     resolver: zodResolver(formSchema),
     mode: "onChange",
@@ -143,34 +127,72 @@ const AddIngredient = () => {
   const watchStore = form.watch("store");
   const watchSupplier = form.watch("supplier");
   const watchCategory = form.watch("category");
+  const watchName = form.watch("name");
   const watchUnit = form.watch("unit");
   const watchBaseUnit = form.watch("baseUnit");
   const watchConversionFactor = form.watch("conversionFactor");
 
-  const selectedSupplier = React.useMemo(
-    () => suppliers.find((s) => String(s.id) === String(watchSupplier)),
-    [suppliers, watchSupplier]
+  const activeStore = isSuperAdmin ? watchStore : store;
+
+  const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
+    ["suppliers-dropdown", activeStore],
+    () => getAllSupplier({ limit: 999, store: activeStore || undefined, includeProducts: true }),
+    { enabled: !!activeStore || !isSuperAdmin }
+  );
+  const suppliers = suppliersData?.data || [];
+
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
+    ["ingredient-categories-dropdown", activeStore, watchSupplier],
+    () => getAllIngredientCategory(),
+    { enabled: (!!activeStore || !isSuperAdmin) && !!watchSupplier }
+  );
+  const categories = categoriesData?.data || [];
+
+  const { data: locationsData, isLoading: locationsLoading } = useQuery(
+    ["locations-all"],
+    () => getAllLocation(),
+    { enabled: isSuperAdmin }
+  );
+  const locations = locationsData?.data || [];
+
+  const { data: productNamesData, isLoading: productNamesLoading } = useQuery(
+    ["ingredient-product-names", activeStore, watchCategory, watchSupplier],
+    () =>
+      getProductNamesByFilters({
+        store: activeStore || undefined,
+        category: watchCategory || undefined,
+        supplier: watchSupplier || undefined
+      }),
+    { enabled: !!activeStore && !!watchSupplier && !!watchCategory }
+  );
+
+  const { data: allSupplierProductsData, isLoading: allSupplierProductsLoading } = useQuery(
+    ["all-supplier-products", activeStore, watchSupplier],
+    () =>
+      getProductNamesByFilters({
+        store: activeStore || undefined,
+        supplier: watchSupplier || undefined
+      }),
+    { enabled: !!activeStore && !!watchSupplier }
   );
 
   const supplierProductOptions = React.useMemo(() => {
-    if (!selectedSupplier?.products) return [];
-    return selectedSupplier.products.map((p) => ({
-      value: p.name,
-      label: p.name
-    }));
-  }, [selectedSupplier]);
+    const products = productNamesData?.data || [];
+    return products.map((p) => {
+      const name = typeof p === "string" ? p : typeof p?.name === "string" ? p.name : "";
+      return { value: name, label: name };
+    });
+  }, [productNamesData]);
 
   const isSupplierDisabled = isSuperAdmin && !watchStore;
-  const isCategoryDisabled = !watchSupplier;
+  const isCategoryDisabled = isSuperAdmin ? !watchStore || !watchSupplier : !watchSupplier;
   const isNameDisabled = !watchCategory;
 
   React.useEffect(() => {
-    if (isSuperAdmin) {
-      form.setValue("supplier", null);
-      form.setValue("category", null);
-      form.setValue("name", "");
-    }
-  }, [watchStore, isSuperAdmin]);
+    form.setValue("supplier", null);
+    form.setValue("category", null);
+    form.setValue("name", "");
+  }, [watchStore]);
 
   React.useEffect(() => {
     form.setValue("category", null);
@@ -194,11 +216,7 @@ const AddIngredient = () => {
 
   const mutation = useMutation(addIngredient, {
     onSuccess: () => {
-      toast.success(t("page.ingredient.add.toastSuccess"), {
-        description: t("page.ingredient.add.toastAddDesc")
-      });
-      queryClient.invalidateQueries(["ingredients"]);
-      navigate("/ingredient");
+      setSuccessModal(true);
     },
     onError: (err) => {
       toast.error(t("page.ingredient.add.toastError"), {
@@ -253,35 +271,35 @@ const AddIngredient = () => {
               <ArrowLeft size={16} />
             </Button>
             <div>
-            <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-              <button
-                onClick={() => navigate("/dashboard-super-admin")}
-                className="hover:text-primary transition-colors">
-                {t("page.ingredient.add.breadcrumbDashboard")}
-              </button>
-              <span>/</span>
-              <button
-                onClick={() => navigate("/ingredient")}
-                className="hover:text-primary transition-colors">
-                {t("page.ingredient.add.breadcrumbIngredient")}
-              </button>
-              <span>/</span>
-              <span className="text-primary font-semibold">
-                {t("page.ingredient.add.breadcrumbAdd")}
-              </span>
-            </nav>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              {t("page.ingredient.add.title")}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.ingredient.add.subtitle")}
-            </p>
+              <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
+                <button
+                  onClick={() => navigate("/dashboard-super-admin")}
+                  className="hover:text-primary transition-colors">
+                  {t("page.ingredient.add.breadcrumbDashboard")}
+                </button>
+                <span>/</span>
+                <button
+                  onClick={() => navigate("/ingredient")}
+                  className="hover:text-primary transition-colors">
+                  {t("page.ingredient.add.breadcrumbIngredient")}
+                </button>
+                <span>/</span>
+                <span className="text-primary font-semibold">
+                  {t("page.ingredient.add.breadcrumbAdd")}
+                </span>
+              </nav>
+              <h2 className="text-2xl font-bold text-foreground tracking-tight">
+                {t("page.ingredient.add.title")}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t("page.ingredient.add.subtitle")}
+              </p>
             </div>
           </div>
           <UserGuide guideKey="add-ingredient" />
         </div>
 
-        {dropdownsLoading ? (
+        {isSuperAdmin && locationsLoading ? (
           <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
             <div className="space-y-6">
               <Skeleton className="h-10 w-full" />
@@ -316,6 +334,7 @@ const AddIngredient = () => {
                           onChange={(v) => field.onChange(v || null)}
                           placeholder={t("page.ingredient.add.selectStorePlaceholder")}
                           searchPlaceholder="Cari toko..."
+                          loading={locationsLoading}
                         />
                         <FormMessage />
                       </FormItem>
@@ -328,7 +347,7 @@ const AddIngredient = () => {
                       {t("page.ingredient.add.sectionInformasi")}
                     </h3>
                     <div className="space-y-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
                         <FormField
                           control={form.control}
                           name="supplier"
@@ -366,6 +385,7 @@ const AddIngredient = () => {
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 {t("page.ingredient.form.categoryLabel")}
+                                <span className="text-destructive">*</span>
                               </FormLabel>
                               <Combobox
                                 options={categories
@@ -382,8 +402,11 @@ const AddIngredient = () => {
                                   "page.ingredient.form.categorySearchPlaceholder"
                                 )}
                                 disabled={isCategoryDisabled}
+                                loading={categoriesLoading}
                               />
-                              <FormDescription>{t("page.ingredient.form.categoryHint")}</FormDescription>
+                              <FormDescription>
+                                {t("page.ingredient.form.categoryHint")}
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -400,7 +423,18 @@ const AddIngredient = () => {
                               <Combobox
                                 options={supplierProductOptions}
                                 value={field.value || ""}
-                                onChange={(v) => field.onChange(v || "")}
+                                onChange={(v) => {
+                                  field.onChange(v || "");
+                                  if (v && allSupplierProductsData?.data) {
+                                    const product = allSupplierProductsData.data.find(
+                                      (p) => p.name?.toLowerCase().trim() === v.toLowerCase().trim()
+                                    );
+                                    if (product) {
+                                      form.setValue("costPrice", product.price || 0);
+                                      form.setValue("unit", product.unit || "pcs");
+                                    }
+                                  }
+                                }}
                                 placeholder={
                                   isNameDisabled
                                     ? t("page.ingredient.form.nameDisabledPlaceholder")
@@ -408,7 +442,7 @@ const AddIngredient = () => {
                                 }
                                 searchPlaceholder={t("page.ingredient.form.nameSearchPlaceholder")}
                                 disabled={isNameDisabled}
-                                loading={suppliersLoading}
+                                loading={productNamesLoading}
                               />
                               <FormMessage />
                             </FormItem>
@@ -416,6 +450,101 @@ const AddIngredient = () => {
                         />
                       </div>
                     </div>
+
+                    {!!watchSupplier && (
+                      <div className="mt-6 border rounded-lg overflow-hidden">
+                        <div className="bg-muted/50 px-4 py-3 border-b">
+                          <p className="text-sm font-semibold text-foreground">
+                            Produk yang Disediakan
+                          </p>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b bg-muted/30">
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground w-8">
+                                  No
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  Nama Produk
+                                </th>
+                                <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                                  Harga
+                                </th>
+                                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                                  Satuan
+                                </th>
+                                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                                  Lead Time
+                                </th>
+                                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                                  Kualitas
+                                </th>
+                                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                                  Min Order
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  Catatan
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {allSupplierProductsLoading ? (
+                                <tr>
+                                  <td
+                                    colSpan={8}
+                                    className="px-3 py-8 text-center text-muted-foreground">
+                                    Loading...
+                                  </td>
+                                </tr>
+                              ) : !allSupplierProductsData?.data?.length ? (
+                                <tr>
+                                  <td
+                                    colSpan={8}
+                                    className="px-3 py-8 text-center text-muted-foreground">
+                                    Tidak ada produk tersedia
+                                  </td>
+                                </tr>
+                              ) : (
+                                allSupplierProductsData.data.map((product, idx) => (
+                                  <tr
+                                    key={product.id || idx}
+                                    className={`border-b last:border-b-0 transition-colors ${
+                                      watchName?.toLowerCase().trim() ===
+                                      product.name?.toLowerCase().trim()
+                                        ? "bg-primary/5"
+                                        : "hover:bg-muted/30"
+                                    }`}>
+                                    <td className="px-3 py-2 text-muted-foreground">{idx + 1}</td>
+                                    <td className="px-3 py-2 font-medium text-foreground">
+                                      {product.name}
+                                    </td>
+                                    <td className="px-3 py-2 text-right font-mono">
+                                      {product.price?.toLocaleString("id-ID") || "-"}
+                                    </td>
+                                    <td className="px-3 py-2 text-center">{product.unit || "-"}</td>
+                                    <td className="px-3 py-2 text-center">
+                                      {product.leadTime
+                                        ? `${product.leadTime} ${product.leadTimeUnit || ""}`
+                                        : "-"}
+                                    </td>
+                                    <td className="px-3 py-2 text-center">
+                                      {product.qualityRating || "-"}
+                                    </td>
+                                    <td className="px-3 py-2 text-center">
+                                      {product.minOrderQty || "-"}
+                                    </td>
+                                    <td className="px-3 py-2 text-muted-foreground max-w-[150px] truncate">
+                                      {product.notes || "-"}
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -432,16 +561,13 @@ const AddIngredient = () => {
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 {t("page.ingredient.form.unitLabel")}
                               </FormLabel>
-                              <select
+                              <Combobox
+                                options={unitOptions}
                                 value={field.value}
-                                onChange={(e) => field.onChange(e.target.value)}
-                                className="w-full h-12 px-3 rounded-md border border-input bg-background text-sm">
-                                {unitOptions.map((o) => (
-                                  <option key={o.value} value={o.value}>
-                                    {o.label}
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={(v) => field.onChange(v)}
+                                placeholder="Pilih unit..."
+                                searchPlaceholder="Cari unit..."
+                              />
                               <FormMessage />
                             </FormItem>
                           )}
@@ -454,16 +580,13 @@ const AddIngredient = () => {
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 {t("page.ingredient.form.baseUnitLabel")}
                               </FormLabel>
-                              <select
+                              <Combobox
+                                options={baseUnitOptions}
                                 value={field.value}
-                                onChange={(e) => field.onChange(e.target.value)}
-                                className="w-full h-12 px-3 rounded-md border border-input bg-background text-sm">
-                                {baseUnitOptions.map((o) => (
-                                  <option key={o.value} value={o.value}>
-                                    {o.label}
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={(v) => field.onChange(v)}
+                                placeholder="Pilih base unit..."
+                                searchPlaceholder="Cari base unit..."
+                              />
                               <FormMessage />
                             </FormItem>
                           )}
@@ -777,6 +900,19 @@ const AddIngredient = () => {
           <Loading fullscreen size="lg" label={t("page.ingredient.form.savingButton")} />
         )}
 
+        <Modal
+          type="confirm"
+          open={successModal}
+          onOpenChange={(o) => !o && setSuccessModal(false)}
+          title={t("page.ingredient.add.toastSuccess")}
+          description={t("page.ingredient.add.toastAddDesc")}
+          confirmText="OK"
+          onConfirm={() => {
+            setSuccessModal(false);
+            queryClient.invalidateQueries(["ingredients"]);
+            navigate("/ingredient");
+          }}
+        />
         <Modal
           type="confirm"
           open={cancelModal}
