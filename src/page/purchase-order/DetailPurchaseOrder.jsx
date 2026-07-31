@@ -180,8 +180,12 @@ export default function DetailPurchaseOrder() {
         id: item.ingredient || item.product,
         ingredient: item.ingredient,
         product: item.product,
+        ingredientName: item.ingredientName,
         name: item.ingredientData?.name || item.productData?.nameProduct || item.ingredientName,
-        maxQty: (item.quantity || 0) - (item.returnedQty || 0),
+        maxQty: Math.max(
+          0,
+          (Number(item.receivedQuantity) || 0) - (Number(item.returnedQty) || 0)
+        ),
         qty: 0,
         unit: item.unit
       }))
@@ -202,6 +206,7 @@ export default function DetailPurchaseOrder() {
         items: selected.map((i) => ({
           productId: i.product,
           ingredient: i.ingredient,
+          ingredientName: i.ingredientName || null,
           qty: Number(i.qty),
           unit: i.unit
         })),
@@ -598,7 +603,7 @@ export default function DetailPurchaseOrder() {
                   <Undo2 size={16} className="text-muted-foreground" />
                   {t("page.purchaseOrder.detail.returns")}
                 </h2>
-                {po.status === "received" && (
+                {(po.status === "received" || po.status === "ordered") && (
                   <Button size="sm" variant="outline" onClick={openReturnModal}>
                     <Plus size={14} className="mr-1" />
                     {t("page.purchaseOrder.detail.addReturn")}
