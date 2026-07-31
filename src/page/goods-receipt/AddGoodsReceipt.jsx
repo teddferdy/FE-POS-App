@@ -382,7 +382,7 @@ const AddGoodsReceipt = () => {
               </div>
             ) : poId ? (
               <>
-                <div className="md:hidden space-y-3">
+                <div className="lg:hidden space-y-3">
                   {items.map((item, idx) => (
                     <div
                       key={idx}
@@ -570,8 +570,10 @@ const AddGoodsReceipt = () => {
                             const landed = poItemLanded[item.purchaseOrderItem] || 0;
                             return landed > 0 ? (
                               <p className="text-[10px] text-emerald-600 mt-1">
-                                {t("page.goodsReceipt.add.table.landed")} + Rp{" "}
-                                {landed.toLocaleString("id-ID")}
+                                <span className="block">
+                                  {t("page.goodsReceipt.add.table.landed")}
+                                </span>
+                                <span className="block">+ Rp {landed.toLocaleString("id-ID")}</span>
                               </p>
                             ) : null;
                           })()}
@@ -593,7 +595,7 @@ const AddGoodsReceipt = () => {
                   ))}
                 </div>
 
-                <div className="hidden md:block overflow-x-auto border rounded-lg">
+                <div className="hidden lg:block overflow-x-auto border rounded-lg">
                   <table className="w-full text-sm min-w-[900px]">
                     <thead>
                       <tr className="bg-muted/60 border-b">
@@ -791,8 +793,12 @@ const AddGoodsReceipt = () => {
                               const landed = poItemLanded[item.purchaseOrderItem] || 0;
                               return landed > 0 ? (
                                 <p className="text-[10px] text-emerald-600 mt-0.5 text-right">
-                                  {t("page.goodsReceipt.add.table.landed")} + Rp{" "}
-                                  {landed.toLocaleString("id-ID")}
+                                  <span className="block">
+                                    {t("page.goodsReceipt.add.table.landed")}
+                                  </span>
+                                  <span className="block">
+                                    + Rp {landed.toLocaleString("id-ID")}
+                                  </span>
                                 </p>
                               ) : null;
                             })()}
