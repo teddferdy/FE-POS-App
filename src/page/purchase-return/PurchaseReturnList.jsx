@@ -4,8 +4,17 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Eye, CheckCircle, XCircle, ClipboardList, Hourglass } from "lucide-react";
+import {
+  Eye,
+  CheckCircle,
+  XCircle,
+  ClipboardList,
+  Hourglass,
+  Filter,
+  RotateCcw
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
 import { canAccess } from "@/utils/permission";
 import {
   getAllPurchaseReturn,
@@ -23,6 +32,7 @@ import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Combobox } from "@/components/ui/combobox";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const statusCfg = {
   pending: {
@@ -49,24 +59,29 @@ const PurchaseReturnList = () => {
   const [search, setSearch] = useState("");
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState(undefined);
+  const [showFilters, setShowFilters] = useState(false);
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-purchase-return"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-purchase-return"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
   const locationParam = storeFilter !== "all" ? storeFilter : undefined;
+  const dateParam = dateFilter ? format(dateFilter, "yyyy-MM-dd") : undefined;
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["purchase-returns", page, limit, search, storeFilter, statusFilter],
+    ["purchase-returns", page, limit, search, storeFilter, statusFilter, dateFilter],
     () =>
       getAllPurchaseReturn({
         page,
         limit,
         search: search || undefined,
         store: locationParam,
-        status: statusFilter !== "all" ? statusFilter : undefined
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        startDate: dateParam,
+        endDate: dateParam
       }),
     { keepPreviousData: true }
   );
@@ -307,48 +322,107 @@ const PurchaseReturnList = () => {
                 isLoading={isLoading || isFetching}
                 emptyMessage={t("page.purchaseReturn.list.emptyMessage")}
                 toolbar={
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                    <>
-                      <h4 className="text-base font-semibold text-foreground">
+                  <div className="flex flex-col gap-4 w-full">
+                    <div className="flex items-center justify-between gap-3">
+                      <h4 className="text-base font-semibold text-foreground shrink-0">
                         {t("page.purchaseReturn.list.title")}
                       </h4>
-                      <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        variant={showFilters ? "default" : "outline"}
+                        size="sm"
+                        className="gap-2 h-9 lg:hidden"
+                        onClick={() => setShowFilters(!showFilters)}>
+                        <Filter size={14} />
+                        {t("page.purchaseReturn.list.filter.title")}
+                      </Button>
+                    </div>
+                    <div
+                      className={`${showFilters ? "flex" : "hidden"} lg:flex flex-col sm:flex-row sm:items-end gap-3 w-full`}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 flex-1 w-full">
                         {isSuperAdmin && (
-                          <StoreFilter
-                            locations={locData?.data || []}
-                            value={storeFilter}
-                            onChange={(v) => {
-                              setGlobalStoreFilter(v);
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              {t("page.purchaseReturn.list.filter.store")}
+                            </label>
+                            <StoreFilter
+                              locations={locData?.data || []}
+                              value={storeFilter}
+                              onChange={(v) => {
+                                setGlobalStoreFilter(v);
+                                setPage(1);
+                              }}
+                              isSuperAdmin={isSuperAdmin}
+                              t={t}
+                            />
+                          </div>
+                        )}
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {t("page.purchaseReturn.list.filter.status")}
+                          </label>
+                          <Combobox
+                            options={[
+                              {
+                                value: "all",
+                                label: t("page.purchaseReturn.list.filter.allStatus")
+                              },
+                              ...Object.keys(statusCfg).map((k) => ({
+                                value: k,
+                                label: t(`page.purchaseReturn.status.${k}`)
+                              }))
+                            ]}
+                            value={statusFilter}
+                            onChange={(val) => {
+                              setStatusFilter(val);
                               setPage(1);
                             }}
-                            isSuperAdmin={isSuperAdmin}
-                            t={t}
+                            placeholder={t("page.purchaseReturn.list.filter.allStatus")}
+                            searchPlaceholder={t("common.search")}
                           />
-                        )}
-                        <Combobox
-                          options={[
-                            { value: "all", label: t("page.purchaseReturn.list.filter.allStatus") },
-                            ...Object.keys(statusCfg).map((k) => ({
-                              value: k,
-                              label: t(`page.purchaseReturn.status.${k}`)
-                            }))
-                          ]}
-                          value={statusFilter}
-                          onChange={(val) => { setStatusFilter(val); setPage(1); }}
-                          placeholder={t("page.purchaseReturn.list.filter.allStatus")}
-                          searchPlaceholder={t("common.search")}
-                        />
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => {
-                            setSearch(val);
-                            setPage(1);
-                          }}
-                          placeholder={t("page.purchaseReturn.list.placeholder.search")}
-                          isLoading={isFetching}
-                        />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {t("page.purchaseReturn.list.filter.date")}
+                          </label>
+                          <DatePicker
+                            date={dateFilter}
+                            setDate={(date) => {
+                              setDateFilter(date);
+                              setPage(1);
+                            }}
+                            placeholder={t("page.purchaseReturn.list.filter.date")}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {t("page.purchaseReturn.list.filter.search")}
+                          </label>
+                          <SearchInput
+                            value={search}
+                            onChange={(val) => {
+                              setSearch(val);
+                              setPage(1);
+                            }}
+                            placeholder={t("page.purchaseReturn.list.placeholder.search")}
+                            isLoading={isFetching}
+                          />
+                        </div>
                       </div>
-                    </>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-10 gap-2 shrink-0"
+                        onClick={() => {
+                          setStatusFilter("all");
+                          setDateFilter(undefined);
+                          setSearch("");
+                          setGlobalStoreFilter("all");
+                          setPage(1);
+                        }}>
+                        <RotateCcw size={14} />
+                        {t("page.purchaseReturn.list.filter.reset")}
+                      </Button>
+                    </div>
                   </div>
                 }
                 pagination={{

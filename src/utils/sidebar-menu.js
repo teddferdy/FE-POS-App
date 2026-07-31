@@ -33,7 +33,6 @@ import {
   ShoppingBag,
   FlaskConical,
   Truck,
-  Users as UsersIcon,
   Megaphone,
   Clock
 } from "lucide-react";
@@ -249,6 +248,7 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.purchaseReturn",
         href: "/purchase-return",
         icon: ShoppingCart,
+        activePaths: ["/purchase-return/detail"],
         actions: ["view"]
       }
     ]
@@ -755,6 +755,7 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.purchaseReturn",
         href: "/purchase-return",
         icon: ShoppingCart,
+        activePaths: ["/purchase-return/detail"],
         actions: ["view"]
       }
     ]
