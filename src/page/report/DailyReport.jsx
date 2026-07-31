@@ -30,7 +30,8 @@ const DailyReport = () => {
     ["daily-report", startDate, endDate],
     () =>
       getDailyReport({
-        date: format(startDate, "yyyy-MM-dd")
+        startDate: format(startDate, "yyyy-MM-dd"),
+        endDate: format(endDate, "yyyy-MM-dd")
       }),
     {}
   );
