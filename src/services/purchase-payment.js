@@ -16,6 +16,7 @@ export const getAllPayments = async (payload = {}) => {
   const params = new URLSearchParams();
   if (payload.page) params.append("page", payload.page);
   if (payload.limit) params.append("limit", payload.limit);
+  if (payload.store) params.append("store", payload.store);
   if (payload.startDate) params.append("startDate", payload.startDate);
   if (payload.endDate) params.append("endDate", payload.endDate);
   if (payload.supplierId) params.append("supplierId", payload.supplierId);

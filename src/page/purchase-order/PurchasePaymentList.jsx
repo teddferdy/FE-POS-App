@@ -6,6 +6,8 @@ import { useCookies } from "react-cookie";
 import { Wallet, Eye } from "lucide-react";
 import { getAllPayments } from "@/services/purchase-payment";
 import { getAllLocation } from "@/services/location";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
+import StoreFilter from "@/components/ui/StoreFilter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
@@ -21,13 +23,16 @@ const PurchasePaymentList = () => {
   const [limit, setLimit] = useState(20);
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const { data: locData } = useQuery(["locations-purchase-payments"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
+  const locationParam = storeFilter !== "all" ? storeFilter : undefined;
+
   const { data, isLoading, isError, refetch } = useQuery(
-    ["purchase-payments", page, limit],
-    () => getAllPayments({ page, limit }),
+    ["purchase-payments", page, limit, storeFilter],
+    () => getAllPayments({ page, limit, store: locationParam }),
     { keepPreviousData: true }
   );
 
@@ -126,7 +131,7 @@ const PurchasePaymentList = () => {
         </nav>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             {t("page.purchasePayment.list.title")}
@@ -135,6 +140,18 @@ const PurchasePaymentList = () => {
             {t("page.purchasePayment.list.description")}
           </p>
         </div>
+        {isSuperAdmin && locData && (
+          <StoreFilter
+            locations={locData?.data || []}
+            value={storeFilter}
+            onChange={(v) => {
+              setGlobalStoreFilter(v);
+              setPage(1);
+            }}
+            isSuperAdmin={isSuperAdmin}
+            t={t}
+          />
+        )}
       </div>
 
       {locData && (locData?.data || []).length === 0 ? (
