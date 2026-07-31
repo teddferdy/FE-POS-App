@@ -3,12 +3,22 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Star, Award, Medal, Diamond, Plus, CheckCircle, Delete, Save, X, Check } from "lucide-react";
+import {
+  Star,
+  Award,
+  Medal,
+  Diamond,
+  Plus,
+  CheckCircle,
+  Delete,
+  Save,
+  X,
+  Check
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import { z } from "zod";
-import { normalizePayload } from "@/lib/payload-normalizer";
 import { addMemberTier } from "@/services/member-tier";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
@@ -385,11 +395,12 @@ const AddMemberTier = () => {
                       {t("page.memberTier.add.tierStatus")}
                     </h3>
                   </div>
-                  <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                    formData.isActive
-                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                  }`}>
+                  <div
+                    className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                      formData.isActive
+                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                    }`}>
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -472,22 +483,26 @@ const AddMemberTier = () => {
               </div>
             </div>
 
-            <div className="flex justify-between items-center gap-4 mt-8 bg-card border border-border rounded-xl p-4">
-              <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-8 bg-card border border-border rounded-xl p-4">
+              <Button
+                variant="outline"
+                onClick={() => setCancelModal(true)}
+                className="gap-2 w-full sm:w-auto justify-center">
                 <X size={18} />
                 {t("common.cancel")}
               </Button>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                 <Button
                   variant="outline"
                   onClick={() => setDraftModal(true)}
-                  disabled={createMutation.isLoading}>
+                  disabled={createMutation.isLoading}
+                  className="w-full sm:w-auto justify-center">
                   {t("page.memberTier.add.saveDraft")}
                 </Button>
                 <Button
                   onClick={() => handleSave(false)}
                   disabled={createMutation.isLoading}
-                  className="gap-2 shadow-lg shadow-primary/20">
+                  className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
                   <Save size={18} />
                   {t("page.memberTier.add.saveTier")}
                 </Button>

@@ -532,11 +532,12 @@ const AddShift = () => {
                     name="status"
                     render={({ field }) => (
                       <FormItem>
-                        <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                          field.value
-                            ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                            : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                        }`}>
+                        <div
+                          className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                            field.value
+                              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                          }`}>
                           <div className="flex items-center gap-3">
                             <div
                               className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -569,21 +570,21 @@ const AddShift = () => {
                   />
 
                   {/* Actions */}
-                  <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setCancelModal(true)}
-                      className="gap-2">
+                      className="gap-2 w-full sm:w-auto justify-center">
                       <X size={18} /> {t("breadcrumb.back")}
                     </Button>
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                       <Button
                         type="button"
                         variant="outline"
                         onClick={() => setDraftModal(true)}
                         disabled={createMutation.isLoading}
-                        className="gap-2">
+                        className="gap-2 w-full sm:w-auto justify-center">
                         <Save size={18} /> {t("common.saveAsDraft")}
                       </Button>
                       <Button
@@ -598,7 +599,7 @@ const AddShift = () => {
                           }
                           setConfirmSaveModal(true);
                         }}
-                        className="gap-2">
+                        className="gap-2 w-full sm:w-auto justify-center">
                         <Save size={18} />
                         {createMutation.isLoading ? t("common.saving") : t("common.save")}
                       </Button>

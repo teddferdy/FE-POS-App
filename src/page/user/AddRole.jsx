@@ -395,17 +395,28 @@ const AddRole = () => {
           </div>
         </div>
 
-        <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-          <Button variant="outline" onClick={() => setCancelModal(true)}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
+          <Button
+            variant="outline"
+            onClick={() => setCancelModal(true)}
+            className="w-full sm:w-auto justify-center">
             {t("common.cancel")}
           </Button>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+            <Button
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto justify-center">
               {t("common.saveAsDraft")}
             </Button>
             <Button
               onClick={() => {
-                const missing = getMissingFields({ name, description }, roleFormSchema, roleFieldLabels);
+                const missing = getMissingFields(
+                  { name, description },
+                  roleFormSchema,
+                  roleFieldLabels
+                );
                 if (missing.length > 0) {
                   setMissingFieldsList(missing);
                   setMissingFieldsModal(true);
@@ -413,7 +424,8 @@ const AddRole = () => {
                 }
                 handleSubmit({ preventDefault: () => {} }, false);
               }}
-              disabled={isSubmitting}>
+              disabled={isSubmitting}
+              className="w-full sm:w-auto justify-center">
               {t("page.role.add.saveRole")}
             </Button>
           </div>

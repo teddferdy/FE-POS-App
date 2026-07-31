@@ -75,13 +75,26 @@ const DetailStockTransfer = () => {
           <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
             <Skeleton className="h-4 w-32" />
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
-              <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-4 w-48" />
+              </div>
             </div>
           </Card>
           <div className="space-y-4">
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
           </div>
         </div>
       </div>
@@ -170,38 +183,42 @@ const DetailStockTransfer = () => {
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.stockTransfer.detail.section.items")}
               </h2>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-2">{t("page.stockTransfer.detail.table.product")}</th>
-                    <th className="pb-2 text-right">{t("page.stockTransfer.detail.table.qty")}</th>
-                    <th className="pb-2 text-center">
-                      {t("page.stockTransfer.detail.table.unit")}
-                    </th>
-                    <th className="pb-2">{t("page.stockTransfer.detail.table.notes")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transfer.items?.length > 0 ? (
-                    transfer.items.map((item, i) => (
-                      <tr key={i} className="border-b border-muted/20">
-                        <td className="py-2">
-                          {item.productData?.nameProduct || item.product?.nameProduct || "-"}
-                        </td>
-                        <td className="py-2 text-right font-mono">{item.qty}</td>
-                        <td className="py-2 text-center">{item.unit || "pcs"}</td>
-                        <td className="py-2">{item.notes || "-"}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="py-4 text-center text-muted-foreground">
-                        {t("page.stockTransfer.detail.table.noItems")}
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[520px]">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-2">{t("page.stockTransfer.detail.table.product")}</th>
+                      <th className="pb-2 text-right">
+                        {t("page.stockTransfer.detail.table.qty")}
+                      </th>
+                      <th className="pb-2 text-center">
+                        {t("page.stockTransfer.detail.table.unit")}
+                      </th>
+                      <th className="pb-2">{t("page.stockTransfer.detail.table.notes")}</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {transfer.items?.length > 0 ? (
+                      transfer.items.map((item, i) => (
+                        <tr key={i} className="border-b border-muted/20">
+                          <td className="py-2">
+                            {item.productData?.nameProduct || item.product?.nameProduct || "-"}
+                          </td>
+                          <td className="py-2 text-right font-mono">{item.qty}</td>
+                          <td className="py-2 text-center">{item.unit || "pcs"}</td>
+                          <td className="py-2">{item.notes || "-"}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="py-4 text-center text-muted-foreground">
+                          {t("page.stockTransfer.detail.table.noItems")}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 

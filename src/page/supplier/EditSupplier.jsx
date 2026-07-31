@@ -241,25 +241,35 @@ const EditSupplier = () => {
       return;
     }
     if (editingProductId) {
-          setSupplierProducts((prev) =>
-            prev.map((p) =>
-              p.id === editingProductId
-                ? { ...p, name: newProductName.trim(), price: Number(productPrice), unit: productUnit || "pcs", leadTime: Number(productLeadTime) || 0, leadTimeUnit: productLeadTimeUnit || "hari", qualityRating: Number(productQualityRating) || 0, minOrderQty: productMinOrderQty || "1", notes: productNotes.trim() || "" }
-                : p
-            )
-          );
-        } else {
-          setSupplierProducts((prev) => [
-            ...prev,
-            {
-              id: `manual_${Date.now()}`,
-              name: newProductName.trim(),
-              price: Number(productPrice),
-              unit: productUnit || "pcs",
-              leadTime: Number(productLeadTime) || 0,
-              leadTimeUnit: productLeadTimeUnit || "hari",
-              qualityRating: Number(productQualityRating) || 0,
-              minOrderQty: productMinOrderQty || "1",
+      setSupplierProducts((prev) =>
+        prev.map((p) =>
+          p.id === editingProductId
+            ? {
+                ...p,
+                name: newProductName.trim(),
+                price: Number(productPrice),
+                unit: productUnit || "pcs",
+                leadTime: Number(productLeadTime) || 0,
+                leadTimeUnit: productLeadTimeUnit || "hari",
+                qualityRating: Number(productQualityRating) || 0,
+                minOrderQty: productMinOrderQty || "1",
+                notes: productNotes.trim() || ""
+              }
+            : p
+        )
+      );
+    } else {
+      setSupplierProducts((prev) => [
+        ...prev,
+        {
+          id: `manual_${Date.now()}`,
+          name: newProductName.trim(),
+          price: Number(productPrice),
+          unit: productUnit || "pcs",
+          leadTime: Number(productLeadTime) || 0,
+          leadTimeUnit: productLeadTimeUnit || "hari",
+          qualityRating: Number(productQualityRating) || 0,
+          minOrderQty: productMinOrderQty || "1",
           notes: productNotes.trim() || ""
         }
       ]);
@@ -661,16 +671,18 @@ const EditSupplier = () => {
                       </div>
                       <div className="col-span-6 space-y-1">
                         <label className="text-xs font-medium text-muted-foreground">Satuan</label>
-                          <Combobox
-                            options={unitOptions}
-                            value={productUnit}
-                            onChange={(v) => setProductUnit(v)}
-                            placeholder="Pilih satuan..."
-                            searchPlaceholder="Cari satuan..."
-                          />
+                        <Combobox
+                          options={unitOptions}
+                          value={productUnit}
+                          onChange={(v) => setProductUnit(v)}
+                          placeholder="Pilih satuan..."
+                          searchPlaceholder="Cari satuan..."
+                        />
                       </div>
                       <div className="col-span-4 space-y-1">
-                        <label className="text-xs font-medium text-muted-foreground">{t("page.supplier.comparison.table.leadTime")}</label>
+                        <label className="text-xs font-medium text-muted-foreground">
+                          {t("page.supplier.comparison.table.leadTime")}
+                        </label>
                         <div className="flex gap-1">
                           <Input
                             type="text"
@@ -697,7 +709,9 @@ const EditSupplier = () => {
                         </div>
                       </div>
                       <div className="col-span-4 space-y-1">
-                        <label className="text-xs font-medium text-muted-foreground">Kualitas (0-5)</label>
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Kualitas (0-5)
+                        </label>
                         <Input
                           type="text"
                           inputMode="decimal"
@@ -714,7 +728,9 @@ const EditSupplier = () => {
                         />
                       </div>
                       <div className="col-span-4 space-y-1">
-                        <label className="text-xs font-medium text-muted-foreground">Min Order</label>
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Min Order
+                        </label>
                         <Input
                           type="text"
                           placeholder="1"
@@ -723,7 +739,9 @@ const EditSupplier = () => {
                         />
                       </div>
                       <div className="col-span-12 space-y-1">
-                        <label className="text-xs font-medium text-muted-foreground">{t("page.supplier.products.notes")}</label>
+                        <label className="text-xs font-medium text-muted-foreground">
+                          {t("page.supplier.products.notes")}
+                        </label>
                         <Textarea
                           placeholder="Catatan opsional..."
                           rows={2}
@@ -809,30 +827,18 @@ const EditSupplier = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-center w-10">
-                            #
-                          </TableHead>
+                          <TableHead className="text-center w-10">#</TableHead>
                           <TableHead className="text-xs">
                             {t("page.supplier.products.table.name")}
                           </TableHead>
                           <TableHead className="text-xs text-right">
                             {t("page.supplier.products.table.price")}
                           </TableHead>
-                          <TableHead className="text-xs text-center">
-                            Satuan
-                          </TableHead>
-                          <TableHead className="text-xs text-right">
-                            Lead Time
-                          </TableHead>
-                          <TableHead className="text-xs text-right">
-                            Kualitas
-                          </TableHead>
-                          <TableHead className="text-xs text-right">
-                            Min Order
-                          </TableHead>
-                          <TableHead className="text-xs">
-                            Catatan
-                          </TableHead>
+                          <TableHead className="text-xs text-center">Satuan</TableHead>
+                          <TableHead className="text-xs text-right">Lead Time</TableHead>
+                          <TableHead className="text-xs text-right">Kualitas</TableHead>
+                          <TableHead className="text-xs text-right">Min Order</TableHead>
+                          <TableHead className="text-xs">Catatan</TableHead>
                           <TableHead className="text-xs text-center w-12">
                             {t("page.supplier.products.table.action")}
                           </TableHead>
@@ -840,8 +846,16 @@ const EditSupplier = () => {
                       </TableHeader>
                       <TableBody>
                         {supplierProducts.map((product, index) => (
-                          <TableRow key={product.id} className={editingProductId === product.id ? "bg-blue-50 dark:bg-blue-900/20" : ""}>
-                            <TableCell className="text-center text-xs text-muted-foreground">{index + 1}</TableCell>
+                          <TableRow
+                            key={product.id}
+                            className={
+                              editingProductId === product.id
+                                ? "bg-blue-50 dark:bg-blue-900/20"
+                                : ""
+                            }>
+                            <TableCell className="text-center text-xs text-muted-foreground">
+                              {index + 1}
+                            </TableCell>
                             <TableCell className="text-sm font-medium">{product.name}</TableCell>
                             <TableCell className="text-sm text-right">
                               Rp {Number(product.price).toLocaleString("id-ID")}
@@ -888,17 +902,20 @@ const EditSupplier = () => {
           </div>
         </div>
 
-        <div className="flex justify-between items-center gap-4 bg-card border border-border rounded-xl p-4">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
+          <Button
+            variant="outline"
+            onClick={() => setCancelModal(true)}
+            className="gap-2 w-full sm:w-auto justify-center">
             <X size={18} />
             {t("common.cancel")}
           </Button>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
             <Button
               variant="outline"
               onClick={() => setDraftModal(true)}
               disabled={updateMutation.isLoading}
-              className="gap-2">
+              className="gap-2 w-full sm:w-auto justify-center">
               <Save size={18} />
               {t("page.supplier.form.saveAsDraft")}
             </Button>
@@ -924,7 +941,7 @@ const EditSupplier = () => {
                 setConfirmSaveModal(true);
               }}
               disabled={updateMutation.isLoading}
-              className="gap-2">
+              className="gap-2 w-full sm:w-auto justify-center">
               <Save size={18} />
               {updateMutation.isLoading ? t("common.saving") : t("common.save")}
             </Button>

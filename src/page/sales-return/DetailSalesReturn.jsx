@@ -48,13 +48,26 @@ const DetailSalesReturn = () => {
           <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
             <Skeleton className="h-4 w-32" />
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
-              <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-4 w-48" />
+              </div>
             </div>
           </Card>
           <div className="space-y-4">
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
           </div>
         </div>
       </div>
@@ -118,7 +131,9 @@ const DetailSalesReturn = () => {
                     [t("page.salesReturn.detail.field.store"), ret.storeData?.name || "-"],
                     [
                       "Refund Amount",
-                      <span className="font-mono font-semibold text-green-600 dark:text-green-400">
+                      <span
+                        key="refund-amount"
+                        className="font-mono font-semibold text-green-600 dark:text-green-400">
                         Rp {(ret.refundAmount || 0).toLocaleString("id-ID")}
                       </span>
                     ],
@@ -145,40 +160,46 @@ const DetailSalesReturn = () => {
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.salesReturn.detail.section.items")}
               </h2>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-2">{t("page.salesReturn.detail.table.product")}</th>
-                    <th className="pb-2 text-right">Price</th>
-                    <th className="pb-2 text-right">{t("page.salesReturn.detail.table.qty")}</th>
-                    <th className="pb-2 text-center">{t("page.salesReturn.detail.table.unit")}</th>
-                    <th className="pb-2 text-right">Total Refund</th>
-                    <th className="pb-2 pl-4">{t("page.salesReturn.detail.table.notes")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ret.items?.length > 0 ? (
-                    ret.items.map((item, i) => (
-                      <tr key={i} className="border-b border-muted/20">
-                        <td className="py-2">{item.productData?.nameProduct || "-"}</td>
-                        <td className="py-2 text-right font-mono">Rp {(item.price || 0).toLocaleString("id-ID")}</td>
-                        <td className="py-2 text-right font-mono">{item.qty}</td>
-                        <td className="py-2 text-center">{item.unit || "pcs"}</td>
-                        <td className="py-2 text-right font-mono font-semibold">
-                          Rp {((item.qty || 0) * (item.price || 0)).toLocaleString("id-ID")}
-                        </td>
-                        <td className="py-2 pl-4">{item.notes || "-"}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="py-4 text-center text-muted-foreground">
-                        {t("page.salesReturn.detail.table.noItems")}
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[640px]">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-2">{t("page.salesReturn.detail.table.product")}</th>
+                      <th className="pb-2 text-right">Price</th>
+                      <th className="pb-2 text-right">{t("page.salesReturn.detail.table.qty")}</th>
+                      <th className="pb-2 text-center">
+                        {t("page.salesReturn.detail.table.unit")}
+                      </th>
+                      <th className="pb-2 text-right">Total Refund</th>
+                      <th className="pb-2 pl-4">{t("page.salesReturn.detail.table.notes")}</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {ret.items?.length > 0 ? (
+                      ret.items.map((item, i) => (
+                        <tr key={i} className="border-b border-muted/20">
+                          <td className="py-2">{item.productData?.nameProduct || "-"}</td>
+                          <td className="py-2 text-right font-mono">
+                            Rp {(item.price || 0).toLocaleString("id-ID")}
+                          </td>
+                          <td className="py-2 text-right font-mono">{item.qty}</td>
+                          <td className="py-2 text-center">{item.unit || "pcs"}</td>
+                          <td className="py-2 text-right font-mono font-semibold">
+                            Rp {((item.qty || 0) * (item.price || 0)).toLocaleString("id-ID")}
+                          </td>
+                          <td className="py-2 pl-4">{item.notes || "-"}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="py-4 text-center text-muted-foreground">
+                          {t("page.salesReturn.detail.table.noItems")}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 

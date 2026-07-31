@@ -74,7 +74,11 @@ const calculateStockAkhir = (row) =>
   toInt(row.stokAwalJumlah) + toInt(row.barangMasukJumlah) - toInt(row.barangKeluarJumlah);
 
 const calculateStockFisik = (row) => {
-  if (row.stokFisikJumlah === null || row.stokFisikJumlah === undefined || row.stokFisikJumlah === "")
+  if (
+    row.stokFisikJumlah === null ||
+    row.stokFisikJumlah === undefined ||
+    row.stokFisikJumlah === ""
+  )
     return null;
   return toInt(row.stokFisikJumlah);
 };
@@ -139,9 +143,7 @@ const LokasiSelect = ({ value, locations, loading, onChange, onAddNew, t, hasErr
       }}>
       <SelectTrigger
         className={`h-9 border-0 border-b rounded-none focus:border-primary focus:border-solid shadow-none px-0 text-sm ${
-          hasError
-            ? "border-destructive"
-            : "border-dashed border-muted-foreground/30"
+          hasError ? "border-destructive" : "border-dashed border-muted-foreground/30"
         }`}>
         <div className="flex items-center gap-2">
           <MapPin size={14} className="text-muted-foreground/40 shrink-0" />
@@ -210,8 +212,12 @@ const AddStockOpname = () => {
           lokasiLabel: z.string().optional(),
           store: z.string().optional(),
           stokAwalJumlah: z.string().min(1, t("page.stockOpname.validation.stokAwalRequired")),
-          barangMasukJumlah: z.string().min(1, t("page.stockOpname.validation.barangMasukRequired")),
-          barangKeluarJumlah: z.string().min(1, t("page.stockOpname.validation.barangKeluarRequired")),
+          barangMasukJumlah: z
+            .string()
+            .min(1, t("page.stockOpname.validation.barangMasukRequired")),
+          barangKeluarJumlah: z
+            .string()
+            .min(1, t("page.stockOpname.validation.barangKeluarRequired")),
           stokFisikJumlah: z.string().min(1, t("page.stockOpname.validation.stokFisikRequired")),
           keterangan: z.string().trim().min(1, t("page.stockOpname.validation.keteranganRequired"))
         })
@@ -541,20 +547,24 @@ const AddStockOpname = () => {
                     control={control}
                     name="tanggalAudit"
                     render={({ field }) => (
-                      <DatePicker date={field.value} setDate={(date) => field.onChange(date || new Date())} />
+                      <DatePicker
+                        date={field.value}
+                        setDate={(date) => field.onChange(date || new Date())}
+                      />
                     )}
                   />
                   <FieldError error={errors.tanggalAudit} />
                 </div>
                 <div className="space-y-2">
                   <Label>
-                    {t("page.stockOpname.form.auditor")}{" "}
-                    <span className="text-destructive">*</span>
+                    {t("page.stockOpname.form.auditor")} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     {...form.register("auditor")}
                     placeholder={t("page.stockOpname.form.auditorPlaceholder")}
-                    className={errors.auditor ? "border-destructive focus-visible:ring-destructive" : ""}
+                    className={
+                      errors.auditor ? "border-destructive focus-visible:ring-destructive" : ""
+                    }
                   />
                   <FieldError error={errors.auditor} />
                 </div>
@@ -651,7 +661,9 @@ const AddStockOpname = () => {
                                   type="text"
                                   {...form.register(`items.${index}.namaBarang`, {
                                     onChange: () => {
-                                      setValue(`items.${index}.productId`, "", { shouldValidate: true });
+                                      setValue(`items.${index}.productId`, "", {
+                                        shouldValidate: true
+                                      });
                                     }
                                   })}
                                   placeholder={t("page.stockOpname.form.namaPlaceholder")}
@@ -679,12 +691,16 @@ const AddStockOpname = () => {
                                       <Search size={14} />
                                     </button>
                                   </PopoverTrigger>
-                                  <PopoverContent align="start" side="bottom" className="p-0 w-[280px]">
+                                  <PopoverContent
+                                    align="start"
+                                    side="bottom"
+                                    className="p-0 w-[280px]">
                                     <Command>
                                       <CommandInput placeholder={t("common.search")} />
                                       <CommandList>
-                                        {allProducts.filter((p) => !selectedProductIds.has(p.id || p._id))
-                                          .length === 0 && (
+                                        {allProducts.filter(
+                                          (p) => !selectedProductIds.has(p.id || p._id)
+                                        ).length === 0 && (
                                           <CommandEmpty>
                                             {t("page.stockOpname.table.productNotFound")}
                                           </CommandEmpty>
@@ -737,7 +753,10 @@ const AddStockOpname = () => {
                                 render={({ field }) => (
                                   <Combobox
                                     options={[
-                                      { value: "", label: t("page.stockOpname.form.satuanPlaceholder") },
+                                      {
+                                        value: "",
+                                        label: t("page.stockOpname.form.satuanPlaceholder")
+                                      },
                                       ...unitOptions.map((opt) => ({
                                         value: opt.value,
                                         label: opt.label
@@ -878,27 +897,27 @@ const AddStockOpname = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
               <Button
                 variant="outline"
                 onClick={() => setCancelModal(true)}
-                className="transition-all">
+                className="transition-all w-full sm:w-auto justify-center">
                 <X size={16} className="mr-1" />
                 {t("common.cancel")}
               </Button>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                 <Button
                   variant="outline"
                   onClick={() => setDraftModal(true)}
                   disabled={isSubmitting}
-                  className="transition-all min-w-[140px]">
+                  className="transition-all min-w-[140px] w-full sm:w-auto justify-center">
                   <Save size={16} className="mr-1" />
                   {isSubmitting ? t("common.saving") : t("page.stockOpname.button.saveDraft")}
                 </Button>
                 <Button
                   onClick={handleSaveComplete}
                   disabled={isSubmitting}
-                  className="transition-all min-w-[140px]">
+                  className="transition-all min-w-[140px] w-full sm:w-auto justify-center">
                   <Save size={16} className="mr-1" />
                   {isSubmitting ? t("common.saving") : t("page.stockOpname.button.saveComplete")}
                 </Button>

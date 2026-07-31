@@ -165,61 +165,63 @@ const DetailGoodsReceipt = () => {
                   <h2 className="text-lg font-semibold mb-4">
                     {t("page.goodsReceipt.detail.itemsReceived")}
                   </h2>
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left text-muted-foreground">
-                        <th className="pb-2">{t("page.goodsReceipt.detail.product")}</th>
-                        <th className="pb-2 text-right">{t("page.goodsReceipt.detail.qty")}</th>
-                        <th className="pb-2 text-center">{t("page.goodsReceipt.detail.unit")}</th>
-                        <th className="pb-2 text-center">
-                          {t("page.goodsReceipt.detail.conversion")}
-                        </th>
-                        <th className="pb-2 text-right">
-                          {t("page.goodsReceipt.detail.costPrice")}
-                        </th>
-                        <th className="pb-2">{t("page.goodsReceipt.detail.notes")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {receipt.items?.length > 0 ? (
-                        receipt.items.map((item, i) => (
-                          <tr key={i} className="border-b border-muted/20">
-                            <td className="py-2">
-                              {item.productData?.nameProduct || item.ingredientName || "-"}
-                            </td>
-                            <td className="py-2 text-right font-mono">{item.qtyReceived}</td>
-                            <td className="py-2 text-center">{item.unit || "pcs"}</td>
-                            <td className="py-2 text-center">
-                              <span className="font-mono">{item.conversionToBase || 1}</span>
-                              {Number(item.qtyStock) > 0 && (
-                                <span className="text-xs text-muted-foreground ml-1">
-                                  (= {Number(item.qtyStock).toLocaleString("id-ID")} stok)
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-2 text-right font-mono">
-                              {Number(item.costPrice) > 0
-                                ? "Rp " + Number(item.costPrice).toLocaleString("id-ID")
-                                : "-"}
-                              {Number(item.landedCost) > 0 && (
-                                <p className="text-[10px] text-emerald-600 font-normal">
-                                  {t("page.goodsReceipt.detail.landed")}: +Rp{" "}
-                                  {Number(item.landedCost).toLocaleString("id-ID")}
-                                </p>
-                              )}
-                            </td>
-                            <td className="py-2">{item.conditionNotes || "-"}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={6} className="py-4 text-center text-muted-foreground">
-                            {t("page.goodsReceipt.detail.noItems")}
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm min-w-[640px]">
+                      <thead>
+                        <tr className="border-b text-left text-muted-foreground">
+                          <th className="pb-2">{t("page.goodsReceipt.detail.product")}</th>
+                          <th className="pb-2 text-right">{t("page.goodsReceipt.detail.qty")}</th>
+                          <th className="pb-2 text-center">{t("page.goodsReceipt.detail.unit")}</th>
+                          <th className="pb-2 text-center">
+                            {t("page.goodsReceipt.detail.conversion")}
+                          </th>
+                          <th className="pb-2 text-right">
+                            {t("page.goodsReceipt.detail.costPrice")}
+                          </th>
+                          <th className="pb-2">{t("page.goodsReceipt.detail.notes")}</th>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {receipt.items?.length > 0 ? (
+                          receipt.items.map((item, i) => (
+                            <tr key={i} className="border-b border-muted/20">
+                              <td className="py-2">
+                                {item.productData?.nameProduct || item.ingredientName || "-"}
+                              </td>
+                              <td className="py-2 text-right font-mono">{item.qtyReceived}</td>
+                              <td className="py-2 text-center">{item.unit || "pcs"}</td>
+                              <td className="py-2 text-center">
+                                <span className="font-mono">{item.conversionToBase || 1}</span>
+                                {Number(item.qtyStock) > 0 && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    (= {Number(item.qtyStock).toLocaleString("id-ID")} stok)
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-2 text-right font-mono">
+                                {Number(item.costPrice) > 0
+                                  ? "Rp " + Number(item.costPrice).toLocaleString("id-ID")
+                                  : "-"}
+                                {Number(item.landedCost) > 0 && (
+                                  <p className="text-[10px] text-emerald-600 font-normal">
+                                    {t("page.goodsReceipt.detail.landed")}: +Rp{" "}
+                                    {Number(item.landedCost).toLocaleString("id-ID")}
+                                  </p>
+                                )}
+                              </td>
+                              <td className="py-2">{item.conditionNotes || "-"}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="py-4 text-center text-muted-foreground">
+                              {t("page.goodsReceipt.detail.noItems")}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
 
                 {receipt.purchaseOrderItems?.length > 0 && (

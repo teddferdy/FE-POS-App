@@ -183,10 +183,13 @@ const EditShift = () => {
           backLink="/shift"
           onBack={() => setCancelModal(true)}></PageHeader>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between">
           <div></div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+            <Button
+              variant="outline"
+              onClick={() => setCancelModal(true)}
+              className="gap-2 w-full sm:w-auto justify-center">
               <X size={18} />
               {t("page.shift.edit.cancel")}
             </Button>
@@ -194,7 +197,7 @@ const EditShift = () => {
               variant="outline"
               onClick={() => setDraftModal(true)}
               disabled={updateMutation.isLoading}
-              className="gap-2">
+              className="gap-2 w-full sm:w-auto justify-center">
               <Save size={18} />
               {t("page.shift.edit.saveDraft")}
             </Button>
@@ -209,7 +212,7 @@ const EditShift = () => {
                 setConfirmSaveModal(true);
               }}
               disabled={updateMutation.isLoading}
-              className="gap-2">
+              className="gap-2 w-full sm:w-auto justify-center">
               <Save size={18} />
               {updateMutation.isLoading ? t("page.shift.edit.saving") : t("page.shift.edit.save")}
             </Button>
@@ -279,11 +282,12 @@ const EditShift = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("page.shift.edit.form.status")}</FormLabel>
-                    <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                      field.value
-                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                    }`}>
+                    <div
+                      className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                        field.value
+                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                      }`}>
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-10 h-10 rounded-full flex items-center justify-center ${

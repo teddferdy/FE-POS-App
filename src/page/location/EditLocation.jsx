@@ -29,7 +29,14 @@ import {
   UserPlus
 } from "lucide-react";
 import { toast } from "sonner";
-import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -407,7 +414,10 @@ const EditLocation = () => {
       id: editId
     };
 
-    const fd = normalizePayload(payload, { isFormData: true, jsonFields: ['openingHours', 'socialMedia'] });
+    const fd = normalizePayload(payload, {
+      isFormData: true,
+      jsonFields: ["openingHours", "socialMedia"]
+    });
     if (imageFile) {
       fd.append("image", imageFile);
     } else if (!imageRemoved && existingImage) {
@@ -823,7 +833,9 @@ const EditLocation = () => {
                               placeholder={t("page.location.form.detailPlaceholder")}
                               className="min-h-[80px]"
                             />
-                            <p className="text-xs text-muted-foreground mt-1">{t("page.location.form.detailLocationHint")}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {t("page.location.form.detailLocationHint")}
+                            </p>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1064,9 +1076,14 @@ const EditLocation = () => {
                               onChange={field.onChange}
                               placeholder={t("page.location.form.categoryLabel")}
                               searchPlaceholder={t("page.location.form.categoryLabel")}
-                              options={categoryOptions.map((opt) => ({ value: opt.value, label: t(opt.labelKey) }))}
+                              options={categoryOptions.map((opt) => ({
+                                value: opt.value,
+                                label: t(opt.labelKey)
+                              }))}
                             />
-                            <FormDescription>{t("page.location.form.categoryHint")}</FormDescription>
+                            <FormDescription>
+                              {t("page.location.form.categoryHint")}
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1458,7 +1475,7 @@ const EditLocation = () => {
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Dialog open={managerModalOpen} onOpenChange={setManagerModalOpen}>
-        <DialogContent className="sm:max-w-2xl min-w-[800px] p-0 gap-0 overflow-hidden">
+        <DialogContent className="max-w-[800px] p-0 gap-0 overflow-hidden">
           <div className="px-6 pt-6 pb-4 border-b border-border">
             <DialogHeader>
               <DialogTitle className="text-lg">{t("page.location.form.selectManager")}</DialogTitle>

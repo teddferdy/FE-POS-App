@@ -996,19 +996,20 @@ const EditDiscount = () => {
                   </FormItem>
                 )}
               />
-              <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setCancelModal(true)}
-                  className="gap-2">
+                  className="gap-2 w-full sm:w-auto justify-center">
                   <X size={18} />
                   {t("breadcrumb.back")}
                 </Button>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                   <Button
                     type="button"
                     variant="outline"
+                    className="w-full sm:w-auto justify-center"
                     onClick={() => setDraftModal(true)}
                     disabled={updateMutation.isLoading}>
                     {t("page.discount.add.saveAsDraft")}
@@ -1017,7 +1018,7 @@ const EditDiscount = () => {
                     type="button"
                     onClick={handleTypeClick}
                     disabled={updateMutation.isLoading}
-                    className="gap-2">
+                    className="gap-2 w-full sm:w-auto justify-center">
                     <Save size={18} />
                     {updateMutation.isLoading ? t("button.saving") : t("button.save")}
                   </Button>

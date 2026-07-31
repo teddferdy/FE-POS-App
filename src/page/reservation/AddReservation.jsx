@@ -24,7 +24,14 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
@@ -205,20 +212,20 @@ const AddReservation = () => {
             <ArrowLeft size={16} />
           </Button>
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/reservation")}
-            className="hover:text-foreground transition-colors">
-            Reservasi
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">Tambah Reservasi</span>
-        </nav>
+            <button
+              onClick={() => navigate("/dashboard-super-admin")}
+              className="hover:text-foreground transition-colors">
+              {t("breadcrumb.home")}
+            </button>
+            <span className="text-xs">/</span>
+            <button
+              onClick={() => navigate("/reservation")}
+              className="hover:text-foreground transition-colors">
+              Reservasi
+            </button>
+            <span className="text-xs">/</span>
+            <span className="text-primary font-semibold">Tambah Reservasi</span>
+          </nav>
         </div>
 
         <div>
@@ -432,8 +439,11 @@ const AddReservation = () => {
                   </FormItem>
                 )}
               />
-              <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-                <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setCancelModal(true)}
+                  className="gap-2 w-full sm:w-auto justify-center">
                   <X size={18} /> {t("breadcrumb.back")}
                 </Button>
                 <Button
@@ -450,7 +460,7 @@ const AddReservation = () => {
                     setConfirmSaveModal(true);
                   }}
                   disabled={createMutation.isLoading}
-                  className="gap-2">
+                  className="gap-2 w-full sm:w-auto justify-center">
                   <Save size={18} />
                   {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
                 </Button>

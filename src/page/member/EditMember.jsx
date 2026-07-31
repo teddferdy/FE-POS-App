@@ -65,9 +65,7 @@ const EditMember = () => {
   const { data: tiersData } = useQuery(
     ["member-tiers-active"],
     () => getAllMemberTier({ status: "active" }),
-    {
-      
-    }
+    {}
   );
   const tiers = tiersData?.data || tiersData?.tiers || [];
 
@@ -381,7 +379,10 @@ const EditMember = () => {
                                   )}
                                 </div>
                               </div>
-                              {(Array.isArray(selected.benefits) ? selected.benefits : (selected.benefits || "").split("\n").filter(Boolean)).length > 0 && (
+                              {(Array.isArray(selected.benefits)
+                                ? selected.benefits
+                                : (selected.benefits || "").split("\n").filter(Boolean)
+                              ).length > 0 && (
                                 <div
                                   className="px-4 py-3 border-t"
                                   style={{ borderColor: `${selected.color || "#6366f1"}15` }}>
@@ -389,7 +390,10 @@ const EditMember = () => {
                                     {t("page.member.benefits")}
                                   </p>
                                   <ul className="space-y-1.5">
-                                    {(Array.isArray(selected.benefits) ? selected.benefits : (selected.benefits || "").split("\n").filter(Boolean)).map((b, i) => (
+                                    {(Array.isArray(selected.benefits)
+                                      ? selected.benefits
+                                      : (selected.benefits || "").split("\n").filter(Boolean)
+                                    ).map((b, i) => (
                                       <li
                                         key={i}
                                         className="flex items-start gap-2 text-xs text-muted-foreground">
@@ -422,20 +426,29 @@ const EditMember = () => {
               </div>
             </div>
 
-            <div className="mt-8 flex items-center justify-between gap-6 bg-card border border-border rounded-xl p-4">
-              <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
+              <Button
+                variant="outline"
+                onClick={() => setCancelModal(true)}
+                className="gap-2 w-full sm:w-auto justify-center">
                 <span className="material-symbols-outlined text-lg">arrow_back</span>
                 {t("breadcrumb.back")}
               </Button>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setDraftModal(true)}
-                  disabled={isSubmitting}>
+                  disabled={isSubmitting}
+                  className="w-full sm:w-auto justify-center">
                   {t("page.member.edit.saveDraft")}
                 </Button>
-                <Button type="button" onClick={() => handleSaveClick()} disabled={isSubmitting} size="lg" className="px-8 gap-2">
+                <Button
+                  type="button"
+                  onClick={() => handleSaveClick()}
+                  disabled={isSubmitting}
+                  size="lg"
+                  className="px-8 gap-2 w-full sm:w-auto justify-center">
                   <span className="material-symbols-outlined text-lg">save</span>
                   {t("page.member.button.save")}
                 </Button>

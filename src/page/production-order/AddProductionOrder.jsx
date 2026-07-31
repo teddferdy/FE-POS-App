@@ -52,7 +52,10 @@ const AddProductionOrder = () => {
     () =>
       z.object({
         productId: z.string().min(1, ""),
-        plannedQty: z.string().min(1, "").refine((v) => parseInt(v) >= 1, ""),
+        plannedQty: z
+          .string()
+          .min(1, "")
+          .refine((v) => parseInt(v) >= 1, ""),
         scheduledDate: z.any().optional()
       }),
     []
@@ -157,7 +160,10 @@ const AddProductionOrder = () => {
             <Combobox
               options={[
                 { value: "", label: t("page.productionOrder.add.placeholderPilihProduk") },
-                ...products.map((p) => ({ value: p.id, label: `${p.nameProduct} (${p.sku || "-"})` }))
+                ...products.map((p) => ({
+                  value: p.id,
+                  label: `${p.nameProduct} (${p.sku || "-"})`
+                }))
               ]}
               value={productId}
               onChange={setProductId}
@@ -200,46 +206,59 @@ const AddProductionOrder = () => {
               <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">
                 {t("page.productionOrder.add.bomComponents")}
               </p>
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="text-left text-blue-600 dark:text-blue-400">
-                    <th className="pb-1">{t("page.productionOrder.add.bomBahan")}</th>
-                    <th className="pb-1">{t("page.productionOrder.add.bomQtyPerUnit")}</th>
-                    <th className="pb-1">{t("page.productionOrder.add.bomUnit")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedProduct.composition.map((c, i) => (
-                    <tr key={i} className="text-blue-800 dark:text-blue-200">
-                      <td>{c.ingredientName || c.name}</td>
-                      <td>{c.qty}</td>
-                      <td>{c.unit || "pcs"}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs min-w-[420px]">
+                  <thead>
+                    <tr className="text-left text-blue-600 dark:text-blue-400">
+                      <th className="pb-1">{t("page.productionOrder.add.bomBahan")}</th>
+                      <th className="pb-1">{t("page.productionOrder.add.bomQtyPerUnit")}</th>
+                      <th className="pb-1">{t("page.productionOrder.add.bomUnit")}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {selectedProduct.composition.map((c, i) => (
+                      <tr key={i} className="text-blue-800 dark:text-blue-200">
+                        <td>{c.ingredientName || c.name}</td>
+                        <td>{c.qty}</td>
+                        <td>{c.unit || "pcs"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
-          <div className="flex items-center justify-between gap-4 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.productionOrder.add.cancelButton")}
             </Button>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+            <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => setDraftModal(true)}
+                disabled={isSubmitting}>
                 Save as Draft
               </Button>
-              <Button type="button" disabled={isSubmitting}
-                  onClick={() => {
-                    const data = { productId, plannedQty, scheduledDate };
-                    const missing = getMissingFields(data, poSchema, poFieldLabels);
-                    if (missing.length > 0) {
-                      setMissingFieldsList(missing);
-                      setMissingFieldsModal(true);
-                      return;
-                    }
-                    handleSubmit(false);
-                  }}>
+              <Button
+                type="button"
+                className="w-full sm:w-auto"
+                disabled={isSubmitting}
+                onClick={() => {
+                  const data = { productId, plannedQty, scheduledDate };
+                  const missing = getMissingFields(data, poSchema, poFieldLabels);
+                  if (missing.length > 0) {
+                    setMissingFieldsList(missing);
+                    setMissingFieldsModal(true);
+                    return;
+                  }
+                  handleSubmit(false);
+                }}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting
                   ? t("page.productionOrder.add.savingButton")

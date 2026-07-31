@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Save, X, Plus, Trash2 } from "lucide-react";
-import { normalizePayload } from "@/lib/payload-normalizer";
 import { addBom } from "@/services/bom";
 import { getAllProduct } from "@/services/product";
 import { getAllIngredients } from "@/services/ingredient";
@@ -53,15 +52,13 @@ const AddBom = () => {
     [t]
   );
 
-  const { data: prodData } = useQuery(["products-for-bom"], () => getAllProduct({}), {
-    
-  });
+  const { data: prodData } = useQuery(["products-for-bom"], () => getAllProduct({}), {});
   const products = prodData?.data || [];
 
   const { data: ingData } = useQuery(
     ["ingredients-for-bom", user?.store],
     () => getAllIngredients({ store: user?.store, limit: 999 }),
-    { }
+    {}
   );
   const ingredients = (ingData?.data || []).filter((i) => i.status === "active");
 
@@ -280,16 +277,29 @@ const AddBom = () => {
             />
           </div>
 
-          <div className="flex items-center justify-between gap-4 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto justify-center"
+              onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.bom.add.form.cancel")}
             </Button>
-            <div className="flex items-center gap-3">
-              <Button type="button" variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting} className="gap-2">
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDraftModal(true)}
+                disabled={isSubmitting}
+                className="gap-2 w-full sm:w-auto justify-center">
                 <Save size={16} />
                 {t("page.bom.add.form.saveDraft")}
               </Button>
-              <Button type="button" onClick={() => handleSaveClick()} disabled={isSubmitting}>
+              <Button
+                type="button"
+                className="w-full sm:w-auto justify-center"
+                onClick={() => handleSaveClick()}
+                disabled={isSubmitting}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting ? t("page.bom.add.form.saving") : t("page.bom.add.form.save")}
               </Button>

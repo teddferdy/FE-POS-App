@@ -590,20 +590,26 @@ const EditGoodsReceipt = () => {
             />
           </div>
 
-          <div className="flex items-center justify-between gap-4 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto justify-center"
+              onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.goodsReceipt.edit.form.cancel")}
             </Button>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
               <Button
                 type="button"
                 variant="outline"
+                className="w-full sm:w-auto justify-center"
                 onClick={() => setDraftModal(true)}
                 disabled={isSubmitting}>
                 Simpan sebagai Draft
               </Button>
               <Button
                 type="button"
+                className="w-full sm:w-auto justify-center"
                 disabled={isSubmitting || items.length === 0}
                 onClick={() => {
                   const missing = getMissingFields({ poId, items }, formSchema, fieldLabels);

@@ -830,16 +830,21 @@ const AddIngredient = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-4 pt-6 mt-6 border-t">
-                  <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-6 mt-6 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCancelModal(true)}
+                    className="w-full sm:w-auto justify-center">
                     <X size={16} className="mr-1" /> {t("page.ingredient.form.cancelButton")}
                   </Button>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setDraftModal(true)}
-                      disabled={mutation.isLoading}>
+                      disabled={mutation.isLoading}
+                      className="w-full sm:w-auto justify-center">
                       {t("common.saveAsDraft")}
                     </Button>
                     <Button
@@ -864,7 +869,8 @@ const AddIngredient = () => {
                         }
                         handleSubmit(e);
                       }}
-                      disabled={mutation.isLoading}>
+                      disabled={mutation.isLoading}
+                      className="w-full sm:w-auto justify-center">
                       <Save size={16} className="mr-1" />{" "}
                       {mutation.isLoading
                         ? t("page.ingredient.form.savingButton")

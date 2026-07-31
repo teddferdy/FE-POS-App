@@ -274,12 +274,15 @@ const EditDriver = () => {
         </div>
       </form>
 
-      <div className="flex justify-between items-center gap-4 bg-card border border-border rounded-xl p-4">
-        <Button variant="outline" onClick={() => setCancelModalOpen(true)} className="gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
+        <Button
+          variant="outline"
+          onClick={() => setCancelModalOpen(true)}
+          className="gap-2 w-full sm:w-auto justify-center">
           <X size={18} />
           {t("common.cancel")}
         </Button>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
           <Button
             variant="outline"
             onClick={() => {
@@ -287,14 +290,14 @@ const EditDriver = () => {
               form.handleSubmit(onSubmit)();
             }}
             disabled={updateMutation?.isLoading}
-            className="gap-2">
+            className="gap-2 w-full sm:w-auto justify-center">
             <FileEdit size={18} />
             {t("common.saveDraft")}
           </Button>
           <Button
             onClick={() => form.handleSubmit(onSubmit)()}
             disabled={updateMutation?.isLoading}
-            className="gap-2">
+            className="gap-2 w-full sm:w-auto justify-center">
             <Save size={18} />
             {updateMutation?.isLoading ? t("common.saving") : t("common.save")}
           </Button>

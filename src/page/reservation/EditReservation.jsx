@@ -24,7 +24,14 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -460,8 +467,11 @@ const EditReservation = () => {
                   </FormItem>
                 )}
               />
-              <div className="flex justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-                <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setCancelModal(true)}
+                  className="gap-2 w-full sm:w-auto justify-center">
                   <X size={18} /> {t("page.reservation.edit.cancel")}
                 </Button>
                 <Button
@@ -478,7 +488,7 @@ const EditReservation = () => {
                     setConfirmSaveModal(true);
                   }}
                   disabled={updateMutation.isLoading}
-                  className="gap-2">
+                  className="gap-2 w-full sm:w-auto justify-center">
                   <Save size={18} />
                   {updateMutation.isLoading
                     ? t("page.reservation.edit.saving")

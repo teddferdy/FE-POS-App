@@ -15,12 +15,18 @@ import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
@@ -81,11 +87,9 @@ const EditTaxConfig = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locationsData } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || [];
 
   const formSchema = useMemo(() => {
@@ -104,7 +108,7 @@ const EditTaxConfig = () => {
   const taxFieldLabels = {
     name: "Nama Pajak",
     type: "Tipe Pajak",
-    rate: "Tarif Pajak",
+    rate: "Tarif Pajak"
   };
 
   const [cancelModal, setCancelModal] = useState(false);
@@ -205,7 +209,11 @@ const EditTaxConfig = () => {
 
       <Card className="p-6">
         <Form {...form}>
-          <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-6">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+            className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -213,8 +221,7 @@ const EditTaxConfig = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t("page.taxConfig.form.name")}{" "}
-                      <span className="text-destructive">*</span>
+                      {t("page.taxConfig.form.name")} <span className="text-destructive">*</span>
                     </FormLabel>
                     <Input placeholder={t("page.taxConfig.form.namePlaceholder")} {...field} />
                     <FormMessage />
@@ -227,8 +234,7 @@ const EditTaxConfig = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t("page.taxConfig.form.type")}{" "}
-                      <span className="text-destructive">*</span>
+                      {t("page.taxConfig.form.type")} <span className="text-destructive">*</span>
                     </FormLabel>
                     <Combobox
                       value={field.value}
@@ -247,8 +253,7 @@ const EditTaxConfig = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t("page.taxConfig.form.rate")}{" "}
-                      <span className="text-destructive">*</span>
+                      {t("page.taxConfig.form.rate")} <span className="text-destructive">*</span>
                     </FormLabel>
                     <Input
                       type="number"
@@ -276,7 +281,7 @@ const EditTaxConfig = () => {
                         searchPlaceholder={t("page.taxConfig.form.store")}
                         options={[
                           { value: "", label: t("page.taxConfig.form.allStores") },
-                          ...locations.map((loc) => ({ value: loc.id, label: loc.name })),
+                          ...locations.map((loc) => ({ value: loc.id, label: loc.name }))
                         ]}
                       />
                       <p className="text-xs text-muted-foreground">
@@ -292,11 +297,12 @@ const EditTaxConfig = () => {
                 name="isActive"
                 render={({ field }) => (
                   <FormItem>
-                    <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                      field.value
-                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                    }`}>
+                    <div
+                      className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                        field.value
+                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                      }`}>
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -343,18 +349,21 @@ const EditTaxConfig = () => {
                 </FormItem>
               )}
             />
-            <div className="flex justify-between items-center gap-4 bg-card border border-border rounded-xl p-4">
-              <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
+              <Button
+                variant="outline"
+                onClick={() => setCancelModal(true)}
+                className="gap-2 w-full sm:w-auto justify-center">
                 <X size={18} />
                 {t("common.cancel")}
               </Button>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setDraftModal(true)}
                   disabled={updateMutation.isLoading}
-                  className="gap-2">
+                  className="gap-2 w-full sm:w-auto justify-center">
                   <Save size={18} />
                   {t("common.saveAsDraft")}
                 </Button>
@@ -372,7 +381,7 @@ const EditTaxConfig = () => {
                     setConfirmSaveModal(true);
                   }}
                   disabled={updateMutation.isLoading}
-                  className="gap-2">
+                  className="gap-2 w-full sm:w-auto justify-center">
                   <Save size={18} />
                   {updateMutation.isLoading ? t("common.saving") : t("common.save")}
                 </Button>

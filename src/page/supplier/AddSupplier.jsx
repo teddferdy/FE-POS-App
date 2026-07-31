@@ -738,8 +738,8 @@ const AddSupplier = () => {
                 )}
 
                 {supplierProducts.length > 0 ? (
-                  <div className="border rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
+                  <div className="border rounded-lg overflow-x-auto">
+                    <table className="w-full text-sm min-w-[840px]">
                       <thead>
                         <tr className="bg-muted/50 border-b">
                           <th className="text-center px-3 py-2 font-medium text-muted-foreground w-10">
@@ -827,17 +827,20 @@ const AddSupplier = () => {
           </div>
         </div>
 
-        <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
+          <Button
+            variant="outline"
+            onClick={() => setCancelModal(true)}
+            className="gap-2 w-full sm:w-auto justify-center">
             <X size={18} />
             {t("common.cancel")}
           </Button>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
             <Button
               variant="outline"
               onClick={() => setDraftModal(true)}
               disabled={createMutation.isLoading}
-              className="gap-2">
+              className="gap-2 w-full sm:w-auto justify-center">
               <Save size={18} />
               {t("page.supplier.form.saveAsDraft")}
             </Button>
@@ -863,7 +866,7 @@ const AddSupplier = () => {
                 setConfirmSaveModal(true);
               }}
               disabled={createMutation.isLoading}
-              className="gap-2">
+              className="gap-2 w-full sm:w-auto justify-center">
               <Save size={18} />
               {createMutation.isLoading ? t("common.saving") : t("common.save")}
             </Button>

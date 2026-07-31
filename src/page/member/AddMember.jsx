@@ -69,9 +69,7 @@ const AddMember = () => {
   const { data: tiersData } = useQuery(
     ["member-tiers-active"],
     () => getAllMemberTier({ status: "active" }),
-    {
-      
-    }
+    {}
   );
   const tiers = tiersData?.data || tiersData?.tiers || [];
 
@@ -117,7 +115,12 @@ const AddMember = () => {
       address: form.address,
       tier: form.tier || null,
       point: form.initialPoints,
-      store: user?.roleType === "super_admin" ? (localStorage.getItem("globalStoreFilter") !== "all" ? localStorage.getItem("globalStoreFilter") : null) : undefined,
+      store:
+        user?.roleType === "super_admin"
+          ? localStorage.getItem("globalStoreFilter") !== "all"
+            ? localStorage.getItem("globalStoreFilter")
+            : null
+          : undefined,
       createdBy: user?.id,
       status: saveAsDraft ? "draft" : "active"
     });
@@ -379,7 +382,10 @@ const AddMember = () => {
                                     )}
                                   </div>
                                 </div>
-                                {(Array.isArray(selected.benefits) ? selected.benefits : (selected.benefits || "").split("\n").filter(Boolean)).length > 0 && (
+                                {(Array.isArray(selected.benefits)
+                                  ? selected.benefits
+                                  : (selected.benefits || "").split("\n").filter(Boolean)
+                                ).length > 0 && (
                                   <div
                                     className="px-4 py-3 border-t"
                                     style={{ borderColor: `${selected.color || "#6366f1"}15` }}>
@@ -387,7 +393,10 @@ const AddMember = () => {
                                       {t("page.member.benefits")}
                                     </p>
                                     <ul className="space-y-1.5">
-                                      {(Array.isArray(selected.benefits) ? selected.benefits : (selected.benefits || "").split("\n").filter(Boolean)).map((b, i) => (
+                                      {(Array.isArray(selected.benefits)
+                                        ? selected.benefits
+                                        : (selected.benefits || "").split("\n").filter(Boolean)
+                                      ).map((b, i) => (
                                         <li
                                           key={i}
                                           className="flex items-start gap-2 text-xs text-muted-foreground">
@@ -440,20 +449,28 @@ const AddMember = () => {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center gap-4 mt-8 bg-card border border-border rounded-xl p-4">
-                <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-8 bg-card border border-border rounded-xl p-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setCancelModal(true)}
+                  className="gap-2 w-full sm:w-auto justify-center">
                   <span className="material-symbols-outlined text-lg">arrow_back</span>
                   {t("breadcrumb.back")}
                 </Button>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setDraftModal(true)}
-                    disabled={isSubmitting}>
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto justify-center">
                     {t("page.member.add.saveDraft")}
                   </Button>
-                  <Button type="button" onClick={() => handleSaveClick()} disabled={isSubmitting} className="gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => handleSaveClick()}
+                    disabled={isSubmitting}
+                    className="gap-2 w-full sm:w-auto justify-center">
                     <span className="material-symbols-outlined text-lg">save</span>
                     {t("page.member.button.save")}
                   </Button>

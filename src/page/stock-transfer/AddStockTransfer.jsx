@@ -50,16 +50,14 @@ const AddStockTransfer = () => {
     qty: t("page.stockTransfer.add.table.qty")
   };
 
-  const { data: locData } = useQuery(["locations-for-transfer"], getAllLocation, {
-    
-  });
+  const { data: locData } = useQuery(["locations-for-transfer"], getAllLocation, {});
   const locations = locData?.data || locData?.locations || locData || [];
   const storeOptions = locations.map((l) => ({ value: String(l.id), label: l.name }));
 
   const { data: prodData } = useQuery(
     ["products-for-transfer", fromStore],
     () => getAllProduct({ location: fromStore, status: "active" }),
-    {  enabled: !!fromStore }
+    { enabled: !!fromStore }
   );
   const products = prodData?.data || [];
 
@@ -357,11 +355,18 @@ const AddStockTransfer = () => {
             />
           </div>
 
-          <div className="flex items-center justify-between gap-4 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCancelModal(true)}
+              className="w-full sm:w-auto justify-center">
               <X size={16} className="mr-1" /> {t("page.stockTransfer.add.cancel")}
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto justify-center">
               <Save size={16} className="mr-1" />{" "}
               {isSubmitting ? t("page.stockTransfer.add.saving") : t("page.stockTransfer.add.save")}
             </Button>

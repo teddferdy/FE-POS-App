@@ -70,7 +70,7 @@ const AddPosition = () => {
 
   const positionFieldLabels = {
     name: "Nama Posisi",
-    department: "Departemen",
+    department: "Departemen"
   };
 
   const createMutation = useMutation(addPosition, {
@@ -141,7 +141,10 @@ const AddPosition = () => {
       ) : (
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
           <Form {...form}>
-            <form onSubmit={(e) => { e.preventDefault(); }}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+              }}>
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <FormField
@@ -270,11 +273,12 @@ const AddPosition = () => {
                   name="isActive"
                   render={({ field }) => (
                     <FormItem>
-                      <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                        field.value
-                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                      }`}>
+                      <div
+                        className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                          field.value
+                            ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                            : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                        }`}>
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -318,21 +322,22 @@ const AddPosition = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setCancelModal(true)}
-                    className="gap-2">
+                    className="gap-2 w-full sm:w-auto justify-center">
                     <span className="material-symbols-outlined text-lg">close</span>
                     {t("common.cancel")}
                   </Button>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setDraftModal(true)}
-                      disabled={createMutation.isLoading}>
+                      disabled={createMutation.isLoading}
+                      className="w-full sm:w-auto justify-center">
                       {t("page.position.button.saveDraft")}
                     </Button>
                     <Button
@@ -349,7 +354,7 @@ const AddPosition = () => {
                         setConfirmSaveModal(true);
                       }}
                       disabled={createMutation.isLoading}
-                      className="gap-2 shadow-lg shadow-primary/20">
+                      className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
                       <span className="material-symbols-outlined text-lg">save</span>
                       {t("page.position.button.save")}
                     </Button>

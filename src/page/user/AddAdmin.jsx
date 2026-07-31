@@ -64,9 +64,7 @@ const AddAdmin = () => {
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || locationsData?.locations || [];
 
-  const { data: rolesData } = useQuery(["roles-all"], () => getAllRole(), {
-    
-  });
+  const { data: rolesData } = useQuery(["roles-all"], () => getAllRole(), {});
   const roles = rolesData?.data || rolesData?.roles || [];
 
   const createMutation = useMutation(createUser, {
@@ -93,18 +91,21 @@ const AddAdmin = () => {
       return;
     }
     setIsSubmitting(true);
-    
-    const payload = normalizePayload({
-      userName: form.name,
-      email: form.email,
-      password: form.password,
-      confirmPassword: form.password,
-      phoneNumber: form.phoneNumber,
-      store: form.locationId ? Number(form.locationId) : null,
-      role: form.role, // Added role field
-      userType: "admin",
-      status: saveAsDraft ? "draft" : "active"
-    }, { isFormData: false });
+
+    const payload = normalizePayload(
+      {
+        userName: form.name,
+        email: form.email,
+        password: form.password,
+        confirmPassword: form.password,
+        phoneNumber: form.phoneNumber,
+        store: form.locationId ? Number(form.locationId) : null,
+        role: form.role, // Added role field
+        userType: "admin",
+        status: saveAsDraft ? "draft" : "active"
+      },
+      { isFormData: false }
+    );
 
     createMutation.mutate(payload);
   };
@@ -306,17 +307,20 @@ const AddAdmin = () => {
           </div>
         </div>
 
-        <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
+          <Button
+            variant="outline"
+            onClick={() => setCancelModal(true)}
+            className="gap-2 w-full sm:w-auto justify-center">
             <span className="material-symbols-outlined text-lg">arrow_back</span>
             {t("page.user.button.back")}
           </Button>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
             <Button
               variant="outline"
               onClick={() => setDraftModal(true)}
               disabled={isSubmitting}
-              className="gap-2">
+              className="gap-2 w-full sm:w-auto justify-center">
               <span className="material-symbols-outlined text-lg">save</span>
               Simpan sebagai Draft
             </Button>
@@ -331,7 +335,7 @@ const AddAdmin = () => {
                 handleSubmit({ preventDefault: () => {} }, false);
               }}
               disabled={isSubmitting}
-              className="gap-2">
+              className="gap-2 w-full sm:w-auto justify-center">
               <span className="material-symbols-outlined text-lg">save</span>
               {t("page.user.button.save")}
             </Button>

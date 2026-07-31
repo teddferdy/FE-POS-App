@@ -792,20 +792,26 @@ const EditCategory = () => {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-                <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full sm:w-auto justify-center"
+                  onClick={() => setCancelModal(true)}>
                   {t("common.cancel")}
                 </Button>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                   <Button
                     type="button"
                     variant="outline"
+                    className="w-full sm:w-auto justify-center"
                     onClick={() => form.handleSubmit((v) => onSubmit(v, true))()}
                     disabled={isSubmitting}>
                     {t("common.saveAsDraft")}
                   </Button>
                   <Button
                     type="button"
+                    className="w-full sm:w-auto justify-center"
                     onClick={(e) => {
                       e.preventDefault();
                       if (isSuperAdmin && !allStores && selectedStore.length === 0) {

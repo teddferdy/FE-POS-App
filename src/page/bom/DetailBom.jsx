@@ -142,37 +142,41 @@ const DetailBom = () => {
 
             <div>
               <div className="bg-card p-6 rounded-xl border border-border">
-                <h2 className="text-lg font-semibold mb-4">{t("page.bom.detail.ingredientList")}</h2>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-2">{t("page.bom.detail.ingredient")}</th>
-                      <th className="pb-2 text-right">{t("page.bom.detail.qty")}</th>
-                      <th className="pb-2 text-center">{t("page.bom.detail.unit")}</th>
-                      <th className="pb-2">{t("page.bom.detail.notes")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bom.lines?.length > 0 ? (
-                      bom.lines.map((line, i) => (
-                        <tr key={i} className="border-b border-muted/20">
-                          <td className="py-2">{line.ingredientData?.name || "-"}</td>
-                          <td className="py-2 text-right font-mono">{line.qty}</td>
-                          <td className="py-2 text-center">
-                            {line.unit || t("page.bom.detail.pcs")}
-                          </td>
-                          <td className="py-2">{line.notes || "-"}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={4} className="py-4 text-center text-muted-foreground">
-                          {t("page.bom.detail.noIngredients")}
-                        </td>
+                <h2 className="text-lg font-semibold mb-4">
+                  {t("page.bom.detail.ingredientList")}
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm min-w-[520px]">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th className="pb-2">{t("page.bom.detail.ingredient")}</th>
+                        <th className="pb-2 text-right">{t("page.bom.detail.qty")}</th>
+                        <th className="pb-2 text-center">{t("page.bom.detail.unit")}</th>
+                        <th className="pb-2">{t("page.bom.detail.notes")}</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {bom.lines?.length > 0 ? (
+                        bom.lines.map((line, i) => (
+                          <tr key={i} className="border-b border-muted/20">
+                            <td className="py-2">{line.ingredientData?.name || "-"}</td>
+                            <td className="py-2 text-right font-mono">{line.qty}</td>
+                            <td className="py-2 text-center">
+                              {line.unit || t("page.bom.detail.pcs")}
+                            </td>
+                            <td className="py-2">{line.notes || "-"}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="py-4 text-center text-muted-foreground">
+                            {t("page.bom.detail.noIngredients")}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>

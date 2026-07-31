@@ -216,11 +216,18 @@ const StockAdjustment = () => {
                 </div>
               </Card>
               <Card className="p-6 shadow-sm border-muted">
-                <div className="flex justify-between items-center">
-                  <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate(-1)}
+                    className="w-full sm:w-auto justify-center">
                     {t("page.stockAdjustment.form.cancel")}
                   </Button>
-                  <Button type="submit" disabled={submitting}>
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full sm:w-auto justify-center">
                     {submitting ? <Loading /> : <Save className="mr-2 h-4 w-4" />}
                     {t("page.stockAdjustment.form.submit")}
                   </Button>

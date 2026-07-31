@@ -195,28 +195,30 @@ const DetailProductionOrder = () => {
                   <h2 className="text-lg font-semibold mb-4">
                     {t("page.productionOrder.detail.bomComponents")}
                   </h2>
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left text-muted-foreground">
-                        <th className="pb-2">{t("page.productionOrder.detail.bomBahan")}</th>
-                        <th className="pb-2">{t("page.productionOrder.detail.bomQtyPerUnit")}</th>
-                        <th className="pb-2">{t("page.productionOrder.detail.bomUnit")}</th>
-                        <th className="pb-2">{t("page.productionOrder.detail.bomTotal")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {order.bomComponents.map((c, i) => (
-                        <tr key={i} className="border-b border-muted/20">
-                          <td className="py-2">{c.ingredientName || c.name}</td>
-                          <td className="py-2">{c.qty}</td>
-                          <td className="py-2">{c.unit || "pcs"}</td>
-                          <td className="py-2 font-mono">
-                            {(parseFloat(c.qty) || 0) * order.plannedQty}
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm min-w-[520px]">
+                      <thead>
+                        <tr className="border-b text-left text-muted-foreground">
+                          <th className="pb-2">{t("page.productionOrder.detail.bomBahan")}</th>
+                          <th className="pb-2">{t("page.productionOrder.detail.bomQtyPerUnit")}</th>
+                          <th className="pb-2">{t("page.productionOrder.detail.bomUnit")}</th>
+                          <th className="pb-2">{t("page.productionOrder.detail.bomTotal")}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {order.bomComponents.map((c, i) => (
+                          <tr key={i} className="border-b border-muted/20">
+                            <td className="py-2">{c.ingredientName || c.name}</td>
+                            <td className="py-2">{c.qty}</td>
+                            <td className="py-2">{c.unit || "pcs"}</td>
+                            <td className="py-2 font-mono">
+                              {(parseFloat(c.qty) || 0) * order.plannedQty}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}

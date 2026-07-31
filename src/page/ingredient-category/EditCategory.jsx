@@ -37,7 +37,7 @@ const EditCategory = () => {
   const [draftModal, setDraftModal] = useState(false);
 
   const categoryFieldLabels = {
-    name: "Nama Kategori",
+    name: "Nama Kategori"
   };
 
   const form = useForm({
@@ -147,11 +147,12 @@ const EditCategory = () => {
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                           {t("page.ingredientCategory.add.status")}
                         </FormLabel>
-                        <div className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                          form.watch("isActive")
-                            ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                            : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                        }`}>
+                        <div
+                          className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                            form.watch("isActive")
+                              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                          }`}>
                           <div className="flex items-center gap-3">
                             <div
                               className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -189,17 +190,22 @@ const EditCategory = () => {
             </div>
           </div>
 
-          <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-            <Button type="button" variant="outline" onClick={() => setShowCancel(true)}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowCancel(true)}
+              className="w-full sm:w-auto justify-center">
               <X size={16} className="mr-1" />
               {t("page.ingredientCategory.add.cancelButton")}
             </Button>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setDraftModal(true)}
-                disabled={editMutation.isLoading}>
+                disabled={editMutation.isLoading}
+                className="w-full sm:w-auto justify-center">
                 {t("common.saveAsDraft")}
               </Button>
               <Button
@@ -215,7 +221,8 @@ const EditCategory = () => {
                   }
                   setConfirmSaveModal(true);
                 }}
-                disabled={editMutation.isLoading}>
+                disabled={editMutation.isLoading}
+                className="w-full sm:w-auto justify-center">
                 <Save size={16} className="mr-1" />
                 {editMutation.isLoading
                   ? t("page.ingredientCategory.add.savingButton")
