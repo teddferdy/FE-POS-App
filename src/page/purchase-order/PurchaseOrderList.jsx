@@ -209,6 +209,10 @@ const PurchaseOrderList = () => {
       setReturItems(
         poDetail.data.items.map((item) => ({
           ...item,
+          available: Math.max(
+            0,
+            (Number(item.receivedQuantity) || 0) - (Number(item.returnedQty) || 0)
+          ),
           returnQty: 0,
           notes: ""
         }))
@@ -1329,7 +1333,7 @@ const PurchaseOrderList = () => {
                                       onChange={(e) => {
                                         const raw = e.target.value;
                                         if (!/^[0-9]*\.?[0-9]*$/.test(raw)) return;
-                                        const maxQty = item.quantity || 0;
+                                        const maxQty = item.available ?? item.quantity ?? 0;
                                         const val = parseFloat(raw);
                                         const capped =
                                           !isNaN(val) && val > maxQty ? String(maxQty) : raw;
@@ -1354,7 +1358,8 @@ const PurchaseOrderList = () => {
                                   <td className="px-3 py-2.5 text-center text-sm font-semibold">
                                     {Math.max(
                                       0,
-                                      (item.quantity || 0) - (parseFloat(item.returnQty) || 0)
+                                      (item.available ?? item.quantity ?? 0) -
+                                        (parseFloat(item.returnQty) || 0)
                                     )}
                                   </td>
                                   <td className="px-3 py-2.5">
