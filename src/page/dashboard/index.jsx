@@ -15,7 +15,8 @@ import {
   AlertTriangle,
   ShoppingCart,
   DollarSign,
-  Target
+  Target,
+  Wallet
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
@@ -224,6 +225,8 @@ const Dashboard = () => {
   const recentOrders = recentOrdersData.rows || [];
   const recentOrdersTotal = recentOrdersData.total || 0;
   const recentOrdersPages = Math.max(1, Math.ceil(recentOrdersTotal / ORDER_PAGE_SIZE));
+  const totalExpense = d.totalExpense || 0;
+  const recentExpenses = d.recentExpenses || [];
   const formatDate = (iso) =>
     iso
       ? new Date(iso).toLocaleDateString("id-ID", {
@@ -330,6 +333,40 @@ const Dashboard = () => {
                 ))}
                 <Skeleton className="h-7 w-14 rounded" />
               </div>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <div>
+                <Skeleton className="h-5 w-44 mb-2" />
+                <Skeleton className="h-3 w-64" />
+              </div>
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/50">
+                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-24" /></th>
+                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-16" /></th>
+                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-16" /></th>
+                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-14" /></th>
+                    <th className="text-right px-5 py-3"><Skeleton className="h-3 w-14" /></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {[...Array(3)].map((_, i) => (
+                    <tr key={i}>
+                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-32" /></td>
+                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-20" /></td>
+                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-20" /></td>
+                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-16" /></td>
+                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-16" /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </>
@@ -647,6 +684,84 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          <div
+            data-tour="dashboard-expenses"
+            className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+            <div className="p-5 border-b border-border flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Wallet size={16} className="text-muted-foreground" />
+                  {t("page.dashboard.recentExpenses")}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.dashboard.recentExpensesSubtitle")}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  {t("page.dashboard.expenseTotal")}
+                </p>
+                <p className="text-lg font-bold text-destructive">
+                  {formatCurrencyRupiah(totalExpense)}
+                </p>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/50 text-muted-foreground">
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.expenseTable.description")}
+                    </th>
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.expenseTable.category")}
+                    </th>
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.expenseTable.store")}
+                    </th>
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.expenseTable.date")}
+                    </th>
+                    <th className="text-right px-5 py-3 font-medium">
+                      {t("page.dashboard.expenseTable.amount")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {recentExpenses.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="px-5 py-8 text-center text-sm text-muted-foreground">
+                        {t("page.dashboard.noExpenses")}
+                      </td>
+                    </tr>
+                  ) : (
+                    recentExpenses.map((exp, i) => (
+                      <tr key={exp.id || i} className="hover:bg-accent/30 transition-colors">
+                        <td className="px-5 py-3.5 font-medium text-foreground">
+                          {exp.description || "-"}
+                        </td>
+                        <td className="px-5 py-3.5 text-muted-foreground">
+                          {exp.categoryName || "-"}
+                        </td>
+                        <td className="px-5 py-3.5 text-muted-foreground">
+                          {exp.storeName || "-"}
+                        </td>
+                        <td className="px-5 py-3.5 text-muted-foreground text-xs">
+                          {formatDate(exp.date)}
+                        </td>
+                        <td className="px-5 py-3.5 text-right font-mono text-xs font-semibold text-destructive">
+                          {formatCurrencyRupiah(exp.amount || 0)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}

@@ -13,12 +13,15 @@ import {
   XCircle,
   Eye,
   Wallet,
-  FileEdit
+  FileEdit,
+  RotateCcw
 } from "lucide-react";
+import { format } from "date-fns";
 import { getAllExpenses, approveExpense, rejectExpense } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
@@ -38,6 +41,8 @@ const ExpenseList = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [showFilters, setShowFilters] = useState(false);
 
@@ -45,6 +50,22 @@ const ExpenseList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/expense";
   const locationParam = storeFilter !== "all" ? storeFilter : user?.store || "";
+
+  const hasActiveFilter =
+    search ||
+    statusFilter !== "all" ||
+    startDate ||
+    endDate ||
+    storeFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setStartDate(null);
+    setEndDate(null);
+    setGlobalStoreFilter("all");
+    setPage(1);
+  };
 
   const { data: locData, isLoading: isLoadingLocations } = useQuery(
     ["locations-expense"],
@@ -55,14 +76,16 @@ const ExpenseList = () => {
   );
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["expenses", page, limit, search, statusFilter, storeFilter],
+    ["expenses", page, limit, search, statusFilter, storeFilter, startDate, endDate],
     () =>
       getAllExpenses({
         location: locationParam,
         page,
         limit,
         search: search || undefined,
-        status: statusFilter !== "all" ? statusFilter : undefined
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
+        endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined
       }),
     { keepPreviousData: true }
   );
@@ -359,8 +382,9 @@ const ExpenseList = () => {
               {isLoadingLocations || isLoading || isFetching ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <Skeleton className="h-9 w-72 rounded-md" />
-                  <Skeleton className="h-9 w-48 rounded-md" />
-                  <Skeleton className="h-9 w-32 rounded-md" />
+                  <Skeleton className="h-9 w-40 rounded-md" />
+                  <Skeleton className="h-9 w-36 rounded-md" />
+                  <Skeleton className="h-9 w-36 rounded-md" />
                 </div>
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
@@ -372,6 +396,40 @@ const ExpenseList = () => {
                     }}
                     placeholder={t("page.expense.list.search")}
                     isLoading={isFetching}
+                  />
+                  <Combobox
+                    options={[
+                      { value: "all", label: t("common.all") },
+                      { value: "draft", label: t("page.expense.list.statusDraft") },
+                      { value: "pending", label: t("page.expense.list.statusPending") },
+                      { value: "approved", label: t("page.expense.list.statusApproved") },
+                      { value: "rejected", label: t("page.expense.list.statusRejected") }
+                    ]}
+                    value={statusFilter}
+                    onChange={(v) => {
+                      setStatusFilter(v);
+                      setPage(1);
+                    }}
+                    placeholder={t("common.all")}
+                    searchPlaceholder="Cari..."
+                  />
+                  <DatePicker
+                    date={startDate}
+                    setDate={(d) => {
+                      setStartDate(d);
+                      setPage(1);
+                    }}
+                    placeholder={t("page.expense.list.filter.startDate")}
+                    className="w-40"
+                  />
+                  <DatePicker
+                    date={endDate}
+                    setDate={(d) => {
+                      setEndDate(d);
+                      setPage(1);
+                    }}
+                    placeholder={t("page.expense.list.filter.endDate")}
+                    className="w-40"
                   />
                   {isSuperAdmin && (
                     <>
@@ -395,24 +453,18 @@ const ExpenseList = () => {
                           isSuperAdmin={isSuperAdmin}
                           t={t}
                         />
-                        <Combobox
-                          options={[
-                            { value: "all", label: t("common.all") },
-                            { value: "draft", label: t("page.expense.list.statusDraft") },
-                            { value: "pending", label: t("page.expense.list.statusPending") },
-                            { value: "approved", label: t("page.expense.list.statusApproved") },
-                            { value: "rejected", label: t("page.expense.list.statusRejected") }
-                          ]}
-                          value={statusFilter}
-                          onChange={(v) => {
-                            setStatusFilter(v);
-                            setPage(1);
-                          }}
-                          placeholder={t("common.all")}
-                          searchPlaceholder="Cari..."
-                        />
                       </div>
                     </>
+                  )}
+                  {hasActiveFilter && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 h-9 text-muted-foreground"
+                      onClick={resetFilters}>
+                      <RotateCcw size={14} />
+                      {t("page.expense.list.filter.reset")}
+                    </Button>
                   )}
                 </div>
               )}
