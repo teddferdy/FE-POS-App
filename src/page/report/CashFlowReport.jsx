@@ -38,7 +38,7 @@ const CashFlowReport = () => {
 
   const cf = data?.data || {};
 
-  const summaryCards = [
+  const inflowCards = [
     {
       labelKey: "page.report.cashFlow.card.cashReceipt",
       value: cf.penerimaanTunai,
@@ -55,12 +55,59 @@ const CashFlowReport = () => {
       color: "text-purple-600"
     },
     {
+      labelKey: "page.report.cashFlow.card.purchaseReturnRefund",
+      value: cf.penerimaanReturPembelian,
+      color: "text-emerald-600"
+    },
+    {
       labelKey: "page.report.cashFlow.card.totalInflow",
       value: cf.totalKasMasuk,
       color: "text-primary",
       bold: true
     }
   ];
+
+  const outflowCards = [
+    {
+      labelKey: "page.report.cashFlow.card.expense",
+      value: cf.pengeluaranExpense,
+      color: "text-orange-600"
+    },
+    {
+      labelKey: "page.report.cashFlow.card.supplierPayment",
+      value: cf.pengeluaranPurchasePayment,
+      color: "text-red-600"
+    },
+    {
+      labelKey: "page.report.cashFlow.card.totalOutflow",
+      value: cf.totalPengeluaran,
+      color: "text-red-600",
+      bold: true
+    },
+    {
+      labelKey: "page.report.cashFlow.card.netCashFlow",
+      value: cf.netCashFlow,
+      color: (cf.netCashFlow ?? 0) >= 0 ? "text-green-600" : "text-red-600",
+      bold: true
+    }
+  ];
+
+  const renderCards = (cards) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {cards.map((card) => (
+        <Card key={card.labelKey}>
+          <CardContent className="p-5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+              {t(card.labelKey)}
+            </p>
+            <p className={`text-xl font-bold ${card.color}`}>
+              {cf != null && card.value != null ? formatCurrency(card.value) : "-"}
+            </p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -97,7 +144,7 @@ const CashFlowReport = () => {
             <AbortController refetch={refetch} />
           ) : isLoading ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[...Array(4)].map((_, i) => (
+              {[...Array(8)].map((_, i) => (
                 <div key={i} className="bg-card rounded-xl border border-border p-4">
                   <div className="flex items-start justify-between mb-3">
                     <Skeleton className="h-3 w-24" />
@@ -109,19 +156,19 @@ const CashFlowReport = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {summaryCards.map((card) => (
-                <Card key={card.labelKey}>
-                  <CardContent className="p-5">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                      {t(card.labelKey)}
-                    </p>
-                    <p className={`text-xl font-bold ${card.color}`}>
-                      {cf != null && card.value != null ? formatCurrency(card.value) : "-"}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                  {t("page.report.cashFlow.section.inflow")}
+                </h3>
+                {renderCards(inflowCards)}
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                  {t("page.report.cashFlow.section.outflow")}
+                </h3>
+                {renderCards(outflowCards)}
+              </div>
             </div>
           )}
         </>
