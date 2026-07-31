@@ -27,7 +27,7 @@ export const getPurchaseReturnById = async (id) => {
   return data;
 };
 
-export const approvePurchaseReturn = async (id, resolution = "credit") => {
+export const approvePurchaseReturn = async ({ id, resolution = "credit" }) => {
   const { data, status } = await axiosInstance.patch(`/purchase-return/approve/${id}`, {
     resolution
   });
