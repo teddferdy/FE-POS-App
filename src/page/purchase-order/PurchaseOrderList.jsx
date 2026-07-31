@@ -778,15 +778,17 @@ const PurchaseOrderList = () => {
                   <path d="m15 5 4 4" />
                 </svg>
               </IconAction>
-              <IconAction
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-600"
-                onClick={() => navigate(`/add-goods-receipt?poId=${po.id}`)}
-                label={t("page.purchaseOrder.list.action.receive")}>
-                <RefreshCw size={18} />
-              </IconAction>
             </>
+          )}
+          {(po.status === "pending" || po.status === "ordered") && (
+            <IconAction
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-green-600"
+              onClick={() => navigate(`/add-goods-receipt?poId=${po.id}`)}
+              label={t("page.purchaseOrder.list.action.receive")}>
+              <RefreshCw size={18} />
+            </IconAction>
           )}
           {(po.status === "ordered" || po.status === "received") && (
             <IconAction
