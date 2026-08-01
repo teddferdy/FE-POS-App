@@ -34,18 +34,18 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <CookiesProvider defaultSetOptions={{ path: "/" }}>
-    <QueryClientProvider client={queryClient}>
-      <StoreProvider>
-      <I18nextProvider i18n={i18n}>
-        <Toaster position="top-center" expand={false} />
-        <SocketProvider>
-          {/* <LoadingProvider> */}
-          <App />
-          {/* </LoadingProvider> */}
-        </SocketProvider>
-      </I18nextProvider>
-      </StoreProvider>
-    </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <StoreProvider>
+          <I18nextProvider i18n={i18n}>
+            <Toaster position="top-center" expand={false} />
+            <SocketProvider>
+              {/* <LoadingProvider> */}
+              <App />
+              {/* </LoadingProvider> */}
+            </SocketProvider>
+          </I18nextProvider>
+        </StoreProvider>
+      </QueryClientProvider>
     </CookiesProvider>
   </React.StrictMode>
 );

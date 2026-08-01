@@ -95,8 +95,8 @@ const ProductionOrderList = () => {
         limit,
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
-      })
-    , { keepPreviousData: true }
+      }),
+    { keepPreviousData: true }
   );
 
   const items = data?.data || [];
@@ -408,16 +408,25 @@ const ProductionOrderList = () => {
                       <Combobox
                         options={[
                           { value: "all", label: t("page.productionOrder.list.filterAll") },
-                          ...Object.entries(statusConfig).map(([k, v]) => ({ value: k, label: v.label }))
+                          ...Object.entries(statusConfig).map(([k, v]) => ({
+                            value: k,
+                            label: v.label
+                          }))
                         ]}
                         value={statusFilter}
-                        onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                        onChange={(v) => {
+                          setStatusFilter(v);
+                          setPage(1);
+                        }}
                         placeholder={t("page.productionOrder.list.filterAll")}
                         searchPlaceholder="Cari..."
                       />
                       <SearchInput
                         value={search}
-                        onChange={(val) => { setSearch(val); setPage(1); }}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
                         placeholder={t("page.productionOrder.list.searchPlaceholder")}
                         isLoading={isFetching}
                       />

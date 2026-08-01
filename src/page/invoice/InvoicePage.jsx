@@ -23,7 +23,7 @@ import {
   Coins,
   RotateCcw,
   Printer,
-  X,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,7 +59,18 @@ const DEFAULT_INVOICE_TEMPLATE = {
   showMemberInfo: true,
   showLogo: true,
   logo: null,
-  addressFieldsVisibility: { storeName: true, address: true, locationDetail: true, province: true, city: true, district: true, village: true, postalCode: true, phone: true, email: true },
+  addressFieldsVisibility: {
+    storeName: true,
+    address: true,
+    locationDetail: true,
+    province: true,
+    city: true,
+    district: true,
+    village: true,
+    postalCode: true,
+    phone: true,
+    email: true
+  },
   memberFieldsVisible: { name: true, tier: true, points: true }
 };
 
@@ -111,7 +122,7 @@ const InvoicePreview = ({
   socialMedia = [],
   socialMediaVisible = {},
   addressFieldsVisible = {},
-  memberFieldsVisible = {},
+  memberFieldsVisible = {}
 }) => {
   const { t } = useTranslation();
   const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
@@ -134,13 +145,27 @@ const InvoicePreview = ({
           )}
           {showAddress && (
             <div className="text-gray-500 mt-1 space-y-0.5">
-              {addressFieldsVisible.storeName !== false && storeName && <p className="text-[11px] font-semibold">{storeName}</p>}
-              {addressFieldsVisible.address !== false && locationDetail?.address && <p className="text-[11px]">{locationDetail.address}</p>}
-              {addressFieldsVisible.locationDetail !== false && locationDetail?.detailLocation && <p className="text-[11px]">{locationDetail.detailLocation}</p>}
-              {addressFieldsVisible.province !== false && provinceName && <p className="text-[11px]">{[cityName, provinceName].filter(Boolean).join(", ")}</p>}
-              {addressFieldsVisible.postalCode !== false && postalCodeValue && <p className="text-[11px]">Kode Pos: {postalCodeValue}</p>}
-              {addressFieldsVisible.phone !== false && storePhone && <p className="text-[11px]">Telp: {storePhone}</p>}
-              {addressFieldsVisible.email !== false && storeEmail && <p className="text-[11px]">{storeEmail}</p>}
+              {addressFieldsVisible.storeName !== false && storeName && (
+                <p className="text-[11px] font-semibold">{storeName}</p>
+              )}
+              {addressFieldsVisible.address !== false && locationDetail?.address && (
+                <p className="text-[11px]">{locationDetail.address}</p>
+              )}
+              {addressFieldsVisible.locationDetail !== false && locationDetail?.detailLocation && (
+                <p className="text-[11px]">{locationDetail.detailLocation}</p>
+              )}
+              {addressFieldsVisible.province !== false && provinceName && (
+                <p className="text-[11px]">{[cityName, provinceName].filter(Boolean).join(", ")}</p>
+              )}
+              {addressFieldsVisible.postalCode !== false && postalCodeValue && (
+                <p className="text-[11px]">Kode Pos: {postalCodeValue}</p>
+              )}
+              {addressFieldsVisible.phone !== false && storePhone && (
+                <p className="text-[11px]">Telp: {storePhone}</p>
+              )}
+              {addressFieldsVisible.email !== false && storeEmail && (
+                <p className="text-[11px]">{storeEmail}</p>
+              )}
             </div>
           )}
         </div>
@@ -171,7 +196,9 @@ const InvoicePreview = ({
           <div className="flex items-center gap-3 text-gray-700 text-[11px]">
             <Medal size={14} className="text-yellow-600 shrink-0" />
             <div className="flex-1 space-y-0.5">
-              {memberFieldsVisible.name !== false && <span className="block font-medium">{memberName || "-"}</span>}
+              {memberFieldsVisible.name !== false && (
+                <span className="block font-medium">{memberName || "-"}</span>
+              )}
               {memberTier && memberFieldsVisible.tier !== false && (
                 <span className="block text-gray-500 text-[10px]">Tier: {memberTier}</span>
               )}
@@ -259,9 +286,7 @@ const InvoicePage = () => {
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
-  const [selectedStore, setSelectedStore] = useState(
-    isSuperAdmin ? "" : String(user?.store || "")
-  );
+  const [selectedStore, setSelectedStore] = useState(isSuperAdmin ? "" : String(user?.store || ""));
   const cashierName = user?.userName || user?.name || user?.fullName || "";
 
   const { data: locData, isLoading: locLoading } = useQuery(
@@ -279,8 +304,7 @@ const InvoicePage = () => {
     isError: storeError,
     refetch: refetchStore
   } = useQuery(["store-detail", selectedStore], () => getLocationById({ id: selectedStore }), {
-    enabled: !!selectedStore,
-    
+    enabled: !!selectedStore
   });
   const locationDetail = (storeData?.data || storeData) ?? null;
   const hasStore = !!locationDetail && !!(locationDetail?.name || locationDetail?.storeName);
@@ -295,11 +319,21 @@ const InvoicePage = () => {
   const [showSocialMedia, setShowSocialMedia] = useState(true);
   const [socialMediaVisible, setSocialMediaVisible] = useState({});
   const [addressFieldsVisible, setAddressFieldsVisible] = useState({
-    storeName: true, address: true, locationDetail: true, province: true,
-    city: true, district: true, village: true, postalCode: true, phone: true, email: true
+    storeName: true,
+    address: true,
+    locationDetail: true,
+    province: true,
+    city: true,
+    district: true,
+    village: true,
+    postalCode: true,
+    phone: true,
+    email: true
   });
   const [memberFieldsVisible, setMemberFieldsVisible] = useState({
-    name: true, tier: true, points: true
+    name: true,
+    tier: true,
+    points: true
   });
   const [logoUrl, setLogoUrl] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
@@ -309,28 +343,27 @@ const InvoicePage = () => {
   const [selectedStores, setSelectedStores] = useState([]);
 
   const { data: provinces } = useQuery(["provinces"], getProvinces, {
-    enabled: hasStore && !!locationDetail?.province,
-    
+    enabled: hasStore && !!locationDetail?.province
   });
   const { data: cities } = useQuery(
     ["cities", locationDetail?.province],
     () => getCities(locationDetail.province),
-    { enabled: hasStore && !!locationDetail?.province, }
+    { enabled: hasStore && !!locationDetail?.province }
   );
   const { data: districts } = useQuery(
     ["districts", locationDetail?.city],
     () => getDistricts(locationDetail.city),
-    { enabled: hasStore && !!locationDetail?.city, }
+    { enabled: hasStore && !!locationDetail?.city }
   );
   const { data: villages } = useQuery(
     ["villages", locationDetail?.district],
     () => getVillages(locationDetail.district),
-    { enabled: hasStore && !!locationDetail?.district, }
+    { enabled: hasStore && !!locationDetail?.district }
   );
   const { data: postalCodes } = useQuery(
     ["postal-codes", locationDetail?.village],
     () => getPostalCode(locationDetail.village),
-    { enabled: hasStore && !!locationDetail?.village, }
+    { enabled: hasStore && !!locationDetail?.village }
   );
 
   const provinceName =
@@ -356,14 +389,13 @@ const InvoicePage = () => {
   const hasPhone = !!storePhone;
   const hasEmail = !!storeEmail;
   const hasPostalCode = !!postalCodeValue;
-  const hasSocialMedia = !!(locationDetail?.socialMedia?.length);
+  const hasSocialMedia = !!locationDetail?.socialMedia?.length;
 
   const { data: invoiceSettings } = useQuery(
     ["invoice-settings", selectedStore],
     () => getInvoiceSetting(selectedStore),
     {
-      enabled: !!selectedStore,
-      
+      enabled: !!selectedStore
     }
   );
 
@@ -394,9 +426,10 @@ const InvoicePage = () => {
       }
       if (settingsData.addressFieldsVisibility) {
         try {
-          const v = typeof settingsData.addressFieldsVisibility === "string"
-            ? JSON.parse(settingsData.addressFieldsVisibility)
-            : settingsData.addressFieldsVisibility;
+          const v =
+            typeof settingsData.addressFieldsVisibility === "string"
+              ? JSON.parse(settingsData.addressFieldsVisibility)
+              : settingsData.addressFieldsVisibility;
           setAddressFieldsVisible((prev) => ({ ...prev, ...v }));
         } catch (err) {
           console.error("Failed to parse addressFieldsVisibility:", err);
@@ -404,9 +437,10 @@ const InvoicePage = () => {
       }
       if (settingsData.memberFieldsVisibility) {
         try {
-          const v = typeof settingsData.memberFieldsVisibility === "string"
-            ? JSON.parse(settingsData.memberFieldsVisibility)
-            : settingsData.memberFieldsVisibility;
+          const v =
+            typeof settingsData.memberFieldsVisibility === "string"
+              ? JSON.parse(settingsData.memberFieldsVisibility)
+              : settingsData.memberFieldsVisibility;
           setMemberFieldsVisible((prev) => ({ ...prev, ...v }));
         } catch (err) {
           console.error("Failed to parse memberFieldsVisibility:", err);
@@ -588,9 +622,7 @@ const InvoicePage = () => {
             <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
               <Store size={40} className="text-primary" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">
-              {t("page.invoice.title")}
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">{t("page.invoice.title")}</h2>
             <p className="text-muted-foreground mb-8">Pilih toko</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {locLoading
@@ -779,23 +811,89 @@ const InvoicePage = () => {
                 {hasStore ? (
                   <div className="space-y-3">
                     {[
-                      { key: "storeName", icon: Store, label: t("page.invoice.storeName"), value: storeName, hasData: !!storeName },
-                      { key: "address", icon: MapPin, label: t("page.invoice.address"), value: locationDetail?.address, hasData: hasAddress },
-                      ...(locationDetail?.detailLocation ? [{ key: "locationDetail", icon: Globe, label: t("page.invoice.locationDetail"), value: locationDetail.detailLocation, hasData: hasDetailLocation }] : []),
-                      { key: "province", icon: Building2, label: t("page.invoice.province"), value: provinceName, hasData: !!provinceName },
-                      { key: "city", icon: Building2, label: t("page.invoice.city"), value: cityName, hasData: !!cityName },
-                      { key: "district", icon: Building2, label: t("page.invoice.district"), value: districtName, hasData: !!districtName },
-                      { key: "village", icon: Building2, label: t("page.invoice.village"), value: villageName, hasData: !!villageName },
-                      { key: "postalCode", icon: Hash, label: t("page.invoice.postalCode"), value: postalCodeValue, hasData: hasPostalCode },
-                      { key: "phone", icon: Phone, label: t("page.invoice.phone"), value: storePhone, hasData: hasPhone },
-                      { key: "email", icon: Mail, label: t("page.invoice.email"), value: storeEmail, hasData: hasEmail },
+                      {
+                        key: "storeName",
+                        icon: Store,
+                        label: t("page.invoice.storeName"),
+                        value: storeName,
+                        hasData: !!storeName
+                      },
+                      {
+                        key: "address",
+                        icon: MapPin,
+                        label: t("page.invoice.address"),
+                        value: locationDetail?.address,
+                        hasData: hasAddress
+                      },
+                      ...(locationDetail?.detailLocation
+                        ? [
+                            {
+                              key: "locationDetail",
+                              icon: Globe,
+                              label: t("page.invoice.locationDetail"),
+                              value: locationDetail.detailLocation,
+                              hasData: hasDetailLocation
+                            }
+                          ]
+                        : []),
+                      {
+                        key: "province",
+                        icon: Building2,
+                        label: t("page.invoice.province"),
+                        value: provinceName,
+                        hasData: !!provinceName
+                      },
+                      {
+                        key: "city",
+                        icon: Building2,
+                        label: t("page.invoice.city"),
+                        value: cityName,
+                        hasData: !!cityName
+                      },
+                      {
+                        key: "district",
+                        icon: Building2,
+                        label: t("page.invoice.district"),
+                        value: districtName,
+                        hasData: !!districtName
+                      },
+                      {
+                        key: "village",
+                        icon: Building2,
+                        label: t("page.invoice.village"),
+                        value: villageName,
+                        hasData: !!villageName
+                      },
+                      {
+                        key: "postalCode",
+                        icon: Hash,
+                        label: t("page.invoice.postalCode"),
+                        value: postalCodeValue,
+                        hasData: hasPostalCode
+                      },
+                      {
+                        key: "phone",
+                        icon: Phone,
+                        label: t("page.invoice.phone"),
+                        value: storePhone,
+                        hasData: hasPhone
+                      },
+                      {
+                        key: "email",
+                        icon: Mail,
+                        label: t("page.invoice.email"),
+                        value: storeEmail,
+                        hasData: hasEmail
+                      }
                     ].map(({ key, icon: Icon, label, value, hasData }) => {
                       const isEmpty = hasData === false;
                       return (
                         <label
                           key={key}
                           className={`flex items-center justify-between p-3 rounded-lg border border-border transition-colors ${
-                            isEmpty ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-muted/50"
+                            isEmpty
+                              ? "opacity-50 cursor-not-allowed"
+                              : "cursor-pointer hover:bg-muted/50"
                           }`}>
                           <div className="flex items-center gap-2 min-w-0">
                             <Icon size={16} className="text-muted-foreground shrink-0" />
@@ -839,7 +937,9 @@ const InvoicePage = () => {
                     <div className="flex items-center gap-2 min-w-0">
                       <Medal size={16} className="text-muted-foreground shrink-0" />
                       <div className="min-w-0">
-                        <span className="text-xs text-muted-foreground">{t("page.invoice.memberName")}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {t("page.invoice.memberName")}
+                        </span>
                         <p className="text-sm font-medium">{sampleMember.name}</p>
                       </div>
                     </div>
@@ -854,7 +954,9 @@ const InvoicePage = () => {
                     <div className="flex items-center gap-2 min-w-0">
                       <Award size={16} className="text-muted-foreground shrink-0" />
                       <div className="min-w-0">
-                        <span className="text-xs text-muted-foreground">{t("page.invoice.memberTier")}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {t("page.invoice.memberTier")}
+                        </span>
                         <p className="text-sm font-medium">{sampleMember.tier}</p>
                       </div>
                     </div>
@@ -869,8 +971,12 @@ const InvoicePage = () => {
                     <div className="flex items-center gap-2 min-w-0">
                       <Coins size={16} className="text-muted-foreground shrink-0" />
                       <div className="min-w-0">
-                        <span className="text-xs text-muted-foreground">{t("page.invoice.totalPoints")}</span>
-                        <p className="text-sm font-medium">{Number(sampleMember.points).toLocaleString("id-ID")}</p>
+                        <span className="text-xs text-muted-foreground">
+                          {t("page.invoice.totalPoints")}
+                        </span>
+                        <p className="text-sm font-medium">
+                          {Number(sampleMember.points).toLocaleString("id-ID")}
+                        </p>
                       </div>
                     </div>
                     <Switch
@@ -891,7 +997,11 @@ const InvoicePage = () => {
                     <Globe size={18} className="text-primary" />
                     <h3 className="text-base font-semibold">{t("page.invoice.socialMedia")}</h3>
                   </div>
-                  <Switch checked={showSocialMedia} onCheckedChange={setShowSocialMedia} disabled={!hasSocialMedia} />
+                  <Switch
+                    checked={showSocialMedia}
+                    onCheckedChange={setShowSocialMedia}
+                    disabled={!hasSocialMedia}
+                  />
                 </div>
                 {locationDetail?.socialMedia?.length ? (
                   <div className="space-y-3">

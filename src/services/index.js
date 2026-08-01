@@ -26,7 +26,7 @@ axiosInstance.interceptors.request.use(
     // Helper to check if store is already provided in URL/Params/Data
     const urlHasStore = req.url?.includes("store=") || req.url?.includes("stores=") || false;
     const paramsHaveStore = req.params?.store !== undefined || req.params?.stores !== undefined;
-    
+
     let dataHasStore = false;
     if (req.data instanceof FormData) {
       dataHasStore = req.data.has("store") || req.data.has("stores");

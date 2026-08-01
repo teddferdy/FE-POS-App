@@ -7,7 +7,6 @@ import { getAllUsers } from "@/services/user";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loading } from "@/components/ui/loading";
 import { Shield, CheckCircle, FileEdit } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
@@ -90,7 +89,7 @@ const AdminList = () => {
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["admins", page, limit, search],
     () => getAllUsers({ page, limit, search }),
-    { }
+    {}
   );
 
   const users = data?.data || data?.users || [];
@@ -183,7 +182,10 @@ const AdminList = () => {
                 <div className="flex gap-3">
                   <SearchInput
                     value={search}
-                    onChange={(val) => { setSearch(val); setPage(1); }}
+                    onChange={(val) => {
+                      setSearch(val);
+                      setPage(1);
+                    }}
                     placeholder={t("page.user.adminList.search")}
                     isLoading={isFetching}
                   />

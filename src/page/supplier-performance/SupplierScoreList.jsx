@@ -4,14 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
-import {
-  TrendingUp,
-  Award,
-  Eye,
-  Calculator,
-  Star,
-  AlertTriangle
-} from "lucide-react";
+import { Award, Eye, Calculator } from "lucide-react";
 import { toast } from "sonner";
 import {
   getSupplierScores,
@@ -21,9 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
-import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
-import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
 import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
@@ -122,9 +113,7 @@ const SupplierScoreList = () => {
       accessorKey: "rank",
       cell: ({ row }) => {
         const idx = (page - 1) * limit + row.index + 1;
-        return (
-          <span className="font-semibold text-foreground">#{idx}</span>
-        );
+        return <span className="font-semibold text-foreground">#{idx}</span>;
       }
     },
     {
@@ -132,9 +121,7 @@ const SupplierScoreList = () => {
       accessorKey: "supplier",
       cell: ({ row }) => (
         <div>
-          <div className="font-medium text-foreground">
-            {row.original.supplier?.name || "-"}
-          </div>
+          <div className="font-medium text-foreground">{row.original.supplier?.name || "-"}</div>
           <div className="text-xs text-muted-foreground">
             {row.original.supplier?.phone || row.original.supplier?.email || ""}
           </div>
@@ -172,7 +159,8 @@ const SupplierScoreList = () => {
       cell: ({ row }) => {
         const rate = parseFloat(row.original.defectRate || 0);
         return (
-          <span className={`text-sm font-medium ${rate > 5 ? "text-red-600" : rate > 2 ? "text-yellow-600" : "text-green-600"}`}>
+          <span
+            className={`text-sm font-medium ${rate > 5 ? "text-red-600" : rate > 2 ? "text-yellow-600" : "text-green-600"}`}>
             {rate.toFixed(1)}%
           </span>
         );
@@ -191,7 +179,8 @@ const SupplierScoreList = () => {
       header: t("page.supplierPerformance.list.grade"),
       accessorKey: "grade",
       cell: ({ row }) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${gradeBadge(row.original.grade)}`}>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${gradeBadge(row.original.grade)}`}>
           {row.original.grade}
         </span>
       )
@@ -248,10 +237,12 @@ const SupplierScoreList = () => {
                 key={supplier.id}
                 className={`p-4 rounded-lg border ${idx === 0 ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/10" : "border-border bg-background"}`}>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`text-lg font-bold ${idx === 0 ? "text-yellow-600" : "text-muted-foreground"}`}>
+                  <span
+                    className={`text-lg font-bold ${idx === 0 ? "text-yellow-600" : "text-muted-foreground"}`}>
                     #{idx + 1}
                   </span>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${gradeBadge(supplier.grade)}`}>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${gradeBadge(supplier.grade)}`}>
                     {supplier.grade}
                   </span>
                 </div>
@@ -340,7 +331,7 @@ const SupplierScoreList = () => {
           <div>
             <label className="text-sm font-medium text-foreground">Period</label>
             <Combobox
-              options={periodOptions.filter(o => o.value !== "all")}
+              options={periodOptions.filter((o) => o.value !== "all")}
               value={calculateForm.period}
               onChange={(v) => setCalculateForm({ ...calculateForm, period: v })}
               placeholder="Pilih periode"

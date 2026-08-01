@@ -53,7 +53,10 @@ export const getLowStockAll = async (payload) => {
 };
 
 export const autoGeneratePOFromLowStock = async (payload) => {
-  const { data, status } = await axiosInstance.post("/stock-history/auto-generate-po", payload || {});
+  const { data, status } = await axiosInstance.post(
+    "/stock-history/auto-generate-po",
+    payload || {}
+  );
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
@@ -76,7 +79,7 @@ export const getStockOpname = async (payload) => {
   const params = new URLSearchParams();
   if (payload?.page) params.append("page", payload.page);
   if (payload?.limit) params.append("limit", payload.limit);
-  if (payload?.location) params.append("warehouse", payload.location);
+  if (payload?.location) params.append("store", payload.location);
   if (payload?.status) params.append("status", payload.status);
   if (payload?.search) params.append("search", payload.search);
   if (payload?.startDate) params.append("startDate", payload.startDate);

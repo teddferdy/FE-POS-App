@@ -333,7 +333,9 @@ const CartPanel = ({
               </div>
             )}
             <div className="border-t border-border/30 pt-2 flex items-center justify-between">
-              <span className="text-sm font-semibold text-foreground">{t("page.cashier.total")}</span>
+              <span className="text-sm font-semibold text-foreground">
+                {t("page.cashier.total")}
+              </span>
               <span className="font-bold text-foreground text-lg">
                 Rp {formatPrice(subtotal + taxAmount)}
               </span>

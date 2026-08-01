@@ -1,13 +1,30 @@
-const CACHE_NAME = "pos-cache-v1";
-const STATIC_CACHE = "pos-static-v1";
+const CACHE_NAME = "pos-cache-v2";
+const STATIC_CACHE = "pos-static-v2";
+const POS_DATA_CACHE = "pos-data-v2";
 
-const STATIC_URLS = ["/", "/login", "/pos"];
+const STATIC_URLS = [
+  "/",
+  "/login",
+  "/home",
+  "/dashboard-super-admin",
+  "/manifest.json"
+];
 
-const CACHEABLE_METHODS = ["GET"];
+const CACHEABLE_API_PATTERNS = [
+  "/api/pos/products",
+  "/api/pos/categories",
+  "/api/pos/tax-config",
+  "/api/location",
+  "/api/member",
+  "/api/member-tier"
+];
+
 const API_PREFIX = "/api";
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(STATIC_URLS)));
+  event.waitUntil(
+    caches.open(STATIC_CACHE).then((cache) => cache.addAll(STATIC_URLS))
+  );
   self.skipWaiting();
 });
 
@@ -17,7 +34,9 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k !== CACHE_NAME && k !== STATIC_CACHE).map((k) => caches.delete(k))
+          keys
+            .filter((k) => k !== CACHE_NAME && k !== STATIC_CACHE && k !== POS_DATA_CACHE)
+            .map((k) => caches.delete(k))
         )
       )
   );
@@ -31,15 +50,19 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.method === "GET") {
-    event.respondWith(networkFirst(request));
-  } else {
-    if (url.pathname.startsWith(API_PREFIX)) {
-      event.respondWith(offlineQueue(request));
+    if (isPOSDataRequest(url)) {
+      event.respondWith(staleWhileRevalidate(request));
     } else {
-      event.respondWith(fetch(request));
+      event.respondWith(networkFirst(request));
     }
+  } else if (request.method !== "GET" && url.pathname.startsWith(API_PREFIX)) {
+    event.respondWith(offlineQueue(request));
   }
 });
+
+function isPOSDataRequest(url) {
+  return CACHEABLE_API_PATTERNS.some((pattern) => url.pathname.startsWith(pattern));
+}
 
 async function networkFirst(request) {
   try {
@@ -59,6 +82,28 @@ async function networkFirst(request) {
   }
 }
 
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(POS_DATA_CACHE);
+  const cached = await cache.match(request);
+
+  const networkPromise = fetch(request)
+    .then((response) => {
+      if (response.ok) {
+        cache.put(request, response.clone());
+      }
+      return response;
+    })
+    .catch(() => cached);
+
+  if (cached) {
+    const age = Date.now() - (cached.headers.get("sw-cache-timestamp") || 0);
+    const isStale = age > 5 * 60 * 1000; // 5 minutes
+    if (!isStale) return cached;
+  }
+
+  return networkPromise;
+}
+
 async function offlineQueue(request) {
   try {
     return await fetch(request);
@@ -70,7 +115,8 @@ async function offlineQueue(request) {
       method: request.method,
       headers: [...request.headers.entries()],
       body,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      isFormData: request.headers.get("content-type")?.includes("multipart/form-data") || false
     };
     const db = await openDB();
     await db.add("syncQueue", entry);
@@ -83,8 +129,8 @@ async function offlineQueue(request) {
 
 function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open("POSOfflineDB", 1);
-    req.onupgradeneeded = () => {
+    const req = indexedDB.open("POSOfflineDB", 2);
+    req.onupgradeneeded = (event) => {
       const db = req.result;
       if (!db.objectStoreNames.contains("syncQueue")) {
         db.createObjectStore("syncQueue", { keyPath: "id", autoIncrement: true });
@@ -95,7 +141,6 @@ function openDB() {
   });
 }
 
-// Background Sync event
 self.addEventListener("sync", (event) => {
   if (event.tag === "sync-orders") {
     event.waitUntil(flushSyncQueue());
@@ -115,13 +160,30 @@ async function flushSyncQueue() {
 
     for (const item of items) {
       try {
+        const headers = item.headers
+          ? Object.fromEntries(item.headers)
+          : { "Content-Type": "application/json" };
+
+        let body = item.body;
+        if (item.isFormData && typeof body === "object" && !(body instanceof FormData)) {
+          const formData = new FormData();
+          Object.entries(body).forEach(([key, value]) => {
+            if (value instanceof Blob) {
+              formData.append(key, value, value.name);
+            } else {
+              formData.append(key, typeof value === "object" ? JSON.stringify(value) : value);
+            }
+          });
+          body = formData;
+          delete headers["Content-Type"];
+        }
+
         const response = await fetch(item.url, {
           method: item.method,
-          headers: item.headers
-            ? Object.fromEntries(item.headers)
-            : { "Content-Type": "application/json" },
-          body: item.body
+          headers,
+          body
         });
+
         if (response.ok) {
           const deleteTx = db.transaction("syncQueue", "readwrite");
           deleteTx.objectStore("syncQueue").delete(item.id);
@@ -138,3 +200,10 @@ async function flushSyncQueue() {
     console.error("Background sync flush error:", e);
   }
 }
+
+// Notify clients when sync completes
+self.addEventListener("message", (event) => {
+  if (event.data === "skipWaiting") {
+    self.skipWaiting();
+  }
+});

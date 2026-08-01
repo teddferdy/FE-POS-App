@@ -2,7 +2,6 @@ import React, { useState, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import { Search, Barcode, Grid3X3, List, Tag, Package, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import { orderList } from "@/state/order-list";
 import { getAllCategoryActive } from "@/services/category";
@@ -22,7 +21,6 @@ const ProductGrid = ({
   store
 }) => {
   const { t } = useTranslation();
-  const [cookie] = useCookies();
   const [viewMode, setViewMode] = useState("grid");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showVariantModal, setShowVariantModal] = useState(false);
@@ -34,7 +32,7 @@ const ProductGrid = ({
 
     () => getAllCategoryActive({ location: store }),
 
-    { enabled: !!store, }
+    { enabled: !!store }
   );
   const categories = categoriesData?.data || categoriesData || [];
 

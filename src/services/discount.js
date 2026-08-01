@@ -9,9 +9,7 @@ export const getDiscount = async () => {
 export const getAllDiscountByLocationAndActive = async ({ limit, page, store }) => {
   const params = new URLSearchParams({ page, size: limit });
   if (store) params.append("store", store);
-  const { data, status } = await axiosInstance.get(
-    `/discount/get-discount-by-location?${params}`
-  );
+  const { data, status } = await axiosInstance.get(`/discount/get-discount-by-location?${params}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

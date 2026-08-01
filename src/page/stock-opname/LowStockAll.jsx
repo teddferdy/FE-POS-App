@@ -41,9 +41,13 @@ const LowStockAll = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [typeFilter, setTypeFilter] = useState("all");
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-low-stock-all"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-low-stock-all"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
   const locations = locData?.data || [];
 
   const { data, isLoading, isError, refetch } = useQuery(
@@ -55,8 +59,8 @@ const LowStockAll = () => {
         store: storeFilter !== "all" ? storeFilter : undefined,
         type: typeFilter !== "all" ? typeFilter : undefined,
         search: search || undefined
-      })
-    , { keepPreviousData: true }
+      }),
+    { keepPreviousData: true }
   );
 
   const autoGenerateMutation = useMutation(autoGeneratePOFromLowStock, {
@@ -199,63 +203,64 @@ const LowStockAll = () => {
     }
   ];
 
-  const filters = isLoadingLocations || isLoading ? (
-    <div className="flex flex-wrap items-center gap-3">
-      <Skeleton className="h-9 w-56 rounded-md" />
-      <Skeleton className="h-9 w-44 rounded-md" />
-    </div>
-  ) : (
-    <div className="flex flex-wrap items-center gap-3">
-      <SearchInput
-        value={search}
-        onChange={(val) => {
-          setSearch(val);
-          setPage(1);
-        }}
-        placeholder="Cari nama barang..."
-        isLoading={isLoading}
-      />
-      <div className="flex items-center gap-2">
-        <Store size={16} className="text-muted-foreground shrink-0" />
-        <Select
-          value={storeFilter}
-          onValueChange={(v) => {
-            setGlobalStoreFilter(v);
-            setPage(1);
-          }}>
-          <SelectTrigger className="w-44 h-9 text-sm">
-            <SelectValue placeholder="Semua Toko" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Toko</SelectItem>
-            {locations.map((loc) => (
-              <SelectItem key={loc.id} value={String(loc.id)}>
-                {loc.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+  const filters =
+    isLoadingLocations || isLoading ? (
+      <div className="flex flex-wrap items-center gap-3">
+        <Skeleton className="h-9 w-56 rounded-md" />
+        <Skeleton className="h-9 w-44 rounded-md" />
       </div>
-      <div className="flex items-center gap-2">
-        <Filter size={16} className="text-muted-foreground shrink-0" />
-        <Select
-          value={typeFilter}
-          onValueChange={(v) => {
-            setTypeFilter(v);
+    ) : (
+      <div className="flex flex-wrap items-center gap-3">
+        <SearchInput
+          value={search}
+          onChange={(val) => {
+            setSearch(val);
             setPage(1);
-          }}>
-          <SelectTrigger className="w-36 h-9 text-sm">
-            <SelectValue placeholder="Semua Tipe" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Tipe</SelectItem>
-            <SelectItem value="product">Produk</SelectItem>
-            <SelectItem value="ingredient">Bahan</SelectItem>
-          </SelectContent>
-        </Select>
+          }}
+          placeholder="Cari nama barang..."
+          isLoading={isLoading}
+        />
+        <div className="flex items-center gap-2">
+          <Store size={16} className="text-muted-foreground shrink-0" />
+          <Select
+            value={storeFilter}
+            onValueChange={(v) => {
+              setGlobalStoreFilter(v);
+              setPage(1);
+            }}>
+            <SelectTrigger className="w-44 h-9 text-sm">
+              <SelectValue placeholder="Semua Toko" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Toko</SelectItem>
+              {locations.map((loc) => (
+                <SelectItem key={loc.id} value={String(loc.id)}>
+                  {loc.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter size={16} className="text-muted-foreground shrink-0" />
+          <Select
+            value={typeFilter}
+            onValueChange={(v) => {
+              setTypeFilter(v);
+              setPage(1);
+            }}>
+            <SelectTrigger className="w-36 h-9 text-sm">
+              <SelectValue placeholder="Semua Tipe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Tipe</SelectItem>
+              <SelectItem value="product">Produk</SelectItem>
+              <SelectItem value="ingredient">Bahan</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   const hasLowStock = stats.totalIngredients > 0 || stats.totalLowStock > 0;
 

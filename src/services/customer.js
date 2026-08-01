@@ -19,10 +19,7 @@ export const addCustomer = async (payload) => {
 };
 
 export const editCustomer = async (payload) => {
-  const { data, status } = await axiosInstance.put(
-    `/member/edit-member/${payload.id}`,
-    payload
-  );
+  const { data, status } = await axiosInstance.put(`/member/edit-member/${payload.id}`, payload);
   if (status !== 200 && status !== 201) throw Error(`${data?.message || data?.error}`);
   return data;
 };

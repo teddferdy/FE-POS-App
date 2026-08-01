@@ -10,9 +10,12 @@ import { getTableById } from "@/services/table";
 
 const statusBadge = (status, t) => {
   const colors = {
-    available: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
-    occupied: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
-    reserved: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"
+    available:
+      "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
+    occupied:
+      "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
+    reserved:
+      "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"
   };
   const labels = {
     available: t("page.table.status.available"),
@@ -20,8 +23,11 @@ const statusBadge = (status, t) => {
     reserved: t("page.table.status.reserved")
   };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${colors[status] || colors.available}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${status === "available" ? "bg-green-500" : status === "occupied" ? "bg-red-500" : "bg-amber-500"}`} />
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${colors[status] || colors.available}`}>
+      <span
+        className={`w-1.5 h-1.5 rounded-full ${status === "available" ? "bg-green-500" : status === "occupied" ? "bg-red-500" : "bg-amber-500"}`}
+      />
       {labels[status] || labels.available}
     </span>
   );
@@ -33,11 +39,9 @@ const DetailTable = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["table", id],
-    () => getTableById(id),
-    { enabled: !!id }
-  );
+  const { data, isLoading, isError, refetch } = useQuery(["table", id], () => getTableById(id), {
+    enabled: !!id
+  });
 
   const table = data?.data || data;
 
@@ -150,15 +154,11 @@ const DetailTable = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">
-                  {t("page.table.table.name")}
-                </p>
+                <p className="text-xs text-muted-foreground mb-1">{t("page.table.table.name")}</p>
                 <p className="font-medium">{table?.name || table?.number || "-"}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">
-                  {t("page.table.detail.id")}
-                </p>
+                <p className="text-xs text-muted-foreground mb-1">{t("page.table.detail.id")}</p>
                 <p className="font-mono text-sm">#{table?.id}</p>
               </div>
               <div>
@@ -167,19 +167,17 @@ const DetailTable = () => {
                 </p>
                 <div className="flex items-center gap-2">
                   <Users size={14} className="shrink-0 text-muted-foreground" />
-                  <span className="font-medium">{table?.capacity || "-"} {t("page.table.detail.people")}</span>
+                  <span className="font-medium">
+                    {table?.capacity || "-"} {t("page.table.detail.people")}
+                  </span>
                 </div>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">
-                  {t("common.status")}
-                </p>
+                <p className="text-xs text-muted-foreground mb-1">{t("common.status")}</p>
                 {statusBadge(table?.status, t)}
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">
-                  {t("page.table.detail.store")}
-                </p>
+                <p className="text-xs text-muted-foreground mb-1">{t("page.table.detail.store")}</p>
                 <div className="flex items-center gap-2">
                   <Store size={14} className="shrink-0 text-muted-foreground" />
                   <span className="font-medium">{table?.store?.name || table?.store || "-"}</span>
@@ -190,13 +188,15 @@ const DetailTable = () => {
               <div className="flex items-center gap-2">
                 <User size={13} className="shrink-0" />
                 <span>
-                  {t("common.createdBy")}: {table?.createdByUser?.fullName || table?.createdBy || "-"}
+                  {t("common.createdBy")}:{" "}
+                  {table?.createdByUser?.fullName || table?.createdBy || "-"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <User size={13} className="shrink-0" />
                 <span>
-                  {t("common.modifiedBy")}: {table?.modifiedByUser?.fullName || table?.modifiedBy || "-"}
+                  {t("common.modifiedBy")}:{" "}
+                  {table?.modifiedByUser?.fullName || table?.modifiedBy || "-"}
                 </span>
               </div>
             </div>

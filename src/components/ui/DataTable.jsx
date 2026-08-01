@@ -1,12 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -126,10 +121,7 @@ const DataTable = ({
               className="p-1 hover:bg-accent rounded transition-colors">
               <ChevronRight
                 size={14}
-                className={cn(
-                  "transition-transform duration-200",
-                  isExpanded && "rotate-90"
-                )}
+                className={cn("transition-transform duration-200", isExpanded && "rotate-90")}
               />
             </button>
           );
@@ -247,9 +239,7 @@ const DataTable = ({
                       <td
                         key={colIndex}
                         style={getCellStyle(col, colIndex)}
-                        onClick={
-                          isCheckboxCol ? (e) => e.stopPropagation() : undefined
-                        }
+                        onClick={isCheckboxCol ? (e) => e.stopPropagation() : undefined}
                         className={cn(
                           "px-6 py-3.5 text-xs font-semibold tracking-wider whitespace-nowrap",
                           col.align === "right" && "text-right",
@@ -270,19 +260,21 @@ const DataTable = ({
                     );
                   })}
                 </tr>
-              ]
+              ];
               if (isExpandedCheck(rowId) && renderExpandedRow) {
                 rows.push(
                   <tr key={`expanded-${rowId}`}>
                     <td colSpan={allColumns.length} className="px-0 py-0">
-                      <div className="sticky left-0 bg-muted/20 px-6 py-4" style={{ width: containerWidth || '100vw', overflow: 'hidden' }}>
+                      <div
+                        className="sticky left-0 bg-muted/20 px-6 py-4"
+                        style={{ width: containerWidth || "100vw", overflow: "hidden" }}>
                         {renderExpandedRow(row)}
                       </div>
                     </td>
                   </tr>
-                )
+                );
               }
-              return rows
+              return rows;
             })}
           </tbody>
         </table>

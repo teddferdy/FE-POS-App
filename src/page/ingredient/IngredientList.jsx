@@ -5,7 +5,19 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Eye, Package, Download, Upload, Loader2, CheckCircle, XCircle, FileEdit } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Package,
+  Download,
+  Upload,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  FileEdit
+} from "lucide-react";
 import {
   getAllIngredients,
   deleteIngredient,
@@ -53,8 +65,7 @@ const IngredientList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/ingredient";
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-ingredients"], () => getAllLocation(), {
-    
+  const { data: locData } = useQuery(["locations-ingredients"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -445,13 +456,19 @@ const IngredientList = () => {
                           { value: "draft", label: t("common.draft") }
                         ]}
                         value={statusFilter}
-                        onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                        onChange={(v) => {
+                          setStatusFilter(v);
+                          setPage(1);
+                        }}
                         placeholder={t("common.all")}
                         searchPlaceholder="Cari..."
                       />
                       <SearchInput
                         value={search}
-                        onChange={(val) => { setSearch(val); setPage(1); }}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
                         placeholder={t("page.ingredient.list.searchPlaceholder")}
                         isLoading={isFetching}
                       />

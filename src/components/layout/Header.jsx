@@ -28,6 +28,8 @@ import { useQueryClient } from "react-query";
 import { axiosInstance } from "@/services";
 import { getUnreadCount } from "@/services/notification";
 import { parseAccessMenu } from "@/utils/permission";
+import { GlobalSearch } from "@/components/ui/GlobalSearch";
+import { useGlobalSearch } from "@/hooks/useGlobalSearch";
 import CommandPalette from "./CommandPalette";
 import { useTourStore } from "@/state/tour";
 import { useThemeStore } from "@/state/theme";
@@ -73,6 +75,8 @@ const StoreSelector = ({ cookie, setCookie }) => {
   }, []);
 
   if (role !== "super_admin" || !hasCashierMenu) return null;
+
+  const { isOpen, setIsOpen, searchItems, handleSelect: handleGlobalSelect } = useGlobalSearch();
 
   const handleSelect = (loc) => {
     const id = loc.id || loc._id;
@@ -405,6 +409,14 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
             </kbd>
           </button>
         </div>
+
+        {/* Global Search */}
+        <GlobalSearch
+          isOpen={isOpen}
+          onOpenChange={setIsOpen}
+          searchItems={searchItems}
+          onSelect={handleGlobalSelect}
+        />
 
         {/* Right */}
         <div className="flex items-center gap-1 sm:gap-2">

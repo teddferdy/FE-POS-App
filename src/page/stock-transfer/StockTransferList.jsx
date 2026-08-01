@@ -20,7 +20,6 @@ import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { Combobox } from "@/components/ui/combobox";
 import StoreFilter from "@/components/ui/StoreFilter";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const statusCfg = {
   sent: {
@@ -65,7 +64,7 @@ const StockTransferList = () => {
   const [showFilters, setShowFilters] = useState(false);
   const effectiveStore = storeFilter !== "all" ? storeFilter : store;
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-stock-transfer"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-stock-transfer"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -80,8 +79,8 @@ const StockTransferList = () => {
         limit,
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
-      })
-    , { keepPreviousData: true }
+      }),
+    { keepPreviousData: true }
   );
 
   const receiveMutation = useMutation(receiveStockTransfer, {
@@ -285,14 +284,20 @@ const StockTransferList = () => {
                           )}
                           <Combobox
                             options={[
-                              { value: "all", label: t("page.stockTransfer.list.filter.allStatus") },
+                              {
+                                value: "all",
+                                label: t("page.stockTransfer.list.filter.allStatus")
+                              },
                               ...Object.entries(statusCfg).map(([k, v]) => ({
                                 value: k,
                                 label: v.label
                               }))
                             ]}
                             value={statusFilter}
-                            onChange={(val) => { setStatusFilter(val); setPage(1); }}
+                            onChange={(val) => {
+                              setStatusFilter(val);
+                              setPage(1);
+                            }}
                             placeholder={t("page.stockTransfer.list.filter.allStatus")}
                             searchPlaceholder={t("common.search")}
                           />

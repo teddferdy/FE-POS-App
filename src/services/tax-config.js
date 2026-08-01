@@ -1,7 +1,8 @@
 import { axiosInstance } from ".";
 
 export const getAllTaxConfig = async (payload) => {
-  const statusParam = payload?.status && payload.status !== "all" ? `&status=${payload.status}` : "";
+  const statusParam =
+    payload?.status && payload.status !== "all" ? `&status=${payload.status}` : "";
   const { data, status } = await axiosInstance.get(
     `/tax-config?store=${payload?.location || ""}&page=${payload?.page || 1}&limit=${payload?.limit || 10}${statusParam}`
   );

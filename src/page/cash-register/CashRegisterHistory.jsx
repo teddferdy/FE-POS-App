@@ -32,9 +32,13 @@ const CashRegisterHistory = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-cat"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-cat"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["cash-register-history", page, limit, search, storeFilter],
@@ -216,7 +220,10 @@ const CashRegisterHistory = () => {
                     <div className="flex items-center gap-3 w-full md:w-auto">
                       <SearchInput
                         value={search}
-                        onChange={(val) => { setSearch(val); setPage(1); }}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
                         placeholder={t("page.cashRegister.history.search")}
                         isLoading={isFetching}
                       />

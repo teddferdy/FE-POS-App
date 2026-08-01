@@ -853,7 +853,10 @@ const EditProduct = () => {
                                 <Combobox
                                   options={[
                                     { value: "menu", label: t("page.product.form.tipeProdukMenu") },
-                                    { value: "bahan_baku", label: t("page.product.form.tipeProdukBahanBaku") }
+                                    {
+                                      value: "bahan_baku",
+                                      label: t("page.product.form.tipeProdukBahanBaku")
+                                    }
                                   ]}
                                   value={field.value}
                                   onChange={field.onChange}
@@ -1128,8 +1131,11 @@ const EditProduct = () => {
                                     <div className="flex-1">
                                       <Combobox
                                         options={[
-                                          { value: "", label: t("page.product.form.selectIngredient") },
-                                          ...compositionOptions.map((opt, i) => ({
+                                          {
+                                            value: "",
+                                            label: t("page.product.form.selectIngredient")
+                                          },
+                                          ...compositionOptions.map((opt) => ({
                                             value: opt.name,
                                             label: `${opt.name} ${opt.unit ? `(${opt.unit})` : ""}`
                                           }))
@@ -1727,7 +1733,7 @@ const EditProduct = () => {
                               {compositionOptions.length > 0 && (
                                 <div className="bg-muted/30 rounded-lg p-4">
                                   <Combobox
-                                    options={compositionOptions.map((opt, i) => ({
+                                    options={compositionOptions.map((opt) => ({
                                       value: opt.name,
                                       label: `${opt.name} ${opt.unit ? `(${opt.unit})` : ""}`
                                     }))}

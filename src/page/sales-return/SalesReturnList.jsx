@@ -15,7 +15,6 @@ import NoStore from "@/components/ui/NoStore";
 import DataTable from "@/components/ui/DataTable";
 import { getAllLocation } from "@/services/location";
 import StoreFilter from "@/components/ui/StoreFilter";
-import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -50,7 +49,7 @@ const SalesReturnList = () => {
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-sales-return"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-sales-return"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -65,8 +64,8 @@ const SalesReturnList = () => {
         search: search || undefined,
         store: locationParam,
         status: statusFilter !== "all" ? statusFilter : undefined
-      })
-    , { keepPreviousData: true }
+      }),
+    { keepPreviousData: true }
   );
 
   const items = data?.data || [];
@@ -252,21 +251,20 @@ const SalesReturnList = () => {
         </nav>
       </div>
       <div>
-         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-           <div>
-             <h1 className="text-2xl font-bold text-foreground">{t("page.salesReturn.list.title")}</h1>
-             <p className="text-sm text-muted-foreground mt-1">
-               {t("page.salesReturn.list.subtitle")}
-             </p>
-           </div>
-           <Button 
-             onClick={() => navigate("/sales-return/create")}
-             className="w-full md:w-auto"
-           >
-             {t("common.create")} Return
-           </Button>
-         </div>
-       </div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.salesReturn.list.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.salesReturn.list.subtitle")}
+            </p>
+          </div>
+          <Button onClick={() => navigate("/sales-return/create")} className="w-full md:w-auto">
+            {t("common.create")} Return
+          </Button>
+        </div>
+      </div>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />
@@ -303,10 +301,16 @@ const SalesReturnList = () => {
                         <Combobox
                           options={[
                             { value: "all", label: t("page.salesReturn.list.filter.allStatus") },
-                            ...Object.entries(statusCfg).map(([k, v]) => ({ value: k, label: v.label }))
+                            ...Object.entries(statusCfg).map(([k, v]) => ({
+                              value: k,
+                              label: v.label
+                            }))
                           ]}
                           value={statusFilter}
-                          onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                          onChange={(v) => {
+                            setStatusFilter(v);
+                            setPage(1);
+                          }}
                           placeholder={t("page.salesReturn.list.filter.allStatus")}
                           searchPlaceholder="Cari..."
                         />

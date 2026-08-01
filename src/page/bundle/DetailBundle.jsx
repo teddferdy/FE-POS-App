@@ -3,15 +3,13 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Edit, Trash2, Package, Zap, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Package, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getBundleById, deleteBundle, changeBundleStatus } from "@/services/productBundle";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
-import Modal from "@/components/organism/modal";
 
 const DetailBundle = () => {
   const { t } = useTranslation();
@@ -24,11 +22,9 @@ const DetailBundle = () => {
   const role = user?.roleType || "";
   const canEdit = isSuperAdmin || role === "admin";
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["bundle", id],
-    () => getBundleById(id),
-    { enabled: !!id }
-  );
+  const { data, isLoading, isError, refetch } = useQuery(["bundle", id], () => getBundleById(id), {
+    enabled: !!id
+  });
 
   const deleteMutation = useMutation(deleteBundle, {
     onSuccess: () => {
@@ -45,20 +41,17 @@ const DetailBundle = () => {
     }
   });
 
-  const statusMutation = useMutation(
-    ({ id, status }) => changeBundleStatus(id, status),
-    {
-      onSuccess: () => {
-        toast.success(t("common.success"));
-        queryClient.invalidateQueries(["bundle", id]);
-      },
-      onError: (err) => {
-        toast.error(t("common.error"), {
-          description: err?.response?.data?.message || err.message
-        });
-      }
+  const statusMutation = useMutation(({ id, status }) => changeBundleStatus(id, status), {
+    onSuccess: () => {
+      toast.success(t("common.success"));
+      queryClient.invalidateQueries(["bundle", id]);
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
-  );
+  });
 
   const bundle = data?.data;
   const items = bundle?.items || [];
@@ -84,8 +77,7 @@ const DetailBundle = () => {
     return map[status] || map.draft;
   };
 
-  const formatPrice = (val) =>
-    `Rp${Number(val || 0).toLocaleString("id-ID")}`;
+  const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;
 
   if (isLoading) {
     return <Loading />;
@@ -101,9 +93,7 @@ const DetailBundle = () => {
     <div className="space-y-6">
       <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate(-1)}
-            className="hover:text-foreground transition-colors">
+          <button onClick={() => navigate(-1)} className="hover:text-foreground transition-colors">
             <ArrowLeft size={14} className="inline mr-1" />
             {t("common.back")}
           </button>
@@ -185,7 +175,9 @@ const DetailBundle = () => {
               </div>
               {bundle.description && (
                 <div className="col-span-2">
-                  <p className="text-xs text-muted-foreground">{t("page.bundle.form.description")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.bundle.form.description")}
+                  </p>
                   <p className="text-sm">{bundle.description}</p>
                 </div>
               )}
@@ -232,17 +224,25 @@ const DetailBundle = () => {
             <h3 className="font-semibold text-sm mb-4">{t("page.bundle.form.pricing")}</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">{t("page.bundle.form.originalPrice")}</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("page.bundle.form.originalPrice")}
+                </span>
                 <span className="text-sm line-through">{formatPrice(bundle.originalPrice)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">{t("page.bundle.form.bundlePrice")}</span>
-                <span className="text-lg font-bold text-green-600">{formatPrice(bundle.bundlePrice)}</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("page.bundle.form.bundlePrice")}
+                </span>
+                <span className="text-lg font-bold text-green-600">
+                  {formatPrice(bundle.bundlePrice)}
+                </span>
               </div>
               <div className="flex justify-between pt-2 border-t">
                 <span className="text-sm font-medium">{t("page.bundle.form.savings")}</span>
                 <span className="text-sm font-bold text-red-600">
-                  {bundle.discountPercentage > 0 ? `${bundle.discountPercentage}%` : formatPrice(bundle.discountAmount)}
+                  {bundle.discountPercentage > 0
+                    ? `${bundle.discountPercentage}%`
+                    : formatPrice(bundle.discountAmount)}
                 </span>
               </div>
             </div>
@@ -252,19 +252,31 @@ const DetailBundle = () => {
             <h3 className="font-semibold text-sm mb-4">{t("page.bundle.form.settings")}</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">{t("page.bundle.form.isAvailable")}</span>
-                <span className="text-sm font-medium">{bundle.isAvailable ? t("common.yes") : t("common.no")}</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("page.bundle.form.isAvailable")}
+                </span>
+                <span className="text-sm font-medium">
+                  {bundle.isAvailable ? t("common.yes") : t("common.no")}
+                </span>
               </div>
               {bundle.validFrom && (
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">{t("page.bundle.form.validFrom")}</span>
-                  <span className="text-sm">{new Date(bundle.validFrom).toLocaleDateString("id-ID")}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t("page.bundle.form.validFrom")}
+                  </span>
+                  <span className="text-sm">
+                    {new Date(bundle.validFrom).toLocaleDateString("id-ID")}
+                  </span>
                 </div>
               )}
               {bundle.validUntil && (
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">{t("page.bundle.form.validUntil")}</span>
-                  <span className="text-sm">{new Date(bundle.validUntil).toLocaleDateString("id-ID")}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t("page.bundle.form.validUntil")}
+                  </span>
+                  <span className="text-sm">
+                    {new Date(bundle.validUntil).toLocaleDateString("id-ID")}
+                  </span>
                 </div>
               )}
             </div>

@@ -79,7 +79,7 @@ const TableList = () => {
   const [formCapacity, setFormCapacity] = useState(4);
   const [formStore, setFormStore] = useState("");
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-table"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-table"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 

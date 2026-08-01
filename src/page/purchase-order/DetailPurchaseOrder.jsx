@@ -182,10 +182,7 @@ export default function DetailPurchaseOrder() {
         product: item.product,
         ingredientName: item.ingredientName,
         name: item.ingredientData?.name || item.productData?.nameProduct || item.ingredientName,
-        maxQty: Math.max(
-          0,
-          (Number(item.receivedQuantity) || 0) - (Number(item.returnedQty) || 0)
-        ),
+        maxQty: Math.max(0, (Number(item.receivedQuantity) || 0) - (Number(item.returnedQty) || 0)),
         qty: 0,
         unit: item.unit
       }))

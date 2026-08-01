@@ -172,7 +172,7 @@ const StoreGeospatial = () => {
                   options={[
                     { value: "all", label: t("common.all") },
                     { value: "active", label: t("common.active") },
-                    { value: "inactive", label: t("common.inactive") },
+                    { value: "inactive", label: t("common.inactive") }
                   ]}
                   value={statusFilter}
                   onChange={(val) => setStatusFilter(val)}
@@ -190,7 +190,7 @@ const StoreGeospatial = () => {
                     { value: "Main Branch", label: t("page.location.category.mainBranch") },
                     { value: "Branch", label: t("page.location.category.branch") },
                     { value: "Warehouse", label: t("page.location.category.warehouse") },
-                    { value: "Office", label: t("page.location.category.office") },
+                    { value: "Office", label: t("page.location.category.office") }
                   ]}
                   value={categoryFilter}
                   onChange={(val) => setCategoryFilter(val)}
@@ -230,7 +230,9 @@ const StoreGeospatial = () => {
               </div>
               <div className="absolute bottom-4 left-4 flex gap-2">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-1.5 bg-card/80 backdrop-blur-sm rounded-lg border border-border/50 px-2.5 py-1.5">
+                  <div
+                    key={i}
+                    className="flex items-center gap-1.5 bg-card/80 backdrop-blur-sm rounded-lg border border-border/50 px-2.5 py-1.5">
                     <Skeleton className="w-2.5 h-2.5 rounded-full shrink-0" />
                     <Skeleton className="h-2.5 w-8" />
                   </div>
@@ -339,7 +341,9 @@ const StoreGeospatial = () => {
             </div>
           ) : (
             <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">{t("page.location.map.legend")}:</span>
+              <span className="font-semibold text-foreground">
+                {t("page.location.map.legend")}:
+              </span>
               <div className="flex items-center gap-1.5">
                 <img
                   src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png"
@@ -358,7 +362,9 @@ const StoreGeospatial = () => {
               </div>
               <div className="flex gap-2 ml-4">
                 {Object.entries(categoryColors).map(([cat, cls]) => (
-                  <span key={cat} className={`text-[10px] font-semibold px-2 py-0.5 rounded ${cls}`}>
+                  <span
+                    key={cat}
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded ${cls}`}>
                     {cat}
                   </span>
                 ))}

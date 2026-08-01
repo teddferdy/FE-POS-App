@@ -1151,6 +1151,7 @@ CheckoutModal.propTypes = {
   store: PropTypes.any,
   cashierName: PropTypes.string,
   cashierId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  taxRate: PropTypes.number,
   onClose: PropTypes.func,
   onComplete: PropTypes.func
 };

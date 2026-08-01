@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Minus, ShoppingCart, Info } from "lucide-react";
+import { ArrowLeft, Plus, Minus, ShoppingCart, Info, RefreshCw, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useQuery } from "react-query";
 import { axiosInstance } from "@/services";
 import { addItem } from "./cartStore";
+import AbortController from "@/components/organism/abort-controller";
 
 const VAR_SEPARATOR = " • ";
 
@@ -17,26 +19,34 @@ const Detail = () => {
   const storeId = searchParams.get("store");
   const tableId = searchParams.get("table");
 
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
   const [variantSelections, setVariantSelections] = useState({});
   const [variantMods, setVariantMods] = useState([]);
   const [notes, setNotes] = useState("");
 
-  useEffect(() => {
-    if (!storeId || !id) return;
-    axiosInstance
-      .get(`/order/customer-menu?store=${storeId}`)
-      .then((res) => {
-        const p = (res.data?.data?.products || []).find(
-          (x) => String(x.id || x.productId) === String(id)
-        );
-        setProduct(p || null);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [id, storeId]);
+  const {
+    data: menuData,
+    isLoading: menuLoading,
+    isError: menuError,
+    refetch: refetchMenu
+  } = useQuery(
+    ["customer-menu-detail", storeId],
+    () =>
+      axiosInstance
+        .get(`/order/customer-menu?store=${storeId}`)
+        .then((res) => res.data?.data),
+    {
+      enabled: !!storeId,
+      staleTime: 5 * 60 * 1000
+    }
+  );
+
+  const allProducts = menuData?.products || [];
+
+  const product = useMemo(
+    () => allProducts.find((p) => String(p.id || p.productId) === String(id)),
+    [allProducts, id]
+  );
 
   const prodName = (p) => p?.name || p?.nameProduct || "-";
   const prodPrice = (p) => Number(p?.sellingPrice || p?.price || 0);
@@ -121,10 +131,25 @@ const Detail = () => {
     navigate(`/customer-order/cart?store=${storeId}&table=${tableId || ""}`);
   };
 
-  if (loading) {
+  if (menuLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (menuError) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <AlertCircle size={40} className="text-muted-foreground mb-4" />
+        <p className="text-on-surface-variant text-sm mb-4">
+          {t("page.customerOrder.loadMenuFail")}
+        </p>
+        <Button variant="outline" size="sm" onClick={() => refetchMenu()}>
+          <RefreshCw size={14} className="mr-1" />
+          {t("page.customerOrder.retry")}
+        </Button>
       </div>
     );
   }

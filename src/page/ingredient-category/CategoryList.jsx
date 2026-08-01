@@ -4,15 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import {
-  Plus,
-  Package,
-  Loader2,
-  FolderOpen,
-  CheckCircle,
-  XCircle,
-  FileEdit
-} from "lucide-react";
+import { Plus, Package, Loader2, FolderOpen, CheckCircle, XCircle, FileEdit } from "lucide-react";
 import {
   getAllIngredientCategoryTable,
   deleteIngredientCategory,
@@ -67,7 +59,7 @@ const CategoryList = () => {
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-ingredient-categories"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-ingredient-categories"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -390,13 +382,19 @@ const CategoryList = () => {
                               { value: "draft", label: t("common.draft") }
                             ]}
                             value={statusFilter}
-                            onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                            onChange={(v) => {
+                              setStatusFilter(v);
+                              setPage(1);
+                            }}
                             placeholder={t("common.all")}
                             searchPlaceholder="Cari..."
                           />
                           <SearchInput
                             value={search}
-                            onChange={(val) => { setSearch(val); setPage(1); }}
+                            onChange={(val) => {
+                              setSearch(val);
+                              setPage(1);
+                            }}
                             placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
                             isLoading={isFetching}
                           />

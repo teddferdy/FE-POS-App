@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 // import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -81,15 +81,18 @@ const KitchenDisplay = () => {
       : ""
     : cookie?.activeStore || cookie?.user?.store;
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-kitchen"], () => getAllLocation(), {
-    
-    enabled: isSuperAdmin
-  });
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-kitchen"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["kitchen-orders", storeId],
     () => getKitchenOrders(storeId ? { store: storeId } : {}),
-    { enabled: !!storeId || storeId === "", refetchInterval: 15000, }
+    { enabled: !!storeId || storeId === "", refetchInterval: 15000 }
   );
   const orders = data?.data || [];
 
@@ -173,8 +176,8 @@ const KitchenDisplay = () => {
         </div>
       </div>
 
-      {isSuperAdmin && (
-        isLoadingLocations || isLoading ? (
+      {isSuperAdmin &&
+        (isLoadingLocations || isLoading ? (
           <Skeleton className="h-9 w-48 rounded-md" />
         ) : (
           <div className="mb-4">
@@ -186,8 +189,7 @@ const KitchenDisplay = () => {
               t={t}
             />
           </div>
-        )
-      )}
+        ))}
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

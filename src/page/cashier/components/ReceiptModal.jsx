@@ -157,7 +157,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
         paymentMethod,
         cashAmount,
         changeAmount,
-        socialMedia: data?.socialMedia || [],
+        socialMedia: data?.socialMedia || []
       };
       await printReceipt(receipt, "auto");
       toast.success("Struk berhasil dicetak");

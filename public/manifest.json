@@ -1,20 +1,56 @@
 {
-  "short_name": "Bisa Nota - Demo",
-  "name": "Bisa Nota - Demo",
+  "short_name": "Bisa Nota POS",
+  "name": "Bisa Nota - Point of Sale",
+  "description": "Sistem POS lengkap untuk UMKM Indonesia - Offline ready, multi-store, member loyalty",
   "icons": [
     {
       "src": "logo-sidebar.ico",
       "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "type": "image/x-icon",
+      "purpose": "any maskable"
     },
     {
       "src": "mini-logo.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "mini-logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/home",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "categories": ["business", "finance", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Buka Kasir",
+      "short_name": "Kasir",
+      "description": "Buka halaman kasir untuk transaksi",
+      "url": "/home",
+      "icons": [{ "src": "mini-logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Lihat ringkasan penjualan hari ini",
+      "url": "/dashboard-super-admin",
+      "icons": [{ "src": "mini-logo.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }

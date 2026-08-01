@@ -130,30 +130,30 @@ export const syncOfflineData = async () => {
     try {
       const fetchOptions = {
         method: item.method,
-        headers: item.headers || {},
+        headers: item.headers || {}
       };
 
       if (item.body) {
         if (item.isFormData) {
-          // If it was FormData, we need to reconstruct it 
+          // If it was FormData, we need to reconstruct it
           // Note: This assumes body is an object of key-values stored in IndexedDB
           const formData = new FormData();
           Object.entries(item.body).forEach(([key, value]) => {
             if (value instanceof Blob) {
               formData.append(key, value, value.name);
             } else {
-              formData.append(key, typeof value === 'object' ? JSON.stringify(value) : value);
+              formData.append(key, typeof value === "object" ? JSON.stringify(value) : value);
             }
           });
           fetchOptions.body = formData;
           // Don't set Content-Type header for FormData, let the browser set it with boundary
-          if (fetchOptions.headers['Content-Type']) {
-            delete fetchOptions.headers['Content-Type'];
+          if (fetchOptions.headers["Content-Type"]) {
+            delete fetchOptions.headers["Content-Type"];
           }
         } else {
           fetchOptions.body = JSON.stringify(item.body);
-          if (!fetchOptions.headers['Content-Type']) {
-            fetchOptions.headers['Content-Type'] = 'application/json';
+          if (!fetchOptions.headers["Content-Type"]) {
+            fetchOptions.headers["Content-Type"] = "application/json";
           }
         }
       }

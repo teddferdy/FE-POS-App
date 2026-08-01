@@ -4,16 +4,16 @@
  */
 
 export const normalizePayload = (data, options = {}) => {
-  const { isFormData = true, jsonFields = [], storeField = 'store' } = options;
+  const { isFormData = true, jsonFields = [], storeField = "store" } = options;
 
   if (isFormData) {
     const formData = new FormData();
-    
+
     Object.entries(data).forEach(([key, value]) => {
       // Handle store fields specifically
-      if (key === storeField || key === 'stores') {
+      if (key === storeField || key === "stores") {
         if (Array.isArray(value)) {
-          formData.append(key, value.length > 0 ? JSON.stringify(value) : '');
+          formData.append(key, value.length > 0 ? JSON.stringify(value) : "");
         } else if (value !== undefined && value !== null) {
           formData.append(key, value);
         }
@@ -27,7 +27,7 @@ export const normalizePayload = (data, options = {}) => {
       }
 
       // Handle standard fields
-      if (value !== undefined && value !== null && value !== '') {
+      if (value !== undefined && value !== null && value !== "") {
         formData.append(key, value);
       }
     });
@@ -36,8 +36,8 @@ export const normalizePayload = (data, options = {}) => {
 
   // Handle JSON payload
   const normalized = { ...data };
-  Object.keys(normalized).forEach(key => {
-    if (normalized[key] === undefined || normalized[key] === null || normalized[key] === '') {
+  Object.keys(normalized).forEach((key) => {
+    if (normalized[key] === undefined || normalized[key] === null || normalized[key] === "") {
       delete normalized[key];
     }
   });

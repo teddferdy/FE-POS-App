@@ -28,7 +28,6 @@ import {
 } from "@/services/promo";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
-import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";

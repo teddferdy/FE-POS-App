@@ -121,7 +121,9 @@ export const canAccess = (user, menuKey, action) => {
     try {
       const full = JSON.parse(sessionStorage.getItem("user"));
       accessMenu = parseAccessMenu(full?.accessMenu);
-    } catch (e) {}
+    } catch (e) {
+      /* ignore invalid session data */
+    }
   }
   if (!accessMenu || accessMenu.length === 0) return false;
   const menu = accessMenu.find(
@@ -149,7 +151,9 @@ export const filterMenuByPermission = (menuItems, user) => {
     try {
       const full = JSON.parse(sessionStorage.getItem("user"));
       accessMenu = parseAccessMenu(full?.accessMenu);
-    } catch (e) {}
+    } catch (e) {
+      /* ignore invalid session data */
+    }
   }
   if (!accessMenu || accessMenu.length === 0) return [];
 

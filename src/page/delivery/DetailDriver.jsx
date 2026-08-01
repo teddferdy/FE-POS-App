@@ -13,7 +13,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Edit,
-  Power,
   Ban,
   FileEdit
 } from "lucide-react";

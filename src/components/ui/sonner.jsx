@@ -1,4 +1,3 @@
-/* eslint-disable react/react-in-jsx-scope */
 import { AlertTriangle, CheckCircle, Info, Loader, XCircle } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Toaster as Sonner } from "sonner";

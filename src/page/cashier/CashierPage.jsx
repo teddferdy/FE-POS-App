@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
-import { ShoppingCart, X, Package, Menu, Sun, Moon, Store, ChevronRight } from "lucide-react";
+import { ShoppingCart, X, Package, Menu, Sun, Moon, Store, ChevronRight, RotateCcw } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { useTranslation } from "react-i18next";
 import { getProductByOutlet } from "@/services/product";
@@ -9,6 +9,9 @@ import { getAllLocation } from "@/services/location";
 import { getAllTaxConfig } from "@/services/tax-config";
 import { orderList } from "@/state/order-list";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { toast } from "sonner";
 import ProductGrid from "./components/ProductGrid";
 import CartPanel from "./components/CartPanel";
 import CheckoutModal from "./components/CheckoutModal";
@@ -86,6 +89,42 @@ const CashierPage = () => {
   const [receiptData, setReceiptData] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [clearCartOpen, setClearCartOpen] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
+
+  useEffect(() => {
+    const visited = localStorage.getItem("pos-onboarding-done");
+    if (visited) setHasSeenOnboarding(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasSeenOnboarding) {
+      const timer = setTimeout(() => {
+        setOnboardingOpen(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [hasSeenOnboarding]);
+
+  const handleCompleteOnboarding = useCallback(() => {
+    localStorage.setItem("pos-onboarding-done", "true");
+    setHasSeenOnboarding(true);
+    setOnboardingOpen(false);
+    toast.success(t("page.cashier.welcome"), {
+      description: t("page.cashier.welcomeDesc")
+    });
+  }, [t]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setShowCartMobile(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handleToggleSidebar = () => setSidebarCollapsed((prev) => !prev);
   const handleMobileMenuToggle = () => setMobileSidebarOpen((prev) => !prev);
@@ -152,7 +191,7 @@ const CashierPage = () => {
   const taxRate = taxRatePercent / 100;
   const taxAmount = Math.round(subtotal * taxRate);
 
-  const handleLoadOrder = (order) => {
+  const handleLoadOrder = useCallback((order) => {
     cart.resetOrder();
     if (order?.items?.length) {
       order.items.forEach((item) => {
@@ -172,17 +211,32 @@ const CashierPage = () => {
         });
       });
     }
-  };
+    toast.success(t("page.cashier.orderLoaded"), {
+      description: t("page.cashier.orderLoadedDesc", { count: order.items.length })
+    });
+  }, [cart, t]);
 
-  const handleCheckoutComplete = (result) => {
+  const handleCheckoutComplete = useCallback((result) => {
     setReceiptData(result);
     setCheckoutOpen(false);
-  };
+  }, []);
 
-  const handleNewTransaction = () => {
+  const handleNewTransaction = useCallback(() => {
     cart.resetOrder();
     setReceiptData(null);
-  };
+  }, [cart]);
+
+  const handleAddToCart = useCallback((product) => {
+    toast.success(t("page.cashier.addedToCart"), {
+      description: product.nameProduct || product.name
+    });
+  }, [t]);
+
+  const handleDeleteFromCart = useCallback((productName) => {
+    toast.success(t("page.cashier.removedFromCart"), {
+      description: productName
+    });
+  }, [t]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background relative">
@@ -214,63 +268,70 @@ const CashierPage = () => {
       <div
         className={`h-screen flex flex-col transition-all duration-300 ${sidebarCollapsed ? "xl:ml-16" : "xl:ml-64"}`}>
         <header className="sticky top-0 z-40 bg-background/70 backdrop-blur-xl border-b border-border/50 shrink-0">
-          <div className="flex items-center justify-between px-4 lg:px-6 py-3 gap-4">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleMobileMenuToggle}
-                className="xl:hidden p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
-                <Menu size={20} />
-              </button>
+          <TooltipProvider>
+            <div className="flex items-center justify-between px-4 lg:px-6 py-3 gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/20 flex items-center justify-center">
-                  <Package className="text-primary-foreground" size={18} />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleMobileMenuToggle}
+                      className="xl:hidden p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
+                      <Menu size={20} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="center">
+                    {t("page.cashier.menu")}
+                  </TooltipContent>
+                </Tooltip>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/20 flex items-center justify-center">
+                    <Package className="text-primary-foreground" size={18} />
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-bold leading-tight text-foreground">{storeName}</h1>
+                    <p className="text-xs text-muted-foreground/80">{userName}</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-lg font-bold leading-tight text-foreground">{storeName}</h1>
-                  <p className="text-xs text-muted-foreground/80">{userName}</p>
-                </div>
+                {/* <StoreSelector cookie={cookie} setCookie={setCookie} /> */}
               </div>
-              {/* <StoreSelector cookie={cookie} setCookie={setCookie} /> */}
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2">
-              <div className="flex items-center bg-muted/60 rounded-full p-0.5 border border-border/60 shadow-sm">
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => updateTranslation(lang.code)}
-                    className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[9px] sm:text-[10px] font-bold tracking-widest rounded-full transition-all duration-200 ${
-                      translation === lang.code
-                        ? "bg-foreground text-background shadow-sm scale-105"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}>
-                    {lang.label}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={toggleTheme}
-                className="p-1.5 sm:p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
-                <Sun size={16} className="hidden dark:block sm:size-[18px]" />
-                <Moon size={16} className="block dark:hidden sm:size-[18px]" />
-              </button>
-              <NotificationBell />
-              <UserDropdown />
-              <div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="xl:hidden relative rounded-xl border-border/60"
-                  onClick={() => setShowCartMobile(!showCartMobile)}>
-                  <ShoppingCart size={18} />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
-                      {totalItems}
-                    </span>
-                  )}
-                </Button>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={toggleTheme}
+                      className="p-1.5 sm:p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
+                      <Sun size={16} className="hidden dark:block sm:size-[18px]" />
+                      <Moon size={16} className="block dark:hidden sm:size-[18px]" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="center">
+                    {t("page.cashier.toggleTheme")}
+                  </TooltipContent>
+                </Tooltip>
+                <NotificationBell />
+                <UserDropdown />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="xl:hidden relative rounded-xl border-border/60"
+                      onClick={() => setShowCartMobile(!showCartMobile)}>
+                      <ShoppingCart size={18} />
+                      {totalItems > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
+                          {totalItems}
+                        </span>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" align="center">
+                    {t("page.cashier.cart", { count: totalItems })}
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
-          </div>
+          </TooltipProvider>
         </header>
 
         <div className="flex flex-1 overflow-hidden">
@@ -417,6 +478,81 @@ const CashierPage = () => {
             onNewTransaction={handleNewTransaction}
           />
         )}
+
+        {/* Clear Cart Confirmation */}
+        <Dialog open={clearCartOpen} onOpenChange={setClearCartOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("page.cashier.clearCart")}</DialogTitle>
+              <DialogDescription>
+                {t("page.cashier.clearCartDesc")}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setClearCartOpen(false)}>
+                {t("page.cashier.cancel")}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  cart.resetOrder();
+                  setClearCartOpen(false);
+                  toast.info(t("page.cashier.cartCleared"));
+                }}
+              >
+                {t("page.cashier.clear")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Onboarding Welcome Modal */}
+        <Dialog open={onboardingOpen} onOpenChange={setOnboardingOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center text-xl">
+                🎉 {t("page.cashier.welcome")}
+              </DialogTitle>
+              <DialogDescription className="text-center">
+                {t("page.cashier.welcomeDesc")}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <ShoppingCart size={16} className="text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">{t("page.cashier.tourCart")}</p>
+                  <p className="text-xs text-muted-foreground">{t("page.cashier.tourCartDesc")}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Package size={16} className="text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">{t("page.cashier.tourProducts")}</p>
+                  <p className="text-xs text-muted-foreground">{t("page.cashier.tourProductsDesc")}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Store size={16} className="text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">{t("page.cashier.tourCheckout")}</p>
+                  <p className="text-xs text-muted-foreground">{t("page.cashier.tourCheckoutDesc")}</p>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button className="w-full" onClick={handleCompleteOnboarding}>
+                {t("page.cashier.startUsing")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

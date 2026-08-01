@@ -18,6 +18,12 @@ const PriceStoreList = React.lazy(() => import("@/page/price-store/PriceStoreLis
 // Backup
 const BackupPage = React.lazy(() => import("@/page/backup/BackupPage"));
 
+// Audit Log
+const AuditLogList = React.lazy(() => import("@/page/audit-log/AuditLogList"));
+
+// Thermal Printer
+const ThermalPrinterSettings = React.lazy(() => import("@/page/thermal-printer/ThermalPrinterSettings"));
+
 export const settingsRoutes = (
   <>
     <Route path="/location-list" element={<LocationList />} />
@@ -32,5 +38,8 @@ export const settingsRoutes = (
     <Route path="/price-list-template" element={<PriceStoreList />} />
 
     <Route path="/backup" element={<BackupPage />} />
+
+    <Route path="/audit-log" element={<AuditLogList />} />
+    <Route path="/thermal-printer" element={<ThermalPrinterSettings />} />
   </>
 );

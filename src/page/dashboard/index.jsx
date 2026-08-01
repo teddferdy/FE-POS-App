@@ -18,6 +18,7 @@ import {
   Target,
   Wallet
 } from "lucide-react";
+import AbortController from "@/components/organism/abort-controller";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { getDashboardSummary } from "@/services/dashboard";
@@ -87,7 +88,7 @@ const Dashboard = () => {
   };
   const prevRange = useMemo(() => getPrevDateRange(chartFilter), [chartFilter]);
 
-  const { data: dashData, isLoading } = useQuery(
+  const { data: dashData, isLoading, isError, refetch } = useQuery(
     ["dashboard-summary", store, chartFilter, orderPage],
     () =>
       getDashboardSummary({
@@ -109,7 +110,7 @@ const Dashboard = () => {
         page: 1,
         pageSize: 1
       }),
-    { }
+    {}
   );
 
   const d = dashData?.data || dashData || {};
@@ -281,95 +282,48 @@ const Dashboard = () => {
                         <Skeleton className="h-3 w-16" />
                       </div>
                     </div>
-                    <Skeleton className="h-6 w-10 rounded" />
+                    <Skeleton className="h-4 w-12" />
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="p-5 border-b border-border flex items-center justify-between">
-              <div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 bg-card rounded-xl border border-border overflow-hidden">
+              <div className="p-5 border-b border-border">
                 <Skeleton className="h-5 w-40 mb-2" />
                 <Skeleton className="h-3 w-56" />
               </div>
-              <Skeleton className="h-4 w-20" />
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/50">
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-16" /></th>
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-14" /></th>
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-18" /></th>
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-14" /></th>
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-14" /></th>
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-16" /></th>
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-12" /></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {[...Array(5)].map((_, i) => (
-                    <tr key={i}>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-20" /></td>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-16" /></td>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-24" /></td>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-20" /></td>
-                      <td className="px-5 py-3.5"><Skeleton className="h-6 w-16 rounded-full" /></td>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-24" /></td>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-14" /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex items-center justify-between px-5 py-3 border-t border-border">
-              <Skeleton className="h-3 w-24" />
-              <div className="flex items-center gap-1">
-                <Skeleton className="h-7 w-14 rounded" />
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-7 w-7 rounded" />
-                ))}
-                <Skeleton className="h-7 w-14 rounded" />
+              <div className="p-5">
+                <Skeleton className="h-[220px] w-full rounded-lg" />
               </div>
             </div>
-          </div>
 
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="p-5 border-b border-border flex items-center justify-between">
-              <div>
-                <Skeleton className="h-5 w-44 mb-2" />
-                <Skeleton className="h-3 w-64" />
+            <div className="lg:col-span-4 bg-card rounded-xl border border-border overflow-hidden">
+              <div className="p-5 border-b border-border">
+                <Skeleton className="h-5 w-40 mb-2" />
+                <Skeleton className="h-3 w-48" />
               </div>
-              <Skeleton className="h-4 w-24" />
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/50">
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-24" /></th>
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-16" /></th>
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-16" /></th>
-                    <th className="text-left px-5 py-3"><Skeleton className="h-3 w-14" /></th>
-                    <th className="text-right px-5 py-3"><Skeleton className="h-3 w-14" /></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {[...Array(3)].map((_, i) => (
-                    <tr key={i}>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-32" /></td>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-20" /></td>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-20" /></td>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-16" /></td>
-                      <td className="px-5 py-3.5"><Skeleton className="h-4 w-16" /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="divide-y divide-border">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
+                      <div>
+                        <Skeleton className="h-4 w-28 mb-1.5" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-4 w-12" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </>
+      ) : isError ? (
+        <AbortController refetch={refetch} />
       ) : (
         <>
           <div

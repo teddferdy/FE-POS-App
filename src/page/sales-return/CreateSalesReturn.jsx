@@ -1,16 +1,13 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Minus, Trash2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { returnOrder, getSalesReturnById } from "@/services/sales-return";
-import { getAllLocation } from "@/services/location";
-import StoreFilter from "@/components/ui/StoreFilter";
+import { returnOrder } from "@/services/sales-return";
 import Modal from "@/components/organism/modal";
 
 const reasonOptions = [
@@ -24,14 +21,12 @@ const reasonOptions = [
 ];
 
 const CreateSalesReturn = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [cookie] = useCookies();
-  
+
   const orderId = searchParams.get("orderId");
-  const store = cookie?.activeStore || cookie.user?.store;
   const userId = cookie?.user?.id;
 
   const [items, setItems] = useState([]);
@@ -39,7 +34,11 @@ const CreateSalesReturn = () => {
   const [notes, setNotes] = useState("");
   const [confirmModal, setConfirmModal] = useState(false);
 
-  const { data: orderData, isLoading: orderLoading, isError } = useQuery(
+  const {
+    data: orderData,
+    isLoading: orderLoading,
+    isError
+  } = useQuery(
     ["order-detail", orderId],
     async () => {
       const res = await fetch(`/api/order/${orderId}`);
@@ -54,7 +53,7 @@ const CreateSalesReturn = () => {
   const mutation = useMutation(
     () => returnOrder(orderId, { items, reason, returnedBy: userId, notes }),
     {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Sales return created successfully");
         queryClient.invalidateQueries(["sales-returns"]);
         navigate("/sales-return");
@@ -68,13 +67,7 @@ const CreateSalesReturn = () => {
   const addItem = (orderItem) => {
     const existing = items.find((i) => i.orderItemId === orderItem.id);
     if (existing) {
-      setItems(
-        items.map((i) =>
-          i.orderItemId === orderItem.id
-            ? { ...i, qty: i.qty + 1 }
-            : i
-        )
-      );
+      setItems(items.map((i) => (i.orderItemId === orderItem.id ? { ...i, qty: i.qty + 1 } : i)));
     } else {
       setItems([
         ...items,
@@ -101,11 +94,7 @@ const CreateSalesReturn = () => {
       toast.error(`Maximum qty is ${item.maxQty}`);
       return;
     }
-    setItems(
-      items.map((i) =>
-        i.orderItemId === orderItemId ? { ...i, qty: newQty } : i
-      )
-    );
+    setItems(items.map((i) => (i.orderItemId === orderItemId ? { ...i, qty: newQty } : i)));
   };
 
   const removeItem = (orderItemId) => {
@@ -119,8 +108,7 @@ const CreateSalesReturn = () => {
     }, 0);
   }, [items]);
 
-  const canSubmit =
-    items.length > 0 && reason.trim() !== "" && !mutation.isLoading;
+  const canSubmit = items.length > 0 && reason.trim() !== "" && !mutation.isLoading;
 
   if (isError || (!orderLoading && !order)) {
     return (
@@ -145,9 +133,7 @@ const CreateSalesReturn = () => {
   if (order?.paymentStatus !== "paid") {
     return (
       <div className="p-6">
-        <p className="text-destructive">
-          Only paid orders can be returned
-        </p>
+        <p className="text-destructive">Only paid orders can be returned</p>
         <Button onClick={() => navigate("/sales-return")} className="mt-4">
           Back to Returns
         </Button>
@@ -158,18 +144,12 @@ const CreateSalesReturn = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => navigate("/sales-return")}
-        >
+        <Button variant="outline" size="icon" onClick={() => navigate("/sales-return")}>
           <ArrowLeft size={16} />
         </Button>
         <div>
           <h1 className="text-2xl font-bold">Create Sales Return</h1>
-          <p className="text-sm text-muted-foreground">
-            Order: {order?.orderNumber}
-          </p>
+          <p className="text-sm text-muted-foreground">Order: {order?.orderNumber}</p>
         </div>
       </div>
 
@@ -183,19 +163,14 @@ const CreateSalesReturn = () => {
                 order.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                  >
+                    className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex-1">
                       <p className="font-medium">{item.productName}</p>
                       <p className="text-sm text-muted-foreground">
                         Available: {item.quantity} {item.unit || "pcs"}
                       </p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => addItem(item)}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => addItem(item)}>
                       <Plus size={16} className="mr-1" /> Add
                     </Button>
                   </div>
@@ -212,15 +187,12 @@ const CreateSalesReturn = () => {
               <h2 className="text-lg font-semibold mb-4">Return Items</h2>
               <div className="space-y-3">
                 {items.map((item) => {
-                  const pricePerUnit = Math.floor(
-                    item.price / item.maxQty
-                  );
+                  const pricePerUnit = Math.floor(item.price / item.maxQty);
                   const itemTotal = pricePerUnit * item.qty;
                   return (
                     <div
                       key={item.orderItemId}
-                      className="flex items-center justify-between p-3 border rounded-lg"
-                    >
+                      className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex-1">
                         <p className="font-medium">{item.productName}</p>
                         <p className="text-sm text-muted-foreground">
@@ -232,31 +204,22 @@ const CreateSalesReturn = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            updateQty(item.orderItemId, item.qty - 1)
-                          }
-                        >
+                          onClick={() => updateQty(item.orderItemId, item.qty - 1)}>
                           <Minus size={14} />
                         </Button>
-                        <span className="w-8 text-center font-semibold">
-                          {item.qty}
-                        </span>
+                        <span className="w-8 text-center font-semibold">{item.qty}</span>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            updateQty(item.orderItemId, item.qty + 1)
-                          }
-                          disabled={item.qty >= item.maxQty}
-                        >
+                          onClick={() => updateQty(item.orderItemId, item.qty + 1)}
+                          disabled={item.qty >= item.maxQty}>
                           <Plus size={14} />
                         </Button>
                         <Button
                           size="sm"
                           variant="ghost"
                           className="text-red-500"
-                          onClick={() => removeItem(item.orderItemId)}
-                        >
+                          onClick={() => removeItem(item.orderItemId)}>
                           <Trash2 size={14} />
                         </Button>
                       </div>
@@ -280,9 +243,7 @@ const CreateSalesReturn = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total Qty:</span>
-                <span className="font-medium">
-                  {items.reduce((sum, i) => sum + i.qty, 0)}
-                </span>
+                <span className="font-medium">{items.reduce((sum, i) => sum + i.qty, 0)}</span>
               </div>
               <div className="border-t pt-2 mt-2 flex justify-between">
                 <span className="font-semibold">Refund Amount:</span>
@@ -299,8 +260,7 @@ const CreateSalesReturn = () => {
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
-            >
+              className="w-full px-3 py-2 border rounded-lg text-sm">
               <option value="">Select reason...</option>
               {reasonOptions.map((r) => (
                 <option key={r} value={r}>
@@ -326,8 +286,7 @@ const CreateSalesReturn = () => {
             onClick={() => setConfirmModal(true)}
             disabled={!canSubmit}
             className="w-full"
-            size="lg"
-          >
+            size="lg">
             Create Return Request
           </Button>
         </div>

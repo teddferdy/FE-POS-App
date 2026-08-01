@@ -2,7 +2,6 @@ import {
   sanitizeInput,
   sanitizeForUrl,
   sanitizeHtml,
-  sanitizeForJson,
   validateInputLength
 } from "@/utils/inputSanitizer";
 import { sanitizeJsonPayload, sanitizeForStorage, parseForClient } from "@/utils/jsonSanitization";

@@ -11,6 +11,7 @@ import Header from "./Header";
 import CommandPalette from "./CommandPalette";
 import { TipsCard } from "@/components/ui/tips-card";
 import FloatingTourButton from "@/components/organism/FloatingTourButton";
+import { OfflineIndicator, OfflineBanner } from "@/components/ui/OfflineIndicator";
 import { useStore } from "@/contexts/StoreContext";
 
 const tipsKeys = {
@@ -170,9 +171,9 @@ const DashboardLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  const [cookie, setCookie] = useCookies();
+  const [cookie] = useCookies();
   const location = useLocation();
-  const { activeStoreId, setActiveStore, isSuperAdmin } = useStore();
+  const { activeStoreId, setActiveStore } = useStore();
 
   const user = cookie?.user;
   const role = user?.roleType || "";
@@ -273,6 +274,10 @@ const DashboardLayout = () => {
 
       {/* Floating Tour Button - super_admin only */}
       <FloatingTourButton />
+
+      {/* Offline Indicator & Banner */}
+      <OfflineBanner />
+      <OfflineIndicator />
     </div>
   );
 };

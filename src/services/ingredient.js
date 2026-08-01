@@ -1,6 +1,12 @@
 import { axiosInstance } from ".";
 
-export const getAllIngredients = async ({ store, page = 1, limit = 10, search = "", status = "" } = {}) => {
+export const getAllIngredients = async ({
+  store,
+  page = 1,
+  limit = 10,
+  search = "",
+  status = ""
+} = {}) => {
   const params = new URLSearchParams();
   if (store && store !== "undefined") params.append("store", store);
   params.append("page", page);
@@ -71,7 +77,9 @@ export const getProductNamesByFilters = async ({ store, category, supplier }) =>
   if (store) params.append("store", store);
   if (category) params.append("category", category);
   if (supplier) params.append("supplier", supplier);
-  const { data, status } = await axiosInstance.get(`/ingredient/product-names?${params.toString()}`);
+  const { data, status } = await axiosInstance.get(
+    `/ingredient/product-names?${params.toString()}`
+  );
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

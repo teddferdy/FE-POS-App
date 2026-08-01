@@ -4,30 +4,12 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
-import {
-  Users,
-  Clock,
-  UserCheck,
-  XCircle,
-  AlertTriangle,
-  Plus,
-  Eye,
-  Trash2,
-  ChevronRight,
-  Timer,
-  UserX
-} from "lucide-react";
+import { Users, Clock, UserCheck, XCircle, Plus, Eye, Timer } from "lucide-react";
 import { toast } from "sonner";
-import {
-  getQueueList,
-  getQueueStats,
-  updateQueueStatus,
-  deleteQueue
-} from "@/services/queue";
+import { getQueueList, getQueueStats, updateQueueStatus } from "@/services/queue";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
-import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
@@ -55,11 +37,16 @@ const priorityOptions = [
 
 const statusBadge = (status) => {
   const map = {
-    waiting: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800",
-    seated: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
-    cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
-    no_show: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
-    expired: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
+    waiting:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800",
+    seated:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
+    cancelled:
+      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
+    no_show:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
+    expired:
+      "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
   };
   return map[status] || "bg-gray-100 text-gray-800";
 };
@@ -131,32 +118,14 @@ const QueueList = () => {
     }
   );
 
-  const cancelMutation = useMutation(
-    ({ id }) => updateQueueStatus(id, { status: "cancelled" }),
-    {
-      onSuccess: () => {
-        toast.success(t("common.success"), {
-          description: "Queue entry cancelled"
-        });
-        queryClient.invalidateQueries(["queue-list"]);
-        queryClient.invalidateQueries(["queue-stats"]);
-        setCancelTarget(null);
-      },
-      onError: (err) => {
-        toast.error(t("common.error"), {
-          description: err?.response?.data?.message || err.message
-        });
-      }
-    }
-  );
-
-  const deleteMutation = useMutation(deleteQueue, {
+  const cancelMutation = useMutation(({ id }) => updateQueueStatus(id, { status: "cancelled" }), {
     onSuccess: () => {
       toast.success(t("common.success"), {
-        description: t("common.deleteSuccess")
+        description: "Queue entry cancelled"
       });
       queryClient.invalidateQueries(["queue-list"]);
       queryClient.invalidateQueries(["queue-stats"]);
+      setCancelTarget(null);
     },
     onError: (err) => {
       toast.error(t("common.error"), {
@@ -172,9 +141,7 @@ const QueueList = () => {
       header: t("page.queue.list.queueNumber"),
       accessorKey: "queueNumber",
       cell: ({ row }) => (
-        <span className="font-mono font-semibold text-foreground">
-          {row.original.queueNumber}
-        </span>
+        <span className="font-mono font-semibold text-foreground">{row.original.queueNumber}</span>
       )
     },
     {
@@ -203,7 +170,8 @@ const QueueList = () => {
       header: t("page.queue.list.priority"),
       accessorKey: "priority",
       cell: ({ row }) => (
-        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${priorityBadge(row.original.priority)}`}>
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${priorityBadge(row.original.priority)}`}>
           {row.original.priority?.toUpperCase()}
         </span>
       )
@@ -212,7 +180,8 @@ const QueueList = () => {
       header: t("page.queue.list.status"),
       accessorKey: "status",
       cell: ({ row }) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge(row.original.status)}`}>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge(row.original.status)}`}>
           {row.original.status?.replace("_", " ")?.toUpperCase()}
         </span>
       )

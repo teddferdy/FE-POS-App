@@ -32,7 +32,6 @@ const BomList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
 
   const { data: locData } = useQuery(["locations-bom"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -181,13 +180,19 @@ const BomList = () => {
                           { value: "draft", label: t("common.draft") }
                         ]}
                         value={statusFilter}
-                        onChange={(val) => { setStatusFilter(val); setPage(1); }}
+                        onChange={(val) => {
+                          setStatusFilter(val);
+                          setPage(1);
+                        }}
                         placeholder={t("common.all")}
                         searchPlaceholder={t("common.search")}
                       />
                       <SearchInput
                         value={search}
-                        onChange={(val) => { setSearch(val); setPage(1); }}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
                         placeholder={t("page.bom.list.searchPlaceholder")}
                         isLoading={isFetching}
                       />

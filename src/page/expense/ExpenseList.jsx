@@ -52,11 +52,7 @@ const ExpenseList = () => {
   const locationParam = storeFilter !== "all" ? storeFilter : user?.store || "";
 
   const hasActiveFilter =
-    search ||
-    statusFilter !== "all" ||
-    startDate ||
-    endDate ||
-    storeFilter !== "all";
+    search || statusFilter !== "all" || startDate || endDate || storeFilter !== "all";
 
   const resetFilters = () => {
     setSearch("");

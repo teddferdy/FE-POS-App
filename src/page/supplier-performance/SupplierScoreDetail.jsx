@@ -3,20 +3,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import {
-  ArrowLeft,
-  TrendingUp,
-  Clock,
-  AlertTriangle,
-  DollarSign,
-  Award,
-  Save
-} from "lucide-react";
+import { ArrowLeft, TrendingUp, Clock, AlertTriangle, DollarSign, Award, Save } from "lucide-react";
 import { toast } from "sonner";
-import {
-  getSupplierScoreById,
-  updateSupplierScoreNote
-} from "@/services/supplierPerformance";
+import { getSupplierScoreById, updateSupplierScoreNote } from "@/services/supplierPerformance";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
@@ -43,28 +32,23 @@ const SupplierScoreDetail = () => {
   const [notes, setNotes] = useState("");
   const [notesLoaded, setNotesLoaded] = useState(false);
 
-  const { data, isLoading } = useQuery(
-    ["supplier-score", id],
-    () => getSupplierScoreById(id),
-    { enabled: !!id }
-  );
+  const { data, isLoading } = useQuery(["supplier-score", id], () => getSupplierScoreById(id), {
+    enabled: !!id
+  });
 
-  const updateNotesMutation = useMutation(
-    ({ notes }) => updateSupplierScoreNote(id, { notes }),
-    {
-      onSuccess: () => {
-        toast.success(t("common.success"), {
-          description: t("page.supplierPerformance.toast.noteUpdated")
-        });
-        queryClient.invalidateQueries(["supplier-score", id]);
-      },
-      onError: (err) => {
-        toast.error(t("common.error"), {
-          description: err?.response?.data?.message || err.message
-        });
-      }
+  const updateNotesMutation = useMutation(({ notes }) => updateSupplierScoreNote(id, { notes }), {
+    onSuccess: () => {
+      toast.success(t("common.success"), {
+        description: t("page.supplierPerformance.toast.noteUpdated")
+      });
+      queryClient.invalidateQueries(["supplier-score", id]);
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
-  );
+  });
 
   React.useEffect(() => {
     if (data?.data && !notesLoaded) {
@@ -147,7 +131,8 @@ const SupplierScoreDetail = () => {
                 <div className="text-4xl font-bold text-foreground">
                   {parseFloat(score.overallScore || 0).toFixed(1)}
                 </div>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${gradeBadge(score.grade)}`}>
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${gradeBadge(score.grade)}`}>
                   Grade {score.grade}
                 </span>
               </div>
@@ -157,50 +142,59 @@ const SupplierScoreDetail = () => {
               <div className="p-4 bg-background rounded-lg border border-border">
                 <div className="flex items-center gap-2 mb-2">
                   <Clock size={16} className="text-blue-500" />
-                  <span className="text-xs text-muted-foreground">{t("page.supplierPerformance.detail.onTimeRate")}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("page.supplierPerformance.detail.onTimeRate")}
+                  </span>
                 </div>
                 <div className="text-2xl font-bold text-foreground">
                   {parseFloat(score.onTimeRate || 0).toFixed(1)}%
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {score.onTimeDeliveries}/{score.totalOrders} {t("page.supplierPerformance.detail.deliveries")}
+                  {score.onTimeDeliveries}/{score.totalOrders}{" "}
+                  {t("page.supplierPerformance.detail.deliveries")}
                 </div>
               </div>
 
               <div className="p-4 bg-background rounded-lg border border-border">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertTriangle size={16} className="text-yellow-500" />
-                  <span className="text-xs text-muted-foreground">{t("page.supplierPerformance.detail.defectRate")}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("page.supplierPerformance.detail.defectRate")}
+                  </span>
                 </div>
                 <div className="text-2xl font-bold text-foreground">
                   {parseFloat(score.defectRate || 0).toFixed(1)}%
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {score.defectiveQty}/{score.totalReceivedQty} {t("page.supplierPerformance.detail.items")}
+                  {score.defectiveQty}/{score.totalReceivedQty}{" "}
+                  {t("page.supplierPerformance.detail.items")}
                 </div>
               </div>
 
               <div className="p-4 bg-background rounded-lg border border-border">
                 <div className="flex items-center gap-2 mb-2">
                   <DollarSign size={16} className="text-green-500" />
-                  <span className="text-xs text-muted-foreground">{t("page.supplierPerformance.detail.priceScore")}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("page.supplierPerformance.detail.priceScore")}
+                  </span>
                 </div>
                 <div className="text-2xl font-bold text-foreground">
                   {parseFloat(score.priceCompetitivenessScore || 0).toFixed(0)}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {t("page.supplierPerformance.detail.avgPrice")}: Rp{(score.avgPricePerItem || 0).toLocaleString()}
+                  {t("page.supplierPerformance.detail.avgPrice")}: Rp
+                  {(score.avgPricePerItem || 0).toLocaleString()}
                 </div>
               </div>
 
               <div className="p-4 bg-background rounded-lg border border-border">
                 <div className="flex items-center gap-2 mb-2">
                   <Award size={16} className="text-purple-500" />
-                  <span className="text-xs text-muted-foreground">{t("page.supplierPerformance.detail.totalOrders")}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("page.supplierPerformance.detail.totalOrders")}
+                  </span>
                 </div>
-                <div className="text-2xl font-bold text-foreground">
-                  {score.totalOrders || 0}
-                </div>
+                <div className="text-2xl font-bold text-foreground">{score.totalOrders || 0}</div>
                 <div className="text-xs text-muted-foreground mt-1">
                   {score.completedOrders} {t("page.supplierPerformance.detail.completed")}
                 </div>
@@ -210,7 +204,9 @@ const SupplierScoreDetail = () => {
 
           {/* Notes */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-foreground mb-4">{t("page.supplierPerformance.detail.notes")}</h3>
+            <h3 className="font-semibold text-foreground mb-4">
+              {t("page.supplierPerformance.detail.notes")}
+            </h3>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -231,36 +227,58 @@ const SupplierScoreDetail = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           <div className="bg-card rounded-xl border border-border p-6">
-            <h4 className="text-sm font-semibold text-foreground mb-3">{t("page.supplierPerformance.detail.supplierInfo")}</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-3">
+              {t("page.supplierPerformance.detail.supplierInfo")}
+            </h4>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-muted-foreground">{t("page.supplierPerformance.detail.phone")}</p>
-                <p className="text-sm font-medium text-foreground">{score.supplier?.phone || "-"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.supplierPerformance.detail.phone")}
+                </p>
+                <p className="text-sm font-medium text-foreground">
+                  {score.supplier?.phone || "-"}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{t("page.supplierPerformance.detail.email")}</p>
-                <p className="text-sm font-medium text-foreground">{score.supplier?.email || "-"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.supplierPerformance.detail.email")}
+                </p>
+                <p className="text-sm font-medium text-foreground">
+                  {score.supplier?.email || "-"}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{t("page.supplierPerformance.detail.contactPerson")}</p>
-                <p className="text-sm font-medium text-foreground">{score.supplier?.contactPerson || "-"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.supplierPerformance.detail.contactPerson")}
+                </p>
+                <p className="text-sm font-medium text-foreground">
+                  {score.supplier?.contactPerson || "-"}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="bg-card rounded-xl border border-border p-6">
-            <h4 className="text-sm font-semibold text-foreground mb-3">{t("page.supplierPerformance.detail.period")}</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-3">
+              {t("page.supplierPerformance.detail.period")}
+            </h4>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-muted-foreground">{t("page.supplierPerformance.detail.periodStart")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.supplierPerformance.detail.periodStart")}
+                </p>
                 <p className="text-sm font-medium text-foreground">{score.periodStart || "-"}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{t("page.supplierPerformance.detail.periodEnd")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.supplierPerformance.detail.periodEnd")}
+                </p>
                 <p className="text-sm font-medium text-foreground">{score.periodEnd || "-"}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{t("page.supplierPerformance.detail.calculatedAt")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.supplierPerformance.detail.calculatedAt")}
+                </p>
                 <p className="text-sm font-medium text-foreground">
                   {score.calculatedAt ? new Date(score.calculatedAt).toLocaleString() : "-"}
                 </p>
@@ -269,7 +287,9 @@ const SupplierScoreDetail = () => {
           </div>
 
           <div className="bg-card rounded-xl border border-border p-6">
-            <h4 className="text-sm font-semibold text-foreground mb-3">{t("page.supplierPerformance.detail.purchaseAmount")}</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-3">
+              {t("page.supplierPerformance.detail.purchaseAmount")}
+            </h4>
             <div className="text-2xl font-bold text-foreground">
               Rp{(score.totalPurchaseAmount || 0).toLocaleString()}
             </div>

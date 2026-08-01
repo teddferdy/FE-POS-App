@@ -73,9 +73,13 @@ const MemberList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-members"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-members"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
 
   const container = {
     hidden: {},
@@ -526,7 +530,10 @@ const MemberList = () => {
                                 { value: "nama", label: t("page.member.list.sortName") }
                               ]}
                               value={sortBy}
-                              onChange={(v) => { setSortBy(v); setPage(1); }}
+                              onChange={(v) => {
+                                setSortBy(v);
+                                setPage(1);
+                              }}
                               placeholder={t("page.member.list.sortNewest")}
                               searchPlaceholder="Cari..."
                             />
@@ -553,29 +560,32 @@ const MemberList = () => {
                     isLoading={isLoading}
                     emptyMessage={t("page.member.list.empty")}
                     toolbar={
-                    <div className="flex items-center justify-between w-full">
-                      <h4 className="text-base font-semibold text-foreground">
-                        {t("page.member.list.title")}
-                      </h4>
-                      {isSuperAdmin && (
-                        <StoreFilter
-                          locations={locData?.data || []}
-                          value={storeFilter}
-                          onChange={(v) => {
-                            setGlobalStoreFilter(v);
+                      <div className="flex items-center justify-between w-full">
+                        <h4 className="text-base font-semibold text-foreground">
+                          {t("page.member.list.title")}
+                        </h4>
+                        {isSuperAdmin && (
+                          <StoreFilter
+                            locations={locData?.data || []}
+                            value={storeFilter}
+                            onChange={(v) => {
+                              setGlobalStoreFilter(v);
+                              setPage(1);
+                            }}
+                            isSuperAdmin={isSuperAdmin}
+                            t={t}
+                          />
+                        )}
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
                             setPage(1);
                           }}
-                          isSuperAdmin={isSuperAdmin}
-                          t={t}
+                          placeholder={t("page.member.list.search")}
+                          isLoading={isFetching}
                         />
-                      )}
-                      <SearchInput
-                        value={search}
-                        onChange={(val) => { setSearch(val); setPage(1); }}
-                        placeholder={t("page.member.list.search")}
-                        isLoading={isFetching}
-                      />
-                    </div>
+                      </div>
                     }
                     pagination={{
                       page,

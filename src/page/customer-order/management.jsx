@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
-import { Clock, ChefHat, User, Store, Loader2, Utensils } from "lucide-react";
+import { Clock, ChefHat, User, Store, Loader2, Utensils, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -15,6 +15,7 @@ import StoreFilter from "@/components/ui/StoreFilter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import AbortController from "@/components/organism/abort-controller";
 
 const CustomerOrderManagement = () => {
   const { t } = useTranslation();
@@ -25,58 +26,68 @@ const CustomerOrderManagement = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const store = cookie?.activeStore || cookie.user?.store;
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [acceptingId, setAcceptingId] = useState(null);
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-customer-orders"], () => getAllLocation("all"), {
-    
-    enabled: isSuperAdmin
-  });
-
-  const fetchOrders = useCallback(() => {
-    const effectiveStore = isSuperAdmin
-      ? storeFilter === "all"
-        ? ""
-        : storeFilter || store
-      : store;
-    if (!isSuperAdmin && !effectiveStore) {
-      setLoading(false);
-      return;
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-customer-orders"],
+    () => getAllLocation("all"),
+    {
+      enabled: isSuperAdmin
     }
-    setLoading(true);
-    const params = new URLSearchParams({ source: "qr", status: "pending", limit: "100" });
-    if (effectiveStore) params.set("store", effectiveStore);
-    axiosInstance
-      .get(`/order/get-orders?${params.toString()}`)
-      .then((res) => setOrders(res.data?.data || []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [store, storeFilter, isSuperAdmin]);
+  );
 
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
-
-  const acceptOrder = async (order) => {
-    setAcceptingId(order.id);
-    try {
-      await axiosInstance.put("/order/update-status", {
-        id: order.id,
-        store,
-        status: "preparing",
-        changedBy: cookie.user?.id,
-        changedByName: cookie.user?.fullName || cookie.user?.userName
-      });
-      toast.success(t("page.customerOrder.accepted", { orderNumber: order.orderNumber }));
-      setOrders((prev) => prev.filter((o) => o.id !== order.id));
-    } catch (e) {
-      toast.error(e?.response?.data?.message || t("page.customerOrder.acceptFailed"));
-    } finally {
-      setAcceptingId(null);
+  const {
+    data: ordersData,
+    isLoading: ordersLoading,
+    isError: ordersError,
+    refetch: refetchOrders
+  } = useQuery(
+    ["customer-orders", store, storeFilter, isSuperAdmin],
+    () => {
+      const effectiveStore = isSuperAdmin
+        ? storeFilter === "all"
+          ? ""
+          : storeFilter || store
+        : store;
+      if (!isSuperAdmin && !effectiveStore) {
+        return [];
+      }
+      const params = new URLSearchParams({ source: "qr", status: "pending", limit: "100" });
+      if (effectiveStore) params.set("store", effectiveStore);
+      return axiosInstance
+        .get(`/order/get-orders?${params.toString()}`)
+        .then((res) => res.data?.data || []);
+    },
+    {
+      enabled: isSuperAdmin || !!store,
+      staleTime: 30 * 1000
     }
-  };
+  );
+
+  const orders = ordersData || [];
+
+  const acceptOrder = useCallback(
+    async (order) => {
+      setAcceptingId(order.id);
+      try {
+        await axiosInstance.put("/order/update-status", {
+          id: order.id,
+          store,
+          status: "preparing",
+          changedBy: cookie.user?.id,
+          changedByName: cookie.user?.fullName || cookie.user?.userName
+        });
+        toast.success(t("page.customerOrder.accepted", { orderNumber: order.orderNumber }));
+        refetchOrders();
+      } catch (e) {
+        toast.error(e?.response?.data?.message || t("page.customerOrder.acceptFailed"));
+      } finally {
+        setAcceptingId(null);
+      }
+    },
+    [store, cookie.user, t, refetchOrders]
+  );
 
   const filtered = orders.filter((o) => {
     if (!search.trim()) return true;
@@ -110,8 +121,8 @@ const CustomerOrderManagement = () => {
               {t("page.customerOrder.pendingDesc", { count: orders.length })}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loading}>
-            {loading ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+          <Button variant="outline" size="sm" onClick={refetchOrders} disabled={ordersLoading}>
+            {ordersLoading ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
             {t("page.customerOrder.refresh")}
           </Button>
         </div>
@@ -142,13 +153,24 @@ const CustomerOrderManagement = () => {
                   value={search}
                   onChange={setSearch}
                   placeholder={t("page.customerOrder.searchOrders")}
-                  isLoading={loading}
+                  isLoading={ordersLoading}
                 />
               </>
             )}
           </div>
 
-          {loading ? (
+          {ordersError ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Utensils size={40} className="text-muted-foreground mb-4" />
+              <p className="text-muted-foreground text-sm mb-4">
+                {t("page.customerOrder.loadOrdersFail")}
+              </p>
+              <Button variant="outline" size="sm" onClick={() => refetchOrders()}>
+                <RefreshCw size={14} className="mr-1" />
+                {t("page.customerOrder.retry")}
+              </Button>
+            </div>
+          ) : ordersLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((n) => (
                 <div key={n} className="h-32 rounded-xl bg-muted animate-pulse" />

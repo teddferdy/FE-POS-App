@@ -11,10 +11,19 @@ export default [
     languageOptions: { globals: globals.browser },
     settings: { react: { version: "detect" } },
     rules: {
-      "react/react-in-jsx-scope": "off",
       "prettier/prettier": "error"
     }
   },
+  {
+    files: ["**/*.{test,spec}.{js,mjs,cjs,jsx}", "**/tests/**/*.{js,jsx}"],
+    languageOptions: { globals: { ...globals.browser, ...globals.jest } }
+  },
   pluginReact.configs.flat.recommended,
+  {
+    files: ["**/*.{js,mjs,cjs,jsx}"],
+    rules: {
+      "react/react-in-jsx-scope": "off"
+    }
+  },
   pluginPrettier
 ];

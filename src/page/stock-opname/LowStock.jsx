@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
-import { AlertTriangle, Package, ShoppingBasket, Plus, Zap, FileText } from "lucide-react";
+import { AlertTriangle, Package, ShoppingBasket, Plus, Zap } from "lucide-react";
 import { getLowStockProducts, autoGeneratePOFromLowStock } from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

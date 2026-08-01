@@ -15,7 +15,9 @@ import {
   Loader2,
   Ticket,
   Star,
-  UtensilsCrossed
+  UtensilsCrossed,
+  AlertCircle,
+  RefreshCw
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -23,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { axiosInstance } from "@/services";
 import { loadCart, updateQty, removeItem, clearCart } from "./cartStore";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const Cart = () => {
   const { t } = useTranslation();
@@ -38,28 +41,33 @@ const Cart = () => {
   const [submitting, setSubmitting] = useState(false);
   const [member, setMember] = useState(null);
   const [memberLoading, setMemberLoading] = useState(false);
+  const [memberError, setMemberError] = useState(null);
+  const [clearCartOpen, setClearCartOpen] = useState(false);
 
   // Member lookup debounce
   useEffect(() => {
     if (!customerName.trim() || !storeId) {
       setMember(null);
+      setMemberError(null);
       return;
     }
     setMemberLoading(true);
+    setMemberError(null);
     const timer = setTimeout(async () => {
       try {
         const res = await axiosInstance.get(
           `/order/customer-member?name=${encodeURIComponent(customerName.trim())}&store=${storeId}`
         );
         setMember(res.data?.data || null);
-      } catch {
+      } catch (e) {
         setMember(null);
+        setMemberError(t("page.customerOrder.memberLookupFail"));
       } finally {
         setMemberLoading(false);
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [customerName, storeId]);
+  }, [customerName, storeId, t]);
 
   // Refresh cart on mount & storage
   useEffect(() => {
@@ -359,8 +367,36 @@ const Cart = () => {
             <FileText size={20} />
             <span className="text-[10px] font-semibold">{t("page.customerOrder.orders")}</span>
           </button>
-        </nav>
+</nav>
       </div>
+
+      {/* Clear Cart Confirmation */}
+      <Dialog open={clearCartOpen} onOpenChange={setClearCartOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("page.customerOrder.clearCart")}</DialogTitle>
+            <DialogDescription>
+              {t("page.customerOrder.clearCartDesc")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setClearCartOpen(false)}>
+              {t("page.customerOrder.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                clearCart();
+                setCart(loadCart());
+                setClearCartOpen(false);
+                toast.info(t("page.customerOrder.cartCleared"));
+              }}
+            >
+              {t("page.customerOrder.clear")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

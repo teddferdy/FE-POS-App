@@ -47,9 +47,8 @@ const CashRegisterCurrent = () => {
     () => getCurrentCashRegister(storeId),
     {
       enabled: !!storeId,
-      
-      refetchInterval: storeId ? 30000 : false,
 
+      refetchInterval: storeId ? 30000 : false
     }
   );
   const reg = data?.data?.register || data?.data;

@@ -426,10 +426,13 @@ const LocationList = () => {
                             { value: "all", label: t("common.all") },
                             { value: "active", label: t("common.active") },
                             { value: "inactive", label: t("common.inactive") },
-                            { value: "draft", label: t("common.draft") },
+                            { value: "draft", label: t("common.draft") }
                           ]}
                           value={statusFilter}
-                          onChange={(val) => { setStatusFilter(val); setPage(1); }}
+                          onChange={(val) => {
+                            setStatusFilter(val);
+                            setPage(1);
+                          }}
                           placeholder={t("common.all")}
                           searchPlaceholder={t("common.all")}
                         />

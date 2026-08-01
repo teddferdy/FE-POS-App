@@ -367,13 +367,19 @@ const MemberTier = () => {
                               { value: "inactive", label: t("common.inactive") }
                             ]}
                             value={statusFilter}
-                            onChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}
+                            onChange={(v) => {
+                              setStatusFilter(v);
+                              setCurrentPage(1);
+                            }}
                             placeholder={t("common.all")}
                             searchPlaceholder="Cari..."
                           />
                           <SearchInput
                             value={search}
-                            onChange={(val) => { setSearch(val); setCurrentPage(1); }}
+                            onChange={(val) => {
+                              setSearch(val);
+                              setCurrentPage(1);
+                            }}
                             placeholder={t("common.search")}
                             isLoading={isFetching}
                           />

@@ -632,7 +632,10 @@ const ProductList = () => {
                       />
                       <Combobox
                         options={[
-                          { value: "", label: `${t("common.all")} ${t("page.product.table.category")}` },
+                          {
+                            value: "",
+                            label: `${t("common.all")} ${t("page.product.table.category")}`
+                          },
                           ...categories.map((cat) => ({ value: cat.name, label: cat.name }))
                         ]}
                         value={categoryFilter}
@@ -647,7 +650,10 @@ const ProductList = () => {
                         options={[
                           { value: "", label: t("page.product.list.filter.newest") },
                           { value: "price-asc", label: t("page.product.list.filter.priceLowHigh") },
-                          { value: "price-desc", label: t("page.product.list.filter.priceHighLow") },
+                          {
+                            value: "price-desc",
+                            label: t("page.product.list.filter.priceHighLow")
+                          },
                           { value: "stock-asc", label: t("page.product.list.filter.stockLow") }
                         ]}
                         value={sortFilter}

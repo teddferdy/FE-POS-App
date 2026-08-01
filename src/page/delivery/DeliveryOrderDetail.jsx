@@ -3,18 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import {
-  ArrowLeft,
-  Truck,
-  MapPin,
-  User,
-  Clock,
-  Package,
-  CheckCircle,
-  XCircle,
-  Phone,
-  FileText
-} from "lucide-react";
+import { ArrowLeft, Truck, User, Clock, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   getDeliveryOrderById,
@@ -46,8 +35,6 @@ const statusBadge = (status) => {
   };
   return map[status] || "bg-gray-100 text-gray-800";
 };
-
-const statusTimeline = ["pending", "assigned", "picked_up", "in_transit", "delivered"];
 
 const DeliveryOrderDetail = () => {
   const { t } = useTranslation();

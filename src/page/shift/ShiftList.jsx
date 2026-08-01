@@ -3,16 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Clock,
-  Clock3,
-  CheckCircle,
-  FileEdit,
-  XCircle
-} from "lucide-react";
+import { Plus, Edit, Trash2, Clock, Clock3, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getAllShift, deleteShift } from "@/services/shift";
 import { Button } from "@/components/ui/button";
@@ -302,10 +293,16 @@ const ShiftList = () => {
                           <Combobox
                             options={[
                               { value: "", label: t("page.employee.list.allStores") },
-                              ...(locData?.data || []).map((loc) => ({ value: loc.id, label: loc.name }))
+                              ...(locData?.data || []).map((loc) => ({
+                                value: loc.id,
+                                label: loc.name
+                              }))
                             ]}
                             value={storeFilter}
-                            onChange={(v) => { setStoreFilter(v); setPage(1); }}
+                            onChange={(v) => {
+                              setStoreFilter(v);
+                              setPage(1);
+                            }}
                             placeholder={t("page.employee.list.allStores")}
                             searchPlaceholder="Cari toko..."
                           />
@@ -318,13 +315,19 @@ const ShiftList = () => {
                             { value: "draft", label: t("common.draft") }
                           ]}
                           value={statusFilter}
-                          onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                          onChange={(v) => {
+                            setStatusFilter(v);
+                            setPage(1);
+                          }}
                           placeholder={t("common.all")}
                           searchPlaceholder="Cari..."
                         />
                         <SearchInput
                           value={search}
-                          onChange={(val) => { setSearch(val); setPage(1); }}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
                           placeholder={t("page.shift.list.search")}
                           isLoading={isFetching}
                         />

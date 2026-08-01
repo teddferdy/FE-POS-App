@@ -14,7 +14,9 @@ export const getSupplierScores = ({ store, page = 1, limit = 10, search, period,
 export const getTopSuppliers = ({ store, period = "all_time", limit = 5 } = {}) => {
   const params = new URLSearchParams({ period, limit });
   if (store) params.set("store", store);
-  return axiosInstance.get(`/supplier-performance/scores/top?${params.toString()}`).then((r) => r.data);
+  return axiosInstance
+    .get(`/supplier-performance/scores/top?${params.toString()}`)
+    .then((r) => r.data);
 };
 
 export const getSupplierScoreById = (id) =>
@@ -23,7 +25,9 @@ export const getSupplierScoreById = (id) =>
 export const getSupplierPerformanceSummary = (supplierId, { store } = {}) => {
   const params = new URLSearchParams();
   if (store) params.set("store", store);
-  return axiosInstance.get(`/supplier-performance/performance/${supplierId}?${params.toString()}`).then((r) => r.data);
+  return axiosInstance
+    .get(`/supplier-performance/performance/${supplierId}?${params.toString()}`)
+    .then((r) => r.data);
 };
 
 export const calculateSupplierScore = (payload) =>

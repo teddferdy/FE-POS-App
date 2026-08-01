@@ -61,11 +61,19 @@ const StockHistory = () => {
   const [searchProduct] = useState("");
   const [storeFilter, setStoreFilter] = useState("");
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-stock-history"], () => getAllLocation(), {
-    enabled: true
-  });
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-stock-history"],
+    () => getAllLocation(),
+    {
+      enabled: true
+    }
+  );
 
-  const store = isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : user?.store || "";
+  const store = isSuperAdmin
+    ? storeFilter && storeFilter !== "all"
+      ? storeFilter
+      : ""
+    : user?.store || "";
   const { data, isLoading, isError, refetch } = useQuery(
     ["stock-history", page, pageSize, productFilter, referenceFilter, startDate, endDate, store],
     () =>
@@ -77,8 +85,8 @@ const StockHistory = () => {
         referenceType: referenceFilter || undefined,
         startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
         endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined
-      })
-    , { keepPreviousData: true }
+      }),
+    { keepPreviousData: true }
   );
 
   const { data: productsData } = useQuery(["products-dropdown", searchProduct], () =>

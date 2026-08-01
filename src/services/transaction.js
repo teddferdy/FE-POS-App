@@ -21,10 +21,10 @@ export const getTransactionById = async (id) => {
 };
 
 export const cancelTransaction = async (payload) => {
-  const { data, status } = await axiosInstance.put(
-    `/order/update-status`,
-    { id: payload.id, status: "cancelled" }
-  );
+  const { data, status } = await axiosInstance.put(`/order/update-status`, {
+    id: payload.id,
+    status: "cancelled"
+  });
   if (status !== 200 && status !== 201) throw Error(`${data?.message || data?.error}`);
   return data;
 };

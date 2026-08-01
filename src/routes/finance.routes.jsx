@@ -38,6 +38,11 @@ const AddTaxConfig = React.lazy(() => import("@/page/tax-config/AddTaxConfig"));
 const EditTaxConfig = React.lazy(() => import("@/page/tax-config/EditTaxConfig"));
 const DetailTaxConfig = React.lazy(() => import("@/page/tax-config/DetailTaxConfig"));
 
+// Advanced Reporting
+const AdvancedReporting = React.lazy(
+  () => import("@/page/advanced-reporting/AdvancedReporting")
+);
+
 export const financeRoutes = (
   <>
     <Route path="/expense-category" element={<ExpenseCategoryList />} />
@@ -63,5 +68,7 @@ export const financeRoutes = (
     <Route path="/add-tax" element={<AddTaxConfig />} />
     <Route path="/edit-tax" element={<EditTaxConfig />} />
     <Route path="/detail-tax" element={<DetailTaxConfig />} />
+
+    <Route path="/advanced-reporting" element={<AdvancedReporting />} />
   </>
 );

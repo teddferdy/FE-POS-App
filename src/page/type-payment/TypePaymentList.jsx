@@ -4,7 +4,17 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Eye, Edit, Trash2, CreditCard, Loader2, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import {
+  Plus,
+  Eye,
+  Edit,
+  Trash2,
+  CreditCard,
+  Loader2,
+  CheckCircle,
+  FileEdit,
+  XCircle
+} from "lucide-react";
 import {
   getAllTypePaymentListActive,
   deleteTypePayment,
@@ -97,7 +107,10 @@ const TypePaymentList = () => {
   const stats = data?.stats || {};
 
   const isStatusActive = (item) =>
-    item.status === "Aktif" || item.status === true || item.status === "active" || item.isActive === true;
+    item.status === "Aktif" ||
+    item.status === true ||
+    item.status === "active" ||
+    item.isActive === true;
   const isStatusDraft = (item) => item.status === "draft";
   const isStatusInactive = (item) => !isStatusActive(item) && !isStatusDraft(item);
 
@@ -120,9 +133,7 @@ const TypePaymentList = () => {
   const payments = filteredPayments.slice((safePage - 1) * limit, safePage * limit);
   const total = totalFiltered;
 
-  const activeCount =
-    stats.active ??
-    rawPayments.filter(isStatusActive).length;
+  const activeCount = stats.active ?? rawPayments.filter(isStatusActive).length;
   const draftCount = stats.draft ?? rawPayments.filter(isStatusDraft).length;
   const inactiveCount = stats.inactive ?? rawPayments.length - activeCount - draftCount;
 
@@ -167,16 +178,12 @@ const TypePaymentList = () => {
     },
     {
       header: t("page.typePayment.table.type"),
-      render: (row) => (
-        <span className="text-sm text-muted-foreground">{row.type || "-"}</span>
-      )
+      render: (row) => <span className="text-sm text-muted-foreground">{row.type || "-"}</span>
     },
     {
       header: t("page.typePayment.table.store"),
       render: (row) => (
-        <span className="text-sm text-muted-foreground">
-          {row.store?.name || row.store || "-"}
-        </span>
+        <span className="text-sm text-muted-foreground">{row.store?.name || row.store || "-"}</span>
       )
     },
     {
@@ -420,10 +427,16 @@ const TypePaymentList = () => {
                           <Combobox
                             options={[
                               { value: "", label: t("page.employee.list.allStores") },
-                              ...(locData?.data || []).map((loc) => ({ value: loc.id, label: loc.name }))
+                              ...(locData?.data || []).map((loc) => ({
+                                value: loc.id,
+                                label: loc.name
+                              }))
                             ]}
                             value={storeFilter}
-                            onChange={(v) => { setStoreFilter(v); setPage(1); }}
+                            onChange={(v) => {
+                              setStoreFilter(v);
+                              setPage(1);
+                            }}
                             placeholder={t("page.employee.list.allStores")}
                             searchPlaceholder="Cari toko..."
                           />
@@ -436,13 +449,19 @@ const TypePaymentList = () => {
                             { value: "draft", label: t("common.draft") }
                           ]}
                           value={statusFilter}
-                          onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                          onChange={(v) => {
+                            setStatusFilter(v);
+                            setPage(1);
+                          }}
                           placeholder={t("common.all")}
                           searchPlaceholder="Cari..."
                         />
                         <SearchInput
                           value={search}
-                          onChange={(val) => { setSearch(val); setPage(1); }}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
                           placeholder={t("page.typePayment.list.search")}
                           isLoading={isFetching}
                         />

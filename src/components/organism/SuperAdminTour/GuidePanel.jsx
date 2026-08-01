@@ -118,11 +118,7 @@ const GuidePanel = ({ onClose }) => {
 
         {/* Search */}
         <div className="px-5 py-3 border-b">
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder={t("guide.panel.search")}
-          />
+          <SearchInput value={search} onChange={setSearch} placeholder={t("guide.panel.search")} />
         </div>
 
         {/* Categories */}

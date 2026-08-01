@@ -4,17 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
-import {
-  Plus,
-  Eye,
-  Edit,
-  Trash2,
-  Package,
-  Zap,
-  XCircle,
-  CheckCircle,
-  AlertTriangle
-} from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Package, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { getBundles, deleteBundle } from "@/services/productBundle";
 import { Button } from "@/components/ui/button";
@@ -44,15 +34,13 @@ const BundleList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
-  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
+  const [storeFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data: locData } = useQuery(
-    ["locations-bundle"],
-    () => getAllLocation("active"),
-    { enabled: isSuperAdmin }
-  );
+  const { data: locData } = useQuery(["locations-bundle"], () => getAllLocation("active"), {
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["bundles", page, limit, search, storeFilter, statusFilter],
@@ -63,8 +51,8 @@ const BundleList = () => {
         store: storeFilter !== "all" ? storeFilter : undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,
         search: search || undefined
-      })
-    , { keepPreviousData: true }
+      }),
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteBundle, {
@@ -142,8 +130,7 @@ const BundleList = () => {
     return map[status] || map.draft;
   };
 
-  const formatPrice = (val) =>
-    `Rp${Number(val || 0).toLocaleString("id-ID")}`;
+  const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;
 
   const columns = [
     {
@@ -156,11 +143,7 @@ const BundleList = () => {
       render: (row) => (
         <div className="flex items-center gap-2">
           {row.image ? (
-            <img
-              src={row.image}
-              alt={row.name}
-              className="w-8 h-8 rounded object-cover"
-            />
+            <img src={row.image} alt={row.name} className="w-8 h-8 rounded object-cover" />
           ) : (
             <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
               <Package size={14} className="text-muted-foreground" />
@@ -193,9 +176,7 @@ const BundleList = () => {
     {
       header: t("page.bundle.table.bundlePrice"),
       render: (row) => (
-        <span className="text-sm font-semibold text-green-600">
-          {formatPrice(row.bundlePrice)}
-        </span>
+        <span className="text-sm font-semibold text-green-600">{formatPrice(row.bundlePrice)}</span>
       ),
       align: "right"
     },
@@ -287,33 +268,21 @@ const BundleList = () => {
       <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
-            onClick={() =>
-              navigate(
-                isSuperAdmin ? "/dashboard-super-admin" : "/dashboard-admin"
-              )
-            }
+            onClick={() => navigate(isSuperAdmin ? "/dashboard-super-admin" : "/dashboard-admin")}
             className="hover:text-foreground transition-colors">
             {t("breadcrumb.home")}
           </button>
           <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("sidebar.bundle")}
-          </span>
+          <span className="text-primary font-semibold">{t("sidebar.bundle")}</span>
         </nav>
       </div>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {t("page.bundle.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.bundle.description")}
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.bundle.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.bundle.description")}</p>
         </div>
-        <Button
-          onClick={() => navigate("/bundle/add")}
-          className="gap-2">
+        <Button onClick={() => navigate("/bundle/add")} className="gap-2">
           <Plus size={16} />
           {t("page.bundle.addButton")}
         </Button>
@@ -334,11 +303,7 @@ const BundleList = () => {
           <TipsCard
             variant="info"
             title={t("tips.bundleTitle")}
-            tips={[
-              t("page.bundle.tip1"),
-              t("page.bundle.tip2"),
-              t("page.bundle.tip3")
-            ]}
+            tips={[t("page.bundle.tip1"), t("page.bundle.tip2"), t("page.bundle.tip3")]}
           />
 
           {isError ? (

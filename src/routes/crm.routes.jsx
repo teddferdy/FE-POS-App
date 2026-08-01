@@ -32,6 +32,11 @@ const AddReservation = React.lazy(() => import("@/page/reservation/AddReservatio
 const EditReservation = React.lazy(() => import("@/page/reservation/EditReservation"));
 const DetailReservation = React.lazy(() => import("@/page/reservation/DetailReservation"));
 
+// Member Loyalty
+const MemberLoyalty = React.lazy(
+  () => import("@/page/member-loyalty/MemberLoyalty")
+);
+
 export const crmRoutes = (
   <>
     <Route path="/member-list" element={<MemberList />} />
@@ -59,5 +64,7 @@ export const crmRoutes = (
     <Route path="/add-reservation" element={<AddReservation />} />
     <Route path="/edit-reservation" element={<EditReservation />} />
     <Route path="/reservation/:id" element={<DetailReservation />} />
+
+    <Route path="/member-loyalty" element={<MemberLoyalty />} />
   </>
 );

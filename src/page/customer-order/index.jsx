@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -9,15 +9,19 @@ import {
   ArrowRight,
   Menu,
   FileText,
-  ShoppingBag
+  ShoppingBag,
+  RefreshCw
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useQuery } from "react-query";
 import { axiosInstance } from "@/services";
 import { loadCart } from "./cartStore";
+import AbortController from "@/components/organism/abort-controller";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CustomerOrder = () => {
   const { t } = useTranslation();
@@ -26,34 +30,35 @@ const CustomerOrder = () => {
   const tableId = searchParams.get("table");
   const storeId = searchParams.get("store");
 
-  const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState(loadCart);
 
-  useEffect(() => {
-    if (!storeId) {
-      setLoading(false);
-      return;
+  const {
+    data: menuData,
+    isLoading: menuLoading,
+    isError: menuError,
+    refetch: refetchMenu
+  } = useQuery(
+    ["customer-menu", storeId],
+    () =>
+      axiosInstance
+        .get(`/order/customer-menu?store=${storeId}`)
+        .then((res) => res.data?.data),
+    {
+      enabled: !!storeId,
+      staleTime: 5 * 60 * 1000
     }
-    axiosInstance
-      .get(`/order/customer-menu?store=${storeId}`)
-      .then((res) => {
-        if (res.data?.data) {
-          setProducts(res.data.data.products || []);
-          setCategories(res.data.data.categories || []);
-        }
-      })
-      .catch((e) => {
-        console.error(e);
-        toast.error(t("page.customerOrder.loadMenuFail"), {
-          description: e?.response?.data?.message || e.message
-        });
-      })
-      .finally(() => setLoading(false));
-  }, [storeId]);
+  );
+
+  const products = menuData?.products || [];
+
+  useEffect(() => {
+    if (menuData?.categories) {
+      setCategories(menuData.categories);
+    }
+  }, [menuData]);
 
   useEffect(() => {
     const onStorage = () => setCart(loadCart());
@@ -167,7 +172,7 @@ const CustomerOrder = () => {
 
         {/* Products */}
         <section className="px-4 pt-4 pb-8 space-y-3">
-          {loading ? (
+          {menuLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((n) => (
                 <div
@@ -176,11 +181,41 @@ const CustomerOrder = () => {
                 />
               ))}
             </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-on-surface-variant text-sm">
-                {t("page.customerOrder.noProducts")}
+          ) : menuError ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <UtensilsCrossed size={40} className="text-muted-foreground mb-4" />
+              <p className="text-on-surface-variant text-sm mb-4">
+                {t("page.customerOrder.loadMenuFail")}
               </p>
+              <Button variant="outline" size="sm" onClick={() => refetchMenu()}>
+                <RefreshCw size={14} className="mr-1" />
+                {t("page.customerOrder.retry")}
+              </Button>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                {searchQuery ? (
+                  <Search size={32} className="text-muted-foreground" />
+                ) : (
+                  <UtensilsCrossed size={32} className="text-muted-foreground" />
+                )}
+              </div>
+              <h3 className="font-semibold text-on-surface mb-2">
+                {searchQuery
+                  ? t("page.customerOrder.noSearchResults")
+                  : t("page.customerOrder.noProducts")}
+              </h3>
+              <p className="text-on-surface-variant text-sm text-center mb-6 max-w-xs">
+                {searchQuery
+                  ? t("page.customerOrder.noSearchResultsDesc")
+                  : t("page.customerOrder.noProductsDesc")}
+              </p>
+              {searchQuery && (
+                <Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
+                  {t("page.customerOrder.clearSearch")}
+                </Button>
+              )}
             </div>
           ) : (
             filteredProducts.map((product) => {

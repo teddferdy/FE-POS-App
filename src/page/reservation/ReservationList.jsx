@@ -74,9 +74,13 @@ const ReservationList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [showFilters, setShowFilters] = useState(false);
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-reservations"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-reservations"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
   const storeMap = Object.fromEntries((locData?.data || []).map((s) => [String(s.id), s.name]));
 
   const statusMutation = useMutation(({ id, status }) => updateReservation({ id, status }), {
@@ -99,8 +103,8 @@ const ReservationList = () => {
         date: dateFilter ? format(dateFilter, "yyyy-MM-dd") : undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,
         store: storeFilter !== "all" ? storeFilter : undefined
-      })
-    , { keepPreviousData: true }
+      }),
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteReservation, {
@@ -404,7 +408,9 @@ const ReservationList = () => {
                               size="sm"
                               className="gap-2 h-9 lg:hidden"
                               onClick={() => setShowFilters(!showFilters)}>
-                              <span className="material-symbols-outlined text-base">filter_list</span>
+                              <span className="material-symbols-outlined text-base">
+                                filter_list
+                              </span>
                               {showFilters ? "Tutup" : "Filter"}
                             </Button>
                           </div>
@@ -433,13 +439,25 @@ const ReservationList = () => {
                               options={[
                                 { value: "all", label: t("page.reservation.filter.allStatus") },
                                 { value: "pending", label: t("page.reservation.status.pending") },
-                                { value: "confirmed", label: t("page.reservation.status.confirmed") },
-                                { value: "cancelled", label: t("page.reservation.status.cancelled") },
-                                { value: "completed", label: t("page.reservation.status.completed") },
+                                {
+                                  value: "confirmed",
+                                  label: t("page.reservation.status.confirmed")
+                                },
+                                {
+                                  value: "cancelled",
+                                  label: t("page.reservation.status.cancelled")
+                                },
+                                {
+                                  value: "completed",
+                                  label: t("page.reservation.status.completed")
+                                },
                                 { value: "no_show", label: t("page.reservation.status.noShow") }
                               ]}
                               value={statusFilter}
-                              onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                              onChange={(v) => {
+                                setStatusFilter(v);
+                                setPage(1);
+                              }}
                               placeholder={t("page.reservation.filter.allStatus")}
                               searchPlaceholder="Cari..."
                             />

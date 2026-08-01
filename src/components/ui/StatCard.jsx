@@ -75,7 +75,15 @@ const variantStyles = {
   }
 };
 
-const StatCard = ({ label, value, icon, subtitle, variant = "default", "data-tour": dataTour, className = "" }) => {
+const StatCard = ({
+  label,
+  value,
+  icon,
+  subtitle,
+  variant = "default",
+  "data-tour": dataTour,
+  className = ""
+}) => {
   const s = variantStyles[variant] || variantStyles.default;
   const isLucide = typeof icon !== "string";
   return (

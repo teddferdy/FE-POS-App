@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import {
   Plus,
-  ChevronLeft,
   Eye,
   Edit,
   Trash2,
@@ -70,11 +69,9 @@ const StockOpnameList = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-stock-opname"],
-    () => getAllLocation("active"),
-    { enabled: isSuperAdmin }
-  );
+  const { data: locData } = useQuery(["locations-stock-opname"], () => getAllLocation("active"), {
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["stockOpname", page, limit, search, storeFilter, statusFilter],
@@ -85,8 +82,8 @@ const StockOpnameList = () => {
         search: search || undefined,
         location: storeFilter !== "all" ? storeFilter : undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
-      })
-    , { keepPreviousData: true }
+      }),
+    { keepPreviousData: true }
   );
 
   const items = data?.data || data?.stockOpname || [];
@@ -489,7 +486,10 @@ const StockOpnameList = () => {
                               { value: "cancelled", label: t("page.stockOpname.status.cancelled") }
                             ]}
                             value={statusFilter}
-                            onChange={(val) => { setStatusFilter(val); setPage(1); }}
+                            onChange={(val) => {
+                              setStatusFilter(val);
+                              setPage(1);
+                            }}
                             placeholder={t("page.stockOpname.list.allStatus")}
                             searchPlaceholder={t("common.search")}
                           />

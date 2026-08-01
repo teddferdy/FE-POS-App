@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
-import { Truck, Clock, UserCheck, Route, CheckCircle, XCircle, Eye, Package } from "lucide-react";
+import { Truck, Clock, Route, CheckCircle, XCircle, Eye, Package } from "lucide-react";
 import { toast } from "sonner";
 import { getDeliveryOrders, cancelDeliveryOrder } from "@/services/delivery";
 import { Button } from "@/components/ui/button";

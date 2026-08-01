@@ -10,11 +10,14 @@ import {
   RefreshCw,
   UtensilsCrossed,
   Clock,
-  ChefHat
+  ChefHat,
+  AlertCircle
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "react-query";
 import { axiosInstance } from "@/services";
+import AbortController from "@/components/organism/abort-controller";
 
 const Tracking = () => {
   const { t } = useTranslation();
@@ -30,16 +33,29 @@ const Tracking = () => {
   const storeId = searchParams.get("store");
   const tableId = searchParams.get("table");
 
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: orderData,
+    isLoading: orderLoading,
+    isError: orderError,
+    refetch: refetchOrder
+  } = useQuery(
+    ["customer-order-tracking", id],
+    () =>
+      axiosInstance
+        .get(`/order/customer-order/${id}`)
+        .then((res) => res.data?.data),
+    {
+      enabled: !!id,
+      staleTime: 5 * 1000,
+      refetchInterval: 10000
+    }
+  );
+
+  const order = orderData;
 
   const fetchOrder = () => {
     if (!id) return;
-    axiosInstance
-      .get(`/order/customer-order/${id}`)
-      .then((res) => setOrder(res.data?.data || null))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    refetchOrder();
   };
 
   useEffect(() => {
@@ -56,10 +72,35 @@ const Tracking = () => {
   const statusOrder = ["pending", "preparing", "ready", "served", "completed"];
   const currentIdx = statusOrder.indexOf(order?.status || "pending");
 
-  if (loading) {
+  if (orderLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (orderError) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <AlertCircle size={40} className="text-muted-foreground mb-4" />
+        <p className="text-on-surface-variant text-sm mb-4">
+          {t("page.customerOrder.loadOrderFail")}
+        </p>
+        <Button variant="outline" size="sm" onClick={() => refetchOrder()}>
+          <RefreshCw size={14} className="mr-1" />
+          {t("page.customerOrder.retry")}
+        </Button>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <p className="text-on-surface-variant text-sm">
+          {t("page.customerOrder.orderNotFound")}
+        </p>
       </div>
     );
   }

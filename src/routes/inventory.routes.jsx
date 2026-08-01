@@ -47,6 +47,11 @@ const AddGoodsReceipt = React.lazy(() => import("@/page/goods-receipt/AddGoodsRe
 const DetailGoodsReceipt = React.lazy(() => import("@/page/goods-receipt/DetailGoodsReceipt"));
 const EditGoodsReceipt = React.lazy(() => import("@/page/goods-receipt/EditGoodsReceipt"));
 
+// Stock Forecast
+const StockForecast = React.lazy(
+  () => import("@/page/stock-forecast/StockForecast")
+);
+
 export const inventoryRoutes = (
   <>
     <Route path="/ingredient" element={<IngredientList />} />
@@ -83,5 +88,7 @@ export const inventoryRoutes = (
     <Route path="/add-goods-receipt" element={<AddGoodsReceipt />} />
     <Route path="/goods-receipt/detail" element={<DetailGoodsReceipt />} />
     <Route path="/edit-goods-receipt" element={<EditGoodsReceipt />} />
+
+    <Route path="/stock-forecast" element={<StockForecast />} />
   </>
 );
