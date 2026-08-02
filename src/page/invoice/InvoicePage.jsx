@@ -108,6 +108,8 @@ const InvoicePreview = ({
   locationDetail,
   cityName,
   provinceName,
+  districtName,
+  villageName,
   postalCodeValue,
   fullAddress,
   cashierName,
@@ -148,7 +150,7 @@ const InvoicePreview = ({
             <h3 className="text-lg font-bold tracking-tight">{storeName || "NAMA TOKO"}</h3>
           )}
           {showAddress && (
-            <div className="text-gray-400 mt-2 space-y-0.5">
+            <div className="text-gray-400 mt-2 space-y-1">
               {addressFieldsVisible.storeName !== false && storeName && (
                 <p className="text-xs font-medium text-gray-300">{storeName}</p>
               )}
@@ -159,16 +161,46 @@ const InvoicePreview = ({
                 <p className="text-[11px]">{locationDetail.detailLocation}</p>
               )}
               {addressFieldsVisible.province !== false && provinceName && (
-                <p className="text-[11px]">{[cityName, provinceName].filter(Boolean).join(", ")}</p>
+                <div className="text-[10px]">
+                  <span className="block text-gray-500 font-medium">Provinsi</span>
+                  <span className="block text-gray-300">{provinceName}</span>
+                </div>
+              )}
+              {addressFieldsVisible.city !== false && cityName && (
+                <div className="text-[10px]">
+                  <span className="block text-gray-500 font-medium">Kota</span>
+                  <span className="block text-gray-300">{cityName}</span>
+                </div>
+              )}
+              {addressFieldsVisible.district !== false && districtName && (
+                <div className="text-[10px]">
+                  <span className="block text-gray-500 font-medium">Kecamatan</span>
+                  <span className="block text-gray-300">{districtName}</span>
+                </div>
+              )}
+              {addressFieldsVisible.village !== false && villageName && (
+                <div className="text-[10px]">
+                  <span className="block text-gray-500 font-medium">Kelurahan</span>
+                  <span className="block text-gray-300">{villageName}</span>
+                </div>
               )}
               {addressFieldsVisible.postalCode !== false && postalCodeValue && (
-                <p className="text-[11px]">Kode Pos: {postalCodeValue}</p>
+                <div className="text-[10px]">
+                  <span className="block text-gray-500 font-medium">Kode Pos</span>
+                  <span className="block text-gray-300">{postalCodeValue}</span>
+                </div>
               )}
               {addressFieldsVisible.phone !== false && storePhone && (
-                <p className="text-[11px]">Telp: {storePhone}</p>
+                <div className="text-[10px]">
+                  <span className="block text-gray-500 font-medium">Telp</span>
+                  <span className="block text-gray-300">{storePhone}</span>
+                </div>
               )}
               {addressFieldsVisible.email !== false && storeEmail && (
-                <p className="text-[11px]">{storeEmail}</p>
+                <div className="text-[10px]">
+                  <span className="block text-gray-500 font-medium">Email</span>
+                  <span className="block text-gray-300">{storeEmail}</span>
+                </div>
               )}
             </div>
           )}
@@ -1103,6 +1135,8 @@ const InvoicePage = () => {
                   locationDetail={locationDetail}
                   cityName={cityName}
                   provinceName={provinceName}
+                  districtName={districtName}
+                  villageName={villageName}
                   postalCodeValue={postalCodeValue}
                   fullAddress={fullAddress}
                   cashierName={cashierName}
