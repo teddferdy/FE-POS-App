@@ -173,14 +173,37 @@ const InvoicePreview = ({
         </div>
       )}
 
-      {showMemberInfo && memberTier && (
-        <div className="px-5 py-2 bg-yellow-50 border-b border-yellow-100">
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-xs font-semibold text-yellow-800">{memberTier}</span>
+      {showMemberInfo && (memberName || memberTier) && (
+        <div className="px-5 py-3 bg-yellow-50 border-b border-yellow-100">
+          <p className="text-[10px] font-semibold text-yellow-800 uppercase tracking-wider mb-2">
+            {t("page.invoice.memberInfo")}
+          </p>
+          <div className="space-y-1">
+            {memberName && memberFieldsVisible.name !== false && (
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] text-yellow-900 font-medium">
+                  {t("page.invoice.memberName")}
+                </span>
+                <span className="text-xs text-yellow-800 font-semibold">{memberName}</span>
+              </div>
+            )}
+            {memberTier && memberFieldsVisible.tier !== false && (
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] text-yellow-900 font-medium">
+                  {t("page.invoice.memberTier")}
+                </span>
+                <span className="text-xs text-yellow-800 font-semibold">{memberTier}</span>
+              </div>
+            )}
             {memberPoints !== undefined && memberFieldsVisible.points !== false && (
-              <span className="text-[11px] text-yellow-700">
-                {Number(memberPoints).toLocaleString("id-ID")} pts
-              </span>
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] text-yellow-900 font-medium">
+                  {t("page.invoice.totalPoints")}
+                </span>
+                <span className="text-xs text-yellow-800 font-semibold">
+                  {Number(memberPoints).toLocaleString("id-ID")} pts
+                </span>
+              </div>
             )}
           </div>
         </div>
