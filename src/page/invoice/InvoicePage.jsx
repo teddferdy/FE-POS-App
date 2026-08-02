@@ -490,6 +490,8 @@ const InvoicePage = () => {
     locationDetail?.detailLocation,
     cityName,
     provinceName,
+    districtName,
+    villageName,
     postalCodeValue
   ]
     .filter(Boolean)
@@ -1120,6 +1122,8 @@ const InvoicePage = () => {
                   locationDetail={locationDetail}
                   cityName={cityName}
                   provinceName={provinceName}
+                  districtName={districtName}
+                  villageName={villageName}
                   postalCodeValue={postalCodeValue}
                   fullAddress={fullAddress}
                   cashierName={cashierName}
