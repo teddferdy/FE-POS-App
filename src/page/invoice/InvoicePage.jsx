@@ -132,146 +132,159 @@ const InvoicePreview = ({
   const showHeader = showStoreName || showAddress || !!logoUrl;
 
   return (
-    <div className="bg-white text-black rounded-xl shadow-sm border border-border p-5 max-w-sm mx-auto font-mono text-xs leading-relaxed select-all">
+    <div className="bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 max-w-sm mx-auto overflow-hidden select-all">
       {showHeader && (
-        <div className="text-center border-b-2 border-gray-300 pb-4 mb-3">
-          {showLogo && logoUrl && (
-            <img src={logoUrl} alt="Logo" className="max-h-16 mx-auto mb-2 object-contain" />
-          )}
-          {showStoreName && (
-            <h3 className="text-base font-bold uppercase tracking-tight text-gray-800">
-              {storeName || "NAMA TOKO"}
-            </h3>
-          )}
-          {showAddress && (
-            <div className="text-gray-500 mt-1 space-y-0.5">
-              {addressFieldsVisible.storeName !== false && storeName && (
-                <p className="text-[11px] font-semibold">{storeName}</p>
+        <div className="bg-gradient-to-br from-gray-900 to-gray-800 px-5 py-5 text-white">
+          <div className="flex items-start gap-4">
+            {showLogo && logoUrl && (
+              <img
+                src={logoUrl}
+                alt="Logo"
+                className="h-14 w-14 object-contain bg-white rounded-lg p-1 shrink-0"
+              />
+            )}
+            <div className="min-w-0">
+              {showStoreName && (
+                <h3 className="text-lg font-bold tracking-tight">{storeName || "NAMA TOKO"}</h3>
               )}
-              {addressFieldsVisible.address !== false && locationDetail?.address && (
-                <p className="text-[11px]">{locationDetail.address}</p>
-              )}
-              {addressFieldsVisible.locationDetail !== false && locationDetail?.detailLocation && (
-                <p className="text-[11px]">{locationDetail.detailLocation}</p>
-              )}
-              {addressFieldsVisible.province !== false && provinceName && (
-                <p className="text-[11px]">{[cityName, provinceName].filter(Boolean).join(", ")}</p>
-              )}
-              {addressFieldsVisible.postalCode !== false && postalCodeValue && (
-                <p className="text-[11px]">Kode Pos: {postalCodeValue}</p>
-              )}
-              {addressFieldsVisible.phone !== false && storePhone && (
-                <p className="text-[11px]">Telp: {storePhone}</p>
-              )}
-              {addressFieldsVisible.email !== false && storeEmail && (
-                <p className="text-[11px]">{storeEmail}</p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="border-b border-dashed border-gray-300 pb-2 mb-3">
-        <div className="flex justify-between text-gray-500 text-[10px]">
-          <span>
-            {new Date().toLocaleDateString("id-ID", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric"
-            })}
-          </span>
-          <span>
-            {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
-          </span>
-        </div>
-        <div className="flex justify-between text-gray-500 text-[10px] mt-0.5">
-          <span>Invoice: INV-{String(Date.now()).slice(-8)}</span>
-          <span>Kasir: {cashierName || "Demo"}</span>
-        </div>
-      </div>
-
-      {showMemberInfo && (memberName || memberTier) && (
-        <div className="border-b border-dashed border-gray-300 pb-2 mb-3">
-          <div className="flex items-center gap-3 text-gray-700 text-[11px]">
-            <Medal size={14} className="text-yellow-600 shrink-0" />
-            <div className="flex-1 space-y-0.5">
-              {memberFieldsVisible.name !== false && (
-                <span className="block font-medium">{memberName || "-"}</span>
-              )}
-              {memberTier && memberFieldsVisible.tier !== false && (
-                <span className="block text-gray-500 text-[10px]">Tier: {memberTier}</span>
-              )}
-              {memberPoints !== undefined && memberFieldsVisible.points !== false && (
-                <span className="block text-gray-500 text-[10px]">
-                  Poin: {Number(memberPoints).toLocaleString("id-ID")}
-                </span>
+              {showAddress && (
+                <div className="text-gray-400 mt-1 space-y-0.5">
+                  {addressFieldsVisible.storeName !== false && storeName && (
+                    <p className="text-xs font-medium text-gray-300">{storeName}</p>
+                  )}
+                  {addressFieldsVisible.address !== false && locationDetail?.address && (
+                    <p className="text-[11px]">{locationDetail.address}</p>
+                  )}
+                  {addressFieldsVisible.locationDetail !== false &&
+                    locationDetail?.detailLocation && (
+                      <p className="text-[11px]">{locationDetail.detailLocation}</p>
+                    )}
+                  {addressFieldsVisible.province !== false && provinceName && (
+                    <p className="text-[11px]">
+                      {[cityName, provinceName].filter(Boolean).join(", ")}
+                    </p>
+                  )}
+                  {addressFieldsVisible.postalCode !== false && postalCodeValue && (
+                    <p className="text-[11px]">Kode Pos: {postalCodeValue}</p>
+                  )}
+                  {addressFieldsVisible.phone !== false && storePhone && (
+                    <p className="text-[11px]">Telp: {storePhone}</p>
+                  )}
+                  {addressFieldsVisible.email !== false && storeEmail && (
+                    <p className="text-[11px]">{storeEmail}</p>
+                  )}
+                </div>
               )}
             </div>
           </div>
         </div>
       )}
 
-      <table className="w-full mb-3">
-        <thead>
-          <tr className="text-gray-600 text-[10px] border-b border-gray-300">
-            <th className="text-left py-1 font-bold uppercase">Item</th>
-            <th className="text-center py-1 font-bold uppercase">Qty</th>
-            <th className="text-right py-1 font-bold uppercase">Harga</th>
-            <th className="text-right py-1 font-bold uppercase">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sampleItems.map((item, i) => (
-            <tr key={i} className="border-b border-gray-100">
-              <td className="py-1.5 text-gray-700">{item.name}</td>
-              <td className="py-1.5 text-center text-gray-600">{item.qty}</td>
-              <td className="py-1.5 text-right text-gray-600">{formatPrice(item.price)}</td>
-              <td className="py-1.5 text-right text-gray-700 font-medium">
-                {formatPrice(item.qty * item.price)}
-              </td>
+      <div className="px-5 py-3 border-b border-gray-100">
+        <div className="flex justify-between items-center">
+          <div className="text-xs">
+            <p className="text-gray-500 font-medium">{t("page.invoice.invoice")}</p>
+            <p className="text-gray-800 font-semibold text-sm">
+              INV-{String(Date.now()).slice(-8)}
+            </p>
+          </div>
+          <div className="text-right text-xs">
+            <p className="text-gray-500 font-medium">{t("page.invoice.date")}</p>
+            <p className="text-gray-800">
+              {new Date().toLocaleDateString("id-ID", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+              })}
+            </p>
+            <p className="text-gray-500 mt-0.5">
+              {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+          <div className="text-xs">
+            <span className="text-gray-500">{t("page.invoice.cashier")}</span>{" "}
+            <span className="text-gray-800 font-medium">{cashierName || "Demo"}</span>
+          </div>
+          {memberName && memberFieldsVisible.name !== false && (
+            <div className="text-xs">
+              <span className="text-gray-500">{t("page.invoice.member")}</span>{" "}
+              <span className="text-gray-800 font-medium">{memberName}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showMemberInfo && memberTier && (
+        <div className="px-5 py-2 bg-yellow-50 border-b border-yellow-100">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-yellow-800">{memberTier}</span>
+            {memberPoints !== undefined && memberFieldsVisible.points !== false && (
+              <span className="text-[11px] text-yellow-700">
+                {Number(memberPoints).toLocaleString("id-ID")} pts
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="px-5 py-3">
+        <table className="w-full">
+          <thead>
+            <tr className="text-[10px] text-gray-500 uppercase tracking-wider border-b border-gray-200">
+              <th className="text-left py-2 font-semibold">{t("page.invoice.item")}</th>
+              <th className="text-center py-2 font-semibold w-10">Qty</th>
+              <th className="text-right py-2 font-semibold">Harga</th>
+              <th className="text-right py-2 font-semibold">Total</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {sampleItems.map((item, i) => (
+              <tr key={i} className={i % 2 === 0 ? "bg-gray-50/50" : ""}>
+                <td className="py-2 text-sm text-gray-800">{item.name}</td>
+                <td className="py-2 text-center text-sm text-gray-600">{item.qty}</td>
+                <td className="py-2 text-right text-sm text-gray-600">{formatPrice(item.price)}</td>
+                <td className="py-2 text-right text-sm font-medium text-gray-900">
+                  {formatPrice(item.qty * item.price)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      <div className="space-y-1 border-t-2 border-gray-300 pt-2 mb-3">
-        <div className="flex justify-between text-[11px]">
-          <span className="text-gray-500">{t("page.invoice.subtotal")}</span>
-          <span className="text-gray-700">{formatPrice(subtotal)}</span>
-        </div>
-        <div className="flex justify-between text-[11px]">
-          <span className="text-gray-500">Pajak (10%)</span>
-          <span className="text-gray-700">{formatPrice(tax)}</span>
-        </div>
-        <div className="flex justify-between font-bold text-sm pt-1.5 border-t border-gray-300 mt-1.5">
-          <span className="text-gray-800">Total</span>
-          <span className="text-gray-900">{formatPrice(total)}</span>
+      <div className="px-5 pb-4">
+        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">{t("page.invoice.subtotal")}</span>
+            <span className="text-gray-700 font-medium">{formatPrice(subtotal)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Pajak (10%)</span>
+            <span className="text-gray-700 font-medium">{formatPrice(tax)}</span>
+          </div>
+          <div className="flex justify-between text-sm pt-2 border-t border-gray-200 mt-2">
+            <span className="text-gray-900 font-bold text-base">{t("page.invoice.total")}</span>
+            <span className="text-gray-900 font-bold text-base">{formatPrice(total)}</span>
+          </div>
         </div>
       </div>
 
-      <div className="text-center text-gray-400 text-[10px] mt-2 pt-2 border-t border-dashed border-gray-200 italic">
-        Terima kasih atas kunjungan Anda
-      </div>
-
-      {showSocialMedia && socialMedia.filter((_, i) => socialMediaVisible[i]).length > 0 && (
-        <div className="mt-2 pt-2 border-t border-dashed border-gray-200">
-          <div className="space-y-1">
+      <div className="bg-gray-50 px-5 py-3 border-t border-gray-200">
+        <p className="text-center text-gray-400 text-xs italic">Terima kasih atas kunjungan Anda</p>
+        {showSocialMedia && socialMedia.filter((_, i) => socialMediaVisible[i]).length > 0 && (
+          <div className="flex items-center justify-center gap-4 mt-2 pt-2 border-t border-gray-200">
             {socialMedia
               .filter((_, i) => socialMediaVisible[i])
               .map((sm, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-center gap-2 text-gray-400 text-[10px]">
-                  <Globe size={12} />
-                  <span>
-                    {sm.platform}: {sm.account}
-                  </span>
-                </div>
+                <span key={i} className="text-gray-400 text-[10px]">
+                  {sm.platform}: {sm.account}
+                </span>
               ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
