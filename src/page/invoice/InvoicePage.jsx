@@ -271,7 +271,16 @@ const InvoicePreview = ({
       </div>
 
       <div className="bg-gray-50 px-5 py-3 border-t border-gray-200">
-        <p className="text-center text-gray-400 text-xs italic line-clamp-4">{footerText}</p>
+        <p
+          className="text-center text-gray-400 text-xs italic overflow-hidden"
+          style={{
+            display: "-webkit-box",
+            WebkitBoxOrient: "vertical",
+            WebkitLineClamp: 4,
+            textOverflow: "ellipsis"
+          }}>
+          {footerText}
+        </p>
         {showSocialMedia && socialMedia.filter((_, i) => socialMediaVisible[i]).length > 0 && (
           <div className="flex items-center justify-center gap-4 mt-2 pt-2 border-t border-gray-200">
             {socialMedia
