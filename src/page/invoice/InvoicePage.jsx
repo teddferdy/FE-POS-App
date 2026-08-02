@@ -134,91 +134,48 @@ const InvoicePreview = ({
   return (
     <div className="bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 max-w-sm mx-auto overflow-hidden select-all">
       {showHeader && (
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 px-5 py-5 text-white">
-          <div className="flex items-start gap-4">
-            {showLogo && logoUrl && (
-              <img
-                src={logoUrl}
-                alt="Logo"
-                className="h-14 w-14 object-contain bg-white rounded-lg p-1 shrink-0"
-              />
-            )}
-            <div className="min-w-0">
-              {showStoreName && (
-                <h3 className="text-lg font-bold tracking-tight">{storeName || "NAMA TOKO"}</h3>
+        <div className="bg-gradient-to-br from-gray-900 to-gray-800 px-5 py-6 text-white text-center">
+          {showLogo && logoUrl && (
+            <img
+              src={logoUrl}
+              alt="Logo"
+              className="h-16 w-16 object-contain bg-white rounded-lg p-1 mx-auto mb-3"
+            />
+          )}
+          {showStoreName && (
+            <h3 className="text-lg font-bold tracking-tight">{storeName || "NAMA TOKO"}</h3>
+          )}
+          {showAddress && (
+            <div className="text-gray-400 mt-2 space-y-0.5">
+              {addressFieldsVisible.storeName !== false && storeName && (
+                <p className="text-xs font-medium text-gray-300">{storeName}</p>
               )}
-              {showAddress && (
-                <div className="text-gray-400 mt-1 space-y-0.5">
-                  {addressFieldsVisible.storeName !== false && storeName && (
-                    <p className="text-xs font-medium text-gray-300">{storeName}</p>
-                  )}
-                  {addressFieldsVisible.address !== false && locationDetail?.address && (
-                    <p className="text-[11px]">{locationDetail.address}</p>
-                  )}
-                  {addressFieldsVisible.locationDetail !== false &&
-                    locationDetail?.detailLocation && (
-                      <p className="text-[11px]">{locationDetail.detailLocation}</p>
-                    )}
-                  {addressFieldsVisible.province !== false && provinceName && (
-                    <p className="text-[11px]">
-                      {[cityName, provinceName].filter(Boolean).join(", ")}
-                    </p>
-                  )}
-                  {addressFieldsVisible.postalCode !== false && postalCodeValue && (
-                    <p className="text-[11px]">Kode Pos: {postalCodeValue}</p>
-                  )}
-                  {addressFieldsVisible.phone !== false && storePhone && (
-                    <p className="text-[11px]">Telp: {storePhone}</p>
-                  )}
-                  {addressFieldsVisible.email !== false && storeEmail && (
-                    <p className="text-[11px]">{storeEmail}</p>
-                  )}
-                </div>
+              {addressFieldsVisible.address !== false && locationDetail?.address && (
+                <p className="text-[11px]">{locationDetail.address}</p>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="px-5 py-3 border-b border-gray-100">
-        <div className="flex justify-between items-center">
-          <div className="text-xs">
-            <p className="text-gray-500 font-medium">{t("page.invoice.invoice")}</p>
-            <p className="text-gray-800 font-semibold text-sm">
-              INV-{String(Date.now()).slice(-8)}
-            </p>
-          </div>
-          <div className="text-right text-xs">
-            <p className="text-gray-500 font-medium">{t("page.invoice.date")}</p>
-            <p className="text-gray-800">
-              {new Date().toLocaleDateString("id-ID", {
-                year: "numeric",
-                month: "short",
-                day: "numeric"
-              })}
-            </p>
-            <p className="text-gray-500 mt-0.5">
-              {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
-            </p>
-          </div>
-        </div>
-        <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
-          <div className="text-xs">
-            <span className="text-gray-500">{t("page.invoice.cashier")}</span>{" "}
-            <span className="text-gray-800 font-medium">{cashierName || "Demo"}</span>
-          </div>
-          {memberName && memberFieldsVisible.name !== false && (
-            <div className="text-xs">
-              <span className="text-gray-500">{t("page.invoice.member")}</span>{" "}
-              <span className="text-gray-800 font-medium">{memberName}</span>
+              {addressFieldsVisible.locationDetail !== false && locationDetail?.detailLocation && (
+                <p className="text-[11px]">{locationDetail.detailLocation}</p>
+              )}
+              {addressFieldsVisible.province !== false && provinceName && (
+                <p className="text-[11px]">{[cityName, provinceName].filter(Boolean).join(", ")}</p>
+              )}
+              {addressFieldsVisible.postalCode !== false && postalCodeValue && (
+                <p className="text-[11px]">Kode Pos: {postalCodeValue}</p>
+              )}
+              {addressFieldsVisible.phone !== false && storePhone && (
+                <p className="text-[11px]">Telp: {storePhone}</p>
+              )}
+              {addressFieldsVisible.email !== false && storeEmail && (
+                <p className="text-[11px]">{storeEmail}</p>
+              )}
             </div>
           )}
         </div>
-      </div>
+      )}
 
       {showMemberInfo && memberTier && (
         <div className="px-5 py-2 bg-yellow-50 border-b border-yellow-100">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <span className="text-xs font-semibold text-yellow-800">{memberTier}</span>
             {memberPoints !== undefined && memberFieldsVisible.points !== false && (
               <span className="text-[11px] text-yellow-700">
