@@ -2487,6 +2487,7 @@
   "page.globalSetting.roleManagement.toast.deleteSuccess": "Role deleted successfully",
   "page.globalSetting.roleManagement.tooltip.detail": "Detail Role",
   "page.invoice.footerDescription": "Manage invoice footer text and content",
+  "page.invoice.footerPlaceholder": "Enter footer text for the invoice",
   "page.invoice.logoDescription": "Manage invoice logo and branding",
   "page.invoice.socialMediaDescription": "Manage social media links on invoices",
   "page.invoiceFooter.add.breadcrumb": "Add Footer",

@@ -59,6 +59,7 @@ const DEFAULT_INVOICE_TEMPLATE = {
   showMemberInfo: true,
   showLogo: true,
   logo: null,
+  footer: "Terima kasih atas kunjungan Anda",
   addressFieldsVisibility: {
     storeName: true,
     address: true,
@@ -122,7 +123,8 @@ const InvoicePreview = ({
   socialMedia = [],
   socialMediaVisible = {},
   addressFieldsVisible = {},
-  memberFieldsVisible = {}
+  memberFieldsVisible = {},
+  footerText = "Terima kasih atas kunjungan Anda"
 }) => {
   const { t } = useTranslation();
   const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
@@ -252,7 +254,7 @@ const InvoicePreview = ({
       </div>
 
       <div className="bg-gray-50 px-5 py-3 border-t border-gray-200">
-        <p className="text-center text-gray-400 text-xs italic">Terima kasih atas kunjungan Anda</p>
+        <p className="text-center text-gray-400 text-xs italic">{footerText}</p>
         {showSocialMedia && socialMedia.filter((_, i) => socialMediaVisible[i]).length > 0 && (
           <div className="flex items-center justify-center gap-4 mt-2 pt-2 border-t border-gray-200">
             {socialMedia
@@ -331,6 +333,7 @@ const InvoicePage = () => {
   const [logoUrl, setLogoUrl] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [footerText, setFooterText] = useState("Terima kasih atas kunjungan Anda");
   const [isSaving, setIsSaving] = useState(false);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [selectedStores, setSelectedStores] = useState([]);
@@ -416,6 +419,11 @@ const InvoicePage = () => {
       if (settingsData.logo) {
         setLogoUrl(settingsData.logo);
         setLogoPreview(settingsData.logo);
+      }
+      if (settingsData.footer !== undefined && settingsData.footer !== null) {
+        setFooterText(settingsData.footer);
+      } else {
+        setFooterText(DEFAULT_INVOICE_TEMPLATE.footer);
       }
       if (settingsData.addressFieldsVisibility) {
         try {
@@ -509,6 +517,7 @@ const InvoicePage = () => {
       setShowAddress(DEFAULT_INVOICE_TEMPLATE.showAddress);
       setShowMemberInfo(DEFAULT_INVOICE_TEMPLATE.showMemberInfo);
       setShowLogo(DEFAULT_INVOICE_TEMPLATE.showLogo);
+      setFooterText(DEFAULT_INVOICE_TEMPLATE.footer);
       setAddressFieldsVisible(DEFAULT_INVOICE_TEMPLATE.addressFieldsVisibility);
       setMemberFieldsVisible(DEFAULT_INVOICE_TEMPLATE.memberFieldsVisible);
       setLogoUrl(null);
@@ -535,6 +544,7 @@ const InvoicePage = () => {
       payload.append("socialMediaVisibility", JSON.stringify(socialMediaVisible));
       payload.append("addressFieldsVisibility", JSON.stringify(addressFieldsVisible));
       payload.append("memberFieldsVisibility", JSON.stringify(memberFieldsVisible));
+      payload.append("footer", footerText);
       if (logoFile) {
         payload.append("logo", logoFile);
       }
@@ -588,7 +598,7 @@ const InvoicePage = () => {
       paymentMethod: "Tunai",
       cashAmount: total,
       changeAmount: 0,
-      footer: "Terima kasih atas kunjungan Anda"
+      footer: footerText
     });
   };
 
@@ -787,6 +797,22 @@ const InvoicePage = () => {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Globe size={18} className="text-primary" />
+                  <h3 className="text-base font-semibold">{t("page.invoice.footer")}</h3>
+                </div>
+                <Input
+                  value={footerText}
+                  onChange={(e) => setFooterText(e.target.value)}
+                  placeholder={t("page.invoice.footerPlaceholder")}
+                  className="text-sm"
+                />
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  {t("page.invoice.footerDescription")}
+                </p>
               </div>
 
               <div
@@ -1093,6 +1119,7 @@ const InvoicePage = () => {
                   socialMediaVisible={socialMediaVisible}
                   addressFieldsVisible={addressFieldsVisible}
                   memberFieldsVisible={memberFieldsVisible}
+                  footerText={footerText}
                 />
               </div>
             </div>
