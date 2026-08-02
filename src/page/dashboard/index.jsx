@@ -88,7 +88,12 @@ const Dashboard = () => {
   };
   const prevRange = useMemo(() => getPrevDateRange(chartFilter), [chartFilter]);
 
-  const { data: dashData, isLoading, isError, refetch } = useQuery(
+  const {
+    data: dashData,
+    isLoading,
+    isError,
+    refetch
+  } = useQuery(
     ["dashboard-summary", store, chartFilter, orderPage],
     () =>
       getDashboardSummary({
@@ -97,7 +102,7 @@ const Dashboard = () => {
         page: orderPage,
         pageSize: ORDER_PAGE_SIZE
       }),
-    { enabled: true }
+    { enabled: true, staleTime: 0 }
   );
 
   const { data: prevDashData } = useQuery(

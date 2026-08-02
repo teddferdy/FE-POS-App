@@ -431,6 +431,14 @@ const ProductGrid = ({
                                   </span>
                                 </span>
                               )}
+                              {product.isBundle && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/90 backdrop-blur-sm shadow-sm">
+                                  <span className="text-[9px] font-bold text-white flex items-center gap-0.5">
+                                    <Package size={8} />
+                                    Bundle
+                                  </span>
+                                </span>
+                              )}
                             </div>
                           </div>
                           <div className="space-y-1">
@@ -513,6 +521,12 @@ const ProductGrid = ({
                                 <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 text-[9px] font-bold uppercase tracking-wider shrink-0">
                                   <Tag size={8} className="inline mr-0.5" />
                                   {t("page.cashier.variant")}
+                                </span>
+                              )}
+                              {product.isBundle && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                                  <Package size={8} className="inline mr-0.5" />
+                                  Bundle
                                 </span>
                               )}
                             </div>

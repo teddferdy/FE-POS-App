@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Save, Plus, Trash2, ArrowLeft } from "lucide-react";
+import { Save, Plus, Trash2, ArrowLeft, X } from "lucide-react";
 import { toast } from "sonner";
 import { getBundleById, updateBundle } from "@/services/productBundle";
 import { getAllProduct } from "@/services/product";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
+import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
+import { z } from "zod";
 import {
   Select,
   SelectContent,
@@ -20,9 +26,6 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
-import { getMissingFields } from "@/lib/validation";
-import { z } from "zod";
 
 const EditBundle = () => {
   const { t } = useTranslation();
@@ -40,14 +43,25 @@ const EditBundle = () => {
     validFrom: "",
     validUntil: "",
     minQuantity: 1,
-    maxQuantity: ""
+    maxQuantity: "",
+    store: null
   });
 
   const [bundleItems, setBundleItems] = useState([]);
 
+  const [selectedStores, setSelectedStores] = useState([]);
+  const [allStores, setAllStores] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
   const saveSchema = z.object({
     name: z.string().min(1, "Nama Bundle harus diisi"),
-    bundlePrice: z.coerce.number().min(1, "Harga Bundle harus diisi")
+    bundlePrice: z.coerce.number().min(1, "Harga Bundle harus diisi"),
+    store: z.string().min(1, "Toko harus dipilih")
   });
 
   const bundleFieldLabels = {
@@ -56,8 +70,8 @@ const EditBundle = () => {
     items: "Item Bundle"
   };
 
-  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
-  const [missingFields, setMissingFields] = useState([]);
+  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation());
+  const locations = locationsData?.data || locationsData?.locations || [];
 
   const {
     data: bundleData,
@@ -82,8 +96,13 @@ const EditBundle = () => {
         validFrom: b.validFrom ? new Date(b.validFrom).toISOString().slice(0, 16) : "",
         validUntil: b.validUntil ? new Date(b.validUntil).toISOString().slice(0, 16) : "",
         minQuantity: b.minQuantity || 1,
-        maxQuantity: b.maxQuantity || ""
+        maxQuantity: b.maxQuantity || "",
+        store: b.store || null
       });
+
+      if (b.store) {
+        setSelectedStores([b.store]);
+      }
 
       if (b.items?.length > 0) {
         setBundleItems(
@@ -105,7 +124,7 @@ const EditBundle = () => {
       });
       queryClient.invalidateQueries(["bundles"]);
       queryClient.invalidateQueries(["bundle", id]);
-      navigate(`/bundle/${id}`);
+      setSuccessModal(true);
     },
     onError: (err) => {
       toast.error(t("common.error"), {
@@ -174,6 +193,7 @@ const EditBundle = () => {
       bundlePrice: Number(formData.bundlePrice),
       minQuantity: Number(formData.minQuantity),
       maxQuantity: formData.maxQuantity ? Number(formData.maxQuantity) : null,
+      store: allStores ? null : selectedStores[0] || null,
       items: bundleItems
         .filter((item) => item.product)
         .map((item) => ({
@@ -210,6 +230,34 @@ const EditBundle = () => {
           <h1 className="text-2xl font-bold text-foreground">{t("page.bundle.editTitle")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.bundle.editDescription")}</p>
         </div>
+
+        <Card className="p-6">
+          <h3 className="font-semibold text-sm mb-4">{t("page.bundle.form.storeSection.title")}</h3>
+          <StoreSelectCard
+            locations={locations}
+            selectedStores={selectedStores}
+            onChange={(stores) => {
+              setSelectedStores(stores);
+              updateFormData("store", stores[0] || null);
+            }}
+            isSuperAdmin={true}
+            user={{ store: null }}
+            t={t}
+            title={t("page.bundle.form.storeSection.title")}
+            description={t("page.bundle.form.storeSection.desc")}
+            noStoreLabel={t("page.bundle.form.storeSection.noStore")}
+            addStoreLabel={t("page.bundle.form.storeSection.addStore")}
+            storeInfoLabel={t("page.bundle.form.storeInfo")}
+            allStores={allStores}
+            onAllStoresChange={(val) => {
+              setAllStores(val);
+              updateFormData("store", val ? null : selectedStores[0] || null);
+            }}
+            navigate={navigate}
+            mandatory={true}
+            locationsLoading={false}
+          />
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
@@ -385,7 +433,15 @@ const EditBundle = () => {
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => handleSubmit(true)}
+                onClick={() => setCancelModal(true)}
+                disabled={updateMutation.isLoading}>
+                <X size={16} className="mr-2" />
+                {t("common.cancel")}
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setDraftModal(true)}
                 disabled={updateMutation.isLoading || !formData.name}>
                 <Save size={16} className="mr-2" />
                 {updateMutation.isLoading ? t("common.processing") : t("common.saveDraft")}
@@ -405,6 +461,39 @@ const EditBundle = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFields}
+      />
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title={t("page.bundle.modal.cancelTitle")}
+        description={t("page.bundle.modal.cancelDescription")}
+        confirmText={t("page.bundle.modal.cancelConfirm")}
+        onConfirm={() => navigate("/bundle")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title={t("page.bundle.modal.draftTitle")}
+        description={t("page.bundle.modal.draftDescription")}
+        confirmText={t("page.bundle.modal.draftConfirm")}
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit(true);
+        }}
+      />
+      <Modal
+        type="success"
+        open={successModal}
+        onOpenChange={setSuccessModal}
+        title={t("page.bundle.modal.successTitle")}
+        description={t("page.bundle.modal.successDescription")}
+        confirmText={t("page.bundle.modal.successConfirm")}
+        onConfirm={() => {
+          setSuccessModal(false);
+          navigate(`/bundle/${id}`);
+        }}
       />
     </>
   );

@@ -2,11 +2,14 @@ import React, { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Save, Plus, Trash2, ArrowLeft } from "lucide-react";
+import { Save, Plus, Trash2, ArrowLeft, X } from "lucide-react";
 import { toast } from "sonner";
 import { createBundle } from "@/services/productBundle";
 import { getAllProduct } from "@/services/product";
+import { getAllLocation } from "@/services/location";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import Modal from "@/components/organism/modal";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { getMissingFields } from "@/lib/validation";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -37,20 +40,30 @@ const AddBundle = () => {
     validFrom: "",
     validUntil: "",
     minQuantity: 1,
-    maxQuantity: ""
+    maxQuantity: "",
+    store: null
   });
 
   const [bundleItems, setBundleItems] = useState([
     { product: "", quantity: 1, unitPrice: 0, isOptional: false }
   ]);
 
+  const [selectedStores, setSelectedStores] = useState([]);
+  const [allStores, setAllStores] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
 
   const saveSchema = z.object({
     name: z.string().min(1, "Nama Bundle harus diisi"),
-    bundlePrice: z.coerce.number().min(1, "Harga Bundle harus diisi")
+    bundlePrice: z.coerce.number().min(1, "Harga Bundle harus diisi"),
+    store: z.string().min(1, "Toko harus dipilih")
   });
+
+  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation());
+  const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: productsData } = useQuery(["products-for-bundle"], () => getAllProduct());
 
@@ -62,7 +75,7 @@ const AddBundle = () => {
         description: t("page.bundle.createSuccess")
       });
       queryClient.invalidateQueries(["bundles"]);
-      navigate("/bundle");
+      setSuccessModal(true);
     },
     onError: (err) => {
       toast.error(t("common.error"), {
@@ -137,6 +150,7 @@ const AddBundle = () => {
       bundlePrice: Number(formData.bundlePrice),
       minQuantity: Number(formData.minQuantity),
       maxQuantity: formData.maxQuantity ? Number(formData.maxQuantity) : null,
+      store: allStores ? null : selectedStores[0] || null,
       items: bundleItems
         .filter((item) => item.product)
         .map((item) => ({
@@ -174,6 +188,34 @@ const AddBundle = () => {
         <h1 className="text-2xl font-bold text-foreground">{t("page.bundle.addTitle")}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t("page.bundle.addDescription")}</p>
       </div>
+
+      <Card className="p-6">
+        <h3 className="font-semibold text-sm mb-4">{t("page.bundle.form.storeSection.title")}</h3>
+        <StoreSelectCard
+          locations={locations}
+          selectedStores={selectedStores}
+          onChange={(stores) => {
+            setSelectedStores(stores);
+            updateFormData("store", stores[0] || null);
+          }}
+          isSuperAdmin={true}
+          user={{ store: null }}
+          t={t}
+          title={t("page.bundle.form.storeSection.title")}
+          description={t("page.bundle.form.storeSection.desc")}
+          noStoreLabel={t("page.bundle.form.storeSection.noStore")}
+          addStoreLabel={t("page.bundle.form.storeSection.addStore")}
+          storeInfoLabel={t("page.bundle.form.storeInfo")}
+          allStores={allStores}
+          onAllStoresChange={(val) => {
+            setAllStores(val);
+            updateFormData("store", val ? null : selectedStores[0] || null);
+          }}
+          navigate={navigate}
+          mandatory={true}
+          locationsLoading={false}
+        />
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
@@ -347,7 +389,15 @@ const AddBundle = () => {
             <Button
               variant="outline"
               className="flex-1"
-              onClick={() => handleSubmit(true)}
+              onClick={() => setCancelModal(true)}
+              disabled={createMutation.isLoading}>
+              <X size={16} className="mr-2" />
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setDraftModal(true)}
               disabled={createMutation.isLoading || !formData.name}>
               <Save size={16} className="mr-2" />
               {createMutation.isLoading ? t("common.processing") : t("common.saveDraft")}
@@ -366,6 +416,39 @@ const AddBundle = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFields}
+      />
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title={t("page.bundle.modal.cancelTitle")}
+        description={t("page.bundle.modal.cancelDescription")}
+        confirmText={t("page.bundle.modal.cancelConfirm")}
+        onConfirm={() => navigate("/bundle")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title={t("page.bundle.modal.draftTitle")}
+        description={t("page.bundle.modal.draftDescription")}
+        confirmText={t("page.bundle.modal.draftConfirm")}
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit(true);
+        }}
+      />
+      <Modal
+        type="success"
+        open={successModal}
+        onOpenChange={setSuccessModal}
+        title={t("page.bundle.modal.successTitle")}
+        description={t("page.bundle.modal.successDescription")}
+        confirmText={t("page.bundle.modal.successConfirm")}
+        onConfirm={() => {
+          setSuccessModal(false);
+          navigate("/bundle");
+        }}
       />
     </div>
   );

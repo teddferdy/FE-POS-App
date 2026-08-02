@@ -1,19 +1,31 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { Package, AlertTriangle, TrendingDown, Calendar, RefreshCw, Download } from "lucide-react";
-import { getForecasts, runForecast, getDeadStock, getExpiringSoon, getValuation } from "@/services/inventory";
+import { Package, TrendingDown, RefreshCw } from "lucide-react";
+import {
+  getForecasts,
+  runForecast,
+  getDeadStock,
+  getExpiringSoon,
+  getValuation
+} from "@/services/inventory";
 import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import NoStore from "@/components/ui/NoStore";
-import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import { toast } from "sonner";
 
@@ -32,29 +44,41 @@ const StockForecast = () => {
   const locations = locData?.data || [];
   const storeId = store || cookie?.activeStore;
 
-  const { data: forecastData, isLoading: forecastLoading } = useQuery(
-    ["stock-forecast", storeId],
-    () => getForecasts({ store: storeId }),
-    { enabled: !!storeId }
-  );
+  const {
+    data: forecastData,
+    isLoading: forecastLoading,
+    isError: forecastIsError,
+    refetch: forecastRefetch
+  } = useQuery(["stock-forecast", storeId], () => getForecasts({ store: storeId }), {
+    enabled: !!storeId
+  });
 
-  const { data: deadStockData, isLoading: deadStockLoading } = useQuery(
-    ["dead-stock", storeId],
-    () => getDeadStock({ store: storeId }),
-    { enabled: !!storeId }
-  );
+  const {
+    data: deadStockData,
+    isLoading: deadStockLoading,
+    isError: deadStockIsError,
+    refetch: deadStockRefetch
+  } = useQuery(["dead-stock", storeId], () => getDeadStock({ store: storeId }), {
+    enabled: !!storeId
+  });
 
-  const { data: expiringData, isLoading: expiringLoading } = useQuery(
-    ["expiring-soon", storeId],
-    () => getExpiringSoon({ store: storeId }),
-    { enabled: !!storeId }
-  );
+  const {
+    data: expiringData,
+    isLoading: expiringLoading,
+    isError: expiringIsError,
+    refetch: expiringRefetch
+  } = useQuery(["expiring-soon", storeId], () => getExpiringSoon({ store: storeId }), {
+    enabled: !!storeId
+  });
 
-  const { data: valuationData, isLoading: valuationLoading } = useQuery(
-    ["inventory-valuation", storeId],
-    () => getValuation({ store: storeId }),
-    { enabled: !!storeId }
-  );
+  const {
+    data: valuationData,
+    isLoading: valuationLoading,
+    isError: valuationIsError,
+    refetch: valuationRefetch
+  } = useQuery(["inventory-valuation", storeId], () => getValuation({ store: storeId }), {
+    enabled: !!storeId
+  });
 
   const runForecastMutation = useMutation({
     mutationFn: (payload) => runForecast(payload),
@@ -68,7 +92,7 @@ const StockForecast = () => {
   });
 
   const handleRunForecast = () => {
-    runForecastMutation.mutate({ productId: undefined });
+    runForecastMutation.mutate({ store: storeId, productId: undefined });
   };
 
   const getStockoutRisk = (daysUntil) => {
@@ -90,13 +114,17 @@ const StockForecast = () => {
               </SelectTrigger>
               <SelectContent>
                 {locations.map((loc) => (
-                  <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>
+                  <SelectItem key={loc.id} value={String(loc.id)}>
+                    {loc.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           )}
           <Button onClick={handleRunForecast} disabled={runForecastMutation.isLoading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${runForecastMutation.isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${runForecastMutation.isLoading ? "animate-spin" : ""}`}
+            />
             {t("page.stockForecast.runForecast")}
           </Button>
         </div>
@@ -111,7 +139,6 @@ const StockForecast = () => {
         </TabsList>
 
         <TabsContent value="forecast">
-          <AbortController />
           {forecastLoading ? (
             <Skeleton className="h-64 rounded-lg" />
           ) : forecastData?.success ? (
@@ -127,10 +154,18 @@ const StockForecast = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left p-2 font-medium text-muted-foreground">Produk</th>
-                          <th className="text-left p-2 font-medium text-muted-foreground">Stok Saat Ini</th>
-                          <th className="text-left p-2 font-medium text-muted-foreground">Consumption Rate</th>
-                          <th className="text-left p-2 font-medium text-muted-foreground">Est. Habis</th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Produk
+                          </th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Stok Saat Ini
+                          </th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Consumption Rate
+                          </th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Est. Habis
+                          </th>
                           <th className="text-left p-2 font-medium text-muted-foreground">Risk</th>
                         </tr>
                       </thead>
@@ -142,9 +177,13 @@ const StockForecast = () => {
                             <tr key={item.id} className="border-b last:border-0">
                               <td className="p-2">{item.productData?.nameProduct || "-"}</td>
                               <td className="p-2">{formatNumber(item.currentStock ?? 0)}</td>
-                              <td className="p-2">{formatNumber(item.dailyConsumption ?? 0)} / hari</td>
+                              <td className="p-2">
+                                {formatNumber(item.dailyConsumption ?? 0)} / hari
+                              </td>
                               <td className="p-2">{days > 0 ? `${days} hari` : "Sudah habis"}</td>
-                              <td className="p-2"><Badge variant={risk.variant}>{risk.label}</Badge></td>
+                              <td className="p-2">
+                                <Badge variant={risk.variant}>{risk.label}</Badge>
+                              </td>
                             </tr>
                           );
                         })}
@@ -154,13 +193,14 @@ const StockForecast = () => {
                 )}
               </CardContent>
             </Card>
+          ) : forecastIsError ? (
+            <AbortController refetch={forecastRefetch} />
           ) : (
             <NoStore />
           )}
         </TabsContent>
 
         <TabsContent value="dead-stock">
-          <AbortController />
           {deadStockLoading ? (
             <Skeleton className="h-64 rounded-lg" />
           ) : deadStockData?.success ? (
@@ -176,10 +216,14 @@ const StockForecast = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left p-2 font-medium text-muted-foreground">Produk</th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Produk
+                          </th>
                           <th className="text-left p-2 font-medium text-muted-foreground">Stok</th>
                           <th className="text-left p-2 font-medium text-muted-foreground">HPP</th>
-                          <th className="text-left p-2 font-medium text-muted-foreground">Total Nilai</th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Total Nilai
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -188,7 +232,9 @@ const StockForecast = () => {
                             <td className="p-2">{item.productData?.nameProduct || "-"}</td>
                             <td className="p-2">{formatNumber(item.stock ?? 0)}</td>
                             <td className="p-2">{formatCurrency(item.costPrice ?? 0)}</td>
-                            <td className="p-2">{formatCurrency((item.stock || 0) * (item.costPrice || 0))}</td>
+                            <td className="p-2">
+                              {formatCurrency((item.stock || 0) * (item.costPrice || 0))}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -197,13 +243,14 @@ const StockForecast = () => {
                 )}
               </CardContent>
             </Card>
+          ) : deadStockIsError ? (
+            <AbortController refetch={deadStockRefetch} />
           ) : (
             <NoStore />
           )}
         </TabsContent>
 
         <TabsContent value="expiring">
-          <AbortController />
           {expiringLoading ? (
             <Skeleton className="h-64 rounded-lg" />
           ) : expiringData?.success ? (
@@ -213,16 +260,24 @@ const StockForecast = () => {
               </CardHeader>
               <CardContent>
                 {expiringData.data.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Tidak ada item mendekati expiry</p>
+                  <p className="text-center text-muted-foreground py-8">
+                    Tidak ada item mendekati expiry
+                  </p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left p-2 font-medium text-muted-foreground">Produk</th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Produk
+                          </th>
                           <th className="text-left p-2 font-medium text-muted-foreground">Stok</th>
-                          <th className="text-left p-2 font-medium text-muted-foreground">Expiry Date</th>
-                          <th className="text-left p-2 font-medium text-muted-foreground">Days Left</th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Expiry Date
+                          </th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Days Left
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -230,7 +285,11 @@ const StockForecast = () => {
                           <tr key={item.id} className="border-b last:border-0">
                             <td className="p-2">{item.productData?.nameProduct || "-"}</td>
                             <td className="p-2">{formatNumber(item.stock ?? 0)}</td>
-                            <td className="p-2">{item.expiryDate ? new Date(item.expiryDate).toLocaleDateString("id-ID") : "-"}</td>
+                            <td className="p-2">
+                              {item.expiryDate
+                                ? new Date(item.expiryDate).toLocaleDateString("id-ID")
+                                : "-"}
+                            </td>
                             <td className="p-2">{item.daysLeft ?? "-"}</td>
                           </tr>
                         ))}
@@ -240,13 +299,14 @@ const StockForecast = () => {
                 )}
               </CardContent>
             </Card>
+          ) : expiringIsError ? (
+            <AbortController refetch={expiringRefetch} />
           ) : (
             <NoStore />
           )}
         </TabsContent>
 
         <TabsContent value="valuation">
-          <AbortController />
           {valuationLoading ? (
             <Skeleton className="h-64 rounded-lg" />
           ) : valuationData?.success ? (
@@ -256,19 +316,35 @@ const StockForecast = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                  <StatCard icon={Package} label="Total Nilai Inventory" value={formatCurrency(valuationData.data.totalValue)} />
-                  <StatCard icon={Package} label="Total Produk" value={formatNumber(valuationData.data.totalProducts)} />
-                  <StatCard icon={TrendingDown} label="Rata-rata HPP" value={formatCurrency(valuationData.data.avgCost)} />
+                  <StatCard
+                    icon={Package}
+                    label="Total Nilai Inventory"
+                    value={formatCurrency(valuationData.data.totalValue)}
+                  />
+                  <StatCard
+                    icon={Package}
+                    label="Total Produk"
+                    value={formatNumber(valuationData.data.totalProducts)}
+                  />
+                  <StatCard
+                    icon={TrendingDown}
+                    label="Rata-rata HPP"
+                    value={formatCurrency(valuationData.data.avgCost)}
+                  />
                 </div>
                 {valuationData.data.products && (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left p-2 font-medium text-muted-foreground">Produk</th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Produk
+                          </th>
                           <th className="text-left p-2 font-medium text-muted-foreground">Stok</th>
                           <th className="text-left p-2 font-medium text-muted-foreground">HPP</th>
-                          <th className="text-left p-2 font-medium text-muted-foreground">Total Nilai</th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">
+                            Total Nilai
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -277,7 +353,9 @@ const StockForecast = () => {
                             <td className="p-2">{item.nameProduct || "-"}</td>
                             <td className="p-2">{formatNumber(item.stock ?? 0)}</td>
                             <td className="p-2">{formatCurrency(item.costPrice ?? 0)}</td>
-                            <td className="p-2">{formatCurrency((item.stock || 0) * (item.costPrice || 0))}</td>
+                            <td className="p-2">
+                              {formatCurrency((item.stock || 0) * (item.costPrice || 0))}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -286,6 +364,8 @@ const StockForecast = () => {
                 )}
               </CardContent>
             </Card>
+          ) : valuationIsError ? (
+            <AbortController refetch={valuationRefetch} />
           ) : (
             <NoStore />
           )}
@@ -308,5 +388,11 @@ const StatCard = ({ icon: Icon, label, value }) => (
     </CardContent>
   </Card>
 );
+
+StatCard.propTypes = {
+  icon: PropTypes.elementType.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
+};
 
 export default StockForecast;

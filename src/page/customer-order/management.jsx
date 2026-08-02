@@ -3,6 +3,7 @@ import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { Clock, ChefHat, User, Store, Loader2, Utensils, RefreshCw } from "lucide-react";
+import { Loading } from "@/components/ui/loading";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -108,6 +109,7 @@ const CustomerOrderManagement = () => {
 
   return (
     <div className="space-y-6">
+      {acceptingId && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
       <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button

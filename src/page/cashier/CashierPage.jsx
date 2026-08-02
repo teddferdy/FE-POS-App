@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
-import { ShoppingCart, X, Package, Menu, Sun, Moon, Store, ChevronRight, RotateCcw } from "lucide-react";
+import { ShoppingCart, X, Package, Menu, Sun, Moon, Store, ChevronRight } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { useTranslation } from "react-i18next";
 import { getProductByOutlet } from "@/services/product";
@@ -10,7 +10,14 @@ import { getAllTaxConfig } from "@/services/tax-config";
 import { orderList } from "@/state/order-list";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import ProductGrid from "./components/ProductGrid";
 import CartPanel from "./components/CartPanel";
@@ -20,7 +27,6 @@ import OrderQueue from "./components/OrderQueue";
 import Sidebar from "@/components/layout/Sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserDropdown, NotificationBell } from "@/components/layout/Header";
-import { translationSelect } from "@/state/translation";
 import { useThemeStore } from "@/state/theme";
 
 const CashierPage = () => {
@@ -64,7 +70,6 @@ const CashierPage = () => {
     ? locationList.find((l) => l.id === store)?.name || t("page.cashier.storeName")
     : t("page.cashier.storeName");
   const userName = user?.userName || user?.name || cookie?.name || t("page.cashier.cashierName");
-  const { translation, updateTranslation } = translationSelect();
   const { theme, toggleTheme: toggleThemeStore } = useThemeStore();
 
   useEffect(() => {
@@ -76,10 +81,6 @@ const CashierPage = () => {
   }, [theme]);
 
   const toggleTheme = () => toggleThemeStore();
-  const languages = [
-    { code: "id", label: "ID" },
-    { code: "en", label: "EN" }
-  ];
 
   const [search, setSearch] = useState("");
   const [barcode, setBarcode] = useState("");
@@ -145,6 +146,21 @@ const CashierPage = () => {
   );
 
   const products = productsData?.data || productsData || [];
+  const bundles = productsData?.bundles || [];
+
+  const bundleProducts = bundles.map((b) => ({
+    id: b.id,
+    nameProduct: b.name,
+    sku: b.sku,
+    sellPrice: b.bundlePrice,
+    price: b.bundlePrice,
+    stock: b.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
+    isBundle: true,
+    category: { id: "bundle", nameCategory: "Bundle" },
+    bundleData: b
+  }));
+
+  const allProducts = [...products, ...bundleProducts];
 
   const catId = (p) => {
     const raw =
@@ -164,7 +180,7 @@ const CashierPage = () => {
     return raw;
   };
 
-  const filteredProducts = products.filter((p) => {
+  const filteredProducts = allProducts.filter((p) => {
     const name = (p.nameProduct || p.name || "").toLowerCase();
     const sku = (p.sku || "").toLowerCase();
     const q = search.toLowerCase();
@@ -191,30 +207,33 @@ const CashierPage = () => {
   const taxRate = taxRatePercent / 100;
   const taxAmount = Math.round(subtotal * taxRate);
 
-  const handleLoadOrder = useCallback((order) => {
-    cart.resetOrder();
-    if (order?.items?.length) {
-      order.items.forEach((item) => {
-        cart.addingProduct({
-          id: item.product,
-          cartKey: `${item.product}_${item.options?.[0]?.name || ""}`,
-          nameProduct: item.productName,
-          variantName: item.options?.[0]?.name || null,
-          price: item.price,
-          count: item.quantity,
-          totalPrice: item.totalPrice || item.price * item.quantity,
-          image: null,
-          unit: "",
-          sku: "",
-          point: 0,
-          redeemPoints: 0
+  const handleLoadOrder = useCallback(
+    (order) => {
+      cart.resetOrder();
+      if (order?.items?.length) {
+        order.items.forEach((item) => {
+          cart.addingProduct({
+            id: item.product,
+            cartKey: `${item.product}_${item.options?.[0]?.name || ""}`,
+            nameProduct: item.productName,
+            variantName: item.options?.[0]?.name || null,
+            price: item.price,
+            count: item.quantity,
+            totalPrice: item.totalPrice || item.price * item.quantity,
+            image: null,
+            unit: "",
+            sku: "",
+            point: 0,
+            redeemPoints: 0
+          });
         });
+      }
+      toast.success(t("page.cashier.orderLoaded"), {
+        description: t("page.cashier.orderLoadedDesc", { count: order.items.length })
       });
-    }
-    toast.success(t("page.cashier.orderLoaded"), {
-      description: t("page.cashier.orderLoadedDesc", { count: order.items.length })
-    });
-  }, [cart, t]);
+    },
+    [cart, t]
+  );
 
   const handleCheckoutComplete = useCallback((result) => {
     setReceiptData(result);
@@ -225,18 +244,6 @@ const CashierPage = () => {
     cart.resetOrder();
     setReceiptData(null);
   }, [cart]);
-
-  const handleAddToCart = useCallback((product) => {
-    toast.success(t("page.cashier.addedToCart"), {
-      description: product.nameProduct || product.name
-    });
-  }, [t]);
-
-  const handleDeleteFromCart = useCallback((productName) => {
-    toast.success(t("page.cashier.removedFromCart"), {
-      description: productName
-    });
-  }, [t]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background relative">
@@ -484,9 +491,7 @@ const CashierPage = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{t("page.cashier.clearCart")}</DialogTitle>
-              <DialogDescription>
-                {t("page.cashier.clearCartDesc")}
-              </DialogDescription>
+              <DialogDescription>{t("page.cashier.clearCartDesc")}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setClearCartOpen(false)}>
@@ -498,8 +503,7 @@ const CashierPage = () => {
                   cart.resetOrder();
                   setClearCartOpen(false);
                   toast.info(t("page.cashier.cartCleared"));
-                }}
-              >
+                }}>
                 {t("page.cashier.clear")}
               </Button>
             </DialogFooter>
@@ -533,7 +537,9 @@ const CashierPage = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-sm">{t("page.cashier.tourProducts")}</p>
-                  <p className="text-xs text-muted-foreground">{t("page.cashier.tourProductsDesc")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.cashier.tourProductsDesc")}
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl">
@@ -542,7 +548,9 @@ const CashierPage = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-sm">{t("page.cashier.tourCheckout")}</p>
-                  <p className="text-xs text-muted-foreground">{t("page.cashier.tourCheckoutDesc")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.cashier.tourCheckoutDesc")}
+                  </p>
                 </div>
               </div>
             </div>

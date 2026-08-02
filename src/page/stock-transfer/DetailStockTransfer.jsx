@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { ArrowLeft, ArrowRightLeft, CheckCircle, XCircle } from "lucide-react";
+import { Loading } from "@/components/ui/loading";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
@@ -116,6 +117,9 @@ const DetailStockTransfer = () => {
 
   return (
     <>
+      {(receiveMutation.isLoading || cancelMutation.isLoading) && (
+        <Loading fullscreen size="lg" label={t("common.loadingData")} />
+      )}
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
