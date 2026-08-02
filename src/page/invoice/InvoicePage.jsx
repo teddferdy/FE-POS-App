@@ -164,25 +164,20 @@ const InvoicePreview = ({
                 addressFieldsVisible.city !== false ||
                 addressFieldsVisible.district !== false ||
                 addressFieldsVisible.village !== false) &&
-                (provinceName || cityName || districtName || villageName) &&
-                (() => {
-                  const parts = [];
-                  if (addressFieldsVisible.province !== false && provinceName) {
-                    parts.push(provinceName);
-                  }
-                  if (addressFieldsVisible.city !== false && cityName) {
-                    parts.push(cityName);
-                  }
-                  if (addressFieldsVisible.district !== false && districtName) {
-                    parts.push(districtName);
-                  }
-                  if (addressFieldsVisible.village !== false && villageName) {
-                    parts.push(villageName);
-                  }
-                  return parts.length > 0 ? (
-                    <p className="text-[11px]">{parts.join(", ")}</p>
-                  ) : null;
-                })()}
+                (provinceName || cityName || districtName || villageName) && (
+                  <p className="text-[11px]">
+                    {addressFieldsVisible.province !== false && provinceName
+                      ? `${provinceName}`
+                      : ""}
+                    {addressFieldsVisible.city !== false && cityName ? `, ${cityName}` : ""}
+                    {addressFieldsVisible.district !== false && districtName
+                      ? `, ${districtName}`
+                      : ""}
+                    {addressFieldsVisible.village !== false && villageName
+                      ? `, ${villageName}`
+                      : ""}
+                  </p>
+                )}
               {addressFieldsVisible.postalCode !== false && postalCodeValue && (
                 <p className="text-[11px]">Kode Pos: {postalCodeValue}</p>
               )}
