@@ -4284,6 +4284,8 @@
   "page.invoice.resetTitle": "Reset Title",
   "page.invoice.saveSettings": "Save Settings",
   "page.invoice.saving": "Saving",
+  "page.invoice.saveConfirmTitle": "Save Settings?",
+  "page.invoice.saveConfirmDesc": "Are you sure you want to save the invoice settings?",
   "page.invoice.selectLogo": "Select Logo",
   "page.invoice.storeAddress": "Store Address",
   "page.invoice.storeName": "Store Name",

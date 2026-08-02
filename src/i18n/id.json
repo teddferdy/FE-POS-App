@@ -4221,6 +4221,8 @@
   "page.invoice.resetTitle": "Atur Ulang Invoice",
   "page.invoice.saveSettings": "Simpan Pengaturan",
   "page.invoice.saving": "Menyimpan",
+  "page.invoice.saveConfirmTitle": "Simpan Pengaturan?",
+  "page.invoice.saveConfirmDesc": "Apakah Anda yakin ingin menyimpan pengaturan invoice?",
   "page.invoice.selectLogo": "Pilih Logo",
   "page.invoice.storeAddress": "Alamat Toko",
   "page.invoice.storeName": "Nama Toko",

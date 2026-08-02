@@ -52,6 +52,7 @@ import {
 import { printViaBrowser } from "@/utils/thermalPrint";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Loading } from "@/components/ui/loading";
 import NoStore from "@/components/ui/NoStore";
 
 const DEFAULT_INVOICE_TEMPLATE = {
@@ -363,6 +364,7 @@ const InvoicePage = () => {
   const [footerText, setFooterText] = useState("Terima kasih atas kunjungan Anda");
   const [isSaving, setIsSaving] = useState(false);
   const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
   const [selectedStores, setSelectedStores] = useState([]);
 
   const { data: provinces } = useQuery(["provinces"], getProvinces, {
@@ -576,8 +578,7 @@ const InvoicePage = () => {
       payload.append("footer", footerText);
       if (logoFile) {
         payload.append("logo", logoFile);
-      }
-      if (!logoPreview) {
+      } else if (!logoPreview) {
         payload.append("removeLogo", "true");
       }
 
@@ -590,6 +591,11 @@ const InvoicePage = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleConfirmSave = () => {
+    setSaveConfirmOpen(false);
+    handleSaveSettings();
   };
 
   const handlePrintPreview = () => {
@@ -1091,7 +1097,7 @@ const InvoicePage = () => {
                 </Button>
                 <Button
                   data-tour="invoice-save"
-                  onClick={handleSaveSettings}
+                  onClick={() => setSaveConfirmOpen(true)}
                   disabled={isSaving}
                   className="flex-1 gap-2"
                   size="lg">
@@ -1207,8 +1213,24 @@ const InvoicePage = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          <Dialog open={saveConfirmOpen} onOpenChange={setSaveConfirmOpen}>
+            <DialogContent className="sm:max-w-[420px]">
+              <DialogHeader>
+                <DialogTitle>{t("page.invoice.saveConfirmTitle")}</DialogTitle>
+                <DialogDescription>{t("page.invoice.saveConfirmDesc")}</DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="gap-2">
+                <Button variant="outline" onClick={() => setSaveConfirmOpen(false)}>
+                  {t("common.cancel")}
+                </Button>
+                <Button onClick={handleConfirmSave}>{t("common.confirm")}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       )}
+      {isSaving && <Loading fullscreen size="lg" label={t("page.invoice.saving")} />}
     </div>
   );
 };
