@@ -13,7 +13,6 @@ import {
   Package,
   Loader2,
   Eye,
-  Filter,
   Boxes,
   CheckCircle,
   XCircle,
@@ -40,6 +39,7 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import StatCard from "@/components/ui/StatCard";
 import { uploadProductExcel } from "@/services/product";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { canAccess } from "@/utils/permission";
 import { Combobox } from "@/components/ui/combobox";
@@ -60,8 +60,23 @@ const ProductList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
-  const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const isFiltered =
+    storeFilter !== "all" ||
+    statusFilter !== "all" ||
+    search !== "" ||
+    categoryFilter !== "" ||
+    sortFilter !== "";
+
+  const resetFilters = () => {
+    setGlobalStoreFilter("all");
+    setStatusFilter("all");
+    setSearch("");
+    setCategoryFilter("");
+    setSortFilter("");
+    setPage(1);
+  };
 
   const user = cookie?.user;
   const MENU_KEY = "/product-list";
@@ -579,94 +594,104 @@ const ProductList = () => {
               emptyMessage={t("page.product.list.empty")}
               emptyIcon={Package}
               toolbar={
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                  <>
-                    <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                      <h4 className="text-base font-semibold text-foreground shrink-0">
-                        {t("page.product.list.title")}
-                      </h4>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2 h-9 lg:hidden"
-                        onClick={() => setShowFilters(!showFilters)}>
-                        <Filter size={18} />
-                        {showFilters ? "Tutup" : "Filter"}
-                      </Button>
-                    </div>
-                    <div
-                      className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                      <StoreFilter
-                        locations={locData?.data || []}
-                        value={storeFilter}
-                        onChange={(v) => {
-                          setGlobalStoreFilter(v);
-                          setPage(1);
-                        }}
-                        isSuperAdmin={isSuperAdmin}
-                        t={t}
-                      />
-                      <Combobox
-                        options={[
-                          { value: "all", label: t("common.all") },
-                          { value: "active", label: t("common.active") },
-                          { value: "inactive", label: t("common.inactive") },
-                          { value: "draft", label: t("common.draft") }
-                        ]}
-                        value={statusFilter}
-                        onChange={(v) => {
-                          setStatusFilter(v);
-                          setPage(1);
-                        }}
-                        placeholder={t("common.all")}
-                        searchPlaceholder="Cari status..."
-                      />
-                      <SearchInput
-                        value={search}
-                        onChange={(val) => {
-                          setSearch(val);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.product.list.searchSku")}
-                        isLoading={isFetching}
-                      />
-                      <Combobox
-                        options={[
-                          {
-                            value: "",
-                            label: `${t("common.all")} ${t("page.product.table.category")}`
-                          },
-                          ...categories.map((cat) => ({ value: cat.name, label: cat.name }))
-                        ]}
-                        value={categoryFilter}
-                        onChange={(v) => {
-                          setCategoryFilter(v);
-                          setPage(1);
-                        }}
-                        placeholder={`${t("common.all")} ${t("page.product.table.category")}`}
-                        searchPlaceholder="Cari kategori..."
-                      />
-                      <Combobox
-                        options={[
-                          { value: "", label: t("page.product.list.filter.newest") },
-                          { value: "price-asc", label: t("page.product.list.filter.priceLowHigh") },
-                          {
-                            value: "price-desc",
-                            label: t("page.product.list.filter.priceHighLow")
-                          },
-                          { value: "stock-asc", label: t("page.product.list.filter.stockLow") }
-                        ]}
-                        value={sortFilter}
-                        onChange={(v) => {
-                          setSortFilter(v);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.product.list.filter.newest")}
-                        searchPlaceholder="Cari..."
-                      />
-                    </div>
-                  </>
-                </div>
+                <TableToolbar
+                  title={t("page.product.list.title")}
+                  onReset={resetFilters}
+                  isFiltered={isFiltered}>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Store
+                    </label>
+                    <StoreFilter
+                      locations={locData?.data || []}
+                      value={storeFilter}
+                      onChange={(v) => {
+                        setGlobalStoreFilter(v);
+                        setPage(1);
+                      }}
+                      isSuperAdmin={isSuperAdmin}
+                      t={t}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.product.table.status")}
+                    </label>
+                    <Combobox
+                      options={[
+                        { value: "all", label: t("common.all") },
+                        { value: "active", label: t("common.active") },
+                        { value: "inactive", label: t("common.inactive") },
+                        { value: "draft", label: t("common.draft") }
+                      ]}
+                      value={statusFilter}
+                      onChange={(v) => {
+                        setStatusFilter(v);
+                        setPage(1);
+                      }}
+                      placeholder={t("common.all")}
+                      searchPlaceholder="Cari status..."
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Cari
+                    </label>
+                    <SearchInput
+                      value={search}
+                      onChange={(val) => {
+                        setSearch(val);
+                        setPage(1);
+                      }}
+                      placeholder={t("page.product.list.searchSku")}
+                      isLoading={isFetching}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.product.table.category")}
+                    </label>
+                    <Combobox
+                      options={[
+                        {
+                          value: "",
+                          label: `${t("common.all")} ${t("page.product.table.category")}`
+                        },
+                        ...categories.map((cat) => ({ value: cat.name, label: cat.name }))
+                      ]}
+                      value={categoryFilter}
+                      onChange={(v) => {
+                        setCategoryFilter(v);
+                        setPage(1);
+                      }}
+                      placeholder={`${t("common.all")} ${t("page.product.table.category")}`}
+                      searchPlaceholder="Cari kategori..."
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.product.list.filter.newest")}
+                    </label>
+                    <Combobox
+                      options={[
+                        { value: "", label: t("page.product.list.filter.newest") },
+                        { value: "price-asc", label: t("page.product.list.filter.priceLowHigh") },
+                        {
+                          value: "price-desc",
+                          label: t("page.product.list.filter.priceHighLow")
+                        },
+                        { value: "stock-asc", label: t("page.product.list.filter.stockLow") }
+                      ]}
+                      value={sortFilter}
+                      onChange={(v) => {
+                        setSortFilter(v);
+                        setPage(1);
+                      }}
+                      placeholder={t("page.product.list.filter.newest")}
+                      searchPlaceholder="Cari..."
+                    />
+                  </div>
+                </TableToolbar>
               }
               pagination={{
                 page,

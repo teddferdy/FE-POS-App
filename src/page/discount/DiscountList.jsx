@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
 
@@ -48,6 +49,15 @@ const DiscountList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
+
+  const isFiltered = search !== "" || statusFilter !== "all" || storeFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setGlobalStoreFilter("all");
+    setPage(1);
+  };
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -311,49 +321,60 @@ const DiscountList = () => {
               emptyMessage={t("page.discount.list.empty")}
               emptyIcon={Gift}
               toolbar={
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                  <>
-                    <h4 className="text-base font-semibold text-foreground">
-                      {t("page.discount.list.title")}
-                    </h4>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                      <StoreFilter
-                        locations={locData?.data || []}
-                        value={storeFilter}
-                        onChange={(v) => {
-                          setGlobalStoreFilter(v);
-                          setPage(1);
-                        }}
-                        isSuperAdmin={isSuperAdmin}
-                        t={t}
-                      />
-                      <Combobox
-                        options={[
-                          { value: "all", label: t("common.all") },
-                          { value: "active", label: t("common.active") },
-                          { value: "inactive", label: t("common.inactive") },
-                          { value: "draft", label: t("common.draft") }
-                        ]}
-                        value={statusFilter}
-                        onChange={(v) => {
-                          setStatusFilter(v);
-                          setPage(1);
-                        }}
-                        placeholder={t("common.all")}
-                        searchPlaceholder="Cari..."
-                      />
-                      <SearchInput
-                        value={search}
-                        onChange={(val) => {
-                          setSearch(val);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.discount.list.search")}
-                        isLoading={isFetching}
-                      />
-                    </div>
-                  </>
-                </div>
+                <TableToolbar
+                  title={t("page.discount.list.title")}
+                  onReset={resetFilters}
+                  isFiltered={isFiltered}>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Store
+                    </label>
+                    <StoreFilter
+                      locations={locData?.data || []}
+                      value={storeFilter}
+                      onChange={(v) => {
+                        setGlobalStoreFilter(v);
+                        setPage(1);
+                      }}
+                      isSuperAdmin={isSuperAdmin}
+                      t={t}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("common.status")}
+                    </label>
+                    <Combobox
+                      options={[
+                        { value: "all", label: t("common.all") },
+                        { value: "active", label: t("common.active") },
+                        { value: "inactive", label: t("common.inactive") },
+                        { value: "draft", label: t("common.draft") }
+                      ]}
+                      value={statusFilter}
+                      onChange={(v) => {
+                        setStatusFilter(v);
+                        setPage(1);
+                      }}
+                      placeholder={t("common.all")}
+                      searchPlaceholder="Cari..."
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Cari
+                    </label>
+                    <SearchInput
+                      value={search}
+                      onChange={(val) => {
+                        setSearch(val);
+                        setPage(1);
+                      }}
+                      placeholder={t("page.discount.list.search")}
+                      isLoading={isFetching}
+                    />
+                  </div>
+                </TableToolbar>
               }
               pagination={{
                 page,

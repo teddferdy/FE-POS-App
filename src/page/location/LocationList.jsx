@@ -24,6 +24,7 @@ import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
@@ -42,7 +43,6 @@ const LocationList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
   const [targetModal, setTargetModal] = useState({ open: false, location: null, value: 0 });
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery(
@@ -69,6 +69,14 @@ const LocationList = () => {
       setDeleteTarget(null);
     }
   });
+
+  const isFiltered = search !== "" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const targetMutation = useMutation(({ id, dailyTarget }) => editLocation({ id, dailyTarget }), {
     onSuccess: () => {
@@ -398,55 +406,59 @@ const LocationList = () => {
                 isLoading={isLoading || isFetching}
                 emptyMessage={t("page.location.list.empty")}
                 toolbar={
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                    <>
-                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                        <h4 className="text-base font-semibold text-foreground shrink-0">
-                          {t("page.location.list.title")}
-                        </h4>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 h-9 lg:hidden"
-                          onClick={() => setShowFilters(!showFilters)}>
-                          <span className="material-symbols-outlined text-base">filter_list</span>
-                          {showFilters ? "Tutup" : "Filter"}
-                        </Button>
-                      </div>
-                      <div
-                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                        <SearchInput
-                          value={search}
-                          onChange={setSearch}
-                          placeholder={t("page.location.list.search")}
-                          isLoading={isFetching}
-                        />
-                        <Combobox
-                          options={[
-                            { value: "all", label: t("common.all") },
-                            { value: "active", label: t("common.active") },
-                            { value: "inactive", label: t("common.inactive") },
-                            { value: "draft", label: t("common.draft") }
-                          ]}
-                          value={statusFilter}
-                          onChange={(val) => {
-                            setStatusFilter(val);
-                            setPage(1);
-                          }}
-                          placeholder={t("common.all")}
-                          searchPlaceholder={t("common.all")}
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 gap-1.5"
-                          onClick={() => navigate("/store-geospatial")}>
-                          <Map size={14} />
-                          {t("page.location.button.viewMap")}
-                        </Button>
-                      </div>
-                    </>
-                  </div>
+                  <TableToolbar
+                    title={t("page.location.list.title")}
+                    onReset={resetFilters}
+                    isFiltered={isFiltered}>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Cari
+                      </label>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.location.list.search")}
+                        isLoading={isFetching}
+                        className="w-full md:w-60"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("common.status")}
+                      </label>
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("common.all") },
+                          { value: "active", label: t("common.active") },
+                          { value: "inactive", label: t("common.inactive") },
+                          { value: "draft", label: t("common.draft") }
+                        ]}
+                        value={statusFilter}
+                        onChange={(val) => {
+                          setStatusFilter(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("common.all")}
+                        searchPlaceholder={t("common.all")}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.location.button.viewMap")}
+                      </label>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 gap-1.5"
+                        onClick={() => navigate("/store-geospatial")}>
+                        <Map size={14} />
+                        {t("page.location.button.viewMap")}
+                      </Button>
+                    </div>
+                  </TableToolbar>
                 }
                 pagination={{
                   page,

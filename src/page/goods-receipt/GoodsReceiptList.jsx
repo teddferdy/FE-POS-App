@@ -27,6 +27,7 @@ import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
@@ -61,6 +62,15 @@ const GoodsReceiptList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
+
+  const isFiltered = storeFilter !== "all" || statusFilter !== "all" || search !== "";
+
+  const resetFilters = () => {
+    setGlobalStoreFilter("all");
+    setStatusFilter("all");
+    setSearch("");
+    setPage(1);
+  };
   const isSuperAdmin = user?.roleType === "super_admin";
 
   const { data: locData } = useQuery(["locations-goods-receipt"], () => getAllLocation(), {
@@ -362,73 +372,89 @@ const GoodsReceiptList = () => {
                   emptyMessage={t("page.goodsReceipt.list.empty")}
                   emptyIcon={FileText}
                   toolbar={
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      <>
-                        <h4 className="text-base font-semibold text-foreground">
-                          {t("page.goodsReceipt.list.title")}
-                        </h4>
-                        <div className="flex items-center gap-3">
-                          {isSuperAdmin && (
-                            <Combobox
-                              options={[
-                                {
-                                  value: "all",
-                                  label: t("page.goodsReceipt.list.filter.allStores")
-                                },
-                                ...(locData?.data || []).map((loc) => ({
-                                  value: loc.id,
-                                  label: loc.name
-                                }))
-                              ]}
-                              value={storeFilter}
-                              onChange={(val) => {
-                                setGlobalStoreFilter(val);
-                                setPage(1);
-                              }}
-                              placeholder={t("page.goodsReceipt.list.filter.allStores")}
-                              searchPlaceholder={t("common.search")}
-                            />
-                          )}
+                    <TableToolbar
+                      title={t("page.goodsReceipt.list.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      {isSuperAdmin && (
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Store
+                          </label>
                           <Combobox
                             options={[
                               {
                                 value: "all",
-                                label: t("page.goodsReceipt.list.filter.allStatuses")
+                                label: t("page.goodsReceipt.list.filter.allStores")
                               },
-                              ...Object.keys(statusMap).map((k) => ({
-                                value: k,
-                                label: t(`page.goodsReceipt.list.status.${k}`)
+                              ...(locData?.data || []).map((loc) => ({
+                                value: loc.id,
+                                label: loc.name
                               }))
                             ]}
-                            value={statusFilter}
+                            value={storeFilter}
                             onChange={(val) => {
-                              setStatusFilter(val);
+                              setGlobalStoreFilter(val);
                               setPage(1);
                             }}
-                            placeholder={t("page.goodsReceipt.list.filter.allStatuses")}
+                            placeholder={t("page.goodsReceipt.list.filter.allStores")}
                             searchPlaceholder={t("common.search")}
                           />
-                          <SearchInput
-                            value={search}
-                            onChange={(val) => {
-                              setSearch(val);
-                              setPage(1);
-                            }}
-                            placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
-                            isLoading={isFetching}
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleExport}
-                            disabled={exportLoading}
-                            className="gap-1.5">
-                            <Download size={14} />
-                            {exportLoading ? "..." : t("common.export")}
-                          </Button>
                         </div>
-                      </>
-                    </div>
+                      )}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("common.status")}
+                        </label>
+                        <Combobox
+                          options={[
+                            {
+                              value: "all",
+                              label: t("page.goodsReceipt.list.filter.allStatuses")
+                            },
+                            ...Object.keys(statusMap).map((k) => ({
+                              value: k,
+                              label: t(`page.goodsReceipt.list.status.${k}`)
+                            }))
+                          ]}
+                          value={statusFilter}
+                          onChange={(val) => {
+                            setStatusFilter(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.goodsReceipt.list.filter.allStatuses")}
+                          searchPlaceholder={t("common.search")}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
+                          isLoading={isFetching}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          &nbsp;
+                        </label>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleExport}
+                          disabled={exportLoading}
+                          className="gap-1.5">
+                          <Download size={14} />
+                          {exportLoading ? "..." : t("common.export")}
+                        </Button>
+                      </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,

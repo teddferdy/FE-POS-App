@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -16,12 +16,9 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import { useQuery } from "react-query";
 import { axiosInstance } from "@/services";
 import { loadCart } from "./cartStore";
-import AbortController from "@/components/organism/abort-controller";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const CustomerOrder = () => {
   const { t } = useTranslation();
@@ -42,10 +39,7 @@ const CustomerOrder = () => {
     refetch: refetchMenu
   } = useQuery(
     ["customer-menu", storeId],
-    () =>
-      axiosInstance
-        .get(`/order/customer-menu?store=${storeId}`)
-        .then((res) => res.data?.data),
+    () => axiosInstance.get(`/order/customer-menu?store=${storeId}`).then((res) => res.data?.data),
     {
       enabled: !!storeId,
       staleTime: 5 * 60 * 1000

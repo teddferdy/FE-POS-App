@@ -76,8 +76,6 @@ const StoreSelector = ({ cookie, setCookie }) => {
 
   if (role !== "super_admin" || !hasCashierMenu) return null;
 
-  const { isOpen, setIsOpen, searchItems, handleSelect: handleGlobalSelect } = useGlobalSearch();
-
   const handleSelect = (loc) => {
     const id = loc.id || loc._id;
     const name = loc.name || loc.storeName || "";
@@ -360,6 +358,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
   const [cookie, setCookie] = useCookies();
   const { translation, updateTranslation } = translationSelect();
   const navigate = useNavigate();
+  const { isOpen, setIsOpen, searchItems, handleSelect: handleGlobalSelect } = useGlobalSearch();
 
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const { startTour } = useTourStore();

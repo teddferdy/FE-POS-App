@@ -30,7 +30,11 @@ const BestSellingReportPage = () => {
     isLoading: bestLoading,
     isError,
     refetch
-  } = useQuery(["best-seller-report"], () => getBestSellerReport({ limit: 10 }), {});
+  } = useQuery(
+    ["best-seller-report"],
+    () => getBestSellerReport({ limit: 10, store: isSuperAdmin ? "" : user?.store || "" }),
+    {}
+  );
 
   const handleExport = async () => {
     setExportLoading(true);

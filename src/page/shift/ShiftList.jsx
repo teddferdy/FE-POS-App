@@ -14,6 +14,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
@@ -30,6 +31,15 @@ const ShiftList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [storeFilter, setStoreFilter] = useState("");
+
+  const isFiltered = search !== "" || statusFilter !== "all" || storeFilter !== "";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setStoreFilter("");
+    setPage(1);
+  };
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -284,12 +294,15 @@ const ShiftList = () => {
                   emptyIcon={Clock}
                   emptyMessage={t("page.shift.list.empty")}
                   toolbar={
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                      <h4 className="text-base font-semibold text-foreground shrink-0">
-                        {t("page.shift.list.title")}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {isSuperAdmin && (
+                    <TableToolbar
+                      title={t("page.shift.list.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      {isSuperAdmin && (
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Store
+                          </label>
                           <Combobox
                             options={[
                               { value: "", label: t("page.employee.list.allStores") },
@@ -306,7 +319,12 @@ const ShiftList = () => {
                             placeholder={t("page.employee.list.allStores")}
                             searchPlaceholder="Cari toko..."
                           />
-                        )}
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("common.status")}
+                        </label>
                         <Combobox
                           options={[
                             { value: "all", label: t("common.all") },
@@ -322,6 +340,11 @@ const ShiftList = () => {
                           placeholder={t("common.all")}
                           searchPlaceholder="Cari..."
                         />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
                         <SearchInput
                           value={search}
                           onChange={(val) => {
@@ -332,7 +355,7 @@ const ShiftList = () => {
                           isLoading={isFetching}
                         />
                       </div>
-                    </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,

@@ -12,10 +12,10 @@ import { toast } from "sonner";
 import { axiosInstance } from "@/services";
 import { useQuery } from "react-query";
 import StoreFilter from "@/components/ui/StoreFilter";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
-import AbortController from "@/components/organism/abort-controller";
 
 const CustomerOrderManagement = () => {
   const { t } = useTranslation();
@@ -28,6 +28,13 @@ const CustomerOrderManagement = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [search, setSearch] = useState("");
   const [acceptingId, setAcceptingId] = useState(null);
+
+  const isFiltered = storeFilter !== "all" || search !== "";
+
+  const resetFilters = () => {
+    setGlobalStoreFilter("all");
+    setSearch("");
+  };
 
   const { data: locData, isLoading: isLoadingLocations } = useQuery(
     ["locations-customer-orders"],
@@ -139,23 +146,36 @@ const CustomerOrderManagement = () => {
                 <Skeleton className="h-9 w-full md:w-64 rounded-md" />
               </>
             ) : (
-              <>
+              <TableToolbar
+                title={t("sidebar.customerOrder")}
+                onReset={resetFilters}
+                isFiltered={isFiltered}>
                 {isSuperAdmin && (
-                  <StoreFilter
-                    locations={(locData?.data || []).filter((l) => l.status === "active")}
-                    value={storeFilter}
-                    onChange={(v) => setGlobalStoreFilter(v)}
-                    isSuperAdmin={isSuperAdmin}
-                    t={t}
-                  />
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Store
+                    </label>
+                    <StoreFilter
+                      locations={(locData?.data || []).filter((l) => l.status === "active")}
+                      value={storeFilter}
+                      onChange={(v) => setGlobalStoreFilter(v)}
+                      isSuperAdmin={isSuperAdmin}
+                      t={t}
+                    />
+                  </div>
                 )}
-                <SearchInput
-                  value={search}
-                  onChange={setSearch}
-                  placeholder={t("page.customerOrder.searchOrders")}
-                  isLoading={ordersLoading}
-                />
-              </>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Cari
+                  </label>
+                  <SearchInput
+                    value={search}
+                    onChange={setSearch}
+                    placeholder={t("page.customerOrder.searchOrders")}
+                    isLoading={ordersLoading}
+                  />
+                </div>
+              </TableToolbar>
             )}
           </div>
 

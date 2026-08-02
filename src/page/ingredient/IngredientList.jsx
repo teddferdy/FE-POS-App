@@ -32,6 +32,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -60,6 +61,15 @@ const IngredientList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
   const pageSize = 10;
+
+  const isFiltered = storeFilter !== "all" || search !== "" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setGlobalStoreFilter("all");
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -430,51 +440,62 @@ const IngredientList = () => {
                 onPageChange: setPage
               }}
               toolbar={
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                  <>
-                    <h4 className="text-base font-semibold text-foreground">
-                      {t("page.ingredient.list.title")}
-                    </h4>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                      {isSuperAdmin && (
-                        <StoreFilter
-                          locations={locData?.data || []}
-                          value={storeFilter}
-                          onChange={(v) => {
-                            setGlobalStoreFilter(v);
-                            setPage(1);
-                          }}
-                          isSuperAdmin={isSuperAdmin}
-                          t={t}
-                        />
-                      )}
-                      <Combobox
-                        options={[
-                          { value: "all", label: t("common.all") },
-                          { value: "active", label: t("common.active") },
-                          { value: "inactive", label: t("common.inactive") },
-                          { value: "draft", label: t("common.draft") }
-                        ]}
-                        value={statusFilter}
+                <TableToolbar
+                  title={t("page.ingredient.list.title")}
+                  onReset={resetFilters}
+                  isFiltered={isFiltered}>
+                  {isSuperAdmin && (
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Store
+                      </label>
+                      <StoreFilter
+                        locations={locData?.data || []}
+                        value={storeFilter}
                         onChange={(v) => {
-                          setStatusFilter(v);
+                          setGlobalStoreFilter(v);
                           setPage(1);
                         }}
-                        placeholder={t("common.all")}
-                        searchPlaceholder="Cari..."
-                      />
-                      <SearchInput
-                        value={search}
-                        onChange={(val) => {
-                          setSearch(val);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.ingredient.list.searchPlaceholder")}
-                        isLoading={isFetching}
+                        isSuperAdmin={isSuperAdmin}
+                        t={t}
                       />
                     </div>
-                  </>
-                </div>
+                  )}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("common.status")}
+                    </label>
+                    <Combobox
+                      options={[
+                        { value: "all", label: t("common.all") },
+                        { value: "active", label: t("common.active") },
+                        { value: "inactive", label: t("common.inactive") },
+                        { value: "draft", label: t("common.draft") }
+                      ]}
+                      value={statusFilter}
+                      onChange={(v) => {
+                        setStatusFilter(v);
+                        setPage(1);
+                      }}
+                      placeholder={t("common.all")}
+                      searchPlaceholder="Cari..."
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Cari
+                    </label>
+                    <SearchInput
+                      value={search}
+                      onChange={(val) => {
+                        setSearch(val);
+                        setPage(1);
+                      }}
+                      placeholder={t("page.ingredient.list.searchPlaceholder")}
+                      isLoading={isFetching}
+                    />
+                  </div>
+                </TableToolbar>
               }
             />
           </div>

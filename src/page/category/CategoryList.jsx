@@ -22,6 +22,7 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadExcel } from "@/services/category";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
 import StatCard from "@/components/ui/StatCard";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -81,7 +82,15 @@ const CategoryList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
-  const [showFilters, setShowFilters] = useState(false);
+
+  const isFiltered = storeFilter !== "all" || search !== "" || statusFilter !== "";
+
+  const resetFilters = () => {
+    setGlobalStoreFilter("all");
+    setSearch("");
+    setStatusFilter("");
+    setPage(1);
+  };
 
   const { data: locData } = useQuery(["locations-cat"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -463,61 +472,61 @@ const CategoryList = () => {
                   isLoading={isLoading || isFetching}
                   emptyMessage={t("page.category.list.empty")}
                   toolbar={
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                      <>
-                        <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                          <h4 className="text-base font-semibold text-foreground shrink-0">
-                            {t("page.category.list.sectionTitle")}
-                          </h4>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 h-9 lg:hidden"
-                            onClick={() => setShowFilters(!showFilters)}>
-                            <span className="material-symbols-outlined text-base">filter_list</span>
-                            {showFilters ? "Tutup" : "Filter"}
-                          </Button>
-                        </div>
-                        <div
-                          className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                          {isSuperAdmin && (
-                            <StoreFilter
-                              locations={locData?.data || []}
-                              value={storeFilter}
-                              onChange={(v) => {
-                                setGlobalStoreFilter(v);
-                                setPage(1);
-                              }}
-                              isSuperAdmin={isSuperAdmin}
-                              t={t}
-                            />
-                          )}
-                          <SearchInput
-                            value={search}
-                            onChange={(val) => {
-                              setSearch(val);
-                              setPage(1);
-                            }}
-                            placeholder={t("page.category.list.search")}
-                            isLoading={isFetching}
-                          />
-                          <Combobox
-                            options={[
-                              { value: "", label: t("page.category.list.statusAll") },
-                              { value: "active", label: t("common.active") },
-                              { value: "inactive", label: t("common.inactive") }
-                            ]}
-                            value={statusFilter}
+                    <TableToolbar
+                      title={t("page.category.list.sectionTitle")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      {isSuperAdmin && (
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Store
+                          </label>
+                          <StoreFilter
+                            locations={locData?.data || []}
+                            value={storeFilter}
                             onChange={(v) => {
-                              setStatusFilter(v);
+                              setGlobalStoreFilter(v);
                               setPage(1);
                             }}
-                            placeholder={t("page.category.list.statusAll")}
-                            searchPlaceholder="Cari..."
+                            isSuperAdmin={isSuperAdmin}
+                            t={t}
                           />
                         </div>
-                      </>
-                    </div>
+                      )}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.category.list.search")}
+                          isLoading={isFetching}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("page.category.table.status")}
+                        </label>
+                        <Combobox
+                          options={[
+                            { value: "", label: t("page.category.list.statusAll") },
+                            { value: "active", label: t("common.active") },
+                            { value: "inactive", label: t("common.inactive") }
+                          ]}
+                          value={statusFilter}
+                          onChange={(v) => {
+                            setStatusFilter(v);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.category.list.statusAll")}
+                          searchPlaceholder="Cari..."
+                        />
+                      </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,

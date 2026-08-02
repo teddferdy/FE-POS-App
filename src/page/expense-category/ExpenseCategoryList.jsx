@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
@@ -44,6 +45,12 @@ const ExpenseCategoryList = () => {
 
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const isFiltered = search !== "";
+
+  const resetFilters = () => {
+    setSearch("");
+  };
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(["expense-categories"], () =>
     getExpenseCategories()
@@ -285,21 +292,30 @@ const ExpenseCategoryList = () => {
               )}
 
               <div>
-                <SearchInput
-                  value={search}
-                  onChange={setSearch}
-                  placeholder={t("page.expenseCategory.list.search")}
-                  isLoading={isFetching}
-                />
-              </div>
-
-              <div>
                 <DataTable
                   columns={columns}
                   data={filtered}
                   isLoading={isLoading || isFetching}
                   emptyIcon={Tag}
                   emptyMessage={t("page.expenseCategory.list.empty")}
+                  toolbar={
+                    <TableToolbar
+                      title={t("page.expenseCategory.list.search")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => setSearch(val)}
+                          placeholder={t("page.expenseCategory.list.search")}
+                          isLoading={isFetching}
+                        />
+                      </div>
+                    </TableToolbar>
+                  }
                 />
               </div>
             </>

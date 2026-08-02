@@ -12,6 +12,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -84,6 +85,17 @@ const DeliveryOrderList = () => {
       }),
     { retry: 1, keepPreviousData: true }
   );
+
+  const isFiltered =
+    search !== "" || statusFilter !== "all" || sourceFilter !== "all" || storeFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setSourceFilter("all");
+    setGlobalStoreFilter("all");
+    setPage(1);
+  };
 
   const cancelMutation = useMutation(({ id, reason }) => cancelDeliveryOrder(id, reason), {
     onSuccess: () => {
@@ -255,54 +267,70 @@ const DeliveryOrderList = () => {
         emptyMessage={t("page.delivery.list.empty")}
         emptyIcon={Package}
         toolbar={
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-            <>
-              <h4 className="text-base font-semibold text-foreground shrink-0">
-                {t("page.delivery.list.title")}
-              </h4>
-              <div className="flex flex-wrap items-center gap-2">
-                <StoreFilter
-                  locations={[]}
-                  value={storeFilter}
-                  onChange={(v) => {
-                    setGlobalStoreFilter(v);
-                    setPage(1);
-                  }}
-                  isSuperAdmin={user?.roleType === "super_admin"}
-                  t={t}
-                />
-                <Combobox
-                  options={statusOptions}
-                  value={statusFilter}
-                  onChange={(val) => {
-                    setStatusFilter(val);
-                    setPage(1);
-                  }}
-                  placeholder={t("common.all")}
-                  searchPlaceholder={t("common.all")}
-                />
-                <Combobox
-                  options={sourceOptions}
-                  value={sourceFilter}
-                  onChange={(val) => {
-                    setSourceFilter(val);
-                    setPage(1);
-                  }}
-                  placeholder={t("common.all")}
-                  searchPlaceholder={t("common.all")}
-                />
-                <SearchInput
-                  value={search}
-                  onChange={(val) => {
-                    setSearch(val);
-                    setPage(1);
-                  }}
-                  placeholder={t("page.delivery.list.search")}
-                  isLoading={isFetching}
-                />
-              </div>
-            </>
-          </div>
+          <TableToolbar
+            title={t("page.delivery.list.title")}
+            onReset={resetFilters}
+            isFiltered={isFiltered}>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Store
+              </label>
+              <StoreFilter
+                locations={[]}
+                value={storeFilter}
+                onChange={(v) => {
+                  setGlobalStoreFilter(v);
+                  setPage(1);
+                }}
+                isSuperAdmin={user?.roleType === "super_admin"}
+                t={t}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("page.delivery.detail.status")}
+              </label>
+              <Combobox
+                options={statusOptions}
+                value={statusFilter}
+                onChange={(val) => {
+                  setStatusFilter(val);
+                  setPage(1);
+                }}
+                placeholder={t("common.all")}
+                searchPlaceholder={t("common.all")}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("page.delivery.detail.source")}
+              </label>
+              <Combobox
+                options={sourceOptions}
+                value={sourceFilter}
+                onChange={(val) => {
+                  setSourceFilter(val);
+                  setPage(1);
+                }}
+                placeholder={t("common.all")}
+                searchPlaceholder={t("common.all")}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Cari
+              </label>
+              <SearchInput
+                value={search}
+                onChange={(val) => {
+                  setSearch(val);
+                  setPage(1);
+                }}
+                placeholder={t("page.delivery.list.search")}
+                isLoading={isFetching}
+              />
+            </div>
+          </TableToolbar>
         }
         pagination={{
           page,

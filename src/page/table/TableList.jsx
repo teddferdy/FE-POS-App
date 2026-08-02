@@ -38,6 +38,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
@@ -88,6 +89,14 @@ const TableList = () => {
     () => getTablesByStore({ location: locationParam, page, limit, search }),
     { keepPreviousData: true }
   );
+
+  const isFiltered = search !== "" || storeFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setGlobalStoreFilter("all");
+    setPage(1);
+  };
 
   const deleteMutation = useMutation(deleteTable, {
     onSuccess: () => {
@@ -384,34 +393,40 @@ const TableList = () => {
                   emptyIcon={Sofa}
                   emptyMessage={t("page.table.list.empty")}
                   toolbar={
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      <>
-                        <h4 className="text-base font-semibold text-foreground">
-                          {t("page.table.list.title")}
-                        </h4>
-                        <div className="flex items-center gap-3 w-full md:w-auto">
-                          <StoreFilter
-                            locations={locData?.data || []}
-                            value={storeFilter}
-                            onChange={(val) => {
-                              setGlobalStoreFilter(val);
-                              setPage(1);
-                            }}
-                            isSuperAdmin={isSuperAdmin}
-                            t={t}
-                          />
-                          <SearchInput
-                            value={search}
-                            onChange={(val) => {
-                              setSearch(val);
-                              setPage(1);
-                            }}
-                            placeholder={t("page.table.list.search")}
-                            isLoading={isFetching}
-                          />
-                        </div>
-                      </>
-                    </div>
+                    <TableToolbar
+                      title={t("page.table.list.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Store
+                        </label>
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(val) => {
+                            setGlobalStoreFilter(val);
+                            setPage(1);
+                          }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.table.list.search")}
+                          isLoading={isFetching}
+                        />
+                      </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,

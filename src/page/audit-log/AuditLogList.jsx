@@ -2,55 +2,19 @@ import React, { useState, useCallback } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
-import {
-  Search,
-  Filter,
-  Download,
-  Clock,
-  User,
-  Database,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight
-} from "lucide-react";
+import { Clock, User, Database, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
-import { toast } from "sonner";
 import { useQuery } from "react-query";
 import StoreFilter from "@/components/ui/StoreFilter";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { getAuditLogs } from "@/services/auditLog";
-
-const actionColors = {
-  CREATE: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  UPDATE: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  DELETE: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-  LOGIN: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  LOGOUT: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
-  PAYMENT: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  REFUND: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  VOID: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
-  PRINT: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
-  EXPORT: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
-  IMPORT: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
-  STATUS_CHANGE: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
-  SETTINGS_CHANGE: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400"
-};
-
-const ActionBadge = ({ action }) => {
-  const colorClass = actionColors[action] || "bg-gray-100 text-gray-700";
-  return (
-    <Badge variant="secondary" className={`text-[10px] ${colorClass}`}>
-      {action}
-    </Badge>
-  );
-};
 
 const AuditLogList = () => {
   const { t } = useTranslation();
@@ -65,7 +29,18 @@ const AuditLogList = () => {
   const [actionFilter, setActionFilter] = useState("");
   const [entityFilter, setEntityFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize] = useState(20);
+
+  const isFiltered =
+    storeFilter !== "all" || search !== "" || actionFilter !== "" || entityFilter !== "";
+
+  const resetFilters = () => {
+    setGlobalStoreFilter("all");
+    setSearch("");
+    setActionFilter("");
+    setEntityFilter("");
+    setPage(1);
+  };
 
   const { data: locData, isLoading: isLoadingLocations } = useQuery(
     ["locations-audit-log"],
@@ -79,11 +54,7 @@ const AuditLogList = () => {
     action: actionFilter || undefined,
     entity: entityFilter || undefined,
     search: search || undefined,
-    ...(isSuperAdmin
-      ? storeFilter === "all"
-        ? {}
-        : { store: storeFilter || store }
-      : { store })
+    ...(isSuperAdmin ? (storeFilter === "all" ? {} : { store: storeFilter || store }) : { store })
   };
 
   const {
@@ -91,15 +62,11 @@ const AuditLogList = () => {
     isLoading,
     isError,
     refetch
-  } = useQuery(
-    ["audit-logs", fetchParams],
-    () => getAuditLogs(fetchParams),
-    {
-      enabled: isSuperAdmin || !!store,
-      keepPreviousData: true,
-      staleTime: 10000
-    }
-  );
+  } = useQuery(["audit-logs", fetchParams], () => getAuditLogs(fetchParams), {
+    enabled: isSuperAdmin || !!store,
+    keepPreviousData: true,
+    staleTime: 10000
+  });
 
   const logs = logsData?.data || [];
   const pagination = logsData?.pagination || { total: 0, totalPages: 1 };
@@ -107,41 +74,6 @@ const AuditLogList = () => {
   const handleFetch = useCallback(() => {
     refetch();
   }, [refetch]);
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleString("id-ID", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
-  };
-
-  const formatChanges = (oldVals, newVals) => {
-    if (!oldVals && !newVals) return null;
-    const changes = [];
-    const allKeys = new Set([...Object.keys(oldVals || {}), ...Object.keys(newVals || {})]);
-    for (const key of allKeys) {
-      const oldV = oldVals?.[key];
-      const newV = newVals?.[key];
-      if (JSON.stringify(oldV) !== JSON.stringify(newV)) {
-        changes.push(
-          <div key={key} className="text-xs font-mono">
-            <span className="text-red-500">− {key}: {JSON.stringify(oldV)}</span>
-            <span className="text-green-500">+ {key}: {JSON.stringify(newV)}</span>
-          </div>
-        );
-      }
-    }
-    return changes.length > 0 ? (
-      <div className="mt-2 p-2 bg-muted/50 rounded text-xs font-mono max-h-32 overflow-auto">
-        {changes}
-      </div>
-    ) : null;
-  };
 
   return (
     <div className="space-y-6">
@@ -185,27 +117,52 @@ const AuditLogList = () => {
                 <Skeleton className="h-9 w-full md:w-64 rounded-md" />
               </>
             ) : (
-              <>
+              <TableToolbar
+                title={t("sidebar.auditLog")}
+                onReset={resetFilters}
+                isFiltered={isFiltered}>
                 {isSuperAdmin && (
-                  <StoreFilter
-                    locations={(locData?.data || []).filter((l) => l.status === "active")}
-                    value={storeFilter}
-                    onChange={(v) => setGlobalStoreFilter(v)}
-                    isSuperAdmin={isSuperAdmin}
-                    t={t}
-                  />
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Store
+                    </label>
+                    <StoreFilter
+                      locations={(locData?.data || []).filter((l) => l.status === "active")}
+                      value={storeFilter}
+                      onChange={(v) => {
+                        setGlobalStoreFilter(v);
+                        setPage(1);
+                      }}
+                      isSuperAdmin={isSuperAdmin}
+                      t={t}
+                    />
+                  </div>
                 )}
-                <div className="flex flex-col sm:flex-row gap-2 w-full">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Cari
+                  </label>
                   <SearchInput
                     value={search}
-                    onChange={setSearch}
+                    onChange={(val) => {
+                      setSearch(val);
+                      setPage(1);
+                    }}
                     placeholder={t("page.auditLog.searchPlaceholder")}
                     isLoading={isLoading}
                     className="flex-1"
                   />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Aksi
+                  </label>
                   <Select
                     value={actionFilter}
-                    onChange={setActionFilter}
+                    onChange={(v) => {
+                      setActionFilter(v);
+                      setPage(1);
+                    }}
                     options={[
                       { value: "", label: t("page.auditLog.allActions") },
                       { value: "CREATE", label: "CREATE" },
@@ -219,9 +176,17 @@ const AuditLogList = () => {
                     ]}
                     className="w-full sm:w-48"
                   />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Entitas
+                  </label>
                   <Select
                     value={entityFilter}
-                    onChange={setEntityFilter}
+                    onChange={(v) => {
+                      setEntityFilter(v);
+                      setPage(1);
+                    }}
                     options={[
                       { value: "", label: t("page.auditLog.allEntities") },
                       { value: "order", label: "Order" },
@@ -235,7 +200,7 @@ const AuditLogList = () => {
                     className="w-full sm:w-48"
                   />
                 </div>
-              </>
+              </TableToolbar>
             )}
           </div>
 
@@ -268,22 +233,33 @@ const AuditLogList = () => {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            log.action === "CREATE" ? "bg-emerald-100 text-emerald-700" :
-                            log.action === "UPDATE" ? "bg-blue-100 text-blue-700" :
-                            log.action === "DELETE" ? "bg-red-100 text-red-700" :
-                            log.action === "LOGIN" ? "bg-purple-100 text-purple-700" :
-                            log.action === "PAYMENT" ? "bg-amber-100 text-amber-700" :
-                            log.action === "REFUND" ? "bg-orange-100 text-orange-700" :
-                            log.action === "VOID" ? "bg-rose-100 text-rose-700" :
-                            log.action === "STATUS_CHANGE" ? "bg-violet-100 text-violet-700" :
-                            "bg-gray-100 text-gray-700"
-                          }`}>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              log.action === "CREATE"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : log.action === "UPDATE"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : log.action === "DELETE"
+                                    ? "bg-red-100 text-red-700"
+                                    : log.action === "LOGIN"
+                                      ? "bg-purple-100 text-purple-700"
+                                      : log.action === "PAYMENT"
+                                        ? "bg-amber-100 text-amber-700"
+                                        : log.action === "REFUND"
+                                          ? "bg-orange-100 text-orange-700"
+                                          : log.action === "VOID"
+                                            ? "bg-rose-100 text-rose-700"
+                                            : log.action === "STATUS_CHANGE"
+                                              ? "bg-violet-100 text-violet-700"
+                                              : "bg-gray-100 text-gray-700"
+                            }`}>
                             {log.action}
                           </span>
                           <span className="font-bold text-sm font-mono text-primary">
                             {log.entity}
-                            {log.entityId && <span className="text-muted-foreground">:#{log.entityId}</span>}
+                            {log.entityId && (
+                              <span className="text-muted-foreground">:#{log.entityId}</span>
+                            )}
                           </span>
                           <span className="px-2 py-0.5 bg-muted text-[10px] rounded">
                             <Clock size={10} className="mr-1 inline" />
@@ -322,8 +298,7 @@ const AuditLogList = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                    >
+                      disabled={page === 1}>
                       <ChevronLeft size={14} />
                     </Button>
                     <span className="px-3 text-sm">
@@ -333,8 +308,7 @@ const AuditLogList = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                      disabled={page === pagination.totalPages}
-                    >
+                      disabled={page === pagination.totalPages}>
                       <ChevronRight size={14} />
                     </Button>
                   </div>

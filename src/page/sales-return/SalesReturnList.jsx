@@ -13,6 +13,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import NoStore from "@/components/ui/NoStore";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { getAllLocation } from "@/services/location";
 import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
@@ -54,6 +55,15 @@ const SalesReturnList = () => {
   });
 
   const locationParam = storeFilter !== "all" ? storeFilter : undefined;
+
+  const isFiltered = search !== "" || storeFilter !== "all" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setGlobalStoreFilter("all");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["sales-returns", page, limit, search, storeFilter, statusFilter],
@@ -280,52 +290,63 @@ const SalesReturnList = () => {
                 isLoading={isLoading}
                 emptyMessage={t("page.salesReturn.list.emptyMessage")}
                 toolbar={
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                    <>
-                      <h4 className="text-base font-semibold text-foreground">
-                        {t("page.salesReturn.list.title")}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {isSuperAdmin && (
-                          <StoreFilter
-                            locations={locData?.data || []}
-                            value={storeFilter}
-                            onChange={(v) => {
-                              setGlobalStoreFilter(v);
-                              setPage(1);
-                            }}
-                            isSuperAdmin={isSuperAdmin}
-                            t={t}
-                          />
-                        )}
-                        <Combobox
-                          options={[
-                            { value: "all", label: t("page.salesReturn.list.filter.allStatus") },
-                            ...Object.entries(statusCfg).map(([k, v]) => ({
-                              value: k,
-                              label: v.label
-                            }))
-                          ]}
-                          value={statusFilter}
+                  <TableToolbar
+                    title={t("page.salesReturn.list.title")}
+                    onReset={resetFilters}
+                    isFiltered={isFiltered}>
+                    {isSuperAdmin && (
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Store
+                        </label>
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
                           onChange={(v) => {
-                            setStatusFilter(v);
+                            setGlobalStoreFilter(v);
                             setPage(1);
                           }}
-                          placeholder={t("page.salesReturn.list.filter.allStatus")}
-                          searchPlaceholder="Cari..."
-                        />
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => {
-                            setSearch(val);
-                            setPage(1);
-                          }}
-                          placeholder={t("page.salesReturn.list.placeholder.search")}
-                          isLoading={isLoading}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
                         />
                       </div>
-                    </>
-                  </div>
+                    )}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.salesReturn.list.filter.allStatus")}
+                      </label>
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("page.salesReturn.list.filter.allStatus") },
+                          ...Object.entries(statusCfg).map(([k, v]) => ({
+                            value: k,
+                            label: v.label
+                          }))
+                        ]}
+                        value={statusFilter}
+                        onChange={(v) => {
+                          setStatusFilter(v);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.salesReturn.list.filter.allStatus")}
+                        searchPlaceholder="Cari..."
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Cari
+                      </label>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.salesReturn.list.placeholder.search")}
+                        isLoading={isLoading}
+                      />
+                    </div>
+                  </TableToolbar>
                 }
                 pagination={{
                   page,

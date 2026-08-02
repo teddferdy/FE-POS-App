@@ -13,7 +13,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
-import StoreFilter from "@/components/ui/StoreFilter";
+import TableToolbar from "@/components/ui/TableToolbar";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
 
@@ -75,6 +75,17 @@ const QueueList = () => {
   const [seatedTarget, setSeatedTarget] = useState(null);
   const [cancelTarget, setCancelTarget] = useState(null);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
+
+  const isFiltered =
+    storeFilter !== "all" || search !== "" || statusFilter !== "all" || priorityFilter !== "all";
+
+  const resetFilters = () => {
+    setGlobalStoreFilter("all");
+    setSearch("");
+    setStatusFilter("all");
+    setPriorityFilter("all");
+    setPage(1);
+  };
 
   const user = cookie?.user;
   const MENU_KEY = "/queue-list";
@@ -294,35 +305,62 @@ const QueueList = () => {
       </div>
 
       <div className="bg-card rounded-xl border border-border p-4">
-        <div className="flex flex-col md:flex-row gap-3 mb-4">
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder={t("page.queue.list.searchPlaceholder")}
-            className="w-full md:w-64"
-          />
-          <StoreFilter value={storeFilter} onChange={setGlobalStoreFilter} />
-          <Combobox
-            options={statusOptions}
-            value={statusFilter}
-            onChange={setStatusFilter}
-            placeholder="Filter Status"
-            searchPlaceholder="Cari..."
-          />
-          <Combobox
-            options={priorityOptions}
-            value={priorityFilter}
-            onChange={setPriorityFilter}
-            placeholder="Filter Priority"
-            searchPlaceholder="Cari..."
-          />
-        </div>
-
         <DataTable
           columns={columns}
           data={data?.data || []}
           loading={isLoading}
           isFetching={isFetching}
+          toolbar={
+            <TableToolbar
+              title={t("page.queue.list.title")}
+              onReset={resetFilters}
+              isFiltered={isFiltered}>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Cari
+                </label>
+                <SearchInput
+                  value={search}
+                  onChange={(val) => {
+                    setSearch(val);
+                    setPage(1);
+                  }}
+                  placeholder={t("page.queue.list.searchPlaceholder")}
+                  className="w-full md:w-64"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Filter Status
+                </label>
+                <Combobox
+                  options={statusOptions}
+                  value={statusFilter}
+                  onChange={(val) => {
+                    setStatusFilter(val);
+                    setPage(1);
+                  }}
+                  placeholder="Filter Status"
+                  searchPlaceholder="Cari..."
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Filter Priority
+                </label>
+                <Combobox
+                  options={priorityOptions}
+                  value={priorityFilter}
+                  onChange={(val) => {
+                    setPriorityFilter(val);
+                    setPage(1);
+                  }}
+                  placeholder="Filter Priority"
+                  searchPlaceholder="Cari..."
+                />
+              </div>
+            </TableToolbar>
+          }
           pagination={data?.pagination}
           onPageChange={setPage}
           onLimitChange={setLimit}

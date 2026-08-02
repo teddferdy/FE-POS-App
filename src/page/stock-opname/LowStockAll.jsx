@@ -5,10 +5,11 @@ import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import NoStore from "@/components/ui/NoStore";
-import { AlertTriangle, Package, ShoppingBasket, Store, Filter, Zap } from "lucide-react";
+import { AlertTriangle, Package, ShoppingBasket, Store, Zap } from "lucide-react";
 import { getLowStockAll, autoGeneratePOFromLowStock } from "@/services/stock";
 import { getAllLocation } from "@/services/location";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { SearchInput } from "@/components/ui/SearchInput";
 import {
   Select,
@@ -49,6 +50,15 @@ const LowStockAll = () => {
     }
   );
   const locations = locData?.data || [];
+
+  const isFiltered = search !== "" || storeFilter !== "all" || typeFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setGlobalStoreFilter("all");
+    setTypeFilter("all");
+    setPage(1);
+  };
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["low-stock-all", page, limit, storeFilter, typeFilter, search],
@@ -203,64 +213,76 @@ const LowStockAll = () => {
     }
   ];
 
-  const filters =
-    isLoadingLocations || isLoading ? (
-      <div className="flex flex-wrap items-center gap-3">
-        <Skeleton className="h-9 w-56 rounded-md" />
-        <Skeleton className="h-9 w-44 rounded-md" />
-      </div>
-    ) : (
-      <div className="flex flex-wrap items-center gap-3">
-        <SearchInput
-          value={search}
-          onChange={(val) => {
-            setSearch(val);
-            setPage(1);
-          }}
-          placeholder="Cari nama barang..."
-          isLoading={isLoading}
-        />
-        <div className="flex items-center gap-2">
-          <Store size={16} className="text-muted-foreground shrink-0" />
-          <Select
-            value={storeFilter}
-            onValueChange={(v) => {
-              setGlobalStoreFilter(v);
-              setPage(1);
-            }}>
-            <SelectTrigger className="w-44 h-9 text-sm">
-              <SelectValue placeholder="Semua Toko" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Toko</SelectItem>
-              {locations.map((loc) => (
-                <SelectItem key={loc.id} value={String(loc.id)}>
-                  {loc.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+  const filters = (
+    <TableToolbar title={t("sidebar.lowStockAll")} onReset={resetFilters} isFiltered={isFiltered}>
+      {isLoadingLocations || isLoading ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <Skeleton className="h-9 w-56 rounded-md" />
+          <Skeleton className="h-9 w-44 rounded-md" />
         </div>
-        <div className="flex items-center gap-2">
-          <Filter size={16} className="text-muted-foreground shrink-0" />
-          <Select
-            value={typeFilter}
-            onValueChange={(v) => {
-              setTypeFilter(v);
-              setPage(1);
-            }}>
-            <SelectTrigger className="w-36 h-9 text-sm">
-              <SelectValue placeholder="Semua Tipe" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Tipe</SelectItem>
-              <SelectItem value="product">Produk</SelectItem>
-              <SelectItem value="ingredient">Bahan</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    );
+      ) : (
+        <>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Cari
+            </label>
+            <SearchInput
+              value={search}
+              onChange={(val) => {
+                setSearch(val);
+                setPage(1);
+              }}
+              placeholder="Cari nama barang..."
+              isLoading={isLoading}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Toko
+            </label>
+            <Select
+              value={storeFilter}
+              onValueChange={(v) => {
+                setGlobalStoreFilter(v);
+                setPage(1);
+              }}>
+              <SelectTrigger className="w-44 h-9 text-sm">
+                <SelectValue placeholder="Semua Toko" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Toko</SelectItem>
+                {locations.map((loc) => (
+                  <SelectItem key={loc.id} value={String(loc.id)}>
+                    {loc.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Tipe
+            </label>
+            <Select
+              value={typeFilter}
+              onValueChange={(v) => {
+                setTypeFilter(v);
+                setPage(1);
+              }}>
+              <SelectTrigger className="w-36 h-9 text-sm">
+                <SelectValue placeholder="Semua Tipe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Tipe</SelectItem>
+                <SelectItem value="product">Produk</SelectItem>
+                <SelectItem value="ingredient">Bahan</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+    </TableToolbar>
+  );
 
   const hasLowStock = stats.totalIngredients > 0 || stats.totalLowStock > 0;
 

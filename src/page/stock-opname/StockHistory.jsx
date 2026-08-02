@@ -5,8 +5,8 @@ import { Calendar } from "lucide-react";
 import { getAllStockHistory } from "@/services/stock";
 import { getAllProductTable } from "@/services/product";
 import { Combobox } from "@/components/ui/combobox";
-import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { useTranslation } from "react-i18next";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -74,6 +74,23 @@ const StockHistory = () => {
       ? storeFilter
       : ""
     : user?.store || "";
+
+  const isFiltered =
+    productFilter !== "" ||
+    referenceFilter !== "" ||
+    !!startDate ||
+    !!endDate ||
+    (storeFilter !== "" && storeFilter !== "all");
+
+  const resetFilters = () => {
+    setProductFilter("");
+    setReferenceFilter("");
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setStoreFilter("");
+    setPage(1);
+  };
+
   const { data, isLoading, isError, refetch } = useQuery(
     ["stock-history", page, pageSize, productFilter, referenceFilter, startDate, endDate, store],
     () =>
@@ -248,9 +265,12 @@ const StockHistory = () => {
               emptyMessage={t("page.stockHistory.empty")}
               emptyIcon={Calendar}
               toolbar={
-                <Card className="p-4 border-0 shadow-none bg-transparent">
+                <TableToolbar
+                  title={t("page.stockHistory.title")}
+                  onReset={resetFilters}
+                  isFiltered={isFiltered}>
                   {isLoadingLocations || isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 col-span-1 sm:col-span-2 lg:col-span-4">
                       <Skeleton className="h-9 rounded-md" />
                       <Skeleton className="h-9 rounded-md" />
                       <Skeleton className="h-9 rounded-md" />
@@ -258,10 +278,10 @@ const StockHistory = () => {
                       <Skeleton className="h-9 rounded-md" />
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <>
                       {isSuperAdmin && (
-                        <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                             {t("header.selectStore") || "Store"}
                           </label>
                           <StoreFilter
@@ -276,8 +296,8 @@ const StockHistory = () => {
                           />
                         </div>
                       )}
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                           {t("page.stockHistory.filter.product")}
                         </label>
                         <Combobox
@@ -297,8 +317,8 @@ const StockHistory = () => {
                           searchPlaceholder={t("common.search")}
                         />
                       </div>
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                           {t("page.stockHistory.filter.referenceType")}
                         </label>
                         <Combobox
@@ -312,8 +332,8 @@ const StockHistory = () => {
                           searchPlaceholder={t("common.search")}
                         />
                       </div>
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                           {t("page.stockHistory.filter.startDate")}
                         </label>
                         <DatePicker
@@ -324,8 +344,8 @@ const StockHistory = () => {
                           }}
                         />
                       </div>
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                           {t("page.stockHistory.filter.endDate")}
                         </label>
                         <DatePicker
@@ -336,9 +356,9 @@ const StockHistory = () => {
                           }}
                         />
                       </div>
-                    </div>
+                    </>
                   )}
-                </Card>
+                </TableToolbar>
               }
               pagination={{
                 page,

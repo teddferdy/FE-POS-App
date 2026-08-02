@@ -16,7 +16,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
 import PageHeader from "@/components/ui/PageHeader";
-import StoreFilter from "@/components/ui/StoreFilter";
+import TableToolbar from "@/components/ui/TableToolbar";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
 
@@ -64,6 +64,17 @@ const SupplierScoreList = () => {
     period: "monthly"
   });
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
+
+  const isFiltered =
+    storeFilter !== "all" || search !== "" || periodFilter !== "all" || gradeFilter !== "all";
+
+  const resetFilters = () => {
+    setGlobalStoreFilter("all");
+    setSearch("");
+    setPeriodFilter("all");
+    setGradeFilter("all");
+    setPage(1);
+  };
 
   const user = cookie?.user;
   const MENU_KEY = "/supplier-score-list";
@@ -259,35 +270,62 @@ const SupplierScoreList = () => {
       )}
 
       <div className="bg-card rounded-xl border border-border p-4">
-        <div className="flex flex-col md:flex-row gap-3 mb-4">
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder={t("page.supplierPerformance.list.searchPlaceholder")}
-            className="w-full md:w-64"
-          />
-          <StoreFilter value={storeFilter} onChange={setGlobalStoreFilter} />
-          <Combobox
-            options={periodOptions}
-            value={periodFilter}
-            onChange={setPeriodFilter}
-            placeholder="Filter Period"
-            searchPlaceholder="Cari..."
-          />
-          <Combobox
-            options={gradeOptions}
-            value={gradeFilter}
-            onChange={setGradeFilter}
-            placeholder="Filter Grade"
-            searchPlaceholder="Cari..."
-          />
-        </div>
-
         <DataTable
           columns={columns}
           data={data?.data || []}
           loading={isLoading}
           isFetching={isFetching}
+          toolbar={
+            <TableToolbar
+              title={t("page.supplierPerformance.list.title")}
+              onReset={resetFilters}
+              isFiltered={isFiltered}>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Cari
+                </label>
+                <SearchInput
+                  value={search}
+                  onChange={(val) => {
+                    setSearch(val);
+                    setPage(1);
+                  }}
+                  placeholder={t("page.supplierPerformance.list.searchPlaceholder")}
+                  className="w-full md:w-64"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Filter Period
+                </label>
+                <Combobox
+                  options={periodOptions}
+                  value={periodFilter}
+                  onChange={(val) => {
+                    setPeriodFilter(val);
+                    setPage(1);
+                  }}
+                  placeholder="Filter Period"
+                  searchPlaceholder="Cari..."
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Filter Grade
+                </label>
+                <Combobox
+                  options={gradeOptions}
+                  value={gradeFilter}
+                  onChange={(val) => {
+                    setGradeFilter(val);
+                    setPage(1);
+                  }}
+                  placeholder="Filter Grade"
+                  searchPlaceholder="Cari..."
+                />
+              </div>
+            </TableToolbar>
+          }
           pagination={data?.pagination}
           onPageChange={setPage}
           onLimitChange={setLimit}

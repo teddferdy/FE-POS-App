@@ -32,6 +32,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
@@ -82,6 +83,14 @@ const ProductionOrderList = () => {
   const [startTarget, setStartTarget] = useState(null);
   const [completeTarget, setCompleteTarget] = useState(null);
   const [completeQty, setCompleteQty] = useState("");
+
+  const isFiltered = search !== "" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const { data: locData } = useQuery(["locations-production-order"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -404,33 +413,46 @@ const ProductionOrderList = () => {
                   emptyMessage={t("page.productionOrder.list.emptyMessage")}
                   emptyIcon={ClipboardList}
                   toolbar={
-                    <div className="flex items-center gap-3">
-                      <Combobox
-                        options={[
-                          { value: "all", label: t("page.productionOrder.list.filterAll") },
-                          ...Object.entries(statusConfig).map(([k, v]) => ({
-                            value: k,
-                            label: v.label
-                          }))
-                        ]}
-                        value={statusFilter}
-                        onChange={(v) => {
-                          setStatusFilter(v);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.productionOrder.list.filterAll")}
-                        searchPlaceholder="Cari..."
-                      />
-                      <SearchInput
-                        value={search}
-                        onChange={(val) => {
-                          setSearch(val);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.productionOrder.list.searchPlaceholder")}
-                        isLoading={isFetching}
-                      />
-                    </div>
+                    <TableToolbar
+                      title={t("page.productionOrder.list.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("page.productionOrder.list.tableStatus")}
+                        </label>
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("page.productionOrder.list.filterAll") },
+                            ...Object.entries(statusConfig).map(([k, v]) => ({
+                              value: k,
+                              label: v.label
+                            }))
+                          ]}
+                          value={statusFilter}
+                          onChange={(v) => {
+                            setStatusFilter(v);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.productionOrder.list.filterAll")}
+                          searchPlaceholder="Cari..."
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.productionOrder.list.searchPlaceholder")}
+                          isLoading={isFetching}
+                        />
+                      </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,

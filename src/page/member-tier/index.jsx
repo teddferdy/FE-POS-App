@@ -15,6 +15,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
@@ -32,6 +33,14 @@ const MemberTier = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [limit, setLimit] = useState(5);
+
+  const isFiltered = statusFilter !== "all" || search !== "";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setCurrentPage(1);
+  };
 
   const { data: locData } = useQuery(["locations-member-tier"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -354,11 +363,14 @@ const MemberTier = () => {
                     isLoading={isLoading || isFetching}
                     rowClassName={() => "group"}
                     toolbar={
-                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                        <h4 className="text-base font-semibold text-foreground shrink-0">
-                          {t("page.memberTier.list.tableTitle")}
-                        </h4>
-                        <div className="flex flex-wrap items-center gap-2">
+                      <TableToolbar
+                        title={t("page.memberTier.list.tableTitle")}
+                        onReset={resetFilters}
+                        isFiltered={isFiltered}>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {t("common.status")}
+                          </label>
                           <Combobox
                             options={[
                               { value: "all", label: t("common.all") },
@@ -374,6 +386,11 @@ const MemberTier = () => {
                             placeholder={t("common.all")}
                             searchPlaceholder="Cari..."
                           />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Cari
+                          </label>
                           <SearchInput
                             value={search}
                             onChange={(val) => {
@@ -384,7 +401,7 @@ const MemberTier = () => {
                             isLoading={isFetching}
                           />
                         </div>
-                      </div>
+                      </TableToolbar>
                     }
                     pagination={{
                       page: currentPage,

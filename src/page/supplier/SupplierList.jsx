@@ -31,6 +31,7 @@ import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadSupplierExcel } from "@/services/supplier";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import StatCard from "@/components/ui/StatCard";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
@@ -78,6 +79,15 @@ const SupplierList = () => {
       }),
     { keepPreviousData: true }
   );
+
+  const isFiltered = search !== "" || storeFilter !== "all" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setGlobalStoreFilter("all");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const deleteMutation = useMutation(deleteSupplier, {
     onSuccess: () => {
@@ -444,11 +454,14 @@ const SupplierList = () => {
                 emptyMessage={t("page.supplier.list.empty")}
                 emptyIcon={Building2}
                 toolbar={
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                    <h4 className="text-base font-semibold text-foreground">
-                      {t("page.supplier.list.title")}
-                    </h4>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
+                  <TableToolbar
+                    title={t("page.supplier.list.title")}
+                    onReset={resetFilters}
+                    isFiltered={isFiltered}>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Store
+                      </label>
                       <StoreFilter
                         locations={locData?.data || []}
                         value={storeFilter}
@@ -459,6 +472,11 @@ const SupplierList = () => {
                         isSuperAdmin={isSuperAdmin}
                         t={t}
                       />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("common.status")}
+                      </label>
                       <Combobox
                         options={[
                           { value: "all", label: t("common.all") },
@@ -474,6 +492,11 @@ const SupplierList = () => {
                         placeholder={t("common.all")}
                         searchPlaceholder="Cari status..."
                       />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Cari
+                      </label>
                       <SearchInput
                         value={search}
                         onChange={(val) => {
@@ -484,7 +507,7 @@ const SupplierList = () => {
                         isLoading={isFetching}
                       />
                     </div>
-                  </div>
+                  </TableToolbar>
                 }
                 pagination={{
                   page,

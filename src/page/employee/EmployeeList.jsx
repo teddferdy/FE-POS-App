@@ -18,6 +18,7 @@ import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import StatCard from "@/components/ui/StatCard";
 import { canAccess } from "@/utils/permission";
 
@@ -49,6 +50,17 @@ const EmployeeList = () => {
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const { t } = useTranslation();
+
+  const isFiltered =
+    search !== "" || locationFilter !== "" || positionFilter !== "" || departmentFilter !== "";
+
+  const resetFilters = () => {
+    setSearch("");
+    setLocationFilter("");
+    setPositionFilter("");
+    setDepartmentFilter("");
+    setPage(1);
+  };
 
   const { data, isLoading, isFetching } = useQuery(
     ["employees", page, limit, search, locationFilter, positionFilter],
@@ -377,11 +389,14 @@ const EmployeeList = () => {
                   isLoading={isLoading || isFetching}
                   emptyMessage={t("page.employee.list.empty")}
                   toolbar={
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                      <h4 className="text-base font-semibold text-foreground shrink-0">
-                        {t("page.employee.list.title")}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-2">
+                    <TableToolbar
+                      title={t("page.employee.list.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
                         <SearchInput
                           value={search}
                           onChange={(val) => {
@@ -391,6 +406,11 @@ const EmployeeList = () => {
                           placeholder={t("page.employee.list.searchPlaceholder")}
                           isLoading={isFetching}
                         />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Toko
+                        </label>
                         <Combobox
                           options={[
                             { value: "", label: t("page.employee.list.allStores") },
@@ -407,6 +427,11 @@ const EmployeeList = () => {
                           placeholder={t("page.employee.list.allStores")}
                           searchPlaceholder="Cari toko..."
                         />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Posisi
+                        </label>
                         <Combobox
                           options={[
                             { value: "", label: t("page.employee.list.allPositions") },
@@ -423,6 +448,11 @@ const EmployeeList = () => {
                           placeholder={t("page.employee.list.allPositions")}
                           searchPlaceholder="Cari posisi..."
                         />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Departemen
+                        </label>
                         <Combobox
                           options={[
                             {
@@ -440,7 +470,7 @@ const EmployeeList = () => {
                           searchPlaceholder="Cari departemen..."
                         />
                       </div>
-                    </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,

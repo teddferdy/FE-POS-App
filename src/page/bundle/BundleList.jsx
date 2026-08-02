@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import { getAllLocation } from "@/services/location";
@@ -37,6 +38,14 @@ const BundleList = () => {
   const [storeFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const isFiltered = search !== "" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const { data: locData } = useQuery(["locations-bundle"], () => getAllLocation("active"), {
     enabled: isSuperAdmin
@@ -233,34 +242,44 @@ const BundleList = () => {
   ];
 
   const filters = (
-    <div className="flex flex-wrap items-center gap-3">
-      <SearchInput
-        value={search}
-        onChange={(val) => {
-          setSearch(val);
-          setPage(1);
-        }}
-        placeholder={t("page.bundle.searchPlaceholder")}
-        isLoading={isLoading}
-      />
-      <Select
-        value={statusFilter}
-        onValueChange={(v) => {
-          setStatusFilter(v);
-          setPage(1);
-        }}>
-        <SelectTrigger className="w-36 h-9 text-sm">
-          <SelectValue placeholder={t("common.status")} />
-        </SelectTrigger>
-        <SelectContent>
-          {statusOptions.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <TableToolbar title={t("page.bundle.title")} onReset={resetFilters} isFiltered={isFiltered}>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Cari
+        </label>
+        <SearchInput
+          value={search}
+          onChange={(val) => {
+            setSearch(val);
+            setPage(1);
+          }}
+          placeholder={t("page.bundle.searchPlaceholder")}
+          isLoading={isLoading}
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {t("common.status")}
+        </label>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(v);
+            setPage(1);
+          }}>
+          <SelectTrigger className="w-36 h-9 text-sm">
+            <SelectValue placeholder={t("common.status")} />
+          </SelectTrigger>
+          <SelectContent>
+            {statusOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </TableToolbar>
   );
 
   return (

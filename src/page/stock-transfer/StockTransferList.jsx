@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
@@ -61,8 +62,16 @@ const StockTransferList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
-  const [showFilters, setShowFilters] = useState(false);
   const effectiveStore = storeFilter !== "all" ? storeFilter : store;
+
+  const isFiltered = search !== "" || storeFilter !== "all" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setGlobalStoreFilter("all");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const { data: locData } = useQuery(["locations-stock-transfer"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -254,66 +263,66 @@ const StockTransferList = () => {
                 isLoading={isLoading}
                 emptyMessage={t("page.stockTransfer.list.emptyMessage")}
                 toolbar={
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                    <>
-                      <h4 className="text-base font-semibold text-foreground">
-                        {t("page.stockTransfer.list.title")}
-                      </h4>
-                      <div className="flex items-center gap-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 h-9 lg:hidden"
-                          onClick={() => setShowFilters(!showFilters)}>
-                          <span className="material-symbols-outlined text-base">filter_list</span>
-                          {showFilters ? "Tutup" : "Filter"}
-                        </Button>
-                        <div
-                          className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                          {isSuperAdmin && (
-                            <StoreFilter
-                              locations={locData?.data || []}
-                              value={storeFilter}
-                              onChange={(v) => {
-                                setGlobalStoreFilter(v);
-                                setPage(1);
-                              }}
-                              isSuperAdmin={isSuperAdmin}
-                              t={t}
-                            />
-                          )}
-                          <Combobox
-                            options={[
-                              {
-                                value: "all",
-                                label: t("page.stockTransfer.list.filter.allStatus")
-                              },
-                              ...Object.entries(statusCfg).map(([k, v]) => ({
-                                value: k,
-                                label: v.label
-                              }))
-                            ]}
-                            value={statusFilter}
-                            onChange={(val) => {
-                              setStatusFilter(val);
-                              setPage(1);
-                            }}
-                            placeholder={t("page.stockTransfer.list.filter.allStatus")}
-                            searchPlaceholder={t("common.search")}
-                          />
-                        </div>
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => {
-                            setSearch(val);
+                  <TableToolbar
+                    title={t("page.stockTransfer.list.title")}
+                    onReset={resetFilters}
+                    isFiltered={isFiltered}>
+                    {isSuperAdmin && (
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Store
+                        </label>
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => {
+                            setGlobalStoreFilter(v);
                             setPage(1);
                           }}
-                          placeholder={t("page.stockTransfer.list.placeholder.search")}
-                          isLoading={isLoading}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
                         />
                       </div>
-                    </>
-                  </div>
+                    )}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.stockTransfer.list.filter.allStatus")}
+                      </label>
+                      <Combobox
+                        options={[
+                          {
+                            value: "all",
+                            label: t("page.stockTransfer.list.filter.allStatus")
+                          },
+                          ...Object.entries(statusCfg).map(([k, v]) => ({
+                            value: k,
+                            label: v.label
+                          }))
+                        ]}
+                        value={statusFilter}
+                        onChange={(val) => {
+                          setStatusFilter(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.stockTransfer.list.filter.allStatus")}
+                        searchPlaceholder={t("common.search")}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Cari
+                      </label>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.stockTransfer.list.placeholder.search")}
+                        isLoading={isLoading}
+                      />
+                    </div>
+                  </TableToolbar>
                 }
                 pagination={{
                   page,

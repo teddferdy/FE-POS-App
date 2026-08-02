@@ -32,6 +32,7 @@ import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadTaxConfigExcel } from "@/services/tax-config";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
@@ -63,6 +64,14 @@ const TaxConfigList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const isFiltered = search !== "" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -396,11 +405,14 @@ const TaxConfigList = () => {
                   emptyMessage={t("page.taxConfig.list.empty")}
                   emptyIcon={Percent}
                   toolbar={
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      <h4 className="text-base font-semibold text-foreground">
-                        {t("page.taxConfig.list.title")}
-                      </h4>
-                      <div className="flex items-center gap-3 w-full md:w-auto">
+                    <TableToolbar
+                      title={t("page.taxConfig.list.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("common.status")}
+                        </label>
                         <Combobox
                           options={[
                             { value: "all", label: t("common.all") },
@@ -416,6 +428,11 @@ const TaxConfigList = () => {
                           placeholder={t("common.all")}
                           searchPlaceholder={t("common.all")}
                         />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
                         <SearchInput
                           value={search}
                           onChange={(val) => {
@@ -426,7 +443,7 @@ const TaxConfigList = () => {
                           isLoading={isFetching}
                         />
                       </div>
-                    </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,

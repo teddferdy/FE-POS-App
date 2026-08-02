@@ -6,6 +6,7 @@ import { useCookies } from "react-cookie";
 import { getAllUsers } from "@/services/user";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, CheckCircle, FileEdit } from "lucide-react";
 import { canAccess } from "@/utils/permission";
@@ -85,6 +86,13 @@ const AdminList = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
+
+  const isFiltered = search !== "";
+
+  const resetFilters = () => {
+    setSearch("");
+    setPage(1);
+  };
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["admins", page, limit, search],
@@ -175,30 +183,37 @@ const AdminList = () => {
             )}
 
             <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-              <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-muted/30">
-                <h4 className="text-base font-semibold text-foreground">
-                  {t("page.user.adminList.tableTitle")}
-                </h4>
-                <div className="flex gap-3">
-                  <SearchInput
-                    value={search}
-                    onChange={(val) => {
-                      setSearch(val);
-                      setPage(1);
-                    }}
-                    placeholder={t("page.user.adminList.search")}
-                    isLoading={isFetching}
-                  />
-                  <Button variant="outline" size="sm" className="gap-2 h-9">
-                    <span className="material-symbols-outlined text-base">filter_list</span>
-                    {t("page.user.adminList.filter")}
-                  </Button>
-                  {canAccess(user, MENU_KEY, "export") && (
-                    <Button variant="outline" size="sm" className="gap-2 h-9">
-                      <span className="material-symbols-outlined text-base">download</span>
-                      {t("page.user.adminList.exportCsv")}
-                    </Button>
-                  )}
+              <div className="px-6 py-5 border-b border-border bg-muted/30">
+                <div className="flex justify-between items-center gap-3">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.user.adminList.tableTitle")}
+                  </h4>
+                  <div className="flex gap-3">
+                    {canAccess(user, MENU_KEY, "export") && (
+                      <Button variant="outline" size="sm" className="gap-2 h-9">
+                        <span className="material-symbols-outlined text-base">download</span>
+                        {t("page.user.adminList.exportCsv")}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <TableToolbar onReset={resetFilters} isFiltered={isFiltered}>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Cari
+                      </label>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.user.adminList.search")}
+                        isLoading={isFetching}
+                      />
+                    </div>
+                  </TableToolbar>
                 </div>
               </div>
 

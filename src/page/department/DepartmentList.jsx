@@ -20,6 +20,7 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadDepartmentExcel } from "@/services/department";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Combobox } from "@/components/ui/combobox";
 import NoStore from "@/components/ui/NoStore";
@@ -63,6 +64,14 @@ const DepartmentList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const isFiltered = search !== "" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const { data: locData } = useQuery(["locations-departments"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -449,11 +458,14 @@ const DepartmentList = () => {
                   isLoading={isFetching}
                   emptyMessage={t("page.department.list.empty")}
                   toolbar={
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                      <h4 className="text-base font-semibold text-foreground shrink-0">
-                        {t("page.department.list.title")}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-2">
+                    <TableToolbar
+                      title={t("page.department.list.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("page.department.table.status")}
+                        </label>
                         <Combobox
                           options={[
                             { value: "all", label: t("common.all") },
@@ -469,6 +481,11 @@ const DepartmentList = () => {
                           placeholder={t("common.all")}
                           searchPlaceholder="Cari status..."
                         />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
                         <SearchInput
                           value={search}
                           onChange={(val) => {
@@ -479,7 +496,7 @@ const DepartmentList = () => {
                           isLoading={isFetching}
                         />
                       </div>
-                    </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,

@@ -26,7 +26,7 @@ export const deleteExpenseCategory = async (payload) => {
 
 export const getAllExpenses = async (payload) => {
   const params = new URLSearchParams();
-  if (payload?.location) params.append("store", payload.location);
+  params.append("store", payload?.location || "");
   if (payload?.page) params.append("page", payload.page);
   if (payload?.limit) params.append("limit", payload.limit);
   if (payload?.search) params.append("search", payload.search);

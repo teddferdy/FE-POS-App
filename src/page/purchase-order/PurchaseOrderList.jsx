@@ -62,6 +62,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { TipsCard } from "@/components/ui/tips-card";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import AbortController from "@/components/organism/abort-controller";
@@ -155,7 +156,6 @@ const PurchaseOrderList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState(undefined);
-  const [showFilters, setShowFilters] = useState(false);
   const [returModal, setReturModal] = useState(false);
   const [returPo, setReturPo] = useState(null);
   const [returReason, setReturReason] = useState("");
@@ -224,6 +224,17 @@ const PurchaseOrderList = () => {
   const MENU_KEY = "/purchase-order";
   const isSuperAdmin = user?.roleType === "super_admin";
   const locationParam = storeFilter !== "all" ? storeFilter : isSuperAdmin ? "" : user?.store || "";
+
+  const isFiltered =
+    storeFilter !== "all" || statusFilter !== "all" || !!dateFilter || search !== "";
+
+  const resetFilters = () => {
+    setGlobalStoreFilter("all");
+    setStatusFilter("all");
+    setDateFilter(undefined);
+    setSearch("");
+    setPage(1);
+  };
 
   const { data: locData } = useQuery(["locations-purchase-orders"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -970,97 +981,82 @@ const PurchaseOrderList = () => {
                   emptyMessage={t("page.purchaseOrder.list.empty")}
                   emptyIcon={Package}
                   toolbar={
-                    <div className="flex flex-col gap-4 w-full">
-                      <div className="flex items-center justify-between gap-3">
-                        <h4 className="text-base font-semibold text-foreground shrink-0">
-                          {t("page.purchaseOrder.list.title")}
-                        </h4>
-                        <Button
-                          variant={showFilters ? "default" : "outline"}
-                          size="sm"
-                          className="gap-2 h-9 lg:hidden"
-                          onClick={() => setShowFilters(!showFilters)}>
-                          <span className="material-symbols-outlined text-base">filter_list</span>
-                          Filter
-                        </Button>
-                      </div>
-                      <div
-                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-col sm:flex-row sm:items-end gap-3 w-full`}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 flex-1 w-full">
-                          {isSuperAdmin && (
-                            <div className="flex flex-col gap-1.5">
-                              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                Store
-                              </label>
-                              <StoreFilter
-                                locations={locData?.data || []}
-                                value={storeFilter}
-                                onChange={(v) => {
-                                  setGlobalStoreFilter(v);
-                                  setPage(1);
-                                }}
-                                isSuperAdmin={isSuperAdmin}
-                                t={t}
-                              />
-                            </div>
-                          )}
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                              {t("page.purchaseOrder.list.columns.status")}
-                            </label>
-                            <Combobox
-                              options={[
-                                { value: "all", label: t("common.all") },
-                                { value: "draft", label: t("page.purchaseOrder.status.draft") },
-                                { value: "pending", label: t("page.purchaseOrder.status.pending") },
-                                { value: "ordered", label: t("page.purchaseOrder.status.ordered") },
-                                {
-                                  value: "received",
-                                  label: t("page.purchaseOrder.status.received")
-                                },
-                                {
-                                  value: "cancelled",
-                                  label: t("page.purchaseOrder.status.cancelled")
-                                }
-                              ]}
-                              value={statusFilter}
-                              onChange={(val) => {
-                                setStatusFilter(val);
-                                setPage(1);
-                              }}
-                              placeholder={t("common.all")}
-                              searchPlaceholder={t("common.all")}
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                              {t("page.purchaseOrder.list.columns.poDate")}
-                            </label>
-                            <DatePicker
-                              date={dateFilter}
-                              setDate={(date) => {
-                                setDateFilter(date);
-                                setPage(1);
-                              }}
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                              Cari
-                            </label>
-                            <SearchInput
-                              value={search}
-                              onChange={(val) => {
-                                setSearch(val);
-                                setPage(1);
-                              }}
-                              placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
-                              isLoading={isFetching}
-                            />
-                          </div>
+                    <TableToolbar
+                      title={t("page.purchaseOrder.list.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      {isSuperAdmin && (
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Store
+                          </label>
+                          <StoreFilter
+                            locations={locData?.data || []}
+                            value={storeFilter}
+                            onChange={(v) => {
+                              setGlobalStoreFilter(v);
+                              setPage(1);
+                            }}
+                            isSuperAdmin={isSuperAdmin}
+                            t={t}
+                          />
                         </div>
+                      )}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("page.purchaseOrder.list.columns.status")}
+                        </label>
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("common.all") },
+                            { value: "draft", label: t("page.purchaseOrder.status.draft") },
+                            { value: "pending", label: t("page.purchaseOrder.status.pending") },
+                            { value: "ordered", label: t("page.purchaseOrder.status.ordered") },
+                            {
+                              value: "received",
+                              label: t("page.purchaseOrder.status.received")
+                            },
+                            {
+                              value: "cancelled",
+                              label: t("page.purchaseOrder.status.cancelled")
+                            }
+                          ]}
+                          value={statusFilter}
+                          onChange={(val) => {
+                            setStatusFilter(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("common.all")}
+                          searchPlaceholder={t("common.all")}
+                        />
                       </div>
-                    </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("page.purchaseOrder.list.columns.poDate")}
+                        </label>
+                        <DatePicker
+                          date={dateFilter}
+                          setDate={(date) => {
+                            setDateFilter(date);
+                            setPage(1);
+                          }}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
+                          isLoading={isFetching}
+                        />
+                      </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,

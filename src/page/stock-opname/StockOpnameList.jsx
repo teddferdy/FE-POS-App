@@ -25,6 +25,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
@@ -67,7 +68,15 @@ const StockOpnameList = () => {
   const [noDataModal, setNoDataModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
-  const [showFilters, setShowFilters] = useState(false);
+
+  const isFiltered = search !== "" || storeFilter !== "all" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setGlobalStoreFilter("all");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const { data: locData } = useQuery(["locations-stock-opname"], () => getAllLocation("active"), {
     enabled: isSuperAdmin
@@ -448,64 +457,62 @@ const StockOpnameList = () => {
                   return classes.join(" ");
                 }}
                 toolbar={
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                    <>
-                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                        <h4 className="text-base font-semibold text-foreground shrink-0">
-                          {t("page.stockOpname.list.title")}
-                        </h4>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 h-9 lg:hidden"
-                          onClick={() => setShowFilters(!showFilters)}>
-                          <span className="material-symbols-outlined text-base">filter_list</span>
-                          {showFilters ? "Tutup" : "Filter"}
-                        </Button>
-                      </div>
-                      <div
-                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {isSuperAdmin && (
-                            <StoreFilter
-                              locations={locData?.data || []}
-                              value={storeFilter}
-                              onChange={(val) => {
-                                setGlobalStoreFilter(val);
-                                setPage(1);
-                              }}
-                              isSuperAdmin={isSuperAdmin}
-                              t={t}
-                            />
-                          )}
-                          <Combobox
-                            options={[
-                              { value: "all", label: t("page.stockOpname.list.allStatus") },
-                              { value: "draft", label: t("page.stockOpname.status.draft") },
-                              { value: "completed", label: t("page.stockOpname.status.completed") },
-                              { value: "cancelled", label: t("page.stockOpname.status.cancelled") }
-                            ]}
-                            value={statusFilter}
-                            onChange={(val) => {
-                              setStatusFilter(val);
-                              setPage(1);
-                            }}
-                            placeholder={t("page.stockOpname.list.allStatus")}
-                            searchPlaceholder={t("common.search")}
-                          />
-                        </div>
-                        <SearchInput
-                          value={search}
+                  <TableToolbar
+                    title={t("page.stockOpname.list.title")}
+                    onReset={resetFilters}
+                    isFiltered={isFiltered}>
+                    {isSuperAdmin && (
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Store
+                        </label>
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
                           onChange={(val) => {
-                            setSearch(val);
+                            setGlobalStoreFilter(val);
                             setPage(1);
                           }}
-                          placeholder={t("page.stockOpname.list.searchPlaceholder")}
-                          isLoading={isFetching}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
                         />
                       </div>
-                    </>
-                  </div>
+                    )}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.stockOpname.list.allStatus")}
+                      </label>
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("page.stockOpname.list.allStatus") },
+                          { value: "draft", label: t("page.stockOpname.status.draft") },
+                          { value: "completed", label: t("page.stockOpname.status.completed") },
+                          { value: "cancelled", label: t("page.stockOpname.status.cancelled") }
+                        ]}
+                        value={statusFilter}
+                        onChange={(val) => {
+                          setStatusFilter(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.stockOpname.list.allStatus")}
+                        searchPlaceholder={t("common.search")}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Cari
+                      </label>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.stockOpname.list.searchPlaceholder")}
+                        isLoading={isFetching}
+                      />
+                    </div>
+                  </TableToolbar>
                 }
                 pagination={{
                   page,

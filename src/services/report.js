@@ -14,7 +14,7 @@ export const getSalesSummary = async (payload = {}) => {
 
 export const getBestSellerReport = async (payload = {}) => {
   const params = new URLSearchParams();
-  if (payload.store) params.append("store", payload.store);
+  params.append("store", payload.store || "");
   if (payload.startDate) params.append("startDate", payload.startDate);
   if (payload.endDate) params.append("endDate", payload.endDate);
   if (payload.limit) params.append("limit", payload.limit);

@@ -13,8 +13,7 @@ import {
   XCircle,
   Eye,
   Wallet,
-  FileEdit,
-  RotateCcw
+  FileEdit
 } from "lucide-react";
 import { format } from "date-fns";
 import { getAllExpenses, approveExpense, rejectExpense } from "@/services/expense";
@@ -24,6 +23,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
@@ -31,6 +31,7 @@ import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Skeleton } from "@/components/ui/skeleton";
+import Modal from "@/components/organism/modal";
 
 const ExpenseList = () => {
   const { t } = useTranslation();
@@ -44,12 +45,12 @@ const ExpenseList = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
-  const [showFilters, setShowFilters] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/expense";
-  const locationParam = storeFilter !== "all" ? storeFilter : user?.store || "";
+  const locationParam = storeFilter !== "all" ? storeFilter : isSuperAdmin ? "" : user?.store || "";
 
   const hasActiveFilter =
     search || statusFilter !== "all" || startDate || endDate || storeFilter !== "all";
@@ -256,7 +257,7 @@ const ExpenseList = () => {
                 size="icon"
                 className="h-8 w-8 text-green-600"
                 disabled={approveMutation.isLoading}
-                onClick={() => approveMutation.mutate(item.id || item._id)}>
+                onClick={() => setConfirmAction({ type: "approve", item })}>
                 <CheckCircle size={18} />
               </Button>
               <Button
@@ -264,7 +265,7 @@ const ExpenseList = () => {
                 size="icon"
                 className="h-8 w-8 text-red-600"
                 disabled={rejectMutation.isLoading}
-                onClick={() => rejectMutation.mutate(item.id || item._id)}>
+                onClick={() => setConfirmAction({ type: "reject", item })}>
                 <XCircle size={18} />
               </Button>
             </>
@@ -375,70 +376,83 @@ const ExpenseList = () => {
                 </div>
               )}
 
-              {isLoadingLocations || isLoading || isFetching ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Skeleton className="h-9 w-72 rounded-md" />
-                  <Skeleton className="h-9 w-40 rounded-md" />
-                  <Skeleton className="h-9 w-36 rounded-md" />
-                  <Skeleton className="h-9 w-36 rounded-md" />
-                </div>
-              ) : (
-                <div className="flex flex-wrap items-center gap-2">
-                  <SearchInput
-                    value={search}
-                    onChange={(val) => {
-                      setSearch(val);
-                      setPage(1);
-                    }}
-                    placeholder={t("page.expense.list.search")}
-                    isLoading={isFetching}
-                  />
-                  <Combobox
-                    options={[
-                      { value: "all", label: t("common.all") },
-                      { value: "draft", label: t("page.expense.list.statusDraft") },
-                      { value: "pending", label: t("page.expense.list.statusPending") },
-                      { value: "approved", label: t("page.expense.list.statusApproved") },
-                      { value: "rejected", label: t("page.expense.list.statusRejected") }
-                    ]}
-                    value={statusFilter}
-                    onChange={(v) => {
-                      setStatusFilter(v);
-                      setPage(1);
-                    }}
-                    placeholder={t("common.all")}
-                    searchPlaceholder="Cari..."
-                  />
-                  <DatePicker
-                    date={startDate}
-                    setDate={(d) => {
-                      setStartDate(d);
-                      setPage(1);
-                    }}
-                    placeholder={t("page.expense.list.filter.startDate")}
-                    className="w-40"
-                  />
-                  <DatePicker
-                    date={endDate}
-                    setDate={(d) => {
-                      setEndDate(d);
-                      setPage(1);
-                    }}
-                    placeholder={t("page.expense.list.filter.endDate")}
-                    className="w-40"
-                  />
-                  {isSuperAdmin && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2 h-9 lg:hidden"
-                        onClick={() => setShowFilters(!showFilters)}>
-                        <span className="material-symbols-outlined text-base">filter_list</span>
-                        {showFilters ? "Tutup" : "Filter"}
-                      </Button>
-                      <div
-                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+              <TableToolbar
+                title={t("page.expense.list.title")}
+                onReset={resetFilters}
+                isFiltered={hasActiveFilter}>
+                {isLoadingLocations || isLoading || isFetching ? (
+                  <div className="col-span-1 sm:col-span-2 lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <Skeleton className="h-9 rounded-md" />
+                    <Skeleton className="h-9 rounded-md" />
+                    <Skeleton className="h-9 rounded-md" />
+                    <Skeleton className="h-9 rounded-md" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Cari
+                      </label>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.expense.list.search")}
+                        isLoading={isFetching}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("common.status")}
+                      </label>
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("common.all") },
+                          { value: "draft", label: t("page.expense.list.statusDraft") },
+                          { value: "pending", label: t("page.expense.list.statusPending") },
+                          { value: "approved", label: t("page.expense.list.statusApproved") },
+                          { value: "rejected", label: t("page.expense.list.statusRejected") }
+                        ]}
+                        value={statusFilter}
+                        onChange={(v) => {
+                          setStatusFilter(v);
+                          setPage(1);
+                        }}
+                        placeholder={t("common.all")}
+                        searchPlaceholder="Cari..."
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.expense.list.filter.startDate")}
+                      </label>
+                      <DatePicker
+                        date={startDate}
+                        setDate={(d) => {
+                          setStartDate(d);
+                          setPage(1);
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.expense.list.filter.endDate")}
+                      </label>
+                      <DatePicker
+                        date={endDate}
+                        setDate={(d) => {
+                          setEndDate(d);
+                          setPage(1);
+                        }}
+                      />
+                    </div>
+                    {isSuperAdmin && (
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Store
+                        </label>
                         <StoreFilter
                           locations={locData?.data || []}
                           value={storeFilter}
@@ -450,20 +464,10 @@ const ExpenseList = () => {
                           t={t}
                         />
                       </div>
-                    </>
-                  )}
-                  {hasActiveFilter && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-1.5 h-9 text-muted-foreground"
-                      onClick={resetFilters}>
-                      <RotateCcw size={14} />
-                      {t("page.expense.list.filter.reset")}
-                    </Button>
-                  )}
-                </div>
-              )}
+                    )}
+                  </>
+                )}
+              </TableToolbar>
 
               <div>
                 <DataTable
@@ -489,6 +493,39 @@ const ExpenseList = () => {
           )}
         </>
       )}
+
+      <Modal
+        open={!!confirmAction}
+        onOpenChange={(v) => {
+          if (!v) setConfirmAction(null);
+        }}
+        type="confirm"
+        title={
+          confirmAction?.type === "approve"
+            ? t("page.expense.list.confirmApproveTitle")
+            : t("page.expense.list.confirmRejectTitle")
+        }
+        description={
+          confirmAction?.type === "approve"
+            ? t("page.expense.list.confirmApproveDesc")
+            : t("page.expense.list.confirmRejectDesc")
+        }
+        confirmText={
+          confirmAction?.type === "approve"
+            ? t("page.expense.list.confirmApprove")
+            : t("page.expense.list.confirmReject")
+        }
+        confirmVariant={confirmAction?.type === "reject" ? "destructive" : "default"}
+        loading={approveMutation.isLoading || rejectMutation.isLoading}
+        onConfirm={() => {
+          if (!confirmAction) return;
+          const id = confirmAction.item.id || confirmAction.item._id;
+          if (confirmAction.type === "approve") approveMutation.mutate(id);
+          else rejectMutation.mutate(id);
+          setConfirmAction(null);
+        }}
+        onCancel={() => setConfirmAction(null)}
+      />
     </div>
   );
 };

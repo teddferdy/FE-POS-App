@@ -19,6 +19,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { useTranslation } from "react-i18next";
@@ -72,6 +73,22 @@ const MemberList = () => {
   const [sortBy, setSortBy] = useState("terbaru");
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const isFiltered =
+    search !== "" ||
+    storeFilter !== "all" ||
+    statusFilter !== null ||
+    tierFilter !== null ||
+    sortBy !== "terbaru";
+
+  const resetFilters = () => {
+    setSearch("");
+    setGlobalStoreFilter("all");
+    setStatusFilter(null);
+    setTierFilter(null);
+    setSortBy("terbaru");
+    setPage(1);
+  };
 
   const { data: locData, isLoading: isLoadingLocations } = useQuery(
     ["locations-members"],
@@ -560,32 +577,42 @@ const MemberList = () => {
                     isLoading={isLoading}
                     emptyMessage={t("page.member.list.empty")}
                     toolbar={
-                      <div className="flex items-center justify-between w-full">
-                        <h4 className="text-base font-semibold text-foreground">
-                          {t("page.member.list.title")}
-                        </h4>
+                      <TableToolbar
+                        title={t("page.member.list.title")}
+                        onReset={resetFilters}
+                        isFiltered={isFiltered}>
                         {isSuperAdmin && (
-                          <StoreFilter
-                            locations={locData?.data || []}
-                            value={storeFilter}
-                            onChange={(v) => {
-                              setGlobalStoreFilter(v);
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              Store
+                            </label>
+                            <StoreFilter
+                              locations={locData?.data || []}
+                              value={storeFilter}
+                              onChange={(v) => {
+                                setGlobalStoreFilter(v);
+                                setPage(1);
+                              }}
+                              isSuperAdmin={isSuperAdmin}
+                              t={t}
+                            />
+                          </div>
+                        )}
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Cari
+                          </label>
+                          <SearchInput
+                            value={search}
+                            onChange={(val) => {
+                              setSearch(val);
                               setPage(1);
                             }}
-                            isSuperAdmin={isSuperAdmin}
-                            t={t}
+                            placeholder={t("page.member.list.search")}
+                            isLoading={isFetching}
                           />
-                        )}
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => {
-                            setSearch(val);
-                            setPage(1);
-                          }}
-                          placeholder={t("page.member.list.search")}
-                          isLoading={isFetching}
-                        />
-                      </div>
+                        </div>
+                      </TableToolbar>
                     }
                     pagination={{
                       page,

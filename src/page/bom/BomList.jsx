@@ -12,6 +12,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -30,6 +31,14 @@ const BomList = () => {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const isFiltered = search !== "" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const { data: locData } = useQuery(["locations-bom"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -167,11 +176,14 @@ const BomList = () => {
                 isLoading={isLoading}
                 emptyMessage={t("page.bom.list.empty")}
                 toolbar={
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                    <h4 className="text-base font-semibold text-foreground">
-                      {t("page.bom.list.title")}
-                    </h4>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
+                  <TableToolbar
+                    title={t("page.bom.list.title")}
+                    onReset={resetFilters}
+                    isFiltered={isFiltered}>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("common.status")}
+                      </label>
                       <Combobox
                         options={[
                           { value: "all", label: t("common.all") },
@@ -187,6 +199,11 @@ const BomList = () => {
                         placeholder={t("common.all")}
                         searchPlaceholder={t("common.search")}
                       />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Cari
+                      </label>
                       <SearchInput
                         value={search}
                         onChange={(val) => {
@@ -197,7 +214,7 @@ const BomList = () => {
                         isLoading={isFetching}
                       />
                     </div>
-                  </div>
+                  </TableToolbar>
                 }
                 pagination={{
                   page,

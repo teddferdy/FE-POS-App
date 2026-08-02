@@ -20,6 +20,7 @@ import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadIngredientCategoryExcel } from "@/services/ingredientCategory";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
@@ -68,6 +69,14 @@ const CategoryList = () => {
     () => getAllIngredientCategoryTable({ page, limit, search, status: statusFilter }),
     { keepPreviousData: true }
   );
+
+  const isFiltered = search !== "" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const deleteMutation = useMutation(deleteIngredientCategory, {
     onSuccess: () => {
@@ -368,39 +377,45 @@ const CategoryList = () => {
                   emptyMessage={t("page.ingredientCategory.list.emptyText")}
                   emptyIcon={Package}
                   toolbar={
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      <>
-                        <h4 className="text-base font-semibold text-foreground">
-                          {t("page.ingredientCategory.list.title")}
-                        </h4>
-                        <div className="flex items-center gap-3 w-full md:w-auto">
-                          <Combobox
-                            options={[
-                              { value: "all", label: t("common.all") },
-                              { value: "active", label: t("common.active") },
-                              { value: "inactive", label: t("common.inactive") },
-                              { value: "draft", label: t("common.draft") }
-                            ]}
-                            value={statusFilter}
-                            onChange={(v) => {
-                              setStatusFilter(v);
-                              setPage(1);
-                            }}
-                            placeholder={t("common.all")}
-                            searchPlaceholder="Cari..."
-                          />
-                          <SearchInput
-                            value={search}
-                            onChange={(val) => {
-                              setSearch(val);
-                              setPage(1);
-                            }}
-                            placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
-                            isLoading={isFetching}
-                          />
-                        </div>
-                      </>
-                    </div>
+                    <TableToolbar
+                      title={t("page.ingredientCategory.list.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("page.ingredientCategory.list.tableStatus")}
+                        </label>
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("common.all") },
+                            { value: "active", label: t("common.active") },
+                            { value: "inactive", label: t("common.inactive") },
+                            { value: "draft", label: t("common.draft") }
+                          ]}
+                          value={statusFilter}
+                          onChange={(v) => {
+                            setStatusFilter(v);
+                            setPage(1);
+                          }}
+                          placeholder={t("common.all")}
+                          searchPlaceholder="Cari..."
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
+                          isLoading={isFetching}
+                        />
+                      </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,
