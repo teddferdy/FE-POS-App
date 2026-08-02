@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -832,11 +833,12 @@ const InvoicePage = () => {
                   <Globe size={18} className="text-primary" />
                   <h3 className="text-base font-semibold">{t("page.invoice.footer")}</h3>
                 </div>
-                <Input
+                <Textarea
                   value={footerText}
                   onChange={(e) => setFooterText(e.target.value)}
                   placeholder={t("page.invoice.footerPlaceholder")}
-                  className="text-sm"
+                  className="text-sm min-h-[80px]"
+                  rows={4}
                 />
                 <p className="text-[11px] text-muted-foreground mt-2">
                   {t("page.invoice.footerDescription")}
