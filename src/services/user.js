@@ -29,3 +29,9 @@ export const changeRoleUser = async (payload) => {
   if (status !== 200 && status !== 201) throw Error(`${data.message || data?.error}`);
   return data;
 };
+
+export const changeUserStatus = async (payload) => {
+  const { data, status } = await axiosInstance.put("/auth/change-user-status", payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message || data?.error}`);
+  return data;
+};

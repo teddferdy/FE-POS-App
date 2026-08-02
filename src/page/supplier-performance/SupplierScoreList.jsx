@@ -11,6 +11,8 @@ import {
   getTopSuppliers,
   calculateSupplierScore
 } from "@/services/supplierPerformance";
+import { getAllSupplier } from "@/services/supplier";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -60,6 +62,7 @@ const SupplierScoreList = () => {
   const [gradeFilter, setGradeFilter] = useState("all");
   const [calculateModal, setCalculateModal] = useState(false);
   const [calculateForm, setCalculateForm] = useState({
+    storeId: "",
     supplierId: "",
     period: "monthly"
   });
@@ -77,6 +80,7 @@ const SupplierScoreList = () => {
   };
 
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/supplier-score-list";
 
   const { data, isLoading, isFetching } = useQuery(
@@ -99,6 +103,30 @@ const SupplierScoreList = () => {
     { retry: 1 }
   );
 
+  const { data: locData } = useQuery(["locations-supplier-score"], () => getAllLocation(), {
+    enabled: isSuperAdmin,
+    retry: 1
+  });
+  const locations = locData?.data || [];
+
+  const { data: suppliersData } = useQuery(
+    ["suppliers-calculate", storeFilter],
+    () =>
+      getAllSupplier({
+        page: 1,
+        limit: 999,
+        status: "active",
+        store: isSuperAdmin
+          ? storeFilter && storeFilter !== "all"
+            ? storeFilter
+            : ""
+          : user?.store || ""
+      }),
+    { retry: 1, staleTime: 30000 }
+  );
+  const suppliers = suppliersData?.data || [];
+  const supplierOptions = suppliers.map((s) => ({ value: s.id, label: s.name }));
+
   const calculateMutation = useMutation(calculateSupplierScore, {
     onSuccess: () => {
       toast.success(t("common.success"), {
@@ -107,7 +135,11 @@ const SupplierScoreList = () => {
       queryClient.invalidateQueries(["supplier-scores"]);
       queryClient.invalidateQueries(["top-suppliers"]);
       setCalculateModal(false);
-      setCalculateForm({ supplierId: "", period: "monthly" });
+      setCalculateForm({
+        storeId: storeFilter !== "all" && storeFilter !== "" ? Number(storeFilter) : "",
+        supplierId: "",
+        period: "monthly"
+      });
     },
     onError: (err) => {
       toast.error(t("common.error"), {
@@ -121,36 +153,30 @@ const SupplierScoreList = () => {
   const columns = [
     {
       header: t("page.supplierPerformance.list.rank"),
-      accessorKey: "rank",
-      cell: ({ row }) => {
-        const idx = (page - 1) * limit + row.index + 1;
+      render: (row, rowIndex) => {
+        const idx = (page - 1) * limit + rowIndex + 1;
         return <span className="font-semibold text-foreground">#{idx}</span>;
       }
     },
     {
       header: t("page.supplierPerformance.list.supplier"),
-      accessorKey: "supplier",
-      cell: ({ row }) => (
+      render: (row) => (
         <div>
-          <div className="font-medium text-foreground">{row.original.supplier?.name || "-"}</div>
+          <div className="font-medium text-foreground">{row.supplier?.name || "-"}</div>
           <div className="text-xs text-muted-foreground">
-            {row.original.supplier?.phone || row.original.supplier?.email || ""}
+            {row.supplier?.phone || row.supplier?.email || ""}
           </div>
         </div>
       )
     },
     {
       header: t("page.supplierPerformance.list.period"),
-      accessorKey: "period",
-      cell: ({ row }) => (
-        <span className="text-sm capitalize">{row.original.period?.replace("_", " ")}</span>
-      )
+      render: (row) => <span className="text-sm capitalize">{row.period?.replace("_", " ")}</span>
     },
     {
       header: t("page.supplierPerformance.list.onTimeRate"),
-      accessorKey: "onTimeRate",
-      cell: ({ row }) => {
-        const rate = parseFloat(row.original.onTimeRate || 0);
+      render: (row) => {
+        const rate = parseFloat(row.onTimeRate || 0);
         return (
           <div className="flex items-center gap-2">
             <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -166,9 +192,8 @@ const SupplierScoreList = () => {
     },
     {
       header: t("page.supplierPerformance.list.defectRate"),
-      accessorKey: "defectRate",
-      cell: ({ row }) => {
-        const rate = parseFloat(row.original.defectRate || 0);
+      render: (row) => {
+        const rate = parseFloat(row.defectRate || 0);
         return (
           <span
             className={`text-sm font-medium ${rate > 5 ? "text-red-600" : rate > 2 ? "text-yellow-600" : "text-green-600"}`}>
@@ -179,32 +204,30 @@ const SupplierScoreList = () => {
     },
     {
       header: t("page.supplierPerformance.list.score"),
-      accessorKey: "overallScore",
-      cell: ({ row }) => (
+      render: (row) => (
         <span className="text-lg font-bold text-foreground">
-          {parseFloat(row.original.overallScore || 0).toFixed(1)}
+          {parseFloat(row.overallScore || 0).toFixed(1)}
         </span>
       )
     },
     {
       header: t("page.supplierPerformance.list.grade"),
-      accessorKey: "grade",
-      cell: ({ row }) => (
+      render: (row) => (
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${gradeBadge(row.original.grade)}`}>
-          {row.original.grade}
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${gradeBadge(row.grade)}`}>
+          {row.grade}
         </span>
       )
     },
     {
-      header: t("common.action"),
-      accessorKey: "actions",
-      cell: ({ row }) => (
+      header: t("common.actions"),
+      stickyRight: true,
+      render: (row) => (
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => navigate(`/detail-supplier-score?id=${row.original.id}`)}>
+          onClick={() => navigate(`/detail-supplier-score?id=${row.id}`)}>
           <Eye size={14} />
         </Button>
       )
@@ -229,7 +252,15 @@ const SupplierScoreList = () => {
         title={t("page.supplierPerformance.list.title")}
         description={t("page.supplierPerformance.list.description")}>
         {canAccess(user, MENU_KEY, "create") && (
-          <Button onClick={() => setCalculateModal(true)}>
+          <Button
+            onClick={() => {
+              setCalculateForm({
+                storeId: storeFilter !== "all" && storeFilter !== "" ? Number(storeFilter) : "",
+                supplierId: "",
+                period: "monthly"
+              });
+              setCalculateModal(true);
+            }}>
             <Calculator size={16} className="mr-2" />
             {t("page.supplierPerformance.list.calculateButton")}
           </Button>
@@ -326,16 +357,24 @@ const SupplierScoreList = () => {
               </div>
             </TableToolbar>
           }
-          pagination={data?.pagination}
-          onPageChange={setPage}
-          onLimitChange={setLimit}
+          pagination={{
+            page,
+            totalPages: data?.pagination?.totalPages || 1,
+            total: data?.pagination?.total || 0,
+            onPageChange: setPage,
+            pageSize: limit,
+            onPageSizeChange: (v) => {
+              setLimit(v);
+              setPage(1);
+            }
+          }}
           emptyMessage={t("page.supplierPerformance.list.empty")}
         />
       </div>
 
       {/* Calculate Modal */}
       <Modal
-        type="confirm"
+        type="form"
         open={calculateModal}
         onOpenChange={setCalculateModal}
         title={t("page.supplierPerformance.modal.calculateTitle")}
@@ -344,26 +383,52 @@ const SupplierScoreList = () => {
         onConfirm={() => {
           if (!calculateForm.supplierId) {
             toast.error(t("common.error"), {
-              description: "Please select a supplier"
+              description: t("page.supplierPerformance.modal.pleaseSelectSupplier")
             });
-            return;
+            return false;
           }
           calculateMutation.mutate({
-            store: storeFilter === "all" ? "" : storeFilter,
-            supplierId: calculateForm.supplierId,
+            store: isSuperAdmin
+              ? calculateForm.storeId
+                ? Number(calculateForm.storeId)
+                : null
+              : user?.store
+                ? Number(user.store)
+                : null,
+            supplierId: Number(calculateForm.supplierId),
             period: calculateForm.period
           });
+          return false;
         }}
-        isLoading={calculateMutation.isLoading}>
+        loading={calculateMutation.isLoading}>
         <div className="space-y-4 mt-4">
+          {isSuperAdmin && (
+            <div>
+              <label className="text-sm font-medium text-foreground">
+                {t("page.supplierPerformance.modal.store")}
+              </label>
+              <Combobox
+                options={[
+                  { value: "", label: t("page.supplierPerformance.modal.allStores") },
+                  ...locations.map((loc) => ({ value: loc.id, label: loc.name }))
+                ]}
+                value={calculateForm.storeId}
+                onChange={(v) => setCalculateForm({ ...calculateForm, storeId: v })}
+                placeholder={t("page.supplierPerformance.modal.allStores")}
+                searchPlaceholder={t("page.supplierPerformance.modal.selectStore")}
+              />
+            </div>
+          )}
           <div>
-            <label className="text-sm font-medium text-foreground">Supplier ID</label>
-            <input
-              type="number"
+            <label className="text-sm font-medium text-foreground">
+              {t("page.supplierPerformance.modal.supplier")}
+            </label>
+            <Combobox
+              options={supplierOptions}
               value={calculateForm.supplierId}
-              onChange={(e) => setCalculateForm({ ...calculateForm, supplierId: e.target.value })}
-              className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-              placeholder="Enter supplier ID"
+              onChange={(v) => setCalculateForm({ ...calculateForm, supplierId: v })}
+              placeholder={t("page.supplierPerformance.modal.selectSupplier")}
+              searchPlaceholder={t("page.supplierPerformance.modal.selectSupplier")}
             />
           </div>
           <div>

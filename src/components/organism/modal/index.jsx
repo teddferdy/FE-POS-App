@@ -72,7 +72,8 @@ export default function Modal({
   const handleClose = () => onOpenChange?.(false);
 
   const handleConfirm = () => {
-    onConfirm?.();
+    const result = onConfirm?.();
+    if (result === false) return;
     handleClose();
   };
 

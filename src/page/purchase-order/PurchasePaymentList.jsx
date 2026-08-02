@@ -63,6 +63,10 @@ const PurchasePaymentList = () => {
       render: (p) => p.supplierData?.name || "-"
     },
     {
+      header: t("page.purchasePayment.list.columns.store"),
+      render: (p) => <span className="text-sm">{p.storeData?.name || "-"}</span>
+    },
+    {
       header: t("page.purchasePayment.list.columns.poNumber"),
       render: (p) => (
         <span
@@ -104,6 +108,7 @@ const PurchasePaymentList = () => {
     },
     {
       header: t("page.purchasePayment.list.columns.actions"),
+      stickyRight: true,
       render: (p) => (
         <Button
           size="icon"

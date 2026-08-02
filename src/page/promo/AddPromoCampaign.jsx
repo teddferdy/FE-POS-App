@@ -15,7 +15,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
-import { FormDescription } from "@/components/ui/form";
+import { Form, FormDescription } from "@/components/ui/form";
 import { Combobox } from "@/components/ui/combobox";
 
 const AddPromoCampaign = () => {
@@ -196,467 +196,473 @@ const AddPromoCampaign = () => {
         </Button>
       </PageHeader>
 
-      <form onSubmit={handleFormSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Info */}
-          <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-foreground mb-4">{t("page.promo.form.basicInfo")}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="text-sm font-medium text-foreground">
-                  {t("page.promo.form.name")} <span className="text-destructive">*</span>
-                </label>
-                <input
-                  {...form.register("name")}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-                  placeholder={t("page.promo.form.namePlaceholder")}
-                />
-                {form.formState.errors.name && (
-                  <p className="text-xs text-destructive mt-1">
-                    {form.formState.errors.name.message}
-                  </p>
-                )}
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-sm font-medium text-foreground">
-                  {t("page.promo.form.description")}
-                </label>
-                <textarea
-                  {...form.register("description")}
-                  className="mt-1 w-full h-20 px-3 py-2 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none resize-none"
-                  placeholder={t("page.promo.form.descriptionPlaceholder")}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  {t("page.promo.form.code")}
-                </label>
-                <input
-                  {...form.register("code")}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none uppercase"
-                  placeholder={t("page.promo.form.codePlaceholder")}
-                />
-                <FormDescription>{t("common.optionalField")}</FormDescription>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  {t("page.promo.form.type")} <span className="text-destructive">*</span>
-                </label>
-                <Combobox
-                  options={[
-                    { value: "happy_hour", label: "Happy Hour" },
-                    { value: "birthday", label: "Birthday" },
-                    { value: "buy_x_get_y", label: "Buy X Get Y" },
-                    { value: "spend_get", label: "Spend & Get" },
-                    { value: "manual", label: "Manual" },
-                    { value: "automatic", label: "Automatic" }
-                  ]}
-                  value={form.watch("type")}
-                  onChange={(v) => form.setValue("type", v)}
-                  placeholder={t("page.promo.form.typePlaceholder") || "Pilih tipe campaign"}
-                  searchPlaceholder="Cari tipe..."
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Discount Settings */}
-          {showDiscountSettings && (
+      <Form {...form}>
+        <form onSubmit={handleFormSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Basic Info */}
             <div className="bg-card rounded-xl border border-border p-6">
               <h3 className="font-semibold text-foreground mb-4">
-                {t("page.promo.form.discountSettings")}
+                {t("page.promo.form.basicInfo")}
               </h3>
-              {isBirthday && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.name")} <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    {...form.register("name")}
+                    className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                    placeholder={t("page.promo.form.namePlaceholder")}
+                  />
+                  {form.formState.errors.name && (
+                    <p className="text-xs text-destructive mt-1">
+                      {form.formState.errors.name.message}
+                    </p>
+                  )}
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.description")}
+                  </label>
+                  <textarea
+                    {...form.register("description")}
+                    className="mt-1 w-full h-20 px-3 py-2 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none resize-none"
+                    placeholder={t("page.promo.form.descriptionPlaceholder")}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.code")}
+                  </label>
+                  <input
+                    {...form.register("code")}
+                    className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none uppercase"
+                    placeholder={t("page.promo.form.codePlaceholder")}
+                  />
+                  <FormDescription>{t("common.optionalField")}</FormDescription>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.type")} <span className="text-destructive">*</span>
+                  </label>
+                  <Combobox
+                    options={[
+                      { value: "happy_hour", label: "Happy Hour" },
+                      { value: "birthday", label: "Birthday" },
+                      { value: "buy_x_get_y", label: "Buy X Get Y" },
+                      { value: "spend_get", label: "Spend & Get" },
+                      { value: "manual", label: "Manual" },
+                      { value: "automatic", label: "Automatic" }
+                    ]}
+                    value={form.watch("type")}
+                    onChange={(v) => form.setValue("type", v)}
+                    placeholder={t("page.promo.form.typePlaceholder") || "Pilih tipe campaign"}
+                    searchPlaceholder="Cari tipe..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Discount Settings */}
+            {showDiscountSettings && (
+              <div className="bg-card rounded-xl border border-border p-6">
+                <h3 className="font-semibold text-foreground mb-4">
+                  {t("page.promo.form.discountSettings")}
+                </h3>
+                {isBirthday && (
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Tipe birthday menggunakan diskon otomatis sesuai rewards
+                  </p>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-foreground">
+                      {t("page.promo.form.discountType")}
+                    </label>
+                    <Combobox
+                      options={[
+                        { value: "percentage", label: "Percentage" },
+                        { value: "fixed", label: "Fixed Amount" },
+                        { value: "free_item", label: "Free Item" }
+                      ]}
+                      value={form.watch("discountType")}
+                      onChange={(v) => form.setValue("discountType", v)}
+                      disabled={isBirthday}
+                      placeholder="Pilih tipe diskon"
+                      searchPlaceholder="Cari tipe diskon..."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground">
+                      {t("page.promo.form.discountValue")}
+                    </label>
+                    <input
+                      type="number"
+                      {...form.register("discountValue", { valueAsNumber: true })}
+                      disabled={isFreeItem || isBirthday}
+                      className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
+                        isFreeItem || isBirthday
+                          ? "bg-muted text-muted-foreground cursor-not-allowed"
+                          : "bg-background"
+                      }`}
+                      placeholder={isFreeItem || isBirthday ? "N/A" : ""}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground">
+                      {t("page.promo.form.maxDiscount")}
+                    </label>
+                    <input
+                      type="number"
+                      {...form.register("maxDiscount", { valueAsNumber: true })}
+                      disabled={!isPercentage}
+                      className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
+                        !isPercentage
+                          ? "bg-muted text-muted-foreground cursor-not-allowed"
+                          : "bg-background"
+                      }`}
+                      placeholder={!isPercentage ? "N/A" : ""}
+                    />
+                    {!isPercentage && (
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        Hanya berlaku untuk tipe Percentage
+                      </p>
+                    )}
+                    <FormDescription>{t("common.optionalField")}</FormDescription>
+                  </div>
+                  {(isSpendGet || isBuyXGetY) && (
+                    <div>
+                      <label className="text-sm font-medium text-foreground">
+                        {t("page.promo.form.minPurchase")}
+                      </label>
+                      <input
+                        type="number"
+                        {...form.register("minPurchase", { valueAsNumber: true })}
+                        className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Schedule */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h3 className="font-semibold text-foreground mb-4">
+                {t("page.promo.form.schedule")}
+              </h3>
+              {isHappyHour && (
                 <p className="text-xs text-muted-foreground mb-3">
-                  Tipe birthday menggunakan diskon otomatis sesuai rewards
+                  Atur jam mulai dan akhir untuk periode Happy Hour
                 </p>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-foreground">
-                    {t("page.promo.form.discountType")}
+                    {t("page.promo.form.startDate")} <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    {...form.register("startDate")}
+                    className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.endDate")} <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    {...form.register("endDate")}
+                    className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                  />
+                </div>
+                {isHappyHour && (
+                  <>
+                    <div>
+                      <label className="text-sm font-medium text-foreground">
+                        {t("page.promo.form.startTime")}
+                      </label>
+                      <input
+                        type="time"
+                        {...form.register("startTime")}
+                        className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground">
+                        {t("page.promo.form.endTime")}
+                      </label>
+                      <input
+                        type="time"
+                        {...form.register("endTime")}
+                        className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Rules */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="font-semibold text-foreground">{t("page.promo.form.rules")}</h3>
+                  {isHappyHour && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Aturan waktu sudah ditentukan dari jadwal Happy Hour
+                    </p>
+                  )}
+                  {isBirthday && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Otomas birthday akan aktif otomatis untuk member yang berulang tahun
+                    </p>
+                  )}
+                  {isBuyXGetY && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Tambahkan aturan untuk menentukan produk X dan produk Y
+                    </p>
+                  )}
+                  {isSpendGet && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Tambahkan aturan untuk menentukan threshold belanja
+                    </p>
+                  )}
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={addRule}>
+                  <Plus size={14} className="mr-1" />
+                  {t("page.promo.form.addRule")}
+                </Button>
+              </div>
+              {rules.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t("page.promo.form.noRules")}</p>
+              ) : (
+                <div className="space-y-3">
+                  {rules.map((rule, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
+                      <Combobox
+                        options={[
+                          { value: "time", label: "Time" },
+                          { value: "birthday", label: "Birthday" },
+                          { value: "buy_x_get_y", label: "Buy X Get Y" },
+                          { value: "spend_threshold", label: "Spend Threshold" },
+                          { value: "member_tier", label: "Member Tier" },
+                          { value: "first_purchase", label: "First Purchase" }
+                        ]}
+                        value={rule.ruleType}
+                        onChange={(v) => updateRule(index, "ruleType", v)}
+                        placeholder="Pilih rule"
+                        searchPlaceholder="Cari rule..."
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-600"
+                        onClick={() => removeRule(index)}>
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Rewards */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="font-semibold text-foreground">{t("page.promo.form.rewards")}</h3>
+                  {isBirthday && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Tambahkan reward yang akan diberikan di hari ulang tahun member
+                    </p>
+                  )}
+                  {isFreeItem && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Tipe free item, tambahkan produk yang akan diberikan sebagai reward
+                    </p>
+                  )}
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={addReward}>
+                  <Plus size={14} className="mr-1" />
+                  {t("page.promo.form.addReward")}
+                </Button>
+              </div>
+              {rewards.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t("page.promo.form.noRewards")}</p>
+              ) : (
+                <div className="space-y-3">
+                  {rewards.map((reward, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
+                      <Combobox
+                        options={[
+                          { value: "discount_percentage", label: "Discount %" },
+                          { value: "discount_fixed", label: "Discount Fixed" },
+                          { value: "free_item", label: "Free Item" },
+                          { value: "buy_x_get_y", label: "Buy X Get Y" },
+                          { value: "points_multiplier", label: "Points Multiplier" },
+                          { value: "cashback", label: "Cashback" }
+                        ]}
+                        value={reward.rewardType}
+                        onChange={(v) => updateReward(index, "rewardType", v)}
+                        placeholder="Pilih reward"
+                        searchPlaceholder="Cari reward..."
+                      />
+                      <input
+                        type="number"
+                        value={reward.rewardValue}
+                        onChange={(e) =>
+                          updateReward(index, "rewardValue", parseInt(e.target.value) || 0)
+                        }
+                        className="h-8 w-24 px-2 bg-background border border-input rounded text-sm"
+                        placeholder="Value"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-600"
+                        onClick={() => removeReward(index)}>
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Info size={16} className="text-primary" />
+                <h4 className="text-sm font-semibold text-foreground">
+                  {t("page.promo.form.tipsTitle")}
+                </h4>
+              </div>
+              <p className="text-xs text-muted-foreground">{t("page.promo.form.tipsContent")}</p>
+            </div>
+
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.applicableTo")}
                   </label>
                   <Combobox
                     options={[
-                      { value: "percentage", label: "Percentage" },
-                      { value: "fixed", label: "Fixed Amount" },
-                      { value: "free_item", label: "Free Item" }
+                      { value: "all", label: "All Products" },
+                      { value: "specific_products", label: "Specific Products" },
+                      { value: "specific_categories", label: "Specific Categories" },
+                      { value: "specific_members", label: "Specific Members" }
                     ]}
-                    value={form.watch("discountType")}
-                    onChange={(v) => form.setValue("discountType", v)}
-                    disabled={isBirthday}
-                    placeholder="Pilih tipe diskon"
-                    searchPlaceholder="Cari tipe diskon..."
+                    value={form.watch("applicableTo")}
+                    onChange={(v) => form.setValue("applicableTo", v)}
+                    placeholder="Pilih penerapan"
+                    searchPlaceholder="Cari penerapan..."
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">
-                    {t("page.promo.form.discountValue")}
-                  </label>
-                  <input
-                    type="number"
-                    {...form.register("discountValue", { valueAsNumber: true })}
-                    disabled={isFreeItem || isBirthday}
-                    className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
-                      isFreeItem || isBirthday
-                        ? "bg-muted text-muted-foreground cursor-not-allowed"
-                        : "bg-background"
-                    }`}
-                    placeholder={isFreeItem || isBirthday ? "N/A" : ""}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">
-                    {t("page.promo.form.maxDiscount")}
-                  </label>
-                  <input
-                    type="number"
-                    {...form.register("maxDiscount", { valueAsNumber: true })}
-                    disabled={!isPercentage}
-                    className={`mt-1 w-full h-10 px-3 border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none ${
-                      !isPercentage
-                        ? "bg-muted text-muted-foreground cursor-not-allowed"
-                        : "bg-background"
-                    }`}
-                    placeholder={!isPercentage ? "N/A" : ""}
-                  />
-                  {!isPercentage && (
-                    <p className="text-[11px] text-muted-foreground mt-1">
-                      Hanya berlaku untuk tipe Percentage
+                {watchedApplicableTo === "specific_products" && (
+                  <div className="p-3 bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground text-center">
+                      Pilih produk spesifik akan tersedia setelah campaign disimpan
                     </p>
-                  )}
+                  </div>
+                )}
+                {watchedApplicableTo === "specific_categories" && (
+                  <div className="p-3 bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground text-center">
+                      Pilih kategori spesifik akan tersedia setelah campaign disimpan
+                    </p>
+                  </div>
+                )}
+                {watchedApplicableTo === "specific_members" && (
+                  <div className="p-3 bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground text-center">
+                      Pilih member spesifik akan tersedia setelah campaign disimpan
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.maxUsageTotal")}
+                  </label>
+                  <input
+                    type="number"
+                    {...form.register("maxUsageTotal", { valueAsNumber: true })}
+                    className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                    placeholder="Unlimited"
+                  />
                   <FormDescription>{t("common.optionalField")}</FormDescription>
                 </div>
-                {(isSpendGet || isBuyXGetY) && (
-                  <div>
-                    <label className="text-sm font-medium text-foreground">
-                      {t("page.promo.form.minPurchase")}
-                    </label>
-                    <input
-                      type="number"
-                      {...form.register("minPurchase", { valueAsNumber: true })}
-                      className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Schedule */}
-          <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-foreground mb-4">{t("page.promo.form.schedule")}</h3>
-            {isHappyHour && (
-              <p className="text-xs text-muted-foreground mb-3">
-                Atur jam mulai dan akhir untuk periode Happy Hour
-              </p>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  {t("page.promo.form.startDate")} <span className="text-destructive">*</span>
-                </label>
-                <input
-                  type="datetime-local"
-                  {...form.register("startDate")}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  {t("page.promo.form.endDate")} <span className="text-destructive">*</span>
-                </label>
-                <input
-                  type="datetime-local"
-                  {...form.register("endDate")}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-                />
-              </div>
-              {isHappyHour && (
-                <>
-                  <div>
-                    <label className="text-sm font-medium text-foreground">
-                      {t("page.promo.form.startTime")}
-                    </label>
-                    <input
-                      type="time"
-                      {...form.register("startTime")}
-                      className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground">
-                      {t("page.promo.form.endTime")}
-                    </label>
-                    <input
-                      type="time"
-                      {...form.register("endTime")}
-                      className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Rules */}
-          <div className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-semibold text-foreground">{t("page.promo.form.rules")}</h3>
-                {isHappyHour && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Aturan waktu sudah ditentukan dari jadwal Happy Hour
-                  </p>
-                )}
-                {isBirthday && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Otomas birthday akan aktif otomatis untuk member yang berulang tahun
-                  </p>
-                )}
-                {isBuyXGetY && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Tambahkan aturan untuk menentukan produk X dan produk Y
-                  </p>
-                )}
-                {isSpendGet && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Tambahkan aturan untuk menentukan threshold belanja
-                  </p>
-                )}
-              </div>
-              <Button type="button" variant="outline" size="sm" onClick={addRule}>
-                <Plus size={14} className="mr-1" />
-                {t("page.promo.form.addRule")}
-              </Button>
-            </div>
-            {rules.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t("page.promo.form.noRules")}</p>
-            ) : (
-              <div className="space-y-3">
-                {rules.map((rule, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
-                    <Combobox
-                      options={[
-                        { value: "time", label: "Time" },
-                        { value: "birthday", label: "Birthday" },
-                        { value: "buy_x_get_y", label: "Buy X Get Y" },
-                        { value: "spend_threshold", label: "Spend Threshold" },
-                        { value: "member_tier", label: "Member Tier" },
-                        { value: "first_purchase", label: "First Purchase" }
-                      ]}
-                      value={rule.ruleType}
-                      onChange={(v) => updateRule(index, "ruleType", v)}
-                      placeholder="Pilih rule"
-                      searchPlaceholder="Cari rule..."
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-600"
-                      onClick={() => removeRule(index)}>
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Rewards */}
-          <div className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-semibold text-foreground">{t("page.promo.form.rewards")}</h3>
-                {isBirthday && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Tambahkan reward yang akan diberikan di hari ulang tahun member
-                  </p>
-                )}
-                {isFreeItem && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Tipe free item, tambahkan produk yang akan diberikan sebagai reward
-                  </p>
-                )}
-              </div>
-              <Button type="button" variant="outline" size="sm" onClick={addReward}>
-                <Plus size={14} className="mr-1" />
-                {t("page.promo.form.addReward")}
-              </Button>
-            </div>
-            {rewards.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t("page.promo.form.noRewards")}</p>
-            ) : (
-              <div className="space-y-3">
-                {rewards.map((reward, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
-                    <Combobox
-                      options={[
-                        { value: "discount_percentage", label: "Discount %" },
-                        { value: "discount_fixed", label: "Discount Fixed" },
-                        { value: "free_item", label: "Free Item" },
-                        { value: "buy_x_get_y", label: "Buy X Get Y" },
-                        { value: "points_multiplier", label: "Points Multiplier" },
-                        { value: "cashback", label: "Cashback" }
-                      ]}
-                      value={reward.rewardType}
-                      onChange={(v) => updateReward(index, "rewardType", v)}
-                      placeholder="Pilih reward"
-                      searchPlaceholder="Cari reward..."
-                    />
-                    <input
-                      type="number"
-                      value={reward.rewardValue}
-                      onChange={(e) =>
-                        updateReward(index, "rewardValue", parseInt(e.target.value) || 0)
-                      }
-                      className="h-8 w-24 px-2 bg-background border border-input rounded text-sm"
-                      placeholder="Value"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-600"
-                      onClick={() => removeReward(index)}>
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          <div className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Info size={16} className="text-primary" />
-              <h4 className="text-sm font-semibold text-foreground">
-                {t("page.promo.form.tipsTitle")}
-              </h4>
-            </div>
-            <p className="text-xs text-muted-foreground">{t("page.promo.form.tipsContent")}</p>
-          </div>
-
-          <div className="bg-card rounded-xl border border-border p-6">
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  {t("page.promo.form.applicableTo")}
-                </label>
-                <Combobox
-                  options={[
-                    { value: "all", label: "All Products" },
-                    { value: "specific_products", label: "Specific Products" },
-                    { value: "specific_categories", label: "Specific Categories" },
-                    { value: "specific_members", label: "Specific Members" }
-                  ]}
-                  value={form.watch("applicableTo")}
-                  onChange={(v) => form.setValue("applicableTo", v)}
-                  placeholder="Pilih penerapan"
-                  searchPlaceholder="Cari penerapan..."
-                />
-              </div>
-              {watchedApplicableTo === "specific_products" && (
-                <div className="p-3 bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg">
-                  <p className="text-xs text-muted-foreground text-center">
-                    Pilih produk spesifik akan tersedia setelah campaign disimpan
-                  </p>
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.maxUsagePerMember")}
+                  </label>
+                  <input
+                    type="number"
+                    {...form.register("maxUsagePerMember", { valueAsNumber: true })}
+                    className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                    placeholder="Unlimited"
+                  />
+                  <FormDescription>{t("common.optionalField")}</FormDescription>
                 </div>
-              )}
-              {watchedApplicableTo === "specific_categories" && (
-                <div className="p-3 bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg">
-                  <p className="text-xs text-muted-foreground text-center">
-                    Pilih kategori spesifik akan tersedia setelah campaign disimpan
-                  </p>
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    {t("page.promo.form.priority")}
+                  </label>
+                  <input
+                    type="number"
+                    {...form.register("priority", { valueAsNumber: true })}
+                    className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
+                  />
                 </div>
-              )}
-              {watchedApplicableTo === "specific_members" && (
-                <div className="p-3 bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg">
-                  <p className="text-xs text-muted-foreground text-center">
-                    Pilih member spesifik akan tersedia setelah campaign disimpan
-                  </p>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" {...form.register("isCombinable")} className="h-4 w-4" />
+                  <label className="text-sm text-foreground">
+                    {t("page.promo.form.isCombinable")}
+                  </label>
                 </div>
-              )}
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  {t("page.promo.form.maxUsageTotal")}
-                </label>
-                <input
-                  type="number"
-                  {...form.register("maxUsageTotal", { valueAsNumber: true })}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-                  placeholder="Unlimited"
-                />
-                <FormDescription>{t("common.optionalField")}</FormDescription>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  {t("page.promo.form.maxUsagePerMember")}
-                </label>
-                <input
-                  type="number"
-                  {...form.register("maxUsagePerMember", { valueAsNumber: true })}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-                  placeholder="Unlimited"
-                />
-                <FormDescription>{t("common.optionalField")}</FormDescription>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  {t("page.promo.form.priority")}
-                </label>
-                <input
-                  type="number"
-                  {...form.register("priority", { valueAsNumber: true })}
-                  className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" {...form.register("isCombinable")} className="h-4 w-4" />
-                <label className="text-sm text-foreground">
-                  {t("page.promo.form.isCombinable")}
-                </label>
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" {...form.register("autoActivate")} className="h-4 w-4" />
-                <label className="text-sm text-foreground">
-                  {t("page.promo.form.autoActivate")}
-                </label>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" {...form.register("autoActivate")} className="h-4 w-4" />
+                  <label className="text-sm text-foreground">
+                    {t("page.promo.form.autoActivate")}
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="bg-card rounded-xl border border-border p-6">
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => setCancelModalOpen(true)}>
-                {t("common.cancel")}
-              </Button>
-              <Button type="submit" className="flex-1" disabled={createMutation?.isLoading}>
-                {createMutation?.isLoading ? (
-                  <Skeleton className="h-4 w-16" />
-                ) : (
-                  <>
-                    <Save size={16} className="mr-1" />
-                    {t("common.save")}
-                  </>
-                )}
-              </Button>
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setCancelModalOpen(true)}>
+                  {t("common.cancel")}
+                </Button>
+                <Button type="submit" className="flex-1" disabled={createMutation?.isLoading}>
+                  {createMutation?.isLoading ? (
+                    <Skeleton className="h-4 w-16" />
+                  ) : (
+                    <>
+                      <Save size={16} className="mr-1" />
+                      {t("common.save")}
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </Form>
 
       <Modal
         type="confirm"

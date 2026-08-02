@@ -1,26 +1,50 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { Award, Gift, TrendingUp, Users, Star, Plus, Edit, Trash, RefreshCw, Eye } from "lucide-react";
-import { getAllMemberTier, addMemberTier, editMemberTier, deleteMemberTier, updateAllMemberTiers, getMemberTierByPoints } from "@/services/member-tier";
-import { getAllMember, getMemberById } from "@/services/member";
+import { Award, Gift, Plus, Edit, Trash, RefreshCw, Eye } from "lucide-react";
+import {
+  getAllMemberTier,
+  addMemberTier,
+  editMemberTier,
+  deleteMemberTier,
+  updateAllMemberTiers
+} from "@/services/member-tier";
+import { getAllMember, addMemberPoints } from "@/services/member";
 import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import NoStore from "@/components/ui/NoStore";
-import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 
 const MemberLoyalty = () => {
@@ -35,7 +59,6 @@ const MemberLoyalty = () => {
   const [search, setSearch] = useState("");
   const [selectedMember, setSelectedMember] = useState(null);
   const [redeemPoints, setRedeemPoints] = useState("");
-  const [redeemDialogOpen, setRedeemDialogOpen] = useState(false);
 
   const { data: locData } = useQuery(["locations-loyalty"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -43,43 +66,27 @@ const MemberLoyalty = () => {
   const locations = locData?.data || [];
   const storeId = store || cookie?.activeStore;
 
-  const { data: tiersData, isLoading: tiersLoading } = useQuery(
-    ["member-tiers", storeId],
-    () => getAllMemberTier({ store: storeId }),
-    { enabled: !!storeId }
-  );
+  const {
+    data: tiersData,
+    isLoading: tiersLoading,
+    isError: tiersError,
+    refetch: refetchTiers
+  } = useQuery(["member-tiers", storeId], () => getAllMemberTier({ store: storeId }), {
+    enabled: !!storeId
+  });
   const tiers = tiersData?.data || tiersData?.tiers || [];
 
-  const { data: membersData, isLoading: membersLoading } = useQuery(
+  const {
+    data: membersData,
+    isLoading: membersLoading,
+    isError: membersError,
+    refetch: refetchMembers
+  } = useQuery(
     ["members-loyalty", storeId, search],
     () => getAllMember({ store: storeId, nameMember: search, page: 1, limit: 20 }),
     { enabled: !!storeId }
   );
   const members = membersData?.data || [];
-
-  const { data: memberDetail, isLoading: memberDetailLoading } = useQuery(
-    ["member-detail-loyalty", selectedMember],
-    () => selectedMember ? getMemberById({ id: selectedMember }) : null,
-    { enabled: !!selectedMember }
-  );
-
-  const addTierMutation = useMutation({
-    mutationFn: addMemberTier,
-    onSuccess: () => {
-      toast.success("Tier berhasil ditambahkan");
-      queryClient.invalidateQueries(["member-tiers"]);
-    },
-    onError: (err) => toast.error(err?.message || "Gagal menambahkan tier")
-  });
-
-  const editTierMutation = useMutation({
-    mutationFn: ({ id, payload }) => editMemberTier({ ...payload, id }),
-    onSuccess: () => {
-      toast.success("Tier berhasil diperbarui");
-      queryClient.invalidateQueries(["member-tiers"]);
-    },
-    onError: (err) => toast.error(err?.message || "Gagal memperbarui tier")
-  });
 
   const deleteTierMutation = useMutation({
     mutationFn: deleteMemberTier,
@@ -100,6 +107,19 @@ const MemberLoyalty = () => {
     onError: (err) => toast.error(err?.message || "Gagal update tier member")
   });
 
+  const redeemMutation = useMutation({
+    mutationFn: ({ phoneNumber, points }) =>
+      addMemberPoints(phoneNumber, { points: -Math.abs(points) }),
+    onSuccess: () => {
+      toast.success("Poin berhasil diredeem");
+      queryClient.invalidateQueries(["members-loyalty"]);
+      queryClient.invalidateQueries(["member-detail-loyalty"]);
+      setRedeemPoints("");
+    },
+    onError: (err) =>
+      toast.error(err?.response?.data?.message || err?.message || "Gagal meredeem poin")
+  });
+
   const handleRedeemPoints = (memberId) => {
     const points = Number(redeemPoints);
     if (!points || points <= 0) {
@@ -112,9 +132,7 @@ const MemberLoyalty = () => {
       toast.error("Poin tidak cukup");
       return;
     }
-    toast.success(`Poin ${points} berhasil diredeem untuk ${member.name}`);
-    setRedeemPoints("");
-    setRedeemDialogOpen(false);
+    redeemMutation.mutate({ phoneNumber: member.phoneNumber, points });
   };
 
   const getTierBadge = (tier) => {
@@ -139,13 +157,19 @@ const MemberLoyalty = () => {
               </SelectTrigger>
               <SelectContent>
                 {locations.map((loc) => (
-                  <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>
+                  <SelectItem key={loc.id} value={String(loc.id)}>
+                    {loc.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           )}
-          <Button onClick={() => updateTiersMutation.mutate()} disabled={updateTiersMutation.isLoading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${updateTiersMutation.isLoading ? "animate-spin" : ""}`} />
+          <Button
+            onClick={() => updateTiersMutation.mutate()}
+            disabled={updateTiersMutation.isLoading}>
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${updateTiersMutation.isLoading ? "animate-spin" : ""}`}
+            />
             Update All Tiers
           </Button>
         </div>
@@ -159,8 +183,9 @@ const MemberLoyalty = () => {
         </TabsList>
 
         <TabsContent value="tiers">
-          <AbortController />
-          {tiersLoading ? (
+          {tiersError ? (
+            <AbortController refetch={refetchTiers} />
+          ) : tiersLoading ? (
             <Skeleton className="h-64 rounded-lg" />
           ) : (
             <Card>
@@ -168,13 +193,18 @@ const MemberLoyalty = () => {
                 <CardTitle>Member Tiers</CardTitle>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button><Plus className="w-4 h-4 mr-2" />Add Tier</Button>
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Tier
+                    </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Add Member Tier</DialogTitle>
                     </DialogHeader>
-                    <AddTierForm onSuccess={() => queryClient.invalidateQueries(["member-tiers"])} />
+                    <AddTierForm
+                      onSuccess={() => queryClient.invalidateQueries(["member-tiers"])}
+                    />
                   </DialogContent>
                 </Dialog>
               </CardHeader>
@@ -184,15 +214,20 @@ const MemberLoyalty = () => {
                 ) : (
                   <div className="space-y-4">
                     {tiers.map((tier) => (
-                      <div key={tier.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div
+                        key={tier.id}
+                        className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ backgroundColor: tier.color || "#00000020" }}>
+                          <div
+                            className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                            style={{ backgroundColor: tier.color || "#00000020" }}>
                             <Award className="w-6 h-6" />
                           </div>
                           <div>
                             <h3 className="font-semibold">{tier.name}</h3>
                             <p className="text-sm text-muted-foreground">
-                              {tier.minPoints} - {tier.maxPoints ?? "∞"} poin | {tier.discountPercent}% diskon
+                              {tier.minPoints} - {tier.maxPoints ?? "∞"} poin |{" "}
+                              {tier.discountPercent}% diskon
                             </p>
                             <p className="text-sm text-muted-foreground">
                               {tier.memberCount || 0} member
@@ -205,16 +240,24 @@ const MemberLoyalty = () => {
                           </Badge>
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button variant="outline" size="sm"><Edit className="w-4 h-4" /></Button>
+                              <Button variant="outline" size="sm">
+                                <Edit className="w-4 h-4" />
+                              </Button>
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
                                 <DialogTitle>Edit Tier</DialogTitle>
                               </DialogHeader>
-                              <EditTierForm tier={tier} onSuccess={() => queryClient.invalidateQueries(["member-tiers"])} />
+                              <EditTierForm
+                                tier={tier}
+                                onSuccess={() => queryClient.invalidateQueries(["member-tiers"])}
+                              />
                             </DialogContent>
                           </Dialog>
-                          <Button variant="destructive" size="sm" onClick={() => deleteTierMutation.mutate({ id: tier.id })}>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteTierMutation.mutate({ id: tier.id })}>
                             <Trash className="w-4 h-4" />
                           </Button>
                         </div>
@@ -228,8 +271,9 @@ const MemberLoyalty = () => {
         </TabsContent>
 
         <TabsContent value="members">
-          <AbortController />
-          {membersLoading ? (
+          {membersError ? (
+            <AbortController refetch={refetchMembers} />
+          ) : membersLoading ? (
             <Skeleton className="h-64 rounded-lg" />
           ) : (
             <Card>
@@ -269,7 +313,10 @@ const MemberLoyalty = () => {
                             <TableCell>{formatNumber(member.totalPoints || 0)}</TableCell>
                             <TableCell>{formatCurrency(member.totalSpent || 0)}</TableCell>
                             <TableCell>
-                              <Button variant="outline" size="sm" onClick={() => navigate(`/member/detail/${member.id}`)}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(`/member/detail/${member.id}`)}>
                                 <Eye className="w-4 h-4" />
                               </Button>
                             </TableCell>
@@ -285,7 +332,6 @@ const MemberLoyalty = () => {
         </TabsContent>
 
         <TabsContent value="redeem">
-          <AbortController />
           <Card>
             <CardHeader>
               <CardTitle>Redeem Points</CardTitle>
@@ -320,7 +366,8 @@ const MemberLoyalty = () => {
                     />
                   </div>
                   <Button onClick={() => selectedMember && handleRedeemPoints(selectedMember)}>
-                    <Gift className="w-4 h-4 mr-2" />Redeem
+                    <Gift className="w-4 h-4 mr-2" />
+                    Redeem
                   </Button>
                 </div>
               </div>
@@ -333,7 +380,6 @@ const MemberLoyalty = () => {
 };
 
 const AddTierForm = ({ onSuccess }) => {
-  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [minPoints, setMinPoints] = useState(0);
   const [maxPoints, setMaxPoints] = useState(0);
@@ -361,17 +407,29 @@ const AddTierForm = ({ onSuccess }) => {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Min Points</Label>
-          <Input type="number" value={minPoints} onChange={(e) => setMinPoints(Number(e.target.value))} />
+          <Input
+            type="number"
+            value={minPoints}
+            onChange={(e) => setMinPoints(Number(e.target.value))}
+          />
         </div>
         <div>
           <Label>Max Points</Label>
-          <Input type="number" value={maxPoints} onChange={(e) => setMaxPoints(Number(e.target.value))} />
+          <Input
+            type="number"
+            value={maxPoints}
+            onChange={(e) => setMaxPoints(Number(e.target.value))}
+          />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Discount %</Label>
-          <Input type="number" value={discountPercent} onChange={(e) => setDiscountPercent(Number(e.target.value))} />
+          <Input
+            type="number"
+            value={discountPercent}
+            onChange={(e) => setDiscountPercent(Number(e.target.value))}
+          />
         </div>
         <div>
           <Label>Color</Label>
@@ -381,7 +439,9 @@ const AddTierForm = ({ onSuccess }) => {
       <div>
         <Label>Status</Label>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
@@ -397,7 +457,6 @@ const AddTierForm = ({ onSuccess }) => {
 };
 
 const EditTierForm = ({ tier, onSuccess }) => {
-  const { t } = useTranslation();
   const [name, setName] = useState(tier.name || "");
   const [minPoints, setMinPoints] = useState(tier.minPoints || 0);
   const [maxPoints, setMaxPoints] = useState(tier.maxPoints ?? 0);
@@ -425,17 +484,29 @@ const EditTierForm = ({ tier, onSuccess }) => {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Min Points</Label>
-          <Input type="number" value={minPoints} onChange={(e) => setMinPoints(Number(e.target.value))} />
+          <Input
+            type="number"
+            value={minPoints}
+            onChange={(e) => setMinPoints(Number(e.target.value))}
+          />
         </div>
         <div>
           <Label>Max Points</Label>
-          <Input type="number" value={maxPoints} onChange={(e) => setMaxPoints(Number(e.target.value))} />
+          <Input
+            type="number"
+            value={maxPoints}
+            onChange={(e) => setMaxPoints(Number(e.target.value))}
+          />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Discount %</Label>
-          <Input type="number" value={discountPercent} onChange={(e) => setDiscountPercent(Number(e.target.value))} />
+          <Input
+            type="number"
+            value={discountPercent}
+            onChange={(e) => setDiscountPercent(Number(e.target.value))}
+          />
         </div>
         <div>
           <Label>Color</Label>
@@ -445,7 +516,9 @@ const EditTierForm = ({ tier, onSuccess }) => {
       <div>
         <Label>Status</Label>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
@@ -458,6 +531,15 @@ const EditTierForm = ({ tier, onSuccess }) => {
       </Button>
     </form>
   );
+};
+
+AddTierForm.propTypes = {
+  onSuccess: PropTypes.func
+};
+
+EditTierForm.propTypes = {
+  tier: PropTypes.object,
+  onSuccess: PropTypes.func
 };
 
 export default MemberLoyalty;

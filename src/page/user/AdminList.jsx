@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { getAllUsers } from "@/services/user";
+import { toast } from "sonner";
+import { getAllUsers, changeUserStatus } from "@/services/user";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import TableToolbar from "@/components/ui/TableToolbar";
@@ -11,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, CheckCircle, FileEdit } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import Modal from "@/components/organism/modal";
 import StatCard from "@/components/ui/StatCard";
 
 const getStatus = (user, t) => {
@@ -92,6 +94,26 @@ const AdminList = () => {
   const resetFilters = () => {
     setSearch("");
     setPage(1);
+  };
+
+  const [statusModal, setStatusModal] = useState(null);
+
+  const statusMutation = useMutation(changeUserStatus, {
+    onSuccess: () => {
+      toast.success("Berhasil", { description: "Status user berhasil diubah" });
+      refetch();
+    },
+    onError: (err) => {
+      toast.error("Gagal", {
+        description: err?.response?.data?.message || err.message || "Gagal mengubah status user"
+      });
+    }
+  });
+
+  const handleConfirmStatus = () => {
+    if (!statusModal) return;
+    statusMutation.mutate({ id: statusModal.id, status: statusModal.status });
+    setStatusModal(null);
   };
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
@@ -354,10 +376,17 @@ const AdminList = () => {
                                     <Button
                                       variant="outline"
                                       size="sm"
+                                      onClick={() =>
+                                        setStatusModal({ id: user.id, status: "active" })
+                                      }
                                       className="h-8 text-xs gap-1 bg-primary text-primary-foreground hover:brightness-110 border-0">
                                       {t("page.user.adminList.activate")}
                                     </Button>
-                                    <button className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
+                                    <button
+                                      className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+                                      onClick={() =>
+                                        setStatusModal({ id: user.id, status: "inactive" })
+                                      }>
                                       <span className="material-symbols-outlined text-lg">
                                         close
                                       </span>
@@ -478,6 +507,26 @@ const AdminList = () => {
           </>
         )}
       </div>
+
+      <Modal
+        type="confirm"
+        open={!!statusModal}
+        onOpenChange={(v) => {
+          if (!v) setStatusModal(null);
+        }}
+        title={
+          statusModal?.status === "active"
+            ? t("page.user.adminList.activateConfirmTitle")
+            : t("page.user.adminList.deactivateConfirmTitle")
+        }
+        description={
+          statusModal?.status === "active"
+            ? t("page.user.adminList.activateConfirmDesc")
+            : t("page.user.adminList.deactivateConfirmDesc")
+        }
+        confirmText={t("common.confirm")}
+        onConfirm={handleConfirmStatus}
+      />
     </div>
   );
 };

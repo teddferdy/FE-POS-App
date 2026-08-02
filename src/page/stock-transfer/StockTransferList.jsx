@@ -17,6 +17,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
 import AbortController from "@/components/organism/abort-controller";
+import Modal from "@/components/organism/modal";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { Combobox } from "@/components/ui/combobox";
@@ -62,6 +63,7 @@ const StockTransferList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
+  const [confirmAction, setConfirmAction] = useState(null);
   const effectiveStore = storeFilter !== "all" ? storeFilter : store;
 
   const isFiltered = search !== "" || storeFilter !== "all" || statusFilter !== "all";
@@ -171,7 +173,13 @@ const StockTransferList = () => {
                 size="icon"
                 className="h-8 w-8 text-green-600"
                 title={t("page.stockTransfer.list.receive")}
-                onClick={() => receiveMutation.mutate(item.id)}>
+                onClick={() =>
+                  setConfirmAction({
+                    type: "receive",
+                    id: item.id,
+                    transferNumber: item.transferNumber
+                  })
+                }>
                 <CheckCircle size={18} />
               </Button>
               <Button
@@ -179,7 +187,13 @@ const StockTransferList = () => {
                 size="icon"
                 className="h-8 w-8 text-red-600"
                 title={t("page.stockTransfer.list.cancel")}
-                onClick={() => cancelMutation.mutate(item.id)}>
+                onClick={() =>
+                  setConfirmAction({
+                    type: "cancel",
+                    id: item.id,
+                    transferNumber: item.transferNumber
+                  })
+                }>
                 <XCircle size={18} />
               </Button>
             </>
@@ -340,6 +354,44 @@ const StockTransferList = () => {
           )}
         </>
       )}
+
+      <Modal
+        type="confirm"
+        open={!!confirmAction}
+        onOpenChange={(v) => {
+          if (!v) setConfirmAction(null);
+        }}
+        title={
+          confirmAction?.type === "receive"
+            ? t("page.stockTransfer.list.receiveConfirmTitle")
+            : t("page.stockTransfer.list.cancelConfirmTitle")
+        }
+        description={
+          confirmAction?.type === "receive"
+            ? t("page.stockTransfer.list.receiveConfirmDesc", {
+                transferNumber: confirmAction?.transferNumber
+              })
+            : t("page.stockTransfer.list.cancelConfirmDesc", {
+                transferNumber: confirmAction?.transferNumber
+              })
+        }
+        confirmText={
+          confirmAction?.type === "receive"
+            ? t("page.stockTransfer.list.receive")
+            : t("page.stockTransfer.list.cancel")
+        }
+        confirmVariant={confirmAction?.type === "cancel" ? "destructive" : "default"}
+        loading={
+          confirmAction?.type === "receive" ? receiveMutation.isLoading : cancelMutation.isLoading
+        }
+        onConfirm={() => {
+          if (!confirmAction) return;
+          if (confirmAction.type === "receive") receiveMutation.mutate(confirmAction.id);
+          else cancelMutation.mutate(confirmAction.id);
+          setConfirmAction(null);
+        }}
+        onCancel={() => setConfirmAction(null)}
+      />
     </div>
   );
 };

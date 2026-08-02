@@ -591,7 +591,11 @@ const AddShift = () => {
                         type="button"
                         disabled={createMutation.isLoading}
                         onClick={() => {
-                          const fields = getMissingFields(form.getValues(), fieldLabels);
+                          const fields = getMissingFields(
+                            form.getValues(),
+                            formSchema,
+                            fieldLabels
+                          );
                           if (fields.length > 0) {
                             setMissingFieldsList(fields);
                             setMissingFieldsModal(true);
@@ -647,7 +651,7 @@ const AddShift = () => {
       <MissingFieldsModal
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
-        missingFields={missingFieldsList}
+        fields={missingFieldsList}
       />
       <Modal
         type="confirm"

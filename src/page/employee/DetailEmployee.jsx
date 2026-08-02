@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   Users,
@@ -17,16 +17,21 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getEmployeeById } from "@/services/employee";
+import { getEmployeeDetail } from "@/services/employee";
 
 const DetailEmployee = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const employeeID = searchParams.get("employeeID");
 
-  const { data, isLoading, isError } = useQuery(["employee", id], () => getEmployeeById(id), {
-    enabled: !!id
-  });
+  const { data, isLoading, isError } = useQuery(
+    ["employee-detail", employeeID],
+    () => getEmployeeDetail(employeeID),
+    {
+      enabled: !!employeeID
+    }
+  );
 
   const employee = data?.data || data;
 
@@ -91,7 +96,7 @@ const DetailEmployee = () => {
             </div>
           </div>
           {!isLoading && (
-            <Button variant="outline" onClick={() => navigate(`/edit-employee?id=${id}`)}>
+            <Button variant="outline" onClick={() => navigate(`/edit-employee?id=${employee?.id}`)}>
               <Edit3 size={14} className="mr-1.5" />
               {t("common.edit")}
             </Button>

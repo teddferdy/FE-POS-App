@@ -203,7 +203,7 @@ const EditShift = () => {
             </Button>
             <Button
               onClick={() => {
-                const fields = getMissingFields(form.getValues(), fieldLabels);
+                const fields = getMissingFields(form.getValues(), formSchema, fieldLabels);
                 if (fields.length > 0) {
                   setMissingFieldsList(fields);
                   setMissingFieldsModal(true);
@@ -362,7 +362,7 @@ const EditShift = () => {
         <MissingFieldsModal
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}
-          missingFields={missingFieldsList}
+          fields={missingFieldsList}
         />
         <Modal
           type="confirm"

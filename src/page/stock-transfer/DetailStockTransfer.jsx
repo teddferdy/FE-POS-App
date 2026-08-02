@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { ArrowLeft, ArrowRightLeft, CheckCircle, XCircle } from "lucide-react";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
+import Modal from "@/components/organism/modal";
 
 const statusDetail = {
   sent: { label: "Sent", class: "bg-blue-100 text-blue-800" },
@@ -39,6 +40,8 @@ const DetailStockTransfer = () => {
   const transfer = data?.data;
 
   const queryClient = useQueryClient();
+
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const receiveMutation = useMutation(receiveStockTransfer, {
     onSuccess: () => {
@@ -235,13 +238,25 @@ const DetailStockTransfer = () => {
                 <div className="mt-4 space-y-2">
                   <Button
                     className="w-full gap-2"
-                    onClick={() => receiveMutation.mutate(transfer.id)}>
+                    onClick={() =>
+                      setConfirmAction({
+                        type: "receive",
+                        id: transfer.id,
+                        transferNumber: transfer.transferNumber
+                      })
+                    }>
                     <CheckCircle size={16} /> {t("page.stockTransfer.detail.receive")}
                   </Button>
                   <Button
                     variant="outline"
                     className="w-full gap-2 text-red-600"
-                    onClick={() => cancelMutation.mutate(transfer.id)}>
+                    onClick={() =>
+                      setConfirmAction({
+                        type: "cancel",
+                        id: transfer.id,
+                        transferNumber: transfer.transferNumber
+                      })
+                    }>
                     <XCircle size={16} /> {t("page.stockTransfer.detail.cancel")}
                   </Button>
                 </div>
@@ -250,6 +265,44 @@ const DetailStockTransfer = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        type="confirm"
+        open={!!confirmAction}
+        onOpenChange={(v) => {
+          if (!v) setConfirmAction(null);
+        }}
+        title={
+          confirmAction?.type === "receive"
+            ? t("page.stockTransfer.detail.receiveConfirmTitle")
+            : t("page.stockTransfer.detail.cancelConfirmTitle")
+        }
+        description={
+          confirmAction?.type === "receive"
+            ? t("page.stockTransfer.detail.receiveConfirmDesc", {
+                transferNumber: confirmAction?.transferNumber
+              })
+            : t("page.stockTransfer.detail.cancelConfirmDesc", {
+                transferNumber: confirmAction?.transferNumber
+              })
+        }
+        confirmText={
+          confirmAction?.type === "receive"
+            ? t("page.stockTransfer.detail.receive")
+            : t("page.stockTransfer.detail.cancel")
+        }
+        confirmVariant={confirmAction?.type === "cancel" ? "destructive" : "default"}
+        loading={
+          confirmAction?.type === "receive" ? receiveMutation.isLoading : cancelMutation.isLoading
+        }
+        onConfirm={() => {
+          if (!confirmAction) return;
+          if (confirmAction.type === "receive") receiveMutation.mutate(confirmAction.id);
+          else cancelMutation.mutate(confirmAction.id);
+          setConfirmAction(null);
+        }}
+        onCancel={() => setConfirmAction(null)}
+      />
     </>
   );
 };
