@@ -1157,6 +1157,7 @@
   "page.invoice.description": "Manage invoice settings and templates.",
   "page.invoice.logo": "Invoice Logo",
   "page.invoice.footer": "Invoice Footer",
+  "page.invoice.footerDefault": "Thank you for your visit",
   "page.invoice.socialMedia": "Social Media",
   "page.invoice.printPreview": "Print Preview",
   "page.invoiceFooter.list.title": "Invoice Footer",

@@ -1155,6 +1155,7 @@
   "page.invoice.description": "Kelola pengaturan dan template invoice.",
   "page.invoice.logo": "Logo Invoice",
   "page.invoice.footer": "Footer Invoice",
+  "page.invoice.footerDefault": "Terima kasih atas kunjungan Anda",
   "page.invoice.socialMedia": "Media Sosial",
   "page.invoice.printPreview": "Cetak Preview",
   "page.invoiceFooter.list.title": "Footer Invoice",

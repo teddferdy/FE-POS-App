@@ -279,10 +279,10 @@ const InvoicePreview = ({
             WebkitLineClamp: 4,
             textOverflow: "ellipsis"
           }}>
-          {footerText}
+          {footerText || t("page.invoice.footerDefault")}
         </p>
         {showSocialMedia && socialMedia.filter((_, i) => socialMediaVisible[i]).length > 0 && (
-          <div className="flex items-center justify-center gap-4 mt-2 pt-2 border-t border-gray-200">
+          <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-gray-200">
             {socialMedia
               .filter((_, i) => socialMediaVisible[i])
               .map((sm, i) => (
