@@ -31,6 +31,8 @@ const AddGoodsReceipt = () => {
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
@@ -197,9 +199,8 @@ const AddGoodsReceipt = () => {
       queryClient.invalidateQueries(["goods-receipts"]);
       navigate("/goods-receipt");
     } catch (err) {
-      toast.error(t("page.goodsReceipt.add.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -937,6 +938,14 @@ const AddGoodsReceipt = () => {
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}
           fields={missingFields}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
       </div>
     </>

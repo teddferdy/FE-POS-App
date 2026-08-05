@@ -102,6 +102,8 @@ const AddLocation = () => {
   const isEdit = !!editId;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
@@ -332,9 +334,8 @@ const AddLocation = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.location.form.error.failed"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
       setIsSubmitting(false);
     }
   });
@@ -346,7 +347,8 @@ const AddLocation = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
       setIsSubmitting(false);
     }
   });
@@ -1531,6 +1533,14 @@ const AddLocation = () => {
           isEdit ? t("page.location.add.successEditTitle") : t("page.location.add.successAddTitle")
         }
         onConfirm={() => navigate("/location-list")}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
       <Modal
         type="confirm"

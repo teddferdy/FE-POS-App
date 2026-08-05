@@ -39,6 +39,8 @@ const AddStockTransfer = () => {
   const [transferredBy, setTransferredBy] = useState(user?.name || "");
   const [items, setItems] = useState([{ productId: "", qty: "", unit: "pcs", notes: "" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
@@ -113,9 +115,8 @@ const AddStockTransfer = () => {
       queryClient.invalidateQueries(["stock-transfers"]);
       navigate("/stock-transfer");
     } catch (err) {
-      toast.error(t("page.stockTransfer.add.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -391,6 +392,14 @@ const AddStockTransfer = () => {
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}
           fields={missingFieldsList}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
       </div>
     </>

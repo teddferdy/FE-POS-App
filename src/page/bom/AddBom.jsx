@@ -39,6 +39,8 @@ const AddBom = () => {
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState([{ ingredientId: "", qty: "", unit: "pcs", notes: "" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -111,9 +113,8 @@ const AddBom = () => {
       queryClient.invalidateQueries(["bom-list"]);
       navigate("/bom");
     } catch (err) {
-      toast.error(t("page.bom.add.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -336,6 +337,14 @@ const AddBom = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
     </div>
   );

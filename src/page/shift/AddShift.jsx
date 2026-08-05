@@ -4,7 +4,6 @@ import { useMutation, useQuery } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
 import { X, Save, Users, CalendarDays, Check, Store } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { addShift } from "@/services/shift";
@@ -41,6 +40,8 @@ const AddShift = () => {
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [draftModal, setDraftModal] = useState(false);
   const [employeeOpen, setEmployeeOpen] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -122,9 +123,8 @@ const AddShift = () => {
   const createMutation = useMutation(addShift, {
     onSuccess: () => setSuccessModal(true),
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal menambahkan shift"
-      });
+      setModalMessage(err?.response?.data?.message || err.message || "Gagal menambahkan shift");
+      setErrorModal(true);
     }
   });
 
@@ -652,6 +652,14 @@ const AddShift = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
       <Modal
         type="confirm"

@@ -79,6 +79,8 @@ const EditSupplier = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [deleteProductId, setDeleteProductId] = useState(null);
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
@@ -177,10 +179,10 @@ const EditSupplier = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("common.error"), {
-        description:
-          err?.response?.data?.message || err.message || t("page.supplier.toast.updateError")
-      });
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.supplier.toast.updateError")
+      );
+      setErrorModal(true);
     }
   });
 
@@ -949,6 +951,14 @@ const EditSupplier = () => {
         </div>
       </div>
 
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
+      />
       <Modal
         type="confirm"
         open={cancelModal}

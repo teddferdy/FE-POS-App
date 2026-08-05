@@ -5,7 +5,6 @@ import { useMutation, useQuery } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save, Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
@@ -117,6 +116,8 @@ const EditTaxConfig = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const {
     data: taxData,
@@ -160,10 +161,10 @@ const EditTaxConfig = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("common.error"), {
-        description:
-          err?.response?.data?.message || err.message || t("page.taxConfig.toast.updateFailed")
-      });
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.taxConfig.toast.updateFailed")
+      );
+      setErrorModal(true);
     }
   });
 
@@ -441,6 +442,14 @@ const EditTaxConfig = () => {
         }}
       />
       {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
+      />
     </div>
   );
 };

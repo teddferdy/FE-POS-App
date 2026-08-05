@@ -75,6 +75,8 @@ const EditMemberTier = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const tierFieldLabels = useMemo(
     () => ({
@@ -134,10 +136,10 @@ const EditMemberTier = () => {
       queryClient.invalidateQueries(["member-tiers"]);
       navigate("/member-tier");
     },
-    onError: (err) =>
-      toast.error(t("page.memberTier.edit.toastError"), {
-        description: err?.response?.data?.message || err.message
-      })
+    onError: (err) => {
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
+    }
   });
 
   const handleInputChange = (field, value) => {
@@ -571,6 +573,14 @@ const EditMemberTier = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFields}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
     </div>
   );

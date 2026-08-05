@@ -70,6 +70,8 @@ const AddReservation = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cancelModal, setCancelModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [stores, setStores] = useState([]);
   const [availableTables, setAvailableTables] = useState([]);
   const [loadingTables, setLoadingTables] = useState(false);
@@ -178,10 +180,10 @@ const AddReservation = () => {
       queryClient.invalidateQueries(["reservations"]);
       navigate("/reservation");
     },
-    onError: (err) =>
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal membuat reservasi"
-      })
+    onError: (err) => {
+      setModalMessage(err?.response?.data?.message || err.message || "Gagal membuat reservasi");
+      setErrorModal(true);
+    }
   });
 
   const onSubmit = (values) => {
@@ -495,6 +497,14 @@ const AddReservation = () => {
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}
           fields={missingFieldsList}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
         {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       </div>

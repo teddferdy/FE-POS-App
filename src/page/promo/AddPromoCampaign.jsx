@@ -37,6 +37,8 @@ const AddPromoCampaign = () => {
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const schema = z.object({
     name: z.string().min(1, t("page.promo.validation.nameRequired")),
@@ -93,9 +95,8 @@ const AddPromoCampaign = () => {
       navigate("/promo-list");
     },
     onError: (err) => {
-      toast.error(t("common.error"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     }
   });
 
@@ -689,6 +690,14 @@ const AddPromoCampaign = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
     </div>
   );

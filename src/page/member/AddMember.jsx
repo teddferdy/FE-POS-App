@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { z } from "zod";
 import { addMember } from "@/services/member";
@@ -41,6 +40,8 @@ const AddMember = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -80,9 +81,8 @@ const AddMember = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.member.add.errorGagal"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
       setIsSubmitting(false);
     }
   });
@@ -529,6 +529,14 @@ const AddMember = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
     </div>
   );

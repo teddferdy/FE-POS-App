@@ -66,6 +66,8 @@ const AddSupplier = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [deleteProductId, setDeleteProductId] = useState(null);
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
@@ -234,10 +236,10 @@ const AddSupplier = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("common.error"), {
-        description:
-          err?.response?.data?.message || err.message || t("page.supplier.toast.addFailed")
-      });
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.supplier.toast.addFailed")
+      );
+      setErrorModal(true);
     }
   });
 
@@ -877,6 +879,15 @@ const AddSupplier = () => {
       {createMutation.isLoading && (
         <Loading fullscreen size="lg" label={t("page.product.form.saving")} />
       )}
+
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
+      />
 
       <Modal
         type="confirm"

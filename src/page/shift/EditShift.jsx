@@ -4,7 +4,6 @@ import { useMutation, useQuery } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
 import { X, Save, Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
@@ -35,6 +34,8 @@ const EditShift = () => {
   const shiftId = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
@@ -90,10 +91,10 @@ const EditShift = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.shift.edit.toast.error"), {
-        description:
-          err?.response?.data?.message || err.message || t("page.shift.edit.toast.errorDesc")
-      });
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.shift.edit.toast.errorDesc")
+      );
+      setErrorModal(true);
     }
   });
 
@@ -363,6 +364,14 @@ const EditShift = () => {
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}
           fields={missingFieldsList}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
         <Modal
           type="confirm"

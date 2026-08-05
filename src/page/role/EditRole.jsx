@@ -133,6 +133,8 @@ const EditRole = () => {
   const [permissions, setPermissions] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -184,9 +186,8 @@ const EditRole = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("common.error"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
       setIsSubmitting(false);
     }
   });
@@ -555,6 +556,14 @@ const EditRole = () => {
             setIsSubmitting(false);
             navigate("/role-management");
           }}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
         <Modal
           type="confirm"

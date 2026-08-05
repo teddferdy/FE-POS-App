@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
-import { toast } from "sonner";
 import { z } from "zod";
 import { getMemberById, editMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
@@ -39,6 +38,8 @@ const EditMember = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const memberFieldLabels = useMemo(
     () => ({
@@ -90,9 +91,8 @@ const EditMember = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.member.edit.toastError"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
       setIsSubmitting(false);
     }
   });
@@ -505,6 +505,14 @@ const EditMember = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
     </div>
   );

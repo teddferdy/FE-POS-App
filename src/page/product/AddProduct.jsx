@@ -241,7 +241,9 @@ const AddProduct = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      setModalMessage(err?.response?.data?.message || err.message || t("page.product.form.failedAddProduct"));
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.product.form.failedAddProduct")
+      );
       setErrorModal(true);
       setIsSubmitting(false);
     }
@@ -1907,6 +1909,15 @@ const AddProduct = () => {
         title={t("page.product.form.successAddTitle")}
         description={t("page.product.form.successAddDesc")}
         onConfirm={() => navigate("/product-list")}
+      />
+
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
 
       <Modal

@@ -95,6 +95,8 @@ const EditPurchaseOrder = () => {
   const [confirmModal, setConfirmModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [orderDate, setOrderDate] = useState(null);
   const [orderTime, setOrderTime] = useState("");
   const [dueDate, setDueDate] = useState(null);
@@ -284,7 +286,8 @@ const EditPurchaseOrder = () => {
       navigate("/purchase-order");
     },
     onError: (err) => {
-      toast.error(t("common.failed"), { description: err?.response?.data?.message || err.message });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     }
   });
 
@@ -1239,6 +1242,14 @@ const EditPurchaseOrder = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
     </div>
   );

@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
 import { Save, X, Check } from "lucide-react";
 import { getIngredientById, editIngredient, getProductNamesByFilters } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
@@ -60,6 +59,8 @@ const EditIngredient = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const unitOptions = [
     { value: "pcs", label: t("page.ingredient.form.unitPcs") },
@@ -252,9 +253,8 @@ const EditIngredient = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.ingredient.edit.toastError"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     }
   });
 
@@ -989,6 +989,14 @@ const EditIngredient = () => {
           }}
         />
         <Modal {...confirmModal()} />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
+        />
         <MissingFieldsModal
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}

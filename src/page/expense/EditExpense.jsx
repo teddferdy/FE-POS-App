@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { X, Save } from "lucide-react";
@@ -56,6 +55,8 @@ const EditExpense = () => {
   const store = user?.store || "";
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [draftModal, setDraftModal] = useState(false);
   const [saveConfirm, setSaveConfirm] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -119,9 +120,10 @@ const EditExpense = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.expense.edit.fail"), {
-        description: err?.response?.data?.message || err.message || t("page.expense.edit.failDesc")
-      });
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.expense.edit.failDesc")
+      );
+      setErrorModal(true);
     }
   });
 
@@ -353,6 +355,14 @@ const EditExpense = () => {
           description={t("page.expense.edit.modalSuccessDesc")}
           confirmText={t("page.expense.edit.modalSuccessConfirm")}
           onConfirm={() => navigate("/expense")}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
         <Modal
           type="confirm"

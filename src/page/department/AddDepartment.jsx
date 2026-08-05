@@ -37,6 +37,8 @@ const AddDepartment = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
   const [cancelModal, setCancelModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const departmentFieldLabels = useMemo(
     () => ({
@@ -65,9 +67,8 @@ const AddDepartment = () => {
       navigate("/department-list");
     },
     onError: (err) => {
-      toast.error(t("common.error"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     }
   });
 
@@ -254,6 +255,14 @@ const AddDepartment = () => {
         }}
       />
       {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
+      />
       <MissingFieldsModal
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}

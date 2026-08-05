@@ -5,7 +5,6 @@ import { useMutation, useQueryClient, useQuery } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
 import { X, Save, Check } from "lucide-react";
 import { useCookies } from "react-cookie";
 import PageHeader from "@/components/ui/PageHeader";
@@ -62,6 +61,8 @@ const AddTypePayment = () => {
   const [saveConfirm, setSaveConfirm] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const fieldLabels = useMemo(
     () => ({
@@ -89,10 +90,10 @@ const AddTypePayment = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("common.error"), {
-        description:
-          err?.response?.data?.message || err.message || t("page.typePayment.toast.addFailed")
-      });
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.typePayment.toast.addFailed")
+      );
+      setErrorModal(true);
     }
   });
 
@@ -332,6 +333,14 @@ const AddTypePayment = () => {
         }}
       />
       {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
+      />
       <MissingFieldsModal
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}

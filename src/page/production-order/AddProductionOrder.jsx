@@ -34,6 +34,8 @@ const AddProductionOrder = () => {
   const [scheduledDate, setScheduledDate] = useState(new Date());
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -105,9 +107,8 @@ const AddProductionOrder = () => {
       queryClient.invalidateQueries(["production-orders"]);
       navigate("/production-order");
     } catch (err) {
-      toast.error(t("page.productionOrder.add.toastError"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -302,6 +303,14 @@ const AddProductionOrder = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
     </div>
   );

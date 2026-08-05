@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save, Check, PackageOpen, Plus, ChevronsUpDown } from "lucide-react";
 import { addDiscount } from "@/services/discount";
@@ -76,6 +75,8 @@ const AddDiscount = () => {
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const {
     data: locationsData,
@@ -228,12 +229,10 @@ const AddDiscount = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.discount.add.toast.error"), {
-        description:
-          err?.response?.data?.message ||
-          err.message ||
-          t("page.discount.add.toast.errorDescription")
-      });
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.discount.add.toast.errorDescription")
+      );
+      setErrorModal(true);
     }
   });
 
@@ -1081,6 +1080,14 @@ const AddDiscount = () => {
           fields={missingFields}
         />
         {createMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
+        />
       </div>
     </div>
   );

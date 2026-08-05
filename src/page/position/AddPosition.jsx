@@ -47,6 +47,8 @@ const AddPosition = () => {
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.position.validation.nameRequired")),
@@ -80,9 +82,8 @@ const AddPosition = () => {
       navigate("/position-list");
     },
     onError: (err) => {
-      toast.error(t("common.error"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     }
   });
 
@@ -398,6 +399,14 @@ const AddPosition = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
 
       <Modal

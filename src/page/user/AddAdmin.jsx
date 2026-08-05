@@ -35,6 +35,8 @@ const AddAdmin = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const adminFieldLabels = useMemo(
     () => ({
@@ -74,7 +76,8 @@ const AddAdmin = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
       setIsSubmitting(false);
     }
   });
@@ -385,6 +388,14 @@ const AddAdmin = () => {
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}
           fields={missingFieldsList}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
       </div>
     </div>

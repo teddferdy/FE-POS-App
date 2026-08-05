@@ -73,6 +73,8 @@ const EditReservation = () => {
   const id = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [availableTables, setAvailableTables] = useState([]);
   const [locationDetail, setLocationDetail] = useState(null);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -196,10 +198,10 @@ const EditReservation = () => {
 
   const updateMutation = useMutation(updateReservation, {
     onSuccess: () => setSuccessModal(true),
-    onError: (err) =>
-      toast.error(t("page.reservation.edit.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      })
+    onError: (err) => {
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
+    }
   });
 
   const onSubmit = (values) => {
@@ -534,6 +536,14 @@ const EditReservation = () => {
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}
           fields={missingFieldsList}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
       </div>
     </div>

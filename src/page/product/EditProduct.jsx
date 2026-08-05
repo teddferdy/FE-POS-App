@@ -100,6 +100,8 @@ const EditProduct = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [deleteImageModal, setDeleteImageModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [variantGroups, setVariantGroups] = useState([]);
@@ -384,10 +386,10 @@ const EditProduct = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.product.form.failed"), {
-        description:
-          err?.response?.data?.message || err.message || t("page.product.form.failedEditProduct")
-      });
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.product.form.failedEditProduct")
+      );
+      setErrorModal(true);
       setIsSubmitting(false);
     }
   });
@@ -401,9 +403,10 @@ const EditProduct = () => {
       setSavingStoreId(null);
     },
     onError: (err) => {
-      toast.error(t("page.product.form.failed"), {
-        description: err?.response?.data?.message || t("page.product.form.storePriceUpdateFailed")
-      });
+      setModalMessage(
+        err?.response?.data?.message || t("page.product.form.storePriceUpdateFailed")
+      );
+      setErrorModal(true);
       setSavingStoreId(null);
     }
   });
@@ -2045,6 +2048,15 @@ const EditProduct = () => {
       {savingStoreId && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal type="confirm" {...confirmModal()} />
+
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
+      />
 
       <Modal
         type="success"

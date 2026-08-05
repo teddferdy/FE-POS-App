@@ -92,6 +92,8 @@ const AddPurchaseOrder = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [orderDate, setOrderDate] = useState(new Date());
   const [orderTime, setOrderTime] = useState(format(new Date(), "HH:mm"));
   const [dueDate, setDueDate] = useState(null);
@@ -241,7 +243,8 @@ const AddPurchaseOrder = () => {
       setShowSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("common.failed"), { description: err?.response?.data?.message || err.message });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     }
   });
 
@@ -892,6 +895,15 @@ const AddPurchaseOrder = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+      />
+
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
 
       <Modal

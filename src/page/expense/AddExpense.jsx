@@ -50,6 +50,8 @@ const AddExpense = () => {
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [draftModal, setDraftModal] = useState(false);
   const [saveConfirm, setSaveConfirm] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -118,12 +120,10 @@ const AddExpense = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.expense.add.toast.error"), {
-        description:
-          err?.response?.data?.message ||
-          err.message ||
-          t("page.expense.add.toast.errorDescription")
-      });
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.expense.add.toast.errorDescription")
+      );
+      setErrorModal(true);
     }
   });
 
@@ -398,6 +398,14 @@ const AddExpense = () => {
           description={t("page.expense.add.successDescription")}
           confirmText={t("page.expense.add.successConfirm")}
           onConfirm={() => navigate("/expense")}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
         <Modal
           type="confirm"

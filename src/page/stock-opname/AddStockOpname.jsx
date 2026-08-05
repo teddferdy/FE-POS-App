@@ -191,6 +191,8 @@ const AddStockOpname = () => {
   const id = searchParams.get("id");
 
   const [cancelModal, setCancelModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -483,7 +485,8 @@ const AddStockOpname = () => {
       queryClient.invalidateQueries(["stockOpname"]);
       navigate("/stock-opname");
     } catch (err) {
-      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -953,6 +956,15 @@ const AddStockOpname = () => {
       />
 
       <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
+      />
+
+      <Modal
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
@@ -975,9 +987,8 @@ const AddStockOpname = () => {
               navigate("/stock-opname");
             })
             .catch((err) => {
-              toast.error(t("common.error"), {
-                description: err?.response?.data?.message || err.message
-              });
+              setModalMessage(err?.response?.data?.message || err.message);
+              setErrorModal(true);
             })
             .finally(() => setIsSubmitting(false));
         }}

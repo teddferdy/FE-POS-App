@@ -49,6 +49,8 @@ const EditCategory = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const {
     isLoading: loadingData,
@@ -77,9 +79,8 @@ const EditCategory = () => {
       setShowSuccess(true);
     },
     onError: (err) => {
-      toast.error(t("page.ingredientCategory.add.toastError"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     }
   });
 
@@ -286,6 +287,14 @@ const EditCategory = () => {
           queryClient.invalidateQueries(["ingredient-categories"]);
           navigate("/ingredient-category");
         }}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
       />
       <Modal
         type="confirm"

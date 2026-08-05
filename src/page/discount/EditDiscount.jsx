@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save, Check } from "lucide-react";
 import { getDiscountById, editDiscount } from "@/services/discount";
@@ -144,6 +143,8 @@ const EditDiscount = () => {
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const currentPromoType = form.watch("promoType");
 
@@ -247,12 +248,12 @@ const EditDiscount = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.discount.edit.toast.error"), {
-        description:
-          err?.response?.data?.message ||
+      setModalMessage(
+        err?.response?.data?.message ||
           err.message ||
           t("page.discount.edit.toast.errorDescription")
-      });
+      );
+      setErrorModal(true);
     }
   });
 
@@ -1029,6 +1030,15 @@ const EditDiscount = () => {
         </Form>
 
         {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}
+
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
+        />
 
         <Modal
           type="confirm"

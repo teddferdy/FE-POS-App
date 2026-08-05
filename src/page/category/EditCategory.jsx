@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { getCategoryById, editCategory } from "@/services/category";
@@ -365,6 +364,8 @@ const EditCategory = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const fileInputRef = useRef(null);
   const [cookie] = useCookies();
@@ -444,7 +445,8 @@ const EditCategory = () => {
     },
     onError: (err) => {
       setIsSubmitting(false);
-      toast.error(err?.response?.data?.message || err.message);
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     }
   });
 
@@ -968,6 +970,14 @@ const EditCategory = () => {
           onOpenChange={setSuccessModal}
           title={t("page.category.modal.successEdit")}
           onConfirm={() => navigate("/category-list")}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
         <Modal
           type="confirm"

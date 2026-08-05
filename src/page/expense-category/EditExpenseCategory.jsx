@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { X, Save, Check } from "lucide-react";
@@ -42,6 +41,8 @@ const EditExpenseCategory = () => {
   const [saveConfirm, setSaveConfirm] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const expenseCategoryFieldLabels = useMemo(
     () => ({
@@ -91,10 +92,10 @@ const EditExpenseCategory = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.expenseCategory.edit.fail"), {
-        description:
-          err?.response?.data?.message || err.message || t("page.expenseCategory.edit.failDesc")
-      });
+      setModalMessage(
+        err?.response?.data?.message || err.message || t("page.expenseCategory.edit.failDesc")
+      );
+      setErrorModal(true);
     }
   });
 
@@ -290,6 +291,14 @@ const EditExpenseCategory = () => {
           description={t("page.expenseCategory.edit.modalSuccessDesc")}
           confirmText={t("page.expenseCategory.edit.modalSuccessConfirm")}
           onConfirm={() => navigate("/expense-category")}
+        />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title={t("common.error")}
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
         />
         <Modal
           type="confirm"
