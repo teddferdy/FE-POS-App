@@ -15,7 +15,6 @@ import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
-import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
 
@@ -330,17 +329,16 @@ const DriverList = () => {
             isFiltered={isFiltered}>
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Store
+                Cari
               </label>
-              <StoreFilter
-                locations={[]}
-                value={storeFilter}
-                onChange={(v) => {
-                  setGlobalStoreFilter(v);
+              <SearchInput
+                value={search}
+                onChange={(val) => {
+                  setSearch(val);
                   setPage(1);
                 }}
-                isSuperAdmin={user?.roleType === "super_admin"}
-                t={t}
+                placeholder={t("page.delivery.driver.list.search")}
+                isLoading={isFetching}
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -356,20 +354,6 @@ const DriverList = () => {
                 }}
                 placeholder={t("common.all")}
                 searchPlaceholder={t("common.all")}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Cari
-              </label>
-              <SearchInput
-                value={search}
-                onChange={(val) => {
-                  setSearch(val);
-                  setPage(1);
-                }}
-                placeholder={t("page.delivery.driver.list.search")}
-                isLoading={isFetching}
               />
             </div>
           </TableToolbar>

@@ -605,6 +605,20 @@ const ProductList = () => {
                   isFiltered={isFiltered}>
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Cari
+                    </label>
+                    <SearchInput
+                      value={search}
+                      onChange={(val) => {
+                        setSearch(val);
+                        setPage(1);
+                      }}
+                      placeholder={t("page.product.list.searchSku")}
+                      isLoading={isFetching}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                       Store
                     </label>
                     <StoreFilter
@@ -616,40 +630,6 @@ const ProductList = () => {
                       }}
                       isSuperAdmin={isSuperAdmin}
                       t={t}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("page.product.table.status")}
-                    </label>
-                    <Combobox
-                      options={[
-                        { value: "all", label: t("common.all") },
-                        { value: "active", label: t("common.active") },
-                        { value: "inactive", label: t("common.inactive") },
-                        { value: "draft", label: t("common.draft") }
-                      ]}
-                      value={statusFilter}
-                      onChange={(v) => {
-                        setStatusFilter(v);
-                        setPage(1);
-                      }}
-                      placeholder={t("common.all")}
-                      searchPlaceholder="Cari status..."
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Cari
-                    </label>
-                    <SearchInput
-                      value={search}
-                      onChange={(val) => {
-                        setSearch(val);
-                        setPage(1);
-                      }}
-                      placeholder={t("page.product.list.searchSku")}
-                      isLoading={isFetching}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -671,6 +651,26 @@ const ProductList = () => {
                       }}
                       placeholder={`${t("common.all")} ${t("page.product.table.category")}`}
                       searchPlaceholder="Cari kategori..."
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.product.table.status")}
+                    </label>
+                    <Combobox
+                      options={[
+                        { value: "all", label: t("common.all") },
+                        { value: "active", label: t("common.active") },
+                        { value: "inactive", label: t("common.inactive") },
+                        { value: "draft", label: t("common.draft") }
+                      ]}
+                      value={statusFilter}
+                      onChange={(v) => {
+                        setStatusFilter(v);
+                        setPage(1);
+                      }}
+                      placeholder={t("common.all")}
+                      searchPlaceholder="Cari status..."
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">

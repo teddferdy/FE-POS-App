@@ -996,6 +996,20 @@ const PurchaseOrderList = () => {
                       title={t("page.purchaseOrder.list.title")}
                       onReset={resetFilters}
                       isFiltered={isFiltered}>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
+                          isLoading={isFetching}
+                        />
+                      </div>
                       {isSuperAdmin && (
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -1013,6 +1027,18 @@ const PurchaseOrderList = () => {
                           />
                         </div>
                       )}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("page.purchaseOrder.list.columns.poDate")}
+                        </label>
+                        <DatePicker
+                          date={dateFilter}
+                          setDate={(date) => {
+                            setDateFilter(date);
+                            setPage(1);
+                          }}
+                        />
+                      </div>
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                           {t("page.purchaseOrder.list.columns.status")}
@@ -1039,32 +1065,6 @@ const PurchaseOrderList = () => {
                           }}
                           placeholder={t("common.all")}
                           searchPlaceholder={t("common.all")}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          {t("page.purchaseOrder.list.columns.poDate")}
-                        </label>
-                        <DatePicker
-                          date={dateFilter}
-                          setDate={(date) => {
-                            setDateFilter(date);
-                            setPage(1);
-                          }}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Cari
-                        </label>
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => {
-                            setSearch(val);
-                            setPage(1);
-                          }}
-                          placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
-                          isLoading={isFetching}
                         />
                       </div>
                     </TableToolbar>

@@ -301,11 +301,24 @@ const GoodsReceiptList = () => {
             {t("page.goodsReceipt.list.description")}
           </p>
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-goods-receipt")} className="shrink-0 gap-2">
-            <Plus size={16} /> {t("page.goodsReceipt.list.addButton")}
-          </Button>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              disabled={exportLoading}
+              className="gap-1.5">
+              <Download size={14} />
+              {exportLoading ? "..." : t("common.export")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button onClick={() => navigate("/add-goods-receipt")} className="shrink-0 gap-2">
+              <Plus size={16} /> {t("page.goodsReceipt.list.addButton")}
+            </Button>
+          )}
+        </div>
       </div>
 
       {locData && (locData?.data || []).length === 0 ? (
@@ -370,6 +383,20 @@ const GoodsReceiptList = () => {
                       title={t("page.goodsReceipt.list.title")}
                       onReset={resetFilters}
                       isFiltered={isFiltered}>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Cari
+                        </label>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
+                          isLoading={isFetching}
+                        />
+                      </div>
                       {isSuperAdmin && (
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -419,34 +446,6 @@ const GoodsReceiptList = () => {
                           placeholder={t("page.goodsReceipt.list.filter.allStatuses")}
                           searchPlaceholder={t("common.search")}
                         />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Cari
-                        </label>
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => {
-                            setSearch(val);
-                            setPage(1);
-                          }}
-                          placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
-                          isLoading={isFetching}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          &nbsp;
-                        </label>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleExport}
-                          disabled={exportLoading}
-                          className="gap-1.5">
-                          <Download size={14} />
-                          {exportLoading ? "..." : t("common.export")}
-                        </Button>
                       </div>
                     </TableToolbar>
                   }

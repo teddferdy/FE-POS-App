@@ -409,6 +409,23 @@ const ExpenseList = () => {
                         isLoading={isFetching}
                       />
                     </div>
+                    {isSuperAdmin && (
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Store
+                        </label>
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => {
+                            setGlobalStoreFilter(v);
+                            setPage(1);
+                          }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                      </div>
+                    )}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                         {t("common.status")}
@@ -454,23 +471,6 @@ const ExpenseList = () => {
                         }}
                       />
                     </div>
-                    {isSuperAdmin && (
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Store
-                        </label>
-                        <StoreFilter
-                          locations={locData?.data || []}
-                          value={storeFilter}
-                          onChange={(v) => {
-                            setGlobalStoreFilter(v);
-                            setPage(1);
-                          }}
-                          isSuperAdmin={isSuperAdmin}
-                          t={t}
-                        />
-                      </div>
-                    )}
                   </>
                 )}
               </TableToolbar>

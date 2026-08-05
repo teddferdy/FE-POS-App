@@ -352,6 +352,20 @@ const PurchaseReturnList = () => {
                     title={t("page.purchaseReturn.list.title")}
                     onReset={resetFilters}
                     isFiltered={isFiltered}>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.purchaseReturn.list.filter.search")}
+                      </label>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.purchaseReturn.list.placeholder.search")}
+                        isLoading={isFetching}
+                      />
+                    </div>
                     {isSuperAdmin && (
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -369,6 +383,19 @@ const PurchaseReturnList = () => {
                         />
                       </div>
                     )}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.purchaseReturn.list.filter.date")}
+                      </label>
+                      <DatePicker
+                        date={dateFilter}
+                        setDate={(date) => {
+                          setDateFilter(date);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.purchaseReturn.list.filter.date")}
+                      />
+                    </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                         {t("page.purchaseReturn.list.filter.status")}
@@ -391,33 +418,6 @@ const PurchaseReturnList = () => {
                         }}
                         placeholder={t("page.purchaseReturn.list.filter.allStatus")}
                         searchPlaceholder={t("common.search")}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        {t("page.purchaseReturn.list.filter.date")}
-                      </label>
-                      <DatePicker
-                        date={dateFilter}
-                        setDate={(date) => {
-                          setDateFilter(date);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.purchaseReturn.list.filter.date")}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        {t("page.purchaseReturn.list.filter.search")}
-                      </label>
-                      <SearchInput
-                        value={search}
-                        onChange={(val) => {
-                          setSearch(val);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.purchaseReturn.list.placeholder.search")}
-                        isLoading={isFetching}
                       />
                     </div>
                   </TableToolbar>

@@ -15,7 +15,6 @@ import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
-import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
 
@@ -277,32 +276,16 @@ const DeliveryOrderList = () => {
             isFiltered={isFiltered}>
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Store
+                Cari
               </label>
-              <StoreFilter
-                locations={[]}
-                value={storeFilter}
-                onChange={(v) => {
-                  setGlobalStoreFilter(v);
-                  setPage(1);
-                }}
-                isSuperAdmin={user?.roleType === "super_admin"}
-                t={t}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("page.delivery.detail.status")}
-              </label>
-              <Combobox
-                options={statusOptions}
-                value={statusFilter}
+              <SearchInput
+                value={search}
                 onChange={(val) => {
-                  setStatusFilter(val);
+                  setSearch(val);
                   setPage(1);
                 }}
-                placeholder={t("common.all")}
-                searchPlaceholder={t("common.all")}
+                placeholder={t("page.delivery.list.search")}
+                isLoading={isFetching}
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -322,16 +305,17 @@ const DeliveryOrderList = () => {
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Cari
+                {t("page.delivery.detail.status")}
               </label>
-              <SearchInput
-                value={search}
+              <Combobox
+                options={statusOptions}
+                value={statusFilter}
                 onChange={(val) => {
-                  setSearch(val);
+                  setStatusFilter(val);
                   setPage(1);
                 }}
-                placeholder={t("page.delivery.list.search")}
-                isLoading={isFetching}
+                placeholder={t("common.all")}
+                searchPlaceholder={t("common.all")}
               />
             </div>
           </TableToolbar>
