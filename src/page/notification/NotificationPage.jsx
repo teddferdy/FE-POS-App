@@ -374,7 +374,11 @@ const NotificationPage = () => {
                 <User size={14} />
                 <span>
                   {t("page.notification.createdBy")}:{" "}
-                  <strong className="text-foreground">{selectedNotif.createdBy ?? "-"}</strong>
+                  <strong className="text-foreground">
+                    {selectedNotif.createdByUser?.fullName ||
+                      selectedNotif.createdByUser?.userName ||
+                      "-"}
+                  </strong>
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">

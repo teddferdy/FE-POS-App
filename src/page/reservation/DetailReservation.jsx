@@ -190,7 +190,7 @@ const DetailReservation = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <DetailRow label={t("page.reservation.createdBy")}>
-              {r.createdByUser?.fullName || r.createdBy}
+              {r.createdByUser?.fullName || "-"}
             </DetailRow>
             <DetailRow label={t("page.reservation.createdAt")}>
               {r.createdAt ? new Date(r.createdAt).toLocaleString("id-ID") : "-"}
@@ -198,7 +198,7 @@ const DetailReservation = () => {
             {r.modifiedBy && (
               <>
                 <DetailRow label={t("page.reservation.modifiedBy")}>
-                  {r.modifiedByUser?.fullName || r.modifiedBy}
+                  {r.modifiedByUser?.fullName || "-"}
                 </DetailRow>
                 <DetailRow label={t("page.reservation.updatedAt")}>
                   {r.updatedAt ? new Date(r.updatedAt).toLocaleString("id-ID") : "-"}

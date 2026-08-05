@@ -222,6 +222,7 @@ const SupplierScoreList = () => {
     {
       header: t("common.actions"),
       stickyRight: true,
+      legend: [{ icon: Eye, label: t("common.view") }],
       render: (row) => (
         <Button
           variant="ghost"

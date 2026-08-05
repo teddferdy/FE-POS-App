@@ -158,6 +158,7 @@ const CashRegisterHistory = () => {
     {
       header: t("page.cashRegister.history.action"),
       align: "right",
+      legend: [{ icon: Eye, label: t("common.view") }],
       render: (item) => (
         <Button
           variant="ghost"
@@ -213,63 +214,65 @@ const CashRegisterHistory = () => {
             emptyIcon={Receipt}
             toolbar={
               <div className="flex flex-col gap-3 w-full">
-                <TableToolbar
-                  title={t("page.cashRegister.history.title")}
-                  onReset={resetFilters}
-                  isFiltered={isFiltered}>
-                  {isLoadingLocations || isLoading ? (
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                      <Skeleton className="h-9 w-64 rounded-md" />
-                      <Skeleton className="h-9 w-48 rounded-md" />
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Cari
-                        </label>
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => {
-                            setSearch(val);
-                            setPage(1);
-                          }}
-                          placeholder={t("page.cashRegister.history.search")}
-                          isLoading={isFetching}
-                        />
-                      </div>
-                      {isSuperAdmin && (
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Store
-                          </label>
-                          <div className="w-44">
-                            <StoreFilter
-                              locations={locData?.data || []}
-                              value={storeFilter}
-                              onChange={(v) => {
-                                setGlobalStoreFilter(v);
+                <div className="flex flex-col lg:flex-row lg:items-end gap-3 w-full">
+                  <div className="flex-1 min-w-0 w-full">
+                    <TableToolbar
+                      title={t("page.cashRegister.history.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      {isLoadingLocations || isLoading ? (
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                          <Skeleton className="h-9 w-64 rounded-md" />
+                          <Skeleton className="h-9 w-48 rounded-md" />
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              Cari
+                            </label>
+                            <SearchInput
+                              value={search}
+                              onChange={(val) => {
+                                setSearch(val);
                                 setPage(1);
                               }}
-                              isSuperAdmin={isSuperAdmin}
-                              t={t}
+                              placeholder={t("page.cashRegister.history.search")}
+                              isLoading={isFetching}
                             />
                           </div>
-                        </div>
+                          {isSuperAdmin && (
+                            <div className="flex flex-col gap-1.5">
+                              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Store
+                              </label>
+                              <div className="w-44">
+                                <StoreFilter
+                                  locations={locData?.data || []}
+                                  value={storeFilter}
+                                  onChange={(v) => {
+                                    setGlobalStoreFilter(v);
+                                    setPage(1);
+                                  }}
+                                  isSuperAdmin={isSuperAdmin}
+                                  t={t}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </>
                       )}
-                    </>
-                  )}
-                </TableToolbar>
-                {!(isLoadingLocations || isLoading) && (
-                  <div className="flex justify-end">
+                    </TableToolbar>
+                  </div>
+                  {!(isLoadingLocations || isLoading) && (
                     <Button
                       variant="default"
                       onClick={() => navigate("/cash-register/open-close")}
                       className="shrink-0 gap-2">
                       <Plus size={16} /> {t("page.cashRegister.history.openRegister")}
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             }
             onRowClick={(item) => navigate("/cash-register/history/detail", { state: { item } })}

@@ -27,7 +27,8 @@ import {
   Trash2,
   ChevronRight,
   X,
-  Send
+  Send,
+  Edit
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -595,7 +596,7 @@ const PurchaseOrderList = () => {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
+          {item.createdByUser?.fullName || item.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -617,7 +618,7 @@ const PurchaseOrderList = () => {
       header: t("common.modifiedBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -639,6 +640,16 @@ const PurchaseOrderList = () => {
       header: t("page.purchaseOrder.list.columns.actions"),
       align: "right",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("page.purchaseOrder.list.action.detail") },
+        { icon: Wallet, label: t("page.purchaseOrder.list.action.pay") },
+        { icon: Edit, label: t("page.purchaseOrder.list.action.edit") },
+        { icon: Send, label: t("page.purchaseOrder.list.action.sendToSupplier") },
+        { icon: RefreshCw, label: t("page.purchaseOrder.list.action.receive") },
+        { icon: Undo2, label: t("page.purchaseOrder.list.action.return") },
+        { icon: XCircle, label: t("page.purchaseOrder.list.action.cancel") },
+        { icon: Trash2, label: t("page.purchaseOrder.list.action.delete") }
+      ],
       render: (po) => (
         <div className="flex items-center justify-end gap-1">
           <IconAction

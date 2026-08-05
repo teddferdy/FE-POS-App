@@ -232,7 +232,6 @@ const RoleManagement = () => {
                         <span className="text-sm text-muted-foreground">
                           {row.createdByUser?.fullName ||
                             row.createdByUser?.userName ||
-                            row.createdBy ||
                             (isProtected(row) ? t("common.system") : "-")}
                         </span>
                       )
@@ -243,7 +242,6 @@ const RoleManagement = () => {
                         <span className="text-sm text-muted-foreground">
                           {row.modifiedByUser?.fullName ||
                             row.modifiedByUser?.userName ||
-                            row.modifiedBy ||
                             (isProtected(row) ? t("common.system") : "-")}
                         </span>
                       )
@@ -284,6 +282,11 @@ const RoleManagement = () => {
                       header: t("page.globalSetting.roleManagement.table.actions"),
                       align: "right",
                       stickyRight: true,
+                      legend: [
+                        { icon: Eye, label: t("common.view") },
+                        { icon: Edit, label: t("common.edit") },
+                        { icon: Trash2, label: t("common.delete") }
+                      ],
                       render: (row) => (
                         <div className="flex justify-end gap-1">
                           {canAccess(user, MENU_KEY, "view") && (

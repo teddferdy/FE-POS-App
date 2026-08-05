@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Combobox } from "@/components/ui/combobox";
+import ActionLegend from "@/components/ui/ActionLegend";
 
 const DataTable = ({
   columns = [],
@@ -32,6 +33,7 @@ const DataTable = ({
 }) => {
   const { t } = useTranslation();
   const emptyMessage = emptyMessageProp ?? t("common.noData");
+  const legendItems = columns.flatMap((col) => (Array.isArray(col.legend) ? col.legend : []));
   const [expandedRows, setExpandedRows] = React.useState(new Set());
   const scrollRef = React.useRef(null);
   const roRef = React.useRef(null);
@@ -395,6 +397,7 @@ const DataTable = ({
         containerClassName
       )}>
       {toolbar && <div className="p-4 border-b border-border bg-muted/30">{toolbar}</div>}
+      {legendItems.length > 0 && <ActionLegend items={legendItems} />}
 
       <div className={cn("relative")}>
         {isLoading ? (

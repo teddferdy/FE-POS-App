@@ -267,7 +267,7 @@ const StockOpnameList = () => {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
+          {item.createdByUser?.fullName || item.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -289,7 +289,7 @@ const StockOpnameList = () => {
       header: t("common.modifiedBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -310,6 +310,11 @@ const StockOpnameList = () => {
     {
       header: t("page.stockOpname.list.columns.actions"),
       align: "right",
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (item) => {
         const isDraft = item.status === "draft";
         return (

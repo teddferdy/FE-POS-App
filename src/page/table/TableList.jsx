@@ -210,7 +210,7 @@ const TableList = () => {
       header: t("common.createdBy"),
       render: (row) => (
         <span className="text-sm text-muted-foreground">
-          {row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}
+          {row.createdByUser?.fullName || row.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -232,7 +232,7 @@ const TableList = () => {
       header: t("common.modifiedBy"),
       render: (row) => (
         <span className="text-sm text-muted-foreground">
-          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}
+          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -254,6 +254,13 @@ const TableList = () => {
       header: t("common.actions"),
       align: "right",
       stickyRight: true,
+      legend: [
+        { icon: RotateCcw, label: t("page.table.setAvailable") },
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: QrCode, label: t("common.qr") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
           {(row.status === "reserved" || row.status === "occupied") && (

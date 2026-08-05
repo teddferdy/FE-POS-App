@@ -145,6 +145,7 @@ const AccountsReceivableList = () => {
     },
     {
       header: t("page.accountsReceivable.list.header.aksi"),
+      legend: [{ icon: Wallet, label: t("page.accountsReceivable.list.payButton") }],
       render: (ar) =>
         ar.status !== "PAID" && (
           <Button

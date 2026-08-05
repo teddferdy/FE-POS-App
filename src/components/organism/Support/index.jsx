@@ -4,15 +4,7 @@ import FaqChat from "../FaqChat";
 import { useLocation } from "react-router-dom";
 
 const Support = () => {
-  const notShowLocation = [
-    "/",
-    "/register",
-    "reset-password",
-    "/customer-order",
-    "/customer-order/checkout",
-    "/customer-order/payment",
-    "/customer-order/success"
-  ];
+  const notShowLocation = ["/", "/register", "/reset-password", "/login", "/forgot-password"];
 
   const location = useLocation();
   console.log("Support location.pathname:", location.pathname);

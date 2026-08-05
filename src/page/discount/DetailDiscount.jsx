@@ -256,15 +256,13 @@ const DetailDiscount = () => {
               <div className="flex items-center gap-2">
                 <User size={13} className="shrink-0" />
                 <span>
-                  {t("page.discount.table.createdBy")}:{" "}
-                  {discount.createdByUser?.fullName || discount.createdBy || "-"}
+                  {t("page.discount.table.createdBy")}: {discount.createdByUser?.fullName || "-"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <User size={13} className="shrink-0" />
                 <span>
-                  {t("page.discount.table.modifiedBy")}:{" "}
-                  {discount.modifiedByUser?.fullName || discount.modifiedBy || "-"}
+                  {t("page.discount.table.modifiedBy")}: {discount.modifiedByUser?.fullName || "-"}
                 </span>
               </div>
             </div>

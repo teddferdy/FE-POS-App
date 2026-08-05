@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import { QRCodeSVG } from "qrcode.react";
@@ -9,15 +9,58 @@ import Modal from "@/components/organism/modal";
 const TableQRModal = ({ open, onOpenChange, table }) => {
   const { t } = useTranslation();
   const qrRef = useRef(null);
+  const [orderIdParam, setOrderIdParam] = useState("");
+
+  const storeId =
+    table && (typeof table.store === "object" && table.store !== null
+      ? String(table.store.id || table.store._id || "")
+      : String(table.store || ""));
+
+  // Debug logging
+  useEffect(() => {
+    if (open && table) {
+      console.log("TableQRModal - table:", table);
+      console.log("TableQRModal - storeId:", storeId);
+      console.log("TableQRModal - table.id:", table.id);
+      console.log("TableQRModal - table.store:", table.store);
+    }
+  }, [open, table, storeId]);
+
+  useEffect(() => {
+    if (!open || !storeId || !table) return;
+    console.log("TableQRModal - Fetching active order for table:", table.id, "store:", storeId);
+    const fetchActiveOrder = async () => {
+      try {
+        const url = `/api/order/customer-orders?store=${storeId}&tableId=${table.id}&limit=1`;
+        console.log("TableQRModal - Fetch URL:", url);
+        const res = await fetch(url);
+        console.log("TableQRModal - Response status:", res.status);
+        if (!res.ok) {
+          console.log("TableQRModal - Response not ok, returning");
+          return;
+        }
+        const data = await res.json();
+        console.log("TableQRModal - Response data:", data);
+        const orders = data.data || [];
+        console.log("TableQRModal - Orders count:", orders.length);
+        if (orders.length > 0 && orders[0].orderNumber) {
+          console.log("TableQRModal - Setting orderIdParam:", orders[0].orderNumber);
+          setOrderIdParam(orders[0].orderNumber);
+        } else {
+          console.log("TableQRModal - No orders found, setting empty");
+          setOrderIdParam("");
+        }
+      } catch (err) {
+        console.error("TableQRModal fetch error:", err);
+        setOrderIdParam("");
+      }
+    };
+    fetchActiveOrder();
+  }, [open, storeId, table]);
 
   if (!table) return null;
 
-  const baseUrl = window.location.origin;
-  const storeId =
-    typeof table.store === "object" && table.store !== null
-      ? table.store.id || table.store._id || ""
-      : table.store || "";
-  const orderUrl = `${baseUrl}/customer-order?table=${table.id}&store=${storeId}`;
+  const orderUrl = `https://order-app-dun.vercel.app/?table=${table.id}&store=${storeId}${orderIdParam ? `&orderId=${orderIdParam}` : ""}`;
 
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");

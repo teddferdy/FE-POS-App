@@ -390,7 +390,9 @@ const DetailIngredient = () => {
                         {t("common.createdBy")}
                       </span>
                       <span className="text-xs font-semibold text-foreground">
-                        {ingredient.createdByUser?.fullName || ingredient.createdBy || "-"}
+                        {ingredient.createdByUser?.fullName ||
+                          ingredient.createdByUser?.userName ||
+                          "-"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
@@ -398,7 +400,9 @@ const DetailIngredient = () => {
                         {t("common.modifiedBy")}
                       </span>
                       <span className="text-xs font-semibold text-foreground">
-                        {ingredient.modifiedBy || "-"}
+                        {ingredient.modifiedByUser?.fullName ||
+                          ingredient.modifiedByUser?.userName ||
+                          "-"}
                       </span>
                     </div>
                   </div>

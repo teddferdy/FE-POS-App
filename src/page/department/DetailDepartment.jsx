@@ -195,13 +195,17 @@ const DetailDepartment = () => {
               <div className="flex items-center gap-2">
                 <User size={13} className="shrink-0" />
                 <span>
-                  {t("common.createdBy")}: {department.createdBy || "-"}
+                  {t("common.createdBy")}:{" "}
+                  {department.createdByUser?.fullName || department.createdByUser?.userName || "-"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <User size={13} className="shrink-0" />
                 <span>
-                  {t("common.modifiedBy")}: {department.modifiedBy || "-"}
+                  {t("common.modifiedBy")}:{" "}
+                  {department.modifiedByUser?.fullName ||
+                    department.modifiedByUser?.userName ||
+                    "-"}
                 </span>
               </div>
             </div>

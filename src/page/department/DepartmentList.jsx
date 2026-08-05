@@ -11,7 +11,17 @@ import {
   downloadDepartmentExcel
 } from "@/services/department";
 import { getAllLocation } from "@/services/location";
-import { Loader2, Building, CheckCircle, FileEdit, XCircle, AlertTriangle } from "lucide-react";
+import {
+  Loader2,
+  Building,
+  CheckCircle,
+  FileEdit,
+  XCircle,
+  AlertTriangle,
+  Eye,
+  Edit,
+  Trash2
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -159,10 +169,7 @@ const DepartmentList = () => {
       header: t("common.createdBy"),
       render: (department) => (
         <span className="text-sm text-muted-foreground">
-          {department.createdByUser?.fullName ||
-            department.createdByUser?.userName ||
-            department.createdBy ||
-            "-"}
+          {department.createdByUser?.fullName || department.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -178,10 +185,7 @@ const DepartmentList = () => {
       header: t("common.modifiedBy"),
       render: (department) => (
         <span className="text-sm text-muted-foreground">
-          {department.modifiedByUser?.fullName ||
-            department.modifiedByUser?.userName ||
-            department.modifiedBy ||
-            "-"}
+          {department.modifiedByUser?.fullName || department.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -197,6 +201,11 @@ const DepartmentList = () => {
       header: t("page.department.table.actions"),
       align: "center",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (department) => (
         <div className="flex items-center justify-center gap-1">
           {canAccess(user, MENU_KEY, "view") && (

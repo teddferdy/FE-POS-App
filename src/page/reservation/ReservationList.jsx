@@ -213,7 +213,7 @@ const ReservationList = () => {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
+          {item.createdByUser?.fullName || item.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -235,7 +235,7 @@ const ReservationList = () => {
       header: t("common.modifiedBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -257,6 +257,13 @@ const ReservationList = () => {
       header: t("page.reservation.columns.actions"),
       align: "right",
       stickyRight: true,
+      legend: [
+        { icon: Check, label: t("common.confirm") },
+        { icon: X, label: t("common.cancel") },
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           {item.status === "pending" && (

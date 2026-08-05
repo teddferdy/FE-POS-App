@@ -138,7 +138,7 @@ const ShiftList = () => {
       header: t("common.createdBy"),
       render: (row) => (
         <span className="text-sm">
-          {row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}
+          {row.createdByUser?.fullName || row.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -146,7 +146,7 @@ const ShiftList = () => {
       header: t("common.modifiedBy"),
       render: (row) => (
         <span className="text-sm">
-          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}
+          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -182,6 +182,10 @@ const ShiftList = () => {
       header: t("common.actions"),
       align: "center",
       stickyRight: true,
+      legend: [
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "edit") && (

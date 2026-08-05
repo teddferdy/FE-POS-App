@@ -202,7 +202,7 @@ const SupplierList = () => {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
+          {item.createdByUser?.fullName || item.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -224,7 +224,7 @@ const SupplierList = () => {
       header: t("common.modifiedBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -246,6 +246,12 @@ const SupplierList = () => {
       header: t("common.actions"),
       align: "center",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Scale, label: t("common.compare") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "view") && (

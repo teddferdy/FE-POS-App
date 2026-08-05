@@ -164,6 +164,11 @@ const StockTransferList = () => {
     {
       header: t("page.stockTransfer.list.header.aksi"),
       align: "right",
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: CheckCircle, label: t("page.stockTransfer.list.receive") },
+        { icon: XCircle, label: t("page.stockTransfer.list.cancel") }
+      ],
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           {item.status === "sent" && (

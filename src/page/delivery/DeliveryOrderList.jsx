@@ -172,6 +172,10 @@ const DeliveryOrderList = () => {
       header: "",
       align: "right",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: XCircle, label: t("common.cancel") }
+      ],
       render: (order) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "view") && (

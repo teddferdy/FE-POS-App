@@ -12,7 +12,7 @@ import {
 } from "@/services/position";
 import { getAllDepartmentTable } from "@/services/department";
 import { getAllLocation } from "@/services/location";
-import { Loader2, Briefcase, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import { Loader2, Briefcase, CheckCircle, FileEdit, XCircle, Eye, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -198,10 +198,7 @@ const PositionList = () => {
       header: t("common.createdBy"),
       render: (position) => (
         <span className="text-sm text-muted-foreground">
-          {position.createdByUser?.fullName ||
-            position.createdByUser?.userName ||
-            position.createdBy ||
-            "-"}
+          {position.createdByUser?.fullName || position.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -217,10 +214,7 @@ const PositionList = () => {
       header: t("common.modifiedBy"),
       render: (position) => (
         <span className="text-sm text-muted-foreground">
-          {position.modifiedByUser?.fullName ||
-            position.modifiedByUser?.userName ||
-            position.modifiedBy ||
-            "-"}
+          {position.modifiedByUser?.fullName || position.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -236,6 +230,11 @@ const PositionList = () => {
       header: t("common.actions"),
       align: "center",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (position) => (
         <div className="flex items-center justify-center gap-1">
           {canAccess(user, MENU_KEY, "view") && (

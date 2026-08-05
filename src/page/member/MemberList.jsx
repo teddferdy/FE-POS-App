@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Users, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import { Users, CheckCircle, FileEdit, XCircle, Eye, Edit, Wallet, Trash2 } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
@@ -267,7 +267,7 @@ const MemberList = () => {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
+          {item.createdByUser?.fullName || item.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -291,7 +291,7 @@ const MemberList = () => {
       header: t("common.modifiedBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -315,6 +315,12 @@ const MemberList = () => {
       header: t("page.member.table.actions"),
       align: "center",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Wallet, label: t("page.member.list.managePoints") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (member) => (
         <div className="flex items-center justify-end gap-1">
           <button

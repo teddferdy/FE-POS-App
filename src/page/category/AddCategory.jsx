@@ -399,6 +399,9 @@ const AddCategory = () => {
     }
   });
 
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
   const createMutation = useMutation(addCategory, {
     onSuccess: () => {
       queryClient.invalidateQueries(["categories"]);
@@ -407,7 +410,8 @@ const AddCategory = () => {
     },
     onError: (err) => {
       setIsSubmitting(false);
-      toast.error(err?.response?.data?.message || err.message);
+      setModalMessage(err?.response?.data?.message || err.message);
+      setErrorModal(true);
     }
   });
 
@@ -945,6 +949,15 @@ const AddCategory = () => {
             onSubmit(values);
           }}
         />
+        <Modal
+          type="error"
+          open={errorModal}
+          onOpenChange={setErrorModal}
+          title="Error"
+          description={modalMessage}
+          onConfirm={() => setErrorModal(false)}
+        />
+
         <MissingFieldsModal
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}

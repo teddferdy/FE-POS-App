@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Award, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import { Plus, Award, CheckCircle, FileEdit, XCircle, Eye, Edit, Trash2 } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -217,16 +217,14 @@ const MemberTier = () => {
     {
       header: t("page.memberTier.table.createdBy"),
       render: (tier) => (
-        <span className="text-sm text-muted-foreground">
-          {tier.createdByUser?.fullName || tier.createdBy || "-"}
-        </span>
+        <span className="text-sm text-muted-foreground">{tier.createdByUser?.fullName || "-"}</span>
       )
     },
     {
       header: t("page.memberTier.table.modifiedBy"),
       render: (tier) => (
         <span className="text-sm text-muted-foreground">
-          {tier.modifiedByUser?.fullName || tier.modifiedBy || "-"}
+          {tier.modifiedByUser?.fullName || "-"}
         </span>
       )
     },
@@ -234,6 +232,11 @@ const MemberTier = () => {
       header: t("page.memberTier.table.actions"),
       align: "center",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (tier) => (
         <div className="flex justify-end gap-1">
           <button

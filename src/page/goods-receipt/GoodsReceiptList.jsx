@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import {
   Plus,
   Eye,
+  Edit,
   Trash2,
   FileText,
   Download,
@@ -194,7 +195,7 @@ const GoodsReceiptList = () => {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
+          {item.createdByUser?.fullName || item.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -216,7 +217,7 @@ const GoodsReceiptList = () => {
       header: t("common.modifiedBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -237,6 +238,11 @@ const GoodsReceiptList = () => {
     {
       header: t("page.goodsReceipt.list.table.actions"),
       align: "right",
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("page.goodsReceipt.list.editTitle") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "view") && (
@@ -255,19 +261,7 @@ const GoodsReceiptList = () => {
               className="h-8 w-8 text-blue-600"
               onClick={() => navigate(`/edit-goods-receipt?id=${item.id}`)}
               title={t("page.goodsReceipt.list.editTitle")}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round">
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-              </svg>
+              <Edit size={18} />
             </Button>
           )}
           {item.status === "draft" && canAccess(user, MENU_KEY, "delete") && (

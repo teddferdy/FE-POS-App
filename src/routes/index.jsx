@@ -11,6 +11,7 @@ export { settingsRoutes } from "./settings.routes";
 export { miscRoutes } from "./misc.routes";
 export { deliveryRoutes } from "./delivery.routes";
 export { queueRoutes } from "./queue.routes";
+export { waiterRoutes } from "./waiter.routes";
 export { supplierPerformanceRoutes } from "./supplierPerformance.routes";
 export { promoRoutes } from "./promo.routes";
 export { bundleRoutes } from "./bundle.routes";

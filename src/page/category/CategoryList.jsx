@@ -4,7 +4,16 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Loader2, FolderOpen, CheckCircle, XCircle, FileEdit } from "lucide-react";
+import {
+  Loader2,
+  FolderOpen,
+  CheckCircle,
+  XCircle,
+  FileEdit,
+  Eye,
+  Edit,
+  Trash2
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   getAllCategoryTable,
@@ -244,7 +253,7 @@ const CategoryList = () => {
       hideOn: "lg",
       render: (cat) => (
         <span className="text-sm text-muted-foreground">
-          {cat.createdByUser?.fullName || cat.createdByUser?.userName || cat.createdBy || "-"}
+          {cat.createdByUser?.fullName || cat.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -259,7 +268,7 @@ const CategoryList = () => {
       hideOn: "lg",
       render: (cat) => (
         <span className="text-sm text-muted-foreground">
-          {cat.modifiedByUser?.fullName || cat.modifiedByUser?.userName || cat.modifiedBy || "-"}
+          {cat.modifiedByUser?.fullName || cat.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -274,6 +283,11 @@ const CategoryList = () => {
       header: t("page.category.table.actions"),
       align: "center",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (cat) => (
         <div className="flex items-center justify-end gap-1 transition-opacity">
           {canAccess(user, MENU_KEY, "view") && (

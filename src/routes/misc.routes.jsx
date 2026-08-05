@@ -6,7 +6,7 @@ const Dashboard = React.lazy(() => import("@/page/dashboard"));
 
 // Kitchen Display & QR Order Management
 const KitchenDisplay = React.lazy(() => import("@/page/kitchen-display"));
-const CustomerOrderManagement = React.lazy(() => import("@/page/customer-order/management"));
+const CustomerOrderManagement = React.lazy(() => import("@/page/customer-order"));
 
 // Invoice
 const InvoicePage = React.lazy(() => import("@/page/invoice/InvoicePage"));

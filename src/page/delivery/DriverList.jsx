@@ -173,10 +173,7 @@ const DriverList = () => {
       header: t("common.createdBy"),
       render: (driver) => (
         <span className="text-sm text-muted-foreground">
-          {driver.createdByUser?.fullName ||
-            driver.createdByUser?.userName ||
-            driver.createdBy ||
-            "-"}
+          {driver.createdByUser?.fullName || driver.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -192,10 +189,7 @@ const DriverList = () => {
       header: t("common.modifiedBy"),
       render: (driver) => (
         <span className="text-sm text-muted-foreground">
-          {driver.modifiedByUser?.fullName ||
-            driver.modifiedByUser?.userName ||
-            driver.modifiedBy ||
-            "-"}
+          {driver.modifiedByUser?.fullName || driver.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -211,6 +205,11 @@ const DriverList = () => {
       header: "",
       align: "right",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (driver) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "view") && (

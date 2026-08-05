@@ -105,6 +105,11 @@ const BomList = () => {
     {
       header: t("page.bom.list.table.actions"),
       align: "right",
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           <Button

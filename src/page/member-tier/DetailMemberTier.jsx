@@ -342,12 +342,22 @@ const DetailMemberTier = () => {
                 <DetailRow
                   icon={User}
                   label={t("page.memberTier.detail.createdBy")}
-                  value={tier.createdByName || "-"}
+                  value={
+                    tier.createdByUser?.fullName ||
+                    tier.createdByUser?.userName ||
+                    tier.createdByName ||
+                    "-"
+                  }
                 />
                 <DetailRow
                   icon={User}
                   label={t("page.memberTier.detail.modifiedBy")}
-                  value={tier.modifiedByName || "-"}
+                  value={
+                    tier.modifiedByUser?.fullName ||
+                    tier.modifiedByUser?.userName ||
+                    tier.modifiedByName ||
+                    "-"
+                  }
                 />
               </div>
             </div>

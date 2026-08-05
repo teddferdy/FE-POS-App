@@ -215,6 +215,11 @@ const QueueList = () => {
     {
       header: t("common.action"),
       accessorKey: "actions",
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: UserCheck, label: t("common.seat") },
+        { icon: XCircle, label: t("common.cancel") }
+      ],
       cell: ({ row }) => {
         const item = row.original;
         return (

@@ -211,7 +211,6 @@ const DetailEmployee = () => {
                         {t("common.createdBy")}:{" "}
                         {employee.createdByUser?.fullName ||
                           employee.createdByUser?.userName ||
-                          employee.createdBy ||
                           "-"}
                       </p>
                     </div>
@@ -220,7 +219,6 @@ const DetailEmployee = () => {
                         {t("common.modifiedBy")}:{" "}
                         {employee.modifiedByUser?.fullName ||
                           employee.modifiedByUser?.userName ||
-                          employee.modifiedBy ||
                           "-"}
                       </p>
                     </div>

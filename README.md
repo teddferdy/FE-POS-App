@@ -153,7 +153,6 @@ src/
 | `/register` | Registration |
 | `/reset-password` | Password Reset |
 | `/home` | Cashier Terminal |
-| `/customer-order` | Customer QR Self-Order Menu |
 | `/customer-display` | Customer Display Screen |
 
 ### Dashboard

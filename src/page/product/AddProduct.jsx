@@ -231,6 +231,9 @@ const AddProduct = () => {
     }
   }, [selectedStores]);
 
+  const [errorModal, setErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
   const createMutation = useMutation(addProduct, {
     onSuccess: () => {
       queryClient.invalidateQueries(["products"]);
@@ -238,10 +241,8 @@ const AddProduct = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error(t("page.product.form.failed"), {
-        description:
-          err?.response?.data?.message || err.message || t("page.product.form.failedAddProduct")
-      });
+      setModalMessage(err?.response?.data?.message || err.message || t("page.product.form.failedAddProduct"));
+      setErrorModal(true);
       setIsSubmitting(false);
     }
   });

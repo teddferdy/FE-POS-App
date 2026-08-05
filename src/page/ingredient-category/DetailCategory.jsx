@@ -223,7 +223,10 @@ const DetailIngredientCategory = () => {
                 <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                   <span className="text-xs text-muted-foreground">{t("common.createdBy")}</span>
                   <span className="text-xs font-medium">
-                    {category?.createdByName || category?.createdBy || "-"}
+                    {category?.createdByUser?.fullName ||
+                      category?.createdByUser?.userName ||
+                      category?.createdByName ||
+                      "-"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
@@ -243,7 +246,10 @@ const DetailIngredientCategory = () => {
                 <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                   <span className="text-xs text-muted-foreground">{t("common.modifiedBy")}</span>
                   <span className="text-xs font-medium">
-                    {category?.modifiedByName || category?.modifiedBy || "-"}
+                    {category?.modifiedByUser?.fullName ||
+                      category?.modifiedByUser?.userName ||
+                      category?.modifiedByName ||
+                      "-"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">

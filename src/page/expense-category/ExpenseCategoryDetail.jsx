@@ -217,19 +217,13 @@ const ExpenseCategoryDetail = () => {
                 <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                   <span className="text-xs font-medium text-muted-foreground">Dibuat Oleh</span>
                   <span className="text-xs font-semibold text-foreground text-right">
-                    {category.createdByUser?.fullName ||
-                      category.createdByUser?.userName ||
-                      category.createdBy ||
-                      "-"}
+                    {category.createdByUser?.fullName || category.createdByUser?.userName || "-"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                   <span className="text-xs font-medium text-muted-foreground">Diubah Oleh</span>
                   <span className="text-xs font-semibold text-foreground text-right">
-                    {category.modifiedByUser?.fullName ||
-                      category.modifiedByUser?.userName ||
-                      category.modifiedBy ||
-                      "-"}
+                    {category.modifiedByUser?.fullName || category.modifiedByUser?.userName || "-"}
                   </span>
                 </div>
               </div>

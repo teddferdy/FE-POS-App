@@ -8,7 +8,6 @@ import { getKitchenOrders, updateOrderItemStatus } from "@/services/kitchen";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import {
@@ -18,7 +17,9 @@ import {
   Bell,
   CookingPot,
   Utensils,
-  ListOrdered
+  ListOrdered,
+  User,
+  StickyNote
 } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -52,11 +53,6 @@ const statusConfig = {
 
 const statusColumns = ["pending", "preparing", "ready"];
 
-const formatTime = (date) => {
-  const d = new Date(date);
-  return d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
-};
-
 const timeAgo = (date) => {
   const diff = Date.now() - new Date(date).getTime();
   const mins = Math.floor(diff / 60000);
@@ -64,6 +60,17 @@ const timeAgo = (date) => {
   if (mins < 60) return `${mins}m`;
   const hours = Math.floor(mins / 60);
   return `${hours}j ${mins % 60}m`;
+};
+
+const formatIDR = (num) => {
+  if (!num && num !== 0) return "-";
+  return "Rp " + Number(num).toLocaleString("id-ID");
+};
+
+const paymentStatusCfg = {
+  paid: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+  unpaid: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+  pending: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
 };
 
 const KitchenDisplay = () => {
@@ -158,6 +165,8 @@ const KitchenDisplay = () => {
     { onSuccess: () => queryClient.invalidateQueries(["kitchen-orders"]) }
   );
 
+  const isItemLoading = (itemId) => updateMut.isLoading && updateMut.variables?.itemId === itemId;
+
   const getOrdersByStatus = (status) =>
     orders.filter((o) => o.items?.some((i) => i.status === status));
 
@@ -223,7 +232,9 @@ const KitchenDisplay = () => {
                         <Icon size={18} />
                         {t(`page.kitchenDisplay.status.${colStatus}`)}
                       </div>
-                      <Badge className={cfg.badge}>{colOrders.length}</Badge>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${cfg.badge}`}>
+                        {colOrders.length}
+                      </span>
                     </div>
                     <div className="flex-1 overflow-y-auto space-y-3 p-3 border-x border-b rounded-b-xl bg-card">
                       {colOrders.length === 0 ? (
@@ -236,69 +247,133 @@ const KitchenDisplay = () => {
                           const colItems = (order.items || []).filter(
                             (i) => i.status === colStatus
                           );
+                          const colQty = colItems.reduce((s, i) => s + (i.quantity || 1), 0);
+                          const colTotal = colItems.reduce((s, i) => s + (i.totalPrice || 0), 0);
                           return (
                             <div
                               key={order.id}
-                              className="bg-muted/30 rounded-lg p-3 border border-border">
-                              <div className="flex items-center justify-between mb-2">
-                                <div>
-                                  <span className="font-bold text-sm">
-                                    #{order.orderNumber || order.id}
+                              className="bg-muted/30 rounded-lg border border-border overflow-hidden">
+                              <div className="px-3 pt-3 pb-2 border-b border-border">
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span className="font-bold text-sm truncate">
+                                      #{order.orderNumber || order.id}
+                                    </span>
+                                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-background border border-border shrink-0">
+                                      {colQty} {t("page.kitchenDisplay.itemUnit")}
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] text-muted-foreground shrink-0">
+                                    {timeAgo(order.createdAt)}
                                   </span>
-                                  {order.table && (
-                                    <span className="ml-2 text-xs text-muted-foreground">
-                                      <Utensils size={12} className="inline mr-0.5" />
-                                      {order.table.name}
+                                </div>
+                                <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                                  {(order.table?.name || order.tableId) && (
+                                    <span className="inline-flex items-center gap-1">
+                                      <Utensils size={12} />
+                                      {order.table?.name ||
+                                        `${t("page.kitchenDisplay.tableLabel")} ${order.tableId}`}
+                                    </span>
+                                  )}
+                                  {order.customerName && (
+                                    <span className="inline-flex items-center gap-1">
+                                      <User size={12} />
+                                      {order.customerName}
+                                    </span>
+                                  )}
+                                  {order.cashierName && (
+                                    <span className="inline-flex items-center gap-1">
+                                      <ChefHat size={12} />
+                                      {order.cashierName}
                                     </span>
                                   )}
                                 </div>
-                                <span className="text-[10px] text-muted-foreground">
-                                  {timeAgo(order.createdAt)}
-                                </span>
                               </div>
-                              <div className="space-y-1.5">
+                              <div className="p-3 space-y-1.5">
                                 {colItems.map((item) => (
                                   <div
                                     key={item.id}
-                                    className="flex items-center justify-between bg-background rounded-md px-3 py-2 text-sm">
-                                    <div className="flex-1 min-w-0">
-                                      <p className="font-medium truncate">
-                                        {item.productName}
-                                        {item.quantity > 1 && (
-                                          <span className="ml-1 text-muted-foreground">
-                                            x{item.quantity}
-                                          </span>
+                                    className="bg-background rounded-md border border-border px-3 py-2">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <p className="font-medium text-sm truncate">
+                                            {item.productName}
+                                          </p>
+                                          {item.quantity > 1 && (
+                                            <span className="text-xs text-muted-foreground shrink-0">
+                                              x{item.quantity}
+                                            </span>
+                                          )}
+                                          {item.bundleName && (
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                                              {item.bundleName}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <p className="text-xs font-mono text-muted-foreground mt-0.5">
+                                          {formatIDR(item.price)}
+                                        </p>
+                                        {item.notes && (
+                                          <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
+                                            <StickyNote size={11} className="inline mr-0.5" />
+                                            {t("page.kitchenDisplay.notesLabel")}: {item.notes}
+                                          </p>
                                         )}
-                                      </p>
-                                      {item.notes && (
-                                        <p className="text-[11px] text-muted-foreground truncate">
-                                          {t("page.kitchenDisplay.notesLabel")}: {item.notes}
-                                        </p>
-                                      )}
-                                      {item.modifiers?.length > 0 && (
-                                        <p className="text-[11px] text-muted-foreground truncate">
-                                          {item.modifiers.map((m) => m.name || m).join(", ")}
-                                        </p>
-                                      )}
+                                        {item.options?.length > 0 && (
+                                          <p className="text-[11px] text-muted-foreground mt-1">
+                                            {t("page.kitchenDisplay.optionsLabel")}:{" "}
+                                            {item.options.map((o) => o.name || o).join(", ")}
+                                          </p>
+                                        )}
+                                        {item.modifiers?.length > 0 && (
+                                          <p className="text-[11px] text-muted-foreground mt-1">
+                                            {t("page.kitchenDisplay.modifiersLabel")}:{" "}
+                                            {item.modifiers.map((m) => m.name || m).join(", ")}
+                                          </p>
+                                        )}
+                                        {item.stationDapur && (
+                                          <p className="text-[11px] text-muted-foreground mt-1">
+                                            {t("page.kitchenDisplay.stationLabel")}:{" "}
+                                            {item.stationDapur}
+                                          </p>
+                                        )}
+                                      </div>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="shrink-0 h-7 text-xs"
+                                        loading={isItemLoading(item.id)}
+                                        onClick={() =>
+                                          updateMut.mutate({
+                                            orderId: order.id,
+                                            itemId: item.id,
+                                            status: cfg.next
+                                          })
+                                        }>
+                                        {t(`page.kitchenDisplay.nextLabel.${colStatus}`)}
+                                      </Button>
                                     </div>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="ml-2 shrink-0 h-7 text-xs"
-                                      onClick={() =>
-                                        updateMut.mutate({
-                                          orderId: order.id,
-                                          itemId: item.id,
-                                          status: cfg.next
-                                        })
-                                      }>
-                                      {t(`page.kitchenDisplay.nextLabel.${colStatus}`)}
-                                    </Button>
                                   </div>
                                 ))}
                               </div>
-                              <div className="mt-2 text-[10px] text-muted-foreground text-right">
-                                {formatTime(order.createdAt)}
+                              <div className="px-3 py-2 border-t border-border flex items-center justify-between gap-2 text-xs">
+                                <span className="text-muted-foreground">
+                                  {colQty} {t("page.kitchenDisplay.itemUnit")}
+                                </span>
+                                <span className="font-semibold font-mono">
+                                  {formatIDR(colTotal)}
+                                </span>
+                              </div>
+                              <div className="px-3 pb-2 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                                <span className="uppercase">{order.paymentMethod || "-"}</span>
+                                <span
+                                  className={`px-1.5 py-0.5 rounded-full font-semibold uppercase ${
+                                    paymentStatusCfg[order.paymentStatus] ||
+                                    paymentStatusCfg.pending
+                                  }`}>
+                                  {order.paymentStatus || "-"}
+                                </span>
                               </div>
                             </div>
                           );

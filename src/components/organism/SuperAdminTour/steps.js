@@ -1252,16 +1252,6 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
-  // ── Customer Order ──
-  {
-    id: "customer-order",
-    page: "/customer-order",
-    icon: Notebook,
-    titleKey: "sidebar.customerOrder",
-    descKey: "guide.page.customerOrder.desc",
-    actionKey: "guide.dashboard.next"
-  },
-
   // ── Customer Display ──
   {
     id: "customer-display",

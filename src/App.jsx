@@ -30,6 +30,7 @@ import {
   miscRoutes,
   deliveryRoutes,
   queueRoutes,
+  waiterRoutes,
   supplierPerformanceRoutes,
   promoRoutes,
   bundleRoutes
@@ -94,6 +95,7 @@ function App() {
                 {miscRoutes}
                 {deliveryRoutes}
                 {queueRoutes}
+                {waiterRoutes}
                 {supplierPerformanceRoutes}
                 {promoRoutes}
                 {bundleRoutes}

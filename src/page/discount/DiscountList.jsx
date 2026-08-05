@@ -182,7 +182,7 @@ const DiscountList = () => {
     },
     {
       header: t("page.discount.table.createdBy"),
-      render: (item) => item.createdByUser?.fullName || item.createdBy || "-"
+      render: (item) => item.createdByUser?.fullName || "-"
     },
     {
       header: t("page.discount.table.createdDate"),
@@ -190,7 +190,7 @@ const DiscountList = () => {
     },
     {
       header: t("page.discount.table.modifiedBy"),
-      render: (item) => item.modifiedByUser?.fullName || item.modifiedBy || "-"
+      render: (item) => item.modifiedByUser?.fullName || "-"
     },
     {
       header: t("page.discount.table.modifiedDate"),
@@ -200,6 +200,11 @@ const DiscountList = () => {
       header: t("page.discount.table.actions"),
       align: "right",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           <Button

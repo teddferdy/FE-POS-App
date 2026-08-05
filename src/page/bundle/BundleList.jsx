@@ -16,6 +16,7 @@ import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import StoreFilter from "@/components/ui/StoreFilter";
 import { TipsCard } from "@/components/ui/tips-card";
 import {
   Select,
@@ -35,15 +36,16 @@ const BundleList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
-  const [storeFilter] = useGlobalStoreFilter();
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const isFiltered = search !== "" || statusFilter !== "all";
+  const isFiltered = search !== "" || statusFilter !== "all" || storeFilter !== "all";
 
   const resetFilters = () => {
     setSearch("");
     setStatusFilter("all");
+    setGlobalStoreFilter("all");
     setPage(1);
   };
 
@@ -141,6 +143,38 @@ const BundleList = () => {
 
   const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "-";
+      return (
+        d.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        }) +
+        " " +
+        d.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      );
+    } catch {
+      return "-";
+    }
+  };
+
+  const getStoreName = (row) => {
+    const store = row.store;
+    if (!store) return t("page.category.form.storeSection.allStores");
+    const loc = (locData?.data || []).find((l) => String(l.id) === String(store));
+    if (loc) return loc.name || loc.storeName || `Store #${store}`;
+    if (user?.store && String(user.store) === String(store))
+      return user.storeName || `Store #${store}`;
+    return `Store #${store}`;
+  };
+
   const columns = [
     {
       header: "No",
@@ -164,6 +198,10 @@ const BundleList = () => {
           </div>
         </div>
       )
+    },
+    {
+      header: t("page.bundle.table.store"),
+      render: (row) => <span className="text-sm text-muted-foreground">{getStoreName(row)}</span>
     },
     {
       header: t("page.bundle.table.items"),
@@ -212,7 +250,41 @@ const BundleList = () => {
       }
     },
     {
+      header: t("page.bundle.table.createdBy"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">
+          {row.createdByUser?.fullName || row.createdByUser?.userName || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.bundle.table.createdDate"),
+      render: (row) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(row.createdAt)}</span>
+      )
+    },
+    {
+      header: t("page.bundle.table.modifiedBy"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">
+          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.bundle.table.modifiedDate"),
+      render: (row) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(row.updatedAt)}</span>
+      )
+    },
+    {
       header: t("common.action"),
+      stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (row) => (
         <div className="flex items-center gap-1">
           <Button
@@ -243,6 +315,23 @@ const BundleList = () => {
 
   const filters = (
     <TableToolbar title={t("page.bundle.title")} onReset={resetFilters} isFiltered={isFiltered}>
+      {isSuperAdmin && (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Store
+          </label>
+          <StoreFilter
+            locations={locData?.data || []}
+            value={storeFilter}
+            onChange={(v) => {
+              setGlobalStoreFilter(v);
+              setPage(1);
+            }}
+            isSuperAdmin={isSuperAdmin}
+            t={t}
+          />
+        </div>
+      )}
       <div className="flex flex-col gap-1.5">
         <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Cari

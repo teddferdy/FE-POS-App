@@ -241,6 +241,13 @@ const PromoCampaignList = () => {
     {
       header: t("common.action"),
       accessorKey: "actions",
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Pause, label: t("common.pause") },
+        { icon: Play, label: t("common.resume") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       cell: ({ row }) => {
         const item = row.original;
         return (

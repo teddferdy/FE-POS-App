@@ -318,20 +318,14 @@ const DetailSupplier = () => {
               <User size={13} className="shrink-0" />
               <span>
                 {t("common.createdBy")}:{" "}
-                {supplier.createdByUser?.fullName ||
-                  supplier.createdByUser?.userName ||
-                  supplier.createdBy ||
-                  "-"}
+                {supplier.createdByUser?.fullName || supplier.createdByUser?.userName || "-"}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <User size={13} className="shrink-0" />
               <span>
                 {t("common.modifiedBy")}:{" "}
-                {supplier.modifiedByUser?.fullName ||
-                  supplier.modifiedByUser?.userName ||
-                  supplier.modifiedBy ||
-                  "-"}
+                {supplier.modifiedByUser?.fullName || supplier.modifiedByUser?.userName || "-"}
               </span>
             </div>
           </div>

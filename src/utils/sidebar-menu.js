@@ -34,7 +34,8 @@ import {
   FlaskConical,
   Truck,
   Megaphone,
-  Clock
+  Clock,
+  HandPlatter
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -309,6 +310,21 @@ export const sidebarMenuSuperAdmin = [
         href: "/queue-list",
         icon: Clock,
         actions: ["view", "add", "edit"]
+      }
+    ]
+  },
+  {
+    title: "Pelayan",
+    section: true,
+    i18nKey: "sidebar.section.waiter",
+    icon: HandPlatter,
+    children: [
+      {
+        title: "Permintaan Pelayan",
+        i18nKey: "sidebar.waiterRequest",
+        href: "/waiter-request",
+        icon: HandPlatter,
+        actions: ["view", "edit"]
       }
     ]
   },
@@ -816,6 +832,21 @@ export const sidebarMenuAdmin = [
         href: "/queue-list",
         icon: Clock,
         actions: ["view", "add", "edit"]
+      }
+    ]
+  },
+  {
+    title: "Pelayan",
+    section: true,
+    i18nKey: "sidebar.section.waiter",
+    icon: HandPlatter,
+    children: [
+      {
+        title: "Permintaan Pelayan",
+        i18nKey: "sidebar.waiterRequest",
+        href: "/waiter-request",
+        icon: HandPlatter,
+        actions: ["view", "edit"]
       }
     ]
   },
@@ -1432,6 +1463,12 @@ export const urlWithArrowBack = [
     pathName: "/bom/detail"
   },
   { url: -1, title: "Notification", i18nKey: "sidebar.notification", pathName: "/notification" },
+  {
+    url: -1,
+    title: "Permintaan Pelayan",
+    i18nKey: "sidebar.waiterRequest",
+    pathName: "/waiter-request"
+  },
   { url: -1, title: "Support", i18nKey: "sidebar.support", pathName: "/support" },
   { url: -1, title: "Profile", i18nKey: "sidebar.profile", pathName: "/profile" },
   { url: -1, title: "Backup & Restore", i18nKey: "sidebar.backup", pathName: "/backup" },

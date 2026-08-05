@@ -109,6 +109,7 @@ const PurchasePaymentList = () => {
     {
       header: t("page.purchasePayment.list.columns.actions"),
       stickyRight: true,
+      legend: [{ icon: Eye, label: t("common.view") }],
       render: (p) => (
         <Button
           size="icon"

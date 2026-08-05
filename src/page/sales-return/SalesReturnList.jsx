@@ -166,7 +166,7 @@ const SalesReturnList = () => {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
+          {item.createdByUser?.fullName || item.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -188,7 +188,7 @@ const SalesReturnList = () => {
       header: t("common.modifiedBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -209,6 +209,11 @@ const SalesReturnList = () => {
     {
       header: t("page.salesReturn.list.header.aksi"),
       align: "right",
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: CheckCircle, label: t("common.approve") },
+        { icon: XCircle, label: t("common.reject") }
+      ],
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           <Button

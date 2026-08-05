@@ -13,7 +13,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
-import { User, Users, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import { User, Users, CheckCircle, FileEdit, XCircle, Eye, Edit, Trash2 } from "lucide-react";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { useTranslation } from "react-i18next";
@@ -223,7 +223,7 @@ const EmployeeList = () => {
       header: t("common.createdBy"),
       render: (row) => (
         <span className="text-sm">
-          {row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}
+          {row.createdByUser?.fullName || row.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -245,7 +245,7 @@ const EmployeeList = () => {
       header: t("common.modifiedBy"),
       render: (row) => (
         <span className="text-sm">
-          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}
+          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -267,6 +267,11 @@ const EmployeeList = () => {
       header: t("page.employee.table.actions"),
       align: "center",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (row) => (
         <div className="flex items-center justify-center gap-1">
           {canAccess(user, MENU_KEY, "view") && (

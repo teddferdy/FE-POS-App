@@ -718,7 +718,9 @@ const LocationDetail = () => {
                           {t("page.location.detail.createdBy")}
                         </span>
                         <span className="text-xs font-semibold text-foreground">
-                          {location.createdBy || "-"}
+                          {location.createdByUser?.fullName ||
+                            location.createdByUser?.userName ||
+                            "-"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
@@ -726,7 +728,9 @@ const LocationDetail = () => {
                           {t("page.location.detail.modifiedBy")}
                         </span>
                         <span className="text-xs font-semibold text-foreground">
-                          {location.modifiedBy || "-"}
+                          {location.modifiedByUser?.fullName ||
+                            location.modifiedByUser?.userName ||
+                            "-"}
                         </span>
                       </div>
                     </div>

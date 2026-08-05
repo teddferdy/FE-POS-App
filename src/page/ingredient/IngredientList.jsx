@@ -213,7 +213,7 @@ const IngredientList = () => {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-xs text-muted-foreground">
-          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
+          {item.createdByUser?.fullName || item.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -228,7 +228,7 @@ const IngredientList = () => {
       header: t("common.modifiedBy"),
       render: (item) => (
         <span className="text-xs text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -243,6 +243,11 @@ const IngredientList = () => {
       header: t("page.ingredient.list.tableAksi"),
       align: "right",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           <Button

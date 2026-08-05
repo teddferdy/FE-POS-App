@@ -195,13 +195,15 @@ const DetailPosition = () => {
               <div className="flex items-center gap-2">
                 <User size={13} className="shrink-0" />
                 <span>
-                  {t("common.createdBy")}: {position.createdBy || "-"}
+                  {t("common.createdBy")}:{" "}
+                  {position.createdByUser?.fullName || position.createdByUser?.userName || "-"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <User size={13} className="shrink-0" />
                 <span>
-                  {t("common.modifiedBy")}: {position.modifiedBy || "-"}
+                  {t("common.modifiedBy")}:{" "}
+                  {position.modifiedByUser?.fullName || position.modifiedByUser?.userName || "-"}
                 </span>
               </div>
             </div>

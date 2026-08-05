@@ -204,7 +204,7 @@ const TypePaymentList = () => {
       header: t("common.createdBy"),
       render: (row) => (
         <span className="text-sm text-muted-foreground">
-          {row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}
+          {row.createdByUser?.fullName || row.createdByUser?.userName || "-"}
         </span>
       )
     },
@@ -218,7 +218,7 @@ const TypePaymentList = () => {
       header: t("common.modifiedBy"),
       render: (row) => (
         <span className="text-sm text-muted-foreground">
-          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}
+          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || "-"}
         </span>
       )
     },
@@ -232,6 +232,11 @@ const TypePaymentList = () => {
       header: t("common.actions"),
       align: "right",
       stickyRight: true,
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: Edit, label: t("common.edit") },
+        { icon: Trash2, label: t("common.delete") }
+      ],
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "detail") && (

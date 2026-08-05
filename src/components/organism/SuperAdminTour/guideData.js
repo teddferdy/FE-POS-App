@@ -953,13 +953,6 @@ const guideData = [
     icon: Monitor,
     pages: [
       {
-        path: "/customer-order",
-        icon: Notebook,
-        titleKey: "sidebar.customerOrder",
-        descKey: "guide.page.customerOrder.desc",
-        actions: ["view"]
-      },
-      {
         path: "/customer-display",
         icon: Monitor,
         titleKey: "sidebar.customerDisplay",

@@ -337,7 +337,12 @@ const CashRegisterDetail = () => {
                     <tr key={o.id} className="hover:bg-accent/30 transition-colors">
                       <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
                       <td className="px-4 py-3 font-medium">{o.orderNumber || "-"}</td>
-                      <td className="px-4 py-3">{o.cashierName || o.createdBy || "-"}</td>
+                      <td className="px-4 py-3">
+                        {o.cashierName ||
+                          o.createdByUser?.fullName ||
+                          o.createdByUser?.userName ||
+                          "-"}
+                      </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {new Date(o.createdAt).toTimeString().slice(0, 5)}
                       </td>

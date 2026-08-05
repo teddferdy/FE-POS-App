@@ -213,13 +213,15 @@ const DetailCategory = () => {
               <div className="flex items-center gap-2">
                 <User size={13} className="shrink-0" />
                 <span>
-                  {t("common.createdBy")}: {category.createdBy || "-"}
+                  {t("common.createdBy")}:{" "}
+                  {category.createdByUser?.fullName || category.createdByUser?.userName || "-"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <User size={13} className="shrink-0" />
                 <span>
-                  {t("common.modifiedBy")}: {category.modifiedBy || "-"}
+                  {t("common.modifiedBy")}:{" "}
+                  {category.modifiedByUser?.fullName || category.modifiedByUser?.userName || "-"}
                 </span>
               </div>
             </div>
