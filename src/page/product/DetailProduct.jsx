@@ -80,6 +80,13 @@ const DetailProduct = () => {
 
   const product = data?.data || data;
 
+  if (!product)
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">{t("page.product.detail.notFound")}</p>
+      </div>
+    );
+
   const formatPrice = (value) => {
     if (value == null || isNaN(value)) return "0";
     return Number(value).toLocaleString("id-ID");

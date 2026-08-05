@@ -15,9 +15,17 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
       ? String(table.store.id || table.store._id || "")
       : String(table.store || ""));
 
+  const orderAppBaseUrl =
+    import.meta.env.VITE_ORDER_APP_URL || "https://order-app-dun.vercel.app";
+
+  const sessionId = React.useMemo(
+    () => Math.random().toString(36).slice(2, 10),
+    []
+  );
+
   if (!table) return null;
 
-  const orderUrl = `https://order-app-dun.vercel.app/?table=${table.id}&store=${storeId}&source=qr`;
+  const orderUrl = `${orderAppBaseUrl}/?table=${table.id}&store=${storeId}&source=qr&session=${sessionId}`;
 
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
