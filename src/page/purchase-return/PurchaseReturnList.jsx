@@ -128,6 +128,7 @@ const PurchaseReturnList = () => {
   const columns = [
     {
       header: t("page.purchaseReturn.list.header.returnNo"),
+      stickyLeft: true,
       render: (item) => (
         <span className="font-mono text-xs font-bold text-primary">{item.returnNumber}</span>
       )
@@ -226,6 +227,7 @@ const PurchaseReturnList = () => {
     {
       header: t("page.purchaseReturn.list.header.aksi"),
       align: "right",
+      stickyRight: true,
       legend: [
         { icon: Eye, label: t("common.view") },
         { icon: CheckCircle, label: t("common.approve") },

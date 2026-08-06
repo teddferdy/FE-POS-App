@@ -148,6 +148,7 @@ const GoodsReceiptList = () => {
   const columns = [
     {
       header: t("page.goodsReceipt.list.table.receiptNumber"),
+      stickyLeft: true,
       render: (item) => (
         <span className="font-mono text-xs font-bold text-primary">
           {item.receiptNumber || "-"}
@@ -156,6 +157,7 @@ const GoodsReceiptList = () => {
     },
     {
       header: t("page.goodsReceipt.list.table.poReference"),
+      stickyLeft: true,
       render: (item) => (
         <span className="text-xs">{item.purchaseOrderData?.orderNumber || "-"}</span>
       )
@@ -238,6 +240,7 @@ const GoodsReceiptList = () => {
     {
       header: t("page.goodsReceipt.list.table.actions"),
       align: "right",
+      stickyRight: true,
       legend: [
         { icon: Eye, label: t("common.view") },
         { icon: Edit, label: t("page.goodsReceipt.list.editTitle") },

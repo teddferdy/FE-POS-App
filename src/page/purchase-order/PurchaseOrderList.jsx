@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -28,7 +28,8 @@ import {
   ChevronRight,
   X,
   Send,
-  Edit
+  Edit,
+  AlertTriangle
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -45,6 +46,7 @@ import {
   downloadPurchaseOrderExcel
 } from "@/services/purchase-order";
 import { getAllLocation } from "@/services/location";
+import { getBatches } from "@/services/inventory";
 import NoStore from "@/components/ui/NoStore";
 import { recordPayment } from "@/services/purchase-payment";
 import { format } from "date-fns";
@@ -221,6 +223,31 @@ const PurchaseOrderList = () => {
     }
   }, [poDetail]);
 
+  const { data: returBatchData } = useQuery(
+    ["po-retur-batches", returPo?.store],
+    () => getBatches({ store: returPo?.store, status: "active" }),
+    { enabled: !!returPo?.store }
+  );
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  const productExpiry = useMemo(() => {
+    const map = {};
+    (returBatchData?.data || []).forEach((b) => {
+      const id = Number(b.product);
+      const date = b.expiryDate;
+      if (!id || !date) return;
+      if (!map[id] || date < map[id].expiryDate) {
+        map[id] = { expiryDate: date, expired: date < todayStr };
+      }
+    });
+    return map;
+  }, [returBatchData, todayStr]);
+
+  const hasExpiredReturnItem = returItems.some(
+    (it) => parseFloat(it.returnQty) > 0 && productExpiry[Number(it.product)]?.expired
+  );
+
   const user = cookie?.user;
   const MENU_KEY = "/purchase-order";
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -261,10 +288,12 @@ const PurchaseOrderList = () => {
           description: t("page.purchaseOrder.detail.toast.returnSuccess")
         });
         queryClient.invalidateQueries(["purchase-orders"]);
+        queryClient.invalidateQueries(["purchase-returns"]);
         setReturModal(false);
         setReturPo(null);
         setReturReason("");
         setReturItems([]);
+        navigate("/purchase-return");
       },
       onError: (err) => {
         toast.error(t("common.failed"), {
@@ -1120,56 +1149,6 @@ const PurchaseOrderList = () => {
                   getRowCanExpand={(po) => (po.items || []).length > 0}
                 />
               </div>
-
-              <div className="mt-4 rounded-xl border border-border bg-card p-4">
-                <h4 className="text-sm font-semibold text-foreground mb-1">
-                  {t("page.purchaseOrder.list.legend.title")}
-                </h4>
-                <p className="text-xs text-muted-foreground mb-3">
-                  {t("page.purchaseOrder.list.legend.description")}
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                  {[
-                    { icon: <Eye size={15} />, label: t("page.purchaseOrder.list.legend.detail") },
-                    { icon: <Wallet size={15} />, label: t("page.purchaseOrder.list.legend.pay") },
-                    {
-                      icon: <Wallet size={15} className="text-purple-600" />,
-                      label: t("page.purchaseOrder.list.legend.payDP")
-                    },
-                    {
-                      icon: <Undo2 size={15} />,
-                      label: t("page.purchaseOrder.list.legend.return")
-                    },
-                    {
-                      icon: <RefreshCw size={15} />,
-                      label: t("page.purchaseOrder.list.legend.receive")
-                    },
-                    {
-                      icon: <XCircle size={15} />,
-                      label: t("page.purchaseOrder.list.legend.cancel")
-                    },
-                    {
-                      icon: <Trash2 size={15} />,
-                      label: t("page.purchaseOrder.list.legend.delete")
-                    },
-                    {
-                      icon: <Send size={15} />,
-                      label: t("page.purchaseOrder.list.legend.sendToSupplier")
-                    },
-                    {
-                      icon: <FileEdit size={15} />,
-                      label: t("page.purchaseOrder.list.legend.edit")
-                    }
-                  ].map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/60 bg-muted/40 text-xs text-muted-foreground">
-                      <span className="shrink-0">{item.icon}</span>
-                      <span>{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </TooltipProvider>
           )}
 
@@ -1322,6 +1301,25 @@ const PurchaseOrderList = () => {
                                   className="hover:bg-muted/20 transition-colors">
                                   <td className="px-3 py-2.5 text-sm font-medium">
                                     {item.productData?.nameProduct || item.ingredientName || "-"}
+                                    {(() => {
+                                      const exp = productExpiry[Number(item.product)];
+                                      if (!exp) return null;
+                                      if (exp.expired) {
+                                        return (
+                                          <span className="inline-flex items-center gap-1 ml-1 text-xs font-medium text-destructive">
+                                            <AlertTriangle size={12} />
+                                            {t("page.purchaseOrder.list.returInfo.expiry.expired")}
+                                          </span>
+                                        );
+                                      }
+                                      return (
+                                        <span className="block mt-0.5 text-xs font-normal text-muted-foreground">
+                                          {t("page.purchaseOrder.list.returInfo.expiry.date", {
+                                            date: exp.expiryDate
+                                          })}
+                                        </span>
+                                      );
+                                    })()}
                                   </td>
                                   <td className="px-3 py-2.5 text-sm text-muted-foreground">
                                     {item.supplierData?.name || "-"}
@@ -1394,11 +1392,46 @@ const PurchaseOrderList = () => {
                       </div>
                     )}
 
+                    {hasExpiredReturnItem && (
+                      <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg p-3 flex items-start gap-2">
+                        <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                        <div>
+                          <p className="font-semibold">
+                            {t("page.purchaseOrder.list.returInfo.expiry.bannerTitle")}
+                          </p>
+                          <p className="text-sm">
+                            {t("page.purchaseOrder.list.returInfo.expiry.banner")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     <div>
                       <label className="text-sm font-medium text-foreground block mb-1.5">
                         {t("page.purchaseOrder.list.returInfo.reasonLabel")}{" "}
                         <span className="text-destructive">*</span>
                       </label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {["damaged", "expired", "quality", "wrongItem"].map((preset) => {
+                          const label = t(
+                            `page.purchaseOrder.list.returInfo.reasonPresets.${preset}`
+                          );
+                          const active = returReason.trim() === label;
+                          return (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => setReturReason(label)}
+                              className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                                active
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "bg-background border-border hover:bg-muted"
+                              }`}>
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
                       <textarea
                         className="w-full min-h-[100px] px-3 py-2.5 border border-border rounded-lg bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary transition-shadow"
                         placeholder={t("page.purchaseOrder.list.returInfo.reasonPlaceholder")}

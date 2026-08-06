@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Combobox } from "@/components/ui/combobox";
 import ActionLegend from "@/components/ui/ActionLegend";
+import TableActionLegend from "@/components/ui/TableActionLegend";
 
 const DataTable = ({
   columns = [],
@@ -466,6 +467,7 @@ const DataTable = ({
       )}
 
       {pagination && renderPagination()}
+      {legendItems.length > 0 && <TableActionLegend items={legendItems} className="m-4" />}
     </div>
   );
 };

@@ -21,15 +21,12 @@ import AbortController from "@/components/organism/abort-controller";
 
 const statusCfg = {
   pending: {
-    label: "Pending",
     class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
   },
   approved: {
-    label: "Approved",
     class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
   },
   rejected: {
-    label: "Rejected",
     class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
   }
 };
@@ -127,7 +124,7 @@ const SalesReturnList = () => {
       render: (item) => <span className="font-mono text-sm">{item.items?.length || 0}</span>
     },
     {
-      header: "Refund Amount",
+      header: t("page.salesReturn.list.header.refundAmount"),
       align: "right",
       render: (item) => (
         <span className="font-mono text-sm font-semibold">
@@ -154,10 +151,11 @@ const SalesReturnList = () => {
       align: "center",
       render: (item) => {
         const sc = statusCfg[item.status] || statusCfg.pending;
+        const statusKey = statusCfg[item.status] ? item.status : "pending";
         return (
           <span
             className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${sc.class}`}>
-            {sc.label}
+            {t(`page.salesReturn.status.${statusKey}`)}
           </span>
         );
       }
@@ -276,7 +274,7 @@ const SalesReturnList = () => {
             </p>
           </div>
           <Button onClick={() => navigate("/sales-return/create")} className="w-full md:w-auto">
-            {t("common.create")} Return
+            {t("page.salesReturn.list.button.create")}
           </Button>
         </div>
       </div>
@@ -302,7 +300,7 @@ const SalesReturnList = () => {
                     {isSuperAdmin && (
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Store
+                          {t("page.salesReturn.list.filter.store")}
                         </label>
                         <StoreFilter
                           locations={locData?.data || []}
@@ -323,9 +321,9 @@ const SalesReturnList = () => {
                       <Combobox
                         options={[
                           { value: "all", label: t("page.salesReturn.list.filter.allStatus") },
-                          ...Object.entries(statusCfg).map(([k, v]) => ({
+                          ...Object.entries(statusCfg).map(([k]) => ({
                             value: k,
-                            label: v.label
+                            label: t(`page.salesReturn.status.${k}`)
                           }))
                         ]}
                         value={statusFilter}
@@ -334,12 +332,12 @@ const SalesReturnList = () => {
                           setPage(1);
                         }}
                         placeholder={t("page.salesReturn.list.filter.allStatus")}
-                        searchPlaceholder="Cari..."
+                        searchPlaceholder={t("common.search")}
                       />
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        Cari
+                        {t("page.salesReturn.list.filter.search")}
                       </label>
                       <SearchInput
                         value={search}

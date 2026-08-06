@@ -265,7 +265,8 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.salesReturn",
         href: "/sales-return",
         icon: ShoppingCart,
-        actions: ["view"]
+        actions: ["view"],
+        activePaths: ["/sales-return/create", "/sales-return/detail"]
       },
       {
         title: "Piutang (AR)",
@@ -787,7 +788,8 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.salesReturn",
         href: "/sales-return",
         icon: ShoppingCart,
-        actions: ["view"]
+        actions: ["view"],
+        activePaths: ["/sales-return/create", "/sales-return/detail"]
       },
       {
         title: "Piutang (AR)",

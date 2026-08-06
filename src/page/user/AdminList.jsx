@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, CheckCircle, FileEdit } from "lucide-react";
+import { Shield, CheckCircle, FileEdit, Edit, Trash2, XCircle } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import StatCard from "@/components/ui/StatCard";
+import TableActionLegend from "@/components/ui/TableActionLegend";
 
 const getStatus = (user, t) => {
   const statusConfig = {
@@ -465,6 +466,15 @@ const AdminList = () => {
                 </div>
               </div>
             </div>
+
+            <TableActionLegend
+              className="mt-4"
+              items={[
+                { icon: Edit, label: t("common.edit") },
+                { icon: Trash2, label: t("common.delete") },
+                { icon: XCircle, label: t("common.deactivate") }
+              ]}
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
               <div className="lg:col-span-3 p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200 dark:border-blue-800 relative overflow-hidden group">

@@ -46,6 +46,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import AbortController from "@/components/organism/abort-controller";
+import TableActionLegend from "@/components/ui/TableActionLegend";
 
 const MemberLoyalty = () => {
   const { t } = useTranslation();
@@ -375,6 +376,15 @@ const MemberLoyalty = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <TableActionLegend
+        className="mt-4"
+        items={[
+          { icon: Eye, label: t("common.view") },
+          { icon: Edit, label: t("common.edit") },
+          { icon: Trash, label: t("common.delete") }
+        ]}
+      />
     </div>
   );
 };

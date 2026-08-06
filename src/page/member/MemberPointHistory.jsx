@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
+import { Receipt } from "lucide-react";
+import TableActionLegend from "@/components/ui/TableActionLegend";
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat("id-ID", {
@@ -322,6 +324,8 @@ const MemberPointHistory = () => {
           </div>
         )}
       </div>
+
+      <TableActionLegend className="mt-4" items={[{ icon: Receipt, label: t("common.view") }]} />
     </div>
   );
 };

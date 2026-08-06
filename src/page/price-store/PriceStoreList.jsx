@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import StatCard from "@/components/ui/StatCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoStore from "@/components/ui/NoStore";
+import TableActionLegend from "@/components/ui/TableActionLegend";
 
 const PriceStoreList = () => {
   const { t } = useTranslation();
@@ -306,6 +307,11 @@ const PriceStoreList = () => {
           </Card>
         </div>
       )}
+
+      <TableActionLegend
+        className="mt-4"
+        items={[{ icon: Pencil, label: t("page.priceStore.list.edit") }]}
+      />
 
       {editModal && (
         <Modal

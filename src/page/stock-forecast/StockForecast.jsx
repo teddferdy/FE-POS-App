@@ -3,13 +3,14 @@ import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { Package, TrendingDown, RefreshCw } from "lucide-react";
+import { Package, TrendingDown, RefreshCw, AlertTriangle } from "lucide-react";
 import {
   getForecasts,
   runForecast,
   getDeadStock,
   getExpiringSoon,
-  getValuation
+  getValuation,
+  postWriteOffExpired
 } from "@/services/inventory";
 import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
@@ -27,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
+import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
 
 const StockForecast = () => {
@@ -93,6 +95,31 @@ const StockForecast = () => {
 
   const handleRunForecast = () => {
     runForecastMutation.mutate({ store: storeId, productId: undefined });
+  };
+
+  const [writeoffModal, setWriteoffModal] = useState(false);
+
+  const writeOffMutation = useMutation({
+    mutationFn: (payload) => postWriteOffExpired(payload),
+    onSuccess: (res) => {
+      toast.success("Write-off selesai", {
+        description: `${res.total || 0} unit dari batch kedaluwarsa dihapus`
+      });
+      queryClient.invalidateQueries(["expiring-soon"]);
+      queryClient.invalidateQueries(["inventory-valuation"]);
+      queryClient.invalidateQueries(["stock-forecast"]);
+      queryClient.invalidateQueries(["dead-stock"]);
+      setWriteoffModal(false);
+    },
+    onError: (err) => {
+      toast.error("Write-off gagal", {
+        description: err?.message || err?.response?.data?.message
+      });
+    }
+  });
+
+  const handleWriteOff = () => {
+    writeOffMutation.mutate({ store: storeId });
   };
 
   const getStockoutRisk = (daysUntil) => {
@@ -256,7 +283,17 @@ const StockForecast = () => {
           ) : expiringData?.success ? (
             <Card>
               <CardHeader>
-                <CardTitle>Expiring Soon</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Expiring Soon</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setWriteoffModal(true)}
+                    disabled={writeOffMutation.isLoading}>
+                    <AlertTriangle className="w-4 h-4 mr-1.5" />
+                    {writeOffMutation.isLoading ? "Memproses..." : "Write-off Kedaluwarsa"}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {expiringData.data.length === 0 ? (
@@ -371,6 +408,17 @@ const StockForecast = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      <Modal
+        type="confirm"
+        open={writeoffModal}
+        onOpenChange={setWriteoffModal}
+        title="Write-off Batch Kedaluwarsa?"
+        description="Semua batch dengan tanggal kedaluwarsa yang sudah lewat akan dihapus dari stok dan dicatat di Stock History. Lanjutkan?"
+        confirmText="Ya, Write-off"
+        onConfirm={handleWriteOff}
+        isLoading={writeOffMutation.isLoading}
+      />
     </div>
   );
 };

@@ -79,6 +79,7 @@ export const getBatches = async (payload = {}) => {
   const params = new URLSearchParams();
   if (payload.store) params.append("store", payload.store);
   if (payload.productId) params.append("productId", payload.productId);
+  if (payload.status) params.append("status", payload.status);
   if (payload.page) params.append("page", payload.page);
   if (payload.limit) params.append("limit", payload.limit);
   const query = params.toString();
