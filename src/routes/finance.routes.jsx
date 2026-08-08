@@ -79,7 +79,7 @@ export const financeRoutes = (
     <Route
       path="/accounting"
       element={
-        <RequireRole roles={["super_admin"]}>
+        <RequireRole roles={["super_admin", "admin"]}>
           <AccountingPage />
         </RequireRole>
       }
