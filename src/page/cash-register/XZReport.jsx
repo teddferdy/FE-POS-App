@@ -13,7 +13,8 @@ import {
   CreditCard,
   ReceiptText,
   Store,
-  User
+  User,
+  ChevronDown
 } from "lucide-react";
 import { getXReport, getZReport, getCashRegisterHistory } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
@@ -24,6 +25,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const formatIDR = (num) => {
   if (num == null || isNaN(num)) return "Rp 0";
