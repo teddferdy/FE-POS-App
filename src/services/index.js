@@ -23,21 +23,34 @@ axiosInstance.interceptors.request.use(
     const isGet = method === "GET";
     const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
 
-    // Helper to check if store is already provided in URL/Params/Data
+    // Helper to check if store is already provided in URL/Params/Data.
+    // Keys that signal the payload carries its own store scope (multi-store forms
+    // like product storePrices or expense allStores must not be overridden).
+    const STORE_KEYS = ["store", "stores", "storeId", "storeIds", "storePrices", "selectedStore"];
     const urlHasStore = req.url?.includes("store=") || req.url?.includes("stores=") || false;
     const paramsHaveStore = req.params?.store !== undefined || req.params?.stores !== undefined;
 
     let dataHasStore = false;
     if (req.data instanceof FormData) {
-      dataHasStore = req.data.has("store") || req.data.has("stores");
+      dataHasStore = STORE_KEYS.some((k) => req.data.has(k));
     } else if (typeof req.data === "object" && req.data !== null) {
-      dataHasStore = req.data.store !== undefined || req.data.stores !== undefined;
+      dataHasStore = STORE_KEYS.some((k) => req.data[k] !== undefined);
     }
 
     if (isSuperAdmin) {
-      // Super Admin: only inject store if one is explicitly set
-      if (activeStore && !urlHasStore && !paramsHaveStore && !dataHasStore && isGet) {
-        req.params = { ...req.params, store: activeStore };
+      // Super Admin: inject the selected store into GETs and mutations, but only
+      // when a store is explicitly picked (global view stays store-agnostic) and
+      // the payload does not already carry its own store scope.
+      if (activeStore && !urlHasStore && !paramsHaveStore && !dataHasStore) {
+        if (isGet) {
+          req.params = { ...req.params, store: activeStore };
+        } else if (isMutation) {
+          if (req.data instanceof FormData) {
+            req.data.append("store", activeStore);
+          } else if (typeof req.data === "object" || !req.data) {
+            req.data = { ...(req.data || {}), store: activeStore };
+          }
+        }
       }
     } else {
       // Non Super Admin: Mandatory activeStore injection

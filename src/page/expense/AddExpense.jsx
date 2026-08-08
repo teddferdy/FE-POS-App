@@ -140,7 +140,7 @@ const AddExpense = () => {
       : cookie?.user?.store || "";
     const data = {
       ...Object.fromEntries(Object.entries(values).filter(([_, v]) => v !== "" && v !== undefined)),
-      store: storeValue ? Number(storeValue) : undefined,
+      store: storeValue ? Number(storeValue) : null,
       date: values.date ? format(values.date, "yyyy-MM-dd") : "",
       status: saveAsDraft ? "draft" : "pending"
     };
