@@ -19,7 +19,8 @@ import {
   User,
   LogOut,
   ChevronRight,
-  LifeBuoy
+  LifeBuoy,
+  Globe
 } from "lucide-react";
 import { translationSelect } from "@/state/translation";
 import { getAllLocation } from "@/services/location";
@@ -27,7 +28,6 @@ import { useSocket } from "@/services/socket";
 import { useQueryClient } from "react-query";
 import { axiosInstance } from "@/services";
 import { getUnreadCount } from "@/services/notification";
-import { parseAccessMenu } from "@/utils/permission";
 import { GlobalSearch } from "@/components/ui/GlobalSearch";
 import { useGlobalSearch } from "@/hooks/useGlobalSearch";
 import CommandPalette from "./CommandPalette";
@@ -47,10 +47,6 @@ const StoreSelector = ({ cookie, setCookie }) => {
   const user = cookie?.user;
   const role = user?.roleType || "";
 
-  const userAccessMenu = parseAccessMenu(user?.accessMenu);
-  const hasCashierMenu =
-    userAccessMenu.length === 0 || userAccessMenu.some((m) => m.menu === "/home");
-
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
     enabled: role === "super_admin"
   });
@@ -60,11 +56,13 @@ const StoreSelector = ({ cookie, setCookie }) => {
   const storeName =
     locations.length === 0
       ? t("header.selectStore")
-      : activeStore?.name ||
-        activeStore?.storeName ||
-        ctxStoreName ||
-        cookie?.activeStoreName ||
-        t("header.selectStore");
+      : !activeStoreId
+        ? t("header.allStore")
+        : activeStore?.name ||
+          activeStore?.storeName ||
+          ctxStoreName ||
+          cookie?.activeStoreName ||
+          t("header.selectStore");
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -74,7 +72,7 @@ const StoreSelector = ({ cookie, setCookie }) => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  if (role !== "super_admin" || !hasCashierMenu) return null;
+  if (role !== "super_admin") return null;
 
   const handleSelect = (loc) => {
     const id = loc.id || loc._id;
@@ -115,7 +113,20 @@ const StoreSelector = ({ cookie, setCookie }) => {
               </button>
             </div>
           ) : (
-            locations.map((loc) => {
+            <>
+              <button
+                onClick={() => {
+                  setActiveStore("", "");
+                  setOpen(false);
+                }}
+                className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2.5 text-[9px] sm:text-sm transition-colors hover:bg-accent ${
+                  !activeStoreId ? "bg-primary/10 text-primary font-medium" : "text-foreground"
+                }`}>
+                <Globe size={14} className={!activeStoreId ? "text-primary" : "text-muted-foreground"} />
+                <span className="truncate flex-1 text-left">{t("header.allStore")}</span>
+                {!activeStoreId && <Check size={12} className="text-primary shrink-0" />}
+              </button>
+              {locations.map((loc) => {
               const id = loc.id || loc._id;
               const name = loc.name || loc.storeName || "";
               const isSelected = id === activeStoreId;
@@ -134,7 +145,8 @@ const StoreSelector = ({ cookie, setCookie }) => {
                   {isSelected && <Check size={12} className="text-primary shrink-0" />}
                 </button>
               );
-            })
+            })}
+            </>
           )}
         </div>
       )}

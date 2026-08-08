@@ -14,11 +14,10 @@ export function StoreProvider({ children }) {
   const isSuperAdmin = role === "super_admin";
 
   const [activeStoreId, setActiveStoreIdState] = useState(() => {
-    if (isSuperAdmin) return null;
-    return cookies?.activeStore || null;
+    const cookieStore = cookies?.activeStore;
+    return cookieStore && cookieStore !== "undefined" ? cookieStore : null;
   });
   const [activeStoreName, setActiveStoreNameState] = useState(() => {
-    if (isSuperAdmin) return "";
     return cookies?.activeStoreName || "";
   });
 
@@ -26,7 +25,7 @@ export function StoreProvider({ children }) {
     (id, name) => {
       // If super_admin, we use the passed ID (could be empty for global, or specific ID)
       // If not super_admin, we use the user's assigned store
-      const storeValue = isSuperAdmin ? id : user?.store;
+      const storeValue = isSuperAdmin ? id : user?.store || "";
 
       setCookie("activeStore", storeValue, { path: "/" });
       setCookie("activeStoreName", name || "", { path: "/" });
