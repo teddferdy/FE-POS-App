@@ -1,6 +1,8 @@
 import React from "react";
 import { Route } from "react-router-dom";
 
+import { RequireRole } from "@/components/ui/RequireRole";
+
 // Location
 const LocationList = React.lazy(() => import("@/page/location/LocationList"));
 const AddLocation = React.lazy(() => import("@/page/location/AddLocation"));
@@ -22,15 +24,52 @@ const BackupPage = React.lazy(() => import("@/page/backup/BackupPage"));
 const AuditLogList = React.lazy(() => import("@/page/audit-log/AuditLogList"));
 
 // Thermal Printer
-const ThermalPrinterSettings = React.lazy(() => import("@/page/thermal-printer/ThermalPrinterSettings"));
+const ThermalPrinterSettings = React.lazy(
+  () => import("@/page/thermal-printer/ThermalPrinterSettings")
+);
 
 export const settingsRoutes = (
   <>
-    <Route path="/location-list" element={<LocationList />} />
-    <Route path="/add-location" element={<AddLocation />} />
-    <Route path="/edit-location" element={<EditLocation />} />
-    <Route path="/detail-location" element={<LocationDetail />} />
-    <Route path="/store-geospatial" element={<StoreGeospatial />} />
+    <Route
+      path="/location-list"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <LocationList />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/add-location"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <AddLocation />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/edit-location"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <EditLocation />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/detail-location"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <LocationDetail />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/store-geospatial"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <StoreGeospatial />
+        </RequireRole>
+      }
+    />
 
     <Route path="/table-list" element={<TableList />} />
     <Route path="/detail-table" element={<DetailTable />} />

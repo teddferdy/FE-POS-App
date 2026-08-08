@@ -355,7 +355,6 @@ const globalPages = [
 
 const Header = ({ onMenuToggle, onOpenPalette }) => {
   const { t } = useTranslation();
-  const [cookie, setCookie] = useCookies();
   const { translation, updateTranslation } = translationSelect();
   const navigate = useNavigate();
   const { isOpen, setIsOpen, searchItems, handleSelect: handleGlobalSelect } = useGlobalSearch();
@@ -364,8 +363,6 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
   const { startTour } = useTourStore();
   const { theme, toggleTheme: toggleThemeStore } = useThemeStore();
   const location = useLocation();
-  const userHeader = cookie?.user;
-  const roleHeader = userHeader?.role || userHeader?.roleType || "";
   const isGlobalPage = globalPages.some((p) => location.pathname.startsWith(p));
   useEffect(() => {
     if (theme === "dark") {

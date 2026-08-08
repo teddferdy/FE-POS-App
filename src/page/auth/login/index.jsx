@@ -21,6 +21,7 @@ import { Loading } from "@/components/ui/loading";
 import { login } from "@/services/auth";
 import { resetSessionExpired } from "@/services";
 import { translationSelect } from "@/state/translation";
+import { getRoleDashboard } from "@/utils/role";
 import AuthGuideModal from "@/components/organism/AuthGuideModal";
 
 const LoginPage = () => {
@@ -108,9 +109,7 @@ const LoginPage = () => {
       }, 1000);
       setTimeout(() => {
         const role = success.user?.roleType;
-        if (role === "super_admin") navigate("/dashboard-super-admin");
-        else if (role === "admin") navigate("/dashboard-admin");
-        else navigate("/home");
+        navigate(getRoleDashboard(role));
         setIsLoading(false);
       }, 2000);
     },

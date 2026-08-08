@@ -13,7 +13,8 @@ import {
   Ban,
   Search,
   ShoppingBag,
-  AlertTriangle
+  AlertTriangle,
+  User
 } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { Button } from "@/components/ui/button";
@@ -235,6 +236,11 @@ const CreateSalesReturn = () => {
           <h1 className="text-2xl font-bold">{t("page.salesReturn.create.title")}</h1>
           <p className="text-sm text-muted-foreground">
             {t("page.salesReturn.create.orderLabel")}: {order?.orderNumber}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {t("page.salesReturn.create.customerLabel")}:{" "}
+            {order?.customerName || t("page.salesReturn.create.guest")}
+            {order?.customerPhone ? ` · ${order.customerPhone}` : ""}
           </p>
         </div>
       </div>
@@ -495,6 +501,13 @@ const OrderPicker = ({ isLoading, orders, onSelect }) => {
               className="flex items-center justify-between gap-3 p-3 hover:bg-muted/40 transition-colors">
               <div className="min-w-0">
                 <p className="font-mono text-sm font-semibold text-primary">{o.orderNumber}</p>
+                <p className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+                  <User size={11} className="shrink-0 text-primary" />
+                  <span className="truncate">
+                    {o.customerName || t("page.salesReturn.create.guest")}
+                    {o.customerPhone ? ` · ${o.customerPhone}` : ""}
+                  </span>
+                </p>
                 <p className="text-xs text-muted-foreground truncate">
                   {o.createdAt
                     ? new Date(o.createdAt).toLocaleDateString("id-ID", {

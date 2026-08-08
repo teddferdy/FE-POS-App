@@ -77,11 +77,7 @@ const EditShift = () => {
         nama_shift: shift.nama_shift || "",
         jam_mulai: shift.jam_mulai || "",
         jam_selesai: shift.jam_selesai || "",
-        status:
-          shift.status === "Aktif" ||
-          shift.status === 1 ||
-          shift.status === true ||
-          shift.status === "active"
+        status: shift.status === 1 || shift.status === true || shift.status === "active"
       });
     }
   }, [shift, form]);

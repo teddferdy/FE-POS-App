@@ -305,7 +305,7 @@ const SupplierScoreList = () => {
         <DataTable
           columns={columns}
           data={data?.data || []}
-          loading={isLoading}
+          isLoading={isLoading}
           isFetching={isFetching}
           toolbar={
             <TableToolbar

@@ -1,11 +1,9 @@
 import { useStore } from "@/contexts/StoreContext";
 
 export function useGlobalStoreFilter(defaultValue = "all") {
-  const { activeStoreId, isSuperAdmin, setActiveStore } = useStore();
+  const { activeStoreId, setActiveStore } = useStore();
 
-  const storeFilter = isSuperAdmin
-    ? String(activeStoreId || defaultValue)
-    : String(activeStoreId || defaultValue);
+  const storeFilter = String(activeStoreId || defaultValue);
 
   const setStoreFilter = (value) => {
     if (value === "all") {

@@ -74,15 +74,11 @@ const ShiftList = () => {
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
   const stats = data?.stats || {};
   const statsTotal = stats.total ?? total;
-  const activeCount =
-    stats.active ??
-    shifts.filter(
-      (s) => s.status === "Aktif" || s.status === "active" || s.status === 1 || s.status === true
-    ).length;
+  const isActive = (s) => s === "active" || s === true || s === 1;
+  const isInactive = (s) => s === "inactive" || s === false || s === 0;
+  const activeCount = stats.active ?? shifts.filter((s) => isActive(s.status)).length;
   const draftCount = stats.draft ?? shifts.filter((s) => s.status === "draft").length;
-  const inactiveCount =
-    stats.inactive ??
-    shifts.filter((s) => s.status === "inactive" || s.status === 0 || s.status === false).length;
+  const inactiveCount = stats.inactive ?? shifts.filter((s) => isInactive(s.status)).length;
 
   const handleDelete = (shift) => {
     setDeleteTarget(shift);
@@ -114,21 +110,15 @@ const ShiftList = () => {
       render: (row) => (
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            row.status === "Aktif" ||
-            row.status === "active" ||
-            row.status === 1 ||
-            row.status === true
+            isActive(row.status)
               ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-              : row.status === "inactive" || row.status === 0 || row.status === false
+              : isInactive(row.status)
                 ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                 : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
           }`}>
-          {row.status === "Aktif" ||
-          row.status === "active" ||
-          row.status === 1 ||
-          row.status === true
+          {isActive(row.status)
             ? t("common.active")
-            : row.status === "inactive" || row.status === 0 || row.status === false
+            : isInactive(row.status)
               ? t("common.inactive")
               : t("common.draft")}
         </span>

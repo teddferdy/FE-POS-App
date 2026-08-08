@@ -42,8 +42,7 @@ const statusBadge = (status) => {
       "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800",
     rejected:
       "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
-    done:
-      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
+    done: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
   };
   return map[status] || "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400";
 };
@@ -184,7 +183,9 @@ const WaiterRequestList = () => {
       header: "No. Request",
       accessorKey: "requestNumber",
       cell: ({ row }) => (
-        <span className="font-mono font-semibold text-foreground">{row.original.requestNumber}</span>
+        <span className="font-mono font-semibold text-foreground">
+          {row.original.requestNumber}
+        </span>
       )
     },
     {
@@ -206,7 +207,10 @@ const WaiterRequestList = () => {
       cell: ({ row }) => (
         <div className="flex items-center gap-1.5 text-sm">
           <MapPin size={14} className="text-muted-foreground" />
-          <span>{row.original.table?.name || (row.original.tableId ? `Meja ${row.original.tableId}` : "-")}</span>
+          <span>
+            {row.original.table?.name ||
+              (row.original.tableId ? `Meja ${row.original.tableId}` : "-")}
+          </span>
         </div>
       )
     },
@@ -315,23 +319,23 @@ const WaiterRequestList = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
-          title="Total Permintaan"
+          label={t("page.waiterRequest.stats.total")}
           value={totalAll}
           icon={HandPlatter}
-          loading={isLoading}
+          isLoading={isLoading}
         />
         <StatCard
-          title="Menunggu"
+          label={t("page.waiterRequest.stats.pending")}
           value={totalPending}
           icon={Bell}
-          loading={isLoading}
+          isLoading={isLoading}
           className="border-yellow-200 dark:border-yellow-800"
         />
         <StatCard
-          title="Menunggu Approval"
+          label={t("page.waiterRequest.stats.approved")}
           value={totalPending}
           icon={Clock}
-          loading={isLoading}
+          isLoading={isLoading}
           className="border-blue-200 dark:border-blue-800"
         />
       </div>
@@ -343,52 +347,52 @@ const WaiterRequestList = () => {
           <DataTable
             columns={columns}
             data={rows}
-            loading={isLoading}
+            isLoading={isLoading}
             isFetching={isFetching}
-          toolbar={
-            <TableToolbar
-              title="Daftar Permintaan Pelayan"
-              onReset={resetFilters}
-              isFiltered={isFiltered}>
-              {isSuperAdmin && (
+            toolbar={
+              <TableToolbar
+                title="Daftar Permintaan Pelayan"
+                onReset={resetFilters}
+                isFiltered={isFiltered}>
+                {isSuperAdmin && (
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Store
+                    </label>
+                    <StoreFilter
+                      locations={locData?.data || []}
+                      value={storeFilter}
+                      onChange={(v) => {
+                        setGlobalStoreFilter(v);
+                        setPage(1);
+                      }}
+                      isSuperAdmin={isSuperAdmin}
+                      t={t}
+                    />
+                  </div>
+                )}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Store
+                    Filter Status
                   </label>
-                  <StoreFilter
-                    locations={locData?.data || []}
-                    value={storeFilter}
-                    onChange={(v) => {
-                      setGlobalStoreFilter(v);
+                  <Combobox
+                    options={statusOptions}
+                    value={statusFilter}
+                    onChange={(val) => {
+                      setStatusFilter(val);
                       setPage(1);
                     }}
-                    isSuperAdmin={isSuperAdmin}
-                    t={t}
+                    placeholder="Filter Status"
+                    searchPlaceholder="Cari..."
                   />
                 </div>
-              )}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Filter Status
-                </label>
-                <Combobox
-                  options={statusOptions}
-                  value={statusFilter}
-                  onChange={(val) => {
-                    setStatusFilter(val);
-                    setPage(1);
-                  }}
-                  placeholder="Filter Status"
-                  searchPlaceholder="Cari..."
-                />
-              </div>
-            </TableToolbar>
-          }
-          pagination={data?.pagination}
-          onPageChange={setPage}
-          onLimitChange={setLimit}
-          emptyMessage="Belum ada permintaan pelayan."
-        />
+              </TableToolbar>
+            }
+            pagination={data?.pagination}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+            emptyMessage="Belum ada permintaan pelayan."
+          />
         </div>
       )}
 
@@ -402,9 +406,7 @@ const WaiterRequestList = () => {
           approveTarget?.table?.name || approveTarget?.tableId || "-"
         }?`}
         confirmText="Setujui"
-        onConfirm={() =>
-          statusMutation.mutate({ id: approveTarget?.id, status: "approved" })
-        }
+        onConfirm={() => statusMutation.mutate({ id: approveTarget?.id, status: "approved" })}
         isLoading={statusMutation.isLoading}
       />
 
@@ -419,9 +421,7 @@ const WaiterRequestList = () => {
         }?`}
         confirmText="Tolak"
         confirmVariant="destructive"
-        onConfirm={() =>
-          statusMutation.mutate({ id: rejectTarget?.id, status: "rejected" })
-        }
+        onConfirm={() => statusMutation.mutate({ id: rejectTarget?.id, status: "rejected" })}
         isLoading={statusMutation.isLoading}
       />
 

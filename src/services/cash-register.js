@@ -30,3 +30,15 @@ export const getCashRegisterHistory = async (payload) => {
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
+
+export const getXReport = async (storeId) => {
+  const { data, status } = await axiosInstance.get(`/cash-register/x-report?store=${storeId}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getZReport = async (registerId) => {
+  const { data, status } = await axiosInstance.get(`/cash-register/z-report/${registerId}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};

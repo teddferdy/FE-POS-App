@@ -99,8 +99,17 @@ const ProductGrid = ({
     return false;
   }, []);
 
+  const isOutOfStock = useCallback((product) => {
+    return (
+      product.stock !== undefined &&
+      Number(product.stock) <= 0 &&
+      product.isAvailable !== false
+    );
+  }, []);
+
   const handleProductClick = useCallback(
     (product) => {
+      if (isOutOfStock(product)) return;
       if (hasChoices(product)) {
         setSelectedProduct(product);
         setShowVariantModal(true);
@@ -108,7 +117,7 @@ const ProductGrid = ({
         cart.addOrder(product, store);
       }
     },
-    [cart, store, hasChoices]
+    [cart, store, hasChoices, isOutOfStock]
   );
 
   const handleAddToCart = useCallback(
@@ -360,7 +369,8 @@ const ProductGrid = ({
                         <button
                           key={productId || idx}
                           onClick={() => handleProductClick(product)}
-                          className="group bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-md hover:bg-card transition-all duration-200 text-left active:scale-[0.98]">
+                          disabled={isOutOfStock(product)}
+                          className="group bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-md hover:bg-card transition-all duration-200 text-left active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border/40 disabled:hover:bg-card/80 disabled:hover:shadow-none disabled:active:scale-100">
                           <div className="relative mb-2.5">
                             {img ? (
                               <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted/50">
@@ -406,15 +416,13 @@ const ProductGrid = ({
                                 </span>
                               </div>
                             )}
-                            {product.stock !== undefined &&
-                              Number(product.stock) <= 0 &&
-                              product.isAvailable !== false && (
-                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] rounded-lg flex items-center justify-center">
-                                  <span className="text-[10px] font-bold text-white bg-destructive/90 px-2 py-1 rounded-md uppercase tracking-wider">
-                                    {t("page.cashier.product.outOfStock")}
-                                  </span>
-                                </div>
-                              )}
+                            {isOutOfStock(product) && (
+                              <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] rounded-lg flex items-center justify-center">
+                                <span className="text-[10px] font-bold text-white bg-destructive/90 px-2 py-1 rounded-md uppercase tracking-wider">
+                                  {t("page.cashier.product.outOfStock")}
+                                </span>
+                              </div>
+                            )}
                             <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
                               {hasChoices(product) && (
                                 <span className="px-1.5 py-0.5 rounded-md bg-amber-500/90 backdrop-blur-sm shadow-sm">
@@ -480,7 +488,8 @@ const ProductGrid = ({
                         <button
                           key={productId || idx}
                           onClick={() => handleProductClick(product)}
-                          className="w-full group flex items-center gap-3 bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-sm hover:bg-card transition-all duration-200 text-left active:scale-[0.99]">
+                          disabled={isOutOfStock(product)}
+                          className="w-full group flex items-center gap-3 bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-sm hover:bg-card transition-all duration-200 text-left active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border/40 disabled:hover:bg-card/80 disabled:hover:shadow-none disabled:active:scale-100">
                           {img ? (
                             <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted/50">
                               <img

@@ -7,6 +7,7 @@ const CashierPage = React.lazy(() => import("@/page/cashier/CashierPage"));
 // const CustomerOrderCart = React.lazy(() => import("@/page/customer-order/cart"));
 // const CustomerOrderTracking = React.lazy(() => import("@/page/customer-order/tracking"));
 const CustomerDisplay = React.lazy(() => import("@/page/customer-display"));
+const CustomerDisplayBoard = React.lazy(() => import("@/page/customer-display-board"));
 
 export const cashierRoutes = (
   <>
@@ -16,5 +17,6 @@ export const cashierRoutes = (
     <Route path="/customer-order/cart" element={<CustomerOrderCart />} />
     <Route path="/customer-order/tracking/:id" element={<CustomerOrderTracking />} /> */}
     <Route path="/customer-display" element={<CustomerDisplay />} />
+    <Route path="/customer-display-board" element={<CustomerDisplayBoard />} />
   </>
 );

@@ -16,6 +16,7 @@ export const generateReceiptHTML = (data) => {
     storeName = "TOKO ANDA",
     storeAddress = "",
     storePhone = "",
+    storeEmail = "",
     logo = "",
     memberName = "",
     memberTier = "",
@@ -28,16 +29,29 @@ export const generateReceiptHTML = (data) => {
     discount = 0,
     serviceCharge = 0,
     tax = 0,
+    taxLabel = "Pajak (10%)",
     total = 0,
     paymentMethod = "Tunai",
     cashAmount = 0,
     changeAmount = 0,
-    footer = "Terima kasih atas kunjungan Anda"
+    footer = "Terima kasih atas kunjungan Anda",
+    socialMedia = [],
+    showLogo = true,
+    showStoreName = true,
+    showAddress = true,
+    showMemberInfo = true,
+    showSocialMedia = true
   } = data;
 
-  const logoHtml = logo
-    ? `<div style="text-align:center;margin-bottom:6px"><img src="${logo}" style="max-height:60px;object-fit:contain" /></div>`
-    : "";
+  const paymentLabel =
+    String(paymentMethod || "Tunai")
+      .charAt(0)
+      .toUpperCase() + String(paymentMethod || "Tunai").slice(1);
+
+  const logoHtml =
+    showLogo && logo
+      ? `<div style="text-align:center;margin-bottom:6px"><img src="${logo}" style="max-height:60px;object-fit:contain" /></div>`
+      : "";
 
   const dateObj = new Date(date);
   const dateStr = dateObj.toLocaleDateString("id-ID", {
@@ -52,16 +66,42 @@ export const generateReceiptHTML = (data) => {
   });
 
   const itemsHtml = items
-    .map(
-      (item) => `
+    .map((item) => {
+      const variant = item.options?.[0]?.name || item.variantName || "";
+      return `
     <tr>
-      <td style="font-size:12px;font-family:monospace;border-bottom:1px dashed #ccc;padding:2px 0">${item.name || item.productName || "-"}</td>
+      <td style="font-size:12px;font-family:monospace;border-bottom:1px dashed #ccc;padding:2px 0">${item.name || item.productName || "-"}${variant ? `<br/><span style="font-size:11px;color:#555">- ${variant}</span>` : ""}</td>
       <td style="font-size:12px;font-family:monospace;text-align:center;border-bottom:1px dashed #ccc;padding:2px 0;width:30px">${item.qty || item.quantity || 0}</td>
       <td style="font-size:12px;font-family:monospace;text-align:right;border-bottom:1px dashed #ccc;padding:2px 0;width:80px">${formatPrice(item.price || 0)}</td>
       <td style="font-size:12px;font-family:monospace;text-align:right;border-bottom:1px dashed #ccc;padding:2px 0;width:80px;font-weight:500">${formatPrice(item.total || item.subtotal || 0)}</td>
-    </tr>`
-    )
+    </tr>`;
+    })
     .join("");
+
+  const headerLines = [
+    logoHtml,
+    showStoreName && storeName
+      ? `<div style="font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px">${storeName}</div>`
+      : "",
+    showAddress && storeAddress
+      ? `<div style="font-size:11px;color:#555">${storeAddress}</div>`
+      : "",
+    showAddress && storePhone
+      ? `<div style="font-size:11px;color:#555">Telp: ${storePhone}</div>`
+      : "",
+    showAddress && storeEmail ? `<div style="font-size:11px;color:#555">${storeEmail}</div>` : ""
+  ]
+    .filter(Boolean)
+    .join("\n      ");
+
+  const socialHtml =
+    showSocialMedia && socialMedia.length > 0
+      ? `<div style="display:flex;justify-content:center;gap:10px;margin-top:4px;flex-wrap:wrap">${socialMedia
+          .map(
+            (sm) => `<span style="font-size:10px;color:#666">${sm.platform}: ${sm.account}</span>`
+          )
+          .join("")}</div>`
+      : "";
 
   return `
 <!DOCTYPE html>
@@ -74,10 +114,7 @@ export const generateReceiptHTML = (data) => {
 <body>
   <div id="receipt" style="width:58mm;padding:4px 8px;font-family:'Courier New',Courier,monospace;font-size:12px;line-height:1.3">
     <div style="text-align:center;margin-bottom:8px">
-      ${logoHtml}
-      <div style="font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px">${storeName}</div>
-      ${storeAddress ? `<div style="font-size:11px;color:#555">${storeAddress}</div>` : ""}
-      ${storePhone ? `<div style="font-size:11px;color:#555">Telp: ${storePhone}</div>` : ""}
+      ${headerLines}
     </div>
     <div style="border-top:2px solid #000;border-bottom:1px dashed #000;padding:4px 0;margin:4px 0;font-size:11px">
       <div style="display:flex;justify-content:space-between">
@@ -90,7 +127,7 @@ export const generateReceiptHTML = (data) => {
       </div>
     </div>
     ${
-      memberName
+      showMemberInfo && memberName
         ? `
     <div style="border-bottom:1px dashed #000;padding:4px 0;margin:4px 0;font-size:11px">
       <div style="font-weight:500">${memberName}</div>
@@ -117,17 +154,18 @@ export const generateReceiptHTML = (data) => {
       ${discount > 0 ? `<div style="display:flex;justify-content:space-between"><span>Diskon</span><span style="color:#c00">-${formatPrice(discount)}</span></div>` : ""}
       ${serviceCharge > 0 ? `<div style="display:flex;justify-content:space-between"><span>Biaya Layanan</span><span>${formatPrice(serviceCharge)}</span></div>` : ""}
       <div style="display:flex;justify-content:space-between">
-        <span>Pajak (10%)</span><span>${formatPrice(tax)}</span>
+        <span>${taxLabel}</span><span>${formatPrice(tax)}</span>
       </div>
       <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;border-top:2px solid #000;padding-top:4px;margin-top:4px">
         <span>TOTAL</span><span>${formatPrice(total)}</span>
       </div>
       <div style="display:flex;justify-content:space-between;margin-top:4px">
-        <span>${paymentMethod}</span><span>${formatPrice(cashAmount)}</span>
+        <span>${paymentLabel}</span><span>${formatPrice(cashAmount)}</span>
       </div>
       ${changeAmount > 0 ? `<div style="display:flex;justify-content:space-between"><span>Kembali</span><span>${formatPrice(changeAmount)}</span></div>` : ""}
     </div>
     <div style="text-align:center;margin-top:12px;font-size:11px;font-style:italic;color:#666">${footer}</div>
+    ${socialHtml}
   </div>
 </body>
 </html>`;
@@ -138,6 +176,7 @@ export const generateESCPOS = (data, opts = {}) => {
     storeName = "TOKO ANDA",
     storeAddress = "",
     storePhone = "",
+    storeEmail = "",
     memberName = "",
     memberTier = "",
     memberPoints = 0,
@@ -149,12 +188,23 @@ export const generateESCPOS = (data, opts = {}) => {
     discount = 0,
     serviceCharge = 0,
     tax = 0,
+    taxLabel = "Pajak (10%)",
     total = 0,
     paymentMethod = "Tunai",
     cashAmount = 0,
     changeAmount = 0,
-    footer = "Terima kasih atas kunjungan Anda"
+    footer = "Terima kasih atas kunjungan Anda",
+    socialMedia = [],
+    showStoreName = true,
+    showAddress = true,
+    showMemberInfo = true,
+    showSocialMedia = true
   } = data;
+
+  const paymentLabel =
+    String(paymentMethod || "Tunai")
+      .charAt(0)
+      .toUpperCase() + String(paymentMethod || "Tunai").slice(1);
 
   const W = RECEIPT_WIDTH;
   let enc = "";
@@ -180,19 +230,22 @@ export const generateESCPOS = (data, opts = {}) => {
   });
 
   enc += init;
-  enc += alignCenter + doubleWidth + boldOn;
-  enc += storeName + "\n";
-  enc += boldOff + normal;
+  if (showStoreName && storeName) {
+    enc += alignCenter + doubleWidth + boldOn;
+    enc += storeName + "\n";
+    enc += boldOff + normal;
+  }
 
   enc += alignCenter;
-  if (storeAddress) enc += storeAddress + "\n";
-  if (storePhone) enc += "Telp: " + storePhone + "\n";
+  if (showAddress && storeAddress) enc += storeAddress + "\n";
+  if (showAddress && storePhone) enc += "Telp: " + storePhone + "\n";
+  if (showAddress && storeEmail) enc += storeEmail + "\n";
 
   enc += line("=", W) + "\n";
   enc += alignLeft;
   enc += padBoth(dateStr, timeStr) + "\n";
   enc += padBoth("Invoice: " + orderNumber, "Kasir: " + cashier) + "\n";
-  if (memberName) {
+  if (showMemberInfo && memberName) {
     enc += "Member: " + memberName + "\n";
     if (memberTier) enc += "Tier: " + memberTier + "\n";
     if (memberPoints) enc += "Poin: " + Number(memberPoints).toLocaleString("id-ID") + "\n";
@@ -208,8 +261,10 @@ export const generateESCPOS = (data, opts = {}) => {
     const qty = item.qty || item.quantity || 0;
     const price = item.price || 0;
     const itemTotal = item.total || item.subtotal || qty * price;
+    const variant = item.options?.[0]?.name || item.variantName || "";
 
     enc += name + "\n";
+    if (variant) enc += "  - " + variant + "\n";
     enc += "  " + String(qty).padEnd(3);
     enc += formatPrice(price).padStart(15);
     enc += "  " + formatPrice(itemTotal).padStart(13) + "\n";
@@ -219,15 +274,20 @@ export const generateESCPOS = (data, opts = {}) => {
   enc += padBoth("Subtotal", formatPrice(subtotal)) + "\n";
   if (discount > 0) enc += padBoth("Diskon", "-" + formatPrice(discount)) + "\n";
   if (serviceCharge > 0) enc += padBoth("Biaya Layanan", formatPrice(serviceCharge)) + "\n";
-  enc += padBoth("Pajak (10%)", formatPrice(tax)) + "\n";
+  enc += padBoth(taxLabel, formatPrice(tax)) + "\n";
   enc += boldOn + line("=", W) + "\n";
   enc += padBoth("TOTAL", formatPrice(total)) + "\n";
   enc += boldOff + line("-", W) + "\n";
-  enc += padBoth(paymentMethod, formatPrice(cashAmount)) + "\n";
+  enc += padBoth(paymentLabel, formatPrice(cashAmount)) + "\n";
   if (changeAmount > 0) enc += padBoth("Kembali", formatPrice(changeAmount)) + "\n";
 
   enc += line("=", W) + "\n";
   enc += alignCenter + footer + "\n";
+  if (showSocialMedia && socialMedia.length > 0) {
+    socialMedia.forEach((sm) => {
+      enc += sm.platform + ": " + sm.account + "\n";
+    });
+  }
   enc += "\n\n\n";
   // ponytail: skip cut for mobile printers (no cutter), enable via opts.cut
   if (opts.cut) {

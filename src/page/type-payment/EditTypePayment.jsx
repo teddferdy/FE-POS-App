@@ -106,12 +106,7 @@ const EditTypePayment = () => {
   useEffect(() => {
     if (item?.id) {
       const statusValue =
-        item.status === "Aktif" ||
-        item.status === true ||
-        item.status === "active" ||
-        item.isActive === true
-          ? true
-          : false;
+        item.status === true || item.status === "active" || item.isActive === true ? true : false;
       form.reset({
         name: item.name || "",
         type: item.type || "",

@@ -1,7 +1,7 @@
 /* eslint-disable no-empty */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
@@ -13,6 +13,7 @@ import {
   sidebarMenuUser
 } from "@/utils/sidebar-menu";
 import { filterMenuByPermission } from "@/utils/permission";
+import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
 import { logOut } from "@/services/auth";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -22,6 +23,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [cookie, , removeCookie] = useCookies();
+  const boardTabRef = useRef(0);
 
   const matchPath = (href, item) => {
     if (!href) return false;
@@ -115,11 +117,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
     user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
 
   const baseMenu = useMemo(() => {
-    if (hasAccessMenu || role === "super_admin") return sidebarMenuSuperAdmin;
-    if (role === "admin") return sidebarMenuAdmin;
-    if (role === "cashier" || role === "kasir") return sidebarMenuCashier;
+    if (hasAccessMenu || isSuperAdminRole(user)) return sidebarMenuSuperAdmin;
+    if (isAdminRole(user)) return sidebarMenuAdmin;
+    if (isCashierRole(user)) return sidebarMenuCashier;
     return sidebarMenuUser;
-  }, [hasAccessMenu, role]);
+  }, [hasAccessMenu, user]);
 
   const menuItems = useMemo(() => filterMenuByPermission(baseMenu, user), [baseMenu, user]);
 
@@ -169,6 +171,28 @@ const Sidebar = ({ collapsed, onToggle }) => {
     return <IconComponent size={size} />;
   };
 
+  const handleNavigate = (item) => {
+    if (!item?.href) return;
+    if (item.href === "/home" && role !== "super_admin") {
+      const store = cookie?.activeStore || user?.store;
+      navigate("/home");
+      const now = Date.now();
+      if (now - boardTabRef.current > 500) {
+        boardTabRef.current = now;
+        window.open(
+          store ? `/customer-display-board?store=${store}` : "/customer-display-board",
+          "_blank"
+        );
+      }
+      return;
+    }
+    if (item.external) {
+      window.open(item.href, "_blank", "noopener,noreferrer");
+    } else {
+      navigate(item.href);
+    }
+  };
+
   const renderNavItem = (item, depth = 0) => {
     if (item.section) {
       return (
@@ -198,7 +222,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
           <button
             key={item.title}
             onClick={() => {
-              if (child.href) navigate(child.href);
+              handleNavigate(child);
             }}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
               isActive(child.href, child)
@@ -265,7 +289,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       <button
         key={item.href || item.title}
         onClick={() => {
-          if (item.href) navigate(item.href);
+          handleNavigate(item);
         }}
         className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
           isActive(item.href, item)

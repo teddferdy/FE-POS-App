@@ -117,10 +117,7 @@ const TypePaymentList = () => {
   const stats = data?.stats || {};
 
   const isStatusActive = (item) =>
-    item.status === "Aktif" ||
-    item.status === true ||
-    item.status === "active" ||
-    item.isActive === true;
+    item.status === true || item.status === "active" || item.isActive === true;
   const isStatusDraft = (item) => item.status === "draft";
   const isStatusInactive = (item) => !isStatusActive(item) && !isStatusDraft(item);
 
@@ -159,11 +156,7 @@ const TypePaymentList = () => {
   };
 
   const getStatusBadge = (item) => {
-    const isActive =
-      item.status === "Aktif" ||
-      item.status === true ||
-      item.status === "active" ||
-      item.isActive === true;
+    const isActive = item.status === true || item.status === "active" || item.isActive === true;
     const isDraft = item.status === "draft";
     return (
       <span

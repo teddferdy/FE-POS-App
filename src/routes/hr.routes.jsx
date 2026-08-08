@@ -1,6 +1,8 @@
 import React from "react";
 import { Route } from "react-router-dom";
 
+import { RequireRole } from "@/components/ui/RequireRole";
+
 // User / Admin
 const AdminList = React.lazy(() => import("@/page/user/AdminList"));
 const AddAdmin = React.lazy(() => import("@/page/user/AddAdmin"));
@@ -38,10 +40,38 @@ export const hrRoutes = (
   <>
     <Route path="/user-list" element={<AdminList />} />
     <Route path="/add-user" element={<AddAdmin />} />
-    <Route path="/add-role" element={<AddRole />} />
-    <Route path="/edit-role/:id" element={<EditRole />} />
-    <Route path="/detail-role/:id" element={<DetailRole />} />
-    <Route path="/role-management" element={<RoleManagement />} />
+    <Route
+      path="/add-role"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <AddRole />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/edit-role/:id"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <EditRole />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/detail-role/:id"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <DetailRole />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/role-management"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <RoleManagement />
+        </RequireRole>
+      }
+    />
 
     <Route path="/employee-list" element={<EmployeeList />} />
     <Route path="/add-employee" element={<AddEmployee />} />

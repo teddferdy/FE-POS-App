@@ -1,13 +1,29 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
-import { ShoppingCart, X, Package, Menu, Sun, Moon, Store, ChevronRight } from "lucide-react";
+import {
+  ShoppingCart,
+  X,
+  Package,
+  Menu,
+  Sun,
+  Moon,
+  Store,
+  ChevronRight,
+  MonitorPlay
+} from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { useTranslation } from "react-i18next";
 import { getProductByOutlet } from "@/services/product";
 import { getAllLocation } from "@/services/location";
 import { getAllTaxConfig } from "@/services/tax-config";
+import { storeIdsEqual } from "@/utils/storeId";
 import { orderList } from "@/state/order-list";
+import {
+  CART_MIRROR_KEY,
+  DISPLAY_EVENT_TYPES,
+  dispatchDisplayEvent
+} from "@/utils/customerDisplayBoard";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -56,6 +72,17 @@ const CashierPage = () => {
   const isSuperAdmin = role === "super_admin";
   const [pickedStore, setPickedStore] = useState(null);
   const store = isSuperAdmin ? pickedStore : cookie?.activeStore || user?.store;
+  const boardTabRef = useRef(0);
+
+  const openBoardTab = (storeId) => {
+    const now = Date.now();
+    if (now - boardTabRef.current < 500) return;
+    boardTabRef.current = now;
+    window.open(
+      storeId ? `/customer-display-board?store=${storeId}` : "/customer-display-board",
+      "_blank"
+    );
+  };
 
   const { data: locsData, isLoading: locsLoading } = useQuery(
     ["cashier-locations"],
@@ -67,7 +94,7 @@ const CashierPage = () => {
   const locationList = locsData?.data || locsData || [];
 
   const storeName = store
-    ? locationList.find((l) => l.id === store)?.name || t("page.cashier.storeName")
+    ? locationList.find((l) => storeIdsEqual(l.id, store))?.name || t("page.cashier.storeName")
     : t("page.cashier.storeName");
   const userName = user?.userName || user?.name || cookie?.name || t("page.cashier.cashierName");
   const { theme, toggleTheme: toggleThemeStore } = useThemeStore();
@@ -207,6 +234,32 @@ const CashierPage = () => {
   const taxRate = taxRatePercent / 100;
   const taxAmount = Math.round(subtotal * taxRate);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      localStorage.setItem(
+        CART_MIRROR_KEY,
+        JSON.stringify({
+          totalItems,
+          subtotal,
+          taxRate,
+          taxAmount,
+          total: subtotal + taxAmount,
+          items: cart.order.map((item) => ({
+            cartKey: item.cartKey || item.id,
+            nameProduct: item.nameProduct || item.name || "",
+            variantName: item.variantName || null,
+            count: item.count || 0,
+            price: Number(item.price) || 0,
+            totalPrice: Number(item.totalPrice) || 0,
+            unit: item.unit || ""
+          })),
+          updatedAt: Date.now()
+        })
+      );
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [cart.order, totalItems, subtotal, taxRate, taxAmount]);
+
   const handleLoadOrder = useCallback(
     (order) => {
       cart.resetOrder();
@@ -235,10 +288,21 @@ const CashierPage = () => {
     [cart, t]
   );
 
-  const handleCheckoutComplete = useCallback((result) => {
-    setReceiptData(result);
-    setCheckoutOpen(false);
-  }, []);
+  const handleCheckoutComplete = useCallback(
+    (result) => {
+      setReceiptData(result);
+      setCheckoutOpen(false);
+      cart.resetOrder();
+      dispatchDisplayEvent({
+        type: DISPLAY_EVENT_TYPES.TRANSACTION_SUCCESS,
+        store,
+        orderId: result?.id || result?._id || "",
+        orderNumber: result?.orderNumber || result?.invoice || "",
+        total: result?.total || result?.grandTotal || result?.totalPrice || 0
+      });
+    },
+    [cart, store]
+  );
 
   const handleNewTransaction = useCallback(() => {
     cart.resetOrder();
@@ -302,6 +366,23 @@ const CashierPage = () => {
                 {/* <StoreSelector cookie={cookie} setCookie={setCookie} /> */}
               </div>
               <div className="flex items-center gap-1 sm:gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="relative rounded-xl border-border/60 hidden sm:inline-flex"
+                      onClick={() => openBoardTab(store)}>
+                      <MonitorPlay size={16} />
+                      <span className="hidden lg:inline">
+                        {t("page.cashier.openCustomerDisplay")}
+                      </span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="center">
+                    {t("page.cashier.openCustomerDisplay")}
+                  </TooltipContent>
+                </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
@@ -371,7 +452,10 @@ const CashierPage = () => {
                     : locationList.map((loc) => (
                         <button
                           key={loc.id}
-                          onClick={() => setPickedStore(loc.id)}
+                          onClick={() => {
+                            setPickedStore(loc.id);
+                            openBoardTab(loc.id);
+                          }}
                           className="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg transition-all text-left group">
                           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15">
                             <Store size={24} className="text-primary" />

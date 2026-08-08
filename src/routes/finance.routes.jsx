@@ -1,6 +1,8 @@
 import React from "react";
 import { Route } from "react-router-dom";
 
+import { RequireRole } from "@/components/ui/RequireRole";
+
 // Expense Category
 const ExpenseCategoryList = React.lazy(() => import("@/page/expense-category/ExpenseCategoryList"));
 const AddExpenseCategory = React.lazy(() => import("@/page/expense-category/AddExpenseCategory"));
@@ -31,6 +33,7 @@ const CashRegisterOpenClose = React.lazy(
 const CashRegisterCurrent = React.lazy(() => import("@/page/cash-register/CashRegisterCurrent"));
 const CashRegisterHistory = React.lazy(() => import("@/page/cash-register/CashRegisterHistory"));
 const CashRegisterDetail = React.lazy(() => import("@/page/cash-register/CashRegisterDetail"));
+const XZReport = React.lazy(() => import("@/page/cash-register/XZReport"));
 
 // Tax Config
 const TaxConfigList = React.lazy(() => import("@/page/tax-config/TaxConfigList"));
@@ -39,9 +42,10 @@ const EditTaxConfig = React.lazy(() => import("@/page/tax-config/EditTaxConfig")
 const DetailTaxConfig = React.lazy(() => import("@/page/tax-config/DetailTaxConfig"));
 
 // Advanced Reporting
-const AdvancedReporting = React.lazy(
-  () => import("@/page/advanced-reporting/AdvancedReporting")
-);
+const AdvancedReporting = React.lazy(() => import("@/page/advanced-reporting/AdvancedReporting"));
+
+// Accounting
+const AccountingPage = React.lazy(() => import("@/page/accounting/AccountingPage"));
 
 export const financeRoutes = (
   <>
@@ -63,6 +67,7 @@ export const financeRoutes = (
     <Route path="/cash-register/current" element={<CashRegisterCurrent />} />
     <Route path="/cash-register/history" element={<CashRegisterHistory />} />
     <Route path="/cash-register/history/detail" element={<CashRegisterDetail />} />
+    <Route path="/cash-register/xz-report" element={<XZReport />} />
 
     <Route path="/tax-list" element={<TaxConfigList />} />
     <Route path="/add-tax" element={<AddTaxConfig />} />
@@ -70,5 +75,14 @@ export const financeRoutes = (
     <Route path="/detail-tax" element={<DetailTaxConfig />} />
 
     <Route path="/advanced-reporting" element={<AdvancedReporting />} />
+
+    <Route
+      path="/accounting"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <AccountingPage />
+        </RequireRole>
+      }
+    />
   </>
 );

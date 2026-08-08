@@ -32,6 +32,7 @@ import { getAllMemberTier } from "@/services/member-tier";
 import { getAllTypePayment } from "@/services/type-payment";
 import { getMemberById } from "@/services/member";
 import { getTableAvailability } from "@/services/table";
+import { getPaymentIconKind } from "@/utils/payment";
 import { toast } from "sonner";
 
 const CheckoutModal = ({
@@ -170,37 +171,31 @@ const CheckoutModal = ({
   const paymentMethods = useMemo(() => {
     const data = paymentMethodsData?.data || paymentMethodsData || [];
     const list = Array.isArray(data) ? data : [];
-    if (list.length > 0) {
-      return list
-        .filter((pm) => {
-          const s = (pm.status || "").toString().toLowerCase();
-          return !s || s === "active" || s === "true";
-        })
-        .map((pm) => ({
+    return list
+      .filter((pm) => {
+        const s = (pm.status || "").toString().toLowerCase();
+        return !s || s === "active" || s === "true";
+      })
+      .map((pm) => {
+        const kind = getPaymentIconKind(pm.type);
+        const icon =
+          kind === "cash"
+            ? Banknote
+            : kind === "ewallet"
+              ? Smartphone
+              : kind === "card"
+                ? CreditCard
+                : Wallet;
+        return {
           id: pm.type || pm.id?.toString() || pm.name?.toLowerCase(),
           label: pm.name,
-          icon:
-            pm.type === "cash" || pm.type === "tunai"
-              ? Banknote
-              : pm.type === "qris" || pm.type === "e-wallet"
-                ? Smartphone
-                : pm.type === "debit" || pm.type === "kartu"
-                  ? CreditCard
-                  : Wallet,
+          icon,
           color: "from-primary to-primary/70"
-        }));
-    }
-    // ponytail: fallback when API unavailable
-    return [
-      { id: "cash", label: "Tunai", icon: Banknote, color: "from-emerald-500 to-emerald-600" },
-      { id: "qris", label: "QRIS", icon: Smartphone, color: "from-violet-500 to-violet-600" },
-      { id: "debit", label: "Debit", icon: CreditCard, color: "from-blue-500 to-blue-600" },
-      { id: "credit", label: "Kredit", icon: CreditCard, color: "from-orange-500 to-orange-600" },
-      { id: "other", label: "Lainnya", icon: Wallet, color: "from-slate-500 to-slate-600" }
-    ];
+        };
+      });
   }, [paymentMethodsData]);
 
-  const taxRate = propTaxRate || 0.11;
+  const taxRate = Number.isFinite(propTaxRate) ? propTaxRate : 0.11;
   const taxAmount = subtotal * taxRate;
   const matchedTier = useMemo(() => {
     if (!memberPoints || memberTiers.length === 0) return null;
@@ -614,36 +609,42 @@ const CheckoutModal = ({
                   {t("page.cashier.paymentMethod")}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {(paymentMethods.length > 0 ? paymentMethods : []).map((method) => {
-                    const Icon = method.icon;
-                    const isSelected = paymentMethod === method.id;
-                    return (
-                      <button
-                        key={method.id}
-                        onClick={() => setPaymentMethod(method.id)}
-                        className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all duration-200 ${
-                          isSelected
-                            ? "border-primary bg-primary/10 shadow-sm shadow-primary/10 scale-[1.02]"
-                            : "border-border/50 bg-card/50 hover:border-border hover:bg-accent/50"
-                        }`}>
-                        <div
-                          className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br ${method.color} shadow-sm`}>
-                          <Icon size={16} className="text-white" />
-                        </div>
-                        <span
-                          className={`text-xs font-medium ${
-                            isSelected ? "text-primary" : "text-muted-foreground"
+                  {paymentMethods.length === 0 ? (
+                    <p className="col-span-full text-sm text-muted-foreground text-center py-3">
+                      {t("page.cashier.noPaymentMethods", "Tidak ada metode pembayaran aktif")}
+                    </p>
+                  ) : (
+                    paymentMethods.map((method) => {
+                      const Icon = method.icon;
+                      const isSelected = paymentMethod === method.id;
+                      return (
+                        <button
+                          key={method.id}
+                          onClick={() => setPaymentMethod(method.id)}
+                          className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all duration-200 ${
+                            isSelected
+                              ? "border-primary bg-primary/10 shadow-sm shadow-primary/10 scale-[1.02]"
+                              : "border-border/50 bg-card/50 hover:border-border hover:bg-accent/50"
                           }`}>
-                          {method.label}
-                        </span>
-                        {isSelected && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-lg">
-                            <Check size={10} className="text-primary-foreground" />
+                          <div
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br ${method.color} shadow-sm`}>
+                            <Icon size={16} className="text-white" />
                           </div>
-                        )}
-                      </button>
-                    );
-                  })}
+                          <span
+                            className={`text-xs font-medium ${
+                              isSelected ? "text-primary" : "text-muted-foreground"
+                            }`}>
+                            {method.label}
+                          </span>
+                          {isSelected && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                              <Check size={10} className="text-primary-foreground" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 

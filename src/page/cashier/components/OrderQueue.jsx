@@ -30,6 +30,18 @@ const statusConfig = {
   }
 };
 
+const paymentStatusConfig = {
+  paid: {
+    color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+  },
+  partial: {
+    color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+  },
+  unpaid: {
+    color: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
+  }
+};
+
 function timeAgo(dateStr) {
   const now = new Date();
   const date = new Date(dateStr);
@@ -45,6 +57,7 @@ function timeAgo(dateStr) {
 const OrderCard = ({ order, onClick }) => {
   const { t } = useTranslation();
   const status = statusConfig[order.status] || statusConfig.pending;
+  const payCfg = paymentStatusConfig[order.paymentStatus] || paymentStatusConfig.unpaid;
   const isDineIn = !!order.tableId;
   const itemCount = order.totalQuantity || order.items?.length || 0;
 
@@ -68,6 +81,19 @@ const OrderCard = ({ order, onClick }) => {
             ? `${t("page.cashier.orderQueue.dineIn")} / ${t("page.cashier.orderQueue.table")} ${order.tableId}`
             : t("page.cashier.orderQueue.takeaway")}
         </span>
+      </div>
+      <div className="flex flex-wrap items-center gap-1 mb-1.5">
+        {order.paymentStatus && (
+          <span
+            className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${payCfg.color}`}>
+            {t(`page.cashier.orderQueue.paymentStatus.${order.paymentStatus}`, order.paymentStatus)}
+          </span>
+        )}
+        {order.source && order.source !== "pos" && (
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border border-border/60 text-muted-foreground uppercase">
+            {t(`page.delivery.source.${order.source}`, order.source)}
+          </span>
+        )}
       </div>
       <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">

@@ -146,14 +146,14 @@ const ExpenseList = () => {
         </span>
       );
     }
-    if (status === "pending" || status === "need approve") {
+    if (status === "pending") {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
           {t("page.expense.list.statusPending")}
         </span>
       );
     }
-    if (status === "rejected" || status === "ditolak") {
+    if (status === "rejected") {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
           {t("page.expense.list.statusRejected")}

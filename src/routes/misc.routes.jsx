@@ -1,6 +1,8 @@
 import React from "react";
 import { Route } from "react-router-dom";
 
+import { RequireRole } from "@/components/ui/RequireRole";
+
 // Dashboard
 const Dashboard = React.lazy(() => import("@/page/dashboard"));
 
@@ -23,7 +25,14 @@ const NotFoundPage = React.lazy(() => import("@/components/ui/NotFoundPage"));
 
 export const miscRoutes = (
   <>
-    <Route path="/dashboard-super-admin" element={<Dashboard />} />
+    <Route
+      path="/dashboard-super-admin"
+      element={
+        <RequireRole roles={["super_admin"]}>
+          <Dashboard />
+        </RequireRole>
+      }
+    />
     <Route path="/dashboard-admin" element={<Dashboard />} />
     <Route path="/kitchen-display" element={<KitchenDisplay />} />
     <Route path="/qr-order-management" element={<CustomerOrderManagement />} />

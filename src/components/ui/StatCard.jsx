@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 const variantStyles = {
   default: {
     card: "bg-card border border-border",
@@ -81,6 +82,7 @@ const StatCard = ({
   icon,
   subtitle,
   variant = "default",
+  isLoading = false,
   "data-tour": dataTour,
   className = ""
 }) => {
@@ -92,16 +94,26 @@ const StatCard = ({
       className={`${s.card} p-6 rounded-xl shadow-sm flex justify-between items-center group hover:shadow-md transition-shadow ${className}`}>
       <div>
         <p className={`text-xs font-semibold ${s.label} uppercase tracking-wider mb-1`}>{label}</p>
-        <h3 className={`text-3xl font-bold ${s.value}`}>{value}</h3>
-        {subtitle && (
-          <p className={`text-xs font-semibold ${s.subtitle} flex items-center gap-1 mt-1`}>
-            {subtitle}
-          </p>
+        {isLoading ? (
+          <Skeleton className="h-8 w-24 my-1.5" />
+        ) : (
+          <h3 className={`text-3xl font-bold ${s.value}`}>{value}</h3>
+        )}
+        {isLoading ? (
+          <Skeleton className="h-3 w-32 mt-1" />
+        ) : (
+          subtitle && (
+            <p className={`text-xs font-semibold ${s.subtitle} flex items-center gap-1 mt-1`}>
+              {subtitle}
+            </p>
+          )
         )}
       </div>
       <div
         className={`w-14 h-14 rounded-2xl ${s.iconBg} flex items-center justify-center ${s.iconColor} group-hover:scale-110 transition-transform`}>
-        {isLucide ? (
+        {isLoading ? (
+          <Skeleton className="w-7 h-7 rounded-lg" />
+        ) : isLucide ? (
           <span className="[&>svg]:w-7 [&>svg]:h-7">{React.createElement(icon, { size: 24 })}</span>
         ) : (
           <span className="material-symbols-outlined text-3xl">{icon}</span>

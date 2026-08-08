@@ -330,29 +330,29 @@ const PromoCampaignList = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title={t("page.promo.stats.totalCampaigns")}
+          label={t("page.promo.stats.totalCampaigns")}
           value={stats.totalCampaigns || 0}
           icon={Megaphone}
-          loading={isLoading}
+          isLoading={isLoading}
         />
         <StatCard
-          title={t("page.promo.stats.activeCampaigns")}
+          label={t("page.promo.stats.activeCampaigns")}
           value={stats.activeCampaigns || 0}
           icon={CheckCircle}
-          loading={isLoading}
+          isLoading={isLoading}
           className="border-green-200 dark:border-green-800"
         />
         <StatCard
-          title={t("page.promo.stats.totalUsage")}
+          label={t("page.promo.stats.totalUsage")}
           value={stats.totalUsage || 0}
           icon={Tag}
-          loading={isLoading}
+          isLoading={isLoading}
         />
         <StatCard
-          title={t("page.promo.stats.totalDiscount")}
+          label={t("page.promo.stats.totalDiscount")}
           value={`Rp${(stats.totalDiscountGiven || 0).toLocaleString()}`}
           icon={Percent}
-          loading={isLoading}
+          isLoading={isLoading}
         />
       </div>
 
@@ -360,7 +360,7 @@ const PromoCampaignList = () => {
         <DataTable
           columns={columns}
           data={data?.data || []}
-          loading={isLoading}
+          isLoading={isLoading}
           isFetching={isFetching}
           toolbar={
             <TableToolbar

@@ -30,6 +30,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import NoStore from "@/components/ui/NoStore";
+import StoreFilter from "@/components/ui/StoreFilter";
 import UserGuide from "@/components/organism/UserGuide";
 
 const StockAdjustment = () => {
@@ -45,6 +46,7 @@ const StockAdjustment = () => {
     enabled: isSuperAdmin
   });
 
+  const [storeFilter, setStoreFilter] = useState("");
   const [product, setProduct] = useState(null);
   const [productOpen, setProductOpen] = useState(false);
   const [sign, setSign] = useState("+");
@@ -52,15 +54,25 @@ const StockAdjustment = () => {
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const queryStore = isSuperAdmin
+    ? storeFilter && storeFilter !== "all"
+      ? storeFilter
+      : ""
+    : store;
+
   const { data: productsData, isLoading: productsLoading } = useQuery(
-    ["products-adjustment", store],
-    () => getAllProduct({ location: store }),
-    { enabled: !!store }
+    ["products-adjustment", queryStore],
+    () => getAllProduct({ location: queryStore }),
+    { enabled: !!queryStore }
   );
   const products = productsData?.data || [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSuperAdmin && (!storeFilter || storeFilter === "all")) {
+      toast.error(t("page.stockAdjustment.validation.storeRequired"));
+      return;
+    }
     if (!product) {
       toast.error(t("page.stockAdjustment.validation.productRequired"));
       return;
@@ -72,7 +84,13 @@ const StockAdjustment = () => {
     }
     setSubmitting(true);
     try {
-      await adjustStock({ productId: product.id, sign, value: val, reason });
+      await adjustStock({
+        productId: product.id,
+        sign,
+        value: val,
+        reason,
+        storeId: isSuperAdmin ? storeFilter : undefined
+      });
       toast.success(t("page.stockAdjustment.toast.success"));
       queryClient.invalidateQueries(["products-adjustment"]);
       setProduct(null);
@@ -119,6 +137,26 @@ const StockAdjustment = () => {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <Card className="p-6 shadow-sm border-muted space-y-5">
+                {isSuperAdmin && (
+                  <div className="space-y-2">
+                    <Label>
+                      {t("page.stockAdjustment.form.store")}{" "}
+                      <span className="text-destructive">*</span>
+                    </Label>
+                    <StoreFilter
+                      locations={locData?.data || []}
+                      value={storeFilter}
+                      onChange={setStoreFilter}
+                      isSuperAdmin={isSuperAdmin}
+                      t={t}
+                    />
+                    {!queryStore && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                        {t("page.stockAdjustment.validation.storeRequired")}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label>
                     {t("page.stockAdjustment.form.product")}{" "}
@@ -226,7 +264,7 @@ const StockAdjustment = () => {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={submitting}
+                    disabled={submitting || (isSuperAdmin && !queryStore)}
                     className="w-full sm:w-auto justify-center">
                     {submitting ? <Loading /> : <Save className="mr-2 h-4 w-4" />}
                     {t("page.stockAdjustment.form.submit")}
