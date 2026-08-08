@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
-import { Eye, Receipt, Plus } from "lucide-react";
+import { Eye, Receipt, Plus, RotateCcw } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { getCashRegisterHistory } from "@/services/cash-register";
