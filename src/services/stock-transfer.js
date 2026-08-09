@@ -41,9 +41,3 @@ export const cancelStockTransfer = async (id) => {
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
-
-export const adjustStock = async (payload) => {
-  const { data, status } = await axiosInstance.post("/pos/adjust", payload);
-  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
-  return data;
-};

@@ -408,30 +408,15 @@ const ReservationList = () => {
                       onReset={resetFilters}
                       isFiltered={isFiltered}>
                       {isLoadingLocations || isLoading || isFetching ? (
-                        <>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                              &nbsp;
-                            </label>
-                            <Skeleton className="h-9 w-full rounded-md" />
-                          </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                              &nbsp;
-                            </label>
-                            <Skeleton className="h-9 w-full rounded-md" />
-                          </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                              &nbsp;
-                            </label>
-                            <Skeleton className="h-9 w-full rounded-md" />
-                          </div>
-                        </>
+                        [
+                          <Skeleton key="s1" className="h-9 w-40 rounded-md" />,
+                          <Skeleton key="s2" className="h-9 w-40 rounded-md" />,
+                          <Skeleton key="s3" className="h-9 w-40 rounded-md" />
+                        ]
                       ) : (
-                        <>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        [
+                          <div key="store">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
                               Store
                             </label>
                             <StoreFilter
@@ -444,9 +429,9 @@ const ReservationList = () => {
                               isSuperAdmin={isSuperAdmin}
                               t={t}
                             />
-                          </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          </div>,
+                          <div key="date">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
                               {t("page.reservation.columns.date")}
                             </label>
                             <DatePicker
@@ -456,9 +441,9 @@ const ReservationList = () => {
                                 setPage(1);
                               }}
                             />
-                          </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          </div>,
+                          <div key="status">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
                               {t("page.reservation.columns.status")}
                             </label>
                             <Combobox
@@ -488,7 +473,7 @@ const ReservationList = () => {
                               searchPlaceholder="Cari..."
                             />
                           </div>
-                        </>
+                        ]
                       )}
                     </TableToolbar>
                   }

@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/ui/EmptyState";
 import { getOrderById, getOrdersByStore } from "@/services/order";
 import { returnOrder } from "@/services/sales-return";
+import { getAllTypePayment } from "@/services/type-payment";
 import { getBatches } from "@/services/inventory";
 import Modal from "@/components/organism/modal";
 
@@ -52,6 +53,7 @@ const CreateSalesReturn = () => {
   const [items, setItems] = useState([]);
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
+  const [refundMethod, setRefundMethod] = useState("cash");
   const [confirmModal, setConfirmModal] = useState(false);
 
   const {
@@ -70,6 +72,34 @@ const CreateSalesReturn = () => {
     () => getBatches({ store: order?.store, status: "active" }),
     { enabled: !!order?.store }
   );
+
+  const { data: paymentMethodsData } = useQuery(
+    ["sales-return-payment-methods", order?.store],
+    () => getAllTypePayment({ store: order?.store, status: "active", limit: 100 }),
+    { enabled: !!order?.store, retry: false }
+  );
+
+  const paymentMethodOptions = useMemo(() => {
+    const raw = paymentMethodsData?.data || paymentMethodsData || [];
+    const list = Array.isArray(raw) ? raw : [];
+    const fallback = [
+      { value: "cash", label: t("page.salesReturn.method.cash") },
+      { value: "debit", label: t("page.salesReturn.method.debit") },
+      { value: "credit", label: t("page.salesReturn.method.credit") },
+      { value: "e-wallet", label: t("page.salesReturn.method.ewallet") },
+      { value: "other", label: t("page.salesReturn.method.other") }
+    ];
+    let opts = list.length > 0 ? list.map((pm) => ({ value: pm.type, label: pm.name })) : fallback;
+    if (order?.paymentMethod && !opts.some((o) => o.value === order.paymentMethod)) {
+      const known = fallback.find((o) => o.value === order.paymentMethod);
+      opts = [{ value: order.paymentMethod, label: known?.label || order.paymentMethod }, ...opts];
+    }
+    return opts;
+  }, [paymentMethodsData, order?.paymentMethod, t]);
+
+  useEffect(() => {
+    setRefundMethod(order?.paymentMethod || "cash");
+  }, [order?.paymentMethod]);
 
   const todayStr = new Date().toISOString().slice(0, 10);
 
@@ -95,7 +125,7 @@ const CreateSalesReturn = () => {
   );
 
   const mutation = useMutation(
-    () => returnOrder(orderId, { items, reason, returnedBy: userId, notes }),
+    () => returnOrder(orderId, { items, reason, returnedBy: userId, refundMethod, notes }),
     {
       onSuccess: () => {
         toast.success(t("page.salesReturn.create.toast.success"));
@@ -398,6 +428,31 @@ const CreateSalesReturn = () => {
                 </option>
               ))}
             </select>
+          </Card>
+
+          {/* Refund Method */}
+          <Card className="p-6 space-y-3">
+            <label className="text-sm font-semibold">
+              {t("page.salesReturn.create.refundMethodLabel")}{" "}
+              <span className="text-destructive">*</span>
+            </label>
+            <select
+              value={refundMethod}
+              onChange={(e) => setRefundMethod(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg text-sm bg-background">
+              {paymentMethodOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              {t("page.salesReturn.create.refundMethodHint")}:{" "}
+              {order?.paymentMethod
+                ? paymentMethodOptions.find((o) => o.value === order.paymentMethod)?.label ||
+                  order.paymentMethod
+                : t("page.salesReturn.method.cash")}
+            </p>
           </Card>
 
           {/* Notes */}

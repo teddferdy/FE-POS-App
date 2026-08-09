@@ -36,7 +36,7 @@ import {
   Megaphone,
   Clock,
   HandPlatter,
-  MonitorPlay,
+  // MonitorPlay,
   Landmark
 } from "lucide-react";
 
@@ -84,14 +84,14 @@ export const sidebarMenuSuperAdmin = [
         icon: ChefHat,
         actions: ["view"]
       },
-      {
-        title: "Layar Pesanan Pelanggan",
-        i18nKey: "sidebar.customerDisplayBoard",
-        href: "/customer-display-board",
-        icon: MonitorPlay,
-        external: true,
-        actions: ["view"]
-      },
+      // {
+      //   title: "Layar Pesanan Pelanggan",
+      //   i18nKey: "sidebar.customerDisplayBoard",
+      //   href: "/customer-display-board",
+      //   icon: MonitorPlay,
+      //   external: true,
+      //   actions: ["view"]
+      // },
       {
         title: "QR Orders",
         i18nKey: "sidebar.qrOrders",
@@ -555,14 +555,14 @@ export const sidebarMenuAdmin = [
         icon: ChefHat,
         actions: ["view"]
       },
-      {
-        title: "Layar Pesanan Pelanggan",
-        i18nKey: "sidebar.customerDisplayBoard",
-        href: "/customer-display-board",
-        icon: MonitorPlay,
-        external: true,
-        actions: ["view"]
-      },
+      // {
+      //   title: "Layar Pesanan Pelanggan",
+      //   i18nKey: "sidebar.customerDisplayBoard",
+      //   href: "/customer-display-board",
+      //   icon: MonitorPlay,
+      //   external: true,
+      //   actions: ["view"]
+      // },
       {
         title: "QR Orders",
         i18nKey: "sidebar.qrOrders",

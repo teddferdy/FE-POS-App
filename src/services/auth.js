@@ -13,6 +13,12 @@ export const register = async (payload) => {
   return data;
 };
 
+export const requestResetPassword = async (payload) => {
+  const { data, status } = await axiosInstance.post("/auth/reset-password/request", payload);
+  if (status !== 200 && status !== 201) throw Error(data?.error);
+  return data;
+};
+
 export const resetPassword = async (payload) => {
   const { data, status } = await axiosInstance.post("/auth/reset-password", payload);
   if (status !== 200 && status !== 201) throw Error(data?.error);

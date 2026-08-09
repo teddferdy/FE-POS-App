@@ -33,19 +33,101 @@ const formatIDR = (num) => {
   return "Rp " + Number(num).toLocaleString("id-ID");
 };
 
+// Top-level smart thermal print handler
+const handlePrintReport = (elementId) => {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+
+  // Clone node so we don't mess up the react virtual DOM
+  const clone = element.cloneNode(true);
+
+  // Strip all buttons/actions that shouldn't be printed
+  const noPrintElements = clone.querySelectorAll(".no-print");
+  noPrintElements.forEach((el) => el.remove());
+
+  // Create absolute container
+  const printContainer = document.createElement("div");
+  printContainer.className = "print-report-container-temp";
+  printContainer.appendChild(clone);
+
+  // Style tags specifically optimized for 58mm POS receipt printers
+  const style = document.createElement("style");
+  style.id = "temp-print-style";
+  style.textContent = `
+    @media screen {
+      .print-report-container-temp {
+        display: none !important;
+      }
+    }
+    @media print {
+      body > * {
+        display: none !important;
+      }
+      .print-report-container-temp {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 58mm !important;
+        background: white !important;
+        color: black !important;
+        padding: 4px 8px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        font-family: 'Courier New', Courier, monospace !important;
+      }
+      .print-report-container-temp * {
+        background: white !important;
+        color: black !important;
+        font-family: 'Courier New', Courier, monospace !important;
+      }
+      .print-report-container-temp .relative,
+      .print-report-container-temp .rounded-2xl {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        background: white !important;
+      }
+      .print-report-container-temp div {
+        border-color: #555 !important;
+      }
+      .print-report-container-temp .bg-accent\\/40,
+      .print-report-container-temp .bg-accent\\/20,
+      .print-report-container-temp .bg-accent {
+        background: white !important;
+        border: 1px dashed #555 !important;
+        padding: 6px !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  `;
+
+  document.body.appendChild(style);
+  document.body.appendChild(printContainer);
+
+  window.print();
+
+  // Cleanup with small timeout to allow window.print() to parse
+  setTimeout(() => {
+    printContainer.remove();
+    style.remove();
+  }, 300);
+};
+
 const Dashed = () => (
-  <div className="flex items-center justify-center gap-1 py-1 select-none" aria-hidden="true">
-    {Array.from({ length: 14 }).map((_, i) => (
-      <span key={i} className="w-1 h-px bg-border/70" />
-    ))}
-  </div>
+  <div className="border-t border-dashed border-border/80 my-3 w-full animate-pulse-subtle" aria-hidden="true" />
 );
 
 const Row = ({ label, value, strong, accent }) => (
-  <div className="flex items-center justify-between gap-4 py-0.5">
-    <span className="text-muted-foreground text-xs">{label}</span>
+  <div className="flex items-center justify-between gap-4 py-1">
+    <span className="text-muted-foreground text-xs font-medium">{label}</span>
     <span
-      className={`font-mono text-xs ${strong ? "font-bold text-sm" : "font-medium"} ${
+      className={`font-mono text-xs ${strong ? "font-bold text-sm text-foreground" : "font-semibold text-muted-foreground"} ${
         accent || ""
       }`}>
       {value}
@@ -60,7 +142,7 @@ Row.propTypes = {
   accent: PropTypes.string
 };
 
-const ReportView = ({ data }) => {
+const ReportView = ({ data, reportType }) => {
   const { t } = useTranslation();
   if (!data) return null;
   const summary = data.summary || {};
@@ -75,212 +157,258 @@ const ReportView = ({ data }) => {
     paymentGroups[key].count += p.count;
   }
 
+  const uniqueId = `report-${reportType === "Z" ? (data.register?.id || "z") : "current"}`;
+
   return (
-    <div className="max-w-[400px] mx-auto bg-card rounded-xl border border-border/60 overflow-hidden">
-      <div className="px-5 pt-5">
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <Store size={15} className="text-primary" />
-          <p className="font-bold uppercase tracking-wide text-sm">
+    <div
+      id={uniqueId}
+      className="relative max-w-[400px] mx-auto bg-card text-card-foreground rounded-2xl border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.03)] dark:shadow-none overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.07)]"
+    >
+      {/* Decorative Brand Top-border */}
+      <div className={`h-1.5 w-full bg-gradient-to-r ${reportType === "Z" ? "from-amber-500 to-orange-500" : "from-blue-500 to-indigo-500"}`} />
+
+      <div className="p-6">
+        {/* Store Header */}
+        <div className="text-center space-y-1.5 mb-4">
+          <div className={`inline-flex p-2.5 rounded-full mb-1 ${reportType === "Z" ? "bg-amber-100/60 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400" : "bg-blue-100/60 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400"}`}>
+            <Store size={18} className="animate-pulse" />
+          </div>
+          <p className="font-bold uppercase tracking-wider text-sm text-foreground">
             {data.store?.name || t("page.cashRegister.xz.storeFallback")}
           </p>
-        </div>
-        {data.store?.address && (
-          <p className="text-[11px] text-muted-foreground text-center">{data.store.address}</p>
-        )}
-        {data.store?.phone && (
-          <p className="text-[11px] text-muted-foreground text-center mt-0.5">{data.store.phone}</p>
-        )}
-      </div>
-
-      <Dashed />
-
-      <div className="px-5 space-y-1.5">
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <FileBarChart size={15} className="text-primary" />
-          <p className="font-semibold text-sm">{t("page.cashRegister.xz.reportTitle")}</p>
-        </div>
-        <Row label={t("page.cashRegister.xz.registerNo")} value={`#${data.register?.id || "-"}`} />
-        <Row
-          label={t("page.cashRegister.xz.cashier")}
-          value={
-            <span className="inline-flex items-center gap-1">
-              <User size={11} className="text-muted-foreground" />
-              {data.cashier?.fullName || "-"}
-            </span>
-          }
-        />
-        <Row
-          label={t("page.cashRegister.xz.openedAt")}
-          value={
-            data.register?.openedAt
-              ? new Date(data.register.openedAt).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "short",
-                  hour: "2-digit",
-                  minute: "2-digit"
-                })
-              : "-"
-          }
-        />
-        {data.register?.closedAt && (
-          <Row
-            label={t("page.cashRegister.xz.closedAt")}
-            value={new Date(data.register.closedAt).toLocaleString("id-ID", {
-              day: "2-digit",
-              month: "short",
-              hour: "2-digit",
-              minute: "2-digit"
-            })}
-          />
-        )}
-        <Row
-          label={t("page.cashRegister.xz.status")}
-          value={
-            <span
-              className={`font-bold ${
-                data.register?.status === "open" ? "text-emerald-600" : "text-muted-foreground"
-              }`}>
-              {data.register?.status === "open"
-                ? t("page.cashRegister.xz.statusOpen")
-                : t("page.cashRegister.xz.statusClosed")}
-            </span>
-          }
-        />
-      </div>
-
-      <Dashed />
-
-      <div className="px-5 space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-          {t("page.cashRegister.xz.summaryTitle")}
-        </p>
-        <Row
-          label={t("page.cashRegister.xz.transactions")}
-          value={summary.totalTransactions ?? 0}
-        />
-        <Row label={t("page.cashRegister.xz.quantity")} value={summary.totalQuantity ?? 0} />
-        {!!summary.totalCovers && (
-          <Row label={t("page.cashRegister.xz.covers")} value={summary.totalCovers} />
-        )}
-        <Row label={t("page.cashRegister.xz.subtotal")} value={formatIDR(summary.subtotal)} />
-        {summary.discount > 0 && (
-          <Row
-            label={t("page.cashRegister.xz.discount")}
-            value={`-${formatIDR(summary.discount)}`}
-            accent="text-emerald-600"
-          />
-        )}
-        {summary.tax > 0 && (
-          <Row label={t("page.cashRegister.xz.tax")} value={formatIDR(summary.tax)} />
-        )}
-        {summary.serviceCharge > 0 && (
-          <Row
-            label={t("page.cashRegister.xz.serviceCharge")}
-            value={formatIDR(summary.serviceCharge)}
-          />
-        )}
-        <Row
-          label={t("page.cashRegister.xz.totalSales")}
-          value={formatIDR(summary.totalSales)}
-          strong
-          accent="text-primary"
-        />
-      </div>
-
-      <Dashed />
-
-      <div className="px-5 space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-          {t("page.cashRegister.xz.paymentTitle")}
-        </p>
-        {Object.entries(paymentGroups).length > 0 ? (
-          Object.entries(paymentGroups).map(([type, p]) => (
-            <div key={type} className="flex items-center justify-between gap-4 py-0.5">
-              <span className="text-xs text-muted-foreground capitalize flex items-center gap-1.5">
-                {isCashPayment(type) ? <Coins size={12} /> : <CreditCard size={12} />}
-                {type} ({p.count})
-              </span>
-              <span className="font-mono text-xs font-medium">{formatIDR(p.amount)}</span>
-            </div>
-          ))
-        ) : (
-          <p className="text-xs text-muted-foreground">-</p>
-        )}
-      </div>
-
-      {expenses.length > 0 && (
-        <>
-          <Dashed />
-          <div className="px-5 space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-              {t("page.cashRegister.xz.expenseTitle")} ({formatIDR(summary.totalExpenses)})
+          {data.store?.address && (
+            <p className="text-[11px] text-muted-foreground leading-relaxed px-4">{data.store.address}</p>
+          )}
+          {data.store?.phone && (
+            <p className="text-[11px] text-muted-foreground/80 mt-0.5 font-mono">
+              Telp: {data.store.phone}
             </p>
-            {expenses.map((e, i) => (
-              <div key={i} className="flex items-center justify-between gap-4 py-0.5">
-                <span className="text-xs text-muted-foreground">
-                  {e.category} ({e.count})
-                </span>
-                <span className="font-mono text-xs text-destructive">{formatIDR(e.amount)}</span>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      <Dashed />
-
-      <div className="px-5 pb-5 space-y-1.5">
-        <Row
-          label={t("page.cashRegister.xz.openingBalance")}
-          value={formatIDR(data.register?.openingBalance)}
-        />
-        <Row
-          label={t("page.cashRegister.xz.cashPayment")}
-          value={formatIDR(summary.totalCashPayment)}
-        />
-        <Row
-          label={t("page.cashRegister.xz.expenses")}
-          value={`-${formatIDR(summary.totalExpenses)}`}
-          accent="text-destructive"
-        />
-        <div className="flex items-center justify-between pt-2 border-t border-dashed border-border/60">
-          <span className="font-bold text-xs">{t("page.cashRegister.xz.expectedCash")}</span>
-          <span className="font-mono font-bold text-sm">{formatIDR(summary.expectedCash)}</span>
+          )}
         </div>
-        {data.register?.status === "closed" && (
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-xs text-muted-foreground">
-              {t("page.cashRegister.xz.closingBalance")}
-            </span>
-            <span className="font-mono text-xs font-bold">
-              {formatIDR(data.register?.closingBalance)}
-            </span>
-          </div>
-        )}
-        {summary.variance != null && (
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              {t("page.cashRegister.xz.variance")}
-            </span>
-            <span
-              className={`font-mono text-xs font-bold ${
-                summary.variance > 0
-                  ? "text-emerald-600"
-                  : summary.variance < 0
-                    ? "text-destructive"
-                    : "text-muted-foreground"
-              }`}>
-              {summary.variance > 0 ? "+" : ""}
-              {formatIDR(summary.variance)}
-            </span>
-          </div>
-        )}
-      </div>
 
-      <div className="px-5 pb-5 border-t border-dashed border-border/60 pt-3">
-        <p className="text-center text-[11px] text-muted-foreground">
-          {t("page.cashRegister.xz.footer")}
-        </p>
+        <Dashed />
+
+        {/* Report Identification */}
+        <div className="space-y-2 my-3">
+          <div className="flex items-center justify-center gap-1.5 mb-2 text-muted-foreground">
+            <FileBarChart size={14} className={reportType === "Z" ? "text-amber-500" : "text-blue-500"} />
+            <p className="font-bold text-xs uppercase tracking-widest">{t("page.cashRegister.xz.reportTitle")}</p>
+          </div>
+          <Row label={t("page.cashRegister.xz.registerNo")} value={`#${data.register?.id || "-"}`} />
+          <Row
+            label={t("page.cashRegister.xz.cashier")}
+            value={
+              <span className="inline-flex items-center gap-1.5 bg-accent/60 px-2 py-0.5 rounded text-[11px] text-foreground font-semibold">
+                <User size={11} className="text-muted-foreground" />
+                {data.cashier?.fullName || "-"}
+              </span>
+            }
+          />
+          <Row
+            label={t("page.cashRegister.xz.openedAt")}
+            value={
+              data.register?.openedAt
+                ? new Date(data.register.openedAt).toLocaleString("id-ID", {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  })
+                : "-"
+            }
+          />
+          {data.register?.closedAt && (
+            <Row
+              label={t("page.cashRegister.xz.closedAt")}
+              value={new Date(data.register.closedAt).toLocaleString("id-ID", {
+                day: "2-digit",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit"
+              })}
+            />
+          )}
+          <Row
+            label={t("page.cashRegister.xz.status")}
+            value={
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  data.register?.status === "open"
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400"
+                    : "bg-muted text-muted-foreground"
+                }`}>
+                {data.register?.status === "open"
+                  ? t("page.cashRegister.xz.statusOpen")
+                  : t("page.cashRegister.xz.statusClosed")}
+              </span>
+            }
+          />
+        </div>
+
+        <Dashed />
+
+        {/* Sales Metrics Section */}
+        <div className="space-y-1 my-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 mb-2">
+            {t("page.cashRegister.xz.summaryTitle")}
+          </p>
+          <Row
+            label={t("page.cashRegister.xz.transactions")}
+            value={summary.totalTransactions ?? 0}
+          />
+          <Row label={t("page.cashRegister.xz.quantity")} value={summary.totalQuantity ?? 0} />
+          {!!summary.totalCovers && (
+            <Row label={t("page.cashRegister.xz.covers")} value={summary.totalCovers} />
+          )}
+          <Row label={t("page.cashRegister.xz.subtotal")} value={formatIDR(summary.subtotal)} />
+          {summary.discount > 0 && (
+            <Row
+              label={t("page.cashRegister.xz.discount")}
+              value={`-${formatIDR(summary.discount)}`}
+              accent="text-emerald-600 dark:text-emerald-400 font-bold"
+            />
+          )}
+          {summary.tax > 0 && (
+            <Row label={t("page.cashRegister.xz.tax")} value={formatIDR(summary.tax)} />
+          )}
+          {summary.serviceCharge > 0 && (
+            <Row
+              label={t("page.cashRegister.xz.serviceCharge")}
+              value={formatIDR(summary.serviceCharge)}
+            />
+          )}
+          <div className="mt-2.5 pt-2.5 border-t border-border/40">
+            <Row
+              label={t("page.cashRegister.xz.totalSales")}
+              value={formatIDR(summary.totalSales)}
+              strong
+              accent={reportType === "Z" ? "text-amber-600 dark:text-amber-400 text-base font-extrabold" : "text-blue-600 dark:text-blue-400 text-base font-extrabold"}
+            />
+          </div>
+        </div>
+
+        <Dashed />
+
+        {/* Payments breakdown */}
+        <div className="space-y-1.5 my-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 mb-2">
+            {t("page.cashRegister.xz.paymentTitle")}
+          </p>
+          {Object.entries(paymentGroups).length > 0 ? (
+            <div className="space-y-1">
+              {Object.entries(paymentGroups).map(([type, p]) => (
+                <div key={type} className="flex items-center justify-between gap-4 py-0.5">
+                  <span className="text-xs text-muted-foreground font-medium capitalize flex items-center gap-2">
+                    {isCashPayment(type) ? (
+                      <Coins size={13} className="text-amber-500/80" />
+                    ) : (
+                      <CreditCard size={13} className="text-blue-500/80" />
+                    )}
+                    {type} <span className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.2 rounded font-mono font-medium">({p.count})</span>
+                  </span>
+                  <span className="font-mono text-xs font-semibold text-foreground">{formatIDR(p.amount)}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground italic">-</p>
+          )}
+        </div>
+
+        {expenses.length > 0 && (
+          <>
+            <Dashed />
+            <div className="space-y-1.5 my-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 mb-2">
+                {t("page.cashRegister.xz.expenseTitle")} ({formatIDR(summary.totalExpenses)})
+              </p>
+              <div className="space-y-1">
+                {expenses.map((e, i) => (
+                  <div key={i} className="flex items-center justify-between gap-4 py-0.5">
+                    <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-destructive/70" />
+                      {e.category} <span className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.2 rounded font-mono font-medium">({e.count})</span>
+                    </span>
+                    <span className="font-mono text-xs font-semibold text-destructive">{formatIDR(e.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        <Dashed />
+
+        {/* Cash balance and discrepancy segment */}
+        <div className="space-y-1.5 my-3 bg-accent/40 dark:bg-accent/25 p-3.5 rounded-xl border border-border/50">
+          <Row
+            label={t("page.cashRegister.xz.openingBalance")}
+            value={formatIDR(data.register?.openingBalance)}
+          />
+          <Row
+            label={t("page.cashRegister.xz.cashPayment")}
+            value={formatIDR(summary.totalCashPayment)}
+          />
+          <Row
+            label={t("page.cashRegister.xz.expenses")}
+            value={`-${formatIDR(summary.totalExpenses)}`}
+            accent="text-destructive font-semibold"
+          />
+
+          <div className="flex items-center justify-between pt-2.5 mt-2.5 border-t border-dashed border-border/60">
+            <span className="font-bold text-xs text-foreground">{t("page.cashRegister.xz.expectedCash")}</span>
+            <span className="font-mono font-bold text-sm text-primary">{formatIDR(summary.expectedCash)}</span>
+          </div>
+
+          {data.register?.status === "closed" && (
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-xs text-muted-foreground font-medium">
+                {t("page.cashRegister.xz.closingBalance")}
+              </span>
+              <span className="font-mono text-xs font-bold text-foreground">
+                {formatIDR(data.register?.closingBalance)}
+              </span>
+            </div>
+          )}
+
+          {summary.variance != null && (
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-xs text-muted-foreground font-medium">
+                {t("page.cashRegister.xz.variance")}
+              </span>
+              <span
+                className={`font-mono text-[11px] font-bold px-2 py-0.5 rounded-md ${
+                  summary.variance > 0
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400"
+                    : summary.variance < 0
+                      ? "bg-destructive/10 text-destructive dark:bg-destructive/20"
+                      : "bg-muted text-muted-foreground"
+                }`}>
+                {summary.variance > 0 ? "+" : ""}
+                {formatIDR(summary.variance)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="pt-4 border-t border-dashed border-border/80 text-center mb-2">
+          <p className="text-[10px] text-muted-foreground tracking-wide font-medium">
+            {t("page.cashRegister.xz.footer")}
+          </p>
+        </div>
+
+        {/* Action printing nested in Card, ignored during print */}
+        <div className="no-print mt-4 pt-3 border-t border-border/30">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full h-10 rounded-xl flex items-center justify-center gap-2 font-semibold transition-all duration-300 hover:bg-primary hover:text-primary-foreground border-dashed"
+            onClick={() => handlePrintReport(uniqueId)}
+          >
+            <Printer size={14} />
+            {t("page.cashRegister.xz.print")} Laporan {reportType === "Z" ? `#${data.register?.id || ""}` : "X"}
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -337,7 +465,8 @@ ReportView.propTypes = {
         count: PropTypes.number
       })
     )
-  })
+  }),
+  reportType: PropTypes.oneOf(["X", "Z"]).isRequired
 };
 
 const XZReport = () => {
@@ -382,7 +511,16 @@ const XZReport = () => {
     enabled: !!selectedRegister
   });
 
-  const handlePrint = () => window.print();
+  // Global print handles contextual selection
+  const handlePrint = () => {
+    if (selectedRegister && zData?.data) {
+      handlePrintReport(`report-z`);
+    } else if (xData?.data) {
+      handlePrintReport(`report-current`);
+    } else {
+      window.print();
+    }
+  };
 
   if (!storeId) {
     return (
@@ -410,49 +548,70 @@ const XZReport = () => {
         title={t("page.cashRegister.xz.title")}
         description={t("page.cashRegister.xz.desc")}>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handlePrint}>
-            <Printer size={16} className="mr-1" /> {t("page.cashRegister.xz.print")}
+          <Button variant="outline" size="sm" onClick={handlePrint} className="shadow-sm font-semibold h-9 rounded-lg">
+            <Printer size={15} className="mr-1.5" /> {t("page.cashRegister.xz.print")}
           </Button>
           <Button
             variant="outline"
+            size="sm"
             onClick={() => {
               refetchX();
               if (selectedRegister) refetchZ();
-            }}>
-            <RefreshCw size={16} className="mr-1" /> {t("page.cashRegister.xz.refresh")}
+            }}
+            className="shadow-sm font-semibold h-9 rounded-lg">
+            <RefreshCw size={15} className="mr-1.5 animate-spin-hover" /> {t("page.cashRegister.xz.refresh")}
           </Button>
         </div>
       </PageHeader>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {/* X Report */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wide">
-              <Wallet size={13} /> X Report
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        {/* X Report Column */}
+        <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60 p-6 space-y-5 shadow-[0_4px_20px_rgb(0,0,0,0.015)]">
+          <div className="flex items-center justify-between border-b border-border/40 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-xl">
+                <Wallet size={18} className="animate-bounce-slow" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-foreground">{t("page.cashRegister.xz.xTitle")}</h2>
+                <p className="text-xs text-muted-foreground">Kondisi laci kasir real-time berjalan</p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm">
+              Real-time
             </span>
-            <h2 className="text-base font-semibold">{t("page.cashRegister.xz.xTitle")}</h2>
           </div>
+
           {xLoading ? (
-            <Skeleton className="h-96 w-full max-w-[400px]" />
+            <div className="flex justify-center p-6">
+              <Skeleton className="h-[450px] w-full max-w-[400px] rounded-2xl" />
+            </div>
           ) : xError ? (
-            <AbortController refetch={refetchX} />
+            <div className="py-6">
+              <AbortController refetch={refetchX} />
+            </div>
           ) : xData?.data ? (
-            <>
-              <ReportView data={xData.data} />
-              <p className="text-xs text-muted-foreground max-w-[400px] mx-auto">
-                {t("page.cashRegister.xz.xNote")}
-              </p>
-            </>
+            <div className="space-y-4">
+              <ReportView data={xData.data} reportType="X" />
+              <div className="flex items-start gap-2.5 max-w-[400px] mx-auto bg-blue-50/50 dark:bg-blue-950/10 p-4 rounded-xl border border-blue-100/50 dark:border-blue-950/30">
+                <span className="text-blue-500 text-sm mt-0.5">💡</span>
+                <p className="text-[11px] text-blue-700/90 dark:text-blue-400 leading-relaxed font-medium">
+                  {t("page.cashRegister.xz.xNote")}
+                </p>
+              </div>
+            </div>
           ) : (
-            <div className="bg-card p-6 rounded-xl border border-border text-center max-w-[400px]">
-              <ReceiptText size={40} className="mx-auto text-muted-foreground/40 mb-3" />
-              <p className="text-sm text-muted-foreground">
+            <div className="bg-card p-8 rounded-2xl border border-border/80 text-center max-w-[400px] mx-auto shadow-sm my-6">
+              <div className="p-4 bg-accent rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-muted-foreground/40">
+                <ReceiptText size={32} />
+              </div>
+              <h3 className="font-bold text-sm text-foreground mb-1">Tidak Ada Register Aktif</h3>
+              <p className="text-xs text-muted-foreground px-4 mb-5 leading-relaxed">
                 {t("page.cashRegister.xz.noOpenRegister")}
               </p>
               <Button
                 onClick={() => navigate("/cash-register/open-close")}
-                className="mt-4"
+                className="font-semibold shadow-sm hover:opacity-90 rounded-xl px-5"
                 size="sm">
                 {t("page.cashRegister.xz.openRegister")}
               </Button>
@@ -460,58 +619,82 @@ const XZReport = () => {
           )}
         </div>
 
-        {/* Z Report */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wide">
-              <FileBarChart size={13} /> Z Report
+        {/* Z Report Column */}
+        <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60 p-6 space-y-5 shadow-[0_4px_20px_rgb(0,0,0,0.015)]">
+          <div className="flex items-center justify-between border-b border-border/40 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 rounded-xl">
+                <FileBarChart size={18} className="animate-bounce-slow" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-foreground">{t("page.cashRegister.xz.zTitle")}</h2>
+                <p className="text-xs text-muted-foreground">Arsip register shift kasir yang ditutup</p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm">
+              Sesi Final
             </span>
-            <h2 className="text-base font-semibold">{t("page.cashRegister.xz.zTitle")}</h2>
           </div>
 
-          <div className="bg-card rounded-xl border border-border max-w-[400px]">
-            <div className="p-4 border-b border-border/50">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="bg-card rounded-2xl border border-border/80 shadow-sm max-w-[400px] mx-auto overflow-hidden">
+            <div className="p-4 bg-accent/20 dark:bg-accent/10 border-b border-border/40 flex items-center gap-4">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/90 whitespace-nowrap">
                 {t("page.cashRegister.xz.selectRegister")}
               </label>
               {registers.length > 0 ? (
-                <select
-                  value={selectedRegister || ""}
-                  onChange={(e) => setSelectedRegister(e.target.value)}
-                  className="mt-2 w-full h-10 px-3 rounded-lg bg-accent/50 border border-border/60 text-sm outline-none focus:border-primary/50 transition-colors">
-                  <option value="">{t("page.cashRegister.xz.selectPlaceholder")}</option>
-                  {registers.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      #{r.id} · {r.userData?.fullName || "-"} ·{" "}
-                      {new Date(r.openedAt).toLocaleDateString("id-ID")}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative flex-1">
+                  <select
+                    value={selectedRegister || ""}
+                    onChange={(e) => setSelectedRegister(e.target.value)}
+                    className="w-full h-9 pl-3 pr-8 rounded-lg bg-background border border-border/80 text-xs font-semibold appearance-none outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer shadow-sm">
+                    <option value="">{t("page.cashRegister.xz.selectPlaceholder")}</option>
+                    {registers.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        #{r.id} · {r.userData?.fullName || "-"} ·{" "}
+                        {new Date(r.openedAt).toLocaleDateString("id-ID", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric"
+                        })}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/70">
+                    <ChevronDown size={14} />
+                  </div>
+                </div>
               ) : (
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-xs text-muted-foreground italic font-medium">
                   {t("page.cashRegister.xz.noClosedRegister")}
                 </p>
               )}
             </div>
-            <ScrollArea className="max-h-[560px]">
+
+            <ScrollArea className="max-h-[580px] min-h-[350px]">
               {selectedRegister ? (
                 zLoading ? (
-                  <div className="p-4">
-                    <Skeleton className="h-96 w-full" />
+                  <div className="p-6">
+                    <Skeleton className="h-[400px] w-full rounded-2xl animate-pulse" />
                   </div>
                 ) : zError ? (
-                  <div className="p-4">
+                  <div className="p-6">
                     <AbortController refetch={refetchZ} />
                   </div>
                 ) : zData?.data ? (
                   <div className="p-4">
-                    <ReportView data={zData.data} />
+                    <ReportView data={zData.data} reportType="Z" />
                   </div>
                 ) : null
               ) : (
-                <p className="p-4 text-sm text-muted-foreground">
-                  {t("page.cashRegister.xz.zHint")}
-                </p>
+                <div className="flex flex-col items-center justify-center p-8 text-center min-h-[350px]">
+                  <div className="p-4 bg-accent/60 dark:bg-accent/30 rounded-2xl text-muted-foreground/40 mb-3 animate-pulse-subtle">
+                    <ReceiptText size={28} />
+                  </div>
+                  <h4 className="text-xs font-bold text-foreground mb-1">{t("page.cashRegister.xz.zHint")}</h4>
+                  <p className="text-[11px] text-muted-foreground max-w-[220px] leading-relaxed font-medium">
+                    Pilih salah satu sesi kasir yang telah ditutup dari daftar di atas untuk melihat ringkasan final laporan Z.
+                  </p>
+                </div>
               )}
             </ScrollArea>
           </div>

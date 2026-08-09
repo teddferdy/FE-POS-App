@@ -24,7 +24,7 @@ const StoreFilter = ({ locations = [], value = "", onChange, isSuperAdmin, t }) 
     <div className="flex items-center gap-2">
       <Store size={16} className="text-muted-foreground shrink-0" />
       <Select value={currentValue} onValueChange={handleChange}>
-        <SelectTrigger className="w-[180px] max-w-full">
+        <SelectTrigger className="w-full">
           <SelectValue placeholder={t?.("header.selectStore") || "Pilih Toko"} />
         </SelectTrigger>
         <SelectContent>

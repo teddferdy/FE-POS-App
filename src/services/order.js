@@ -32,9 +32,3 @@ export const updateOrderStatus = async (payload) => {
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
-
-export const returnOrder = async (id, payload) => {
-  const { data, status } = await axiosInstance.post(`/pos/order/${id}/return`, payload);
-  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
-  return data;
-};

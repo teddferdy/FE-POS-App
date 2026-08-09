@@ -3,8 +3,21 @@ import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Eye, EyeOff, Moon, Sun, Mail, Lock, ArrowLeft, ShieldCheck, Shield } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Eye,
+  EyeOff,
+  Moon,
+  Sun,
+  Mail,
+  Lock,
+  ArrowLeft,
+  ShieldCheck,
+  Shield,
+  Send,
+  CheckCircle2,
+  AlertTriangle
+} from "lucide-react";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useMutation } from "react-query";
 import { toast } from "sonner";
 
@@ -21,7 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import PolicyDialog from "@/components/organism/policy-dialog";
 
-import { resetPassword } from "@/services/auth";
+import { requestResetPassword, resetPassword } from "@/services/auth";
 import { translationSelect } from "@/state/translation";
 import AuthGuideModal from "@/components/organism/AuthGuideModal";
 
@@ -29,9 +42,16 @@ const ResetPasswordPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") || "";
+  const urlEmail = searchParams.get("email") || "";
+  const isResetMode = Boolean(token);
+
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [invalidToken, setInvalidToken] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(
@@ -60,7 +80,15 @@ const ResetPasswordPage = () => {
       faReadyDesc: t("translation:faReadyDesc"),
       help: t("translation:help"),
       privacyPolicy: t("translation:privacyPolicy"),
-      termsConditions: t("translation:termsConditions")
+      termsConditions: t("translation:termsConditions"),
+      btnSendLink: t("page.resetPassword.btnSendLink"),
+      setNewPassword: t("page.resetPassword.setNewPassword"),
+      setNewPasswordDesc: t("page.resetPassword.setNewPasswordDesc"),
+      emailSentTitle: t("page.resetPassword.emailSentTitle"),
+      emailSentDesc: t("page.resetPassword.emailSentDesc"),
+      requestNew: t("page.resetPassword.requestNew"),
+      invalidTokenTitle: t("page.resetPassword.invalidTokenTitle"),
+      invalidTokenDesc: t("page.resetPassword.invalidTokenDesc")
     }),
     [t]
   );
@@ -75,46 +103,70 @@ const ResetPasswordPage = () => {
             .email({
               message: t("page.resetPassword.validation.emailInvalid")
             }),
-          newPassword: z.string().min(6, {
-            message: t("page.resetPassword.validation.passwordMin")
-          }),
-          confirmPassword: z.string().min(1, {
-            message: t("page.resetPassword.validation.confirmRequired")
-          })
+          newPassword: isResetMode
+            ? z.string().min(6, {
+                message: t("page.resetPassword.validation.passwordMin")
+              })
+            : z.string().optional(),
+          confirmPassword: isResetMode
+            ? z.string().min(1, {
+                message: t("page.resetPassword.validation.confirmRequired")
+              })
+            : z.string().optional()
         })
-        .refine((data) => data.newPassword === data.confirmPassword, {
+        .refine((data) => !isResetMode || data.newPassword === data.confirmPassword, {
           message: t("page.resetPassword.validation.passwordMismatch"),
           path: ["confirmPassword"]
         }),
-    [t]
+    [t, isResetMode]
   );
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      email: urlEmail,
       newPassword: "",
       confirmPassword: ""
     }
   });
 
-  const mutateReset = useMutation(resetPassword, {
+  const mutateReset = useMutation(isResetMode ? resetPassword : requestResetPassword, {
     onMutate: () => setIsLoading(true),
     onSuccess: () => {
       setIsLoading(false);
-      toast.success(t("page.resetPassword.toast.success"), {
-        description: t("page.resetPassword.toast.successDescription")
-      });
-      setTimeout(() => navigate("/"), 1500);
+      if (isResetMode) {
+        toast.success(t("page.resetPassword.toast.success"), {
+          description: t("page.resetPassword.toast.successDescription")
+        });
+        setTimeout(() => navigate("/"), 1500);
+      } else {
+        setEmailSent(true);
+      }
     },
     onError: (err) => {
       setIsLoading(false);
       const message = err.response?.data?.error || err.response?.data?.message || err.message;
-      toast.error(t("page.resetPassword.toast.error"), {
-        description: message
-      });
+      if (isResetMode) {
+        setInvalidToken(true);
+      } else {
+        toast.error(t("page.resetPassword.toast.error"), {
+          description: message
+        });
+      }
     }
   });
+
+  const onSubmit = (values) => {
+    const payload = isResetMode
+      ? {
+          email: values.email,
+          token,
+          newPassword: values.newPassword,
+          confirmPassword: values.confirmPassword
+        }
+      : { email: values.email };
+    mutateReset.mutate(payload);
+  };
 
   return (
     <div>
@@ -174,122 +226,181 @@ const ResetPasswordPage = () => {
             <div className="bg-card rounded-xl shadow-sm border border-border p-5 md:p-6 lg:p-xl flex flex-col items-center text-center transition-colors">
               {/* Lock Icon */}
               <div className="w-14 h-14 md:w-16 md:h-16 bg-muted rounded-full flex items-center justify-center mb-4 md:mb-lg">
-                <Lock className="w-7 h-7 md:w-8 md:h-8 text-foreground" />
+                {invalidToken ? (
+                  <AlertTriangle className="w-7 h-7 md:w-8 md:h-8 text-rose-600" />
+                ) : emailSent ? (
+                  <CheckCircle2 className="w-7 h-7 md:w-8 md:h-8 text-emerald-600" />
+                ) : (
+                  <Lock className="w-7 h-7 md:w-8 md:h-8 text-foreground" />
+                )}
               </div>
 
-              <h1 className="text-xl md:text-[28px] font-semibold text-foreground mb-1.5 md:mb-sm">
-                {translationMemo.resetPassword}
-              </h1>
-              <p className="text-sm md:text-base text-muted-foreground/80 font-light mb-6 md:mb-xl max-w-[360px]">
-                {translationMemo.resetPasswordDesc}
-              </p>
-
-              {/* Form */}
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit((values) => mutateReset.mutate(values))}
-                  className="w-full space-y-4 md:space-y-5 text-left">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem data-tour="auth-email">
-                        <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
-                          {translationMemo.email}
-                        </FormLabel>
-                        <div className="relative group">
-                          <Mail className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground/60 group-focus-within:text-foreground transition-colors pointer-events-none" />
-                          <Input
-                            {...field}
-                            placeholder="nama@perusahaan.com"
-                            className="w-full pl-10 md:pl-12 pr-3.5 md:pr-4 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
-                          />
-                        </div>
-                        {form?.formState?.errors?.email && (
-                          <FormMessage>{form?.formState?.errors?.email}</FormMessage>
-                        )}
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="newPassword"
-                    render={({ field }) => (
-                      <FormItem data-tour="auth-password">
-                        <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
-                          {translationMemo.newPassword}
-                        </FormLabel>
-                        <div className="relative group">
-                          <Lock className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground/60 group-focus-within:text-foreground transition-colors pointer-events-none" />
-                          <Input
-                            type={showNewPassword ? "text" : "password"}
-                            {...field}
-                            placeholder="••••••••"
-                            className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowNewPassword(!showNewPassword)}
-                            className="absolute right-3.5 md:right-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors">
-                            {showNewPassword ? (
-                              <EyeOff className="w-4 h-4 md:w-5 md:h-5" />
-                            ) : (
-                              <Eye className="w-4 h-4 md:w-5 md:h-5" />
-                            )}
-                          </button>
-                        </div>
-                        {form?.formState?.errors?.newPassword && (
-                          <FormMessage>{form?.formState?.errors?.newPassword}</FormMessage>
-                        )}
-                        <FormDescription>{t("common.passwordMin6")}</FormDescription>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
-                          {translationMemo.confirmationNewPassword}
-                        </FormLabel>
-                        <div className="relative group">
-                          <Shield className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground/60 group-focus-within:text-foreground transition-colors pointer-events-none" />
-                          <Input
-                            type={showConfirmPassword ? "text" : "password"}
-                            {...field}
-                            placeholder="••••••••"
-                            className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3.5 md:right-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors">
-                            {showConfirmPassword ? (
-                              <EyeOff className="w-4 h-4 md:w-5 md:h-5" />
-                            ) : (
-                              <Eye className="w-4 h-4 md:w-5 md:h-5" />
-                            )}
-                          </button>
-                        </div>
-                        {form?.formState?.errors?.confirmPassword && (
-                          <FormMessage>{form?.formState?.errors?.confirmPassword}</FormMessage>
-                        )}
-                        <FormDescription>{t("common.passwordMatch")}</FormDescription>
-                      </FormItem>
-                    )}
-                  />
-
+              {invalidToken ? (
+                <>
+                  <h1 className="text-xl md:text-[28px] font-semibold text-foreground mb-1.5 md:mb-sm">
+                    {translationMemo.invalidTokenTitle}
+                  </h1>
+                  <p className="text-sm md:text-base text-muted-foreground/80 font-light mb-6 md:mb-xl max-w-[360px]">
+                    {translationMemo.invalidTokenDesc}
+                  </p>
                   <Button
-                    type="submit"
-                    data-tour="auth-submit"
+                    type="button"
+                    onClick={() => {
+                      setInvalidToken(false);
+                      navigate("/reset-password");
+                    }}
                     className="w-full bg-foreground text-background hover:bg-foreground/90 py-3.5 md:py-4 px-lg rounded-xl font-semibold text-sm md:text-base shadow-sm hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
-                    {translationMemo.btnResetPassword}
+                    {translationMemo.requestNew}
                   </Button>
-                </form>
-              </Form>
+                </>
+              ) : emailSent ? (
+                <>
+                  <h1 className="text-xl md:text-[28px] font-semibold text-foreground mb-1.5 md:mb-sm">
+                    {translationMemo.emailSentTitle}
+                  </h1>
+                  <p className="text-sm md:text-base text-muted-foreground/80 font-light mb-6 md:mb-xl max-w-[360px]">
+                    {translationMemo.emailSentDesc}
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={() => navigate("/")}
+                    className="w-full bg-foreground text-background hover:bg-foreground/90 py-3.5 md:py-4 px-lg rounded-xl font-semibold text-sm md:text-base shadow-sm hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
+                    {translationMemo.backToLogin}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-xl md:text-[28px] font-semibold text-foreground mb-1.5 md:mb-sm">
+                    {isResetMode ? translationMemo.setNewPassword : translationMemo.resetPassword}
+                  </h1>
+                  <p className="text-sm md:text-base text-muted-foreground/80 font-light mb-6 md:mb-xl max-w-[360px]">
+                    {isResetMode
+                      ? translationMemo.setNewPasswordDesc
+                      : translationMemo.resetPasswordDesc}
+                  </p>
+
+                  {/* Form */}
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className="w-full space-y-4 md:space-y-5 text-left">
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem data-tour="auth-email">
+                            <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
+                              {translationMemo.email}
+                            </FormLabel>
+                            <div className="relative group">
+                              <Mail className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground/60 group-focus-within:text-foreground transition-colors pointer-events-none" />
+                              <Input
+                                {...field}
+                                disabled={isResetMode}
+                                placeholder="nama@perusahaan.com"
+                                className="w-full pl-10 md:pl-12 pr-3.5 md:pr-4 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300 disabled:opacity-60"
+                              />
+                            </div>
+                            {form?.formState?.errors?.email && (
+                              <FormMessage>{form?.formState?.errors?.email}</FormMessage>
+                            )}
+                          </FormItem>
+                        )}
+                      />
+
+                      {isResetMode && (
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="newPassword"
+                            render={({ field }) => (
+                              <FormItem data-tour="auth-password">
+                                <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
+                                  {translationMemo.newPassword}
+                                </FormLabel>
+                                <div className="relative group">
+                                  <Lock className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground/60 group-focus-within:text-foreground transition-colors pointer-events-none" />
+                                  <Input
+                                    type={showNewPassword ? "text" : "password"}
+                                    {...field}
+                                    placeholder="••••••••"
+                                    className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                    className="absolute right-3.5 md:right-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors">
+                                    {showNewPassword ? (
+                                      <EyeOff className="w-4 h-4 md:w-5 md:h-5" />
+                                    ) : (
+                                      <Eye className="w-4 h-4 md:w-5 md:h-5" />
+                                    )}
+                                  </button>
+                                </div>
+                                {form?.formState?.errors?.newPassword && (
+                                  <FormMessage>{form?.formState?.errors?.newPassword}</FormMessage>
+                                )}
+                                <FormDescription>{t("common.passwordMin6")}</FormDescription>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
+                                  {translationMemo.confirmationNewPassword}
+                                </FormLabel>
+                                <div className="relative group">
+                                  <Shield className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground/60 group-focus-within:text-foreground transition-colors pointer-events-none" />
+                                  <Input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    {...field}
+                                    placeholder="••••••••"
+                                    className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3.5 md:right-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors">
+                                    {showConfirmPassword ? (
+                                      <EyeOff className="w-4 h-4 md:w-5 md:h-5" />
+                                    ) : (
+                                      <Eye className="w-4 h-4 md:w-5 md:h-5" />
+                                    )}
+                                  </button>
+                                </div>
+                                {form?.formState?.errors?.confirmPassword && (
+                                  <FormMessage>
+                                    {form?.formState?.errors?.confirmPassword}
+                                  </FormMessage>
+                                )}
+                                <FormDescription>{t("common.passwordMatch")}</FormDescription>
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )}
+
+                      <Button
+                        type="submit"
+                        data-tour="auth-submit"
+                        className="w-full bg-foreground text-background hover:bg-foreground/90 py-3.5 md:py-4 px-lg rounded-xl font-semibold text-sm md:text-base shadow-sm hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
+                        {isResetMode ? (
+                          translationMemo.btnResetPassword
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 mr-2" />
+                            {translationMemo.btnSendLink}
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </Form>
+                </>
+              )}
 
               {/* Back to Login */}
               <div className="mt-6 md:mt-xl">

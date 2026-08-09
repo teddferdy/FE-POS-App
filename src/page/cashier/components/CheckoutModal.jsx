@@ -136,10 +136,11 @@ const CheckoutModal = ({
     () => getTableAvailability({ location: store }),
     { enabled: !!store }
   );
-  const availableTables = useMemo(() => {
-    const data = tablesData?.data?.tables || [];
-    return Array.isArray(data) ? data.filter((t) => t.status === "available") : [];
-  }, [tablesData]);
+  const allTables = useMemo(() => tablesData?.data?.tables || [], [tablesData]);
+  const availableTables = useMemo(
+    () => allTables.filter((t) => t.status === "available"),
+    [allTables]
+  );
 
   const customerId = selectedCustomer?.id || selectedCustomer?._id;
   const { data: memberData } = useQuery(
@@ -587,10 +588,16 @@ const CheckoutModal = ({
                     <Combobox
                       options={[
                         { value: "", label: t("page.cashier.selectTable", "Pilih Meja") },
-                        ...availableTables.map((tbl) => ({
-                          value: String(tbl.id),
-                          label: `${tbl.name} (${t("page.cashier.capacity", "Kapasitas")}: ${tbl.capacity})`
-                        }))
+                        ...allTables.map((tbl) => {
+                          const isAvailable = tbl.status === "available";
+                          return {
+                            value: String(tbl.id),
+                            label: isAvailable
+                              ? `${tbl.name} (${t("page.cashier.capacity", "Kapasitas")}: ${tbl.capacity})`
+                              : `${tbl.name} (${t("page.cashier.capacity", "Kapasitas")}: ${tbl.capacity}) — ${t("page.cashier.tableInUse", "Dipakai")}`,
+                            disabled: !isAvailable
+                          };
+                        })
                       ]}
                       value={String(selectedTable?.id || "")}
                       onChange={(v) => {

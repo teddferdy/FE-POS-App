@@ -216,13 +216,14 @@ const LowStockAll = () => {
   const filters = (
     <TableToolbar title={t("sidebar.lowStockAll")} onReset={resetFilters} isFiltered={isFiltered}>
       {isLoadingLocations || isLoading ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <Skeleton className="h-9 w-56 rounded-md" />
-          <Skeleton className="h-9 w-44 rounded-md" />
-        </div>
+        [
+          <Skeleton key="s1" className="h-9 w-full rounded-md" />,
+          <Skeleton key="s2" className="h-9 w-full rounded-md" />,
+          <Skeleton key="s3" className="h-9 w-full rounded-md" />
+        ]
       ) : (
-        <>
-          <div className="flex flex-col gap-1.5">
+        [
+          <div key="search" className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Cari
             </label>
@@ -235,8 +236,8 @@ const LowStockAll = () => {
               placeholder="Cari nama barang..."
               isLoading={isLoading}
             />
-          </div>
-          <div className="flex flex-col gap-1.5">
+          </div>,
+          <div key="store" className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Toko
             </label>
@@ -246,7 +247,7 @@ const LowStockAll = () => {
                 setGlobalStoreFilter(v);
                 setPage(1);
               }}>
-              <SelectTrigger className="w-44 h-9 text-sm">
+              <SelectTrigger className="h-9 text-sm">
                 <SelectValue placeholder="Semua Toko" />
               </SelectTrigger>
               <SelectContent>
@@ -258,8 +259,8 @@ const LowStockAll = () => {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="flex flex-col gap-1.5">
+          </div>,
+          <div key="type" className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Tipe
             </label>
@@ -269,7 +270,7 @@ const LowStockAll = () => {
                 setTypeFilter(v);
                 setPage(1);
               }}>
-              <SelectTrigger className="w-36 h-9 text-sm">
+              <SelectTrigger className="h-9 text-sm">
                 <SelectValue placeholder="Semua Tipe" />
               </SelectTrigger>
               <SelectContent>
@@ -279,7 +280,7 @@ const LowStockAll = () => {
               </SelectContent>
             </Select>
           </div>
-        </>
+        ]
       )}
     </TableToolbar>
   );

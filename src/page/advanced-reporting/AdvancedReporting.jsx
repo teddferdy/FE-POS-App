@@ -6,11 +6,11 @@ import { useQuery } from "react-query";
 import * as XLSX from "xlsx";
 import { TrendingUp, Package, Users, DollarSign, Download } from "lucide-react";
 import {
-  getSalesSummary,
-  getProductSalesSummary,
-  getCategorySalesSummary,
-  getKasirPerformance
-} from "@/services/reporting";
+  getReportingSalesSummary,
+  getReportingProductSales,
+  getReportingCategorySales,
+  getReportingKasirPerformance
+} from "@/services/report";
 import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import { Button } from "@/components/ui/button";
@@ -52,25 +52,25 @@ const AdvancedReporting = () => {
 
   const { data: salesData, isLoading: salesLoading } = useQuery(
     ["advanced-sales-summary", period, storeId],
-    () => getSalesSummary({ store: storeId, period }),
+    () => getReportingSalesSummary({ store: storeId, period }),
     { enabled: !!storeId }
   );
 
   const { data: productData, isLoading: productLoading } = useQuery(
     ["advanced-product-sales", period, storeId],
-    () => getProductSalesSummary({ store: storeId, period }),
+    () => getReportingProductSales({ store: storeId, period }),
     { enabled: !!storeId }
   );
 
   const { data: categoryData, isLoading: categoryLoading } = useQuery(
     ["advanced-category-sales", period, storeId],
-    () => getCategorySalesSummary({ store: storeId, period }),
+    () => getReportingCategorySales({ store: storeId, period }),
     { enabled: !!storeId }
   );
 
   const { data: kasirData, isLoading: kasirLoading } = useQuery(
     ["advanced-kasir-performance", period, storeId],
-    () => getKasirPerformance({ store: storeId, period }),
+    () => getReportingKasirPerformance({ store: storeId, period }),
     { enabled: !!storeId }
   );
 

@@ -83,6 +83,10 @@ const DetailSalesReturn = () => {
     );
 
   const st = statusDetail[ret.status] || statusDetail.pending;
+  const refundMethodLabel = (m) => {
+    const known = ["cash", "debit", "credit", "e-wallet", "other"];
+    return known.includes(m) ? t(`page.salesReturn.method.${m}`) : m || "-";
+  };
 
   return (
     <>
@@ -130,12 +134,16 @@ const DetailSalesReturn = () => {
                     [t("page.salesReturn.detail.field.returnNo"), ret.returnNumber],
                     [t("page.salesReturn.detail.field.store"), ret.storeData?.name || "-"],
                     [
-                      "Refund Amount",
+                      t("page.salesReturn.detail.field.refundAmount"),
                       <span
                         key="refund-amount"
                         className="font-mono font-semibold text-green-600 dark:text-green-400">
                         Rp {(ret.refundAmount || 0).toLocaleString("id-ID")}
                       </span>
+                    ],
+                    [
+                      t("page.salesReturn.detail.field.refundMethod"),
+                      refundMethodLabel(ret.refundMethod)
                     ],
                     [t("page.salesReturn.detail.field.reason"), ret.reason || "-"],
                     [

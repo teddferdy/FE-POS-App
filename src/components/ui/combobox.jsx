@@ -60,7 +60,9 @@ export function Combobox({
               {options.map((opt) => (
                 <CommandItem
                   key={opt.value}
+                  disabled={opt.disabled}
                   onSelect={() => {
+                    if (opt.disabled) return;
                     onChange(opt.value);
                     setOpen(false);
                   }}>
@@ -70,7 +72,7 @@ export function Combobox({
                       value === opt.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {opt.label}
+                  <span className={cn("flex-1", opt.disabled && "opacity-50")}>{opt.label}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

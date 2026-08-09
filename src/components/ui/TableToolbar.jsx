@@ -23,17 +23,15 @@ const TableToolbar = ({ title, onReset, isFiltered, children }) => {
         </Button>
       </div>
       <div
-        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap items-end gap-3 w-full`}>
+        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-row flex-wrap items-end gap-3 w-full`}>
         {filters.map((filter, i) => (
-          <div
-            key={i}
-            className="flex flex-col gap-1.5 min-w-0 flex-1 basis-full sm:basis-[calc(50%-0.375rem)] lg:basis-0">
+          <div key={i} className="flex flex-col gap-1.5 flex-1 min-w-[150px]">
             {filter}
           </div>
         ))}
         {onReset && (
           <div className="flex flex-col gap-1.5 shrink-0">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground invisible">
               &nbsp;
             </label>
             <Button

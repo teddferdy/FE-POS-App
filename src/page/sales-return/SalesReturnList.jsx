@@ -33,6 +33,10 @@ const statusCfg = {
 
 const SalesReturnList = () => {
   const { t } = useTranslation();
+  const refundMethodLabel = (m) => {
+    const known = ["cash", "debit", "credit", "e-wallet", "other"];
+    return known.includes(m) ? t(`page.salesReturn.method.${m}`) : m || "-";
+  };
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -131,6 +135,10 @@ const SalesReturnList = () => {
           Rp {(item.refundAmount || 0).toLocaleString("id-ID")}
         </span>
       )
+    },
+    {
+      header: t("page.salesReturn.list.header.refundMethod"),
+      render: (item) => <span className="text-sm">{refundMethodLabel(item.refundMethod)}</span>
     },
     {
       header: t("page.salesReturn.list.header.reason"),

@@ -270,18 +270,18 @@ const StockHistory = () => {
                   onReset={resetFilters}
                   isFiltered={isFiltered}>
                   {isLoadingLocations || isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 col-span-1 sm:col-span-2 lg:col-span-4">
-                      <Skeleton className="h-9 rounded-md" />
-                      <Skeleton className="h-9 rounded-md" />
-                      <Skeleton className="h-9 rounded-md" />
-                      <Skeleton className="h-9 rounded-md" />
-                      <Skeleton className="h-9 rounded-md" />
-                    </div>
+                    [
+                      <Skeleton key="s1" className="h-9 w-full rounded-md" />,
+                      <Skeleton key="s2" className="h-9 w-full rounded-md" />,
+                      <Skeleton key="s3" className="h-9 w-full rounded-md" />,
+                      <Skeleton key="s4" className="h-9 w-full rounded-md" />,
+                      <Skeleton key="s5" className="h-9 w-full rounded-md" />
+                    ]
                   ) : (
-                    <>
-                      {isSuperAdmin && (
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    [
+                      isSuperAdmin && (
+                        <div key="store">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
                             {t("header.selectStore") || "Store"}
                           </label>
                           <StoreFilter
@@ -295,9 +295,9 @@ const StockHistory = () => {
                             t={t}
                           />
                         </div>
-                      )}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      ),
+                      <div key="product">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
                           {t("page.stockHistory.filter.product")}
                         </label>
                         <Combobox
@@ -316,9 +316,9 @@ const StockHistory = () => {
                           placeholder={t("page.stockHistory.filter.allProducts")}
                           searchPlaceholder={t("common.search")}
                         />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      </div>,
+                      <div key="ref">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
                           {t("page.stockHistory.filter.referenceType")}
                         </label>
                         <Combobox
@@ -331,9 +331,9 @@ const StockHistory = () => {
                           placeholder={t("page.stockHistory.filter.allTypes")}
                           searchPlaceholder={t("common.search")}
                         />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      </div>,
+                      <div key="start">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
                           {t("page.stockHistory.filter.startDate")}
                         </label>
                         <DatePicker
@@ -343,9 +343,9 @@ const StockHistory = () => {
                             setPage(1);
                           }}
                         />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      </div>,
+                      <div key="end">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
                           {t("page.stockHistory.filter.endDate")}
                         </label>
                         <DatePicker
@@ -356,7 +356,7 @@ const StockHistory = () => {
                           }}
                         />
                       </div>
-                    </>
+                    ]
                   )}
                 </TableToolbar>
               }
