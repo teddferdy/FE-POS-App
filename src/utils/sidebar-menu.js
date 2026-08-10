@@ -239,6 +239,14 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete"]
       },
       {
+        title: "Permintaan Barang",
+        i18nKey: "sidebar.goodsRequest",
+        href: "/goods-request",
+        icon: ClipboardList,
+        activePaths: ["/goods-request/detail", "/add-goods-request", "/edit-goods-request"],
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
         title: "Purchase Order",
         i18nKey: "sidebar.purchaseOrder",
         href: "/purchase-order",
@@ -695,6 +703,14 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view", "delete"]
       },
       {
+        title: "Permintaan Barang",
+        i18nKey: "sidebar.goodsRequest",
+        href: "/goods-request",
+        icon: ClipboardList,
+        activePaths: ["/goods-request/detail", "/add-goods-request", "/edit-goods-request"],
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
         title: "Purchase Order",
         i18nKey: "sidebar.purchaseOrder",
         href: "/purchase-order",
@@ -1032,6 +1048,12 @@ export const urlWithArrowBack = [
   },
   {
     url: -1,
+    title: "Goods Request",
+    i18nKey: "sidebar.goodsRequest",
+    pathName: "/goods-request"
+  },
+  {
+    url: -1,
     title: "Dashboard Utang",
     i18nKey: "sidebar.apDashboard",
     pathName: "/ap-dashboard"
@@ -1208,6 +1230,24 @@ export const urlWithArrowBack = [
     title: "Edit Purchase Order",
     i18nKey: "breadcrumb.edit",
     pathName: "/edit-purchase-order"
+  },
+  {
+    url: "/goods-request",
+    title: "Add Goods Request",
+    i18nKey: "breadcrumb.add",
+    pathName: "/add-goods-request"
+  },
+  {
+    url: "/goods-request",
+    title: "Edit Goods Request",
+    i18nKey: "breadcrumb.edit",
+    pathName: "/edit-goods-request"
+  },
+  {
+    url: "/goods-request",
+    title: "Detail Goods Request",
+    i18nKey: "breadcrumb.detail",
+    pathName: "/goods-request/detail"
   },
   {
     url: "/stock-opname",

@@ -25,6 +25,12 @@ const DetailPurchaseReturn = React.lazy(
   () => import("@/page/purchase-return/DetailPurchaseReturn")
 );
 
+// Goods Request (Permintaan Barang)
+const GoodsRequestList = React.lazy(() => import("@/page/goods-request/GoodsRequestList"));
+const AddGoodsRequest = React.lazy(() => import("@/page/goods-request/AddGoodsRequest"));
+const EditGoodsRequest = React.lazy(() => import("@/page/goods-request/EditGoodsRequest"));
+const DetailGoodsRequest = React.lazy(() => import("@/page/goods-request/DetailGoodsRequest"));
+
 // Sales Return
 const SalesReturnList = React.lazy(() => import("@/page/sales-return/SalesReturnList"));
 const DetailSalesReturn = React.lazy(() => import("@/page/sales-return/DetailSalesReturn"));
@@ -48,6 +54,11 @@ export const purchasingRoutes = (
 
     <Route path="/purchase-return" element={<PurchaseReturnList />} />
     <Route path="/purchase-return/detail" element={<DetailPurchaseReturn />} />
+
+    <Route path="/goods-request" element={<GoodsRequestList />} />
+    <Route path="/add-goods-request" element={<AddGoodsRequest />} />
+    <Route path="/edit-goods-request" element={<EditGoodsRequest />} />
+    <Route path="/goods-request/detail" element={<DetailGoodsRequest />} />
 
     <Route path="/sales-return" element={<SalesReturnList />} />
     <Route path="/sales-return/detail" element={<DetailSalesReturn />} />
