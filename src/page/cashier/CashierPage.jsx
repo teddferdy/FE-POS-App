@@ -120,6 +120,7 @@ const CashierPage = () => {
   const [clearCartOpen, setClearCartOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
+  const [selectedTable, setSelectedTable] = useState(null);
 
   useEffect(() => {
     const visited = localStorage.getItem("pos-onboarding-done");
@@ -244,6 +245,7 @@ const CashierPage = () => {
           taxRate,
           taxAmount,
           total: subtotal + taxAmount,
+          tableName: selectedTable?.name || "",
           items: cart.order.map((item) => ({
             cartKey: item.cartKey || item.id,
             nameProduct: item.nameProduct || item.name || "",
@@ -258,7 +260,7 @@ const CashierPage = () => {
       );
     }, 150);
     return () => clearTimeout(timer);
-  }, [cart.order, totalItems, subtotal, taxRate, taxAmount]);
+  }, [cart.order, totalItems, subtotal, taxRate, taxAmount, selectedTable]);
 
   const handleLoadOrder = useCallback(
     (order) => {
@@ -306,6 +308,7 @@ const CashierPage = () => {
 
   const handleNewTransaction = useCallback(() => {
     cart.resetOrder();
+    setSelectedTable(null);
     setReceiptData(null);
   }, [cart]);
 
@@ -558,6 +561,7 @@ const CashierPage = () => {
             store={store}
             cashierName={userName}
             cashierId={user?.id || user?.ID}
+            onTableChange={setSelectedTable}
             onComplete={handleCheckoutComplete}
           />
         )}

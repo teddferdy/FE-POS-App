@@ -34,6 +34,7 @@ import { getMemberById } from "@/services/member";
 import { getTableAvailability } from "@/services/table";
 import { getPaymentIconKind } from "@/utils/payment";
 import { toast } from "sonner";
+import { dispatchDisplayEvent, DISPLAY_EVENT_TYPES } from "@/utils/customerDisplayBoard";
 
 const CheckoutModal = ({
   items: propItems,
@@ -43,6 +44,7 @@ const CheckoutModal = ({
   cashierName,
   cashierId,
   onClose,
+  onTableChange,
   onComplete
 }) => {
   const { t } = useTranslation();
@@ -69,6 +71,9 @@ const CheckoutModal = ({
   const [memberPoints, setMemberPoints] = useState(0);
   const [orderType, setOrderType] = useState("take-away");
   const [selectedTable, setSelectedTable] = useState(null);
+  const [partySize, setPartySize] = useState("");
+  const [qrisPending, setQrisPending] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState(null);
   const cashInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const discountSearchRef = useRef(null);
@@ -131,16 +136,42 @@ const CheckoutModal = ({
   const { data: paymentMethodsData } = useQuery(["payment-methods-active"], () =>
     getAllTypePayment({ store, status: "active" })
   );
-  const { data: tablesData } = useQuery(
+  const { data: tablesData, isLoading: tablesLoading } = useQuery(
     ["table-availability", store],
     () => getTableAvailability({ location: store }),
-    { enabled: !!store }
+    { enabled: !!store, staleTime: 0, refetchOnMount: true }
   );
   const allTables = useMemo(() => tablesData?.data?.tables || [], [tablesData]);
+  const partySizeNum = Number(partySize) || 0;
   const availableTables = useMemo(
-    () => allTables.filter((t) => t.status === "available"),
-    [allTables]
+    () =>
+      allTables.filter(
+        (t) =>
+          t.status === "available" && (partySizeNum === 0 || Number(t.capacity) >= partySizeNum)
+      ),
+    [allTables, partySizeNum]
   );
+
+  const isQrisPayment = paymentMethod === "e-wallet" || paymentMethod === "qris";
+
+  useEffect(() => {
+    onTableChange?.(selectedTable);
+  }, [selectedTable, onTableChange]);
+
+  useEffect(() => {
+    if (partySize && !selectedTable) {
+      setSelectedTable(null);
+    }
+  }, [partySize, selectedTable]);
+  const selectedTableStillFits =
+    !selectedTable ||
+    !partySizeNum ||
+    !selectedTable.capacity ||
+    Number(selectedTable.capacity) >= partySizeNum;
+
+  useEffect(() => {
+    if (selectedTable && !selectedTableStillFits) setSelectedTable(null);
+  }, [selectedTableStillFits, selectedTable]);
 
   const customerId = selectedCustomer?.id || selectedCustomer?._id;
   const { data: memberData } = useQuery(
@@ -409,6 +440,26 @@ const CheckoutModal = ({
     });
   }, [newCustomerName, newCustomerPhone, selectedTier, addCustomerMutation]);
 
+  const handleQrisConfirm = useCallback(() => {
+    if (!pendingPayload) return;
+    mutation.mutate(pendingPayload);
+  }, [pendingPayload, mutation]);
+
+  const startQrisPayment = useCallback(
+    (payload, method) => {
+      setPendingPayload(payload);
+      setQrisPending(true);
+      dispatchDisplayEvent({
+        type: DISPLAY_EVENT_TYPES.QRIS_PAYMENT_REQUEST,
+        store,
+        total: remainingTotal,
+        tableName: selectedTable?.name || "",
+        paymentMethod: method
+      });
+    },
+    [store, remainingTotal, selectedTable]
+  );
+
   const handleSubmit = useCallback(() => {
     if (orderType === "dine-in" && !selectedTable) {
       toast.error(t("page.cashier.selectTable", "Pilih meja terlebih dahulu"));
@@ -436,6 +487,7 @@ const CheckoutModal = ({
       paymentMethod: method,
       source: "pos",
       tableId: orderType === "dine-in" ? selectedTable?.id || null : null,
+      totalCovers: orderType === "dine-in" ? partySizeNum : 0,
       cashAmount: method === "cash" ? cashAmountNum : total,
       changeAmount: method === "cash" ? change : 0,
       items: items.map((item) => ({
@@ -449,6 +501,11 @@ const CheckoutModal = ({
         modifiers: []
       }))
     };
+
+    if (method === "e-wallet" || method === "qris") {
+      startQrisPayment(payload, method);
+      return;
+    }
 
     mutation.mutate(payload);
   }, [
@@ -469,7 +526,8 @@ const CheckoutModal = ({
     selectedTable,
     mutation,
     cookie,
-    t
+    t,
+    startQrisPayment
   ]);
 
   const formatPrice = (value) => {
@@ -584,29 +642,64 @@ const CheckoutModal = ({
                   </button>
                 </div>
                 {orderType === "dine-in" && (
-                  <div className="mt-2">
-                    <Combobox
-                      options={[
-                        { value: "", label: t("page.cashier.selectTable", "Pilih Meja") },
-                        ...allTables.map((tbl) => {
-                          const isAvailable = tbl.status === "available";
-                          return {
-                            value: String(tbl.id),
-                            label: isAvailable
-                              ? `${tbl.name} (${t("page.cashier.capacity", "Kapasitas")}: ${tbl.capacity})`
-                              : `${tbl.name} (${t("page.cashier.capacity", "Kapasitas")}: ${tbl.capacity}) — ${t("page.cashier.tableInUse", "Dipakai")}`,
-                            disabled: !isAvailable
-                          };
-                        })
-                      ]}
-                      value={String(selectedTable?.id || "")}
-                      onChange={(v) => {
-                        const t = availableTables.find((tbl) => String(tbl.id) === v);
-                        setSelectedTable(t || null);
-                      }}
-                      placeholder={t("page.cashier.selectTable", "Pilih Meja")}
-                      searchPlaceholder="Cari meja..."
-                    />
+                  <div className="mt-2 space-y-2">
+                    <div className="flex items-start gap-2">
+                      <div className="w-[38%] shrink-0">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
+                          {t("page.cashier.guests", "Jumlah orang")}
+                        </label>
+                        <div className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background px-2.5 focus-within:border-primary">
+                          <Users size={14} className="text-muted-foreground shrink-0" />
+                          <input
+                            type="number"
+                            min="1"
+                            value={partySize}
+                            onChange={(e) => setPartySize(e.target.value)}
+                            placeholder="0"
+                            className="w-full py-2 text-sm outline-none bg-transparent"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
+                          {t("page.cashier.modal.table", "Pilih Meja")}
+                        </label>
+                        <Combobox
+                          options={[
+                            { value: "", label: t("page.cashier.selectTable", "Pilih Meja") },
+                            ...allTables.map((tbl) => {
+                              const isAvailable = tbl.status === "available";
+                              const statusLabel = t(
+                                `page.table.status.${tbl.status || "available"}`,
+                                tbl.status || "available"
+                              );
+                              return {
+                                value: String(tbl.id),
+                                label: `${tbl.name} (${t("page.cashier.capacity", "Kapasitas")}: ${tbl.capacity}) — ${statusLabel}`,
+                                disabled: !isAvailable
+                              };
+                            })
+                          ]}
+                          value={String(selectedTable?.id || "")}
+                          onChange={(v) => {
+                            const tbl = allTables.find(
+                              (tb) => String(tb.id) === v && tb.status === "available"
+                            );
+                            setSelectedTable(tbl || null);
+                          }}
+                          placeholder={t("page.cashier.selectTable", "Pilih Meja")}
+                          searchPlaceholder="Cari meja..."
+                        />
+                      </div>
+                    </div>
+                    {partySizeNum > 0 && !tablesLoading && availableTables.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        {t(
+                          "page.cashier.guestsNoTable",
+                          "Tidak ada meja kosong untuk jumlah orang tersebut"
+                        )}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -627,7 +720,10 @@ const CheckoutModal = ({
                       return (
                         <button
                           key={method.id}
-                          onClick={() => setPaymentMethod(method.id)}
+                          onClick={() => {
+                            setPaymentMethod(method.id);
+                            setQrisPending(false);
+                          }}
                           className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all duration-200 ${
                             isSelected
                               ? "border-primary bg-primary/10 shadow-sm shadow-primary/10 scale-[1.02]"
@@ -1132,21 +1228,63 @@ const CheckoutModal = ({
           </div>
         )}
 
-        <div className="border-t border-border/50 p-4 shrink-0">
-          <Button
-            onClick={handleSubmit}
-            disabled={!canSubmit || mutation.isLoading}
-            className="w-full h-12 rounded-xl font-semibold text-sm relative overflow-hidden group/btn">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/90 opacity-90 group-hover/btn:opacity-100 transition-opacity" />
-            <span className="relative flex items-center justify-center gap-2">
-              {mutation.isLoading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <Check size={16} />
-              )}
-              {mutation.isLoading ? t("page.cashier.processing") : t("page.cashier.confirmPayment")}
-            </span>
-          </Button>
+        <div className="border-t border-border/50 p-4 shrink-0 space-y-2">
+          {qrisPending && isQrisPayment ? (
+            <>
+              <div className="flex items-start gap-2 rounded-xl bg-primary/10 border border-primary/20 px-3 py-2.5 text-sm">
+                <Smartphone size={16} className="text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-primary">
+                    {t("page.cashier.qris.onBoard", "QRIS ditampilkan di layar pelanggan")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      "page.cashier.qris.waiting",
+                      "Tunggu pembayaran pelanggan, lalu konfirmasi di bawah."
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setQrisPending(false)}
+                  className="flex-1 h-12 rounded-xl">
+                  {t("page.cashier.cancel", "Batal")}
+                </Button>
+                <Button
+                  onClick={handleQrisConfirm}
+                  disabled={mutation.isLoading}
+                  className="flex-[2] h-12 rounded-xl font-semibold text-sm">
+                  {mutation.isLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Check size={16} />
+                  )}
+                  {mutation.isLoading
+                    ? t("page.cashier.processing")
+                    : t("page.cashier.qris.confirmReceived", "Konfirmasi Pembayaran Diterima")}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Button
+              onClick={handleSubmit}
+              disabled={!canSubmit || mutation.isLoading}
+              className="w-full h-12 rounded-xl font-semibold text-sm relative overflow-hidden group/btn">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/90 opacity-90 group-hover/btn:opacity-100 transition-opacity" />
+              <span className="relative flex items-center justify-center gap-2">
+                {mutation.isLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Check size={16} />
+                )}
+                {mutation.isLoading
+                  ? t("page.cashier.processing")
+                  : t("page.cashier.confirmPayment")}
+              </span>
+            </Button>
+          )}
         </div>
       </div>
     </div>
@@ -1161,6 +1299,7 @@ CheckoutModal.propTypes = {
   cashierId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   taxRate: PropTypes.number,
   onClose: PropTypes.func,
+  onTableChange: PropTypes.func,
   onComplete: PropTypes.func
 };
 

@@ -2,7 +2,8 @@ export const CART_MIRROR_KEY = "customer-display-cart";
 export const DISPLAY_EVENT_KEY = "customer-display-event";
 
 export const DISPLAY_EVENT_TYPES = {
-  TRANSACTION_SUCCESS: "transaction-success"
+  TRANSACTION_SUCCESS: "transaction-success",
+  QRIS_PAYMENT_REQUEST: "qris-payment-request"
 };
 
 export const EMPTY_CART_MIRROR = {

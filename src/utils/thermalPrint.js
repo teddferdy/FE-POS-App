@@ -13,162 +13,116 @@ const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;
 
 export const generateReceiptHTML = (data) => {
   const {
-    storeName = "TOKO ANDA",
-    storeAddress = "",
-    storePhone = "",
-    storeEmail = "",
-    logo = "",
-    memberName = "",
-    memberTier = "",
-    memberPoints = 0,
-    orderNumber = "",
-    cashier = "",
+    storeName,
+    storeAddress,
+    storePhone,
+    storeEmail,
+    logo,
+    memberName,
+    memberTier,
+    memberPoints,
+    orderNumber,
+    cashier,
     date = new Date().toLocaleString("id-ID"),
     items = [],
     subtotal = 0,
     discount = 0,
-    serviceCharge = 0,
     tax = 0,
-    taxLabel = "Pajak (10%)",
     total = 0,
-    paymentMethod = "Tunai",
-    cashAmount = 0,
-    changeAmount = 0,
-    footer = "Terima kasih atas kunjungan Anda",
+    footer,
     socialMedia = [],
     showLogo = true,
     showStoreName = true,
     showAddress = true,
     showMemberInfo = true,
-    showSocialMedia = true
+    showSocialMedia = true,
+    addressFieldsVisibility = {},
+    socialMediaVisibility = {}
   } = data;
-
-  const paymentLabel =
-    String(paymentMethod || "Tunai")
-      .charAt(0)
-      .toUpperCase() + String(paymentMethod || "Tunai").slice(1);
-
-  const logoHtml =
-    showLogo && logo
-      ? `<div style="text-align:center;margin-bottom:6px"><img src="${logo}" style="max-height:60px;object-fit:contain" /></div>`
-      : "";
 
   const dateObj = new Date(date);
   const dateStr = dateObj.toLocaleDateString("id-ID", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric"
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
   });
   const timeStr = dateObj.toLocaleTimeString("id-ID", {
     hour: "2-digit",
     minute: "2-digit"
   });
 
-  const itemsHtml = items
-    .map((item) => {
-      const variant = item.options?.[0]?.name || item.variantName || "";
-      return `
-    <tr>
-      <td style="font-size:12px;font-family:monospace;border-bottom:1px dashed #ccc;padding:2px 0">${item.name || item.productName || "-"}${variant ? `<br/><span style="font-size:11px;color:#555">- ${variant}</span>` : ""}</td>
-      <td style="font-size:12px;font-family:monospace;text-align:center;border-bottom:1px dashed #ccc;padding:2px 0;width:30px">${item.qty || item.quantity || 0}</td>
-      <td style="font-size:12px;font-family:monospace;text-align:right;border-bottom:1px dashed #ccc;padding:2px 0;width:80px">${formatPrice(item.price || 0)}</td>
-      <td style="font-size:12px;font-family:monospace;text-align:right;border-bottom:1px dashed #ccc;padding:2px 0;width:80px;font-weight:500">${formatPrice(item.total || item.subtotal || 0)}</td>
-    </tr>`;
-    })
-    .join("");
+  const logoHtml = showLogo && logo ? `<div style="text-align:center;margin-bottom:8px"><img src="${logo}" style="max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto" /></div>` : "";
+  
+  const headerHtml = `
+    <div style="background:#111;color:#fff;padding:10px 5px;text-align:center;">
+      ${logoHtml}
+      ${showStoreName && addressFieldsVisibility.storeName !== false ? `<div style="font-size:14px;font-weight:bold;text-transform:uppercase;">${storeName || "TOKO"}</div>` : ""}
+      ${showAddress ? `
+        <div style="font-size:10px;color:#ccc;margin-top:4px;">
+          ${addressFieldsVisibility.address !== false && storeAddress ? `<div>${storeAddress}</div>` : ""}
+          ${addressFieldsVisibility.phone !== false && storePhone ? `<div>Telp: ${storePhone}</div>` : ""}
+          ${addressFieldsVisibility.email !== false && storeEmail ? `<div>${storeEmail}</div>` : ""}
+        </div>
+      ` : ""}
+    </div>
+  `;
 
-  const headerLines = [
-    logoHtml,
-    showStoreName && storeName
-      ? `<div style="font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px">${storeName}</div>`
-      : "",
-    showAddress && storeAddress
-      ? `<div style="font-size:11px;color:#555">${storeAddress}</div>`
-      : "",
-    showAddress && storePhone
-      ? `<div style="font-size:11px;color:#555">Telp: ${storePhone}</div>`
-      : "",
-    showAddress && storeEmail ? `<div style="font-size:11px;color:#555">${storeEmail}</div>` : ""
-  ]
-    .filter(Boolean)
-    .join("\n      ");
+  const memberHtml = (showMemberInfo && (memberName || memberTier)) ? `
+    <div style="background:#fffbeb;padding:8px;border-bottom:1px solid #fef3c7;font-size:10px;color:#78350f;">
+      <div style="font-weight:bold;text-transform:uppercase;margin-bottom:4px;">INFO MEMBER</div>
+      ${memberName ? `<div style="display:flex;justify-content:space-between;"><span>Nama:</span><span style="font-weight:bold;">${memberName}</span></div>` : ""}
+      ${memberTier ? `<div style="display:flex;justify-content:space-between;"><span>Tier:</span><span style="font-weight:bold;">${memberTier}</span></div>` : ""}
+      ${memberPoints !== undefined ? `<div style="display:flex;justify-content:space-between;"><span>Poin:</span><span style="font-weight:bold;">${Number(memberPoints).toLocaleString("id-ID")}</span></div>` : ""}
+    </div>
+  ` : "";
 
-  const socialHtml =
-    showSocialMedia && socialMedia.length > 0
-      ? `<div style="display:flex;justify-content:center;gap:10px;margin-top:4px;flex-wrap:wrap">${socialMedia
-          .map(
-            (sm) => `<span style="font-size:10px;color:#666">${sm.platform}: ${sm.account}</span>`
-          )
-          .join("")}</div>`
-      : "";
+  const itemsHtml = items.map(item => `
+    <tr style="font-size:11px;">
+      <td style="padding:4px 0;">${item.name}</td>
+      <td style="padding:4px 0;text-align:center;">${item.qty}</td>
+      <td style="padding:4px 0;text-align:right;">${formatPrice(item.price)}</td>
+      <td style="padding:4px 0;text-align:right;font-weight:bold;">${formatPrice(item.qty * item.price)}</td>
+    </tr>
+  `).join("");
+
+  const footerHtml = `
+    <div style="padding:10px 5px;border-top:1px solid #ddd;font-size:10px;text-align:center;color:#666;">
+      <div style="font-style:italic;margin-bottom:8px;">${footer}</div>
+      ${showSocialMedia && socialMedia.length > 0 ? `
+        <div style="display:flex;justify-content:center;gap:5px;flex-wrap:wrap;">
+          ${socialMedia.filter(sm => !socialMediaVisibility || socialMediaVisibility[sm.platform] !== false).map(sm => `<span>${sm.platform}: ${sm.account}</span>`).join(" | ")}
+        </div>
+      ` : ""}
+    </div>
+  `;
 
   return `
 <!DOCTYPE html>
 <html>
-<head><title>Print Receipt</title>
-<style>
-  @page { width:58mm; margin:0; padding:0; }
-  @media print { body { margin:0; padding:0; } }
-</style></head>
+<head><style>@page { width: 58mm; margin:0; } body { font-family: 'Courier New', Courier, monospace; }</style></head>
 <body>
-  <div id="receipt" style="width:58mm;padding:4px 8px;font-family:'Courier New',Courier,monospace;font-size:12px;line-height:1.3">
-    <div style="text-align:center;margin-bottom:8px">
-      ${headerLines}
-    </div>
-    <div style="border-top:2px solid #000;border-bottom:1px dashed #000;padding:4px 0;margin:4px 0;font-size:11px">
-      <div style="display:flex;justify-content:space-between">
-        <span>${dateStr}</span>
-        <span>${timeStr}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between">
-        <span>Invoice: ${orderNumber}</span>
-        <span>Kasir: ${cashier}</span>
-      </div>
-    </div>
-    ${
-      showMemberInfo && memberName
-        ? `
-    <div style="border-bottom:1px dashed #000;padding:4px 0;margin:4px 0;font-size:11px">
-      <div style="font-weight:500">${memberName}</div>
-      ${memberTier ? `<div style="color:#555;font-size:10px">Tier: ${memberTier}</div>` : ""}
-      ${memberPoints ? `<div style="color:#555;font-size:10px">Poin: ${Number(memberPoints).toLocaleString("id-ID")}</div>` : ""}
-    </div>`
-        : ""
-    }
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead>
-        <tr style="border-bottom:2px solid #000">
-          <th style="text-align:left;font-size:10px;text-transform:uppercase;padding:2px 0">Item</th>
-          <th style="text-align:center;font-size:10px;text-transform:uppercase;padding:2px 0;width:30px">Qty</th>
-          <th style="text-align:right;font-size:10px;text-transform:uppercase;padding:2px 0;width:80px">Harga</th>
-          <th style="text-align:right;font-size:10px;text-transform:uppercase;padding:2px 0;width:80px">Total</th>
-        </tr>
-      </thead>
-      <tbody>${itemsHtml}</tbody>
+  <div style="width: 58mm; padding: 0 2px;">
+    ${headerHtml}
+    ${memberHtml}
+    <table style="width:100%;border-collapse:collapse;margin:10px 0;">
+      <tr style="font-size:10px;color:#666;text-transform:uppercase;border-bottom:1px solid #ddd;">
+        <th style="text-align:left;padding:4px 0;">Item</th>
+        <th style="text-align:center;padding:4px 0;">Qty</th>
+        <th style="text-align:right;padding:4px 0;">Harga</th>
+        <th style="text-align:right;padding:4px 0;">Total</th>
+      </tr>
+      ${itemsHtml}
     </table>
-    <div style="border-top:2px solid #000;margin-top:4px;padding-top:4px;font-size:12px">
-      <div style="display:flex;justify-content:space-between">
-        <span>Subtotal</span><span>${formatPrice(subtotal)}</span>
-      </div>
-      ${discount > 0 ? `<div style="display:flex;justify-content:space-between"><span>Diskon</span><span style="color:#c00">-${formatPrice(discount)}</span></div>` : ""}
-      ${serviceCharge > 0 ? `<div style="display:flex;justify-content:space-between"><span>Biaya Layanan</span><span>${formatPrice(serviceCharge)}</span></div>` : ""}
-      <div style="display:flex;justify-content:space-between">
-        <span>${taxLabel}</span><span>${formatPrice(tax)}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;border-top:2px solid #000;padding-top:4px;margin-top:4px">
-        <span>TOTAL</span><span>${formatPrice(total)}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:4px">
-        <span>${paymentLabel}</span><span>${formatPrice(cashAmount)}</span>
-      </div>
-      ${changeAmount > 0 ? `<div style="display:flex;justify-content:space-between"><span>Kembali</span><span>${formatPrice(changeAmount)}</span></div>` : ""}
+    <div style="padding:5px;background:#f9f9f9;font-size:11px;">
+      <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span>${formatPrice(subtotal)}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span>Pajak</span><span>${formatPrice(tax)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:bold;margin-top:5px;font-size:13px;"><span>Total</span><span>${formatPrice(total)}</span></div>
     </div>
-    <div style="text-align:center;margin-top:12px;font-size:11px;font-style:italic;color:#666">${footer}</div>
-    ${socialHtml}
+    ${footerHtml}
   </div>
 </body>
-</html>`;
+</html>
+  `;
 };
 
 export const generateESCPOS = (data, opts = {}) => {

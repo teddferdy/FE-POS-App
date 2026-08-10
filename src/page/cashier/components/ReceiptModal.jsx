@@ -226,7 +226,9 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
         showStoreName,
         showAddress,
         showMemberInfo,
-        showSocialMedia
+        showSocialMedia,
+        socialMediaVisibility: settingsData?.socialMediaVisibility,
+        addressFieldsVisibility: addressFieldsVisible
       };
       await printReceipt(receipt, "auto");
       toast.success(t("page.cashier.receipt.toast.printSuccess"));

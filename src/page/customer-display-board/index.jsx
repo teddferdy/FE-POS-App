@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { ShoppingBag, Maximize, Minimize, Sun, Moon, Store } from "lucide-react";
+import { ShoppingBag, Maximize, Minimize, Sun, Moon, Store, UtensilsCrossed } from "lucide-react";
 import { useThemeStore } from "@/state/theme";
 import { getAllLocation } from "@/services/location";
 import { storeIdsEqual } from "@/utils/storeId";
@@ -15,6 +15,7 @@ import {
   readDisplayEvent
 } from "@/utils/customerDisplayBoard";
 import ThankYouModal from "./ThankYouModal";
+import QrisPaymentModal from "./QrisPaymentModal";
 
 const EVENT_RECENCY_MS = 30000;
 
@@ -65,6 +66,7 @@ const CustomerDisplayBoard = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [cart, setCart] = useState(readCart);
   const [thankYouEvent, setThankYouEvent] = useState(null);
+  const [qrisEvent, setQrisEvent] = useState(null);
 
   const { data: locsData } = useQuery(
     ["customer-display-board-locations", storeId],
@@ -100,6 +102,7 @@ const CustomerDisplayBoard = () => {
     } catch {
       // localStorage unavailable; ignore
     }
+    setQrisEvent(null);
     setThankYouEvent(evt);
     clearDisplayEvent();
   };
@@ -116,8 +119,13 @@ const CustomerDisplayBoard = () => {
         } catch {
           evt = null;
         }
-        if (evt && evt.type === DISPLAY_EVENT_TYPES.TRANSACTION_SUCCESS && matchesStore(evt)) {
+        if (!evt) return;
+        if (evt.type === DISPLAY_EVENT_TYPES.TRANSACTION_SUCCESS && matchesStore(evt)) {
           handleThankYouEvent(evt);
+        } else if (evt.type === DISPLAY_EVENT_TYPES.QRIS_PAYMENT_REQUEST && matchesStore(evt)) {
+          setThankYouEvent(null);
+          setQrisEvent(evt);
+          clearDisplayEvent();
         }
       }
     };
@@ -127,17 +135,23 @@ const CustomerDisplayBoard = () => {
 
   useEffect(() => {
     const evt = readDisplayEvent();
+    if (!evt || !matchesStore(evt)) return;
     if (
-      evt &&
       evt.type === DISPLAY_EVENT_TYPES.TRANSACTION_SUCCESS &&
-      matchesStore(evt) &&
       Date.now() - (evt.dispatchedAt || 0) < EVENT_RECENCY_MS
     ) {
       handleThankYouEvent(evt);
+    } else if (
+      evt.type === DISPLAY_EVENT_TYPES.QRIS_PAYMENT_REQUEST &&
+      Date.now() - (evt.dispatchedAt || 0) < EVENT_RECENCY_MS
+    ) {
+      setQrisEvent(evt);
+      clearDisplayEvent();
     }
   }, [storeId]);
 
   const items = cart?.items || [];
+  const tableName = cart?.tableName || "";
   const totalItems = cart?.totalItems ?? items.reduce((sum, i) => sum + (i.count || 0), 0);
   const subtotal = cart?.subtotal ?? 0;
   const taxAmount = cart?.taxAmount ?? 0;
@@ -164,10 +178,18 @@ const CustomerDisplayBoard = () => {
               <h1 className="text-2xl font-black tracking-tight">
                 {t("page.customerDisplayBoard.title")}
               </h1>
-              <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <Store size={13} />
-                {storeName || t("page.customerDisplayBoard.store")}
-              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <Store size={13} />
+                  {storeName || t("page.customerDisplayBoard.store")}
+                </p>
+                {tableName && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-3 py-0.5 text-sm font-bold">
+                    <UtensilsCrossed size={13} />
+                    {t("page.customerDisplayBoard.table")}: {tableName}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -256,6 +278,8 @@ const CustomerDisplayBoard = () => {
       {thankYouEvent && (
         <ThankYouModal event={thankYouEvent} onDismiss={() => setThankYouEvent(null)} />
       )}
+
+      {qrisEvent && <QrisPaymentModal event={qrisEvent} onDismiss={() => setQrisEvent(null)} />}
     </div>
   );
 };
