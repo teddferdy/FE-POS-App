@@ -1,22 +1,22 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useStore } from "@/contexts/StoreContext";
 import { toast } from "sonner";
-import { Save, X, Plus, ShoppingCart } from "lucide-react";
+import { Save, X, Plus, ShoppingCart, Package, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { z } from "zod";
 import { addPurchaseOrder } from "@/services/purchase-order";
-import { getAllSupplier, addSupplier } from "@/services/supplier";
+import { getAllSupplier } from "@/services/supplier";
 import { getAllEmployee } from "@/services/employee";
-import { getAllIngredients } from "@/services/ingredient";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -26,10 +26,74 @@ import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
-import OrderItemsCard from "@/components/organism/OrderItemsCard";
 import { getMissingFields } from "@/lib/validation";
+
+const emptyItem = {
+  name: "",
+  product: null,
+  productName: null,
+  ingredient: null,
+  ingredientName: null,
+  qty: 1,
+  unit: "pcs",
+  price: 0,
+  conversionToBase: 1
+};
+
+const emptyGroup = () => ({ supplier: null, items: [{ ...emptyItem }] });
+
+const unitOptions = [
+  { value: "pcs", label: "pcs" },
+  { value: "item", label: "item" },
+  { value: "unit", label: "unit" },
+  { value: "buah", label: "buah" },
+  { value: "pasang", label: "pasang" },
+  { value: "set", label: "set" },
+  { value: "lusin", label: "lusin" },
+  { value: "pack", label: "pack" },
+  { value: "box", label: "box" },
+  { value: "karton", label: "karton" },
+  { value: "kg", label: "kg" },
+  { value: "gram", label: "gram" },
+  { value: "liter", label: "liter" },
+  { value: "ml", label: "ml" },
+  { value: "meter", label: "meter" },
+  { value: "cm", label: "cm" },
+  { value: "cup", label: "cup" },
+  { value: "gelas", label: "gelas" },
+  { value: "porsi", label: "porsi" }
+];
+
 const AddPurchaseOrder = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const prefillNames = useMemo(() => {
+    const raw = searchParams.get("ingredients");
+    if (!raw) return [];
+    return raw
+      .split(",")
+      .filter(Boolean)
+      .map((n) => decodeURIComponent(n.trim()));
+  }, [searchParams]);
+
+  const prefillSupplier = searchParams.get("supplier");
+
+  const [groups, setGroups] = useState(() => {
+    if (prefillNames.length > 0) {
+      return [
+        {
+          supplier: prefillSupplier ? Number(prefillSupplier) : null,
+          items: prefillNames.map((name) => ({ ...emptyItem, name, ingredientName: name }))
+        }
+      ];
+    }
+    if (prefillSupplier) {
+      return [{ supplier: Number(prefillSupplier), items: [{ ...emptyItem }] }];
+    }
+    return [emptyGroup()];
+  });
 
   const poFieldLabels = {
     store: t("page.purchaseOrder.add.store"),
@@ -57,7 +121,7 @@ const AddPurchaseOrder = () => {
       )
       .min(1, t("page.purchaseOrder.add.validation.minItem"))
   });
-  const navigate = useNavigate();
+
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -65,27 +129,6 @@ const AddPurchaseOrder = () => {
   const locationParam = selectedStore;
 
   const [notes, setNotes] = useState("");
-  const [items, setItems] = useState([
-    { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs", supplierId: null }
-  ]);
-  const [searchParams] = useSearchParams();
-  useEffect(() => {
-    const raw = searchParams.get("ingredients");
-    if (raw) {
-      const names = raw
-        .split(",")
-        .filter(Boolean)
-        .map((n) => ({
-          name: decodeURIComponent(n.trim()),
-          ingredientId: null,
-          qty: 1,
-          price: 0,
-          unit: "pcs",
-          supplierId: null
-        }));
-      if (names.length > 0) setItems(names);
-    }
-  }, [searchParams]);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
@@ -103,12 +146,8 @@ const AddPurchaseOrder = () => {
   const [picSearch, setPicSearch] = useState("");
   const [picId, setPicId] = useState(null);
   const [showPicList, setShowPicList] = useState(false);
-  const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
-  const [addSupplierItemIdx, setAddSupplierItemIdx] = useState(null);
-  const [newSupplierName, setNewSupplierName] = useState("");
-  const [newSupplierPhone, setNewSupplierPhone] = useState("");
 
-  const { data: suppliersData } = useQuery(
+  const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
     ["suppliers-dropdown", selectedStore],
     () =>
       getAllSupplier({ limit: 999, store: selectedStore, status: "active", includeProducts: true }),
@@ -137,13 +176,6 @@ const AddPurchaseOrder = () => {
   );
   const locations = locationsData?.data || [];
 
-  const { data: ingredientsData } = useQuery(
-    ["ingredients-po", selectedStore],
-    () => getAllIngredients({ store: locationParam, limit: 999, status: "active" }),
-    { enabled: !!selectedStore, staleTime: 30000 }
-  );
-  const ingredients = ingredientsData?.data || [];
-  const activeIngredients = ingredients;
   useEffect(() => {
     setPicSearch("");
     setPicId(null);
@@ -151,91 +183,167 @@ const AddPurchaseOrder = () => {
   }, [selectedStore]);
 
   const headerReady = !locationsLoading;
-  const [ingredientsReady, setIngredientsReady] = useState(false);
-  const prevStoreRef = useRef(selectedStore);
-  useEffect(() => {
-    if (prevStoreRef.current !== selectedStore) {
-      setIngredientsReady(false);
-      prevStoreRef.current = selectedStore;
-    }
-    if (ingredientsData) setIngredientsReady(true);
-  }, [selectedStore, ingredientsData]);
-  const itemsLoading = !!selectedStore && !ingredientsReady;
 
-  const ingredientSuppliersMap = useMemo(() => {
+  const supplierOptions = useMemo(
+    () =>
+      (suppliers || []).map((sup) => ({
+        value: String(sup.id),
+        label: sup.name || sup.supplierName || `Supplier #${sup.id}`
+      })),
+    [suppliers]
+  );
+
+  const supplierItemsBySupplier = useMemo(() => {
     const map = {};
-    for (const sp of suppliers) {
-      const sid = sp.id || sp._id;
-      const sname = sp.name;
-      const products = (sp.products || []).filter((p) => !p.status || p.status === "active");
-      for (const prod of products) {
-        const pname = (prod.name || "").toLowerCase().trim();
-        if (!map[pname]) map[pname] = [];
-        map[pname].push({ supplierId: sid, supplierName: sname, price: prod.price });
-      }
+    for (const sup of suppliers || []) {
+      map[sup.id] = (sup.products || []).map((p) => ({
+        value: `sp-${p.id}`,
+        productId: p.productId || null,
+        name: p.name,
+        unit: p.unit || "pcs",
+        price: p.price || p.lastPrice || 0
+      }));
     }
     return map;
   }, [suppliers]);
 
-  const supplierProductsMap = useMemo(() => {
-    const map = {};
-    for (const sp of suppliers) {
-      const sid = sp.id || sp._id;
-      map[sid] = (sp.products || []).filter((p) => !p.status || p.status === "active");
-    }
-    return map;
-  }, [suppliers]);
-
-  const getSuppliersForIngredientName = (ingredientId) => {
-    if (!ingredientId) return [];
-    const ing = activeIngredients.find((i) => i.id === ingredientId);
-    if (!ing) return [];
-    return ingredientSuppliersMap[(ing.name || "").toLowerCase().trim()] || [];
+  const selectedItemValue = (item, supplier) => {
+    if (!supplier) return "";
+    const list = supplierItemsBySupplier[supplier] || [];
+    const match = list.find(
+      (opt) =>
+        (item.product && item.product === opt.productId) ||
+        (item.ingredientName && item.ingredientName === opt.name) ||
+        (item.productName && item.productName === opt.name)
+    );
+    return match?.value || "";
   };
 
-  const unitOptions = [
-    { value: "pcs", label: t("page.product.form.unit.pcs") },
-    { value: "item", label: t("page.product.form.unit.item") },
-    { value: "unit", label: t("page.product.form.unit.unit") },
-    { value: "buah", label: t("page.product.form.unit.buah") },
-    { value: "pasang", label: t("page.product.form.unit.pasang") },
-    { value: "set", label: t("page.product.form.unit.set") },
-    { value: "lusin", label: t("page.product.form.unit.lusin") },
-    { value: "pack", label: t("page.product.form.unit.pack") },
-    { value: "box", label: t("page.product.form.unit.box") },
-    { value: "karton", label: t("page.product.form.unit.karton") },
-    { value: "kg", label: t("page.product.form.unit.kg") },
-    { value: "gram", label: t("page.product.form.unit.gram") },
-    { value: "liter", label: t("page.product.form.unit.liter") },
-    { value: "ml", label: t("page.product.form.unit.ml") },
-    { value: "meter", label: t("page.product.form.unit.meter") },
-    { value: "cm", label: t("page.product.form.unit.cm") },
-    { value: "cup", label: t("page.product.form.unit.cup") },
-    { value: "gelas", label: t("page.product.form.unit.gelas") },
-    { value: "porsi", label: t("page.product.form.unit.porsi") }
-  ];
+  const itemOptionsForRow = (gIdx, iIdx, supplier) => {
+    if (!supplier) return [];
+    const list = supplierItemsBySupplier[supplier] || [];
+    const taken = new Set();
+    const group = groups[gIdx];
+    (group?.items || []).forEach((other, j) => {
+      if (j === iIdx) return;
+      const val = selectedItemValue(other, supplier);
+      if (val) taken.add(val);
+    });
+    return list
+      .filter((it) => !taken.has(it.value))
+      .map((it) => ({ value: it.value, label: it.name }));
+  };
+
+  const allFilledItems = useMemo(
+    () =>
+      groups.flatMap((g) =>
+        g.items.filter((it) => it.name.trim()).map((it) => ({ ...it, supplier: g.supplier }))
+      ),
+    [groups]
+  );
+
+  const addGroup = () => setGroups((prev) => [...prev, emptyGroup()]);
+
+  const removeGroup = (gIdx) => setGroups((prev) => prev.filter((_, i) => i !== gIdx));
+
+  const addItem = (gIdx) =>
+    setGroups((prev) =>
+      prev.map((g, i) => (i === gIdx ? { ...g, items: [...g.items, { ...emptyItem }] } : g))
+    );
+
+  const removeItem = (gIdx, iIdx) =>
+    setGroups((prev) =>
+      prev.map((g, i) => (i === gIdx ? { ...g, items: g.items.filter((_, j) => j !== iIdx) } : g))
+    );
+
+  const updateItem = (gIdx, iIdx, field, value) =>
+    setGroups((prev) =>
+      prev.map((g, i) =>
+        i === gIdx
+          ? {
+              ...g,
+              items: g.items.map((it, j) => (j === iIdx ? { ...it, [field]: value } : it))
+            }
+          : g
+      )
+    );
+
+  const pickGroupSupplier = (gIdx, value) => {
+    const supplierId = value ? Number(value) : null;
+    setGroups((prev) =>
+      prev.map((g, i) => {
+        if (i !== gIdx) return g;
+        const list = supplierItemsBySupplier[supplierId] || [];
+        const items = g.items.map((it) => {
+          if (!it.name.trim()) return { ...emptyItem };
+          const name = it.name.trim();
+          const match = list.find(
+            (o) =>
+              (o.productId && it.product === o.productId) ||
+              o.name.toLowerCase() === name.toLowerCase()
+          );
+          if (match) {
+            return {
+              ...it,
+              product: match.productId,
+              productName: match.name,
+              ingredient: null,
+              ingredientName: null,
+              unit: match.unit || it.unit,
+              price: match.price
+            };
+          }
+          return {
+            ...it,
+            product: null,
+            productName: null,
+            ingredient: null,
+            ingredientName: name
+          };
+        });
+        return { supplier: supplierId, items };
+      })
+    );
+  };
+
+  const pickItemOption = (gIdx, iIdx, value) => {
+    setGroups((prev) =>
+      prev.map((g, gi) => {
+        if (gi !== gIdx) return g;
+        const list = supplierItemsBySupplier[g.supplier] || [];
+        const opt = list.find((o) => o.value === value);
+        return {
+          ...g,
+          items: g.items.map((it, ii) => {
+            if (ii !== iIdx) return it;
+            if (!opt) {
+              return {
+                ...it,
+                name: "",
+                product: null,
+                productName: null,
+                ingredient: null,
+                ingredientName: null
+              };
+            }
+            return {
+              ...it,
+              name: opt.name,
+              product: opt.productId,
+              productName: opt.name,
+              ingredient: null,
+              ingredientName: null,
+              unit: opt.unit || it.unit,
+              price: opt.price
+            };
+          })
+        };
+      })
+    );
+  };
 
   const queryClient = useQueryClient();
   const { setActiveStore } = useStore();
-
-  const addSupplierMutation = useMutation(addSupplier, {
-    onSuccess: (res) => {
-      const newSupplier = res.data || res;
-      if (addSupplierItemIdx !== null) {
-        updateItem(addSupplierItemIdx, "supplierId", newSupplier.id || newSupplier._id);
-      }
-      setShowAddSupplierModal(false);
-      setAddSupplierItemIdx(null);
-      toast.success(t("page.purchaseOrder.add.toast.supplierAdded"));
-      queryClient.invalidateQueries(["suppliers-dropdown"]);
-      queryClient.invalidateQueries(["all-supplier-details"]);
-    },
-    onError: (err) => {
-      toast.error(t("page.purchaseOrder.add.toast.supplierAddFailed"), {
-        description: err?.response?.data?.message || err.message
-      });
-    }
-  });
 
   const createMutation = useMutation(addPurchaseOrder, {
     onSuccess: () => {
@@ -264,51 +372,60 @@ const AddPurchaseOrder = () => {
     return Number(str.replace(/[^0-9]/g, "")) || 0;
   };
 
-  const addItem = () =>
-    setItems((prev) => [
-      ...prev,
-      {
-        name: "",
-        ingredientId: null,
-        qty: 1,
-        price: 0,
-        unit: "pcs",
-        supplierId: null,
-        conversionToBase: 1
-      }
-    ]);
-  const removeItem = (idx) => setItems((prev) => prev.filter((_, i) => i !== idx));
-  const updateItem = (idx, field, value) =>
-    setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
-
   const [discount, setDiscount] = useState(0);
   const [additionalCost, setAdditionalCost] = useState(0);
   const [overDeliveryTolerance, setOverDeliveryTolerance] = useState(10);
-  const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
+  const totalAmount = useMemo(
+    () => groups.flatMap((g) => g.items).reduce((sum, item) => sum + item.qty * item.price, 0),
+    [groups]
+  );
   const finalAmount = totalAmount - discount + additionalCost;
 
   const [errors, setErrors] = useState({});
-
-  const hasDuplicateItems = useMemo(() => {
-    return items.some((item, i) => {
-      if (!item.ingredientId) return false;
-      return items.some(
-        (other, j) =>
-          i !== j &&
-          other.ingredientId === item.ingredientId &&
-          (other.supplierId || null) === (item.supplierId || null)
-      );
-    });
-  }, [items]);
 
   const handleSubmit = (e, saveAsDraft = false) => {
     if (e?.preventDefault) e.preventDefault();
     setErrors({});
 
+    const itemsPayload = (() => {
+      const rows = [];
+      groups.forEach((g) => {
+        g.items.forEach((it) => {
+          if (!saveAsDraft && !it.name.trim()) return;
+          rows.push({
+            product: it.product || null,
+            ingredient: it.ingredient || null,
+            ingredientName: it.ingredientName || it.productName || it.name || null,
+            quantity: it.qty,
+            price: it.price || 0,
+            unit: it.unit || "pcs",
+            conversionToBase: Number(it.conversionToBase) || 1,
+            supplier: g.supplier || null
+          });
+        });
+      });
+      return rows;
+    })();
+
     if (!saveAsDraft) {
-      if (hasDuplicateItems) {
+      const seen = new Set();
+      const hasDup = allFilledItems.some((it) => {
+        const key = `${it.product || it.ingredient || it.name.toLowerCase()}-sup-${it.supplier || ""}`;
+        if (seen.has(key)) return true;
+        seen.add(key);
+        return false;
+      });
+
+      if (hasDup) {
         toast.error(t("page.purchaseOrder.add.validation.duplicateItems"), {
           description: t("page.purchaseOrder.add.validation.duplicateItemsDesc")
+        });
+        return;
+      }
+
+      if (allFilledItems.some((it) => !it.supplier)) {
+        toast.error(t("page.purchaseOrder.add.validation.validationFailed"), {
+          description: t("page.purchaseOrder.add.toast.supplierRequired")
         });
         return;
       }
@@ -327,7 +444,12 @@ const AddPurchaseOrder = () => {
         orderDate,
         orderTime,
         dueDate,
-        items: items.filter((i) => i.name?.trim())
+        items: allFilledItems.map((it) => ({
+          name: it.name,
+          qty: it.qty,
+          price: it.price,
+          unit: it.unit
+        }))
       });
 
       if (!result.success) {
@@ -362,18 +484,7 @@ const AddPurchaseOrder = () => {
         d.setHours(parseInt(hours), parseInt(minutes), 0, 0);
         return d;
       })(),
-      items: items
-        .filter((i) => (saveAsDraft ? true : i.name?.trim()))
-        .map(({ name, ingredientId, qty, price, unit, supplierId, conversionToBase }) => ({
-          product: null,
-          ingredient: ingredientId || null,
-          ingredientName: name,
-          quantity: qty,
-          price,
-          unit: unit || "pcs",
-          conversionToBase: conversionToBase || 1,
-          supplier: supplierId || null
-        })),
+      items: itemsPayload,
       createdBy: user?.id
     });
   };
@@ -469,6 +580,7 @@ const AddPurchaseOrder = () => {
                         value={selectedStore}
                         onChange={(val) => {
                           setSelectedStore(val);
+                          setGroups([emptyGroup()]);
                           setErrors((prev) => ({ ...prev, store: undefined }));
                         }}
                         disabled={!isSuperAdmin}
@@ -706,31 +818,313 @@ const AddPurchaseOrder = () => {
                 </div>
               </Card>
 
-              <OrderItemsCard
-                items={items}
-                suppliers={suppliers}
-                supplierProductsMap={supplierProductsMap}
-                getSuppliersForIngredientName={getSuppliersForIngredientName}
-                unitOptions={unitOptions}
-                discount={discount}
-                totalAmount={totalAmount}
-                finalAmount={finalAmount}
-                additionalCost={additionalCost}
-                overDeliveryTolerance={overDeliveryTolerance}
-                errors={errors}
-                hasDuplicateItems={hasDuplicateItems}
-                itemsLoading={itemsLoading}
-                selectedStore={selectedStore}
-                onAddItem={addItem}
-                onRemoveItem={removeItem}
-                onUpdateItem={updateItem}
-                onDiscountChange={(val) => setDiscount(val)}
-                onAdditionalCostChange={(val) => setAdditionalCost(val)}
-                onOverDeliveryToleranceChange={(val) => setOverDeliveryTolerance(val)}
-                formatIDR={formatIDR}
-                parseIDR={parseIDR}
-                t={t}
-              />
+              <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+                <div className="bg-gradient-to-r from-emerald-600/90 to-emerald-700/90 px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+                      <Package size={18} className="text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-white">
+                        {t("page.purchaseOrder.add.itemSection")}
+                      </h3>
+                      <p className="text-xs text-emerald-100">
+                        {t("page.purchaseOrder.add.itemSectionDesc")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 sm:p-6">
+                  {!selectedStore ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+                      <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
+                        <ShoppingCart size={22} className="text-muted-foreground" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground">
+                        {t("page.purchaseOrder.add.selectStoreFirst") ||
+                          "Pilih store terlebih dahulu"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1.5 max-w-xs">
+                        {t("page.purchaseOrder.add.selectStoreHint") ||
+                          "Item pesanan akan muncul setelah store dipilih"}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {errors.items && (
+                        <div className="flex items-center gap-2 rounded-lg bg-destructive/5 border border-destructive/20 px-3 py-2">
+                          <span className="text-xs text-destructive font-medium">
+                            {errors.items}
+                          </span>
+                        </div>
+                      )}
+
+                      {groups.map((group, gIdx) => (
+                        <div key={gIdx} className="border rounded-lg overflow-hidden">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 border-b bg-muted/40">
+                            <Label className="shrink-0 text-xs text-muted-foreground">
+                              {t("page.purchaseOrder.add.table.supplier")}
+                            </Label>
+                            <div className="flex-1 min-w-[220px]">
+                              <Combobox
+                                options={supplierOptions}
+                                value={group.supplier ? String(group.supplier) : ""}
+                                onChange={(val) => pickGroupSupplier(gIdx, val)}
+                                placeholder={t("page.purchaseOrder.add.selectSupplier")}
+                                searchPlaceholder={t("common.search")}
+                                emptyMessage={t("page.purchaseOrder.add.noSupplierFound")}
+                                disabled={!selectedStore || suppliersLoading}
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                              onClick={() => removeGroup(gIdx)}
+                              disabled={groups.length === 1}>
+                              <Trash2 size={14} />
+                            </Button>
+                          </div>
+
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm min-w-[820px]">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                                    {t("page.purchaseOrder.add.table.name")}
+                                  </th>
+                                  <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                                    {t("page.purchaseOrder.add.table.qty")}
+                                  </th>
+                                  <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                                    {t("page.purchaseOrder.add.table.unit")}
+                                  </th>
+                                  <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                                    {t("page.purchaseOrder.add.table.price")}
+                                  </th>
+                                  <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                                    {t("page.purchaseOrder.add.table.subtotal")}
+                                  </th>
+                                  <th className="w-10"></th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {group.items.map((item, iIdx) => (
+                                  <tr key={iIdx} className="border-b border-muted/20">
+                                    <td className="px-3 py-2 min-w-[280px]">
+                                      <Combobox
+                                        options={itemOptionsForRow(gIdx, iIdx, group.supplier)}
+                                        value={selectedItemValue(item, group.supplier)}
+                                        onChange={(val) => pickItemOption(gIdx, iIdx, val)}
+                                        placeholder={
+                                          group.supplier
+                                            ? t("page.purchaseOrder.add.placeholder.selectItem")
+                                            : t("page.purchaseOrder.add.selectSupplierFirst")
+                                        }
+                                        searchPlaceholder={t("common.search")}
+                                        emptyMessage={t("page.purchaseOrder.add.noIngredientFound")}
+                                        disabled={!group.supplier}
+                                      />
+                                      {item.name && !selectedItemValue(item, group.supplier) && (
+                                        <p className="text-[10px] text-muted-foreground mt-1 truncate">
+                                          {item.name}
+                                        </p>
+                                      )}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                      <Input
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={item.qty === 0 ? "" : String(item.qty)}
+                                        onChange={(e) =>
+                                          updateItem(
+                                            gIdx,
+                                            iIdx,
+                                            "qty",
+                                            Number(e.target.value.replace(/[^0-9]/g, "")) || 0
+                                          )
+                                        }
+                                        className="h-8 text-xs text-center w-20 mx-auto"
+                                        placeholder="0"
+                                      />
+                                    </td>
+                                    <td className="px-3 py-2 align-top">
+                                      <div className="flex justify-center">
+                                        <Combobox
+                                          options={unitOptions.map((opt) => ({
+                                            value: opt.value,
+                                            label: opt.label
+                                          }))}
+                                          value={item.unit}
+                                          onChange={(val) => updateItem(gIdx, iIdx, "unit", val)}
+                                          placeholder="pcs"
+                                          searchPlaceholder={t("common.search")}
+                                        />
+                                      </div>
+                                      <div className="mt-1">
+                                        <Input
+                                          type="text"
+                                          inputMode="decimal"
+                                          value={
+                                            item.conversionToBase
+                                              ? String(item.conversionToBase)
+                                              : "1"
+                                          }
+                                          onChange={(e) =>
+                                            updateItem(
+                                              gIdx,
+                                              iIdx,
+                                              "conversionToBase",
+                                              Number(e.target.value.replace(/[^0-9.]/g, "")) || 1
+                                            )
+                                          }
+                                          className="h-7 text-xs text-center"
+                                          title={`1 ${item.unit || "pcs"} = ? stok`}
+                                          aria-label={`1 ${item.unit || "pcs"} = ? stok`}
+                                        />
+                                        <p className="text-[10px] text-muted-foreground text-center mt-0.5">
+                                          {"1 " + (item.unit || "pcs") + " = ? stok"}
+                                        </p>
+                                      </div>
+                                    </td>
+                                    <td className="px-3 py-2">
+                                      <Input
+                                        placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                                        value={item.price ? formatIDR(item.price) : ""}
+                                        onChange={(e) =>
+                                          updateItem(gIdx, iIdx, "price", parseIDR(e.target.value))
+                                        }
+                                        className="h-8 text-xs text-right w-36 ml-auto"
+                                      />
+                                    </td>
+                                    <td className="px-3 py-2">
+                                      <div className="text-right">
+                                        <p className="text-sm font-semibold text-foreground">
+                                          Rp {(item.qty * item.price).toLocaleString("id-ID")}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground">
+                                          {item.qty} x {formatIDR(item.price)}
+                                        </p>
+                                      </div>
+                                    </td>
+                                    <td className="px-3 py-2 text-center">
+                                      <button
+                                        type="button"
+                                        onClick={() => removeItem(gIdx, iIdx)}
+                                        className="text-muted-foreground/40 hover:text-destructive">
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <div className="p-3 border-t">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => addItem(gIdx)}
+                              className="gap-1">
+                              <Plus size={14} /> {t("page.purchaseOrder.add.form.addItem")}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addGroup}
+                        disabled={!selectedStore || suppliersLoading}
+                        className="gap-1">
+                        <Plus size={14} /> {t("page.purchaseOrder.add.form.addSupplier")}
+                      </Button>
+
+                      <div className="rounded-xl bg-gradient-to-b from-muted/50 to-muted/20 border border-border/60 p-4 sm:p-5">
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 justify-end">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 sm:pt-1">
+                            <div className="flex items-center gap-3">
+                              <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                                {t("page.purchaseOrder.add.discount")}
+                              </Label>
+                              <Input
+                                placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                                value={discount ? formatIDR(discount) : ""}
+                                onChange={(e) => setDiscount(parseIDR(e.target.value))}
+                                className="h-9 text-sm w-32 sm:w-36 text-right"
+                              />
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                                {t("page.purchaseOrder.add.additionalCost")}
+                              </Label>
+                              <Input
+                                placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                                value={additionalCost ? formatIDR(additionalCost) : ""}
+                                onChange={(e) => setAdditionalCost(parseIDR(e.target.value))}
+                                className="h-9 text-sm w-32 sm:w-36 text-right"
+                              />
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                                {t("page.purchaseOrder.add.overDeliveryTolerance")}
+                              </Label>
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={overDeliveryTolerance || ""}
+                                onChange={(e) =>
+                                  setOverDeliveryTolerance(
+                                    Number(e.target.value.replace(/[^0-9.]/g, "")) || 0
+                                  )
+                                }
+                                className="h-9 text-sm w-20 text-right"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex-1 max-w-[280px] ml-auto">
+                            <div className="text-right space-y-1">
+                              <p className="text-xs text-muted-foreground">
+                                {t("page.purchaseOrder.add.totalPrice")}
+                              </p>
+                              <p className="text-xl sm:text-2xl font-bold text-foreground">
+                                Rp {totalAmount.toLocaleString("id-ID")}
+                              </p>
+                            </div>
+                            {(discount > 0 || additionalCost > 0) && (
+                              <>
+                                <div className="border-t border-border/60 my-2" />
+                                <div className="text-right space-y-0.5">
+                                  {discount > 0 && (
+                                    <p className="text-xs font-medium text-destructive">
+                                      {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
+                                      {discount.toLocaleString("id-ID")}
+                                    </p>
+                                  )}
+                                  {additionalCost > 0 && (
+                                    <p className="text-xs font-medium text-emerald-600">
+                                      {t("page.purchaseOrder.add.additionalCostLabel")} + Rp{" "}
+                                      {additionalCost.toLocaleString("id-ID")}
+                                    </p>
+                                  )}
+                                  <p className="text-base sm:text-lg font-bold text-foreground">
+                                    Rp {finalAmount.toLocaleString("id-ID")}
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
 
               <div className="sticky bottom-4 flex justify-between items-center gap-4 bg-card border border-border/60 shadow-lg rounded-xl p-4 backdrop-blur-sm">
                 <Button
@@ -746,17 +1140,13 @@ const AddPurchaseOrder = () => {
                     <p className="text-xs text-muted-foreground">
                       {t("page.purchaseOrder.add.totalAfterDiscount")}
                     </p>
-                    {itemsLoading ? (
-                      <Skeleton className="h-4 w-28 ml-auto" />
-                    ) : (
-                      <p className="text-sm font-semibold">
-                        Rp{" "}
-                        {(discount > 0 || additionalCost > 0
-                          ? finalAmount
-                          : totalAmount
-                        ).toLocaleString("id-ID")}
-                      </p>
-                    )}
+                    <p className="text-sm font-semibold">
+                      Rp{" "}
+                      {(discount > 0 || additionalCost > 0
+                        ? finalAmount
+                        : totalAmount
+                      ).toLocaleString("id-ID")}
+                    </p>
                   </div>
                   <div className="flex gap-3">
                     <Button
@@ -778,7 +1168,12 @@ const AddPurchaseOrder = () => {
                             orderDate,
                             orderTime,
                             dueDate,
-                            items: items.filter((i) => i.name?.trim())
+                            items: allFilledItems.map((it) => ({
+                              name: it.name,
+                              qty: it.qty,
+                              price: it.price,
+                              unit: it.unit
+                            }))
                           },
                           poSchema,
                           poFieldLabels
@@ -803,7 +1198,6 @@ const AddPurchaseOrder = () => {
         </div>
       )}
 
-      {addSupplierMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal
@@ -846,51 +1240,6 @@ const AddPurchaseOrder = () => {
         }}
       />
 
-      <Modal
-        type="form"
-        open={showAddSupplierModal}
-        onOpenChange={setShowAddSupplierModal}
-        title={t("page.purchaseOrder.add.addSupplier")}
-        confirmText={t("common.save")}
-        loading={addSupplierMutation.isLoading}
-        onConfirm={() => {
-          if (!newSupplierName.trim() || !newSupplierPhone.trim()) return;
-          if (newSupplierPhone.trim().length > 14) return;
-          addSupplierMutation.mutate({
-            name: newSupplierName.trim(),
-            phone: newSupplierPhone.trim(),
-            status: "active"
-          });
-        }}>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">
-              {t("page.purchaseOrder.add.supplierName")} <span className="text-destructive">*</span>
-            </label>
-            <Input
-              value={newSupplierName}
-              onChange={(e) => setNewSupplierName(e.target.value)}
-              placeholder={t("page.purchaseOrder.add.supplierNamePlaceholder")}
-              autoFocus
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">
-              {t("page.purchaseOrder.add.supplierPhone")}{" "}
-              <span className="text-destructive">*</span>
-            </label>
-            <Input
-              value={newSupplierPhone}
-              onChange={(e) => setNewSupplierPhone(e.target.value)}
-              placeholder={t("page.purchaseOrder.add.supplierPhonePlaceholder")}
-              maxLength={14}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("page.purchaseOrder.add.supplierPhoneHint")}
-            </p>
-          </div>
-        </div>
-      </Modal>
       <MissingFieldsModal
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}

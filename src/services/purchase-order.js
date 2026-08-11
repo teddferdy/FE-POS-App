@@ -6,7 +6,8 @@ export const getAllPurchaseOrder = async (payload) => {
     page: payload?.page || 1,
     limit: payload?.limit || 10,
     search: payload?.search || "",
-    ...(payload?.status && payload.status !== "all" ? { status: payload.status } : {})
+    ...(payload?.status && payload.status !== "all" ? { status: payload.status } : {}),
+    ...(payload?.source && payload.source !== "all" ? { source: payload.source } : {})
   });
   const { data, status } = await axiosInstance.get(`/purchase-order/get-all?${query}`);
   if (status !== 200) throw Error(`${data?.message}`);

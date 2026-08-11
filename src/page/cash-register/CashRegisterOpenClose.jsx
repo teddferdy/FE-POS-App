@@ -13,17 +13,19 @@ import {
   Smartphone,
   RefreshCw,
   CheckCircle2,
-  AlertCircle,
-  ArrowLeft
+  AlertCircle
 } from "lucide-react";
-import { openCashRegister } from "@/services/cash-register";
+import { openCashRegister, getOpenRegisters } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
 import { getWhatsAppStatus, restartWhatsApp } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
+
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
   return "Rp " + Number(num).toLocaleString("id-ID");
@@ -44,15 +46,36 @@ const CashRegisterOpenClose = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locationsData, isLoading: locationsLoading } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    { enabled: isSuperAdmin }
+  );
   const locations = locationsData?.data || [];
+
+  const { data: openRegistersData, isLoading: openRegistersLoading } = useQuery(
+    ["open-registers"],
+    () => getOpenRegisters(),
+    { enabled: isSuperAdmin }
+  );
+  const openRegisters = openRegistersData?.data || [];
+  const openStoreIds = new Set(openRegisters.map((r) => Number(r.store)));
+  const storeLoading = isSuperAdmin && (locationsLoading || openRegistersLoading);
+
+  const storeOptions = locations.map((loc) => {
+    const isOpen = openStoreIds.has(Number(loc.id));
+    return {
+      value: loc.id,
+      label: isOpen ? `${loc.name} ${t("page.cashRegister.openClose.storeOpenBadge")}` : loc.name
+    };
+  });
 
   const [selectedStore, setSelectedStore] = useState(cookie?.activeStore || user?.store || "");
   const [rawBalance, setRawBalance] = useState("0");
   const [notes, setNotes] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
+
+  const selectedStoreIsOpen = openStoreIds.has(Number(selectedStore));
 
   const numericBalance = parseIDR(rawBalance);
 
@@ -103,46 +126,33 @@ const CashRegisterOpenClose = () => {
 
   return (
     <>
-      <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-10 w-10 shrink-0"
-            onClick={() => setCancelModal(true)}>
-            <ArrowLeft size={16} />
-          </Button>
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <button
-              onClick={() => navigate("/dashboard-super-admin")}
-              className="hover:text-foreground transition-colors">
-              {t("page.cashRegister.openClose.breadcrumbDashboard")}
-            </button>
-            <span className="text-xs">/</span>
-            <span className="text-primary font-semibold">
-              {t("page.cashRegister.openClose.breadcrumb")}
+      <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300 max-w-[1440px] mx-auto w-full">
+        <PageHeader
+          backLink="/dashboard-super-admin"
+          onBack={() => setCancelModal(true)}
+          breadcrumbs={[
+            {
+              href: "/dashboard-super-admin",
+              i18nKey: "page.cashRegister.openClose.breadcrumbDashboard"
+            },
+            { i18nKey: "page.cashRegister.openClose.breadcrumb" }
+          ]}
+          title={t("page.cashRegister.openClose.title")}
+          description={t("page.cashRegister.openClose.desc")}>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Wallet size={18} />
+            <span className="text-sm font-medium whitespace-nowrap">
+              {user?.name || user?.username}
             </span>
-          </nav>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{t("page.cashRegister.openClose.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.cashRegister.openClose.desc")}
-            </p>
           </div>
-          <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
-            <Wallet size={20} />
-            <span className="text-sm">{user?.name || user?.username}</span>
-          </div>
-        </div>
+        </PageHeader>
 
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="bg-gradient-to-r from-primary/5 via-primary/[0.02] to-transparent px-6 py-5 border-b border-border">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        {/* Opening Balance Card */}
+        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+          <div className="border-b border-border bg-gradient-to-r from-primary/10 via-primary/[0.03] to-transparent px-4 sm:px-6 py-4 sm:py-5">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <Landmark size={20} className="text-primary" />
                 </div>
                 <div className="min-w-0">
@@ -155,22 +165,38 @@ const CashRegisterOpenClose = () => {
                 </div>
               </div>
               {isSuperAdmin && (
-                <div className="shrink-0 w-full sm:w-56">
-                  <Combobox
-                    options={locations?.map((loc) => ({ value: loc.id, label: loc.name })) || []}
-                    value={selectedStore}
-                    onChange={setSelectedStore}
-                    placeholder={t("page.cashRegister.openClose.selectStore")}
-                    searchPlaceholder="Cari toko..."
-                  />
+                <div className="w-full lg:w-64 xl:w-72 shrink-0">
+                  {storeLoading ? (
+                    <Skeleton className="h-10 w-full rounded-md" />
+                  ) : (
+                    <>
+                      <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.cashRegister.openClose.selectStore")}
+                      </Label>
+                      <Combobox
+                        options={storeOptions}
+                        value={selectedStore}
+                        onChange={setSelectedStore}
+                        placeholder={t("page.cashRegister.openClose.selectStore")}
+                        searchPlaceholder="Cari toko..."
+                        className="mt-1.5"
+                      />
+                      {selectedStoreIsOpen && (
+                        <p className="mt-1.5 text-xs font-medium text-amber-600 dark:text-amber-500 flex items-center gap-1">
+                          <AlertCircle size={12} className="shrink-0" />
+                          {t("page.cashRegister.openClose.storeOpenWarning")}
+                        </p>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
-          <div className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-4">
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-6 xl:gap-8">
+              <div className="space-y-5 xl:col-span-3">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">
                     {t("page.cashRegister.openClose.amountLabel")}{" "}
@@ -203,13 +229,13 @@ const CashRegisterOpenClose = () => {
                   <Label className="text-xs text-muted-foreground font-normal">
                     {t("page.cashRegister.openClose.quickSelect")}
                   </Label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap gap-2">
                     {quickAmounts.map((amount) => (
                       <button
                         key={amount}
                         type="button"
                         onClick={() => setRawBalance(String(amount))}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                        className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all ${
                           numericBalance === amount
                             ? "bg-primary text-primary-foreground border-primary shadow-sm"
                             : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
@@ -221,7 +247,7 @@ const CashRegisterOpenClose = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col justify-between gap-4">
+              <div className="space-y-5 xl:col-span-2">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">
                     {t("page.cashRegister.openClose.notesLabel")}
@@ -234,17 +260,25 @@ const CashRegisterOpenClose = () => {
                     placeholder={t("page.cashRegister.openClose.notesPlaceholder")}
                   />
                 </div>
-                <div className="flex items-center justify-end gap-3">
+                <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
                   <Button
                     variant="outline"
                     onClick={() => navigate("/dashboard-super-admin")}
-                    className="gap-1.5">
+                    className="w-full sm:w-auto gap-1.5">
                     <X size={16} /> {t("page.cashRegister.openClose.cancel")}
                   </Button>
                   <Button
-                    onClick={() => openMut.mutate()}
-                    disabled={openMut.isLoading || numericBalance <= 0}
-                    className="gap-1.5">
+                    onClick={() => {
+                      if (selectedStoreIsOpen) {
+                        toast.error(t("page.cashRegister.openClose.fail"), {
+                          description: t("page.cashRegister.openClose.storeOpenError")
+                        });
+                        return;
+                      }
+                      openMut.mutate();
+                    }}
+                    disabled={openMut.isLoading || numericBalance <= 0 || !selectedStore}
+                    className="w-full sm:w-auto gap-1.5">
                     <DollarSign size={16} />
                     {openMut.isLoading
                       ? t("page.cashRegister.openClose.opening")
@@ -259,14 +293,18 @@ const CashRegisterOpenClose = () => {
         </div>
 
         {/* WA Connection Status */}
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="bg-gradient-to-r from-primary/5 via-primary/[0.02] to-transparent px-6 py-4 border-b border-border flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Smartphone size={18} className="text-primary" />
-              <h2 className="font-semibold text-sm">WhatsApp</h2>
-              {isSuperAdmin && waStoreId && (
-                <span className="text-xs text-muted-foreground ml-1">({waStoreId})</span>
-              )}
+        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+          <div className="border-b border-border bg-gradient-to-r from-primary/10 via-primary/[0.03] to-transparent px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Smartphone size={18} className="text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-semibold text-sm">WhatsApp</h2>
+                {isSuperAdmin && waStoreId && (
+                  <p className="text-[11px] text-muted-foreground truncate">({waStoreId})</p>
+                )}
+              </div>
             </div>
             {waLoading ? (
               <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
@@ -284,21 +322,27 @@ const CashRegisterOpenClose = () => {
               </span>
             )}
           </div>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {waLoading && !waData ? (
-              <p className="text-sm text-muted-foreground text-center">Memuat status WhatsApp...</p>
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-64 max-w-full mx-auto" />
+                <Skeleton className="h-4 w-48 max-w-full mx-auto" />
+              </div>
             ) : waReady ? (
-              <p className="text-sm text-muted-foreground">
-                WhatsApp terhubung — invoice bisa dikirim langsung dari POS.
-              </p>
+              <div className="flex items-center justify-center gap-3">
+                <CheckCircle2 size={20} className="text-emerald-600 shrink-0" />
+                <p className="text-sm text-muted-foreground">
+                  WhatsApp terhubung — invoice bisa dikirim langsung dari POS.
+                </p>
+              </div>
             ) : waQR ? (
               <div className="flex flex-col items-center gap-3">
                 <img
                   src={waQR}
                   alt="WhatsApp QR Code"
-                  className="w-48 h-48 border border-border rounded-lg"
+                  className="w-40 h-40 sm:w-48 sm:h-48 border border-border rounded-lg"
                 />
-                <p className="text-sm text-muted-foreground text-center">
+                <p className="text-sm text-muted-foreground text-center max-w-md">
                   Scan QR code ini dengan WhatsApp kamu untuk menghubungkan.
                 </p>
                 <Button

@@ -1,22 +1,22 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Save, X, Plus, Trash2, ShoppingCart, Package } from "lucide-react";
+import { Save, X, Plus, ShoppingCart, Package, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { z } from "zod";
 import { normalizePayload } from "@/lib/payload-normalizer";
 import { editPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
-import { getAllSupplier, addSupplier } from "@/services/supplier";
+import { getAllSupplier } from "@/services/supplier";
 import { getAllEmployee } from "@/services/employee";
-import { getAllIngredients } from "@/services/ingredient";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -29,24 +29,41 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 
-const COMMON_CONVERSION = {
-  "kg->gram": 1000,
-  "gram->kg": 0.001,
-  "liter->ml": 1000,
-  "ml->liter": 0.001,
-  "meter->cm": 100,
-  "cm->meter": 0.01,
-  "meter->mm": 1000,
-  "cm->mm": 10,
-  "lusin->pcs": 12,
-  "pcs->lusin": 1 / 12
+const emptyItem = {
+  name: "",
+  product: null,
+  productName: null,
+  ingredient: null,
+  ingredientName: null,
+  qty: 1,
+  unit: "pcs",
+  price: 0,
+  conversionToBase: 1
 };
 
-const getSuggestedConversion = (from, to) => {
-  const key = `${from}->${to}`;
-  if (COMMON_CONVERSION[key] !== undefined) return COMMON_CONVERSION[key];
-  return 1;
-};
+const emptyGroup = () => ({ supplier: null, items: [{ ...emptyItem }] });
+
+const unitOptions = [
+  { value: "pcs", label: "pcs" },
+  { value: "item", label: "item" },
+  { value: "unit", label: "unit" },
+  { value: "buah", label: "buah" },
+  { value: "pasang", label: "pasang" },
+  { value: "set", label: "set" },
+  { value: "lusin", label: "lusin" },
+  { value: "pack", label: "pack" },
+  { value: "box", label: "box" },
+  { value: "karton", label: "karton" },
+  { value: "kg", label: "kg" },
+  { value: "gram", label: "gram" },
+  { value: "liter", label: "liter" },
+  { value: "ml", label: "ml" },
+  { value: "meter", label: "meter" },
+  { value: "cm", label: "cm" },
+  { value: "cup", label: "cup" },
+  { value: "gelas", label: "gelas" },
+  { value: "porsi", label: "porsi" }
+];
 
 const EditPurchaseOrder = () => {
   const { t } = useTranslation();
@@ -71,7 +88,7 @@ const EditPurchaseOrder = () => {
     pic: z.number().min(1, ""),
     orderDate: z.date({ required_error: "" }),
     orderTime: z.string().min(1, ""),
-    dueDate: z.date({ required_error: "" }),
+    dueDate: z.date().nullable().optional(),
     items: z
       .array(
         z.object({
@@ -89,7 +106,7 @@ const EditPurchaseOrder = () => {
   const [discount, setDiscount] = useState(0);
   const [additionalCost, setAdditionalCost] = useState(0);
   const [overDeliveryTolerance, setOverDeliveryTolerance] = useState(10);
-  const [items, setItems] = useState([]);
+  const [groups, setGroups] = useState([emptyGroup()]);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
@@ -106,10 +123,6 @@ const EditPurchaseOrder = () => {
   const [picSearch, setPicSearch] = useState("");
   const [picId, setPicId] = useState(null);
   const [showPicList, setShowPicList] = useState(false);
-  const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
-  const [addSupplierItemIdx, setAddSupplierItemIdx] = useState(null);
-  const [newSupplierName, setNewSupplierName] = useState("");
-  const [newSupplierPhone, setNewSupplierPhone] = useState("");
 
   const {
     data: poData,
@@ -135,22 +148,34 @@ const EditPurchaseOrder = () => {
     setPaymentMethod(po.paymentMethod || "cash");
     setTenor(po.tenor || 0);
     setDpPercent(po.dpPercent || 0);
-    if (po.items) {
-      setItems(
-        po.items.map((item) => ({
+    if (po.items && po.items.length > 0) {
+      const bySupplier = {};
+      po.items.forEach((item) => {
+        const supId = item.supplier || null;
+        if (!bySupplier[supId]) bySupplier[supId] = [];
+        bySupplier[supId].push({
           name: item.ingredientName || item.productData?.nameProduct || "",
-          ingredientId: item.ingredient || null,
+          product: item.product || null,
+          productName: item.productData?.nameProduct || null,
+          ingredient: item.ingredient || null,
+          ingredientName: item.ingredientName || null,
           qty: item.quantity,
           price: item.price,
           unit: item.unit || "pcs",
-          conversionToBase: item.conversionToBase || 1,
-          supplierId: item.supplier || null
-        }))
-      );
+          conversionToBase: item.conversionToBase || 1
+        });
+      });
+      const grouped = Object.keys(bySupplier).map((supId) => ({
+        supplier: supId === "null" ? null : Number(supId),
+        items: bySupplier[supId]
+      }));
+      setGroups(grouped.length > 0 ? grouped : [emptyGroup()]);
+    } else {
+      setGroups([emptyGroup()]);
     }
   }, [po]);
 
-  const { data: suppliersData } = useQuery(
+  const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
     ["suppliers-dropdown", selectedStore],
     () =>
       getAllSupplier({ limit: 999, store: selectedStore, status: "active", includeProducts: true }),
@@ -158,10 +183,11 @@ const EditPurchaseOrder = () => {
   );
   const suppliers = suppliersData?.data || [];
 
-  const { data: employeesData } = useQuery(
-    ["employees-dropdown"],
-    () => getAllEmployee({ limit: 999, status: "active" }),
+  const { data: employeesData, isLoading: employeesLoading } = useQuery(
+    ["employees-dropdown", selectedStore],
+    () => getAllEmployee({ limit: 999, status: "active", location: selectedStore || undefined }),
     {
+      enabled: !!selectedStore,
       staleTime: 30000
     }
   );
@@ -176,113 +202,172 @@ const EditPurchaseOrder = () => {
   });
   const locations = locationsData?.data || [];
 
-  const { data: ingredientsData, isFetching: ingredientsFetching } = useQuery(
-    ["ingredients-po-edit", selectedStore],
-    () => getAllIngredients({ store: selectedStore, limit: 999, status: "active" }),
-    { enabled: !!selectedStore, staleTime: 30000 }
+  const supplierOptions = useMemo(
+    () =>
+      (suppliers || []).map((sup) => ({
+        value: String(sup.id),
+        label: sup.name || sup.supplierName || `Supplier #${sup.id}`
+      })),
+    [suppliers]
   );
-  const ingredients = ingredientsData?.data || [];
 
-  const [ingredientsReady, setIngredientsReady] = useState(false);
-  const prevStoreRef = useRef(selectedStore);
-  useEffect(() => {
-    if (prevStoreRef.current !== selectedStore) {
-      setIngredientsReady(false);
-      prevStoreRef.current = selectedStore;
-    }
-    if (ingredientsData) setIngredientsReady(true);
-  }, [selectedStore, ingredientsData]);
-  const itemsLoading = !!selectedStore && (!ingredientsReady || ingredientsFetching);
-  const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
-
-  const supplierToIngredients = useMemo(() => {
+  const supplierItemsBySupplier = useMemo(() => {
     const map = {};
-    for (const sp of suppliers) {
-      const products = (sp.products || []).filter((p) => !p.status || p.status === "active");
-      map[sp.id || sp._id] = new Set(products.map((p) => (p.name || "").toLowerCase().trim()));
+    for (const sup of suppliers || []) {
+      map[sup.id] = (sup.products || []).map((p) => ({
+        value: `sp-${p.id}`,
+        productId: p.productId || null,
+        name: p.name,
+        unit: p.unit || "pcs",
+        price: p.price || p.lastPrice || 0
+      }));
     }
     return map;
   }, [suppliers]);
 
-  const ingredientSuppliersMap = useMemo(() => {
-    const map = {};
-    for (const sp of suppliers) {
-      const sid = sp.id || sp._id;
-      const sname = sp.name;
-      const products = (sp.products || []).filter((p) => !p.status || p.status === "active");
-      for (const prod of products) {
-        const pname = (prod.name || "").toLowerCase().trim();
-        if (!map[pname]) map[pname] = [];
-        map[pname].push({ supplierId: sid, supplierName: sname, price: prod.price });
-      }
-    }
-    return map;
-  }, [suppliers]);
-
-  const getSuppliersForIngredientName = (ingredientId) => {
-    if (!ingredientId) return [];
-    const ing = ingredients.find((i) => i.id === ingredientId);
-    if (!ing) return [];
-    return ingredientSuppliersMap[(ing.name || "").toLowerCase().trim()] || [];
+  const selectedItemValue = (item, supplier) => {
+    if (!supplier) return "";
+    const list = supplierItemsBySupplier[supplier] || [];
+    const match = list.find(
+      (opt) =>
+        (item.product && item.product === opt.productId) ||
+        (item.ingredientName && item.ingredientName === opt.name) ||
+        (item.productName && item.productName === opt.name)
+    );
+    return match?.value || "";
   };
 
-  const getFilteredIngredients = (search, itemSupplierId) => {
-    let filtered = ingredients;
-    if (itemSupplierId && supplierToIngredients[itemSupplierId]?.size > 0) {
-      const allowedNames = supplierToIngredients[itemSupplierId];
-      filtered = ingredients.filter((i) => allowedNames.has((i.name || "").toLowerCase().trim()));
-    }
-    return filtered.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
+  const itemOptionsForRow = (gIdx, iIdx, supplier) => {
+    if (!supplier) return [];
+    const list = supplierItemsBySupplier[supplier] || [];
+    const taken = new Set();
+    const group = groups[gIdx];
+    (group?.items || []).forEach((other, j) => {
+      if (j === iIdx) return;
+      const val = selectedItemValue(other, supplier);
+      if (val) taken.add(val);
+    });
+    return list
+      .filter((it) => !taken.has(it.value))
+      .map((it) => ({ value: it.value, label: it.name }));
   };
 
-  const unitOptions = [
-    { value: "pcs", label: t("page.product.form.unit.pcs") },
-    { value: "item", label: t("page.product.form.unit.item") },
-    { value: "unit", label: t("page.product.form.unit.unit") },
-    { value: "buah", label: t("page.product.form.unit.buah") },
-    { value: "pasang", label: t("page.product.form.unit.pasang") },
-    { value: "set", label: t("page.product.form.unit.set") },
-    { value: "lusin", label: t("page.product.form.unit.lusin") },
-    { value: "pack", label: t("page.product.form.unit.pack") },
-    { value: "box", label: t("page.product.form.unit.box") },
-    { value: "karton", label: t("page.product.form.unit.karton") },
-    { value: "kg", label: t("page.product.form.unit.kg") },
-    { value: "gram", label: t("page.product.form.unit.gram") },
-    { value: "liter", label: t("page.product.form.unit.liter") },
-    { value: "ml", label: t("page.product.form.unit.ml") },
-    { value: "meter", label: t("page.product.form.unit.meter") },
-    { value: "cm", label: t("page.product.form.unit.cm") },
-    { value: "cup", label: t("page.product.form.unit.cup") },
-    { value: "gelas", label: t("page.product.form.unit.gelas") },
-    { value: "porsi", label: t("page.product.form.unit.porsi") }
-  ];
+  const allFilledItems = useMemo(
+    () =>
+      groups.flatMap((g) =>
+        g.items.filter((it) => it.name.trim()).map((it) => ({ ...it, supplier: g.supplier }))
+      ),
+    [groups]
+  );
+
+  const addGroup = () => setGroups((prev) => [...prev, emptyGroup()]);
+
+  const removeGroup = (gIdx) => setGroups((prev) => prev.filter((_, i) => i !== gIdx));
+
+  const addItem = (gIdx) =>
+    setGroups((prev) =>
+      prev.map((g, i) => (i === gIdx ? { ...g, items: [...g.items, { ...emptyItem }] } : g))
+    );
+
+  const removeItem = (gIdx, iIdx) =>
+    setGroups((prev) =>
+      prev.map((g, i) => (i === gIdx ? { ...g, items: g.items.filter((_, j) => j !== iIdx) } : g))
+    );
+
+  const updateItem = (gIdx, iIdx, field, value) =>
+    setGroups((prev) =>
+      prev.map((g, i) =>
+        i === gIdx
+          ? {
+              ...g,
+              items: g.items.map((it, j) => (j === iIdx ? { ...it, [field]: value } : it))
+            }
+          : g
+      )
+    );
+
+  const pickGroupSupplier = (gIdx, value) => {
+    const supplierId = value ? Number(value) : null;
+    setGroups((prev) =>
+      prev.map((g, i) => {
+        if (i !== gIdx) return g;
+        const list = supplierItemsBySupplier[supplierId] || [];
+        const items = g.items.map((it) => {
+          if (!it.name.trim()) return { ...emptyItem };
+          const name = it.name.trim();
+          const match = list.find(
+            (o) =>
+              (o.productId && it.product === o.productId) ||
+              o.name.toLowerCase() === name.toLowerCase()
+          );
+          if (match) {
+            return {
+              ...it,
+              product: match.productId,
+              productName: match.name,
+              ingredient: null,
+              ingredientName: null,
+              unit: match.unit || it.unit,
+              price: match.price
+            };
+          }
+          return {
+            ...it,
+            product: null,
+            productName: null,
+            ingredient: null,
+            ingredientName: name
+          };
+        });
+        return { supplier: supplierId, items };
+      })
+    );
+  };
+
+  const pickItemOption = (gIdx, iIdx, value) => {
+    setGroups((prev) =>
+      prev.map((g, gi) => {
+        if (gi !== gIdx) return g;
+        const list = supplierItemsBySupplier[g.supplier] || [];
+        const opt = list.find((o) => o.value === value);
+        return {
+          ...g,
+          items: g.items.map((it, ii) => {
+            if (ii !== iIdx) return it;
+            if (!opt) {
+              return {
+                ...it,
+                name: "",
+                product: null,
+                productName: null,
+                ingredient: null,
+                ingredientName: null
+              };
+            }
+            return {
+              ...it,
+              name: opt.name,
+              product: opt.productId,
+              productName: opt.name,
+              ingredient: null,
+              ingredientName: null,
+              unit: opt.unit || it.unit,
+              price: opt.price
+            };
+          })
+        };
+      })
+    );
+  };
 
   const queryClient = useQueryClient();
-
-  const addSupplierMutation = useMutation(addSupplier, {
-    onSuccess: (res) => {
-      const newSupplier = res.data || res;
-      if (addSupplierItemIdx !== null) {
-        updateItem(addSupplierItemIdx, "supplierId", newSupplier.id || newSupplier._id);
-      }
-      setShowAddSupplierModal(false);
-      setAddSupplierItemIdx(null);
-      toast.success(t("page.purchaseOrder.add.toast.supplierAdded"));
-      queryClient.invalidateQueries(["suppliers-dropdown"]);
-      queryClient.invalidateQueries(["all-supplier-details"]);
-    },
-    onError: (err) => {
-      toast.error(t("page.purchaseOrder.add.toast.supplierAddFailed"), {
-        description: err?.response?.data?.message || err.message
-      });
-    }
-  });
 
   const updateMutation = useMutation((payload) => editPurchaseOrder(id, payload), {
     onSuccess: () => {
       toast.success(t("common.success"), {
         description: t("page.purchaseOrder.edit.toast.poUpdated")
       });
+      queryClient.invalidateQueries(["purchase-orders"]);
       navigate("/purchase-order");
     },
     onError: (err) => {
@@ -307,40 +392,27 @@ const EditPurchaseOrder = () => {
     return Number(str.replace(/[^0-9]/g, "")) || 0;
   };
 
-  const addItem = () =>
-    setItems((prev) => [
-      ...prev,
-      {
-        name: "",
-        ingredientId: null,
-        qty: 1,
-        price: 0,
-        unit: "pcs",
-        supplierId: null,
-        conversionToBase: 1
-      }
-    ]);
-  const removeItem = (idx) => setItems((prev) => prev.filter((_, i) => i !== idx));
-  const updateItem = (idx, field, value) =>
-    setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
-
-  const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
+  const totalAmount = useMemo(
+    () => groups.flatMap((g) => g.items).reduce((sum, item) => sum + item.qty * item.price, 0),
+    [groups]
+  );
   const finalAmount = totalAmount - discount + additionalCost;
 
   const hasDuplicateItems = useMemo(() => {
-    return items.some((item, i) => {
-      if (!item.ingredientId) return false;
-      return items.some(
-        (other, j) =>
-          i !== j &&
-          other.ingredientId === item.ingredientId &&
-          (other.supplierId || null) === (item.supplierId || null)
-      );
+    const seen = new Set();
+    return allFilledItems.some((it) => {
+      const key = `${it.product || it.ingredient || it.name.toLowerCase()}-sup-${it.supplier || ""}`;
+      if (seen.has(key)) return true;
+      seen.add(key);
+      return false;
     });
-  }, [items]);
+  }, [allFilledItems]);
+
+  const [errors, setErrors] = useState({});
 
   const handleSubmit = (e, saveAsDraft = false) => {
     if (e?.preventDefault) e.preventDefault();
+    setErrors({});
     if (!selectedStore) {
       toast.error(t("page.purchaseOrder.edit.validation.store"), {
         description: t("page.purchaseOrder.edit.validation.storeDesc")
@@ -365,13 +437,14 @@ const EditPurchaseOrder = () => {
       });
       return;
     }
-    if (!dueDate) {
+    if (paymentMethod === "credit" && !dueDate) {
+      setErrors((prev) => ({ ...prev, dueDate: t("page.purchaseOrder.add.validation.dueDate") }));
       toast.error(t("page.purchaseOrder.edit.validation.dueDate"), {
         description: t("page.purchaseOrder.edit.validation.dueDateDesc")
       });
       return;
     }
-    if (items.length === 0 || !items[0].name?.trim()) {
+    if (allFilledItems.length === 0) {
       toast.error(t("page.purchaseOrder.edit.validation.items"), {
         description: t("page.purchaseOrder.edit.validation.itemsDesc")
       });
@@ -383,6 +456,29 @@ const EditPurchaseOrder = () => {
       });
       return;
     }
+    if (!saveAsDraft && allFilledItems.some((it) => !it.supplier)) {
+      toast.error(t("page.purchaseOrder.add.validation.validationFailed"), {
+        description: t("page.purchaseOrder.add.toast.supplierRequired")
+      });
+      return;
+    }
+
+    const itemsPayload = [];
+    groups.forEach((g) => {
+      g.items.forEach((it) => {
+        if (!saveAsDraft && !it.name.trim()) return;
+        itemsPayload.push({
+          product: it.product || null,
+          ingredient: it.ingredient || null,
+          ingredientName: it.ingredientName || it.productName || it.name || null,
+          quantity: it.qty,
+          price: it.price || 0,
+          unit: it.unit || "pcs",
+          conversionToBase: Number(it.conversionToBase) || 1,
+          supplier: g.supplier || null
+        });
+      });
+    });
 
     const payload = {
       store: selectedStore,
@@ -401,18 +497,7 @@ const EditPurchaseOrder = () => {
         d.setHours(parseInt(hours), parseInt(minutes), 0, 0);
         return d;
       })(),
-      items: items.map(
-        ({ name, ingredientId, qty, price, unit, supplierId, conversionToBase }) => ({
-          product: null,
-          ingredient: ingredientId || null,
-          ingredientName: name,
-          quantity: qty,
-          price,
-          unit: unit || "pcs",
-          conversionToBase: conversionToBase || 1,
-          supplier: supplierId || null
-        })
-      ),
+      items: itemsPayload,
       status: saveAsDraft ? "draft" : po.status
     };
 
@@ -547,17 +632,23 @@ const EditPurchaseOrder = () => {
                         ...locations.map((loc) => ({ value: loc.id, label: loc.name }))
                       ]}
                       value={selectedStore}
-                      onChange={(val) => setSelectedStore(val)}
+                      onChange={(val) => {
+                        setSelectedStore(val);
+                        setErrors((prev) => ({ ...prev, store: undefined }));
+                      }}
                       disabled={!isSuperAdmin}
                       placeholder={t("page.purchaseOrder.add.selectStore")}
                       searchPlaceholder={t("page.purchaseOrder.add.selectStore")}
                     />
+                    {errors.store && (
+                      <p className="text-xs text-destructive mt-1">{errors.store}</p>
+                    )}
                   </div>
                   <div className="relative">
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
                       {t("page.purchaseOrder.add.pic")} <span className="text-destructive">*</span>
                     </label>
-                    {employees.length === 0 ? (
+                    {employees.length === 0 && !employeesLoading ? (
                       <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
                         <div className="text-center">
                           <p className="text-sm font-medium text-foreground">
@@ -578,18 +669,26 @@ const EditPurchaseOrder = () => {
                       </div>
                     ) : (
                       <>
-                        <Input
-                          placeholder={t("page.purchaseOrder.add.picPlaceholder")}
-                          value={picSearch}
-                          onChange={(e) => {
-                            setPicSearch(e.target.value);
-                            setPicId(null);
-                            setShowPicList(true);
-                          }}
-                          onFocus={() => setShowPicList(true)}
-                          onBlur={() => setTimeout(() => setShowPicList(false), 200)}
-                          className="h-10"
-                        />
+                        {employeesLoading && !picId ? (
+                          <Skeleton className="h-10 w-full" />
+                        ) : (
+                          <Input
+                            placeholder={t("page.purchaseOrder.add.picPlaceholder")}
+                            value={picSearch}
+                            onChange={(e) => {
+                              setPicSearch(e.target.value);
+                              setPicId(null);
+                              setShowPicList(true);
+                              setErrors((prev) => ({ ...prev, pic: undefined }));
+                            }}
+                            onFocus={() => setShowPicList(true)}
+                            onBlur={() => setTimeout(() => setShowPicList(false), 200)}
+                            className={`h-10 ${errors.pic ? "border-destructive" : ""}`}
+                          />
+                        )}
+                        {errors.pic && (
+                          <p className="text-xs text-destructive mt-1">{errors.pic}</p>
+                        )}
                         {showPicList && (
                           <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
                             {filteredEmployees.length > 0 ? (
@@ -621,20 +720,31 @@ const EditPurchaseOrder = () => {
                       {t("page.purchaseOrder.add.poDate")}{" "}
                       <span className="text-destructive">*</span>
                     </label>
-                    <DatePicker date={orderDate} setDate={setOrderDate} />
+                    <DatePicker
+                      date={orderDate}
+                      setDate={(d) => {
+                        setOrderDate(d);
+                        setErrors((prev) => ({ ...prev, orderDate: undefined }));
+                      }}
+                    />
+                    {errors.orderDate && (
+                      <p className="text-xs text-destructive mt-1">{errors.orderDate}</p>
+                    )}
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
                       {t("page.purchaseOrder.add.time")} <span className="text-destructive">*</span>
                     </label>
-                    <TimePicker value={orderTime} onChange={setOrderTime} />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">
-                      {t("page.purchaseOrder.add.dueDate")}{" "}
-                      <span className="text-destructive">*</span>
-                    </label>
-                    <DatePicker date={dueDate} setDate={setDueDate} />
+                    <TimePicker
+                      value={orderTime}
+                      onChange={(v) => {
+                        setOrderTime(v);
+                        setErrors((prev) => ({ ...prev, orderTime: undefined }));
+                      }}
+                    />
+                    {errors.orderTime && (
+                      <p className="text-xs text-destructive mt-1">{errors.orderTime}</p>
+                    )}
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
@@ -652,6 +762,7 @@ const EditPurchaseOrder = () => {
                         if (val === "cash") {
                           setTenor(0);
                           setDpPercent(0);
+                          setDueDate(null);
                         }
                       }}
                       placeholder={t("page.purchaseOrder.add.paymentMethodCash")}
@@ -659,51 +770,69 @@ const EditPurchaseOrder = () => {
                     />
                   </div>
                   {paymentMethod === "credit" && (
-                    <>
-                      <div>
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">
-                          {t("page.purchaseOrder.add.tenor")}{" "}
-                          <span className="text-destructive">*</span>
-                        </label>
-                        <Input
-                          type="number"
-                          min="1"
-                          placeholder={t("page.purchaseOrder.add.tenorPlaceholder")}
-                          value={tenor || ""}
-                          onChange={(e) => setTenor(Number(e.target.value) || 0)}
-                          className="h-10"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("page.purchaseOrder.add.tenorHint")}
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1.5 block">
+                        {t("page.purchaseOrder.add.dpPercent")}
+                      </label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        placeholder={t("page.purchaseOrder.add.dpPercentPlaceholder")}
+                        value={dpPercent || ""}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val >= 0 && val <= 100) setDpPercent(val);
+                        }}
+                        className="h-10"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t("page.purchaseOrder.add.dpPercentHint")}
+                      </p>
+                      {dpPercent > 0 && (
+                        <p className="text-xs text-primary font-medium mt-1">
+                          {t("page.purchaseOrder.add.dpAmount")}: Rp{" "}
+                          {((finalAmount * dpPercent) / 100).toLocaleString("id-ID")}
                         </p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">
-                          {t("page.purchaseOrder.add.dpPercent")}
-                        </label>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder={t("page.purchaseOrder.add.dpPercentPlaceholder")}
-                          value={dpPercent || ""}
-                          onChange={(e) => {
-                            const val = Number(e.target.value);
-                            if (val >= 0 && val <= 100) setDpPercent(val);
-                          }}
-                          className="h-10"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("page.purchaseOrder.add.dpPercentHint")}
-                        </p>
-                        {dpPercent > 0 && (
-                          <p className="text-xs text-primary font-medium mt-1">
-                            {t("page.purchaseOrder.add.dpAmount")}: Rp{" "}
-                            {((finalAmount * dpPercent) / 100).toLocaleString("id-ID")}
-                          </p>
-                        )}
-                      </div>
-                    </>
+                      )}
+                    </div>
+                  )}
+                  {paymentMethod === "credit" && (
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1.5 block">
+                        {t("page.purchaseOrder.add.dueDate")}{" "}
+                        <span className="text-destructive">*</span>
+                      </label>
+                      <DatePicker
+                        date={dueDate}
+                        setDate={(d) => {
+                          setDueDate(d);
+                          setErrors((prev) => ({ ...prev, dueDate: undefined }));
+                        }}
+                      />
+                      {errors.dueDate && (
+                        <p className="text-xs text-destructive mt-1">{errors.dueDate}</p>
+                      )}
+                    </div>
+                  )}
+                  {paymentMethod === "credit" && (
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1.5 block">
+                        {t("page.purchaseOrder.add.tenor")}{" "}
+                        <span className="text-destructive">*</span>
+                      </label>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder={t("page.purchaseOrder.add.tenorPlaceholder")}
+                        value={tenor || ""}
+                        onChange={(e) => setTenor(Number(e.target.value) || 0)}
+                        className="h-10"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t("page.purchaseOrder.add.tenorHint")}
+                      </p>
+                    </div>
                   )}
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
@@ -722,364 +851,295 @@ const EditPurchaseOrder = () => {
 
             <Card className="overflow-hidden border-0 shadow-md rounded-xl">
               <div className="bg-gradient-to-r from-emerald-600/90 to-emerald-700/90 px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
-                      <Package size={18} className="text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-semibold text-white">
-                        {t("page.purchaseOrder.add.itemSection")}
-                      </h3>
-                      <p className="text-xs text-emerald-100">
-                        {t("page.purchaseOrder.add.itemSectionDesc")}
-                      </p>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+                    <Package size={18} className="text-white" />
                   </div>
-                  {!itemsLoading && (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
-                      onClick={addItem}>
-                      <Plus size={18} />
-                      {t("page.purchaseOrder.add.addItem")}
-                    </Button>
-                  )}
-                </div>
-              </div>
-              <div className="p-6">
-                {hasDuplicateItems && (
-                  <p className="text-xs text-amber-600 mb-3">
-                    {t("page.purchaseOrder.add.validation.duplicateItems")}
-                  </p>
-                )}
-
-                {itemsLoading ? (
-                  <div className="space-y-3">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
-                        <Skeleton className="w-6 h-6 rounded-full shrink-0" />
-                        <Skeleton className="h-9 flex-1" />
-                        <Skeleton className="h-9 w-32 shrink-0" />
-                        <Skeleton className="h-9 w-20 shrink-0" />
-                        <Skeleton className="h-9 w-20 shrink-0" />
-                        <Skeleton className="h-9 w-36 shrink-0" />
-                        <Skeleton className="h-5 w-28 shrink-0" />
-                      </div>
-                    ))}
-                    <p className="text-xs text-muted-foreground text-center pt-2">
-                      {t("page.purchaseOrder.add.loadingIngredients")}
+                  <div>
+                    <h3 className="text-base font-semibold text-white">
+                      {t("page.purchaseOrder.add.itemSection")}
+                    </h3>
+                    <p className="text-xs text-emerald-100">
+                      {t("page.purchaseOrder.add.itemSectionDesc")}
                     </p>
                   </div>
-                ) : items.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    {t("page.purchaseOrder.add.noItem")}
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {items.map((item, idx) => {
-                      const suppliersForItem = getSuppliersForIngredientName(item.ingredientId);
-                      const itemPrices = suppliersForItem.map((s) => s.price);
-                      const minPrice = itemPrices.length > 0 ? Math.min(...itemPrices) : 0;
-
-                      return (
-                        <div key={idx} className="bg-muted/30 rounded-lg p-3">
-                          <div className="flex items-center gap-3">
-                            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
-                              {idx + 1}
-                            </span>
-                            <div className="w-36 shrink-0">
-                              <Combobox
-                                options={[
-                                  { value: "", label: t("page.purchaseOrder.add.selectSupplier") },
-                                  ...suppliers.map((sp) => ({
-                                    value: sp.id || sp._id,
-                                    label: sp.name
-                                  }))
-                                ]}
-                                value={item.supplierId || ""}
-                                onChange={(val) => {
-                                  const newVal = val || null;
-                                  updateItem(idx, "supplierId", newVal);
-                                  if (
-                                    newVal &&
-                                    item.ingredientId &&
-                                    getSuppliersForIngredientName(item.ingredientId).length > 0
-                                  ) {
-                                    const match = getSuppliersForIngredientName(
-                                      item.ingredientId
-                                    ).find((s) => s.supplierId === newVal);
-                                    if (match) updateItem(idx, "price", match.price);
-                                  }
-                                }}
-                                placeholder={t("page.purchaseOrder.add.selectSupplier")}
-                                searchPlaceholder={t("page.purchaseOrder.add.selectSupplier")}
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-9 w-9 shrink-0 rounded-l-none border-l-0"
-                                onClick={() => {
-                                  setAddSupplierItemIdx(idx);
-                                  setNewSupplierName("");
-                                  setNewSupplierPhone("");
-                                  setShowAddSupplierModal(true);
-                                }}>
-                                <Plus size={14} />
-                              </Button>
-                            </div>
-                            <div className="relative flex-1 min-w-0">
-                              <Input
-                                placeholder={t("page.purchaseOrder.add.itemNamePlaceholder")}
-                                value={item.name}
-                                onChange={(e) => {
-                                  updateItem(idx, "name", e.target.value);
-                                  updateItem(idx, "ingredientId", null);
-                                  setIngredientFocusIdx(idx);
-                                }}
-                                onFocus={() => setIngredientFocusIdx(idx)}
-                                onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
-                                className="h-9 text-sm w-full"
-                              />
-                              {ingredientFocusIdx === idx && (
-                                <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                  {getFilteredIngredients(item.name || "", item.supplierId).length >
-                                  0 ? (
-                                    getFilteredIngredients(item.name || "", item.supplierId).map(
-                                      (ing) => (
-                                        <button
-                                          key={ing.id}
-                                          type="button"
-                                          onMouseDown={() => {
-                                            updateItem(idx, "name", ing.name);
-                                            updateItem(idx, "ingredientId", ing.id);
-                                            updateItem(idx, "unit", ing.unit || "pcs");
-                                            const match = item.supplierId
-                                              ? ingredientSuppliersMap[
-                                                  (ing.name || "").toLowerCase().trim()
-                                                ]?.find((s) => s.supplierId === item.supplierId)
-                                              : null;
-                                            updateItem(idx, "price", match ? match.price : 0);
-                                            setIngredientFocusIdx(null);
-                                          }}
-                                          className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
-                                          <span>{ing.name}</span>
-                                          <span className="text-xs text-muted-foreground ml-auto">
-                                            {ing.unit || "pcs"}
-                                          </span>
-                                        </button>
-                                      )
-                                    )
-                                  ) : (
-                                    <p className="p-3 text-xs text-muted-foreground text-center">
-                                      {t("page.purchaseOrder.add.noIngredientFound")}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                            <Input
-                              placeholder={t("page.purchaseOrder.add.qty")}
-                              value={item.qty || ""}
-                              onChange={(e) =>
-                                updateItem(
-                                  idx,
-                                  "qty",
-                                  Number(e.target.value.replace(/[^0-9]/g, "")) || 0
-                                )
-                              }
-                              className="h-9 text-sm w-20 shrink-0"
-                            />
-                            <div className="w-20 shrink-0">
-                              <Combobox
-                                options={unitOptions.map((opt) => ({
-                                  value: opt.value,
-                                  label: opt.label
-                                }))}
-                                value={item.unit}
-                                onChange={(val) => {
-                                  const prevUnit = item.unit;
-                                  updateItem(idx, "unit", val);
-                                  const suggested = getSuggestedConversion(val, prevUnit);
-                                  if (suggested !== 1) {
-                                    updateItem(idx, "conversionToBase", suggested);
-                                  }
-                                }}
-                                placeholder={t("page.product.form.unitPlaceholder")}
-                                searchPlaceholder={t("page.product.form.unitPlaceholder")}
-                              />
-                            </div>
-                            <Input
-                              type="text"
-                              inputMode="decimal"
-                              value={item.conversionToBase ? String(item.conversionToBase) : "1"}
-                              onChange={(e) =>
-                                updateItem(
-                                  idx,
-                                  "conversionToBase",
-                                  Number(e.target.value.replace(/[^0-9.]/g, "")) || 1
-                                )
-                              }
-                              className="h-9 text-sm w-16 shrink-0 text-center"
-                              title={`1 ${item.unit || "pcs"} = ? satuan stok`}
-                              aria-label={`1 ${item.unit || "pcs"} = ? satuan stok`}
-                            />
-                            <Input
-                              placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                              value={item.price ? formatIDR(item.price) : ""}
-                              onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
-                              className="h-9 text-sm w-36 shrink-0"
-                            />
-                            <span className="text-sm font-medium text-foreground w-28 text-right shrink-0">
-                              Rp {(item.qty * item.price).toLocaleString("id-ID")}
-                            </span>
-                            {items.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive shrink-0"
-                                onClick={() => removeItem(idx)}>
-                                <Trash2 size={18} />
-                              </Button>
-                            )}
-                          </div>
-                          {item.ingredientId && (
-                            <div className="flex flex-wrap items-center gap-2 mt-2 ml-9">
-                              {suppliersForItem.length > 0 ? (
-                                <>
-                                  <span className="text-xs text-muted-foreground font-medium shrink-0">
-                                    {t("page.purchaseOrder.add.supplierPrice")}:
-                                  </span>
-                                  {suppliersForItem.map((sp) => {
-                                    const isCheapest = sp.price === minPrice;
-                                    const isSelected = item.supplierId === sp.supplierId;
-                                    return (
-                                      <button
-                                        key={sp.supplierId}
-                                        type="button"
-                                        onClick={() => {
-                                          updateItem(idx, "supplierId", sp.supplierId);
-                                          updateItem(idx, "price", sp.price);
-                                        }}
-                                        className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
-                                          isSelected
-                                            ? "bg-primary/10 border-primary text-primary font-medium"
-                                            : isCheapest
-                                              ? "bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
-                                              : "bg-background border-border hover:bg-accent/50"
-                                        }`}>
-                                        {sp.supplierName}: {formatIDR(sp.price)}
-                                      </button>
-                                    );
-                                  })}
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      updateItem(idx, "supplierId", null);
-                                    }}
-                                    className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
-                                      !item.supplierId
-                                        ? "bg-primary/10 border-primary text-primary font-medium"
-                                        : "bg-background border-border hover:bg-accent/50"
-                                    }`}>
-                                    {t("page.purchaseOrder.add.customPrice")}
-                                  </button>
-                                </>
-                              ) : (
-                                <span className="text-xs text-muted-foreground">
-                                  {t("page.purchaseOrder.add.noSupplierForIngredient")}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                <div className="bg-muted/40 rounded-xl p-5 mt-4">
-                  {itemsLoading ? (
-                    <div className="space-y-3 flex flex-col items-end">
-                      <Skeleton className="h-9 w-36" />
-                      <Skeleton className="h-8 w-48" />
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-end space-y-2">
-                      <div className="flex items-center gap-3">
-                        <label className="text-sm text-muted-foreground font-medium">
-                          {t("page.purchaseOrder.add.discount")}
-                        </label>
-                        <Input
-                          placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                          value={discount ? formatIDR(discount) : ""}
-                          onChange={(e) => setDiscount(parseIDR(e.target.value))}
-                          className="h-9 text-sm w-36 text-right"
-                        />
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <label className="text-sm text-muted-foreground font-medium">
-                          {t("page.purchaseOrder.add.additionalCost")}
-                        </label>
-                        <Input
-                          placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                          value={additionalCost ? formatIDR(additionalCost) : ""}
-                          onChange={(e) => setAdditionalCost(parseIDR(e.target.value))}
-                          className="h-9 text-sm w-36 text-right"
-                        />
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <label className="text-sm text-muted-foreground font-medium">
-                          {t("page.purchaseOrder.add.overDeliveryTolerance")}
-                        </label>
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          value={overDeliveryTolerance || ""}
-                          onChange={(e) =>
-                            setOverDeliveryTolerance(
-                              Number(e.target.value.replace(/[^0-9.]/g, "")) || 0
-                            )
-                          }
-                          className="h-9 text-sm w-20 text-right"
-                        />
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">
-                          {t("page.purchaseOrder.add.totalPrice")}
-                        </p>
-                        <p className="text-2xl font-bold text-foreground">
-                          Rp {totalAmount.toLocaleString("id-ID")}
-                        </p>
-                      </div>
-                      {(discount > 0 || additionalCost > 0) && (
-                        <>
-                          <div className="w-full border-t border-border my-1" />
-                          <div className="text-right">
-                            {discount > 0 && (
-                              <p className="text-sm font-medium text-red-500">
-                                {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
-                                {discount.toLocaleString("id-ID")}
-                              </p>
-                            )}
-                            {additionalCost > 0 && (
-                              <p className="text-sm font-medium text-emerald-600">
-                                {t("page.purchaseOrder.add.additionalCostLabel")} + Rp{" "}
-                                {additionalCost.toLocaleString("id-ID")}
-                              </p>
-                            )}
-                            <p className="text-xl font-bold text-foreground">
-                              Rp {finalAmount.toLocaleString("id-ID")}
-                            </p>
-                          </div>
-                        </>
-                      )}
+                </div>
+              </div>
+              <div className="p-4 sm:p-6">
+                <div className="space-y-4">
+                  {errors.items && (
+                    <div className="flex items-center gap-2 rounded-lg bg-destructive/5 border border-destructive/20 px-3 py-2">
+                      <span className="text-xs text-destructive font-medium">{errors.items}</span>
                     </div>
                   )}
+                  {hasDuplicateItems && (
+                    <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 dark:bg-amber-950/20 dark:border-amber-800">
+                      <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                        {t("page.purchaseOrder.add.validation.duplicateItems")}
+                      </span>
+                    </div>
+                  )}
+
+                  {groups.map((group, gIdx) => (
+                    <div key={gIdx} className="border rounded-lg overflow-hidden">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 border-b bg-muted/40">
+                        <Label className="shrink-0 text-xs text-muted-foreground">
+                          {t("page.purchaseOrder.add.table.supplier")}
+                        </Label>
+                        <div className="flex-1 min-w-[220px]">
+                          <Combobox
+                            options={supplierOptions}
+                            value={group.supplier ? String(group.supplier) : ""}
+                            onChange={(val) => pickGroupSupplier(gIdx, val)}
+                            placeholder={t("page.purchaseOrder.add.selectSupplier")}
+                            searchPlaceholder={t("common.search")}
+                            emptyMessage={t("page.purchaseOrder.add.noSupplierFound")}
+                            disabled={!selectedStore || suppliersLoading}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => removeGroup(gIdx)}
+                          disabled={groups.length === 1}>
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm min-w-[820px]">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                                {t("page.purchaseOrder.add.table.name")}
+                              </th>
+                              <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                                {t("page.purchaseOrder.add.table.qty")}
+                              </th>
+                              <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                                {t("page.purchaseOrder.add.table.unit")}
+                              </th>
+                              <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                                {t("page.purchaseOrder.add.table.price")}
+                              </th>
+                              <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                                {t("page.purchaseOrder.add.table.subtotal")}
+                              </th>
+                              <th className="w-10"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {group.items.map((item, iIdx) => (
+                              <tr key={iIdx} className="border-b border-muted/20">
+                                <td className="px-3 py-2 min-w-[280px]">
+                                  <Combobox
+                                    options={itemOptionsForRow(gIdx, iIdx, group.supplier)}
+                                    value={selectedItemValue(item, group.supplier)}
+                                    onChange={(val) => pickItemOption(gIdx, iIdx, val)}
+                                    placeholder={
+                                      group.supplier
+                                        ? t("page.purchaseOrder.add.placeholder.selectItem")
+                                        : t("page.purchaseOrder.add.selectSupplierFirst")
+                                    }
+                                    searchPlaceholder={t("common.search")}
+                                    emptyMessage={t("page.purchaseOrder.add.noIngredientFound")}
+                                    disabled={!group.supplier}
+                                  />
+                                  {item.name && !selectedItemValue(item, group.supplier) && (
+                                    <p className="text-[10px] text-muted-foreground mt-1 truncate">
+                                      {item.name}
+                                    </p>
+                                  )}
+                                </td>
+                                <td className="px-3 py-2">
+                                  <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={item.qty === 0 ? "" : String(item.qty)}
+                                    onChange={(e) =>
+                                      updateItem(
+                                        gIdx,
+                                        iIdx,
+                                        "qty",
+                                        Number(e.target.value.replace(/[^0-9]/g, "")) || 0
+                                      )
+                                    }
+                                    className="h-8 text-xs text-center w-20 mx-auto"
+                                    placeholder="0"
+                                  />
+                                </td>
+                                <td className="px-3 py-2 align-top">
+                                  <div className="flex justify-center">
+                                    <Combobox
+                                      options={unitOptions.map((opt) => ({
+                                        value: opt.value,
+                                        label: opt.label
+                                      }))}
+                                      value={item.unit}
+                                      onChange={(val) => updateItem(gIdx, iIdx, "unit", val)}
+                                      placeholder="pcs"
+                                      searchPlaceholder={t("common.search")}
+                                    />
+                                  </div>
+                                  <div className="mt-1">
+                                    <Input
+                                      type="text"
+                                      inputMode="decimal"
+                                      value={
+                                        item.conversionToBase ? String(item.conversionToBase) : "1"
+                                      }
+                                      onChange={(e) =>
+                                        updateItem(
+                                          gIdx,
+                                          iIdx,
+                                          "conversionToBase",
+                                          Number(e.target.value.replace(/[^0-9.]/g, "")) || 1
+                                        )
+                                      }
+                                      className="h-7 text-xs text-center"
+                                      title={`1 ${item.unit || "pcs"} = ? stok`}
+                                      aria-label={`1 ${item.unit || "pcs"} = ? stok`}
+                                    />
+                                    <p className="text-[10px] text-muted-foreground text-center mt-0.5">
+                                      {"1 " + (item.unit || "pcs") + " = ? stok"}
+                                    </p>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2">
+                                  <Input
+                                    placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                                    value={item.price ? formatIDR(item.price) : ""}
+                                    onChange={(e) =>
+                                      updateItem(gIdx, iIdx, "price", parseIDR(e.target.value))
+                                    }
+                                    className="h-8 text-xs text-right w-36 ml-auto"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <div className="text-right">
+                                    <p className="text-sm font-semibold text-foreground">
+                                      Rp {(item.qty * item.price).toLocaleString("id-ID")}
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground">
+                                      {item.qty} x {formatIDR(item.price)}
+                                    </p>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => removeItem(gIdx, iIdx)}
+                                    className="text-muted-foreground/40 hover:text-destructive">
+                                    <Trash2 size={14} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="p-3 border-t">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addItem(gIdx)}
+                          className="gap-1">
+                          <Plus size={14} /> {t("page.purchaseOrder.add.form.addItem")}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addGroup}
+                    disabled={!selectedStore || suppliersLoading}
+                    className="gap-1">
+                    <Plus size={14} /> {t("page.purchaseOrder.add.form.addSupplier")}
+                  </Button>
+
+                  <div className="rounded-xl bg-gradient-to-b from-muted/50 to-muted/20 border border-border/60 p-4 sm:p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 justify-end">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 sm:pt-1">
+                        <div className="flex items-center gap-3">
+                          <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                            {t("page.purchaseOrder.add.discount")}
+                          </Label>
+                          <Input
+                            placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                            value={discount ? formatIDR(discount) : ""}
+                            onChange={(e) => setDiscount(parseIDR(e.target.value))}
+                            className="h-9 text-sm w-32 sm:w-36 text-right"
+                          />
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                            {t("page.purchaseOrder.add.additionalCost")}
+                          </Label>
+                          <Input
+                            placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                            value={additionalCost ? formatIDR(additionalCost) : ""}
+                            onChange={(e) => setAdditionalCost(parseIDR(e.target.value))}
+                            className="h-9 text-sm w-32 sm:w-36 text-right"
+                          />
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                            {t("page.purchaseOrder.add.overDeliveryTolerance")}
+                          </Label>
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            value={overDeliveryTolerance || ""}
+                            onChange={(e) =>
+                              setOverDeliveryTolerance(
+                                Number(e.target.value.replace(/[^0-9.]/g, "")) || 0
+                              )
+                            }
+                            className="h-9 text-sm w-20 text-right"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1 max-w-[280px] ml-auto">
+                        <div className="text-right space-y-1">
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.purchaseOrder.add.totalPrice")}
+                          </p>
+                          <p className="text-xl sm:text-2xl font-bold text-foreground">
+                            Rp {totalAmount.toLocaleString("id-ID")}
+                          </p>
+                        </div>
+                        {(discount > 0 || additionalCost > 0) && (
+                          <>
+                            <div className="border-t border-border/60 my-2" />
+                            <div className="text-right space-y-0.5">
+                              {discount > 0 && (
+                                <p className="text-xs font-medium text-destructive">
+                                  {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
+                                  {discount.toLocaleString("id-ID")}
+                                </p>
+                              )}
+                              {additionalCost > 0 && (
+                                <p className="text-xs font-medium text-emerald-600">
+                                  {t("page.purchaseOrder.add.additionalCostLabel")} + Rp{" "}
+                                  {additionalCost.toLocaleString("id-ID")}
+                                </p>
+                              )}
+                              <p className="text-base sm:text-lg font-bold text-foreground">
+                                Rp {finalAmount.toLocaleString("id-ID")}
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -1098,17 +1158,13 @@ const EditPurchaseOrder = () => {
                   <p className="text-xs text-muted-foreground">
                     {t("page.purchaseOrder.add.totalAfterDiscount")}
                   </p>
-                  {itemsLoading ? (
-                    <Skeleton className="h-4 w-28 ml-auto" />
-                  ) : (
-                    <p className="text-sm font-semibold">
-                      Rp{" "}
-                      {(discount > 0 || additionalCost > 0
-                        ? finalAmount
-                        : totalAmount
-                      ).toLocaleString("id-ID")}
-                    </p>
-                  )}
+                  <p className="text-sm font-semibold">
+                    Rp{" "}
+                    {(discount > 0 || additionalCost > 0
+                      ? finalAmount
+                      : totalAmount
+                    ).toLocaleString("id-ID")}
+                  </p>
                 </div>
                 <div className="flex gap-3">
                   <Button
@@ -1130,7 +1186,12 @@ const EditPurchaseOrder = () => {
                           orderDate,
                           orderTime,
                           dueDate,
-                          items: items.filter((i) => i.name?.trim())
+                          items: allFilledItems.map((it) => ({
+                            name: it.name,
+                            qty: it.qty,
+                            price: it.price,
+                            unit: it.unit
+                          }))
                         },
                         poSchema,
                         poFieldLabels
@@ -1191,58 +1252,12 @@ const EditPurchaseOrder = () => {
           handleSubmit(null, false);
         }}
       />
-      <Modal
-        type="form"
-        open={showAddSupplierModal}
-        onOpenChange={setShowAddSupplierModal}
-        title={t("page.purchaseOrder.add.addSupplier")}
-        confirmText={t("common.save")}
-        loading={addSupplierMutation.isLoading}
-        onConfirm={() => {
-          if (!newSupplierName.trim() || !newSupplierPhone.trim()) return;
-          if (newSupplierPhone.trim().length > 14) return;
-          addSupplierMutation.mutate({
-            name: newSupplierName.trim(),
-            phone: newSupplierPhone.trim(),
-            status: "active"
-          });
-        }}>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">
-              {t("page.purchaseOrder.add.supplierName")} <span className="text-destructive">*</span>
-            </label>
-            <Input
-              value={newSupplierName}
-              onChange={(e) => setNewSupplierName(e.target.value)}
-              placeholder={t("page.purchaseOrder.add.supplierNamePlaceholder")}
-              autoFocus
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">
-              {t("page.purchaseOrder.add.supplierPhone")}{" "}
-              <span className="text-destructive">*</span>
-            </label>
-            <Input
-              value={newSupplierPhone}
-              onChange={(e) => setNewSupplierPhone(e.target.value)}
-              placeholder={t("page.purchaseOrder.add.supplierPhonePlaceholder")}
-              maxLength={14}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("page.purchaseOrder.add.supplierPhoneHint")}
-            </p>
-          </div>
-        </div>
-      </Modal>
-      {addSupplierMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
-      {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       <MissingFieldsModal
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
       />
+      {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       <Modal
         type="error"
         open={errorModal}

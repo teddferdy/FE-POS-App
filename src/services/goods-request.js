@@ -5,6 +5,7 @@ export const getAllGoodsRequest = async (payload) => {
   if (payload?.page) params.append("page", payload.page);
   if (payload?.limit) params.append("limit", payload.limit);
   if (payload?.status) params.append("status", payload.status);
+  if (payload?.supplier) params.append("supplier", payload.supplier);
   if (payload?.search) params.append("search", payload.search);
   if (payload?.store) params.append("queryStore", payload.store);
   if (payload?.startDate) params.append("startDate", payload.startDate);

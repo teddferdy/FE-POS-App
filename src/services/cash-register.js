@@ -31,6 +31,12 @@ export const getCashRegisterHistory = async (payload) => {
   return data;
 };
 
+export const getOpenRegisters = async () => {
+  const { data, status } = await axiosInstance.get("/cash-register/open-registers");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const getXReport = async (storeId) => {
   const { data, status } = await axiosInstance.get(`/cash-register/x-report?store=${storeId}`);
   if (status !== 200) throw Error(`${data.message}`);

@@ -1,29 +1,38 @@
 import React, { useState } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "react-query";
-import { Eye, Receipt, Plus, RotateCcw } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { Eye, Receipt, Plus, RotateCcw, X, Coins } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { getCashRegisterHistory } from "@/services/cash-register";
+import { toast } from "sonner";
+import { getCashRegisterHistory, closeCashRegister } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
 import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
-import TableToolbar from "@/components/ui/TableToolbar";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
+import Modal from "@/components/organism/modal";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "-";
   return "Rp " + Number(num).toLocaleString("id-ID");
 };
 
+const parseIDR = (str) => {
+  if (!str) return 0;
+  return Number(str.replace(/[^0-9]/g, "")) || 0;
+};
+
 const CashRegisterHistory = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -32,6 +41,9 @@ const CashRegisterHistory = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
+  const [closeTarget, setCloseTarget] = useState(null);
+  const [rawClosing, setRawClosing] = useState("0");
+  const closingBalance = parseIDR(rawClosing);
 
   const isFiltered = search !== "" || storeFilter !== "all";
 
@@ -64,6 +76,29 @@ const CashRegisterHistory = () => {
   const items = data?.data || [];
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
+
+  const closeMut = useMutation(
+    () =>
+      closeCashRegister(closeTarget?.id, {
+        storeId: closeTarget?.store || closeTarget?.storeData?.id,
+        closedBy: user?.id,
+        closingBalance
+      }),
+    {
+      onSuccess: () => {
+        toast.success(t("page.cashRegister.history.closeSuccess"));
+        queryClient.invalidateQueries(["cash-register-history"]);
+        queryClient.invalidateQueries(["cash-register-current"]);
+        setCloseTarget(null);
+        setRawClosing("0");
+        refetch();
+      },
+      onError: (err) =>
+        toast.error(t("page.cashRegister.history.closeFail"), {
+          description: err?.response?.data?.message || err.message
+        })
+    }
+  );
 
   const statusCfg = {
     open: {
@@ -158,18 +193,38 @@ const CashRegisterHistory = () => {
     {
       header: t("page.cashRegister.history.action"),
       align: "right",
-      legend: [{ icon: Eye, label: t("common.view") }],
+      legend: [
+        { icon: Eye, label: t("common.view") },
+        { icon: X, label: t("page.cashRegister.history.closeRegister") }
+      ],
       render: (item) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-primary"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate("/cash-register/history/detail", { state: { item } });
-          }}>
-          <Eye size={18} />
-        </Button>
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate("/cash-register/history/detail", { state: { item } });
+            }}>
+            <Eye size={18} />
+          </Button>
+          {item.status === "open" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                const expected =
+                  (item.openingBalance || 0) + (item.totalSales || 0) - (item.totalExpenses || 0);
+                setRawClosing(String(expected > 0 ? Math.round(expected) : 0));
+                setCloseTarget(item);
+              }}>
+              <X size={18} />
+            </Button>
+          )}
+        </div>
       )
     }
   ];
@@ -297,6 +352,40 @@ const CashRegisterHistory = () => {
           />
         </div>
       )}
+
+      <Modal
+        type="form"
+        open={!!closeTarget}
+        onOpenChange={(o) => !o && setCloseTarget(null)}
+        title={t("page.cashRegister.history.closeRegister")}
+        description={t("page.cashRegister.history.closeDesc")}
+        confirmText={t("page.cashRegister.history.closeConfirm")}
+        loading={closeMut.isLoading}
+        onConfirm={() => closeMut.mutate()}>
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">
+            {t("page.cashRegister.current.closingBalance")}{" "}
+            <span className="text-destructive">*</span>
+          </Label>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-muted-foreground pointer-events-none">
+              <Coins size={16} />
+            </div>
+            <Input
+              type="text"
+              inputMode="numeric"
+              value={formatIDR(rawClosing === "0" ? "" : rawClosing)}
+              placeholder={t("page.cashRegister.current.placeholder")}
+              onChange={(e) => {
+                const cleaned = e.target.value.replace(/[^0-9]/g, "");
+                setRawClosing(cleaned || "0");
+              }}
+              className="pl-10 h-12 text-lg font-semibold tabular-nums"
+              autoFocus
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

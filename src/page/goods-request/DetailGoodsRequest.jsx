@@ -14,6 +14,7 @@ import {
   ShoppingCart,
   User,
   Store,
+  Truck,
   FileText
 } from "lucide-react";
 import { canAccess } from "@/utils/permission";
@@ -275,57 +276,116 @@ const DetailGoodsRequest = () => {
                   <h2 className="text-lg font-semibold mb-4">
                     {t("page.goodsRequest.detail.itemsRequested")}
                   </h2>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[640px]">
-                      <thead>
-                        <tr className="border-b text-left text-muted-foreground">
-                          <th className="pb-2">{t("page.goodsRequest.detail.itemName")}</th>
-                          <th className="pb-2">{t("page.goodsRequest.detail.type")}</th>
-                          <th className="pb-2 text-center">{t("page.goodsRequest.detail.qty")}</th>
-                          <th className="pb-2 text-center">{t("page.goodsRequest.detail.unit")}</th>
-                          <th className="pb-2">{t("page.goodsRequest.detail.notes")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {request.items?.length > 0 ? (
-                          request.items.map((item, i) => {
-                            const name =
-                              item.ingredientData?.name ||
-                              item.ingredientName ||
-                              item.productData?.nameProduct ||
-                              item.productName ||
-                              "-";
-                            const isIngredient = !!(item.ingredientData || item.ingredientName);
-                            return (
-                              <tr key={i} className="border-b border-muted/20">
-                                <td className="py-2">{name}</td>
-                                <td className="py-2">
-                                  {isIngredient ? (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-                                      {t("page.goodsRequest.detail.typeIngredient")}
-                                    </span>
-                                  ) : (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                                      {t("page.goodsRequest.detail.typeProduct")}
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="py-2 text-center font-mono">{item.qty}</td>
-                                <td className="py-2 text-center">{item.unit || "pcs"}</td>
-                                <td className="py-2">{item.notes || "-"}</td>
-                              </tr>
-                            );
-                          })
-                        ) : (
-                          <tr>
-                            <td colSpan={5} className="py-4 text-center text-muted-foreground">
-                              {t("page.goodsRequest.detail.noItems")}
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                  {request.items?.length > 0 ? (
+                    (() => {
+                      const groups = [];
+                      const groupMap = {};
+                      for (const it of request.items) {
+                        const sid = it.supplier;
+                        const key = sid ? String(sid) : "unassigned";
+                        if (!groupMap[key]) {
+                          groupMap[key] = {
+                            supplierId: key,
+                            supplierName: sid
+                              ? it.supplierData?.name || `Supplier #${sid}`
+                              : t("page.goodsRequest.detail.unassignedSupplier"),
+                            items: []
+                          };
+                          groups.push(groupMap[key]);
+                        }
+                        groupMap[key].items.push(it);
+                      }
+                      return (
+                        <div className="space-y-3">
+                          {groups.map((g) => (
+                            <div
+                              key={g.supplierId}
+                              className="border border-border rounded-xl overflow-hidden">
+                              <div className="flex items-center gap-3 px-4 py-3 bg-muted/40 border-b">
+                                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white shrink-0">
+                                  <Truck size={14} />
+                                </div>
+                                <span className="font-semibold text-foreground">
+                                  {g.supplierName}
+                                </span>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                  {g.items.length}{" "}
+                                  {g.items.length > 1
+                                    ? t("page.goodsRequest.detail.items")
+                                    : t("page.goodsRequest.detail.item")}
+                                </span>
+                              </div>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm min-w-[640px]">
+                                  <thead>
+                                    <tr className="border-b text-left text-muted-foreground">
+                                      <th className="px-4 py-2 font-medium">
+                                        {t("page.goodsRequest.detail.itemName")}
+                                      </th>
+                                      <th className="px-4 py-2 font-medium">
+                                        {t("page.goodsRequest.detail.type")}
+                                      </th>
+                                      <th className="px-4 py-2 font-medium text-center">
+                                        {t("page.goodsRequest.detail.qty")}
+                                      </th>
+                                      <th className="px-4 py-2 font-medium text-center">
+                                        {t("page.goodsRequest.detail.unit")}
+                                      </th>
+                                      <th className="px-4 py-2 font-medium">
+                                        {t("page.goodsRequest.detail.notes")}
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {g.items.map((item, i) => {
+                                      const name =
+                                        item.ingredientData?.name ||
+                                        item.ingredientName ||
+                                        item.productData?.nameProduct ||
+                                        item.productName ||
+                                        "-";
+                                      const isIngredient = !!(
+                                        item.ingredientData || item.ingredientName
+                                      );
+                                      return (
+                                        <tr
+                                          key={i}
+                                          className="border-b border-muted/20 last:border-0">
+                                          <td className="px-4 py-2">{name}</td>
+                                          <td className="px-4 py-2">
+                                            {isIngredient ? (
+                                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                                                {t("page.goodsRequest.detail.typeIngredient")}
+                                              </span>
+                                            ) : (
+                                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                {t("page.goodsRequest.detail.typeProduct")}
+                                              </span>
+                                            )}
+                                          </td>
+                                          <td className="px-4 py-2 text-center font-mono">
+                                            {item.qty}
+                                          </td>
+                                          <td className="px-4 py-2 text-center">
+                                            {item.unit || "pcs"}
+                                          </td>
+                                          <td className="px-4 py-2">{item.notes || "-"}</td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {t("page.goodsRequest.detail.noItems")}
+                    </p>
+                  )}
                 </div>
               </div>
 

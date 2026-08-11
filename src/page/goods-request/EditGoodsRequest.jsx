@@ -6,8 +6,7 @@ import { useCookies } from "react-cookie";
 import { Save, X, Plus, Trash2, ArrowLeft, User } from "lucide-react";
 import { toast } from "sonner";
 import { getGoodsRequestById, editGoodsRequest } from "@/services/goods-request";
-import { getAllIngredients } from "@/services/ingredient";
-import { getAllProduct } from "@/services/product";
+import { getAllSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +31,19 @@ const unitOptions = [
   { value: "karton", label: "karton" }
 ];
 
+const emptyItem = {
+  name: "",
+  ingredient: null,
+  ingredientName: null,
+  product: null,
+  productName: null,
+  qty: 1,
+  unit: "pcs",
+  notes: ""
+};
+
+const emptyGroup = () => ({ supplier: null, items: [{ ...emptyItem }] });
+
 const EditGoodsRequest = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -43,7 +55,7 @@ const EditGoodsRequest = () => {
 
   const [requestedBy, setRequestedBy] = useState("");
   const [notes, setNotes] = useState("");
-  const [items, setItems] = useState([]);
+  const [groups, setGroups] = useState([emptyGroup()]);
   const [loaded, setLoaded] = useState(false);
   const isSubmitting = false;
   const [errorModal, setErrorModal] = useState(false);
@@ -56,92 +68,175 @@ const EditGoodsRequest = () => {
   });
   const request = data?.data;
 
+  const groupItems = (itemList) => {
+    const order = [];
+    const map = new Map();
+    for (const it of itemList || []) {
+      const key = it.supplier ? String(it.supplier) : "none";
+      if (!map.has(key)) {
+        map.set(key, { supplier: it.supplier || null, items: [] });
+        order.push(key);
+      }
+      map.get(key).items.push({
+        name: it.ingredientName || it.productName || "",
+        ingredient: it.ingredient || null,
+        ingredientName: it.ingredientName || null,
+        product: it.product || null,
+        productName: it.productName || null,
+        qty: it.qty || 0,
+        unit: it.unit || "pcs",
+        notes: it.notes || ""
+      });
+    }
+    return order.map((k) => map.get(k));
+  };
+
   useEffect(() => {
     if (request && !loaded) {
       setRequestedBy(request.requestedBy || "");
       setNotes(request.notes || "");
-      setItems(
-        (request.items || []).map((it) => ({
-          name: it.ingredientName || it.productName || "",
-          ingredient: it.ingredient || null,
-          product: it.product || null,
-          qty: it.qty || 0,
-          unit: it.unit || "pcs",
-          notes: it.notes || ""
-        }))
-      );
+      setGroups(groupItems(request.items));
       setLoaded(true);
     }
   }, [request, loaded]);
 
   const storeId = request?.store || user?.store || "";
 
-  const { data: ingredientsData } = useQuery(
-    ["ingredients-goods-request-edit", storeId],
-    () => getAllIngredients({ store: storeId, limit: 999, status: "active" }),
+  const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
+    ["suppliers-goods-request-edit", storeId],
+    () =>
+      getAllSupplier({
+        store: storeId,
+        limit: 999,
+        status: "active",
+        includeProducts: true
+      }),
     { enabled: !!storeId && loaded }
   );
-  const ingredients = ingredientsData?.data || [];
+  const suppliers = suppliersData?.data || [];
 
-  const { data: productsData } = useQuery(
-    ["products-goods-request-edit", storeId],
-    () => getAllProduct({ location: storeId, status: "active" }),
-    { enabled: !!storeId && loaded }
+  const supplierOptions = useMemo(
+    () =>
+      (suppliers || []).map((sup) => ({
+        value: String(sup.id),
+        label: sup.name || sup.supplierName || `Supplier #${sup.id}`
+      })),
+    [suppliers]
   );
-  const products = productsData?.data || [];
 
-  const itemOptions = useMemo(() => {
-    const opts = [];
-    for (const ing of ingredients) {
-      opts.push({
-        value: `ing-${ing.id}`,
-        label: `${ing.name || ing.ingredientName || "Bahan Baku"} (bahan baku)`
-      });
+  const supplierItemsBySupplier = useMemo(() => {
+    const map = {};
+    for (const sup of suppliers || []) {
+      map[sup.id] = (sup.products || []).map((p) => ({
+        value: `sp-${p.id}`,
+        productId: p.productId || null,
+        name: p.name,
+        unit: p.unit || "pcs"
+      }));
     }
-    for (const prod of products) {
-      opts.push({
-        value: `prod-${prod.id || prod._id}`,
-        label: `${prod.nameProduct || prod.name || "Produk"} (produk)`
-      });
-    }
-    return opts;
-  }, [ingredients, products]);
+    return map;
+  }, [suppliers]);
 
-  const addItem = () =>
-    setItems((prev) => [
-      ...prev,
-      { name: "", ingredient: null, product: null, qty: 1, unit: "pcs", notes: "" }
-    ]);
-
-  const removeItem = (idx) => setItems((prev) => prev.filter((_, i) => i !== idx));
-
-  const updateItem = (idx, field, value) => {
-    setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
+  const selectedItemValue = (item, supplier) => {
+    if (!supplier) return "";
+    const list = supplierItemsBySupplier[supplier] || [];
+    const match = list.find(
+      (opt) =>
+        (item.product && item.product === opt.productId) ||
+        (item.ingredientName && item.ingredientName === opt.name) ||
+        (item.productName && item.productName === opt.name)
+    );
+    return match?.value || "";
   };
 
-  const pickItemOption = (idx, value) => {
-    setItems((prev) =>
-      prev.map((item, i) => {
-        if (i !== idx) return item;
-        if (value.startsWith("ing-")) {
-          const ing = ingredients.find((x) => `ing-${x.id}` === value);
-          return {
-            ...item,
-            ingredient: ing?.id || null,
-            product: null,
-            name: ing?.name || ing?.ingredientName || ""
-          };
-        }
-        if (value.startsWith("prod-")) {
-          const prod = products.find((x) => `prod-${x.id || x._id}` === value);
-          return {
-            ...item,
-            ingredient: null,
-            product: prod?.id || prod?._id || null,
-            name: prod?.nameProduct || prod?.name || ""
-          };
-        }
-        return { ...item, ingredient: null, product: null, name: value };
+  const itemOptionsForRow = (gIdx, iIdx, supplier) => {
+    if (!supplier) return [];
+    const list = supplierItemsBySupplier[supplier] || [];
+    const taken = new Set();
+    const group = groups[gIdx];
+    (group?.items || []).forEach((other, j) => {
+      if (j === iIdx) return;
+      const val = selectedItemValue(other, supplier);
+      if (val) taken.add(val);
+    });
+    return list
+      .filter((it) => !taken.has(it.value))
+      .map((it) => ({ value: it.value, label: it.name }));
+  };
+
+  const addGroup = () => setGroups((prev) => [...prev, emptyGroup()]);
+
+  const removeGroup = (gIdx) => setGroups((prev) => prev.filter((_, i) => i !== gIdx));
+
+  const addItem = (gIdx) =>
+    setGroups((prev) =>
+      prev.map((g, i) => (i === gIdx ? { ...g, items: [...g.items, { ...emptyItem }] } : g))
+    );
+
+  const removeItem = (gIdx, iIdx) =>
+    setGroups((prev) =>
+      prev.map((g, i) => (i === gIdx ? { ...g, items: g.items.filter((_, j) => j !== iIdx) } : g))
+    );
+
+  const updateItem = (gIdx, iIdx, field, value) =>
+    setGroups((prev) =>
+      prev.map((g, i) =>
+        i === gIdx
+          ? {
+              ...g,
+              items: g.items.map((it, j) => (j === iIdx ? { ...it, [field]: value } : it))
+            }
+          : g
+      )
+    );
+
+  const pickGroupSupplier = (gIdx, value) => {
+    const supplierId = value ? Number(value) : null;
+    setGroups((prev) => prev.map((g, i) => (i === gIdx ? { ...g, supplier: supplierId } : g)));
+  };
+
+  const pickItemOption = (gIdx, iIdx, value) => {
+    setGroups((prev) =>
+      prev.map((g, gi) => {
+        if (gi !== gIdx) return g;
+        const list = supplierItemsBySupplier[g.supplier] || [];
+        const opt = list.find((o) => o.value === value);
+        return {
+          ...g,
+          items: g.items.map((it, ii) => {
+            if (ii !== iIdx) return it;
+            if (!opt) {
+              return {
+                ...it,
+                name: "",
+                ingredient: null,
+                ingredientName: null,
+                product: null,
+                productName: null
+              };
+            }
+            if (opt.productId) {
+              return {
+                ...it,
+                name: opt.name,
+                product: opt.productId,
+                productName: opt.name,
+                ingredient: null,
+                ingredientName: null,
+                unit: opt.unit || it.unit
+              };
+            }
+            return {
+              ...it,
+              name: opt.name,
+              ingredient: null,
+              ingredientName: opt.name,
+              product: null,
+              productName: null,
+              unit: opt.unit || it.unit
+            };
+          })
+        };
       })
     );
   };
@@ -160,11 +255,34 @@ const EditGoodsRequest = () => {
     }
   });
 
+  const allItems = useMemo(
+    () =>
+      groups.flatMap((g) =>
+        g.items.map((it) => ({
+          name: it.name,
+          qty: it.qty,
+          supplier: g.supplier
+        }))
+      ),
+    [groups]
+  );
+
   const doSubmit = () => {
-    const validItems = items.filter((it) => it.name.trim() && it.qty > 0);
+    const validItems = [];
+    for (const g of groups) {
+      for (const it of g.items) {
+        if (it.name.trim() && it.qty > 0) validItems.push({ ...it, supplier: g.supplier });
+      }
+    }
     if (validItems.length === 0) {
       toast.error(t("page.goodsRequest.edit.toast.validation"), {
         description: t("page.goodsRequest.edit.toast.itemRequired")
+      });
+      return;
+    }
+    if (validItems.some((it) => !it.supplier)) {
+      toast.error(t("page.goodsRequest.edit.toast.validation"), {
+        description: t("page.goodsRequest.edit.toast.supplierRequired")
       });
       return;
     }
@@ -173,9 +291,10 @@ const EditGoodsRequest = () => {
       notes,
       items: validItems.map((it) => ({
         ingredient: it.ingredient,
-        ingredientName: it.ingredient ? it.name : null,
+        ingredientName: it.ingredientName || null,
         product: it.product,
-        productName: it.product ? it.name : null,
+        productName: it.productName || null,
+        supplier: it.supplier || null,
         qty: it.qty,
         unit: it.unit,
         notes: it.notes || null
@@ -284,105 +403,144 @@ const EditGoodsRequest = () => {
             <Label>
               {t("page.goodsRequest.edit.form.items")} <span className="text-destructive">*</span>
             </Label>
-            <div className="overflow-x-auto border rounded-lg">
-              <table className="w-full text-sm min-w-[760px]">
-                <thead>
-                  <tr className="bg-muted/60 border-b">
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                      {t("page.goodsRequest.edit.table.name")}
-                    </th>
-                    <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                      {t("page.goodsRequest.edit.table.qty")}
-                    </th>
-                    <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                      {t("page.goodsRequest.edit.table.unit")}
-                    </th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                      {t("page.goodsRequest.edit.table.notes")}
-                    </th>
-                    <th className="w-10"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item, idx) => {
-                    const selectedValue = item.ingredient
-                      ? `ing-${item.ingredient}`
-                      : item.product
-                        ? `prod-${item.product}`
-                        : "";
-                    return (
-                      <tr key={idx} className="border-b border-muted/20">
-                        <td className="px-3 py-2 min-w-[260px]">
-                          <Combobox
-                            options={itemOptions}
-                            value={selectedValue}
-                            onChange={(val) => pickItemOption(idx, val)}
-                            placeholder={t("page.goodsRequest.edit.placeholder.selectItem")}
-                            searchPlaceholder={t("common.search")}
-                            emptyMessage={t("page.goodsRequest.edit.table.noItem")}
-                          />
-                          <Input
-                            value={item.name}
-                            onChange={(e) => {
-                              updateItem(idx, "name", e.target.value);
-                              updateItem(idx, "ingredient", null);
-                              updateItem(idx, "product", null);
-                            }}
-                            placeholder={t("page.goodsRequest.edit.placeholder.name")}
-                            className="h-8 text-xs mt-1.5"
-                          />
-                        </td>
-                        <td className="px-3 py-2">
-                          <Input
-                            type="text"
-                            inputMode="numeric"
-                            value={item.qty === 0 ? "" : String(item.qty)}
-                            onChange={(e) =>
-                              updateItem(
-                                idx,
-                                "qty",
-                                Number(e.target.value.replace(/[^0-9]/g, "")) || 0
-                              )
-                            }
-                            className="h-8 text-xs text-center w-20 mx-auto"
-                            placeholder="0"
-                          />
-                        </td>
-                        <td className="px-3 py-2">
-                          <div className="flex justify-center">
-                            <Combobox
-                              options={unitOptions}
-                              value={item.unit}
-                              onChange={(val) => updateItem(idx, "unit", val)}
-                              placeholder="pcs"
-                              searchPlaceholder={t("common.search")}
-                            />
-                          </div>
-                        </td>
-                        <td className="px-3 py-2">
-                          <Input
-                            value={item.notes}
-                            onChange={(e) => updateItem(idx, "notes", e.target.value)}
-                            className="h-8 text-xs"
-                            placeholder={t("page.goodsRequest.edit.placeholder.notes")}
-                          />
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          <button
-                            type="button"
-                            onClick={() => removeItem(idx)}
-                            className="text-muted-foreground/40 hover:text-destructive">
-                            <Trash2 size={14} />
-                          </button>
-                        </td>
+
+            {groups.map((group, gIdx) => (
+              <div key={gIdx} className="border rounded-lg overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 border-b bg-muted/40">
+                  <Label className="shrink-0 text-xs text-muted-foreground">
+                    {t("page.goodsRequest.edit.table.supplier")}
+                  </Label>
+                  <div className="flex-1 min-w-[220px]">
+                    <Combobox
+                      options={supplierOptions}
+                      value={group.supplier ? String(group.supplier) : ""}
+                      onChange={(val) => pickGroupSupplier(gIdx, val)}
+                      placeholder={t("page.goodsRequest.edit.placeholder.selectSupplier")}
+                      searchPlaceholder={t("common.search")}
+                      emptyMessage={t("page.goodsRequest.edit.table.noSupplier")}
+                      disabled={suppliersLoading}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeGroup(gIdx)}
+                    disabled={groups.length === 1}>
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm min-w-[760px]">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsRequest.edit.table.name")}
+                        </th>
+                        <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsRequest.edit.table.qty")}
+                        </th>
+                        <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsRequest.edit.table.unit")}
+                        </th>
+                        <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                          {t("page.goodsRequest.edit.table.notes")}
+                        </th>
+                        <th className="w-10"></th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1">
-              <Plus size={14} /> {t("page.goodsRequest.edit.form.addItem")}
+                    </thead>
+                    <tbody>
+                      {group.items.map((item, iIdx) => (
+                        <tr key={iIdx} className="border-b border-muted/20">
+                          <td className="px-3 py-2 min-w-[280px]">
+                            <Combobox
+                              options={itemOptionsForRow(gIdx, iIdx, group.supplier)}
+                              value={selectedItemValue(item, group.supplier)}
+                              onChange={(val) => pickItemOption(gIdx, iIdx, val)}
+                              placeholder={t("page.goodsRequest.edit.placeholder.selectItem")}
+                              searchPlaceholder={t("common.search")}
+                              emptyMessage={t("page.goodsRequest.edit.table.noItem")}
+                              disabled={!group.supplier}
+                            />
+                            {item.name && !selectedItemValue(item, group.supplier) && (
+                              <p className="text-[10px] text-muted-foreground mt-1 truncate">
+                                {item.name}
+                              </p>
+                            )}
+                          </td>
+                          <td className="px-3 py-2">
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              value={item.qty === 0 ? "" : String(item.qty)}
+                              onChange={(e) =>
+                                updateItem(
+                                  gIdx,
+                                  iIdx,
+                                  "qty",
+                                  Number(e.target.value.replace(/[^0-9]/g, "")) || 0
+                                )
+                              }
+                              className="h-8 text-xs text-center w-20 mx-auto"
+                              placeholder="0"
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <div className="flex justify-center">
+                              <Combobox
+                                options={unitOptions}
+                                value={item.unit}
+                                onChange={(val) => updateItem(gIdx, iIdx, "unit", val)}
+                                placeholder="pcs"
+                                searchPlaceholder={t("common.search")}
+                              />
+                            </div>
+                          </td>
+                          <td className="px-3 py-2">
+                            <Input
+                              value={item.notes}
+                              onChange={(e) => updateItem(gIdx, iIdx, "notes", e.target.value)}
+                              className="h-8 text-xs"
+                              placeholder={t("page.goodsRequest.edit.placeholder.notes")}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            <button
+                              type="button"
+                              onClick={() => removeItem(gIdx, iIdx)}
+                              className="text-muted-foreground/40 hover:text-destructive">
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="p-3 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addItem(gIdx)}
+                    className="gap-1">
+                    <Plus size={14} /> {t("page.goodsRequest.edit.form.addItem")}
+                  </Button>
+                </div>
+              </div>
+            ))}
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addGroup}
+              disabled={suppliersLoading}
+              className="gap-1">
+              <Plus size={14} /> {t("page.goodsRequest.edit.form.addSupplier")}
             </Button>
           </div>
 
@@ -407,7 +565,7 @@ const EditGoodsRequest = () => {
             <Button
               type="button"
               className="w-full sm:w-auto justify-center"
-              disabled={isSubmitting || updateMutation.isLoading || items.length === 0}
+              disabled={isSubmitting || updateMutation.isLoading || allItems.length === 0}
               onClick={() => setConfirmModal(true)}>
               <Save size={16} className="mr-1" />{" "}
               {updateMutation.isLoading

@@ -57,6 +57,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import StoreFilter from "@/components/ui/StoreFilter";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -158,6 +159,7 @@ const PurchaseOrderList = () => {
   const [search, setSearch] = useState("");
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState(undefined);
   const [returModal, setReturModal] = useState(false);
   const [returPo, setReturPo] = useState(null);
@@ -254,11 +256,16 @@ const PurchaseOrderList = () => {
   const locationParam = storeFilter !== "all" ? storeFilter : isSuperAdmin ? "" : user?.store || "";
 
   const isFiltered =
-    storeFilter !== "all" || statusFilter !== "all" || !!dateFilter || search !== "";
+    storeFilter !== "all" ||
+    statusFilter !== "all" ||
+    sourceFilter !== "all" ||
+    !!dateFilter ||
+    search !== "";
 
   const resetFilters = () => {
     setGlobalStoreFilter("all");
     setStatusFilter("all");
+    setSourceFilter("all");
     setDateFilter(undefined);
     setSearch("");
     setPage(1);
@@ -269,9 +276,16 @@ const PurchaseOrderList = () => {
   });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["purchase-orders", page, limit, search, storeFilter, statusFilter],
+    ["purchase-orders", page, limit, search, storeFilter, statusFilter, sourceFilter],
     () =>
-      getAllPurchaseOrder({ location: locationParam, page, limit, search, status: statusFilter }),
+      getAllPurchaseOrder({
+        location: locationParam,
+        page,
+        limit,
+        search,
+        status: statusFilter,
+        source: sourceFilter
+      }),
     { keepPreviousData: true }
   );
 
@@ -456,6 +470,22 @@ const PurchaseOrderList = () => {
           className="font-medium text-foreground truncate block"
           title={po.orderNumber || `PO-${po.id}`}>
           {po.orderNumber || `PO-${po.id}`}
+        </span>
+      )
+    },
+    {
+      header: t("page.purchaseOrder.list.columns.source"),
+      width: 190,
+      render: (po) => (
+        <span
+          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium border whitespace-nowrap ${
+            po.isFromGoodsRequest
+              ? "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-800"
+              : "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-900/40 dark:text-gray-400 dark:border-gray-800"
+          }`}>
+          {po.isFromGoodsRequest
+            ? t("page.purchaseOrder.list.source.fromGoodsRequest")
+            : t("page.purchaseOrder.list.source.manual")}
         </span>
       )
     },
@@ -909,6 +939,21 @@ const PurchaseOrderList = () => {
         </div>
       </div>
 
+      <Tabs
+        value={sourceFilter}
+        onValueChange={(val) => {
+          setSourceFilter(val);
+          setPage(1);
+        }}>
+        <TabsList>
+          <TabsTrigger value="all">{t("page.purchaseOrder.list.tabs.all")}</TabsTrigger>
+          <TabsTrigger value="manual">{t("page.purchaseOrder.list.tabs.manual")}</TabsTrigger>
+          <TabsTrigger value="goods_request">
+            {t("page.purchaseOrder.list.tabs.fromGoodsRequest")}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />
       ) : (
@@ -1112,9 +1157,13 @@ const PurchaseOrderList = () => {
                   renderExpandedRow={(po) => {
                     const items = po.items || [];
                     const supplierMap = {};
+                    const unassignedItems = [];
                     items.forEach((it) => {
                       const sid = it.supplier;
-                      if (!sid) return;
+                      if (!sid) {
+                        unassignedItems.push(it);
+                        return;
+                      }
                       if (!supplierMap[sid]) {
                         supplierMap[sid] = {
                           supplierId: sid,
@@ -1125,6 +1174,13 @@ const PurchaseOrderList = () => {
                       supplierMap[sid].items.push(it);
                     });
                     const suppliers = Object.values(supplierMap);
+                    if (unassignedItems.length > 0) {
+                      suppliers.push({
+                        supplierId: "unassigned",
+                        supplierName: t("page.purchaseOrder.list.unassignedSupplier"),
+                        items: unassignedItems
+                      });
+                    }
 
                     if (suppliers.length === 0) {
                       return (

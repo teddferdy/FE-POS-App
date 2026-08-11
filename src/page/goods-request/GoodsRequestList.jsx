@@ -39,6 +39,7 @@ import { Combobox } from "@/components/ui/combobox";
 import * as XLSX from "xlsx";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
+import { cn } from "@/lib/utils";
 
 const statusMap = {
   pending: {
@@ -298,6 +299,93 @@ const GoodsRequestList = () => {
     }
   ];
 
+  const renderExpandedItems = (row) => {
+    const items = row.items || [];
+    const groups = [];
+    const groupMap = {};
+    for (const it of items) {
+      const sid = it.supplier;
+      const key = sid ? String(sid) : "unassigned";
+      if (!groupMap[key]) {
+        groupMap[key] = {
+          supplierId: key,
+          supplierName: sid
+            ? it.supplierData?.name || `Supplier #${sid}`
+            : t("page.goodsRequest.list.unassignedSupplier"),
+          items: []
+        };
+        groups.push(groupMap[key]);
+      }
+      groupMap[key].items.push(it);
+    }
+
+    if (groups.length === 0) {
+      return (
+        <p className="text-sm text-muted-foreground text-center py-4">
+          {t("page.goodsRequest.list.emptyItems")}
+        </p>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {groups.map((g) => (
+          <div
+            key={g.supplierId}
+            className="border border-border rounded-xl overflow-hidden bg-card">
+            <div className="flex items-center gap-3 px-4 py-3 bg-muted/40 border-b">
+              <span className="font-semibold text-foreground">{g.supplierName}</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                {g.items.length}{" "}
+                {g.items.length > 1
+                  ? t("page.goodsRequest.list.items")
+                  : t("page.goodsRequest.list.item")}
+              </span>
+            </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-blue-950/20">
+                  <th className="text-left px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("page.goodsRequest.list.table.item")}
+                  </th>
+                  <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("page.goodsRequest.list.table.qty")}
+                  </th>
+                  <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("page.goodsRequest.list.table.unit")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40">
+                {g.items.map((it, i) => (
+                  <tr
+                    key={it.id || i}
+                    className={cn(
+                      "transition-colors",
+                      i % 2 === 0
+                        ? "bg-white dark:bg-slate-950"
+                        : "bg-slate-50/50 dark:bg-slate-900/50",
+                      "hover:bg-blue-50/50 dark:hover:bg-blue-950/20"
+                    )}>
+                    <td className="px-4 py-2.5 font-medium text-foreground">
+                      {it.ingredientName || it.productName || "-"}
+                    </td>
+                    <td className="px-4 py-2.5 text-center font-medium text-foreground">
+                      {it.qty || 0}
+                    </td>
+                    <td className="px-4 py-2.5 text-center text-muted-foreground">
+                      {it.unit || "pcs"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const exportData = () => {
     setExportLoading(true);
     try {
@@ -429,6 +517,8 @@ const GoodsRequestList = () => {
                   isLoading={isLoading || isFetching}
                   emptyMessage={t("page.goodsRequest.list.empty")}
                   emptyIcon={FileText}
+                  renderExpandedRow={renderExpandedItems}
+                  getRowCanExpand={(row) => (row.items || []).length > 0}
                   toolbar={
                     <TableToolbar
                       title={t("page.goodsRequest.list.title")}
