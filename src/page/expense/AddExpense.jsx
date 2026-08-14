@@ -1,15 +1,15 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save, ArrowLeft } from "lucide-react";
-import { normalizePayload } from "@/lib/payload-normalizer";
-import { addExpense, getExpenseCategories } from "@/services/expense";
+import { parseSalary } from "@/lib/utils";
+import { addExpense, bulkAddExpenses, getExpenseCategories } from "@/services/expense";
+import { getAllEmployee } from "@/services/employee";
 import { getAllLocation } from "@/services/location";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,13 +33,33 @@ import {
   FormDescription
 } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import Modal from "@/components/organism/modal";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
+import EmployeeSalaryPanel from "@/components/organism/EmployeeSalaryPanel";
 import { useTranslation } from "react-i18next";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
+import { isSalaryCategoryName } from "@/lib/salary-category";
+import {
+  buildSalaryExpensePayloads,
+  buildSingleExpensePayload,
+  createExpenses
+} from "@/lib/expense-payload";
+
+const SectionHeader = ({ step, title, description }) => (
+  <div className="flex items-center gap-3 pt-1">
+    <span className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold shrink-0">
+      {step}
+    </span>
+    <div>
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
+    </div>
+  </div>
+);
 
 const AddExpense = () => {
   const queryClient = useQueryClient();
@@ -58,6 +78,8 @@ const AddExpense = () => {
   const [missingFields, setMissingFields] = useState([]);
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
+  const [selectedSalaryIds, setSelectedSalaryIds] = useState([]);
+  const [salaryBasis, setSalaryBasis] = useState("monthly");
 
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
@@ -67,7 +89,8 @@ const AddExpense = () => {
       categoryId: t("page.expense.add.category"),
       description: t("page.expense.add.description"),
       amount: t("page.expense.add.amount"),
-      date: t("page.expense.add.date")
+      date: t("page.expense.add.date"),
+      employeeId: t("page.expense.form.salary.employee")
     }),
     [t]
   );
@@ -88,6 +111,16 @@ const AddExpense = () => {
     (cat) => cat.status === "active"
   );
 
+  const { data: employeesData, isLoading: employeesLoading } = useQuery(["expense-employees"], () =>
+    getAllEmployee({ page: 1, limit: 100, status: "active" })
+  );
+  const employees = (employeesData?.data || employeesData?.employees || []).filter((emp) => {
+    if (!isSuperAdmin) return true;
+    if (allStores) return true;
+    const storeId = Number(selectedStore[0] || 0);
+    return !storeId || Number(emp.store) === storeId;
+  });
+
   const formSchema = useMemo(
     () =>
       z.object({
@@ -96,7 +129,12 @@ const AddExpense = () => {
         amount: z.coerce.number().min(1, t("page.expense.add.validation.amountRequired")),
         date: z.date({ required_error: t("page.expense.add.validation.dateRequired") }),
         notes: z.string().optional().or(z.literal("")),
-        store: z.string().optional()
+        payee: z.string().optional().or(z.literal("")),
+        employeeId: z.string().optional().or(z.literal("")),
+        paymentMethod: z.enum(["cash", "bank", "e-wallet"]).default("cash"),
+        store: z.string().optional(),
+        frequency: z.enum(["once", "daily", "weekly", "monthly", "yearly"]).default("once"),
+        recurringEndDate: z.date().optional().nullable()
       }),
     [t]
   );
@@ -110,22 +148,82 @@ const AddExpense = () => {
       amount: "",
       date: new Date(),
       notes: "",
-      store: ""
+      payee: "",
+      employeeId: "",
+      paymentMethod: "cash",
+      store: "",
+      frequency: "once",
+      recurringEndDate: undefined
     }
   });
 
-  const createMutation = useMutation(addExpense, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["expenses"]);
-      setSuccessModal(true);
-    },
-    onError: (err) => {
-      setModalMessage(
-        err?.response?.data?.message || err.message || t("page.expense.add.toast.errorDescription")
-      );
-      setErrorModal(true);
+  const watchedCategoryId = form.watch("categoryId");
+  const watchedFrequency = form.watch("frequency");
+  const selectedCategory = categories.find((cat) => String(cat.id) === String(watchedCategoryId));
+  const isSalary = isSalaryCategoryName(selectedCategory?.name);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const salaryOf = (emp) =>
+    salaryBasis === "daily" ? parseSalary(emp.dailySalary) : parseSalary(emp.monthlySalary);
+  const selectedSalaryEmps = employees.filter((e) => selectedSalaryIds.includes(String(e.id)));
+  const totalSalary = selectedSalaryEmps.reduce((sum, e) => sum + salaryOf(e), 0);
+  const hasNoSalaryEmps = selectedSalaryEmps.some((e) => salaryOf(e) <= 0);
+
+  useEffect(() => {
+    if (!isSalary || selectedSalaryEmps.length === 0) {
+      if (!isSalary && selectedSalaryIds.length > 0) setSelectedSalaryIds([]);
+      form.clearErrors(["employeeId", "amount"]);
+      return;
     }
-  });
+    const nextPayee = selectedSalaryEmps
+      .map((e) => e.fullName)
+      .filter(Boolean)
+      .join(", ");
+    const nextDescription = t("page.expense.form.salary.descriptionPrefix");
+    if (form.getValues("payee") !== nextPayee) form.setValue("payee", nextPayee);
+    if (form.getValues("description") !== nextDescription)
+      form.setValue("description", nextDescription);
+    if (form.getValues("frequency") !== "monthly") form.setValue("frequency", "monthly");
+    if (Number(form.getValues("amount")) !== totalSalary) form.setValue("amount", totalSalary);
+    if (hasNoSalaryEmps) {
+      form.setError("amount", { message: t("page.expense.form.salary.employeeNoSalary") });
+    } else {
+      form.clearErrors("amount");
+    }
+  }, [isSalary, selectedSalaryIds, salaryBasis, totalSalary]);
+
+  const handleToggleSalaryEmployee = (empId) => {
+    setSelectedSalaryIds((prev) =>
+      prev.includes(empId) ? prev.filter((id) => id !== empId) : [...prev, empId]
+    );
+    form.clearErrors("employeeId");
+  };
+
+  const handleToggleAllSalary = () => {
+    setSelectedSalaryIds((prev) =>
+      prev.length === employees.length ? [] : employees.map((e) => String(e.id))
+    );
+    form.clearErrors("employeeId");
+  };
+
+  const validateBeforeSave = () => {
+    const data = form.getValues();
+    const missing = getMissingFields(data, formSchema, expenseFieldLabels);
+    if (isSalary && selectedSalaryEmps.length === 0) {
+      form.setError("employeeId", { message: t("page.expense.form.salary.employeeRequired") });
+      missing.push(expenseFieldLabels.employeeId);
+    }
+    if (isSalary && hasNoSalaryEmps) {
+      form.setError("amount", { message: t("page.expense.form.salary.employeeNoSalary") });
+      missing.push(expenseFieldLabels.amount);
+    }
+    if (missing.length > 0) {
+      setMissingFields([...new Set(missing)]);
+      setMissingFieldsModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const onSubmit = (values, saveAsDraft = false) => {
     if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
@@ -138,14 +236,32 @@ const AddExpense = () => {
         ? ""
         : selectedStore[0] || ""
       : cookie?.user?.store || "";
-    const data = {
-      ...Object.fromEntries(Object.entries(values).filter(([_, v]) => v !== "" && v !== undefined)),
+    const base = {
       store: storeValue ? Number(storeValue) : null,
       date: values.date ? format(values.date, "yyyy-MM-dd") : "",
-      status: saveAsDraft ? "draft" : "pending"
+      status: saveAsDraft ? "draft" : "pending",
+      frequency: values.frequency || "once",
+      paymentMethod: values.paymentMethod || "cash",
+      recurringEndDate: values.recurringEndDate ? format(values.recurringEndDate, "yyyy-MM-dd") : ""
     };
-    const payload = normalizePayload(data, { isFormData: false });
-    createMutation.mutate(payload);
+    const payloads = isSalary
+      ? buildSalaryExpensePayloads({ base, values, selectedSalaryEmps, salaryOf })
+      : [buildSingleExpensePayload({ base, values })];
+    setIsSaving(true);
+    createExpenses({ payloads, addExpense, bulkAddExpenses })
+      .then(() => {
+        queryClient.invalidateQueries(["expenses"]);
+        setSuccessModal(true);
+      })
+      .catch((err) => {
+        setModalMessage(
+          err?.response?.data?.message ||
+            err.message ||
+            t("page.expense.add.toast.errorDescription")
+        );
+        setErrorModal(true);
+      })
+      .finally(() => setIsSaving(false));
   };
 
   return (
@@ -231,115 +347,324 @@ const AddExpense = () => {
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="categoryId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t("page.expense.add.category")}{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("page.expense.add.categoryPlaceholder")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.length === 0 ? (
-                              <SelectItem value="__none" disabled>
-                                {t("page.expense.add.noCategories")}
-                              </SelectItem>
-                            ) : (
-                              categories.map((cat) => (
-                                <SelectItem
-                                  key={cat.id || cat._id}
-                                  value={String(cat.id || cat._id)}>
-                                  {cat.name}
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>{t("page.expense.form.categoryHint")}</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+
+                <div className="space-y-6 pt-2">
+                  <SectionHeader
+                    step={1}
+                    title={t("page.expense.form.section.detailTitle")}
+                    description={t("page.expense.form.section.detailDesc")}
                   />
+                  <Separator />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t("page.expense.add.category")}{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={t("page.expense.add.categoryPlaceholder")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories.length === 0 ? (
+                                <SelectItem value="__none" disabled>
+                                  {t("page.expense.add.noCategories")}
+                                </SelectItem>
+                              ) : (
+                                categories.map((cat) => (
+                                  <SelectItem
+                                    key={cat.id || cat._id}
+                                    value={String(cat.id || cat._id)}>
+                                    {cat.name}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>{t("page.expense.form.categoryHint")}</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t("page.expense.add.date")} <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <DatePicker date={field.value} setDate={field.onChange} />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {isSalary && (
+                    <FormField
+                      control={form.control}
+                      name="employeeId"
+                      render={() => (
+                        <FormItem>
+                          <FormControl>
+                            <EmployeeSalaryPanel
+                              employees={employees}
+                              selectedIds={selectedSalaryIds}
+                              onToggle={handleToggleSalaryEmployee}
+                              onToggleAll={handleToggleAllSalary}
+                              salaryBasis={salaryBasis}
+                              onSalaryBasisChange={setSalaryBasis}
+                              t={t}
+                              loading={employeesLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t("page.expense.add.description")}{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <Input
+                            placeholder={
+                              isSalary
+                                ? t("page.expense.form.salary.descriptionPlaceholder")
+                                : t("page.expense.add.descriptionPlaceholder")
+                            }
+                            disabled={isSalary}
+                            {...field}
+                          />
+                          {isSalary && (
+                            <FormDescription>
+                              {t("page.expense.form.salary.descriptionHint")}
+                            </FormDescription>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="amount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t("page.expense.add.amount")}{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                              Rp
+                            </span>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="0"
+                              className="pl-10"
+                              disabled={isSalary}
+                              value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(/[^0-9]/g, "");
+                                field.onChange(raw ? Number(raw) : "");
+                              }}
+                            />
+                          </div>
+                          {isSalary && (
+                            <FormDescription>
+                              {t("page.expense.form.salary.amountHint")}
+                            </FormDescription>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <SectionHeader
+                    step={2}
+                    title={t("page.expense.form.section.paymentTitle")}
+                    description={t("page.expense.form.section.paymentDesc")}
+                  />
+                  <Separator />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="paymentMethod"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.expense.form.paymentMethod")}</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={t("page.expense.form.paymentMethodPlaceholder")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="cash">
+                                {t("page.expense.form.paymentMethodCash")}
+                              </SelectItem>
+                              <SelectItem value="bank">
+                                {t("page.expense.form.paymentMethodBank")}
+                              </SelectItem>
+                              <SelectItem value="e-wallet">
+                                {t("page.expense.form.paymentMethodEWallet")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            {t("page.expense.form.paymentMethodHint")}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="frequency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.expense.form.frequency")}</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            disabled={isSalary}>
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={t("page.expense.form.frequencyPlaceholder")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="once">
+                                {t("page.expense.form.frequencyOnce")}
+                              </SelectItem>
+                              <SelectItem value="daily">
+                                {t("page.expense.form.frequencyDaily")}
+                              </SelectItem>
+                              <SelectItem value="weekly">
+                                {t("page.expense.form.frequencyWeekly")}
+                              </SelectItem>
+                              <SelectItem value="monthly">
+                                {t("page.expense.form.frequencyMonthly")}
+                              </SelectItem>
+                              <SelectItem value="yearly">
+                                {t("page.expense.form.frequencyYearly")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>{t("page.expense.form.frequencyHint")}</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="payee"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.expense.form.payee")}</FormLabel>
+                          <Input
+                            placeholder={t("page.expense.form.payeePlaceholder")}
+                            disabled={isSalary}
+                            {...field}
+                          />
+                          <FormDescription>{t("page.expense.form.payeeHint")}</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {watchedFrequency !== "once" && (
+                      <FormField
+                        control={form.control}
+                        name="recurringEndDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.expense.form.recurringEndDate")}</FormLabel>
+                            <DatePicker date={field.value} setDate={field.onChange} />
+                            <FormDescription>
+                              {t("page.expense.form.recurringEndDateHint")}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                    {!isSalary && (
+                      <FormField
+                        control={form.control}
+                        name="employeeId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.expense.form.employee")}</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={t("page.expense.form.employeePlaceholder")}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {employees.length === 0 ? (
+                                  <SelectItem value="__none" disabled>
+                                    {t("page.expense.form.employeeEmpty")}
+                                  </SelectItem>
+                                ) : (
+                                  employees.map((emp) => (
+                                    <SelectItem key={emp.id} value={String(emp.id)}>
+                                      {emp.fullName}
+                                    </SelectItem>
+                                  ))
+                                )}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>{t("page.expense.form.employeeHint")}</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
+
+                  <SectionHeader
+                    step={3}
+                    title={t("page.expense.form.section.additionalTitle")}
+                    description={t("page.expense.form.section.additionalDesc")}
+                  />
+                  <Separator />
+
                   <FormField
                     control={form.control}
-                    name="description"
+                    name="notes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          {t("page.expense.add.description")}{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <Input
-                          placeholder={t("page.expense.add.descriptionPlaceholder")}
+                        <FormLabel>{t("page.expense.add.notes")}</FormLabel>
+                        <Textarea
+                          placeholder={t("page.expense.add.notesPlaceholder")}
+                          rows={3}
                           {...field}
                         />
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t("page.expense.add.amount")} <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                            Rp
-                          </span>
-                          <Input
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="0"
-                            className="pl-10"
-                            value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/[^0-9]/g, "");
-                              field.onChange(raw ? Number(raw) : "");
-                            }}
-                          />
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t("page.expense.add.date")} <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <DatePicker date={field.value} setDate={field.onChange} />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("page.expense.add.notes")}</FormLabel>
-                      <Textarea
-                        placeholder={t("page.expense.add.notesPlaceholder")}
-                        rows={3}
-                        {...field}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
                   <Button
                     variant="outline"
@@ -354,25 +679,18 @@ const AddExpense = () => {
                       variant="outline"
                       className="w-full sm:w-auto justify-center"
                       onClick={() => setDraftModal(true)}
-                      disabled={createMutation.isLoading}>
+                      disabled={isSaving}>
                       {t("page.expense.add.saveAsDraft")}
                     </Button>
                     <Button
                       type="button"
-                      disabled={createMutation.isLoading}
+                      disabled={isSaving}
                       onClick={() => {
-                        const data = form.getValues();
-                        const missing = getMissingFields(data, formSchema, expenseFieldLabels);
-                        if (missing.length > 0) {
-                          setMissingFields(missing);
-                          setMissingFieldsModal(true);
-                          return;
-                        }
-                        setSaveConfirm(true);
+                        if (validateBeforeSave()) setSaveConfirm(true);
                       }}
                       className="gap-2 w-full sm:w-auto justify-center">
                       <Save size={18} />
-                      {createMutation.isLoading ? t("button.saving") : t("button.save")}
+                      {isSaving ? t("button.saving") : t("button.save")}
                     </Button>
                   </div>
                 </div>
@@ -395,7 +713,13 @@ const AddExpense = () => {
           open={successModal}
           onOpenChange={setSuccessModal}
           title={t("page.expense.add.successTitle")}
-          description={t("page.expense.add.successDescription")}
+          description={
+            isSalary
+              ? t("page.expense.form.salary.successDescription", {
+                  count: selectedSalaryIds.length
+                })
+              : t("page.expense.add.successDescription")
+          }
           confirmText={t("page.expense.add.successConfirm")}
           onConfirm={() => navigate("/expense")}
         />
@@ -437,7 +761,7 @@ const AddExpense = () => {
           onOpenChange={setMissingFieldsModal}
           fields={missingFields}
         />
-        {createMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}
+        {isSaving && <Loading fullscreen size="lg" label={t("button.saving")} />}
       </div>
     </div>
   );

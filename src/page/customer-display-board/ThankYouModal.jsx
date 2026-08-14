@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useEffect, useMemo, useState } from "react";
 import { Check, Clock, PartyPopper, X } from "lucide-react";
 import { useTranslation } from "react-i18next";

@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";

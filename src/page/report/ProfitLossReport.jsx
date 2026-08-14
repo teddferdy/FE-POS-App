@@ -60,8 +60,18 @@ const ProfitLossReport = () => {
       color: "text-purple-600"
     },
     {
+      labelKey: "page.report.profitLoss.card.totalExpense",
+      value: pl.totalExpense,
+      color: "text-rose-600"
+    },
+    {
+      labelKey: "page.report.profitLoss.card.netProfit",
+      value: pl.netProfit,
+      color: "text-green-600"
+    },
+    {
       labelKey: "page.report.profitLoss.card.margin",
-      value: pl.marginPersen != null ? `${pl.marginPersen}%` : null,
+      value: pl.netMarginPersen != null ? `${pl.netMarginPersen}%` : null,
       color: "text-primary"
     }
   ];
@@ -113,7 +123,7 @@ const ProfitLossReport = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {summaryCards.map((card) => (
                 <Card key={card.labelKey}>
                   <CardContent className="p-5">

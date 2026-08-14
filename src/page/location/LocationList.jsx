@@ -148,6 +148,42 @@ const LocationList = () => {
       )
     },
     {
+      header: t("page.location.table.province"),
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground">
+          {loc.provinceName || loc.province || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.location.table.city"),
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground">{loc.cityName || loc.city || "-"}</span>
+      )
+    },
+    {
+      header: t("page.location.table.district"),
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground">
+          {loc.districtName || loc.district || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.location.table.village"),
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground">
+          {loc.villageName || loc.village || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.location.table.postalCode"),
+      render: (loc) => (
+        <span className="font-mono text-xs text-foreground">{loc.postalCode || "-"}</span>
+      )
+    },
+    {
       header: t("page.location.table.phoneNumber"),
       render: (loc) => (
         <span className="font-mono text-xs text-foreground">

@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React from "react";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import { Skeleton } from "@/components/ui/skeleton";

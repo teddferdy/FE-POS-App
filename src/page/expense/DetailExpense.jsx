@@ -1,13 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useQuery } from "react-query";
-import { ArrowLeft, Tag, User, Calendar, FileText, CreditCard, Receipt, Edit3 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import {
+  ArrowLeft,
+  Tag,
+  User,
+  Calendar,
+  FileText,
+  CreditCard,
+  Receipt,
+  Edit3,
+  Wallet,
+  BadgeCheck,
+  Building2,
+  MapPin,
+  Hash,
+  CircleDollarSign,
+  History,
+  XCircle
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { getExpenseById } from "@/services/expense";
+import { toast } from "sonner";
+import { getExpenseById, markExpensePaid, markExpenseUnpaid } from "@/services/expense";
+import { getEmployeeById } from "@/services/employee";
+import { parseSalary } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import AbortController from "@/components/organism/abort-controller";
+import Modal from "@/components/organism/modal";
+import { isSalaryCategoryName } from "@/lib/salary-category";
 
 const statusBadge = {
   draft: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
@@ -34,11 +67,37 @@ const fmtDate = (date) =>
       })
     : "-";
 
+const fmtRp = (val) => {
+  const n = parseSalary(val);
+  return n > 0 ? `Rp ${n.toLocaleString("id-ID")}` : "-";
+};
+
+const DetailRow = ({ icon: Icon, label, value }) => (
+  <div className="flex items-start gap-2.5">
+    <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center shrink-0">
+      <Icon size={14} />
+    </div>
+    <div className="min-w-0">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+        {label}
+      </p>
+      <p className="text-sm font-medium text-foreground truncate">{value || "-"}</p>
+    </div>
+  </div>
+);
+
 const DetailExpense = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
+  const [paidModal, setPaidModal] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({
+    paymentDate: "",
+    paymentMethod: "cash",
+    note: ""
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["expense", id],
@@ -46,9 +105,68 @@ const DetailExpense = () => {
     { enabled: !!id }
   );
 
-  if (isError) return <AbortController refetch={refetch} />;
-
   const item = data?.data;
+
+  const paidMutation = useMutation(
+    ({ expenseId, payload }) => markExpensePaid(expenseId, payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["expense", id]);
+        toast.success(t("page.expense.detail.toast.paidSuccess"), {
+          description: t("page.expense.detail.toast.paidDescription")
+        });
+      },
+      onError: (err) => {
+        toast.error(t("page.expense.list.toast.error"), {
+          description: err?.response?.data?.message || err.message
+        });
+      }
+    }
+  );
+
+  const unpaidMutation = useMutation(markExpenseUnpaid, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["expense", id]);
+      toast.success(t("page.expense.detail.toast.unpaidSuccess"), {
+        description: t("page.expense.detail.toast.unpaidDescription")
+      });
+    },
+    onError: (err) => {
+      toast.error(t("page.expense.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
+
+  const openPaidModal = () => {
+    setPaymentForm({
+      paymentDate: new Date().toISOString().slice(0, 10),
+      paymentMethod: item?.paymentMethod || "cash",
+      note: ""
+    });
+    setPaidModal(true);
+  };
+
+  const handleMarkPaid = () => {
+    paidMutation.mutate({
+      expenseId: id,
+      payload: {
+        paymentDate: paymentForm.paymentDate,
+        paymentMethod: paymentForm.paymentMethod || item?.paymentMethod || "cash",
+        note: paymentForm.note || null
+      }
+    });
+  };
+
+  const { data: employeeData, isLoading: employeeLoading } = useQuery(
+    ["expense-employee-detail", item?.employeeId],
+    () => getEmployeeById({ id: item.employeeId }),
+    { enabled: !!item?.employeeId }
+  );
+  const employeeDetail = employeeData?.data;
+  const isSalary = isSalaryCategoryName(item?.categoryData?.name);
+
+  if (isError) return <AbortController refetch={refetch} />;
 
   return (
     <div>
@@ -189,6 +307,24 @@ const DetailExpense = () => {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.expense.detail.payee")}
+                    </p>
+                    <p className="text-sm font-medium flex items-center gap-1">
+                      <User size={14} className="text-muted-foreground" />
+                      {item.payee || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.expense.detail.employee")}
+                    </p>
+                    <p className="text-sm font-medium flex items-center gap-1">
+                      <User size={14} className="text-muted-foreground" />
+                      {item.employee?.fullName || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                       {t("page.expense.detail.date")}
                     </p>
                     <p className="text-sm font-medium flex items-center gap-1">
@@ -198,6 +334,106 @@ const DetailExpense = () => {
                   </div>
                 </div>
               </div>
+
+              {item.employeeId && (
+                <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                  <div className="flex items-center gap-2 mb-5">
+                    <Wallet size={16} className="text-primary" />
+                    <h3 className="text-base font-semibold text-foreground">
+                      {isSalary
+                        ? t("page.expense.detail.salaryTitle")
+                        : t("page.expense.detail.employeeTitle")}
+                    </h3>
+                    {isSalary && (
+                      <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-primary/10 text-primary">
+                        {t("page.expense.form.salary.badge")}
+                      </span>
+                    )}
+                  </div>
+
+                  {employeeLoading ? (
+                    <div className="space-y-3">
+                      <Skeleton className="h-12 w-full rounded-lg" />
+                      <div className="grid grid-cols-2 gap-3">
+                        <Skeleton className="h-16 rounded-lg" />
+                        <Skeleton className="h-16 rounded-lg" />
+                      </div>
+                    </div>
+                  ) : employeeDetail ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-11 w-11">
+                          {employeeDetail.image ? (
+                            <AvatarImage src={employeeDetail.image} alt={employeeDetail.fullName} />
+                          ) : null}
+                          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                            {(employeeDetail.fullName || "K").slice(0, 1).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {employeeDetail.fullName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {employeeDetail.employeeID ||
+                              t("page.expense.detail.employeeId") + ` #${employeeDetail.id}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <DetailRow
+                          icon={BadgeCheck}
+                          label={t("page.expense.form.salary.position")}
+                          value={employeeDetail.positionData?.name}
+                        />
+                        <DetailRow
+                          icon={Building2}
+                          label={t("page.expense.form.salary.department")}
+                          value={employeeDetail.departmentData?.name}
+                        />
+                        <DetailRow
+                          icon={MapPin}
+                          label={t("page.expense.form.salary.store")}
+                          value={employeeDetail.storeData?.name}
+                        />
+                        <DetailRow
+                          icon={Hash}
+                          label={t("page.expense.form.salary.employeeId")}
+                          value={employeeDetail.employeeID}
+                        />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+                          <CircleDollarSign size={12} />
+                          {t("page.expense.form.salary.salaryInfo")}
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="rounded-lg border border-primary/40 bg-primary/5 p-3">
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                              {t("page.expense.form.salary.monthlySalary")}
+                            </p>
+                            <p className="text-base font-bold text-primary">
+                              {fmtRp(employeeDetail.monthlySalary)}
+                            </p>
+                          </div>
+                          <div className="rounded-lg border border-border bg-background p-3">
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                              {t("page.expense.form.salary.dailySalary")}
+                            </p>
+                            <p className="text-base font-bold text-foreground">
+                              {fmtRp(employeeDetail.dailySalary)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {item.employee?.fullName || "-"}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {item.notes && (
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -220,6 +456,55 @@ const DetailExpense = () => {
                   />
                 </div>
               )}
+
+              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <History size={16} className="text-primary" />
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.expense.detail.paymentLogTitle")}
+                  </h3>
+                  {item.isPaid && (
+                    <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-teal-100 text-teal-700">
+                      {t("page.expense.list.statusPaid")}
+                    </span>
+                  )}
+                </div>
+
+                {item.payments?.length > 0 ? (
+                  <div className="space-y-3">
+                    {item.payments.map((p) => (
+                      <div
+                        key={p.id}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-foreground">{fmtRp(p.amount)}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {fmtDate(p.paymentDate)}
+                          </p>
+                          {p.note && (
+                            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                              {p.note}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 text-purple-700 capitalize">
+                            {p.paymentMethod || "-"}
+                          </span>
+                          <p className="text-[11px] text-muted-foreground mt-1">
+                            {t("page.expense.detail.paymentBy")}{" "}
+                            {p.createdByUser?.fullName || p.createdByUser?.userName || "-"}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {t("page.expense.detail.paymentLogEmpty")}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-6">
@@ -257,9 +542,32 @@ const DetailExpense = () => {
                   {t("page.expense.detail.actions")}
                 </h3>
                 <div className="space-y-3">
+                  {item.status === "approved" && (
+                    <>
+                      {item.isPaid ? (
+                        <Button
+                          className="w-full"
+                          variant="outline"
+                          disabled={unpaidMutation.isLoading}
+                          onClick={() => unpaidMutation.mutate(id)}>
+                          <XCircle size={14} className="mr-1.5" />
+                          {t("page.expense.detail.markUnpaidBtn")}
+                        </Button>
+                      ) : (
+                        <Button
+                          className="w-full"
+                          variant="default"
+                          disabled={paidMutation.isLoading}
+                          onClick={openPaidModal}>
+                          <BadgeCheck size={14} className="mr-1.5" />
+                          {t("page.expense.detail.markPaidBtn")}
+                        </Button>
+                      )}
+                    </>
+                  )}
                   <Button
                     className="w-full"
-                    variant="default"
+                    variant="outline"
                     onClick={() => navigate(`/edit-expense?id=${item.id}`)}>
                     {t("page.expense.detail.editBtn")}
                   </Button>
@@ -274,6 +582,58 @@ const DetailExpense = () => {
             </div>
           </div>
         )}
+
+        <Modal
+          open={paidModal}
+          onOpenChange={(v) => {
+            if (!v) setPaidModal(false);
+          }}
+          type="form"
+          title={t("page.expense.detail.paymentFormTitle")}
+          description={t("page.expense.detail.paymentFormDesc")}
+          confirmText={t("page.expense.detail.paymentFormSubmit")}
+          loading={paidMutation.isLoading}
+          onConfirm={handleMarkPaid}
+          onCancel={() => setPaidModal(false)}>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="payment-date">{t("page.expense.detail.paymentFormDate")}</Label>
+              <Input
+                id="payment-date"
+                type="date"
+                value={paymentForm.paymentDate}
+                onChange={(e) => setPaymentForm((f) => ({ ...f, paymentDate: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("page.expense.detail.paymentFormMethod")}</Label>
+              <Select
+                value={paymentForm.paymentMethod}
+                onValueChange={(v) => setPaymentForm((f) => ({ ...f, paymentMethod: v }))}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t("page.expense.form.paymentMethodPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">{t("page.expense.form.paymentMethodCash")}</SelectItem>
+                  <SelectItem value="bank">{t("page.expense.form.paymentMethodBank")}</SelectItem>
+                  <SelectItem value="e-wallet">
+                    {t("page.expense.form.paymentMethodEWallet")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="payment-note">{t("page.expense.detail.paymentFormNote")}</Label>
+              <Textarea
+                id="payment-note"
+                rows={3}
+                placeholder={t("page.expense.detail.paymentFormNotePlaceholder")}
+                value={paymentForm.note}
+                onChange={(e) => setPaymentForm((f) => ({ ...f, note: e.target.value }))}
+              />
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );

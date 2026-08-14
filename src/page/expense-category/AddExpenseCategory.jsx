@@ -1,17 +1,33 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { X, Save, Check, ArrowLeft } from "lucide-react";
+import { useCookies } from "react-cookie";
 import { addExpenseCategory } from "@/services/expense";
+import { getAccounts } from "@/services/accounting";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
@@ -22,6 +38,9 @@ const AddExpenseCategory = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const store = user?.store || "";
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
@@ -30,6 +49,27 @@ const AddExpenseCategory = () => {
   const [missingFields, setMissingFields] = useState([]);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+
+  const { data: accountsData } = useQuery(
+    ["accounts", store],
+    () => getAccounts(store || undefined),
+    {
+      staleTime: 300000
+    }
+  );
+  const accounts = accountsData?.data || [];
+  const expenseAccounts = accounts.filter((acc) => acc.type === "expense");
+
+  const accountOptions = useMemo(() => {
+    const opts = expenseAccounts.map((acc) => ({
+      value: String(acc.code),
+      label: `${acc.code} - ${acc.name}`
+    }));
+    if (!expenseAccounts.some((acc) => String(acc.code) === "6000")) {
+      opts.push({ value: "6000", label: "6000 - Operating Expenses" });
+    }
+    return opts;
+  }, [expenseAccounts]);
 
   const expenseCategoryFieldLabels = useMemo(
     () => ({
@@ -42,6 +82,7 @@ const AddExpenseCategory = () => {
   const formSchema = z.object({
     name: z.string().min(1, t("page.expenseCategory.add.validation.nameRequired")),
     description: z.string().optional().or(z.literal("")),
+    accountCode: z.string().optional().or(z.literal("")),
     isActive: z.boolean()
   });
 
@@ -51,6 +92,7 @@ const AddExpenseCategory = () => {
     defaultValues: {
       name: "",
       description: "",
+      accountCode: "",
       isActive: true
     }
   });
@@ -74,6 +116,7 @@ const AddExpenseCategory = () => {
     createMutation.mutate({
       name: values.name,
       description: values.description,
+      accountCode: values.accountCode || "",
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
     });
   };
@@ -147,6 +190,36 @@ const AddExpenseCategory = () => {
                         rows={3}
                         {...field}
                       />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="accountCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.expenseCategory.form.accountCode")}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={t("page.expenseCategory.form.accountCodePlaceholder")}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none" disabled>
+                            {t("page.expenseCategory.form.accountCodePlaceholder")}
+                          </SelectItem>
+                          {accountOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        {t("page.expenseCategory.form.accountCodeHint")}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

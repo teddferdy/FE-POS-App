@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { useCookies } from "react-cookie";
 import { useQueryClient } from "react-query";

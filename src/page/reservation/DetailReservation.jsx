@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";

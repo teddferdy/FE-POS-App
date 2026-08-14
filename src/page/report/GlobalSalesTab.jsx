@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useMemo } from "react";
 import { formatCurrency, formatNumber, periods } from "@/utils/reportUtils";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-empty */
-/* eslint-disable react/prop-types */
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronRight, Loader } from "lucide-react";

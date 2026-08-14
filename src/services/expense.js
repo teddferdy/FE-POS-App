@@ -31,6 +31,7 @@ export const getAllExpenses = async (payload) => {
   if (payload?.limit) params.append("limit", payload.limit);
   if (payload?.search) params.append("search", payload.search);
   if (payload?.status) params.append("status", payload.status);
+  if (payload?.categoryId) params.append("categoryId", payload.categoryId);
   if (payload?.startDate) params.append("startDate", payload.startDate);
   if (payload?.endDate) params.append("endDate", payload.endDate);
   const { data, status } = await axiosInstance.get(`/expense/get-all?${params}`);
@@ -40,6 +41,12 @@ export const getAllExpenses = async (payload) => {
 
 export const addExpense = async (payload) => {
   const { data, status } = await axiosInstance.post("/expense/add", payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const bulkAddExpenses = async (items) => {
+  const { data, status } = await axiosInstance.post("/expense/bulk-create", { items });
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
@@ -79,5 +86,34 @@ export const deleteExpense = async (id) => {
 export const rejectExpense = async (id) => {
   const { data, status } = await axiosInstance.put(`/expense/reject/${id}`);
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const generateSalaryExpenses = async (payload) => {
+  const { data, status } = await axiosInstance.post("/expense/generate-salary", payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const markExpensePaid = async (id, payload = {}) => {
+  const { data, status } = await axiosInstance.put(`/expense/mark-paid/${id}`, payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const markExpenseUnpaid = async (id) => {
+  const { data, status } = await axiosInstance.put(`/expense/mark-unpaid/${id}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getUpcomingPayments = async (payload = {}) => {
+  const params = new URLSearchParams();
+  if (payload?.location) params.append("store", payload.location);
+  if (payload?.days) params.append("days", payload.days);
+  const { data, status } = await axiosInstance.get(
+    `/expense/upcoming-payments${params.toString() ? `?${params}` : ""}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

@@ -112,6 +112,14 @@ const ExpenseCategoryList = () => {
       )
     },
     {
+      header: t("page.expenseCategory.list.accountCode"),
+      render: (row) => (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-medium bg-primary/10 text-primary">
+          {row.accountCode || "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.expenseCategory.list.status"),
       render: (row) => (
         <span

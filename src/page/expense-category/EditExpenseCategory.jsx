@@ -8,11 +8,26 @@ import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { X, Save, Check } from "lucide-react";
 import { getExpenseCategories, editExpenseCategory } from "@/services/expense";
+import { getAccounts } from "@/services/accounting";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -26,6 +41,7 @@ const EditExpenseCategory = () => {
   const formSchema = z.object({
     name: z.string().min(1, t("page.expenseCategory.add.validation.nameRequired")),
     description: z.string().optional().or(z.literal("")),
+    accountCode: z.string().optional().or(z.literal("")),
     isActive: z.boolean()
   });
   const navigate = useNavigate();
@@ -60,6 +76,27 @@ const EditExpenseCategory = () => {
     }
   );
 
+  const { data: accountsData } = useQuery(
+    ["accounts", store],
+    () => getAccounts(store || undefined),
+    {
+      staleTime: 300000
+    }
+  );
+  const accounts = accountsData?.data || [];
+  const expenseAccounts = accounts.filter((acc) => acc.type === "expense");
+
+  const accountOptions = useMemo(() => {
+    const opts = expenseAccounts.map((acc) => ({
+      value: String(acc.code),
+      label: `${acc.code} - ${acc.name}`
+    }));
+    if (!expenseAccounts.some((acc) => String(acc.code) === "6000")) {
+      opts.push({ value: "6000", label: "6000 - Operating Expenses" });
+    }
+    return opts;
+  }, [expenseAccounts]);
+
   const categoryItem = useMemo(() => {
     if (!data) return {};
     const list = data?.data || data || [];
@@ -72,6 +109,7 @@ const EditExpenseCategory = () => {
     defaultValues: {
       name: "",
       description: "",
+      accountCode: "",
       isActive: true
     }
   });
@@ -81,6 +119,7 @@ const EditExpenseCategory = () => {
       form.reset({
         name: categoryItem.name || "",
         description: categoryItem.description || "",
+        accountCode: categoryItem.accountCode || "",
         isActive: categoryItem.status === "active"
       });
     }
@@ -104,6 +143,7 @@ const EditExpenseCategory = () => {
       id,
       name: values.name,
       description: values.description,
+      accountCode: values.accountCode || "",
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
     });
   };
@@ -185,6 +225,36 @@ const EditExpenseCategory = () => {
                         rows={3}
                         {...field}
                       />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="accountCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.expenseCategory.form.accountCode")}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={t("page.expenseCategory.form.accountCodePlaceholder")}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none" disabled>
+                            {t("page.expenseCategory.form.accountCodePlaceholder")}
+                          </SelectItem>
+                          {accountOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        {t("page.expenseCategory.form.accountCodeHint")}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

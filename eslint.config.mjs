@@ -11,7 +11,8 @@ export default [
     languageOptions: { globals: globals.browser },
     settings: { react: { version: "detect" } },
     rules: {
-      "prettier/prettier": "error"
+      "prettier/prettier": "error",
+      "react/prop-types": "off"
     }
   },
   {
@@ -22,7 +23,8 @@ export default [
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
     rules: {
-      "react/react-in-jsx-scope": "off"
+      "react/react-in-jsx-scope": "off",
+      "react/prop-types": "off"
     }
   },
   pluginPrettier

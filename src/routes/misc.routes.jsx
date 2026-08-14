@@ -5,6 +5,7 @@ import { RequireRole } from "@/components/ui/RequireRole";
 
 // Dashboard
 const Dashboard = React.lazy(() => import("@/page/dashboard"));
+const DashboardSuperAdmin = React.lazy(() => import("@/page/dashboard-super-admin"));
 
 // Kitchen Display & QR Order Management
 const KitchenDisplay = React.lazy(() => import("@/page/kitchen-display"));
@@ -29,7 +30,7 @@ export const miscRoutes = (
       path="/dashboard-super-admin"
       element={
         <RequireRole roles={["super_admin"]}>
-          <Dashboard />
+          <DashboardSuperAdmin />
         </RequireRole>
       }
     />

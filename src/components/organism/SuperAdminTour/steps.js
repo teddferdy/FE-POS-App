@@ -50,7 +50,6 @@ import {
   ArrowRightLeft,
   BadgePercent,
   Table,
-  Notebook,
   Monitor,
   BellDot,
   MapPinned
