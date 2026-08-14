@@ -36,17 +36,21 @@ const PROD_STATUS = {
   }
 };
 
+const STATUS_KEYS = ["draft", "planned", "in_progress", "completed", "cancelled"];
+
 const OperationsSection = ({ operations }) => {
   const lowStock = operations?.lowStockItems || [];
   const production = operations?.production || {};
   const register = operations?.cashRegister || { open: 0, closed: 0 };
 
-  const prodSummary = ["draft", "planned", "in_progress", "completed", "cancelled"]
-    .filter((s) => {
-      if (!Object.prototype.hasOwnProperty.call(production, s)) return false;
-      return production[s] > 0; // nosemgrep: generic-object-injection-sink - key from static allowlist, guarded by hasOwnProperty
-    })
-    .map((s) => ({ status: s, ...safeGet(PROD_STATUS, s, {}) }));
+  const statusCounts = new Map(
+    Object.entries(production).filter(([key]) => STATUS_KEYS.includes(key))
+  );
+  const prodSummary = STATUS_KEYS.map((s) => ({
+    status: s,
+    count: statusCounts.get(s) || 0,
+    ...safeGet(PROD_STATUS, s, {})
+  })).filter((item) => item.count > 0);
 
   return (
     <SectionCard
@@ -103,7 +107,7 @@ const OperationsSection = ({ operations }) => {
               <span
                 key={s.status}
                 className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${s.bg} ${s.color}`}>
-                {s.label}: {production[s.status]}
+                {s.label}: {s.count}
               </span>
             ))}
           </div>
