@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 "use client";
 import * as React from "react";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";

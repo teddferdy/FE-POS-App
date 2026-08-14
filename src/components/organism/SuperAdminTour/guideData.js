@@ -37,7 +37,6 @@ import {
   KeyRound,
   LayoutGrid,
   Monitor,
-  Notebook,
   BellDot,
   UserCog,
   MapPinned

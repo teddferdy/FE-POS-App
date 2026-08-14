@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React from "react";
 import {
   Package,
@@ -11,7 +10,7 @@ import {
 } from "lucide-react";
 import SectionCard from "./SectionCard";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
-import { hasOwn, safeGet } from "@/lib/safe-lookup";
+import { safeGet } from "@/lib/safe-lookup";
 
 const PROD_STATUS = {
   draft: { label: "Draft", color: "text-muted-foreground", bg: "bg-muted" },
@@ -43,7 +42,7 @@ const OperationsSection = ({ operations }) => {
   const register = operations?.cashRegister || { open: 0, closed: 0 };
 
   const prodSummary = ["draft", "planned", "in_progress", "completed", "cancelled"]
-    .filter((s) => hasOwn(production, s) && production[s] > 0)
+    .filter((s) => Object.prototype.hasOwnProperty.call(production, s) && production[s] > 0)
     .map((s) => ({ status: s, ...safeGet(PROD_STATUS, s, {}) }));
 
   return (

@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
 import React, { useState, useEffect, useRef } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -122,30 +121,33 @@ const StoreSelector = ({ cookie, setCookie }) => {
                 className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2.5 text-[9px] sm:text-sm transition-colors hover:bg-accent ${
                   !activeStoreId ? "bg-primary/10 text-primary font-medium" : "text-foreground"
                 }`}>
-                <Globe size={14} className={!activeStoreId ? "text-primary" : "text-muted-foreground"} />
+                <Globe
+                  size={14}
+                  className={!activeStoreId ? "text-primary" : "text-muted-foreground"}
+                />
                 <span className="truncate flex-1 text-left">{t("header.allStore")}</span>
                 {!activeStoreId && <Check size={12} className="text-primary shrink-0" />}
               </button>
               {locations.map((loc) => {
-              const id = loc.id || loc._id;
-              const name = loc.name || loc.storeName || "";
-              const isSelected = id === activeStoreId;
-              return (
-                <button
-                  key={id}
-                  onClick={() => handleSelect(loc)}
-                  className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2.5 text-[9px] sm:text-sm transition-colors hover:bg-accent ${
-                    isSelected ? "bg-primary/10 text-primary font-medium" : "text-foreground"
-                  }`}>
-                  <Store
-                    size={14}
-                    className={isSelected ? "text-primary" : "text-muted-foreground"}
-                  />
-                  <span className="truncate flex-1 text-left">{name}</span>
-                  {isSelected && <Check size={12} className="text-primary shrink-0" />}
-                </button>
-              );
-            })}
+                const id = loc.id || loc._id;
+                const name = loc.name || loc.storeName || "";
+                const isSelected = id === activeStoreId;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => handleSelect(loc)}
+                    className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2.5 text-[9px] sm:text-sm transition-colors hover:bg-accent ${
+                      isSelected ? "bg-primary/10 text-primary font-medium" : "text-foreground"
+                    }`}>
+                    <Store
+                      size={14}
+                      className={isSelected ? "text-primary" : "text-muted-foreground"}
+                    />
+                    <span className="truncate flex-1 text-left">{name}</span>
+                    {isSelected && <Check size={12} className="text-primary shrink-0" />}
+                  </button>
+                );
+              })}
             </>
           )}
         </div>

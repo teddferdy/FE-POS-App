@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React from "react";
 import { Wallet, ArrowDownRight, Building2, CalendarClock } from "lucide-react";
 import {

@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Lightbulb, Info, AlertTriangle, X } from "lucide-react";

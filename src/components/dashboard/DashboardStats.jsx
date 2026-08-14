@@ -1,11 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  Users
-} from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Users } from "lucide-react";
 
 const DashboardStats = ({ summaryCards }) => {
   const navigate = useNavigate();

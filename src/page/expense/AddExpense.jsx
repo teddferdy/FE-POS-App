@@ -1,11 +1,10 @@
-/* eslint-disable no-unused-vars, react/prop-types */
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save, ArrowLeft } from "lucide-react";
 import { parseSalary } from "@/lib/utils";

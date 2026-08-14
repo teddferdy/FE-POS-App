@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React from "react";
 import { Users, Crown, TrendingUp, Phone } from "lucide-react";
 import SectionCard from "./SectionCard";

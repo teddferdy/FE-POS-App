@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";

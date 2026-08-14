@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 const variantStyles = {

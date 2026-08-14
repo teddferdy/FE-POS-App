@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
