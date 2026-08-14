@@ -45,6 +45,12 @@ export const addExpense = async (payload) => {
   return data;
 };
 
+export const bulkAddExpenses = async (items) => {
+  const { data, status } = await axiosInstance.post("/expense/bulk-create", { items });
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
 export const editExpense = async (payload) => {
   const { data, status } = await axiosInstance.put(`/expense/edit/${payload.id}`, payload);
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);

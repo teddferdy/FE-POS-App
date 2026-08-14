@@ -48,6 +48,7 @@ import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
+import { safeGet } from "@/lib/safe-lookup";
 
 const ExpenseList = () => {
   const { t } = useTranslation();
@@ -264,7 +265,7 @@ const ExpenseList = () => {
       bank: t("page.expense.form.paymentMethodBank"),
       "e-wallet": t("page.expense.form.paymentMethodEWallet")
     };
-    return labels[method] || method || "-";
+    return safeGet(labels, method, method || "-");
   };
 
   const getStatusBadge = (status) => {

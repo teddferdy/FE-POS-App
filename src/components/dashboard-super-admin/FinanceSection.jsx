@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import SectionCard from "./SectionCard";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
+import { safeGet } from "@/lib/safe-lookup";
 
 const fmtShort = (val) => {
   if (val >= 1000000) return `Rp${(val / 1000000).toFixed(1)}Jt`;
@@ -90,7 +91,7 @@ const FinanceSection = ({ finance, summary }) => {
                         outflow: "Pengeluaran",
                         net: "Selisih"
                       };
-                      return [formatCurrencyRupiah(value), labels[name] || name];
+                      return [formatCurrencyRupiah(value), safeGet(labels, name, name)];
                     }}
                   />
                   <Legend wrapperStyle={{ fontSize: "12px" }} />

@@ -42,8 +42,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
-
-const isSalaryCategoryName = (name) => /gaji|salary|upah|wage/i.test(name || "");
+import { isSalaryCategoryName } from "@/lib/salary-category";
 
 const SectionHeader = ({ step, title, description }) => (
   <div className="flex items-center gap-3 pt-1">
@@ -216,9 +215,7 @@ const EditExpense = () => {
   }, [isSalary, selectedSalaryIds, salaryBasis, totalSalary]);
 
   const handleToggleSalaryEmployee = (empId) => {
-    setSelectedSalaryIds((prev) =>
-      prev.includes(empId) ? prev.filter((id) => id !== empId) : [...prev, empId]
-    );
+    setSelectedSalaryIds((prev) => (prev.includes(empId) ? [] : [empId]));
     form.clearErrors("employeeId");
   };
 
@@ -388,6 +385,7 @@ const EditExpense = () => {
                             onToggleAll={handleToggleAllSalary}
                             salaryBasis={salaryBasis}
                             onSalaryBasisChange={setSalaryBasis}
+                            singleSelect
                             t={t}
                             loading={employeesLoading}
                           />

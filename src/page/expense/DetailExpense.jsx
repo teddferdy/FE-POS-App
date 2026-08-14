@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
+import { isSalaryCategoryName } from "@/lib/salary-category";
 
 const statusBadge = {
   draft: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
@@ -66,8 +67,6 @@ const fmtDate = (date) =>
         minute: "2-digit"
       })
     : "-";
-
-const isSalaryCategoryName = (name) => /gaji|salary|upah|wage/i.test(name || "");
 
 const fmtRp = (val) => {
   const n = parseSalary(val);

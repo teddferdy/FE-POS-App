@@ -8,9 +8,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save, ArrowLeft } from "lucide-react";
-import { normalizePayload } from "@/lib/payload-normalizer";
 import { parseSalary } from "@/lib/utils";
-import { addExpense, getExpenseCategories } from "@/services/expense";
+import { addExpense, bulkAddExpenses, getExpenseCategories } from "@/services/expense";
 import { getAllEmployee } from "@/services/employee";
 import { getAllLocation } from "@/services/location";
 import { Loading } from "@/components/ui/loading";
@@ -44,8 +43,12 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
-
-const isSalaryCategoryName = (name) => /gaji|salary|upah|wage/i.test(name || "");
+import { isSalaryCategoryName } from "@/lib/salary-category";
+import {
+  buildSalaryExpensePayloads,
+  buildSingleExpensePayload,
+  createExpenses
+} from "@/lib/expense-payload";
 
 const SectionHeader = ({ step, title, description }) => (
   <div className="flex items-center gap-3 pt-1">
@@ -243,36 +246,10 @@ const AddExpense = () => {
       recurringEndDate: values.recurringEndDate ? format(values.recurringEndDate, "yyyy-MM-dd") : ""
     };
     const payloads = isSalary
-      ? selectedSalaryEmps.map((emp) => {
-          const salary = salaryOf(emp);
-          return normalizePayload(
-            {
-              ...base,
-              description: `Gaji ${emp.fullName || ""}`,
-              amount: salary,
-              payee: emp.fullName || "",
-              employeeId: String(emp.id),
-              categoryId: values.categoryId
-            },
-            { isFormData: false }
-          );
-        })
-      : [
-          normalizePayload(
-            {
-              ...base,
-              categoryId: values.categoryId,
-              description: values.description,
-              amount: values.amount,
-              payee: values.payee || "",
-              employeeId: values.employeeId || "",
-              notes: values.notes || ""
-            },
-            { isFormData: false }
-          )
-        ];
+      ? buildSalaryExpensePayloads({ base, values, selectedSalaryEmps, salaryOf })
+      : [buildSingleExpensePayload({ base, values })];
     setIsSaving(true);
-    Promise.all(payloads.map((p) => addExpense(p)))
+    createExpenses({ payloads, addExpense, bulkAddExpenses })
       .then(() => {
         queryClient.invalidateQueries(["expenses"]);
         setSuccessModal(true);

@@ -44,7 +44,8 @@ const EmployeeMultiSelect = ({
   onToggleAll,
   salaryOf,
   t,
-  loading
+  loading,
+  singleSelect = false
 }) => {
   const [open, setOpen] = useState(false);
   const allSelected = employees.length > 0 && selectedIds.length === employees.length;
@@ -61,7 +62,10 @@ const EmployeeMultiSelect = ({
           className="w-full justify-between font-normal h-10">
           {selectedIds.length > 0 ? (
             <span className="truncate font-medium text-foreground">
-              {t("page.expense.form.salary.employeeSelected", { count: selectedIds.length })}
+              {singleSelect && selectedIds.length === 1
+                ? employees.find((e) => String(e.id) === String(selectedIds[0]))?.fullName ||
+                  t("page.expense.form.salary.employeeSelected", { count: selectedIds.length })
+                : t("page.expense.form.salary.employeeSelected", { count: selectedIds.length })}
             </span>
           ) : (
             <span className="text-muted-foreground">
@@ -76,7 +80,7 @@ const EmployeeMultiSelect = ({
           <CommandInput placeholder={t("page.expense.form.salary.employeeSearch")} />
           <CommandList>
             <CommandEmpty>{t("page.expense.form.salary.employeeEmpty")}</CommandEmpty>
-            {employees.length > 0 && (
+            {!singleSelect && employees.length > 0 && (
               <CommandItem
                 onSelect={() => onToggleAll()}
                 className="cursor-pointer border-b border-border">
@@ -119,7 +123,8 @@ const EmployeeSalaryPanel = ({
   salaryBasis = "monthly",
   onSalaryBasisChange,
   t,
-  loading
+  loading,
+  singleSelect = false
 }) => {
   const salaryOf = (emp) =>
     salaryBasis === "daily" ? parseSalary(emp.dailySalary) : parseSalary(emp.monthlySalary);
@@ -176,25 +181,27 @@ const EmployeeSalaryPanel = ({
       </div>
 
       <div className="space-y-2">
-        <button
-          type="button"
-          onClick={onToggleAll}
-          className="w-full flex items-center gap-2.5 p-3 rounded-lg border bg-background transition-colors cursor-pointer hover:border-primary/50 text-left">
-          <StaticCheck checked={allSelected} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">
-              {t("page.expense.form.salary.selectAll")}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {t("page.expense.form.salary.selectAllHint", { count: employees.length })}
-            </p>
-          </div>
-          <span className="text-xs text-muted-foreground shrink-0">
-            {selectedIds.length > 0
-              ? t("page.expense.form.salary.employeeSelected", { count: selectedIds.length })
-              : ""}
-          </span>
-        </button>
+        {!singleSelect && (
+          <button
+            type="button"
+            onClick={onToggleAll}
+            className="w-full flex items-center gap-2.5 p-3 rounded-lg border bg-background transition-colors cursor-pointer hover:border-primary/50 text-left">
+            <StaticCheck checked={allSelected} />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                {t("page.expense.form.salary.selectAll")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t("page.expense.form.salary.selectAllHint", { count: employees.length })}
+              </p>
+            </div>
+            <span className="text-xs text-muted-foreground shrink-0">
+              {selectedIds.length > 0
+                ? t("page.expense.form.salary.employeeSelected", { count: selectedIds.length })
+                : ""}
+            </span>
+          </button>
+        )}
 
         <EmployeeMultiSelect
           employees={employees}
@@ -204,6 +211,7 @@ const EmployeeSalaryPanel = ({
           salaryOf={salaryOf}
           t={t}
           loading={loading}
+          singleSelect={singleSelect}
         />
         <p className="text-xs text-muted-foreground mt-1.5">
           {t("page.expense.form.salary.employeeHint")}

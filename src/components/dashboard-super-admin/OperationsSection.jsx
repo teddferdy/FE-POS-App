@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import SectionCard from "./SectionCard";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
+import { hasOwn, safeGet } from "@/lib/safe-lookup";
 
 const PROD_STATUS = {
   draft: { label: "Draft", color: "text-muted-foreground", bg: "bg-muted" },
@@ -42,8 +43,8 @@ const OperationsSection = ({ operations }) => {
   const register = operations?.cashRegister || { open: 0, closed: 0 };
 
   const prodSummary = ["draft", "planned", "in_progress", "completed", "cancelled"]
-    .filter((s) => production[s] > 0)
-    .map((s) => ({ status: s, ...PROD_STATUS[s] }));
+    .filter((s) => hasOwn(production, s) && production[s] > 0)
+    .map((s) => ({ status: s, ...safeGet(PROD_STATUS, s, {}) }));
 
   return (
     <SectionCard

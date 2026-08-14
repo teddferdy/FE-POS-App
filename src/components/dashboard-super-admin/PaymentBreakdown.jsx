@@ -4,6 +4,7 @@ import { CreditCard } from "lucide-react";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import SectionCard from "./SectionCard";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
+import { safeGet } from "@/lib/safe-lookup";
 
 const BUCKET_META = {
   cash: { label: "Tunai", color: "#10b981" },
@@ -13,7 +14,7 @@ const BUCKET_META = {
   other: { label: "Lainnya", color: "#94a3b8" }
 };
 
-const bucketMeta = (type) => BUCKET_META[type] || BUCKET_META.other;
+const bucketMeta = (type) => safeGet(BUCKET_META, type, BUCKET_META.other);
 
 const PaymentBreakdown = ({ paymentBreakdown }) => {
   const byType = (paymentBreakdown?.byType || []).map((r) => ({

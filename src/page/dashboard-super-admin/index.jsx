@@ -35,6 +35,7 @@ import OperationsSection from "@/components/dashboard-super-admin/OperationsSect
 import CustomersSection from "@/components/dashboard-super-admin/CustomersSection";
 import ActivitySection from "@/components/dashboard-super-admin/ActivitySection";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
+import { buildDashboardQueryParams } from "@/lib/dashboard-query";
 
 const PRESETS = [
   { key: "7d", label: "7 Hari" },
@@ -102,13 +103,10 @@ const DashboardSuperAdmin = () => {
   const upcoming = upcomingData?.data || [];
   const upcomingCount = upcoming.length;
 
-  const queryParams = useMemo(() => {
-    const params = {};
-    if (storeFilter) params.store = storeFilter;
-    if (dateRange.startDate) params.startDate = dateRange.startDate;
-    if (dateRange.endDate) params.endDate = dateRange.endDate;
-    return params;
-  }, [storeFilter, dateRange]);
+  const queryParams = useMemo(
+    () => buildDashboardQueryParams({ storeFilter, dateRange }),
+    [storeFilter, dateRange]
+  );
 
   const {
     data: dashData,
