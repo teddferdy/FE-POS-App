@@ -568,41 +568,47 @@ const XZReport = () => {
         {/* X Report Column */}
         <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60 p-6 space-y-5 shadow-[0_4px_20px_rgb(0,0,0,0.015)]">
           <div className="flex items-center justify-between border-b border-border/40 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-xl">
-                <Wallet size={18} className="animate-bounce-slow" />
+            <div className="flex items-center gap-3 flex-1">
+              <div className="p-2.5 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-950/20 text-blue-600 dark:text-blue-400 rounded-xl shadow-sm">
+                <Wallet size={18} className="animate-pulse" />
               </div>
               <div>
                 <h2 className="text-base font-bold text-foreground">{t("page.cashRegister.xz.xTitle")}</h2>
-                <p className="text-xs text-muted-foreground">Kondisi laci kasir real-time berjalan</p>
+                <p className="text-xs text-muted-foreground">Status kasir saat ini · Tidak ada penyesuaian</p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm">
-              Real-time
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-950/60 dark:to-blue-950/30 text-blue-700 dark:text-blue-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm border border-blue-200/50 dark:border-blue-900/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              Aktif
             </span>
           </div>
 
-          {xLoading ? (
+           {xLoading ? (
             <div className="flex justify-center p-6">
               <Skeleton className="h-[450px] w-full max-w-[400px] rounded-2xl" />
             </div>
-          ) : xError ? (
+           ) : xError ? (
             <div className="py-6">
               <AbortController refetch={refetchX} />
             </div>
-          ) : xData?.data ? (
+           ) : xData?.data ? (
             <div className="space-y-4">
               <ReportView data={xData.data} reportType="X" />
-              <div className="flex items-start gap-2.5 max-w-[400px] mx-auto bg-blue-50/50 dark:bg-blue-950/10 p-4 rounded-xl border border-blue-100/50 dark:border-blue-950/30">
-                <span className="text-blue-500 text-sm mt-0.5">💡</span>
-                <p className="text-[11px] text-blue-700/90 dark:text-blue-400 leading-relaxed font-medium">
-                  {t("page.cashRegister.xz.xNote")}
-                </p>
+              <div className="flex items-start gap-2.5 max-w-[400px] mx-auto bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-950/20 dark:to-blue-950/10 p-4 rounded-xl border border-blue-200/60 dark:border-blue-900/40 shadow-sm">
+                <span className="text-blue-500 text-lg flex-shrink-0 mt-0">ℹ️</span>
+                <div>
+                  <p className="text-[11px] font-semibold text-blue-900 dark:text-blue-200 mb-0.5">
+                    {t("page.cashRegister.xz.xNote")}
+                  </p>
+                  <p className="text-[10px] text-blue-700/80 dark:text-blue-300/70 leading-relaxed">
+                    Laporan X dapat dicetak berkali-kali tanpa mereset transaksi. Gunakan ini untuk verifikasi harian.
+                  </p>
+                </div>
               </div>
             </div>
-          ) : (
-            <div className="bg-card p-8 rounded-2xl border border-border/80 text-center max-w-[400px] mx-auto shadow-sm my-6">
-              <div className="p-4 bg-accent rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-muted-foreground/40">
+           ) : (
+            <div className="bg-card/60 dark:bg-card/30 p-8 rounded-2xl border border-dashed border-border/60 text-center max-w-[400px] mx-auto shadow-sm my-6">
+              <div className="p-4 bg-accent/40 dark:bg-accent/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-muted-foreground/30">
                 <ReceiptText size={32} />
               </div>
               <h3 className="font-bold text-sm text-foreground mb-1">Tidak Ada Register Aktif</h3>
@@ -611,33 +617,34 @@ const XZReport = () => {
               </p>
               <Button
                 onClick={() => navigate("/cash-register/open-close")}
-                className="font-semibold shadow-sm hover:opacity-90 rounded-xl px-5"
+                className="font-semibold shadow-sm hover:shadow-md rounded-lg px-5 h-9 transition-all"
                 size="sm">
                 {t("page.cashRegister.xz.openRegister")}
               </Button>
             </div>
-          )}
+           )}
         </div>
 
         {/* Z Report Column */}
         <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60 p-6 space-y-5 shadow-[0_4px_20px_rgb(0,0,0,0.015)]">
           <div className="flex items-center justify-between border-b border-border/40 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 rounded-xl">
-                <FileBarChart size={18} className="animate-bounce-slow" />
+            <div className="flex items-center gap-3 flex-1">
+              <div className="p-2.5 bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950/40 dark:to-amber-950/20 text-amber-600 dark:text-amber-400 rounded-xl shadow-sm">
+                <FileBarChart size={18} className="animate-pulse" />
               </div>
               <div>
                 <h2 className="text-base font-bold text-foreground">{t("page.cashRegister.xz.zTitle")}</h2>
-                <p className="text-xs text-muted-foreground">Arsip register shift kasir yang ditutup</p>
+                <p className="text-xs text-muted-foreground">Laporan akhir shift · Arsip permanen</p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm">
-              Sesi Final
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-100 to-orange-50 dark:from-amber-950/60 dark:to-amber-950/30 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm border border-amber-200/50 dark:border-amber-900/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              Tertutup
             </span>
           </div>
 
           <div className="bg-card rounded-2xl border border-border/80 shadow-sm max-w-[400px] mx-auto overflow-hidden">
-            <div className="p-4 bg-accent/20 dark:bg-accent/10 border-b border-border/40 flex items-center gap-4">
+            <div className="p-4 bg-gradient-to-r from-accent/30 to-accent/10 dark:from-accent/15 dark:to-accent/5 border-b border-border/40 flex items-center gap-4">
               <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/90 whitespace-nowrap">
                 {t("page.cashRegister.xz.selectRegister")}
               </label>
@@ -646,7 +653,7 @@ const XZReport = () => {
                   <select
                     value={selectedRegister || ""}
                     onChange={(e) => setSelectedRegister(e.target.value)}
-                    className="w-full h-9 pl-3 pr-8 rounded-lg bg-background border border-border/80 text-xs font-semibold appearance-none outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer shadow-sm">
+                    className="w-full h-9 pl-3 pr-8 rounded-lg bg-background border border-border/80 text-xs font-semibold appearance-none outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer shadow-sm hover:border-border">
                     <option value="">{t("page.cashRegister.xz.selectPlaceholder")}</option>
                     {registers.map((r) => (
                       <option key={r.id} value={r.id}>
@@ -659,43 +666,43 @@ const XZReport = () => {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/70">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/60">
                     <ChevronDown size={14} />
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground italic font-medium">
+                <p className="text-xs text-muted-foreground italic font-medium flex-1">
                   {t("page.cashRegister.xz.noClosedRegister")}
                 </p>
               )}
             </div>
 
-            <ScrollArea className="max-h-[580px] min-h-[350px]">
-              {selectedRegister ? (
-                zLoading ? (
-                  <div className="p-6">
-                    <Skeleton className="h-[400px] w-full rounded-2xl animate-pulse" />
-                  </div>
-                ) : zError ? (
-                  <div className="p-6">
-                    <AbortController refetch={refetchZ} />
-                  </div>
-                ) : zData?.data ? (
-                  <div className="p-4">
-                    <ReportView data={zData.data} reportType="Z" />
-                  </div>
-                ) : null
-              ) : (
-                <div className="flex flex-col items-center justify-center p-8 text-center min-h-[350px]">
-                  <div className="p-4 bg-accent/60 dark:bg-accent/30 rounded-2xl text-muted-foreground/40 mb-3 animate-pulse-subtle">
-                    <ReceiptText size={28} />
-                  </div>
-                  <h4 className="text-xs font-bold text-foreground mb-1">{t("page.cashRegister.xz.zHint")}</h4>
-                  <p className="text-[11px] text-muted-foreground max-w-[220px] leading-relaxed font-medium">
-                    Pilih salah satu sesi kasir yang telah ditutup dari daftar di atas untuk melihat ringkasan final laporan Z.
-                  </p>
-                </div>
-              )}
+            <ScrollArea className="min-h-[350px] [&>[data-radix-scroll-area-viewport]]:max-h-[580px]">
+               {selectedRegister ? (
+                 zLoading ? (
+                   <div className="p-6">
+                     <Skeleton className="h-[400px] w-full rounded-2xl animate-pulse" />
+                   </div>
+                 ) : zError ? (
+                   <div className="p-6">
+                     <AbortController refetch={refetchZ} />
+                   </div>
+                 ) : zData?.data ? (
+                   <div className="p-4">
+                     <ReportView data={zData.data} reportType="Z" />
+                   </div>
+                 ) : null
+               ) : (
+                 <div className="flex flex-col items-center justify-center p-8 text-center min-h-[350px]">
+                   <div className="p-4 bg-gradient-to-br from-accent/40 to-accent/20 dark:from-accent/20 dark:to-accent/10 rounded-2xl text-muted-foreground/40 mb-4 animate-pulse">
+                     <ReceiptText size={32} />
+                   </div>
+                   <h4 className="text-xs font-bold text-foreground mb-1.5">{t("page.cashRegister.xz.zHint")}</h4>
+                   <p className="text-[11px] text-muted-foreground max-w-[240px] leading-relaxed font-medium">
+                     Pilih salah satu sesi kasir yang telah ditutup dari daftar di atas untuk melihat ringkasan final laporan Z beserta perhitungan varians kas.
+                   </p>
+                 </div>
+               )}
             </ScrollArea>
           </div>
         </div>

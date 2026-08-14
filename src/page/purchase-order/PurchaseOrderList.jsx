@@ -29,7 +29,8 @@ import {
   X,
   Send,
   Edit,
-  AlertTriangle
+  AlertTriangle,
+  ChevronDown
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -72,6 +73,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const IconAction = ({ label, children, ...props }) => (
   <Tooltip delayDuration={0}>
@@ -174,6 +176,8 @@ const PurchaseOrderList = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [deletePoId, setDeletePoId] = useState(null);
   const [payPo, setPayPo] = useState(null);
+  const [isPaymentStatsOpen, setIsPaymentStatsOpen] = useState(false);
+  const [isOrderStatsOpen, setIsOrderStatsOpen] = useState(false);
   const [payForm, setPayForm] = useState({
     amount: "",
     paymentDate: undefined,
@@ -958,256 +962,275 @@ const PurchaseOrderList = () => {
         <NoStore />
       ) : (
         <>
-          <div className="space-y-6">
-            <h3>Status Order :</h3>
-            {isFetching || isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-card rounded-xl border border-border p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <Skeleton className="h-3 w-24" />
-                      <Skeleton className="h-4 w-4 rounded" />
+          <Collapsible open={isOrderStatsOpen} onOpenChange={setIsOrderStatsOpen}>
+            <div className="flex items-center justify-between mb-4">
+              <CollapsibleTrigger asChild>
+                <h3 className="text-lg font-semibold flex items-center gap-2 cursor-pointer">
+                  {isOrderStatsOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                  {t("page.purchaseOrder.list.statusOrder")} :
+                </h3>
+              </CollapsibleTrigger>
+            </div>
+            <CollapsibleContent>
+              {isFetching || isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
                     </div>
-                    <Skeleton className="h-8 w-28 mb-2" />
-                    <Skeleton className="h-3 w-20" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <StatCard
-                  label={t("page.purchaseOrder.list.title")}
-                  value={total}
-                  icon={ShoppingCart}
-                  variant="default"
-                />
-                <StatCard
-                  label={t("page.purchaseOrder.status.received")}
-                  value={data?.stats?.received ?? 0}
-                  icon={CheckCircle}
-                  variant="active"
-                />
-                <StatCard
-                  label={t("page.purchaseOrder.status.ordered")}
-                  value={data?.stats?.ordered ?? 0}
-                  icon={Clock}
-                  variant="blue"
-                />
-                <StatCard
-                  label={t("page.purchaseOrder.status.draft")}
-                  value={data?.stats?.draft ?? 0}
-                  icon={ClipboardList}
-                  variant="gray"
-                />
-                <StatCard
-                  label={t("page.purchaseOrder.status.pending")}
-                  value={data?.stats?.pending ?? 0}
-                  icon={FileEdit}
-                  variant="yellow"
-                />
-                <StatCard
-                  label={t("page.purchaseOrder.status.cancelled")}
-                  value={data?.stats?.cancelled ?? 0}
-                  icon={XCircle}
-                  variant="red"
-                />
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <StatCard
+                    label={t("page.purchaseOrder.list.title")}
+                    value={total}
+                    icon={ShoppingCart}
+                    variant="default"
+                  />
+                  <StatCard
+                    label={t("page.purchaseOrder.status.received")}
+                    value={data?.stats?.received ?? 0}
+                    icon={CheckCircle}
+                    variant="active"
+                  />
+                  <StatCard
+                    label={t("page.purchaseOrder.status.ordered")}
+                    value={data?.stats?.ordered ?? 0}
+                    icon={Clock}
+                    variant="blue"
+                  />
+                  <StatCard
+                    label={t("page.purchaseOrder.status.draft")}
+                    value={data?.stats?.draft ?? 0}
+                    icon={ClipboardList}
+                    variant="gray"
+                  />
+                  <StatCard
+                    label={t("page.purchaseOrder.status.pending")}
+                    value={data?.stats?.pending ?? 0}
+                    icon={FileEdit}
+                    variant="yellow"
+                  />
+                  <StatCard
+                    label={t("page.purchaseOrder.status.cancelled")}
+                    value={data?.stats?.cancelled ?? 0}
+                    icon={XCircle}
+                    variant="red"
+                  />
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
 
-          <div className="space-y-6">
-            <h3>Status Payment :</h3>
-            {isFetching || isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="bg-card rounded-xl border border-border p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <Skeleton className="h-3 w-24" />
-                      <Skeleton className="h-4 w-4 rounded" />
+          <Collapsible open={isPaymentStatsOpen} onOpenChange={setIsPaymentStatsOpen}>
+            <div className="flex items-center justify-between mb-4 mt-6">
+              <CollapsibleTrigger asChild>
+                <h3 className="text-lg font-semibold flex items-center gap-2 cursor-pointer">
+                  {isPaymentStatsOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                  {t("page.purchaseOrder.list.statusPayment")} :
+                </h3>
+              </CollapsibleTrigger>
+            </div>
+            <CollapsibleContent>
+              {isFetching || isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
                     </div>
-                    <Skeleton className="h-8 w-28 mb-2" />
-                    <Skeleton className="h-3 w-20" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <StatCard
-                  label={t("page.purchaseOrder.list.paymentStatus.paid")}
-                  value={data?.paymentStats?.paid ?? 0}
-                  icon={CircleDollarSign}
-                  variant="active"
-                />
-                <StatCard
-                  label={t("page.purchaseOrder.list.paymentStatus.unpaid")}
-                  value={data?.paymentStats?.unpaid ?? 0}
-                  icon={Ban}
-                  variant="yellow"
-                />
-                <StatCard
-                  label={t("page.purchaseOrder.list.paymentStatus.partial")}
-                  value={data?.paymentStats?.partial ?? 0}
-                  icon={Wallet}
-                  variant="blue"
-                />
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <StatCard
+                    label={t("page.purchaseOrder.list.paymentStatus.paid")}
+                    value={data?.paymentStats?.paid ?? 0}
+                    icon={CircleDollarSign}
+                    variant="active"
+                  />
+                  <StatCard
+                    label={t("page.purchaseOrder.list.paymentStatus.unpaid")}
+                    value={data?.paymentStats?.unpaid ?? 0}
+                    icon={Ban}
+                    variant="yellow"
+                  />
+                  <StatCard
+                    label={t("page.purchaseOrder.list.paymentStatus.partial")}
+                    value={data?.paymentStats?.partial ?? 0}
+                    icon={Wallet}
+                    variant="blue"
+                  />
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+        </>
+      )}
 
-          {isError ? (
-            <AbortController refetch={refetch} />
-          ) : (
-            <TooltipProvider>
-              <div data-tour="purchase-order-table" className="mt-6">
-                <DataTable
-                  columns={columns}
-                  data={orders}
-                  isLoading={isLoading || isFetching}
-                  emptyMessage={t("page.purchaseOrder.list.empty")}
-                  emptyIcon={Package}
-                  toolbar={
-                    <TableToolbar
-                      title={t("page.purchaseOrder.list.title")}
-                      onReset={resetFilters}
-                      isFiltered={isFiltered}>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <TooltipProvider>
+            <div data-tour="purchase-order-table" className="mt-6">
+              <DataTable
+                columns={columns}
+                data={orders}
+                isLoading={isLoading || isFetching}
+                emptyMessage={t("page.purchaseOrder.list.empty")}
+                emptyIcon={Package}
+                toolbar={
+                  <TableToolbar
+                    title={t("page.purchaseOrder.list.title")}
+                    onReset={resetFilters}
+                    isFiltered={isFiltered}>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Cari
+                      </label>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
+                        isLoading={isFetching}
+                      />
+                    </div>
+                    {isSuperAdmin && (
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Cari
+                          Store
                         </label>
-                        <SearchInput
-                          value={search}
-                          onChange={(val) => {
-                            setSearch(val);
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => {
+                            setGlobalStoreFilter(v);
                             setPage(1);
                           }}
-                          placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
-                          isLoading={isFetching}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
                         />
                       </div>
-                      {isSuperAdmin && (
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Store
-                          </label>
-                          <StoreFilter
-                            locations={locData?.data || []}
-                            value={storeFilter}
-                            onChange={(v) => {
-                              setGlobalStoreFilter(v);
-                              setPage(1);
-                            }}
-                            isSuperAdmin={isSuperAdmin}
-                            t={t}
-                          />
-                        </div>
-                      )}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          {t("page.purchaseOrder.list.columns.poDate")}
-                        </label>
-                        <DatePicker
-                          date={dateFilter}
-                          setDate={(date) => {
-                            setDateFilter(date);
-                            setPage(1);
-                          }}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          {t("page.purchaseOrder.list.columns.status")}
-                        </label>
-                        <Combobox
-                          options={[
-                            { value: "all", label: t("common.all") },
-                            { value: "draft", label: t("page.purchaseOrder.status.draft") },
-                            { value: "pending", label: t("page.purchaseOrder.status.pending") },
-                            { value: "ordered", label: t("page.purchaseOrder.status.ordered") },
-                            {
-                              value: "received",
-                              label: t("page.purchaseOrder.status.received")
-                            },
-                            {
-                              value: "cancelled",
-                              label: t("page.purchaseOrder.status.cancelled")
-                            }
-                          ]}
-                          value={statusFilter}
-                          onChange={(val) => {
-                            setStatusFilter(val);
-                            setPage(1);
-                          }}
-                          placeholder={t("common.all")}
-                          searchPlaceholder={t("common.all")}
-                        />
-                      </div>
-                    </TableToolbar>
+                    )}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.purchaseOrder.list.columns.poDate")}
+                      </label>
+                      <DatePicker
+                        date={dateFilter}
+                        setDate={(date) => {
+                          setDateFilter(date);
+                          setPage(1);
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.purchaseOrder.list.columns.status")}
+                      </label>
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("common.all") },
+                          { value: "draft", label: t("page.purchaseOrder.status.draft") },
+                          { value: "pending", label: t("page.purchaseOrder.status.pending") },
+                          { value: "ordered", label: t("page.purchaseOrder.status.ordered") },
+                          {
+                            value: "received",
+                            label: t("page.purchaseOrder.status.received")
+                          },
+                          {
+                            value: "cancelled",
+                            label: t("page.purchaseOrder.status.cancelled")
+                          }
+                        ]}
+                        value={statusFilter}
+                        onChange={(val) => {
+                          setStatusFilter(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("common.all")}
+                        searchPlaceholder={t("common.all")}
+                      />
+                    </div>
+                  </TableToolbar>
+                }
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => {
+                    setLimit(v);
+                    setPage(1);
                   }
-                  pagination={{
-                    page,
-                    totalPages,
-                    total,
-                    onPageChange: setPage,
-                    pageSize: limit,
-                    onPageSizeChange: (v) => {
-                      setLimit(v);
-                      setPage(1);
+                }}
+                renderExpandedRow={(po) => {
+                  const items = po.items || [];
+                  const supplierMap = {};
+                  const unassignedItems = [];
+                  items.forEach((it) => {
+                    const sid = it.supplier;
+                    if (!sid) {
+                      unassignedItems.push(it);
+                      return;
                     }
-                  }}
-                  renderExpandedRow={(po) => {
-                    const items = po.items || [];
-                    const supplierMap = {};
-                    const unassignedItems = [];
-                    items.forEach((it) => {
-                      const sid = it.supplier;
-                      if (!sid) {
-                        unassignedItems.push(it);
-                        return;
-                      }
-                      if (!supplierMap[sid]) {
-                        supplierMap[sid] = {
-                          supplierId: sid,
-                          supplierName: it.supplierData?.name || `Supplier #${sid}`,
-                          items: []
-                        };
-                      }
-                      supplierMap[sid].items.push(it);
+                    if (!supplierMap[sid]) {
+                      supplierMap[sid] = {
+                        supplierId: sid,
+                        supplierName: it.supplierData?.name || `Supplier #${sid}`,
+                        items: []
+                      };
+                    }
+                    supplierMap[sid].items.push(it);
+                  });
+                  const suppliers = Object.values(supplierMap);
+                  if (unassignedItems.length > 0) {
+                    suppliers.push({
+                      supplierId: "unassigned",
+                      supplierName: t("page.purchaseOrder.list.unassignedSupplier"),
+                      items: unassignedItems
                     });
-                    const suppliers = Object.values(supplierMap);
-                    if (unassignedItems.length > 0) {
-                      suppliers.push({
-                        supplierId: "unassigned",
-                        supplierName: t("page.purchaseOrder.list.unassignedSupplier"),
-                        items: unassignedItems
-                      });
-                    }
+                  }
 
-                    if (suppliers.length === 0) {
-                      return (
-                        <p className="text-sm text-muted-foreground text-center py-4">
-                          Tidak ada item
-                        </p>
-                      );
-                    }
-
+                  if (suppliers.length === 0) {
                     return (
-                      <div className="space-y-2">
-                        {suppliers.map((sup) => (
-                          <SupplierExpandableRow
-                            key={sup.supplierId}
-                            supplier={sup}
-                            renderSupplierItems={renderSupplierItems}
-                          />
-                        ))}
-                      </div>
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Tidak ada item
+                      </p>
                     );
-                  }}
-                  getRowCanExpand={(po) => (po.items || []).length > 0}
-                />
-              </div>
-            </TooltipProvider>
-          )}
+                  }
 
+                  return (
+                    <div className="space-y-2">
+                      {suppliers.map((sup) => (
+                        <SupplierExpandableRow
+                          key={sup.supplierId}
+                          supplier={sup}
+                          renderSupplierItems={renderSupplierItems}
+                        />
+                      ))}
+                    </div>
+                  );
+                }}
+                getRowCanExpand={(po) => (po.items || []).length > 0}
+              />
+            </div>
+          </TooltipProvider>
           <div>
             <TipsCard
               tips={[
@@ -1220,7 +1243,6 @@ const PurchaseOrderList = () => {
           </div>
         </>
       )}
-
       {returModal &&
         returPo &&
         createPortal(

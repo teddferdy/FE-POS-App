@@ -185,6 +185,14 @@ const ExpenseCategoryDetail = () => {
                     {statusLabel}
                   </span>
                 </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Kode Akun
+                  </p>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-medium bg-primary/10 text-primary mt-1">
+                    {category.accountCode || "-"}
+                  </span>
+                </div>
                 <div className="md:col-span-2">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Deskripsi

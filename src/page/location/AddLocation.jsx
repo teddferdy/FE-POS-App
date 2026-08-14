@@ -459,11 +459,17 @@ const AddLocation = () => {
 
     if (!provCode) return;
 
+    const district = districtsRef.current.find((d) => d.kode_kec === districtCode);
+    if (district?.latitude != null && district?.longitude != null) {
+      form.setValue("latitude", district.latitude);
+      form.setValue("longitude", district.longitude);
+      return;
+    }
+
     const provName =
       provincesRef.current.find((p) => p.kode_prov === provCode)?.nama_provinsi || "";
     const cityName = citiesRef.current.find((c) => c.kode_kab === cityCode)?.nama_kabupaten || "";
-    const districtName =
-      districtsRef.current.find((d) => d.kode_kec === districtCode)?.nama_kecamatan || "";
+    const districtName = district?.nama_kecamatan || "";
     const villageName =
       villagesRef.current.find((v) => v.kode_desa === villageCode)?.nama_desa || "";
 

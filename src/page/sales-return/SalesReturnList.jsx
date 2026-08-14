@@ -151,7 +151,9 @@ const SalesReturnList = () => {
     {
       header: t("page.salesReturn.list.header.returnedBy"),
       render: (item) => (
-        <span className="text-sm">{item.returnedBy || item.returnedByData?.name || "-"}</span>
+        <span className="text-sm">
+          {item.createdByUser?.fullName || item.createdByUser?.userName || "-"}
+        </span>
       )
     },
     {
