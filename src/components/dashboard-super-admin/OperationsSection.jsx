@@ -42,7 +42,10 @@ const OperationsSection = ({ operations }) => {
   const register = operations?.cashRegister || { open: 0, closed: 0 };
 
   const prodSummary = ["draft", "planned", "in_progress", "completed", "cancelled"]
-    .filter((s) => Object.prototype.hasOwnProperty.call(production, s) && production[s] > 0)
+    .filter((s) => {
+      if (!Object.prototype.hasOwnProperty.call(production, s)) return false;
+      return production[s] > 0; // nosemgrep: generic-object-injection-sink - key from static allowlist, guarded by hasOwnProperty
+    })
     .map((s) => ({ status: s, ...safeGet(PROD_STATUS, s, {}) }));
 
   return (
