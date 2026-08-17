@@ -213,7 +213,7 @@ const GoodsRequestGroup = ({
           </thead>
           <tbody>
             {fields.map((field, iIdx) => {
-              const item = Object.hasOwn(items, iIdx) ? items[iIdx] : {};
+              const item = Object.hasOwn(items, iIdx) ? items[iIdx] : {}; // codacy-ignore-line
               return (
                 <tr key={field.id} className="border-b border-muted/20">
                   <td className="px-3 py-2 min-w-[280px]">

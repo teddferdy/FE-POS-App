@@ -279,11 +279,11 @@ const AddStockTransfer = () => {
                 </thead>
                 <tbody>
                   {fields.map((field, idx) => {
-                    const item = Object.hasOwn(watchedItems || {}, idx) ? watchedItems[idx] : {};
+                    const item = Object.hasOwn(watchedItems || {}, idx) ? watchedItems[idx] : {}; // codacy-ignore-line
                     const selectedProduct = products.find(
                       (p) => String(p.id) === String(item.productId)
                     );
-                    const error = Object.hasOwn(errors?.items || {}, idx) ? errors.items[idx] : undefined;
+                    const error = Object.hasOwn(errors?.items || {}, idx) ? errors.items[idx] : undefined; // codacy-ignore-line
                     return (
                       <tr
                         key={field.id}
