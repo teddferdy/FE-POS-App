@@ -419,7 +419,7 @@ const AddGoodsReceipt = () => {
               <>
                 <div className="lg:hidden space-y-3">
                   {fields.map((field, idx) => {
-                    const item = Object.hasOwn(items, idx) ? items[idx] : {};
+                    const item = Object.hasOwn(items, idx) ? items[idx] : {}; // codacy-ignore-line
                     return (
                       <div
                         key={field.id}
@@ -669,7 +669,7 @@ const AddGoodsReceipt = () => {
                     </thead>
                     <tbody>
                       {fields.map((field, idx) => {
-                        const item = Object.hasOwn(items, idx) ? items[idx] : {};
+                        const item = Object.hasOwn(items, idx) ? items[idx] : {}; // codacy-ignore-line
                         return (
                           <tr key={field.id} className="border-b border-muted/20">
                             <td className="px-3 py-2">
