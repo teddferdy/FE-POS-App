@@ -6,13 +6,14 @@ import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
-import { getCategoryById, editCategory } from "@/services/category";
+import { getCategoryById, editCategory, getAllCategory } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import { Check } from "lucide-react";
 
@@ -338,6 +339,19 @@ const allIconsFlat = [
   ...new Map(iconSections.flatMap((s) => s.icons).map((ic) => [ic.icon, ic])).values()
 ];
 
+const colorPalette = [
+  "#0f172a",
+  "#dc2626",
+  "#ea580c",
+  "#ca8a04",
+  "#16a34a",
+  "#0891b2",
+  "#2563eb",
+  "#7c3aed",
+  "#db2777",
+  "#64748b"
+];
+
 const EditCategory = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -382,6 +396,9 @@ const EditCategory = () => {
   });
   const locations = locationsData?.data || locationsData?.locations || [];
 
+  const { data: categoriesData } = useQuery(["categories-all-parent-edit"], getAllCategory);
+  const allCategories = categoriesData?.data || categoriesData?.categories || [];
+
   const { data: categoryData, isLoading: categoryLoading } = useQuery(
     ["category-edit", categoryId],
     () => getCategoryById({ id: categoryId }),
@@ -392,6 +409,9 @@ const EditCategory = () => {
         form.reset({
           name: d.name || "",
           description: d.description || "",
+          parentId: d.parentId ? String(d.parentId) : "",
+          color: d.color || "#0f172a",
+          sortOrder: d.sortOrder || 0,
           isActive: d.status !== "inactive",
           store: ""
         });
@@ -421,6 +441,9 @@ const EditCategory = () => {
     return z.object({
       name: z.string().min(1, t("page.category.validation.nameRequired")),
       description: z.string().optional().or(z.literal("")),
+      parentId: z.string().optional().or(z.literal("")),
+      color: z.string().default("#0f172a"),
+      sortOrder: z.coerce.number().min(0).optional().default(0),
       isActive: z.boolean().default(true),
       store: z.string().optional()
     });
@@ -432,6 +455,9 @@ const EditCategory = () => {
     defaultValues: {
       name: "",
       description: "",
+      parentId: "",
+      color: "#0f172a",
+      sortOrder: 0,
       isActive: true,
       store: ""
     }
@@ -476,6 +502,9 @@ const EditCategory = () => {
     const payload = new FormData();
     payload.append("name", values.name);
     payload.append("description", values.description || "");
+    payload.append("parentId", values.parentId || "");
+    payload.append("color", values.color || "#0f172a");
+    payload.append("sortOrder", values.sortOrder || 0);
     payload.append("status", saveAsDraft ? "draft" : values.isActive ? "active" : "inactive");
     payload.append("store", JSON.stringify(selectedStore));
     if (selectedIcon) {
@@ -604,6 +633,82 @@ const EditCategory = () => {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={form.control}
+                        name="parentId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.category.form.parentCategory")}
+                            </FormLabel>
+                            <Combobox
+                              options={[
+                                {
+                                  value: "",
+                                  label: t("page.category.form.parentCategoryNone")
+                                },
+                                ...allCategories
+                                  .filter((c) => String(c.id) !== String(categoryId))
+                                  .map((c) => ({
+                                    value: String(c.id),
+                                    label: c.name
+                                  }))
+                              ]}
+                              value={field.value}
+                              onChange={(v) => field.onChange(v)}
+                              placeholder={t("page.category.form.parentCategoryPlaceholder")}
+                              searchPlaceholder={t("common.search")}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              {t("page.category.form.parentCategoryDesc")}
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="color"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.category.form.color")}
+                              </FormLabel>
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {colorPalette.map((c) => (
+                                  <button
+                                    key={c}
+                                    type="button"
+                                    onClick={() => field.onChange(c)}
+                                    className={`w-8 h-8 rounded-full transition-all border-2 ${
+                                      field.value === c
+                                        ? "border-primary scale-110"
+                                        : "border-border hover:scale-105"
+                                    }`}
+                                    style={{ backgroundColor: c }}
+                                    aria-label={c}
+                                  />
+                                ))}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="sortOrder"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.category.form.sortOrder")}
+                              </FormLabel>
+                              <Input type="number" min="0" placeholder="0" {...field} />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                       <FormField
                         control={form.control}
                         name="isActive"

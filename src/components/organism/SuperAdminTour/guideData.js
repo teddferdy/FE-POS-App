@@ -813,13 +813,6 @@ const guideData = [
         actions: ["view"]
       },
       {
-        path: "/report/profit-loss",
-        icon: TrendingUp,
-        titleKey: "sidebar.labaRugi",
-        descKey: "guide.pnl.s25bdesc",
-        actions: ["view"]
-      },
-      {
         path: "/report/cash-flow",
         icon: Receipt,
         titleKey: "sidebar.arusKas",

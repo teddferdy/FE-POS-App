@@ -177,28 +177,40 @@ const CategoryList = () => {
     },
     {
       header: t("page.category.table.name"),
-      render: (cat) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-            {cat.image ? (
-              cat.image.startsWith("http") ? (
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  className="w-full h-full object-cover rounded-lg"
-                />
+      render: (cat) => {
+        const parent = categories.find((c) => String(c.id) === String(cat.parentId));
+        return (
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+              {cat.image ? (
+                cat.image.startsWith("http") ? (
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                ) : (
+                  <span className="material-symbols-outlined text-primary">{cat.image}</span>
+                )
               ) : (
-                <span className="material-symbols-outlined text-primary">{cat.image}</span>
-              )
-            ) : (
-              <span className="material-symbols-outlined text-primary">
-                {getCategoryIcon(cat.name)}
+                <span className="material-symbols-outlined text-primary">
+                  {getCategoryIcon(cat.name)}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <span
+                  className="w-2.5 h-2.5 rounded-full inline-block shrink-0"
+                  style={{ backgroundColor: cat.color || "#0f172a" }}
+                />
+                {cat.name}
               </span>
-            )}
+              {parent && <span className="text-[11px] text-muted-foreground">{parent.name}</span>}
+            </div>
           </div>
-          <span className="text-sm font-semibold text-foreground">{cat.name}</span>
-        </div>
-      )
+        );
+      }
     },
     {
       header: t("page.category.table.store"),

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
-import { AlertTriangle, Package, ShoppingBasket, Plus, Zap } from "lucide-react";
+import { AlertTriangle, Package, ShoppingBasket, Plus, Zap, Store } from "lucide-react";
 import { getLowStockProducts, autoGeneratePOFromLowStock } from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,6 +19,7 @@ import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
 import { useNavigate } from "react-router-dom";
 import { getAllLocation } from "@/services/location";
+import { normalizeStoreId, storeIdsEqual } from "@/utils/storeId";
 import { toast } from "sonner";
 import Modal from "@/components/organism/modal";
 
@@ -37,9 +38,7 @@ const LowStock = () => {
   const queryClient = useQueryClient();
   const [confirmModal, setConfirmModal] = useState(false);
 
-  const { data: locData } = useQuery(["locations-low-stock"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locData } = useQuery(["locations-low-stock"], () => getAllLocation(), {});
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["low-stock"],
@@ -72,6 +71,34 @@ const LowStock = () => {
   const products = lowStockData.products || [];
   const ingredients = lowStockData.ingredients || [];
   const hasLowStockIngredients = ingredients.length > 0;
+
+  const allLocations = locData?.data || [];
+
+  const locations = useMemo(() => {
+    const active = allLocations.filter((l) => l.status === "active");
+    if (isSuperAdmin) return active;
+    return active.filter((l) => storeIdsEqual(l.id, user?.store));
+  }, [allLocations, isSuperAdmin, user?.store]);
+
+  const storeGroups = useMemo(() => {
+    const groups = locations.map((loc) => {
+      const storeId = Number(normalizeStoreId(loc.id)) || null;
+      return {
+        storeId,
+        storeName: loc.name,
+        items: ingredients.filter(
+          (i) => i.store != null && i.store !== "" && Number(i.store) === storeId
+        )
+      };
+    });
+    const noStoreItems = ingredients.filter(
+      (i) => i.store == null || i.store === "" || i.store === 0
+    );
+    if (noStoreItems.length > 0) {
+      groups.push({ storeId: null, storeName: null, items: noStoreItems });
+    }
+    return groups;
+  }, [ingredients, locations]);
 
   const getStockStatus = (stock, t) => {
     if (stock <= 0)
@@ -189,6 +216,9 @@ const LowStock = () => {
                               <TableHead>
                                 <Skeleton className="h-3 w-14" />
                               </TableHead>
+                              <TableHead>
+                                <Skeleton className="h-3 w-14" />
+                              </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -207,6 +237,9 @@ const LowStock = () => {
                                   <Skeleton className="h-4 w-10" />
                                 </TableCell>
                                 <TableCell>
+                                  <Skeleton className="h-4 w-14" />
+                                </TableCell>
+                                <TableCell>
                                   <Skeleton className="h-5 w-20 rounded-full" />
                                 </TableCell>
                               </TableRow>
@@ -216,7 +249,7 @@ const LowStock = () => {
                       </div>
                     </Card>
                   </div>
-                ) : products.length === 0 && ingredients.length === 0 ? (
+                ) : products.length === 0 && storeGroups.length === 0 ? (
                   <Card className="p-12 text-center text-muted-foreground mt-6">
                     <AlertTriangle size={48} className="mx-auto mb-4 opacity-30" />
                     <p className="text-lg font-medium">{t("page.lowStock.empty")}</p>
@@ -244,6 +277,7 @@ const LowStock = () => {
                                   {t("page.lowStock.table.minStock")}
                                 </TableHead>
                                 <TableHead>{t("page.lowStock.table.unit")}</TableHead>
+                                <TableHead>{t("page.lowStock.table.store")}</TableHead>
                                 <TableHead>{t("common.status")}</TableHead>
                               </TableRow>
                             </TableHeader>
@@ -260,6 +294,11 @@ const LowStock = () => {
                                       {formatNumber(p.minStock)}
                                     </TableCell>
                                     <TableCell>{p.unit || "pcs"}</TableCell>
+                                    <TableCell>
+                                      <span className="text-xs text-muted-foreground">
+                                        {p.stores?.length ? p.stores.join(", ") : "-"}
+                                      </span>
+                                    </TableCell>
                                     <TableCell>
                                       <span
                                         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
@@ -278,72 +317,97 @@ const LowStock = () => {
                       </Card>
                     )}
 
-                    {ingredients.length > 0 && (
-                      <Card className="overflow-hidden mt-6">
-                        <div className="p-4 border-b border-border bg-muted/30 flex items-center justify-between">
-                          <h3 className="font-semibold text-sm flex items-center gap-2">
-                            <ShoppingBasket size={16} className="text-orange-500" />
-                            {t("page.lowStock.ingredient")} ({ingredients.length})
-                          </h3>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="gap-1.5"
-                            onClick={() => {
-                              const names = ingredients
-                                .map((i) => encodeURIComponent(i.name))
-                                .join(",");
-                              navigate(`/add-purchase-order?ingredients=${names}`);
-                            }}>
-                            <Plus size={14} />
-                            {t("page.lowStock.buatPO")}
-                          </Button>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>{t("page.lowStock.table.ingredientName")}</TableHead>
-                                <TableHead className="text-right">
-                                  {t("page.lowStock.table.currentStock")}
-                                </TableHead>
-                                <TableHead className="text-right">
-                                  {t("page.lowStock.table.minStock")}
-                                </TableHead>
-                                <TableHead>{t("page.lowStock.table.unit")}</TableHead>
-                                <TableHead>{t("common.status")}</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {ingredients.map((i) => {
-                                const status = getStockStatus(i.stock, t);
-                                return (
-                                  <TableRow key={i.id}>
-                                    <TableCell className="font-medium">{i.name}</TableCell>
-                                    <TableCell className="text-right font-semibold">
-                                      {formatNumber(i.stock)}
-                                    </TableCell>
-                                    <TableCell className="text-right text-muted-foreground">
-                                      {formatNumber(i.minStock)}
-                                    </TableCell>
-                                    <TableCell>{i.unit || "pcs"}</TableCell>
-                                    <TableCell>
-                                      <span
-                                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
-                                        <span
-                                          className={`w-1.5 h-1.5 rounded-full ${i.stock <= 0 ? "bg-red-500" : "bg-orange-500"}`}
-                                        />
-                                        {status.label}
-                                      </span>
-                                    </TableCell>
+                    {storeGroups.length > 0 &&
+                      storeGroups.map((group) => (
+                        <Card key={group.storeId ?? "no-store"} className="overflow-hidden mt-6">
+                          <div className="p-4 border-b border-border bg-muted/30 flex items-center justify-between">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <ShoppingBasket size={16} className="text-orange-500" />
+                              <h3 className="font-semibold text-sm">
+                                {t("page.lowStock.ingredient")} ({group.items.length})
+                              </h3>
+                              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                                <Store size={12} />
+                                {group.storeName || t("page.lowStock.noStore")}
+                              </span>
+                            </div>
+                            {group.items.length > 0 && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1.5"
+                                onClick={() => {
+                                  const names = group.items
+                                    .map((i) => encodeURIComponent(i.name))
+                                    .join(",");
+                                  const storeParam = group.storeId ? `&store=${group.storeId}` : "";
+                                  navigate(`/add-purchase-order?ingredients=${names}${storeParam}`);
+                                }}>
+                                <Plus size={14} />
+                                {t("page.lowStock.buatPO")}
+                              </Button>
+                            )}
+                          </div>
+                          {group.items.length > 0 ? (
+                            <div className="overflow-x-auto">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>{t("page.lowStock.table.ingredientName")}</TableHead>
+                                    <TableHead className="text-right">
+                                      {t("page.lowStock.table.currentStock")}
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                      {t("page.lowStock.table.minStock")}
+                                    </TableHead>
+                                    <TableHead>{t("page.lowStock.table.unit")}</TableHead>
+                                    <TableHead>{t("page.lowStock.table.store")}</TableHead>
+                                    <TableHead>{t("common.status")}</TableHead>
                                   </TableRow>
-                                );
+                                </TableHeader>
+                                <TableBody>
+                                  {group.items.map((i) => {
+                                    const status = getStockStatus(i.stock, t);
+                                    return (
+                                      <TableRow key={i.id}>
+                                        <TableCell className="font-medium">{i.name}</TableCell>
+                                        <TableCell className="text-right font-semibold">
+                                          {formatNumber(i.stock)}
+                                        </TableCell>
+                                        <TableCell className="text-right text-muted-foreground">
+                                          {formatNumber(i.minStock)}
+                                        </TableCell>
+                                        <TableCell>{i.unit || "pcs"}</TableCell>
+                                        <TableCell>
+                                          <span className="text-xs text-muted-foreground">
+                                            {i.storeData?.name || "-"}
+                                          </span>
+                                        </TableCell>
+                                        <TableCell>
+                                          <span
+                                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
+                                            <span
+                                              className={`w-1.5 h-1.5 rounded-full ${i.stock <= 0 ? "bg-red-500" : "bg-orange-500"}`}
+                                            />
+                                            {status.label}
+                                          </span>
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  })}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          ) : (
+                            <div className="p-4 text-sm text-muted-foreground flex items-center gap-2">
+                              <Store size={14} />
+                              {t("page.lowStock.emptyStore", {
+                                storeName: group.storeName || t("page.lowStock.noStore")
                               })}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </Card>
-                    )}
+                            </div>
+                          )}
+                        </Card>
+                      ))}
                   </>
                 )}
               </div>

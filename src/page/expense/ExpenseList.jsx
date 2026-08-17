@@ -20,7 +20,9 @@ import {
   Calendar,
   Users,
   BellRing,
-  BadgeCheck
+  BadgeCheck,
+  Archive,
+  ArchiveRestore
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -32,6 +34,7 @@ import {
   generateSalaryExpenses,
   markExpensePaid,
   markExpenseUnpaid,
+  setExpenseActive,
   getUpcomingPayments
 } from "@/services/expense";
 import { Button } from "@/components/ui/button";
@@ -59,6 +62,7 @@ const ExpenseList = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isActiveFilter, setIsActiveFilter] = useState("active");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
@@ -74,6 +78,7 @@ const ExpenseList = () => {
   const hasActiveFilter =
     search ||
     statusFilter !== "all" ||
+    isActiveFilter !== "active" ||
     categoryFilter !== "all" ||
     startDate ||
     endDate ||
@@ -82,6 +87,7 @@ const ExpenseList = () => {
   const resetFilters = () => {
     setSearch("");
     setStatusFilter("all");
+    setIsActiveFilter("active");
     setCategoryFilter("all");
     setStartDate(null);
     setEndDate(null);
@@ -119,6 +125,7 @@ const ExpenseList = () => {
       limit,
       search,
       statusFilter,
+      isActiveFilter,
       categoryFilter,
       storeFilter,
       startDate,
@@ -131,6 +138,7 @@ const ExpenseList = () => {
         limit,
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,
+        isActive: isActiveFilter === "archived" ? "false" : undefined,
         categoryId: categoryFilter !== "all" ? categoryFilter : undefined,
         startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
         endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined
@@ -209,6 +217,30 @@ const ExpenseList = () => {
       toast.success(t("page.expense.list.toast.unpaidSuccess"), {
         description: t("page.expense.list.toast.unpaidDescription")
       });
+    },
+    onError: (err) => {
+      toast.error(t("page.expense.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
+
+  const activeMutation = useMutation(({ id, isActive }) => setExpenseActive(id, isActive), {
+    onSuccess: (_res, variables) => {
+      queryClient.invalidateQueries(["expenses"]);
+      queryClient.invalidateQueries(["expense-summary"]);
+      queryClient.invalidateQueries(["expense-upcoming"]);
+      const activating = variables.isActive;
+      toast.success(
+        activating
+          ? t("page.expense.list.toast.restoreSuccess")
+          : t("page.expense.list.toast.archiveSuccess"),
+        {
+          description: activating
+            ? t("page.expense.list.toast.restoreDescription")
+            : t("page.expense.list.toast.archiveDescription")
+        }
+      );
     },
     onError: (err) => {
       toast.error(t("page.expense.list.toast.error"), {
@@ -361,6 +393,11 @@ const ExpenseList = () => {
                 : t("page.expense.list.statusUnpaid")}
             </span>
           )}
+          {item.isActive === false && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-200 text-gray-700">
+              {t("page.expense.list.statusArchived")}
+            </span>
+          )}
         </div>
       )
     },
@@ -422,6 +459,7 @@ const ExpenseList = () => {
         { icon: CheckCircle, label: t("common.approve") },
         { icon: XCircle, label: t("common.reject") },
         { icon: BadgeCheck, label: t("page.expense.list.markPaid") },
+        { icon: Archive, label: t("page.expense.list.archive") },
         { icon: Eye, label: t("common.view") },
         { icon: Edit, label: t("common.edit") }
       ],
@@ -461,6 +499,21 @@ const ExpenseList = () => {
             </Button>
           )}
           {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-8 w-8 ${item.isActive ? "text-gray-400" : "text-teal-600"}`}
+              disabled={activeMutation.isLoading}
+              title={
+                item.isActive ? t("page.expense.list.archive") : t("page.expense.list.restore")
+              }
+              onClick={() =>
+                setConfirmAction({ type: item.isActive ? "archive" : "restore", item })
+              }>
+              {item.isActive ? <Archive size={18} /> : <ArchiveRestore size={18} />}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "edit") && (
             <>
               <Button
                 variant="ghost"
@@ -482,6 +535,45 @@ const ExpenseList = () => {
       )
     }
   ];
+
+  const confirmConfig = {
+    approve: {
+      title: t("page.expense.list.confirmApproveTitle"),
+      desc: t("page.expense.list.confirmApproveDesc"),
+      text: t("page.expense.list.confirmApprove"),
+      destructive: false
+    },
+    reject: {
+      title: t("page.expense.list.confirmRejectTitle"),
+      desc: t("page.expense.list.confirmRejectDesc"),
+      text: t("page.expense.list.confirmReject"),
+      destructive: true
+    },
+    paid: {
+      title: t("page.expense.list.confirmPaidTitle"),
+      desc: t("page.expense.list.confirmPaidDesc"),
+      text: t("page.expense.list.confirmPaid"),
+      destructive: false
+    },
+    unpaid: {
+      title: t("page.expense.list.confirmUnpaidTitle"),
+      desc: t("page.expense.list.confirmUnpaidDesc"),
+      text: t("page.expense.list.confirmUnpaid"),
+      destructive: true
+    },
+    archive: {
+      title: t("page.expense.list.confirmArchiveTitle"),
+      desc: t("page.expense.list.confirmArchiveDesc"),
+      text: t("page.expense.list.confirmArchive"),
+      destructive: true
+    },
+    restore: {
+      title: t("page.expense.list.confirmRestoreTitle"),
+      desc: t("page.expense.list.confirmRestoreDesc"),
+      text: t("page.expense.list.confirmRestore"),
+      destructive: false
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -707,6 +799,19 @@ const ExpenseList = () => {
                     />
                     <Combobox
                       options={[
+                        { value: "active", label: t("page.expense.list.filterActive") },
+                        { value: "archived", label: t("page.expense.list.filterArchived") }
+                      ]}
+                      value={isActiveFilter}
+                      onChange={(v) => {
+                        setIsActiveFilter(v);
+                        setPage(1);
+                      }}
+                      placeholder={t("page.expense.list.filter.isActive")}
+                      searchPlaceholder="Cari..."
+                    />
+                    <Combobox
+                      options={[
                         { value: "all", label: t("common.all") },
                         ...categories.map((c) => ({
                           value: c.id,
@@ -756,43 +861,16 @@ const ExpenseList = () => {
           if (!v) setConfirmAction(null);
         }}
         type="confirm"
-        title={
-          confirmAction?.type === "approve"
-            ? t("page.expense.list.confirmApproveTitle")
-            : confirmAction?.type === "reject"
-              ? t("page.expense.list.confirmRejectTitle")
-              : confirmAction?.type === "paid"
-                ? t("page.expense.list.confirmPaidTitle")
-                : t("page.expense.list.confirmUnpaidTitle")
-        }
-        description={
-          confirmAction?.type === "approve"
-            ? t("page.expense.list.confirmApproveDesc")
-            : confirmAction?.type === "reject"
-              ? t("page.expense.list.confirmRejectDesc")
-              : confirmAction?.type === "paid"
-                ? t("page.expense.list.confirmPaidDesc")
-                : t("page.expense.list.confirmUnpaidDesc")
-        }
-        confirmText={
-          confirmAction?.type === "approve"
-            ? t("page.expense.list.confirmApprove")
-            : confirmAction?.type === "reject"
-              ? t("page.expense.list.confirmReject")
-              : confirmAction?.type === "paid"
-                ? t("page.expense.list.confirmPaid")
-                : t("page.expense.list.confirmUnpaid")
-        }
-        confirmVariant={
-          confirmAction?.type === "reject" || confirmAction?.type === "unpaid"
-            ? "destructive"
-            : "default"
-        }
+        title={confirmConfig[confirmAction?.type]?.title}
+        description={confirmConfig[confirmAction?.type]?.desc}
+        confirmText={confirmConfig[confirmAction?.type]?.text}
+        confirmVariant={confirmConfig[confirmAction?.type]?.destructive ? "destructive" : "default"}
         loading={
           approveMutation.isLoading ||
           rejectMutation.isLoading ||
           paidMutation.isLoading ||
-          unpaidMutation.isLoading
+          unpaidMutation.isLoading ||
+          activeMutation.isLoading
         }
         onConfirm={() => {
           if (!confirmAction) return;
@@ -800,7 +878,9 @@ const ExpenseList = () => {
           if (confirmAction.type === "approve") approveMutation.mutate(id);
           else if (confirmAction.type === "reject") rejectMutation.mutate(id);
           else if (confirmAction.type === "paid") paidMutation.mutate(id);
-          else unpaidMutation.mutate(id);
+          else if (confirmAction.type === "unpaid") unpaidMutation.mutate(id);
+          else if (confirmAction.type === "archive") activeMutation.mutate({ id, isActive: false });
+          else if (confirmAction.type === "restore") activeMutation.mutate({ id, isActive: true });
           setConfirmAction(null);
         }}
         onCancel={() => setConfirmAction(null)}

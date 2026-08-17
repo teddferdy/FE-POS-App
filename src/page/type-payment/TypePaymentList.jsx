@@ -184,6 +184,27 @@ const TypePaymentList = () => {
       render: (row) => <span className="text-sm text-muted-foreground">{row.type || "-"}</span>
     },
     {
+      header: t("page.typePayment.form.fee"),
+      render: (row) => {
+        if (row.feeType === "percent") {
+          return <span className="text-sm text-muted-foreground">{row.fee || 0}%</span>;
+        }
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {Number(row.fee) > 0 ? `Rp ${Number(row.fee).toLocaleString("id-ID")}` : "-"}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("page.typePayment.form.tenor"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">
+          {row.tenor > 0 ? `${row.tenor} hari` : "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.typePayment.table.store"),
       render: (row) => (
         <span className="text-sm text-muted-foreground">{row.store?.name || row.store || "-"}</span>

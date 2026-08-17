@@ -175,7 +175,14 @@ const DetailStockTransfer = () => {
                       t("page.stockTransfer.detail.field.date"),
                       new Date(transfer.createdAt).toLocaleDateString("id")
                     ],
-                    [t("page.stockTransfer.detail.field.notes"), transfer.notes || "-"]
+                    [t("page.stockTransfer.detail.field.notes"), transfer.notes || "-"],
+                    [t("page.stockTransfer.detail.field.reason"), transfer.reason || "-"],
+                    [
+                      t("page.stockTransfer.detail.field.expectedArrival"),
+                      transfer.expectedArrival
+                        ? new Date(transfer.expectedArrival).toLocaleDateString("id-ID")
+                        : "-"
+                    ]
                   ].map(([l, v]) => (
                     <tr key={l} className="border-b border-muted/30">
                       <td className="py-2 pr-4 text-muted-foreground w-40">{l}</td>

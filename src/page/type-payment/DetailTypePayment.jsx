@@ -182,6 +182,49 @@ const DetailTypePayment = () => {
               </div>
             </div>
             <div className="p-6 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <span className="material-symbols-outlined text-lg">percent</span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {t("page.typePayment.form.fee")}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-0.5">
+                  {item.feeType === "percent"
+                    ? `${item.fee || 0}%`
+                    : Number(item.fee) > 0
+                      ? `Rp ${Number(item.fee).toLocaleString("id-ID")}`
+                      : "-"}
+                </p>
+              </div>
+            </div>
+            <div className="p-6 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <span className="material-symbols-outlined text-lg">schedule</span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {t("page.typePayment.form.tenor")}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-0.5">
+                  {item.tenor > 0 ? `${item.tenor} hari` : "-"}
+                </p>
+              </div>
+            </div>
+            <div className="p-6 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <span className="material-symbols-outlined text-lg">sort</span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {t("page.typePayment.form.sortOrder")}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-0.5">
+                  {item.sortOrder ?? "-"}
+                </p>
+              </div>
+            </div>
+            <div className="p-6 flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/20 flex items-center justify-center text-green-600 shrink-0">
                 <span className="text-sm font-bold">{isActive ? "A" : "N"}</span>
               </div>

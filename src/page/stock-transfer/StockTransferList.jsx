@@ -143,6 +143,22 @@ const StockTransferList = () => {
       )
     },
     {
+      header: t("page.stockTransfer.list.header.reason"),
+      render: (item) => (
+        <span className="text-xs text-muted-foreground max-w-[150px] truncate block">
+          {item.reason || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.stockTransfer.list.header.expectedArrival"),
+      render: (item) => (
+        <span className="text-xs font-mono text-muted-foreground">
+          {item.expectedArrival ? new Date(item.expectedArrival).toLocaleDateString("id-ID") : "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.stockTransfer.list.header.transferredBy"),
       render: (item) => (
         <span className="text-sm">{item.transferredBy || item.transferredByData?.name || "-"}</span>

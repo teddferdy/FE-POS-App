@@ -18,7 +18,8 @@ import {
   Clock,
   ShoppingCart,
   Check,
-  Ban
+  Ban,
+  CircleOff
 } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import {
@@ -71,6 +72,7 @@ const GoodsRequestList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [approveTarget, setApproveTarget] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
+  const [cancelTarget, setCancelTarget] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
 
   const isFiltered = storeFilter !== "all" || statusFilter !== "all" || search !== "";
@@ -121,25 +123,27 @@ const GoodsRequestList = () => {
 
   const statusMutation = useMutation(({ id, status }) => changeGoodsRequestStatus(id, status), {
     onSuccess: (res) => {
-      const isApproved = res?.data?.status === "approved" || res?.data?.status === "approved";
-      toast.success(
-        t(
-          isApproved
-            ? "page.goodsRequest.list.toast.approveSuccess"
-            : "page.goodsRequest.list.toast.rejectSuccess"
-        ),
-        {
-          description: t(
-            isApproved
-              ? "page.goodsRequest.list.toast.approveSuccessDesc"
-              : "page.goodsRequest.list.toast.rejectSuccessDesc"
-          )
-        }
-      );
+      const resStatus = res?.data?.status;
+      const isApproved = resStatus === "approved";
+      const isCancelled = resStatus === "cancelled";
+      const toastKey = isApproved
+        ? "page.goodsRequest.list.toast.approveSuccess"
+        : isCancelled
+          ? "page.goodsRequest.list.toast.cancelSuccess"
+          : "page.goodsRequest.list.toast.rejectSuccess";
+      const toastDescKey = isApproved
+        ? "page.goodsRequest.list.toast.approveSuccessDesc"
+        : isCancelled
+          ? "page.goodsRequest.list.toast.cancelSuccessDesc"
+          : "page.goodsRequest.list.toast.rejectSuccessDesc";
+      toast.success(t(toastKey), {
+        description: t(toastDescKey)
+      });
       queryClient.invalidateQueries(["goods-requests"]);
       queryClient.invalidateQueries(["purchase-orders"]);
       setApproveTarget(null);
       setRejectTarget(null);
+      setCancelTarget(null);
     },
     onError: (err) =>
       toast.error(t("page.goodsRequest.list.toast.statusError"), {
@@ -156,6 +160,20 @@ const GoodsRequestList = () => {
           {item.requestNumber || "-"}
         </span>
       )
+    },
+    {
+      header: t("page.goodsRequest.list.table.poReference"),
+      stickyLeft: true,
+      render: (item) =>
+        item.purchaseOrderData?.orderNumber ? (
+          <button
+            onClick={() => navigate(`/purchase-order/detail?id=${item.purchaseOrderData.id}`)}
+            className="font-mono text-xs text-blue-600 hover:underline">
+            {item.purchaseOrderData.orderNumber}
+          </button>
+        ) : (
+          <span className="text-xs text-muted-foreground">-</span>
+        )
     },
     {
       header: t("page.goodsRequest.list.table.requestedBy"),
@@ -180,17 +198,17 @@ const GoodsRequestList = () => {
       render: (item) => <span className="text-sm">{item.store?.name || "-"}</span>
     },
     {
-      header: t("page.goodsRequest.list.table.poReference"),
-      render: (item) =>
-        item.purchaseOrderData?.orderNumber ? (
-          <button
-            onClick={() => navigate(`/purchase-order/detail?id=${item.purchaseOrderData.id}`)}
-            className="font-mono text-xs text-blue-600 hover:underline">
-            {item.purchaseOrderData.orderNumber}
-          </button>
-        ) : (
-          <span className="text-xs text-muted-foreground">-</span>
-        )
+      header: t("page.goodsRequest.list.table.neededDate"),
+      render: (item) => {
+        if (!item.neededDate) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(item.neededDate);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+          </span>
+        );
+      }
     },
     {
       header: t("page.goodsRequest.list.table.status"),
@@ -227,6 +245,7 @@ const GoodsRequestList = () => {
         { icon: Eye, label: t("common.view") },
         { icon: Check, label: t("page.goodsRequest.list.approve") },
         { icon: Ban, label: t("page.goodsRequest.list.reject") },
+        { icon: CircleOff, label: t("page.goodsRequest.list.cancel") },
         { icon: Edit, label: t("page.goodsRequest.list.editTitle") },
         { icon: Trash2, label: t("common.delete") }
       ],
@@ -284,15 +303,29 @@ const GoodsRequestList = () => {
               )}
             </>
           )}
-          {item.status === "approved" && item.purchaseOrderData && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-blue-600"
-              onClick={() => navigate(`/purchase-order/detail?id=${item.purchaseOrderData.id}`)}
-              title={t("page.goodsRequest.list.viewPO")}>
-              <ShoppingCart size={18} />
-            </Button>
+          {item.status === "approved" && (
+            <>
+              {canAccess(user, MENU_KEY, "update") && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive"
+                  onClick={() => setCancelTarget(item.id)}
+                  title={t("page.goodsRequest.list.cancel")}>
+                  <CircleOff size={18} />
+                </Button>
+              )}
+              {item.purchaseOrderData && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-blue-600"
+                  onClick={() => navigate(`/purchase-order/detail?id=${item.purchaseOrderData.id}`)}
+                  title={t("page.goodsRequest.list.viewPO")}>
+                  <ShoppingCart size={18} />
+                </Button>
+              )}
+            </>
           )}
         </div>
       )
@@ -633,6 +666,16 @@ const GoodsRequestList = () => {
                 confirmText={t("page.goodsRequest.list.modal.confirmReject")}
                 loading={statusMutation.isLoading}
                 onConfirm={() => statusMutation.mutate({ id: rejectTarget, status: "rejected" })}
+              />
+              <Modal
+                type="confirm"
+                open={!!cancelTarget}
+                onOpenChange={(o) => !o && setCancelTarget(null)}
+                title={t("page.goodsRequest.list.modal.cancelTitle")}
+                description={t("page.goodsRequest.list.modal.cancelDescription")}
+                confirmText={t("page.goodsRequest.list.modal.confirmCancel")}
+                loading={statusMutation.isLoading}
+                onConfirm={() => statusMutation.mutate({ id: cancelTarget, status: "cancelled" })}
               />
               {(deleteMutation.isLoading || statusMutation.isLoading) && (
                 <Loading fullscreen size="lg" label={t("common.loadingData")} />

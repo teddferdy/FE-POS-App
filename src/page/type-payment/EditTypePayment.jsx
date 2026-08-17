@@ -51,6 +51,10 @@ const EditTypePayment = () => {
   const formSchema = z.object({
     name: z.string().min(1, t("page.typePayment.validation.nameRequired")),
     type: z.string().min(1, t("page.typePayment.validation.typeRequired")),
+    feeType: z.string().default("fixed"),
+    fee: z.coerce.number().min(0).optional().default(0),
+    tenor: z.coerce.number().min(0).optional().default(0),
+    sortOrder: z.coerce.number().min(0).optional().default(0),
     status: z.boolean().default(true),
     store: z.string().optional()
   });
@@ -98,6 +102,10 @@ const EditTypePayment = () => {
     defaultValues: {
       name: "",
       type: "",
+      feeType: "fixed",
+      fee: 0,
+      tenor: 0,
+      sortOrder: 0,
       status: true,
       store: ""
     }
@@ -110,6 +118,10 @@ const EditTypePayment = () => {
       form.reset({
         name: item.name || "",
         type: item.type || "",
+        feeType: item.feeType || "fixed",
+        fee: Number(item.fee) || 0,
+        tenor: Number(item.tenor) || 0,
+        sortOrder: Number(item.sortOrder) || 0,
         status: statusValue,
         store: ""
       });
@@ -284,6 +296,82 @@ const EditTypePayment = () => {
                               <SelectItem value="other">Lainnya</SelectItem>
                             </SelectContent>
                           </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="feeType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.typePayment.form.feeType")}</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={t("page.typePayment.form.feeTypePlaceholder")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="fixed">
+                                {t("page.typePayment.feeType.fixed")}
+                              </SelectItem>
+                              <SelectItem value="percent">
+                                {t("page.typePayment.feeType.percent")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="fee"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.typePayment.form.fee")}</FormLabel>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder={t("page.typePayment.form.feePlaceholder")}
+                            {...field}
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="tenor"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.typePayment.form.tenor")}</FormLabel>
+                          <Input
+                            type="number"
+                            min="0"
+                            placeholder={t("page.typePayment.form.tenorPlaceholder")}
+                            {...field}
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="sortOrder"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.typePayment.form.sortOrder")}</FormLabel>
+                          <Input
+                            type="number"
+                            min="0"
+                            placeholder={t("page.typePayment.form.sortOrderPlaceholder")}
+                            {...field}
+                          />
                           <FormMessage />
                         </FormItem>
                       )}
