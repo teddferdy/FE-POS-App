@@ -3,8 +3,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
-import { Save, X, Plus, Trash2, ArrowLeft, User } from "lucide-react";
+import { Save, X, Plus, Trash2, ArrowLeft, User, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
 import { getGoodsRequestById, editGoodsRequest } from "@/services/goods-request";
 import { getAllSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,8 @@ const EditGoodsRequest = () => {
   const user = cookie?.user;
 
   const [requestedBy, setRequestedBy] = useState("");
+  const [requestDate, setRequestDate] = useState("");
+  const [neededDate, setNeededDate] = useState("");
   const [notes, setNotes] = useState("");
   const [groups, setGroups] = useState([emptyGroup()]);
   const [loaded, setLoaded] = useState(false);
@@ -94,6 +97,8 @@ const EditGoodsRequest = () => {
   useEffect(() => {
     if (request && !loaded) {
       setRequestedBy(request.requestedBy || "");
+      setRequestDate(request.requestDate || format(new Date(), "yyyy-MM-dd"));
+      setNeededDate(request.neededDate || "");
       setNotes(request.notes || "");
       setGroups(groupItems(request.items));
       setLoaded(true);
@@ -286,8 +291,22 @@ const EditGoodsRequest = () => {
       });
       return;
     }
+    if (!neededDate) {
+      toast.error(t("page.goodsRequest.edit.toast.validation"), {
+        description: t("page.goodsRequest.edit.toast.neededDateRequired")
+      });
+      return;
+    }
+    if (requestDate && neededDate && new Date(neededDate) < new Date(requestDate)) {
+      toast.error(t("page.goodsRequest.edit.toast.validation"), {
+        description: t("page.goodsRequest.edit.toast.neededDateBeforeRequest")
+      });
+      return;
+    }
     updateMutation.mutate({
       requestedBy,
+      requestDate: requestDate || null,
+      neededDate: neededDate || null,
       notes,
       items: validItems.map((it) => ({
         ingredient: it.ingredient,
@@ -373,7 +392,7 @@ const EditGoodsRequest = () => {
             doSubmit();
           }}
           className="bg-card p-4 sm:p-6 rounded-xl border border-border space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t("page.goodsRequest.edit.form.store")}</Label>
               <Input
@@ -393,6 +412,42 @@ const EditGoodsRequest = () => {
                   value={requestedBy}
                   onChange={(e) => setRequestedBy(e.target.value)}
                   placeholder={t("page.goodsRequest.edit.placeholder.requestedBy")}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("page.goodsRequest.edit.form.requestDate")}</Label>
+              <div className="relative">
+                <CalendarDays
+                  size={15}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  type="date"
+                  value={requestDate}
+                  max={neededDate || undefined}
+                  onChange={(e) => setRequestDate(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>
+                {t("page.goodsRequest.edit.form.neededDate")}{" "}
+                <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative">
+                <CalendarDays
+                  size={15}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  type="date"
+                  value={neededDate}
+                  min={requestDate || undefined}
+                  onChange={(e) => setNeededDate(e.target.value)}
+                  placeholder={t("page.goodsRequest.edit.placeholder.neededDate")}
                   className="pl-9"
                 />
               </div>

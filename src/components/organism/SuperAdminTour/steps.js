@@ -926,14 +926,6 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
   {
-    id: "profit-loss",
-    page: "/report/profit-loss",
-    icon: TrendingUp,
-    titleKey: "guide.pnl.s25b",
-    descKey: "guide.pnl.s25bdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
     id: "cash-flow",
     page: "/report/cash-flow",
     icon: Receipt,

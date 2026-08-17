@@ -173,6 +173,20 @@ const DetailTable = () => {
                 </div>
               </div>
               <div>
+                <p className="text-xs text-muted-foreground mb-1">{t("page.table.table.area")}</p>
+                <span className="font-medium capitalize">
+                  {t(`page.table.area.${table?.area || "indoor"}`)}
+                </span>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.table.table.tableType")}
+                </p>
+                <span className="font-medium capitalize">
+                  {t(`page.table.tableType.${table?.tableType || "regular"}`)}
+                </span>
+              </div>
+              <div>
                 <p className="text-xs text-muted-foreground mb-1">{t("common.status")}</p>
                 {statusBadge(table?.status, t)}
               </div>

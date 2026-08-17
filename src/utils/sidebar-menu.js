@@ -410,13 +410,6 @@ export const sidebarMenuSuperAdmin = [
         actions: ["view"]
       },
       {
-        title: "Laba / Rugi",
-        i18nKey: "sidebar.labaRugi",
-        href: "/report/profit-loss",
-        icon: TrendingUp,
-        actions: ["view"]
-      },
-      {
         title: "Arus Kas",
         i18nKey: "sidebar.arusKas",
         href: "/report/cash-flow",
@@ -1403,7 +1396,6 @@ export const urlWithArrowBack = [
     pathName: "/ingredient-category"
   },
   { url: -1, title: "Laporan Harian", i18nKey: "sidebar.laporanHarian", pathName: "/report/daily" },
-  { url: -1, title: "Laba / Rugi", i18nKey: "sidebar.labaRugi", pathName: "/report/profit-loss" },
   { url: -1, title: "Arus Kas", i18nKey: "sidebar.arusKas", pathName: "/report/cash-flow" },
   {
     url: -1,

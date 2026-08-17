@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
@@ -10,8 +10,10 @@ import { format } from "date-fns";
 import { z } from "zod";
 import { addPurchaseOrder } from "@/services/purchase-order";
 import { getAllSupplier } from "@/services/supplier";
+import { getAllIngredients } from "@/services/ingredient";
 import { getAllEmployee } from "@/services/employee";
 import { getAllLocation } from "@/services/location";
+import { normalizeStoreId, storeIdsEqual } from "@/utils/storeId";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -80,6 +82,8 @@ const AddPurchaseOrder = () => {
 
   const prefillSupplier = searchParams.get("supplier");
 
+  const lockedStore = searchParams.get("store");
+
   const [groups, setGroups] = useState(() => {
     if (prefillNames.length > 0) {
       return [
@@ -125,7 +129,9 @@ const AddPurchaseOrder = () => {
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
-  const [selectedStore, setSelectedStore] = useState(isSuperAdmin ? "" : user?.store || "");
+  const [selectedStore, setSelectedStore] = useState(
+    isSuperAdmin ? normalizeStoreId(searchParams.get("store")) : normalizeStoreId(user?.store)
+  );
   const locationParam = selectedStore;
 
   const [notes, setNotes] = useState("");
@@ -154,6 +160,64 @@ const AddPurchaseOrder = () => {
     { enabled: !!selectedStore, staleTime: 30000 }
   );
   const suppliers = suppliersData?.data || [];
+
+  const { data: prefillData } = useQuery(
+    ["ingredients-prefill", selectedStore],
+    () =>
+      getAllIngredients({
+        limit: 999,
+        status: "active",
+        store: selectedStore || undefined
+      }),
+    { enabled: !!selectedStore && prefillNames.length > 0, staleTime: 30000 }
+  );
+  const prefillIngredients = prefillData?.data;
+  const prefillResolved = useRef(false);
+
+  useEffect(() => {
+    if (prefillResolved.current || prefillNames.length === 0) return;
+    if (prefillIngredients === undefined) return;
+    prefillResolved.current = true;
+
+    const byName = {};
+    (prefillIngredients || []).forEach((ing) => {
+      if (ing?.name) byName[String(ing.name).trim().toLowerCase()] = ing;
+    });
+
+    const bySupplier = {};
+    const unassigned = [];
+    prefillNames.forEach((raw) => {
+      const name = raw.trim();
+      const ing = Object.hasOwn(byName, name.toLowerCase()) ? byName[name.toLowerCase()] : undefined;
+      if (ing?.supplier) {
+        const sid = String(ing.supplier);
+        if (!Object.hasOwn(bySupplier, sid)) bySupplier[sid] = []; // codacy-ignore-line
+        bySupplier[sid].push({ // codacy-ignore-line
+          ...emptyItem,
+          name: ing.name,
+          ingredient: ing.id,
+          ingredientName: ing.name,
+          unit: ing.unit || "pcs",
+          price: Number(ing.costPrice) || 0,
+          qty: Math.max(Number(ing.minStock) - Number(ing.stock), 1)
+        });
+      } else {
+        unassigned.push({ ...emptyItem, name, ingredientName: name });
+      }
+    });
+
+    const resolved = Object.keys(bySupplier).map((sid) => ({
+      supplier: Number(sid),
+      items: Object.hasOwn(bySupplier, sid) ? bySupplier[sid] : [] // codacy-ignore-line
+    }));
+    if (unassigned.length > 0) resolved.push({ supplier: null, items: unassigned });
+    if (resolved.length === 0) resolved.push(emptyGroup());
+    setGroups(resolved);
+
+    if (unassigned.length > 0) {
+      toast.info(t("page.purchaseOrder.add.prefillNoSupplier"));
+    }
+  }, [prefillIngredients, prefillNames]);
 
   const { data: employeesData, isLoading: employeesLoading } = useQuery(
     ["employees-dropdown", selectedStore],
@@ -575,7 +639,10 @@ const AddPurchaseOrder = () => {
                       <Combobox
                         options={[
                           { value: "", label: t("page.purchaseOrder.add.selectStore") },
-                          ...locations.map((loc) => ({ value: loc.id, label: loc.name }))
+                          ...locations.map((loc) => ({
+                            value: normalizeStoreId(loc.id),
+                            label: loc.name
+                          }))
                         ]}
                         value={selectedStore}
                         onChange={(val) => {
@@ -583,7 +650,7 @@ const AddPurchaseOrder = () => {
                           setGroups([emptyGroup()]);
                           setErrors((prev) => ({ ...prev, store: undefined }));
                         }}
-                        disabled={!isSuperAdmin}
+                        disabled={!isSuperAdmin || !!lockedStore}
                         placeholder={t("page.purchaseOrder.add.selectStore")}
                         searchPlaceholder={t("page.purchaseOrder.add.selectStore")}
                       />
@@ -616,7 +683,7 @@ const AddPurchaseOrder = () => {
                                 <span className="text-muted-foreground">
                                   {t("page.purchaseOrder.add.inStore", {
                                     storeName:
-                                      locations.find((l) => String(l.id) === String(selectedStore))
+                                      locations.find((l) => storeIdsEqual(l.id, selectedStore))
                                         ?.name || ""
                                   })}
                                 </span>
@@ -980,11 +1047,18 @@ const AddPurchaseOrder = () => {
                                             )
                                           }
                                           className="h-7 text-xs text-center"
-                                          title={`1 ${item.unit || "pcs"} = ? stok`}
-                                          aria-label={`1 ${item.unit || "pcs"} = ? stok`}
+                                          title={t("page.purchaseOrder.add.conversionPlaceholder", {
+                                            unit: item.unit || "pcs"
+                                          })}
+                                          aria-label={t(
+                                            "page.purchaseOrder.add.conversionPlaceholder",
+                                            { unit: item.unit || "pcs" }
+                                          )}
                                         />
                                         <p className="text-[10px] text-muted-foreground text-center mt-0.5">
-                                          {"1 " + (item.unit || "pcs") + " = ? stok"}
+                                          {t("page.purchaseOrder.add.conversionPlaceholder", {
+                                            unit: item.unit || "pcs"
+                                          })}
                                         </p>
                                       </div>
                                     </td>
@@ -1154,7 +1228,7 @@ const AddPurchaseOrder = () => {
                       variant="outline"
                       onClick={() => setDraftModal(true)}
                       disabled={createMutation.isLoading}>
-                      Simpan sebagai Draft
+                      {t("page.purchaseOrder.add.saveDraft")}
                     </Button>
                     <Button
                       type="button"
@@ -1214,9 +1288,9 @@ const AddPurchaseOrder = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft"
-        description="Data PO akan disimpan sebagai draft"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.purchaseOrder.add.draftModalTitle")}
+        description={t("page.purchaseOrder.add.draftModalDesc")}
+        confirmText={t("page.purchaseOrder.add.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           handleSubmit(null, true);
@@ -1263,8 +1337,7 @@ const AddPurchaseOrder = () => {
         description={t("page.purchaseOrder.add.toast.poCreated")}
         onConfirm={() => {
           if (isSuperAdmin && selectedStore) {
-            const storeName =
-              locations.find((l) => String(l.id) === String(selectedStore))?.name || "";
+            const storeName = locations.find((l) => storeIdsEqual(l.id, selectedStore))?.name || "";
             setActiveStore(selectedStore, storeName);
           }
           navigate("/purchase-order");

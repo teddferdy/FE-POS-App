@@ -47,7 +47,8 @@ import {
   deleteJournal,
   getTrialBalance,
   getIncomeStatement,
-  getBalanceSheet
+  getBalanceSheet,
+  getAccountingOverview
 } from "@/services/accounting";
 
 const formatIDR = (num) => {
@@ -336,27 +337,48 @@ const AccountsTab = ({ storeId, isAll }) => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                    <th className="px-4 py-3 font-semibold">
-                      {t("page.accounting.accounts.code")}
+                    <th className="px-4 py-3 font-semibold align-top">
+                      <span className="block">{t("page.accounting.accounts.code")}</span>
+                      <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
+                        {t("page.accounting.accounts.codeHint")}
+                      </span>
                     </th>
-                    <th className="px-4 py-3 font-semibold">
-                      {t("page.accounting.accounts.name")}
+                    <th className="px-4 py-3 font-semibold align-top">
+                      <span className="block">{t("page.accounting.accounts.name")}</span>
+                      <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
+                        {t("page.accounting.accounts.nameHint")}
+                      </span>
                     </th>
-                    <th className="px-4 py-3 font-semibold">
-                      {t("page.accounting.accounts.type")}
+                    <th className="px-4 py-3 font-semibold align-top">
+                      <span className="block">{t("page.accounting.accounts.type")}</span>
+                      <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
+                        {t("page.accounting.accounts.typeHint")}
+                      </span>
                     </th>
-                    <th className="px-4 py-3 font-semibold">
-                      {t("page.accounting.accounts.normalBalance")}
+                    <th className="px-4 py-3 font-semibold align-top">
+                      <span className="block">{t("page.accounting.accounts.normalBalance")}</span>
+                      <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
+                        {t("page.accounting.accounts.normalBalanceHint")}
+                      </span>
                     </th>
-                    <th className="px-4 py-3 font-semibold text-right">
-                      {t("page.accounting.accounts.actions")}
+                    <th className="px-4 py-3 font-semibold align-top">
+                      <span className="block">{t("page.accounting.accounts.description")}</span>
+                      <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
+                        {t("page.accounting.accounts.descriptionHint")}
+                      </span>
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-right align-top">
+                      <span className="block">{t("page.accounting.accounts.actions")}</span>
+                      <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
+                        {t("page.accounting.accounts.actionsHint")}
+                      </span>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-4">
+                      <td colSpan={6} className="px-4 py-4">
                         <EmptyState
                           icon={BookOpen}
                           title={
@@ -383,6 +405,9 @@ const AccountsTab = ({ storeId, isAll }) => {
                         </td>
                         <td className="px-4 py-2.5 text-xs text-muted-foreground capitalize">
                           {t(`page.accounting.accounts.${acc.normalBalance}`)}
+                        </td>
+                        <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[240px]">
+                          {acc.description || "-"}
                         </td>
                         <td className="px-4 py-2.5 text-right">
                           {!isAll && (
@@ -1077,15 +1102,29 @@ const TrialBalanceTab = ({ storeId, isAll }) => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                      <th className="px-4 py-3 font-semibold">{t("page.accounting.trial.code")}</th>
-                      <th className="px-4 py-3 font-semibold">
-                        {t("page.accounting.trial.account")}
+                      <th className="px-4 py-3 font-semibold align-top">
+                        <span className="block">{t("page.accounting.trial.code")}</span>
+                        <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
+                          {t("page.accounting.trial.codeHint")}
+                        </span>
                       </th>
-                      <th className="px-4 py-3 font-semibold text-right">
-                        {t("page.accounting.trial.debit")}
+                      <th className="px-4 py-3 font-semibold align-top">
+                        <span className="block">{t("page.accounting.trial.account")}</span>
+                        <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
+                          {t("page.accounting.trial.accountHint")}
+                        </span>
                       </th>
-                      <th className="px-4 py-3 font-semibold text-right">
-                        {t("page.accounting.trial.credit")}
+                      <th className="px-4 py-3 font-semibold text-right align-top">
+                        <span className="block">{t("page.accounting.trial.debit")}</span>
+                        <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
+                          {t("page.accounting.trial.debitHint")}
+                        </span>
+                      </th>
+                      <th className="px-4 py-3 font-semibold text-right align-top">
+                        <span className="block">{t("page.accounting.trial.credit")}</span>
+                        <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
+                          {t("page.accounting.trial.creditHint")}
+                        </span>
                       </th>
                     </tr>
                   </thead>
@@ -1237,7 +1276,7 @@ const IncomeStatementTab = ({ storeId, isAll }) => {
             />
           </div>
 
-          <div className="bg-card rounded-xl border border-border overflow-hidden max-w-2xl">
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
             <div className="p-5 space-y-1">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                 {t("page.accounting.income.revenue")}
@@ -1434,6 +1473,182 @@ BalanceSheetTab.propTypes = {
   isAll: PropTypes.bool
 };
 
+const AccountingOverview = ({ storeId, isAll }) => {
+  const { t } = useTranslation();
+  const [dateRange, setDateRange] = useState({ from: null, to: null });
+
+  const { data, isLoading, isError, refetch } = useQuery(
+    [
+      "accounting-overview",
+      storeId || "all",
+      dateRange?.from ? dateRange.from.toISOString() : "",
+      dateRange?.to ? dateRange.to.toISOString() : ""
+    ],
+    () =>
+      getAccountingOverview({
+        store: storeId,
+        startDate: dateRange?.from ? dateRange.from.toISOString().slice(0, 10) : undefined,
+        endDate: dateRange?.to ? dateRange.to.toISOString().slice(0, 10) : undefined
+      }),
+    { enabled: !!storeId || isAll }
+  );
+
+  const ov = data?.data;
+  const hasFilter = dateRange?.from || dateRange?.to;
+  const resetFilters = () => setDateRange({ from: null, to: null });
+
+  const periodLabel = dateRange?.from
+    ? `${formatDate(dateRange.from)} - ${formatDate(dateRange.to || dateRange.from)}`
+    : t("page.accounting.overview.allPeriod");
+
+  return (
+    <div className="bg-card rounded-xl border border-border overflow-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 px-5 pt-5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <Wallet size={18} />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold">{t("page.accounting.overview.title")}</h2>
+            <p className="text-sm text-muted-foreground">{t("page.accounting.overview.desc")}</p>
+          </div>
+        </div>
+        <div className="flex items-end gap-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("page.accounting.filter.dateRange")}
+            </label>
+            <DatePickerWithRange
+              date={dateRange}
+              setDate={setDateRange}
+              placeholder={t("page.accounting.filter.pickDateRange")}
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-10 gap-1.5 shrink-0"
+            onClick={resetFilters}
+            disabled={!hasFilter}>
+            <CalendarDays size={14} />
+            {t("page.accounting.filter.reset")}
+          </Button>
+        </div>
+      </div>
+
+      <div className="p-5">
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-28 w-full" />
+            ))}
+          </div>
+        ) : isError ? (
+          <AbortController refetch={refetch} />
+        ) : !ov ? (
+          <p className="text-sm text-muted-foreground text-center py-6">
+            {t("page.accounting.overview.notFound")}
+          </p>
+        ) : (
+          <>
+            <div className="rounded-xl p-6 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-100">
+                  {t("page.accounting.overview.totalRevenue")}
+                </p>
+                <h3 className="text-3xl sm:text-4xl font-bold mt-1">
+                  {formatIDR(ov.totalRevenue)}
+                </h3>
+                <p className="text-sm text-emerald-100 flex items-center gap-1.5 mt-1">
+                  <CalendarDays size={13} /> {t("page.accounting.overview.period")}: {periodLabel}
+                </p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
+                <TrendingUp size={26} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <StatCard
+                label={t("page.accounting.overview.cashBank")}
+                value={formatIDR(ov.cashBank)}
+                icon={Wallet}
+                variant="blue"
+              />
+              <StatCard
+                label={t("page.accounting.overview.totalExpense")}
+                value={formatIDR(ov.totalExpense)}
+                icon={TrendingDown}
+                variant="red"
+                subtitle={`${ov.journalEntryCount} ${t("page.accounting.overview.entries")}`}
+              />
+              <StatCard
+                label={
+                  ov.isProfit
+                    ? t("page.accounting.overview.netIncome")
+                    : t("page.accounting.overview.netLoss")
+                }
+                value={formatIDR(Math.abs(ov.netIncome))}
+                icon={ov.isProfit ? CheckCircle2 : AlertTriangle}
+                variant={ov.isProfit ? "gold" : "inactive"}
+                subtitle={ov.isProfit ? "▲" : "▼"}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+              <StatCard
+                label={t("page.accounting.overview.totalAssets")}
+                value={formatIDR(ov.totalAssets)}
+                icon={Landmark}
+                variant="blue"
+              />
+              <StatCard
+                label={t("page.accounting.overview.totalLiabilities")}
+                value={formatIDR(ov.totalLiabilities)}
+                icon={ReceiptText}
+                variant="gold"
+              />
+              <StatCard
+                label={t("page.accounting.overview.totalEquity")}
+                value={formatIDR(ov.totalEquity)}
+                icon={Scale}
+                variant="active"
+              />
+              <StatCard
+                label={t("page.accounting.overview.difference")}
+                value={formatIDR(Math.abs(ov.totalAssets - ov.totalLiabilitiesEquity))}
+                icon={ov.balanced ? CheckCircle2 : AlertTriangle}
+                variant={ov.balanced ? "active" : "inactive"}
+                subtitle={
+                  ov.balanced
+                    ? t("page.accounting.overview.balanced")
+                    : t("page.accounting.overview.unbalanced")
+                }
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-4 px-1 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <FileText size={13} /> {ov.journalEntryCount}{" "}
+                {t("page.accounting.overview.entries")}
+              </span>
+              <span className="text-border">|</span>
+              <span className="inline-flex items-center gap-1.5">
+                <CalendarDays size={13} /> {t("page.accounting.overview.period")}: {periodLabel}
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+AccountingOverview.propTypes = {
+  storeId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isAll: PropTypes.bool
+};
+
 const AccountingPage = () => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
@@ -1490,6 +1705,8 @@ const AccountingPage = () => {
           />
         )}
       </PageHeader>
+
+      <AccountingOverview storeId={storeId} isAll={isAll} />
 
       <Tabs defaultValue="accounts">
         <TabsList>

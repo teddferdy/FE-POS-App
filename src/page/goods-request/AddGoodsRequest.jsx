@@ -3,8 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
-import { Save, X, Plus, Trash2, ArrowLeft, User } from "lucide-react";
-import { toast } from "sonner";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Save, X, Plus, Trash2, ArrowLeft, User, CalendarDays } from "lucide-react";
+import { format } from "date-fns";
 import { addGoodsRequest } from "@/services/goods-request";
 import { getAllLocation } from "@/services/location";
 import { getAllSupplier } from "@/services/supplier";
@@ -13,11 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
-import { z } from "zod";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
-import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
-import { getMissingFields } from "@/lib/validation";
 
 const emptyItem = {
   name: "",
@@ -30,7 +30,7 @@ const emptyItem = {
   notes: ""
 };
 
-const emptyGroup = () => ({ supplier: null, items: [{ ...emptyItem }] });
+const emptyGroup = () => ({ supplier: "", items: [{ ...emptyItem }] });
 
 const unitOptions = [
   { value: "pcs", label: "pcs" },
@@ -47,6 +47,260 @@ const unitOptions = [
   { value: "karton", label: "karton" }
 ];
 
+const GoodsRequestGroup = ({
+  control,
+  groupIndex,
+  suppliers,
+  supplierItemsBySupplier,
+  canRemove,
+  storeId,
+  suppliersLoading,
+  watch,
+  getValues,
+  setValue,
+  register,
+  onRemove,
+  t
+}) => {
+  const { fields, append, remove, replace } = useFieldArray({
+    control,
+    name: `groups.${groupIndex}.items`
+  });
+
+  const supplier = watch(`groups.${groupIndex}.supplier`);
+  const items = watch(`groups.${groupIndex}.items`) || [];
+
+  const supplierOptions = useMemo(
+    () =>
+      (suppliers || []).map((sup) => ({
+        value: String(sup.id),
+        label: sup.name || sup.supplierName || `Supplier #${sup.id}`
+      })),
+    [suppliers]
+  );
+
+  const selectedItemValue = (item) => {
+    if (!supplier) return "";
+    const list = supplierItemsBySupplier[supplier] || [];
+    const match = list.find(
+      (opt) =>
+        (item.product && item.product === opt.productId) ||
+        (item.ingredientName && item.ingredientName === opt.name) ||
+        (item.productName && item.productName === opt.name)
+    );
+    return match?.value || "";
+  };
+
+  const itemOptionsForRow = (iIdx) => {
+    if (!supplier) return [];
+    const list = supplierItemsBySupplier[supplier] || [];
+    const taken = new Set();
+    (items || []).forEach((other, j) => {
+      if (j === iIdx) return;
+      const val = selectedItemValue(other);
+      if (val) taken.add(val);
+    });
+    return list
+      .filter((it) => !taken.has(it.value))
+      .map((it) => ({ value: it.value, label: it.name }));
+  };
+
+  const pickItemOption = (iIdx, value) => {
+    const list = supplierItemsBySupplier[supplier] || [];
+    const opt = list.find((o) => o.value === value);
+    const current = getValues(`groups.${groupIndex}.items.${iIdx}`) || {};
+    if (!opt) {
+      setValue(
+        `groups.${groupIndex}.items.${iIdx}`,
+        {
+          ...current,
+          name: "",
+          ingredient: null,
+          ingredientName: null,
+          product: null,
+          productName: null
+        },
+        { shouldValidate: true }
+      );
+      return;
+    }
+    if (opt.productId) {
+      setValue(
+        `groups.${groupIndex}.items.${iIdx}`,
+        {
+          ...current,
+          name: opt.name,
+          product: opt.productId,
+          productName: opt.name,
+          ingredient: null,
+          ingredientName: null,
+          unit: opt.unit || current.unit
+        },
+        { shouldValidate: true }
+      );
+    } else {
+      setValue(
+        `groups.${groupIndex}.items.${iIdx}`,
+        {
+          ...current,
+          name: opt.name,
+          ingredient: null,
+          ingredientName: opt.name,
+          product: null,
+          productName: null,
+          unit: opt.unit || current.unit
+        },
+        { shouldValidate: true }
+      );
+    }
+  };
+
+  return (
+    <div className="border rounded-lg overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 border-b bg-muted/40">
+        <Label className="shrink-0 text-xs text-muted-foreground">
+          {t("page.goodsRequest.add.table.supplier")}
+        </Label>
+        <div className="flex-1 min-w-[220px]">
+          <Controller
+            control={control}
+            name={`groups.${groupIndex}.supplier`}
+            render={({ field }) => (
+              <Combobox
+                options={supplierOptions}
+                value={field.value ? String(field.value) : ""}
+                onChange={(val) => {
+                  field.onChange(val);
+                  replace([{ ...emptyItem }]);
+                }}
+                placeholder={t("page.goodsRequest.add.placeholder.selectSupplier")}
+                searchPlaceholder={t("common.search")}
+                emptyMessage={t("page.goodsRequest.add.table.noSupplier")}
+                disabled={!storeId || suppliersLoading}
+              />
+            )}
+          />
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+          onClick={onRemove}
+          disabled={!canRemove}>
+          <Trash2 size={14} />
+        </Button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[760px]">
+          <thead>
+            <tr className="border-b">
+              <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                {t("page.goodsRequest.add.table.name")}
+              </th>
+              <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                {t("page.goodsRequest.add.table.qty")}
+              </th>
+              <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                {t("page.goodsRequest.add.table.unit")}
+              </th>
+              <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                {t("page.goodsRequest.add.table.notes")}
+              </th>
+              <th className="w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {fields.map((field, iIdx) => {
+              const item = Object.hasOwn(items, iIdx) ? items[iIdx] : {}; // codacy-ignore-line
+              return (
+                <tr key={field.id} className="border-b border-muted/20">
+                  <td className="px-3 py-2 min-w-[280px]">
+                    <Combobox
+                      options={itemOptionsForRow(iIdx)}
+                      value={selectedItemValue(item)}
+                      onChange={(val) => pickItemOption(iIdx, val)}
+                      placeholder={t("page.goodsRequest.add.placeholder.selectItem")}
+                      searchPlaceholder={t("common.search")}
+                      emptyMessage={t("page.goodsRequest.add.table.noItem")}
+                      disabled={!supplier}
+                    />
+                    {item.name && !selectedItemValue(item) && (
+                      <p className="text-[10px] text-muted-foreground mt-1 truncate">{item.name}</p>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    <Controller
+                      control={control}
+                      name={`groups.${groupIndex}.items.${iIdx}.qty`}
+                      render={({ field: qtyField }) => (
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          value={qtyField.value === 0 ? "" : String(qtyField.value)}
+                          onChange={(e) =>
+                            qtyField.onChange(Number(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                          }
+                          className="h-8 text-xs text-center w-20 mx-auto"
+                          placeholder="0"
+                        />
+                      )}
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex justify-center">
+                      <Controller
+                        control={control}
+                        name={`groups.${groupIndex}.items.${iIdx}.unit`}
+                        render={({ field: unitField }) => (
+                          <Combobox
+                            options={unitOptions}
+                            value={unitField.value}
+                            onChange={unitField.onChange}
+                            placeholder="pcs"
+                            searchPlaceholder={t("common.search")}
+                          />
+                        )}
+                      />
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Input
+                      {...register(`groups.${groupIndex}.items.${iIdx}.notes`)}
+                      className="h-8 text-xs"
+                      placeholder={t("page.goodsRequest.add.placeholder.notes")}
+                    />
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      onClick={() => remove(iIdx)}
+                      className="text-muted-foreground/40 hover:text-destructive">
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="p-3 border-t">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => append({ ...emptyItem })}
+          className="gap-1">
+          <Plus size={14} /> {t("page.goodsRequest.add.form.addItem")}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const AddGoodsRequest = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -55,37 +309,96 @@ const AddGoodsRequest = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const [storeId, setStoreId] = useState(isSuperAdmin ? "" : user?.store || "");
-  const [requestedBy, setRequestedBy] = useState("");
-  const [notes, setNotes] = useState("");
-  const [groups, setGroups] = useState([emptyGroup()]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
-  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
-  const [missingFields, setMissingFields] = useState([]);
   const [changeStoreModal, setChangeStoreModal] = useState(false);
   const [pendingStoreId, setPendingStoreId] = useState("");
   const [successModal, setSuccessModal] = useState(false);
 
-  const fieldLabels = {
-    storeId: t("page.goodsRequest.add.form.store"),
-    items: t("page.goodsRequest.add.form.items")
-  };
+  const goodsRequestSchema = z
+    .object({
+      storeId: z.union([
+        z.string().min(1, t("page.goodsRequest.add.toast.storeRequired")),
+        z.number()
+      ]),
+      requestedBy: z.string().optional(),
+      requestDate: z.string().min(1),
+      neededDate: z.string().min(1, t("page.goodsRequest.add.toast.neededDateRequired")),
+      notes: z.string().optional(),
+      groups: z
+        .array(
+          z.object({
+            supplier: z.string().min(1, t("page.goodsRequest.add.toast.supplierRequired")),
+            items: z.array(
+              z.object({
+                name: z.string().min(1, t("page.goodsRequest.add.toast.itemRequired")),
+                qty: z.number().min(1, t("page.goodsRequest.add.toast.itemRequired")),
+                unit: z.string().min(1),
+                notes: z.string().optional()
+              })
+            )
+          })
+        )
+        .min(1, t("page.goodsRequest.add.toast.itemRequired"))
+    })
+    .superRefine((data, ctx) => {
+      if (
+        data.requestDate &&
+        data.neededDate &&
+        new Date(data.neededDate) < new Date(data.requestDate)
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["neededDate"],
+          message: t("page.goodsRequest.add.toast.neededDateBeforeRequest")
+        });
+      }
+      const validItems = data.groups.flatMap((g) => g.items.filter((it) => it.name && it.qty > 0));
+      if (validItems.length === 0) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["groups"],
+          message: t("page.goodsRequest.add.toast.itemRequired")
+        });
+      }
+    });
 
-  const formSchema = z.object({
-    storeId: z.union([z.string().min(1), z.number().min(1)]),
-    items: z
-      .array(
-        z.object({
-          name: z.string().min(1),
-          qty: z.number().min(1)
-        })
-      )
-      .min(1)
+  const form = useForm({
+    resolver: zodResolver(goodsRequestSchema),
+    mode: "onChange",
+    defaultValues: {
+      storeId: isSuperAdmin ? "" : user?.store || "",
+      requestedBy: "",
+      requestDate: format(new Date(), "yyyy-MM-dd"),
+      neededDate: "",
+      notes: "",
+      groups: [emptyGroup()]
+    }
   });
+
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    watch,
+    getValues,
+    setValue,
+    trigger
+  } = form;
+
+  const {
+    fields: groupFields,
+    append: appendGroup,
+    remove: removeGroup
+  } = useFieldArray({
+    control,
+    name: "groups"
+  });
+
+  const storeId = watch("storeId");
 
   const { data: locData } = useQuery(["locations-goods-request-add"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -105,15 +418,6 @@ const AddGoodsRequest = () => {
   );
   const suppliers = suppliersData?.data || [];
 
-  const supplierOptions = useMemo(
-    () =>
-      (suppliers || []).map((sup) => ({
-        value: String(sup.id),
-        label: sup.name || sup.supplierName || `Supplier #${sup.id}`
-      })),
-    [suppliers]
-  );
-
   const supplierItemsBySupplier = useMemo(() => {
     const map = {};
     for (const sup of suppliers || []) {
@@ -127,166 +431,42 @@ const AddGoodsRequest = () => {
     return map;
   }, [suppliers]);
 
-  const selectedItemValue = (item, supplier) => {
-    if (!supplier) return "";
-    const list = supplierItemsBySupplier[supplier] || [];
-    const match = list.find(
-      (opt) =>
-        (item.product && item.product === opt.productId) ||
-        (item.ingredientName && item.ingredientName === opt.name) ||
-        (item.productName && item.productName === opt.name)
+  const hasFilledItems = useMemo(() => {
+    const groups = getValues("groups") || [];
+    return groups.some(
+      (g) =>
+        g.supplier ||
+        (g.items || []).some((it) => it.name.trim() !== "" || it.ingredient || it.product)
     );
-    return match?.value || "";
-  };
-
-  const itemOptionsForRow = (gIdx, iIdx, supplier) => {
-    if (!supplier) return [];
-    const list = supplierItemsBySupplier[supplier] || [];
-    const taken = new Set();
-    const group = groups[gIdx];
-    (group?.items || []).forEach((other, j) => {
-      if (j === iIdx) return;
-      const val = selectedItemValue(other, supplier);
-      if (val) taken.add(val);
-    });
-    return list
-      .filter((it) => !taken.has(it.value))
-      .map((it) => ({ value: it.value, label: it.name }));
-  };
+  }, [getValues, storeId, groupFields]);
 
   const allItems = useMemo(
     () =>
-      groups.flatMap((g) =>
-        g.items.map((it) => ({
+      (getValues("groups") || []).flatMap((g) =>
+        (g.items || []).map((it) => ({
           name: it.name,
           qty: it.qty,
           supplier: g.supplier
         }))
       ),
-    [groups]
+    [getValues, groupFields]
   );
 
-  const hasFilledItems = useMemo(
-    () =>
-      groups.some(
-        (g) =>
-          g.supplier || g.items.some((it) => it.name.trim() !== "" || it.ingredient || it.product)
-      ),
-    [groups]
-  );
-
-  const addGroup = () => setGroups((prev) => [...prev, emptyGroup()]);
-
-  const removeGroup = (gIdx) => setGroups((prev) => prev.filter((_, i) => i !== gIdx));
-
-  const addItem = (gIdx) =>
-    setGroups((prev) =>
-      prev.map((g, i) => (i === gIdx ? { ...g, items: [...g.items, { ...emptyItem }] } : g))
-    );
-
-  const removeItem = (gIdx, iIdx) =>
-    setGroups((prev) =>
-      prev.map((g, i) => (i === gIdx ? { ...g, items: g.items.filter((_, j) => j !== iIdx) } : g))
-    );
-
-  const updateItem = (gIdx, iIdx, field, value) =>
-    setGroups((prev) =>
-      prev.map((g, i) =>
-        i === gIdx
-          ? {
-              ...g,
-              items: g.items.map((it, j) => (j === iIdx ? { ...it, [field]: value } : it))
-            }
-          : g
-      )
-    );
-
-  const pickGroupSupplier = (gIdx, value) => {
-    const supplierId = value ? Number(value) : null;
-    setGroups((prev) =>
-      prev.map((g, i) =>
-        i === gIdx ? { supplier: supplierId, items: g.items.map(() => ({ ...emptyItem })) } : g
-      )
-    );
-  };
-
-  const pickItemOption = (gIdx, iIdx, value) => {
-    setGroups((prev) =>
-      prev.map((g, gi) => {
-        if (gi !== gIdx) return g;
-        const list = supplierItemsBySupplier[g.supplier] || [];
-        const opt = list.find((o) => o.value === value);
-        return {
-          ...g,
-          items: g.items.map((it, ii) => {
-            if (ii !== iIdx) return it;
-            if (!opt) {
-              return {
-                ...it,
-                name: "",
-                ingredient: null,
-                ingredientName: null,
-                product: null,
-                productName: null
-              };
-            }
-            if (opt.productId) {
-              return {
-                ...it,
-                name: opt.name,
-                product: opt.productId,
-                productName: opt.name,
-                ingredient: null,
-                ingredientName: null,
-                unit: opt.unit || it.unit
-              };
-            }
-            return {
-              ...it,
-              name: opt.name,
-              ingredient: null,
-              ingredientName: opt.name,
-              product: null,
-              productName: null,
-              unit: opt.unit || it.unit
-            };
-          })
-        };
-      })
-    );
-  };
-
-  const doSubmit = async () => {
-    if (!storeId) {
-      toast.error(t("page.goodsRequest.add.toast.validation"), {
-        description: t("page.goodsRequest.add.toast.storeRequired")
-      });
-      return;
-    }
-    const validItems = [];
-    for (const g of groups) {
-      for (const it of g.items) {
-        if (it.name.trim() && it.qty > 0) validItems.push({ ...it, supplier: g.supplier });
-      }
-    }
-    if (validItems.length === 0) {
-      toast.error(t("page.goodsRequest.add.toast.validation"), {
-        description: t("page.goodsRequest.add.toast.itemRequired")
-      });
-      return;
-    }
-    if (validItems.some((it) => !it.supplier)) {
-      toast.error(t("page.goodsRequest.add.toast.validation"), {
-        description: t("page.goodsRequest.add.toast.supplierRequired")
-      });
-      return;
-    }
+  const doSubmit = async (data) => {
     setIsSubmitting(true);
     try {
+      const validItems = [];
+      for (const g of data.groups) {
+        for (const it of g.items) {
+          if (it.name.trim() && it.qty > 0) validItems.push({ ...it, supplier: g.supplier });
+        }
+      }
       await addGoodsRequest({
-        store: storeId,
-        requestedBy,
-        notes,
+        store: data.storeId,
+        requestedBy: data.requestedBy,
+        requestDate: data.requestDate || null,
+        neededDate: data.neededDate || null,
+        notes: data.notes,
         items: validItems.map((it) => ({
           ingredient: it.ingredient,
           ingredientName: it.ingredientName || null,
@@ -342,35 +522,41 @@ const AddGoodsRequest = () => {
         </div>
 
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            doSubmit();
-          }}
+          onSubmit={handleSubmit((data) => doSubmit(data))}
           className="bg-card p-4 sm:p-6 rounded-xl border border-border space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>
                 {t("page.goodsRequest.add.form.store")} <span className="text-destructive">*</span>
               </Label>
-              <Combobox
-                options={[
-                  { value: "", label: t("page.goodsRequest.add.form.selectStore") },
-                  ...locations.map((loc) => ({ value: loc.id, label: loc.name }))
-                ]}
-                value={storeId}
-                onChange={(val) => {
-                  if (val === storeId) return;
-                  if (storeId && hasFilledItems) {
-                    setPendingStoreId(val);
-                    setChangeStoreModal(true);
-                    return;
-                  }
-                  setStoreId(val);
-                }}
-                disabled={!isSuperAdmin}
-                placeholder={t("page.goodsRequest.add.form.selectStore")}
-                searchPlaceholder={t("common.search")}
+              <Controller
+                control={control}
+                name="storeId"
+                render={({ field }) => (
+                  <Combobox
+                    options={[
+                      { value: "", label: t("page.goodsRequest.add.form.selectStore") },
+                      ...locations.map((loc) => ({ value: loc.id, label: loc.name }))
+                    ]}
+                    value={field.value}
+                    onChange={(val) => {
+                      if (val === field.value) return;
+                      if (field.value && hasFilledItems) {
+                        setPendingStoreId(val);
+                        setChangeStoreModal(true);
+                        return;
+                      }
+                      field.onChange(val);
+                    }}
+                    disabled={!isSuperAdmin}
+                    placeholder={t("page.goodsRequest.add.form.selectStore")}
+                    searchPlaceholder={t("common.search")}
+                  />
+                )}
               />
+              {errors.storeId && (
+                <p className="text-xs text-destructive">{errors.storeId.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>{t("page.goodsRequest.add.form.requestedBy")}</Label>
@@ -380,12 +566,48 @@ const AddGoodsRequest = () => {
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
                 <Input
-                  value={requestedBy}
-                  onChange={(e) => setRequestedBy(e.target.value)}
+                  {...form.register("requestedBy")}
                   placeholder={t("page.goodsRequest.add.placeholder.requestedBy")}
                   className="pl-9"
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("page.goodsRequest.add.form.requestDate")}</Label>
+              <div className="relative">
+                <CalendarDays
+                  size={15}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  type="date"
+                  {...form.register("requestDate")}
+                  max={watch("neededDate") || undefined}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>
+                {t("page.goodsRequest.add.form.neededDate")}{" "}
+                <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative">
+                <CalendarDays
+                  size={15}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  type="date"
+                  {...form.register("neededDate")}
+                  min={watch("requestDate") || undefined}
+                  placeholder={t("page.goodsRequest.add.placeholder.neededDate")}
+                  className="pl-9"
+                />
+              </div>
+              {errors.neededDate && (
+                <p className="text-xs text-destructive">{errors.neededDate.message}</p>
+              )}
             </div>
           </div>
 
@@ -394,140 +616,34 @@ const AddGoodsRequest = () => {
               {t("page.goodsRequest.add.form.items")} <span className="text-destructive">*</span>
             </Label>
 
-            {groups.map((group, gIdx) => (
-              <div key={gIdx} className="border rounded-lg overflow-hidden">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 border-b bg-muted/40">
-                  <Label className="shrink-0 text-xs text-muted-foreground">
-                    {t("page.goodsRequest.add.table.supplier")}
-                  </Label>
-                  <div className="flex-1 min-w-[220px]">
-                    <Combobox
-                      options={supplierOptions}
-                      value={group.supplier ? String(group.supplier) : ""}
-                      onChange={(val) => pickGroupSupplier(gIdx, val)}
-                      placeholder={t("page.goodsRequest.add.placeholder.selectSupplier")}
-                      searchPlaceholder={t("common.search")}
-                      emptyMessage={t("page.goodsRequest.add.table.noSupplier")}
-                      disabled={!storeId || suppliersLoading}
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                    onClick={() => removeGroup(gIdx)}
-                    disabled={groups.length === 1}>
-                    <Trash2 size={14} />
-                  </Button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm min-w-[760px]">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                          {t("page.goodsRequest.add.table.name")}
-                        </th>
-                        <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                          {t("page.goodsRequest.add.table.qty")}
-                        </th>
-                        <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                          {t("page.goodsRequest.add.table.unit")}
-                        </th>
-                        <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                          {t("page.goodsRequest.add.table.notes")}
-                        </th>
-                        <th className="w-10"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {group.items.map((item, iIdx) => (
-                        <tr key={iIdx} className="border-b border-muted/20">
-                          <td className="px-3 py-2 min-w-[280px]">
-                            <Combobox
-                              options={itemOptionsForRow(gIdx, iIdx, group.supplier)}
-                              value={selectedItemValue(item, group.supplier)}
-                              onChange={(val) => pickItemOption(gIdx, iIdx, val)}
-                              placeholder={t("page.goodsRequest.add.placeholder.selectItem")}
-                              searchPlaceholder={t("common.search")}
-                              emptyMessage={t("page.goodsRequest.add.table.noItem")}
-                              disabled={!group.supplier}
-                            />
-                            {item.name && !selectedItemValue(item, group.supplier) && (
-                              <p className="text-[10px] text-muted-foreground mt-1 truncate">
-                                {item.name}
-                              </p>
-                            )}
-                          </td>
-                          <td className="px-3 py-2">
-                            <Input
-                              type="text"
-                              inputMode="numeric"
-                              value={item.qty === 0 ? "" : String(item.qty)}
-                              onChange={(e) =>
-                                updateItem(
-                                  gIdx,
-                                  iIdx,
-                                  "qty",
-                                  Number(e.target.value.replace(/[^0-9]/g, "")) || 0
-                                )
-                              }
-                              className="h-8 text-xs text-center w-20 mx-auto"
-                              placeholder="0"
-                            />
-                          </td>
-                          <td className="px-3 py-2">
-                            <div className="flex justify-center">
-                              <Combobox
-                                options={unitOptions}
-                                value={item.unit}
-                                onChange={(val) => updateItem(gIdx, iIdx, "unit", val)}
-                                placeholder="pcs"
-                                searchPlaceholder={t("common.search")}
-                              />
-                            </div>
-                          </td>
-                          <td className="px-3 py-2">
-                            <Input
-                              value={item.notes}
-                              onChange={(e) => updateItem(gIdx, iIdx, "notes", e.target.value)}
-                              className="h-8 text-xs"
-                              placeholder={t("page.goodsRequest.add.placeholder.notes")}
-                            />
-                          </td>
-                          <td className="px-3 py-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => removeItem(gIdx, iIdx)}
-                              className="text-muted-foreground/40 hover:text-destructive">
-                              <Trash2 size={14} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="p-3 border-t">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addItem(gIdx)}
-                    className="gap-1">
-                    <Plus size={14} /> {t("page.goodsRequest.add.form.addItem")}
-                  </Button>
-                </div>
-              </div>
+            {groupFields.map((field, gIdx) => (
+              <GoodsRequestGroup
+                key={field.id}
+                control={control}
+                groupIndex={gIdx}
+                suppliers={suppliers}
+                supplierItemsBySupplier={supplierItemsBySupplier}
+                canRemove={groupFields.length > 1}
+                storeId={storeId}
+                suppliersLoading={suppliersLoading}
+                watch={watch}
+                getValues={getValues}
+                setValue={setValue}
+                register={form.register}
+                onRemove={() => removeGroup(gIdx)}
+                t={t}
+              />
             ))}
+
+            {errors.groups?.message && (
+              <p className="text-xs text-destructive">{errors.groups.message}</p>
+            )}
 
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={addGroup}
+              onClick={() => appendGroup(emptyGroup())}
               disabled={!storeId || suppliersLoading}
               className="gap-1">
               <Plus size={14} /> {t("page.goodsRequest.add.form.addSupplier")}
@@ -538,8 +654,7 @@ const AddGoodsRequest = () => {
             <Label>{t("page.goodsRequest.add.form.notesLabel")}</Label>
             <Textarea
               rows={2}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              {...form.register("notes")}
               placeholder={t("page.goodsRequest.add.placeholder.notes")}
             />
           </div>
@@ -556,17 +671,9 @@ const AddGoodsRequest = () => {
               type="button"
               className="w-full sm:w-auto justify-center"
               disabled={isSubmitting || allItems.length === 0}
-              onClick={() => {
-                const missing = getMissingFields(
-                  { storeId, items: allItems },
-                  formSchema,
-                  fieldLabels
-                );
-                if (missing.length > 0) {
-                  setMissingFields(missing);
-                  setMissingFieldsModal(true);
-                  return;
-                }
+              onClick={async () => {
+                const ok = await trigger();
+                if (!ok) return;
                 setConfirmModal(true);
               }}>
               <Save size={16} className="mr-1" />{" "}
@@ -602,7 +709,7 @@ const AddGoodsRequest = () => {
           confirmText={t("page.goodsRequest.add.confirmModal.confirm")}
           onConfirm={() => {
             setConfirmModal(false);
-            doSubmit();
+            doSubmit(getValues());
           }}
         />
         <Modal
@@ -613,16 +720,11 @@ const AddGoodsRequest = () => {
           description={t("page.goodsRequest.add.changeStoreModal.description")}
           confirmText={t("page.goodsRequest.add.changeStoreModal.confirm")}
           onConfirm={() => {
-            setGroups([emptyGroup()]);
-            setStoreId(pendingStoreId);
+            setValue("groups", [emptyGroup()]);
+            setValue("storeId", pendingStoreId);
             setChangeStoreModal(false);
             setPendingStoreId("");
           }}
-        />
-        <MissingFieldsModal
-          open={missingFieldsModal}
-          onOpenChange={setMissingFieldsModal}
-          fields={missingFields}
         />
         <Modal
           type="success"

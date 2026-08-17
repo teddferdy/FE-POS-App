@@ -42,7 +42,6 @@ const tipsKeys = {
   "/report/sales": ["tips.report", "tips.report2"],
   "/best-selling": ["tips.report", "tips.report2"],
   "/report/daily": ["tips.report", "tips.report2"],
-  "/report/profit-loss": ["tips.report", "tips.report2"],
   "/report/cash-flow": ["tips.report", "tips.report2"],
   "/invoice-page": ["tips.invoice", "tips.invoice2", "tips.invoice3"],
   "/cashier": ["tips.cashier", "tips.cashier2", "tips.cashier3"],

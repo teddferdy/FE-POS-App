@@ -32,6 +32,7 @@ export const getAllExpenses = async (payload) => {
   if (payload?.search) params.append("search", payload.search);
   if (payload?.status) params.append("status", payload.status);
   if (payload?.categoryId) params.append("categoryId", payload.categoryId);
+  if (payload?.isActive) params.append("isActive", payload.isActive);
   if (payload?.startDate) params.append("startDate", payload.startDate);
   if (payload?.endDate) params.append("endDate", payload.endDate);
   const { data, status } = await axiosInstance.get(`/expense/get-all?${params}`);
@@ -103,6 +104,12 @@ export const markExpensePaid = async (id, payload = {}) => {
 
 export const markExpenseUnpaid = async (id) => {
   const { data, status } = await axiosInstance.put(`/expense/mark-unpaid/${id}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const setExpenseActive = async (id, isActive) => {
+  const { data, status } = await axiosInstance.put(`/expense/set-active/${id}`, { isActive });
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };

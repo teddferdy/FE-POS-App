@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
-import { getCategoryById } from "@/services/category";
+import { getCategoryById, getAllCategory } from "@/services/category";
 import { getAllProduct } from "@/services/product";
 
 const statusBadge = (status, t) => {
@@ -45,6 +45,11 @@ const DetailCategory = () => {
     () => getCategoryById({ id }),
     { enabled: !!id }
   );
+
+  const { data: categoryOptions } = useQuery(["categories-all"], () => getAllCategory(), {
+    enabled: !!data
+  });
+  const allCategories = categoryOptions?.data || categoryOptions?.categories || [];
 
   const { data: productData, isLoading: productLoading } = useQuery(
     ["category-products", id],
@@ -184,11 +189,34 @@ const DetailCategory = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">{t("page.category.form.name")}</p>
-                <p className="font-medium">{category.name || "-"}</p>
+                <p className="font-medium flex items-center gap-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full inline-block shrink-0"
+                    style={{ backgroundColor: category.color || "#0f172a" }}
+                  />
+                  {category.name || "-"}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">{t("page.category.value")}</p>
                 <p className="font-medium">{category.value || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.category.form.parentCategory")}
+                </p>
+                <p className="font-medium">
+                  {category.parentId
+                    ? allCategories.find((c) => String(c.id) === String(category.parentId))?.name ||
+                      `#${category.parentId}`
+                    : "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.category.form.sortOrder")}
+                </p>
+                <p className="font-medium">{category.sortOrder ?? "-"}</p>
               </div>
               <div className="md:col-span-2">
                 <p className="text-xs text-muted-foreground mb-1">

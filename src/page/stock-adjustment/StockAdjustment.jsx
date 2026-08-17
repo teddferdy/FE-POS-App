@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Save, Search, Package, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -46,17 +49,59 @@ const StockAdjustment = () => {
     enabled: isSuperAdmin
   });
 
-  const [storeFilter, setStoreFilter] = useState("");
-  const [product, setProduct] = useState(null);
   const [productOpen, setProductOpen] = useState(false);
-  const [sign, setSign] = useState("+");
-  const [value, setValue] = useState("");
-  const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const adjustmentSchema = z.object({
+    store: z
+      .string()
+      .min(1, t("page.stockAdjustment.validation.storeRequired"))
+      .refine((s) => s && s !== "all", {
+        message: t("page.stockAdjustment.validation.storeRequired")
+      }),
+    product: z
+      .object({
+        id: z.any(),
+        nameProduct: z.string(),
+        stock: z.any().optional()
+      })
+      .nullable()
+      .refine((p) => !!p, { message: t("page.stockAdjustment.validation.productRequired") }),
+    sign: z.string().min(1),
+    value: z
+      .string()
+      .min(1, t("page.stockAdjustment.validation.qtyRequired"))
+      .refine((v) => {
+        const n = parseInt(v, 10);
+        return !isNaN(n) && n > 0;
+      }, t("page.stockAdjustment.validation.qtyRequired")),
+    reason: z.string().optional()
+  });
+
+  const form = useForm({
+    resolver: zodResolver(adjustmentSchema),
+    mode: "onChange",
+    defaultValues: {
+      store: isSuperAdmin ? "all" : store || "",
+      product: null,
+      sign: "+",
+      value: "",
+      reason: ""
+    }
+  });
+
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    watch,
+    setValue
+  } = form;
+
+  const selectedStore = watch("store");
   const queryStore = isSuperAdmin
-    ? storeFilter && storeFilter !== "all"
-      ? storeFilter
+    ? selectedStore && selectedStore !== "all"
+      ? selectedStore
       : ""
     : store;
 
@@ -67,36 +112,24 @@ const StockAdjustment = () => {
   );
   const products = productsData?.data || [];
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isSuperAdmin && (!storeFilter || storeFilter === "all")) {
-      toast.error(t("page.stockAdjustment.validation.storeRequired"));
-      return;
-    }
-    if (!product) {
-      toast.error(t("page.stockAdjustment.validation.productRequired"));
-      return;
-    }
-    const val = parseInt(value, 10);
-    if (isNaN(val) || val <= 0) {
-      toast.error(t("page.stockAdjustment.validation.qtyRequired"));
-      return;
-    }
+  const onSubmit = async (data) => {
+    const val = parseInt(data.value, 10);
     setSubmitting(true);
     try {
       await adjustStock({
-        productId: product.id,
-        sign,
+        productId: data.product.id,
+        sign: data.sign,
         value: val,
-        reason,
-        storeId: isSuperAdmin ? storeFilter : undefined
+        reason: data.reason,
+        storeId: isSuperAdmin ? data.store : undefined
       });
       toast.success(t("page.stockAdjustment.toast.success"));
       queryClient.invalidateQueries(["products-adjustment"]);
-      setProduct(null);
-      setSign("+");
-      setValue("");
-      setReason("");
+      setValue("product", null);
+      setValue("sign", "+");
+      setValue("value", "");
+      setValue("reason", "");
+      form.trigger();
     } catch (err) {
       toast.error(err.message || t("page.stockAdjustment.toast.error"));
     } finally {
@@ -135,7 +168,7 @@ const StockAdjustment = () => {
           {productsLoading ? (
             <Loading />
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <Card className="p-6 shadow-sm border-muted space-y-5">
                 {isSuperAdmin && (
                   <div className="space-y-2">
@@ -143,17 +176,21 @@ const StockAdjustment = () => {
                       {t("page.stockAdjustment.form.store")}{" "}
                       <span className="text-destructive">*</span>
                     </Label>
-                    <StoreFilter
-                      locations={locData?.data || []}
-                      value={storeFilter}
-                      onChange={setStoreFilter}
-                      isSuperAdmin={isSuperAdmin}
-                      t={t}
+                    <Controller
+                      control={control}
+                      name="store"
+                      render={({ field }) => (
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={field.value}
+                          onChange={field.onChange}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                      )}
                     />
-                    {!queryStore && (
-                      <p className="text-xs text-amber-600 dark:text-amber-400">
-                        {t("page.stockAdjustment.validation.storeRequired")}
-                      </p>
+                    {errors.store && (
+                      <p className="text-xs text-destructive">{errors.store.message}</p>
                     )}
                   </div>
                 )}
@@ -162,46 +199,55 @@ const StockAdjustment = () => {
                     {t("page.stockAdjustment.form.product")}{" "}
                     <span className="text-destructive">*</span>
                   </Label>
-                  <Popover open={productOpen} onOpenChange={setProductOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className="w-full justify-between h-9">
-                        {product
-                          ? `${product.nameProduct} (${t("page.stockAdjustment.form.stockAvailable")}: ${product.stock || 0})`
-                          : t("page.stockAdjustment.form.productPlaceholder")}
-                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
-                        <CommandInput
-                          placeholder={t("page.stockAdjustment.form.productPlaceholder")}
-                        />
-                        <CommandList>
-                          <CommandEmpty>
-                            {t("page.stockAdjustment.form.productPlaceholder")}
-                          </CommandEmpty>
-                          {products.map((p) => (
-                            <CommandItem
-                              key={p.id}
-                              value={`${p.id}-${p.nameProduct}`}
-                              onSelect={() => {
-                                setProduct(p);
-                                setProductOpen(false);
-                              }}>
-                              <Package className="mr-2 h-4 w-4 shrink-0" />
-                              <span className="flex-1">{p.nameProduct}</span>
-                              <span className="text-muted-foreground text-sm">
-                                {t("page.stockAdjustment.form.stockAvailable")}: {p.stock || 0}
-                              </span>
-                            </CommandItem>
-                          ))}
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <Controller
+                    control={control}
+                    name="product"
+                    render={({ field }) => (
+                      <Popover open={productOpen} onOpenChange={setProductOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="w-full justify-between h-9">
+                            {field.value
+                              ? `${field.value.nameProduct} (${t("page.stockAdjustment.form.stockAvailable")}: ${field.value.stock || 0})`
+                              : t("page.stockAdjustment.form.productPlaceholder")}
+                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command>
+                            <CommandInput
+                              placeholder={t("page.stockAdjustment.form.productPlaceholder")}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                {t("page.stockAdjustment.form.productPlaceholder")}
+                              </CommandEmpty>
+                              {products.map((p) => (
+                                <CommandItem
+                                  key={p.id}
+                                  value={`${p.id}-${p.nameProduct}`}
+                                  onSelect={() => {
+                                    field.onChange(p);
+                                    setProductOpen(false);
+                                  }}>
+                                  <Package className="mr-2 h-4 w-4 shrink-0" />
+                                  <span className="flex-1">{p.nameProduct}</span>
+                                  <span className="text-muted-foreground text-sm">
+                                    {t("page.stockAdjustment.form.stockAvailable")}: {p.stock || 0}
+                                  </span>
+                                </CommandItem>
+                              ))}
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  />
+                  {errors.product && (
+                    <p className="text-xs text-destructive">{errors.product.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -212,32 +258,40 @@ const StockAdjustment = () => {
                     </span>
                   </Label>
                   <div className="flex gap-2">
-                    <Select value={sign} onValueChange={setSign}>
-                      <SelectTrigger className="w-14 h-9">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="w-14 max-w-14">
-                        <SelectItem value="+">+</SelectItem>
-                        <SelectItem value="-">-</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Controller
+                      control={control}
+                      name="sign"
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger className="w-14 h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="w-14 max-w-14">
+                            <SelectItem value="+">+</SelectItem>
+                            <SelectItem value="-">-</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                     <Input
                       type="text"
                       inputMode="numeric"
                       placeholder={t("page.stockAdjustment.form.qtyPlaceholder")}
-                      value={value}
-                      onChange={(e) => setValue(e.target.value.replace(/\D/g, ""))}
+                      {...form.register("value")}
+                      onChange={(e) => setValue("value", e.target.value.replace(/\D/g, ""))}
                       className="h-9 flex-1"
                     />
                   </div>
+                  {errors.value && (
+                    <p className="text-xs text-destructive">{errors.value.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label>{t("page.stockAdjustment.form.reason")}</Label>
                   <Textarea
                     placeholder={t("page.stockAdjustment.form.reasonPlaceholder")}
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
+                    {...form.register("reason")}
                     rows={3}
                   />
                 </div>

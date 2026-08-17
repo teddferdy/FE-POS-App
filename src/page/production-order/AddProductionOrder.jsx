@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Save, X } from "lucide-react";
 import { toast } from "sonner";
@@ -19,8 +21,6 @@ import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
-import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
-import { getMissingFields } from "@/lib/validation";
 
 const AddProductionOrder = () => {
   const { t } = useTranslation();
@@ -29,40 +29,42 @@ const AddProductionOrder = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
-  const [productId, setProductId] = useState("");
-  const [plannedQty, setPlannedQty] = useState("");
-  const [scheduledDate, setScheduledDate] = useState(new Date());
-  const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
-  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
-  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
-  const poFieldLabels = useMemo(
-    () => ({
-      productId: t("page.productionOrder.add.labelProduk"),
-      plannedQty: t("page.productionOrder.add.labelJumlahProduksi"),
-      scheduledDate: t("page.productionOrder.add.labelJadwal")
-    }),
-    [t]
-  );
+  const poSchema = z.object({
+    productId: z.string().min(1, t("page.productionOrder.add.validation.productRequired")),
+    plannedQty: z
+      .string()
+      .min(1, t("page.productionOrder.add.validation.plannedQtyRequired"))
+      .refine(
+        (v) => parseInt(v, 10) >= 1,
+        t("page.productionOrder.add.validation.plannedQtyRequired")
+      ),
+    scheduledDate: z.date().nullable().optional(),
+    notes: z.string().optional()
+  });
 
-  const poSchema = useMemo(
-    () =>
-      z.object({
-        productId: z.string().min(1, ""),
-        plannedQty: z
-          .string()
-          .min(1, "")
-          .refine((v) => parseInt(v) >= 1, ""),
-        scheduledDate: z.any().optional()
-      }),
-    []
-  );
-  // const [productSearch, setProductSearch] = useState("");
+  const form = useForm({
+    resolver: zodResolver(poSchema),
+    mode: "onChange",
+    defaultValues: {
+      productId: "",
+      plannedQty: "",
+      scheduledDate: new Date(),
+      notes: ""
+    }
+  });
+
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    watch
+  } = form;
 
   const { data: productsData } = useQuery(["products-for-po"], () => getAllProduct({}), {});
   const products = productsData?.data || [];
@@ -74,24 +76,28 @@ const AddProductionOrder = () => {
   React.useEffect(() => {
     if (editData?.data) {
       const d = editData.data;
-      setProductId(d.productItemId || "");
-      setPlannedQty(String(d.plannedQty || ""));
-      setScheduledDate(d.scheduledDate ? new Date(d.scheduledDate) : new Date());
-      setNotes(d.notes || "");
+      form.reset({
+        productId: String(d.productItemId || ""),
+        plannedQty: String(d.plannedQty || ""),
+        scheduledDate: d.scheduledDate ? new Date(d.scheduledDate) : new Date(),
+        notes: d.notes || ""
+      });
     }
   }, [editData]);
 
-  const selectedProduct = products.find((p) => p.id === parseInt(productId));
+  const selectedProduct = products.find((p) => p.id === parseInt(watch("productId")));
 
-  const handleSubmit = async (saveAsDraft = false) => {
+  const doSubmit = async (data, saveAsDraft = false) => {
     setIsSubmitting(true);
     try {
       const payload = {
-        productItemId: parseInt(productId),
-        plannedQty: parseInt(plannedQty),
+        productItemId: parseInt(data.productId),
+        plannedQty: parseInt(data.plannedQty),
         scheduledDate:
-          scheduledDate instanceof Date ? scheduledDate.toISOString().split("T")[0] : scheduledDate,
-        notes,
+          data.scheduledDate instanceof Date
+            ? data.scheduledDate.toISOString().split("T")[0]
+            : data.scheduledDate,
+        notes: data.notes,
         ...(saveAsDraft && { status: "draft" })
       };
       if (id) {
@@ -151,26 +157,35 @@ const AddProductionOrder = () => {
 
       <div>
         <form
-          onSubmit={(e) => e.preventDefault()}
+          onSubmit={handleSubmit((data) => doSubmit(data, false))}
           className="bg-card p-6 rounded-xl border border-border space-y-6 max-w-2xl">
           <div className="space-y-2">
             <Label>
               {t("page.productionOrder.add.labelProduk")}{" "}
               <span className="text-destructive">*</span>
             </Label>
-            <Combobox
-              options={[
-                { value: "", label: t("page.productionOrder.add.placeholderPilihProduk") },
-                ...products.map((p) => ({
-                  value: p.id,
-                  label: `${p.nameProduct} (${p.sku || "-"})`
-                }))
-              ]}
-              value={productId}
-              onChange={setProductId}
-              placeholder={t("page.productionOrder.add.placeholderPilihProduk")}
-              searchPlaceholder="Cari produk..."
+            <Controller
+              control={control}
+              name="productId"
+              render={({ field }) => (
+                <Combobox
+                  options={[
+                    { value: "", label: t("page.productionOrder.add.placeholderPilihProduk") },
+                    ...products.map((p) => ({
+                      value: p.id,
+                      label: `${p.nameProduct} (${p.sku || "-"})`
+                    }))
+                  ]}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={t("page.productionOrder.add.placeholderPilihProduk")}
+                  searchPlaceholder="Cari produk..."
+                />
+              )}
             />
+            {errors.productId && (
+              <p className="text-xs text-destructive">{errors.productId.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -181,23 +196,28 @@ const AddProductionOrder = () => {
             <Input
               type="number"
               min="1"
-              value={plannedQty}
-              onChange={(e) => setPlannedQty(e.target.value)}
+              {...form.register("plannedQty")}
               placeholder={t("page.productionOrder.add.placeholderJumlah")}
             />
+            {errors.plannedQty && (
+              <p className="text-xs text-destructive">{errors.plannedQty.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label>{t("page.productionOrder.add.labelJadwal")}</Label>
-            <DatePicker date={scheduledDate} setDate={setScheduledDate} />
+            <Controller
+              control={control}
+              name="scheduledDate"
+              render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />}
+            />
           </div>
 
           <div className="space-y-2">
             <Label>{t("page.productionOrder.add.labelCatatan")}</Label>
             <Textarea
               rows={3}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              {...form.register("notes")}
               placeholder={t("page.productionOrder.add.placeholderCatatan")}
             />
           </div>
@@ -246,20 +266,7 @@ const AddProductionOrder = () => {
                 disabled={isSubmitting}>
                 Save as Draft
               </Button>
-              <Button
-                type="button"
-                className="w-full sm:w-auto"
-                disabled={isSubmitting}
-                onClick={() => {
-                  const data = { productId, plannedQty, scheduledDate };
-                  const missing = getMissingFields(data, poSchema, poFieldLabels);
-                  if (missing.length > 0) {
-                    setMissingFieldsList(missing);
-                    setMissingFieldsModal(true);
-                    return;
-                  }
-                  handleSubmit(false);
-                }}>
+              <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting
                   ? t("page.productionOrder.add.savingButton")
@@ -296,13 +303,8 @@ const AddProductionOrder = () => {
         confirmText={t("common.yesSaveDraft")}
         onConfirm={() => {
           setDraftModal(false);
-          handleSubmit(true);
+          doSubmit(form.getValues(), true);
         }}
-      />
-      <MissingFieldsModal
-        open={missingFieldsModal}
-        onOpenChange={setMissingFieldsModal}
-        fields={missingFieldsList}
       />
       <Modal
         type="error"

@@ -79,6 +79,8 @@ const TableList = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [formName, setFormName] = useState("");
   const [formCapacity, setFormCapacity] = useState(4);
+  const [formArea, setFormArea] = useState("indoor");
+  const [formTableType, setFormTableType] = useState("regular");
   const [formStore, setFormStore] = useState("");
 
   const { data: locData } = useQuery(["locations-table"], () => getAllLocation(), {
@@ -131,6 +133,8 @@ const TableList = () => {
       setEditTarget(null);
       setFormName("");
       setFormCapacity(4);
+      setFormArea("indoor");
+      setFormTableType("regular");
       setFormStore("");
       refetch();
     },
@@ -148,6 +152,8 @@ const TableList = () => {
     setEditTarget(table);
     setFormName(table.name || "");
     setFormCapacity(table.capacity || 4);
+    setFormArea(table.area || "indoor");
+    setFormTableType(table.tableType || "regular");
     setFormStore(table.store?.id ? String(table.store.id) : table.store?.toString() || "");
   };
 
@@ -161,7 +167,13 @@ const TableList = () => {
       toast.error(t("page.table.validation.storeRequired"));
       return;
     }
-    const payload = { store: storeId, name: formName, capacity: formCapacity };
+    const payload = {
+      store: storeId,
+      name: formName,
+      capacity: formCapacity,
+      area: formArea,
+      tableType: formTableType
+    };
     if (editTarget) saveMutation.mutate({ id: editTarget.id || editTarget._id, ...payload });
     else saveMutation.mutate(payload);
   };
@@ -184,6 +196,25 @@ const TableList = () => {
     {
       header: t("page.table.table.capacity"),
       render: (row) => t("page.table.table.capacityValue", { capacity: row.capacity || "-" })
+    },
+    {
+      header: t("page.table.table.area"),
+      render: (row) => (
+        <span
+          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${
+            row.area === "outdoor"
+              ? "bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-400"
+              : row.area === "vip"
+                ? "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
+                : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400"
+          }`}>
+          {t(`page.table.area.${row.area || "indoor"}`)}
+        </span>
+      )
+    },
+    {
+      header: t("page.table.table.tableType"),
+      render: (row) => t(`page.table.tableType.${row.tableType || "regular"}`)
     },
     {
       header: t("common.status"),
@@ -334,6 +365,8 @@ const TableList = () => {
               setEditTarget(null);
               setFormName("");
               setFormCapacity(4);
+              setFormArea("indoor");
+              setFormTableType("regular");
               setFormStore(isSuperAdmin ? "" : locationParam);
             }}
             className="gap-2">
@@ -485,6 +518,38 @@ const TableList = () => {
                   value={formCapacity}
                   onChange={(e) => setFormCapacity(Number(e.target.value))}
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
+                    {t("page.table.form.area")}
+                  </label>
+                  <Select value={formArea} onValueChange={setFormArea}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="indoor">{t("page.table.area.indoor")}</SelectItem>
+                      <SelectItem value="outdoor">{t("page.table.area.outdoor")}</SelectItem>
+                      <SelectItem value="vip">{t("page.table.area.vip")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
+                    {t("page.table.form.tableType")}
+                  </label>
+                  <Select value={formTableType} onValueChange={setFormTableType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="regular">{t("page.table.tableType.regular")}</SelectItem>
+                      <SelectItem value="round">{t("page.table.tableType.round")}</SelectItem>
+                      <SelectItem value="booth">{t("page.table.tableType.booth")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">

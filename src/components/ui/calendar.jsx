@@ -125,7 +125,7 @@ function CalendarMonth({
     if (mode === "single") {
       onSelect?.(day);
     } else if (mode === "range") {
-      if (!selected || (selected.from && selected.to)) {
+      if (!selected?.from || (selected.from && selected.to)) {
         onSelect?.({ from: day, to: undefined });
       } else if (selected.from && !selected.to) {
         if (day < selected.from) {

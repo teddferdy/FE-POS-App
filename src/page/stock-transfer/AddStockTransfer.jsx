@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useCookies } from "react-cookie";
 import { Save, X, Plus, Trash2, Package, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +12,7 @@ import { transferStock } from "@/services/stock-transfer";
 import { getAllLocation } from "@/services/location";
 import { getAllProduct } from "@/services/product";
 import { Combobox } from "@/components/ui/combobox";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +27,6 @@ import {
 } from "@/components/ui/command";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
-import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 
 const AddStockTransfer = () => {
   const { t } = useTranslation();
@@ -33,24 +36,72 @@ const AddStockTransfer = () => {
   const user = cookie?.user;
 
   const isSuperAdmin = user?.roleType === "super_admin";
-  const [fromStore, setFromStore] = useState(isSuperAdmin ? "" : user?.store || "");
-  const [toStore, setToStore] = useState("");
-  const [notes, setNotes] = useState("");
-  const [transferredBy, setTransferredBy] = useState(user?.name || "");
-  const [items, setItems] = useState([{ productId: "", qty: "", unit: "pcs", notes: "" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
-  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
-  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
-  const fieldLabels = {
-    fromStore: t("page.stockTransfer.add.form.fromStore"),
-    toStore: t("page.stockTransfer.add.form.toStore"),
-    productId: t("page.stockTransfer.add.table.product"),
-    qty: t("page.stockTransfer.add.table.qty")
-  };
+  const transferSchema = z
+    .object({
+      fromStore: z.string().min(1, t("page.stockTransfer.add.validation.fromStoreRequired")),
+      toStore: z.string().min(1, t("page.stockTransfer.add.validation.toStoreRequired")),
+      transferredBy: z.string().optional(),
+      reason: z.string().optional(),
+      expectedArrival: z.date().nullable().optional(),
+      notes: z.string().optional(),
+      items: z
+        .array(
+          z.object({
+            productId: z.string().min(1, t("page.stockTransfer.add.validation.productRequired")),
+            qty: z.string().refine((v) => {
+              const n = parseInt(v, 10);
+              return !isNaN(n) && n > 0;
+            }, t("page.stockTransfer.add.validation.qtyRequired")),
+            unit: z.string().min(1),
+            notes: z.string().optional()
+          })
+        )
+        .min(1, t("page.stockTransfer.add.validation.minOneProduct"))
+    })
+    .superRefine((data, ctx) => {
+      if (data.fromStore && data.toStore && data.fromStore === data.toStore) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["toStore"],
+          message: t("page.stockTransfer.add.validation.differentStore")
+        });
+      }
+    });
+
+  const form = useForm({
+    resolver: zodResolver(transferSchema),
+    mode: "onChange",
+    defaultValues: {
+      fromStore: isSuperAdmin ? "" : user?.store || "",
+      toStore: "",
+      transferredBy: user?.name || "",
+      reason: "",
+      expectedArrival: null,
+      notes: "",
+      items: [{ productId: "", qty: "", unit: "pcs", notes: "" }]
+    }
+  });
+
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    setValue,
+    watch
+  } = form;
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "items"
+  });
+
+  const watchedItems = watch("items");
+  const fromStore = watch("fromStore");
 
   const { data: locData } = useQuery(["locations-for-transfer"], getAllLocation, {});
   const locations = locData?.data || locData?.locations || locData || [];
@@ -63,44 +114,22 @@ const AddStockTransfer = () => {
   );
   const products = prodData?.data || [];
 
-  const addItem = () =>
-    setItems((prev) => [...prev, { productId: "", qty: "", unit: "pcs", notes: "" }]);
+  const addItem = () => append({ productId: "", qty: "", unit: "pcs", notes: "" });
   const removeItem = (idx) => {
-    if (items.length > 1) setItems((prev) => prev.filter((_, i) => i !== idx));
+    if (fields.length > 1) remove(idx);
   };
-  const updateItem = (idx, field, value) =>
-    setItems((prev) => prev.map((it, i) => (i !== idx ? it : { ...it, [field]: value })));
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const missing = [];
-    if (isSuperAdmin && !fromStore) {
-      missing.push(fieldLabels.fromStore);
-    }
-    if (!toStore) {
-      missing.push(fieldLabels.toStore);
-    }
-    if (fromStore && toStore && fromStore === toStore) {
-      if (!missing.includes(fieldLabels.toStore)) {
-        missing.push(fieldLabels.toStore);
-      }
-    }
-    if (!items[0].productId) {
-      missing.push(fieldLabels.productId);
-    }
-    if (missing.length > 0) {
-      setMissingFieldsList(missing);
-      setMissingFieldsModal(true);
-      return;
-    }
+  const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
       await transferStock({
-        fromStore: parseInt(fromStore),
-        toStore: parseInt(toStore),
-        notes,
-        transferredBy,
-        items: items
+        fromStore: parseInt(data.fromStore),
+        toStore: parseInt(data.toStore),
+        notes: data.notes,
+        reason: data.reason,
+        expectedArrival: data.expectedArrival || null,
+        transferredBy: data.transferredBy,
+        items: data.items
           .filter((it) => it.productId && parseInt(it.qty) > 0)
           .map((it) => ({
             productId: parseInt(it.productId),
@@ -148,7 +177,7 @@ const AddStockTransfer = () => {
         </div>
 
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className="bg-card p-6 rounded-xl border border-border space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {isSuperAdmin && (
@@ -157,13 +186,22 @@ const AddStockTransfer = () => {
                   {t("page.stockTransfer.add.form.fromStore")}{" "}
                   <span className="text-destructive">*</span>
                 </Label>
-                <Combobox
-                  options={storeOptions}
-                  value={fromStore}
-                  onChange={setFromStore}
-                  placeholder={t("page.stockTransfer.add.form.selectStore")}
-                  searchPlaceholder={t("common.search")}
+                <Controller
+                  control={control}
+                  name="fromStore"
+                  render={({ field }) => (
+                    <Combobox
+                      options={storeOptions}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder={t("page.stockTransfer.add.form.selectStore")}
+                      searchPlaceholder={t("common.search")}
+                    />
+                  )}
                 />
+                {errors.fromStore && (
+                  <p className="text-xs text-destructive">{errors.fromStore.message}</p>
+                )}
               </div>
             )}
             <div className="space-y-2">
@@ -171,23 +209,49 @@ const AddStockTransfer = () => {
                 {t("page.stockTransfer.add.form.toStore")}{" "}
                 <span className="text-destructive">*</span>
               </Label>
-              <Combobox
-                options={storeOptions}
-                value={toStore}
-                onChange={setToStore}
-                placeholder={t("page.stockTransfer.add.form.selectStore")}
-                searchPlaceholder={t("common.search")}
+              <Controller
+                control={control}
+                name="toStore"
+                render={({ field }) => (
+                  <Combobox
+                    options={storeOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={t("page.stockTransfer.add.form.selectStore")}
+                    searchPlaceholder={t("common.search")}
+                  />
+                )}
               />
+              {errors.toStore && (
+                <p className="text-xs text-destructive">{errors.toStore.message}</p>
+              )}
             </div>
           </div>
 
           <div className="space-y-2">
             <Label>{t("page.stockTransfer.add.form.transferredBy")}</Label>
             <Input
-              value={transferredBy}
-              onChange={(e) => setTransferredBy(e.target.value)}
+              {...form.register("transferredBy")}
               placeholder={t("page.stockTransfer.add.form.transferredByPlaceholder")}
             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{t("page.stockTransfer.add.form.reason")}</Label>
+              <Input
+                {...form.register("reason")}
+                placeholder={t("page.stockTransfer.add.form.reasonPlaceholder")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("page.stockTransfer.add.form.expectedArrival")}</Label>
+              <Controller
+                control={control}
+                name="expectedArrival"
+                render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />}
+              />
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -214,11 +278,15 @@ const AddStockTransfer = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item, idx) => {
-                    const selectedProduct = products.find((p) => String(p.id) === item.productId);
+                  {fields.map((field, idx) => {
+                    const item = Object.hasOwn(watchedItems || {}, idx) ? watchedItems[idx] : {}; // codacy-ignore-line
+                    const selectedProduct = products.find(
+                      (p) => String(p.id) === String(item.productId)
+                    );
+                    const error = Object.hasOwn(errors?.items || {}, idx) ? errors.items[idx] : undefined; // codacy-ignore-line
                     return (
                       <tr
-                        key={idx}
+                        key={field.id}
                         className="border-b border-muted/10 last:border-b-0 hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3 min-w-[220px]">
                           <div className="flex items-center gap-2">
@@ -254,7 +322,11 @@ const AddStockTransfer = () => {
                                       <CommandItem
                                         key={p.id}
                                         value={p.nameProduct}
-                                        onSelect={() => updateItem(idx, "productId", String(p.id))}>
+                                        onSelect={() =>
+                                          setValue(`items.${idx}.productId`, String(p.id), {
+                                            shouldValidate: true
+                                          })
+                                        }>
                                         <div className="flex items-center justify-between w-full gap-3">
                                           <div className="flex flex-col min-w-0">
                                             <span className="text-sm font-medium truncate">
@@ -284,44 +356,57 @@ const AddStockTransfer = () => {
                               </span>
                             )}
                           </div>
+                          {error?.productId && (
+                            <p className="text-xs text-destructive mt-1">
+                              {error.productId.message}
+                            </p>
+                          )}
                         </td>
                         <td className="px-4 py-3 w-[100px]">
                           <Input
                             type="number"
                             min="1"
                             max={selectedProduct?.stock ?? 0}
-                            value={item.qty}
+                            {...form.register(`items.${idx}.qty`)}
                             onChange={(e) => {
                               const val = e.target.value;
                               const max = selectedProduct?.stock ?? 0;
                               if (val && parseInt(val) > max) {
-                                updateItem(idx, "qty", String(max));
+                                setValue(`items.${idx}.qty`, String(max), { shouldValidate: true });
                               } else {
-                                updateItem(idx, "qty", val);
+                                setValue(`items.${idx}.qty`, val, { shouldValidate: true });
                               }
                             }}
                             className="h-9 text-xs text-right"
                             placeholder="0"
                           />
+                          {error?.qty && (
+                            <p className="text-xs text-destructive mt-1">{error.qty.message}</p>
+                          )}
                         </td>
                         <td className="px-4 py-3 w-[100px]">
-                          <Combobox
-                            options={[
-                              { value: "pcs", label: "pcs" },
-                              { value: "kg", label: "kg" },
-                              { value: "liter", label: "liter" },
-                              { value: "box", label: "box" }
-                            ]}
-                            value={item.unit}
-                            onChange={(val) => updateItem(idx, "unit", val)}
-                            placeholder="pcs"
-                            searchPlaceholder={t("common.search")}
+                          <Controller
+                            control={control}
+                            name={`items.${idx}.unit`}
+                            render={({ field: unitField }) => (
+                              <Combobox
+                                options={[
+                                  { value: "pcs", label: "pcs" },
+                                  { value: "kg", label: "kg" },
+                                  { value: "liter", label: "liter" },
+                                  { value: "box", label: "box" }
+                                ]}
+                                value={unitField.value}
+                                onChange={unitField.onChange}
+                                placeholder="pcs"
+                                searchPlaceholder={t("common.search")}
+                              />
+                            )}
                           />
                         </td>
                         <td className="px-4 py-3 min-w-[140px]">
                           <Input
-                            value={item.notes}
-                            onChange={(e) => updateItem(idx, "notes", e.target.value)}
+                            {...form.register(`items.${idx}.notes`)}
                             className="h-9 text-xs"
                             placeholder={t("page.stockTransfer.add.table.notesPlaceholder")}
                           />
@@ -329,7 +414,7 @@ const AddStockTransfer = () => {
                         <td className="px-4 py-3 text-center w-12">
                           <button
                             type="button"
-                            disabled={items.length <= 1}
+                            disabled={fields.length <= 1}
                             onClick={() => removeItem(idx)}
                             className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 disabled:opacity-20 transition-colors">
                             <Trash2 size={14} />
@@ -341,6 +426,12 @@ const AddStockTransfer = () => {
                 </tbody>
               </table>
             </div>
+            {errors.items?.root && (
+              <p className="text-xs text-destructive">{errors.items.root.message}</p>
+            )}
+            {errors.items?.message && (
+              <p className="text-xs text-destructive">{errors.items.message}</p>
+            )}
             <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1.5">
               <Plus size={14} /> {t("page.stockTransfer.add.table.addItem")}
             </Button>
@@ -350,8 +441,7 @@ const AddStockTransfer = () => {
             <Label>{t("page.stockTransfer.add.form.notes")}</Label>
             <Textarea
               rows={2}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              {...form.register("notes")}
               placeholder={t("page.stockTransfer.add.form.notesPlaceholder")}
             />
           </div>
@@ -387,11 +477,6 @@ const AddStockTransfer = () => {
             setCancelModal(false);
             navigate("/stock-transfer");
           }}
-        />
-        <MissingFieldsModal
-          open={missingFieldsModal}
-          onOpenChange={setMissingFieldsModal}
-          fields={missingFieldsList}
         />
         <Modal
           type="error"

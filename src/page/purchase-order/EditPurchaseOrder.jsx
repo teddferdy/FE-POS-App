@@ -110,6 +110,8 @@ const EditPurchaseOrder = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
+  const [storeChangeModal, setStoreChangeModal] = useState(false);
+  const [pendingStore, setPendingStore] = useState(null);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [errorModal, setErrorModal] = useState(false);
@@ -633,7 +635,12 @@ const EditPurchaseOrder = () => {
                       ]}
                       value={selectedStore}
                       onChange={(val) => {
-                        setSelectedStore(val);
+                        if (isSuperAdmin && val !== selectedStore) {
+                          setPendingStore(val);
+                          setStoreChangeModal(true);
+                        } else {
+                          setSelectedStore(val);
+                        }
                         setErrors((prev) => ({ ...prev, store: undefined }));
                       }}
                       disabled={!isSuperAdmin}
@@ -999,11 +1006,20 @@ const EditPurchaseOrder = () => {
                                         )
                                       }
                                       className="h-7 text-xs text-center"
-                                      title={`1 ${item.unit || "pcs"} = ? stok`}
-                                      aria-label={`1 ${item.unit || "pcs"} = ? stok`}
+                                      title={t("page.purchaseOrder.add.conversionPlaceholder", {
+                                        unit: item.unit || "pcs"
+                                      })}
+                                      aria-label={t(
+                                        "page.purchaseOrder.add.conversionPlaceholder",
+                                        {
+                                          unit: item.unit || "pcs"
+                                        }
+                                      )}
                                     />
                                     <p className="text-[10px] text-muted-foreground text-center mt-0.5">
-                                      {"1 " + (item.unit || "pcs") + " = ? stok"}
+                                      {t("page.purchaseOrder.add.conversionPlaceholder", {
+                                        unit: item.unit || "pcs"
+                                      })}
                                     </p>
                                   </div>
                                 </td>
@@ -1172,7 +1188,7 @@ const EditPurchaseOrder = () => {
                     variant="outline"
                     onClick={() => setDraftModal(true)}
                     disabled={updateMutation.isLoading}>
-                    Simpan sebagai Draft
+                    {t("page.purchaseOrder.add.saveDraft")}
                   </Button>
                   <Button
                     type="button"
@@ -1228,12 +1244,33 @@ const EditPurchaseOrder = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft"
-        description="Data PO akan disimpan sebagai draft"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.purchaseOrder.add.draftModalTitle")}
+        description={t("page.purchaseOrder.add.draftModalDesc")}
+        confirmText={t("page.purchaseOrder.add.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           handleSubmit(null, true);
+        }}
+      />
+      <Modal
+        type="confirm"
+        open={storeChangeModal}
+        onOpenChange={(open) => {
+          setStoreChangeModal(open);
+          if (!open) setPendingStore(null);
+        }}
+        title={t("page.purchaseOrder.edit.storeChangeTitle")}
+        description={t("page.purchaseOrder.edit.storeChangeDesc")}
+        confirmText={t("page.purchaseOrder.edit.storeChangeConfirm")}
+        cancelText={t("common.no") || "Batal"}
+        onConfirm={() => {
+          setSelectedStore(pendingStore);
+          setPendingStore(null);
+          setStoreChangeModal(false);
+        }}
+        onCancel={() => {
+          setPendingStore(null);
+          setStoreChangeModal(false);
         }}
       />
       <Modal
