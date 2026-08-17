@@ -541,7 +541,7 @@ const StockOpnameList = () => {
             title={t("page.stockOpname.list.noDataTitle")}
             description={t("page.stockOpname.list.noDataDesc")}
             confirmText={t("page.stockOpname.list.addButton")}
-            onConfirm={() => navigate("/add-stock-opname")}
+            onConfirm={() => setTimeout(() => navigate("/add-stock-opname"), 150)}
           />
 
           <Modal

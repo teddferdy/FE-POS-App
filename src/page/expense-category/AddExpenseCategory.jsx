@@ -316,7 +316,7 @@ const AddExpenseCategory = () => {
           title={t("modal.cancelTitle")}
           description={t("modal.cancelDescription")}
           confirmText={t("modal.yesCancel")}
-          onConfirm={() => navigate("/expense-category")}
+          onConfirm={() => setTimeout(() => navigate("/expense-category"), 150)}
         />
         <Modal
           type="success"
@@ -325,7 +325,7 @@ const AddExpenseCategory = () => {
           title={t("page.expenseCategory.add.successTitle")}
           description={t("page.expenseCategory.add.successDescription")}
           confirmText={t("page.expenseCategory.add.successConfirm")}
-          onConfirm={() => navigate("/expense-category")}
+          onConfirm={() => setTimeout(() => navigate("/expense-category"), 150)}
         />
         <Modal
           type="error"

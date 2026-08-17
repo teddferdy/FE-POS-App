@@ -318,7 +318,7 @@ const AddBom = () => {
         confirmText={t("page.bom.add.modal.confirm")}
         onConfirm={() => {
           setCancelModal(false);
-          navigate("/bom");
+          setTimeout(() => navigate("/bom"), 150);
         }}
       />
       <Modal

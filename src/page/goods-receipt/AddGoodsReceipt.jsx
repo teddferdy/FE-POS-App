@@ -947,7 +947,7 @@ const AddGoodsReceipt = () => {
           confirmText={t("page.goodsReceipt.add.modal.confirm")}
           onConfirm={() => {
             setCancelModal(false);
-            navigate("/goods-receipt");
+            setTimeout(() => navigate("/goods-receipt"), 150);
           }}
         />
         <Modal

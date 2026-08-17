@@ -951,7 +951,7 @@ const EditIngredient = () => {
         )}
 
         <Modal
-          type="confirm"
+          type="success"
           open={successModal}
           onOpenChange={(o) => !o && setSuccessModal(false)}
           title={t("page.ingredient.edit.toastSuccess")}
@@ -960,7 +960,7 @@ const EditIngredient = () => {
           onConfirm={() => {
             setSuccessModal(false);
             queryClient.invalidateQueries(["ingredients"]);
-            navigate("/ingredient");
+            setTimeout(() => navigate("/ingredient"), 150);
           }}
         />
         <Modal
@@ -972,7 +972,7 @@ const EditIngredient = () => {
           confirmText={t("page.ingredient.edit.modalCancelConfirm")}
           onConfirm={() => {
             setCancelModal(false);
-            navigate("/ingredient");
+            setTimeout(() => navigate("/ingredient"), 150);
           }}
         />
         <Modal

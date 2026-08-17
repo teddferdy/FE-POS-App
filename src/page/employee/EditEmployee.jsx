@@ -1559,7 +1559,7 @@ const EditEmployee = () => {
         onOpenChange={setSuccessModal}
         title={t("page.employee.edit.successTitle")}
         description={t("page.employee.edit.successDescription")}
-        onConfirm={() => navigate("/employee-list")}
+        onConfirm={() => setTimeout(() => navigate("/employee-list"), 150)}
       />
       <Modal
         type="confirm"
@@ -1568,7 +1568,7 @@ const EditEmployee = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/employee-list")}
+        onConfirm={() => setTimeout(() => navigate("/employee-list"), 150)}
       />
       <Modal
         type="confirm"

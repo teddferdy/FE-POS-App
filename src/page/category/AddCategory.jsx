@@ -1011,7 +1011,7 @@ const AddCategory = () => {
           title={t("page.category.modal.successAdd")}
           onConfirm={() => {
             queryClient.invalidateQueries(["categories"]);
-            navigate("/category-list");
+            setTimeout(() => navigate("/category-list"), 150);
           }}
         />
         <Modal
@@ -1020,7 +1020,7 @@ const AddCategory = () => {
           onOpenChange={setCancelModal}
           title={t("page.category.modal.cancelTitle")}
           confirmText={t("page.category.modal.confirmCancel")}
-          onConfirm={() => navigate("/category-list")}
+          onConfirm={() => setTimeout(() => navigate("/category-list"), 150)}
         />
         <Modal
           type="confirm"

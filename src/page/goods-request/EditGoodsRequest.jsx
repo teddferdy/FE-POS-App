@@ -643,7 +643,7 @@ const EditGoodsRequest = () => {
           confirmText={t("page.goodsRequest.edit.modal.confirm")}
           onConfirm={() => {
             setCancelModal(false);
-            navigate("/goods-request");
+            setTimeout(() => navigate("/goods-request"), 150);
           }}
         />
         <Modal

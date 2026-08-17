@@ -554,7 +554,7 @@ const EditRole = () => {
           title={t("page.role.edit.successTitle")}
           onConfirm={() => {
             setIsSubmitting(false);
-            navigate("/role-management");
+            setTimeout(() => navigate("/role-management"), 150);
           }}
         />
         <Modal
@@ -571,7 +571,7 @@ const EditRole = () => {
           onOpenChange={setCancelModal}
           title={t("modal.cancelTitle")}
           confirmText={t("modal.yesCancel")}
-          onConfirm={() => navigate("/role-management")}
+          onConfirm={() => setTimeout(() => navigate("/role-management"), 150)}
         />
 
         <Modal

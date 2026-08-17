@@ -697,7 +697,7 @@ const AddGoodsRequest = () => {
           confirmText={t("page.goodsRequest.add.modal.confirm")}
           onConfirm={() => {
             setCancelModal(false);
-            navigate("/goods-request");
+            setTimeout(() => navigate("/goods-request"), 150);
           }}
         />
         <Modal
@@ -732,7 +732,7 @@ const AddGoodsRequest = () => {
           onOpenChange={setSuccessModal}
           title={t("page.goodsRequest.add.successModal.title")}
           description={t("page.goodsRequest.add.successModal.description")}
-          onConfirm={() => navigate("/goods-request")}
+          onConfirm={() => setTimeout(() => navigate("/goods-request"), 150)}
         />
         <Modal
           type="error"

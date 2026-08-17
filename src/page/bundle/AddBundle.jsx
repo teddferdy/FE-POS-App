@@ -433,7 +433,7 @@ const AddBundle = () => {
         title={t("page.bundle.modal.cancelTitle")}
         description={t("page.bundle.modal.cancelDescription")}
         confirmText={t("page.bundle.modal.cancelConfirm")}
-        onConfirm={() => navigate("/bundle")}
+        onConfirm={() => setTimeout(() => navigate("/bundle"), 150)}
       />
       <Modal
         type="confirm"
@@ -456,7 +456,7 @@ const AddBundle = () => {
         confirmText={t("page.bundle.modal.successConfirm")}
         onConfirm={() => {
           setSuccessModal(false);
-          navigate("/bundle");
+          setTimeout(() => navigate("/bundle"), 150);
         }}
       />
     </div>

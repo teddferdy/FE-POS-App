@@ -1041,7 +1041,7 @@ const AddDiscount = () => {
           title={t("modal.cancelTitle")}
           description={t("modal.cancelDescription")}
           confirmText={t("modal.yesCancel")}
-          onConfirm={() => navigate("/discount-list")}
+          onConfirm={() => setTimeout(() => navigate("/discount-list"), 150)}
         />
         <Modal
           type="success"
@@ -1050,7 +1050,7 @@ const AddDiscount = () => {
           title={t("page.discount.add.successTitle")}
           description={t("page.discount.add.successDescription")}
           confirmText={t("page.discount.add.successConfirm")}
-          onConfirm={() => navigate("/discount-list")}
+          onConfirm={() => setTimeout(() => navigate("/discount-list"), 150)}
         />
         <Modal
           type="confirm"

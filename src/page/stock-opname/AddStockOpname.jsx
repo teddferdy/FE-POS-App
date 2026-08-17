@@ -940,7 +940,7 @@ const AddStockOpname = () => {
         confirmText={t("page.stockOpname.modal.confirmCancel")}
         onConfirm={() => {
           setCancelModal(false);
-          navigate("/stock-opname");
+          setTimeout(() => navigate("/stock-opname"), 150);
         }}
       />
 
@@ -951,7 +951,7 @@ const AddStockOpname = () => {
         title={t("page.stockOpname.modal.noLocationTitle")}
         description={t("page.stockOpname.modal.noLocationDescription")}
         confirmText={t("page.stockOpname.modal.addLocation")}
-        onConfirm={() => navigate("/add-location")}
+        onConfirm={() => setTimeout(() => navigate("/add-location"), 150)}
       />
 
       <Modal

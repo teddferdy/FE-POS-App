@@ -672,7 +672,7 @@ const AddPromoCampaign = () => {
         title={t("page.promo.modal.cancelTitle")}
         description={t("page.promo.modal.cancelDescription")}
         confirmText={t("page.promo.modal.confirmCancel")}
-        onConfirm={() => navigate("/promo-list")}
+        onConfirm={() => setTimeout(() => navigate("/promo-list"), 150)}
       />
       <Modal
         type="confirm"

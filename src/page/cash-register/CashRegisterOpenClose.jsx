@@ -373,7 +373,7 @@ const CashRegisterOpenClose = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/dashboard-super-admin")}
+        onConfirm={() => setTimeout(() => navigate("/dashboard-super-admin"), 150)}
       />
     </>
   );

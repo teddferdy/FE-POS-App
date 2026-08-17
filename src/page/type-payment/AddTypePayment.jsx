@@ -392,7 +392,7 @@ const AddTypePayment = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/type-payment-list")}
+        onConfirm={() => setTimeout(() => navigate("/type-payment-list"), 150)}
       />
       <Modal
         type="success"
@@ -401,7 +401,7 @@ const AddTypePayment = () => {
         title={t("common.success")}
         description={t("page.typePayment.toast.addSuccess")}
         confirmText={t("modal.backToList")}
-        onConfirm={() => navigate("/type-payment-list")}
+        onConfirm={() => setTimeout(() => navigate("/type-payment-list"), 150)}
       />
       <Modal
         type="confirm"

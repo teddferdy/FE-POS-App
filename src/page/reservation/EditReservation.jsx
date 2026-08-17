@@ -521,7 +521,7 @@ const EditReservation = () => {
           title={t("modal.cancelTitle")}
           description={t("modal.cancelDescription")}
           confirmText={t("modal.yesCancel")}
-          onConfirm={() => navigate("/reservation")}
+          onConfirm={() => setTimeout(() => navigate("/reservation"), 150)}
         />
         <Modal
           type="success"
@@ -530,7 +530,7 @@ const EditReservation = () => {
           title={t("page.reservation.edit.modal.successTitle")}
           description={t("page.reservation.edit.modal.successDesc")}
           confirmText={t("page.reservation.edit.modal.successConfirm")}
-          onConfirm={() => navigate("/reservation")}
+          onConfirm={() => setTimeout(() => navigate("/reservation"), 150)}
         />
         <MissingFieldsModal
           open={missingFieldsModal}

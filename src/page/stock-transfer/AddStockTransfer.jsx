@@ -475,7 +475,7 @@ const AddStockTransfer = () => {
           confirmText={t("modal.yesCancel")}
           onConfirm={() => {
             setCancelModal(false);
-            navigate("/stock-transfer");
+            setTimeout(() => navigate("/stock-transfer"), 150);
           }}
         />
         <Modal

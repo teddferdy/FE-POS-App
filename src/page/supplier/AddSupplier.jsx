@@ -896,7 +896,7 @@ const AddSupplier = () => {
         title={t("page.supplier.modal.cancelTitle")}
         description={t("page.supplier.modal.cancelDescription")}
         confirmText={t("page.supplier.modal.confirmCancel")}
-        onConfirm={() => navigate("/supplier")}
+        onConfirm={() => setTimeout(() => navigate("/supplier"), 150)}
       />
       <Modal
         type="success"
@@ -905,7 +905,7 @@ const AddSupplier = () => {
         title={t("common.success")}
         description={t("page.supplier.toast.addSuccess")}
         confirmText={t("page.supplier.modal.backToList")}
-        onConfirm={() => navigate("/supplier")}
+        onConfirm={() => setTimeout(() => navigate("/supplier"), 150)}
       />
       <Modal
         type="confirm"

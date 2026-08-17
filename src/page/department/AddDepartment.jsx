@@ -278,7 +278,7 @@ const AddDepartment = () => {
         confirmText={t("modal.yesCancel")}
         onConfirm={() => {
           setCancelModal(false);
-          navigate("/department-list");
+          setTimeout(() => navigate("/department-list"), 150);
         }}
       />
     </div>

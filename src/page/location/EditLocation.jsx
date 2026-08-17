@@ -1664,7 +1664,7 @@ const EditLocation = () => {
         open={successModal}
         onOpenChange={setSuccessModal}
         title={t("page.location.edit.successEditTitle")}
-        onConfirm={() => navigate("/location-list")}
+        onConfirm={() => setTimeout(() => navigate("/location-list"), 150)}
       />
       <Modal
         type="error"
@@ -1681,7 +1681,7 @@ const EditLocation = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/location-list")}
+        onConfirm={() => setTimeout(() => navigate("/location-list"), 150)}
       />
       <Modal
         type="confirm"

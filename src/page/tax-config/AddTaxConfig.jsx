@@ -346,7 +346,7 @@ const AddTaxConfig = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/tax-list")}
+        onConfirm={() => setTimeout(() => navigate("/tax-list"), 150)}
       />
       <Modal
         type="success"
@@ -355,7 +355,7 @@ const AddTaxConfig = () => {
         title={t("common.success")}
         description={t("page.taxConfig.toast.addSuccess")}
         confirmText={t("modal.backToList")}
-        onConfirm={() => navigate("/tax-list")}
+        onConfirm={() => setTimeout(() => navigate("/tax-list"), 150)}
       />
       <Modal
         type="confirm"

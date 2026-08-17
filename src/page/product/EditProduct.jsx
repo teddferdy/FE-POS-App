@@ -2064,7 +2064,7 @@ const EditProduct = () => {
         onOpenChange={setSuccessModal}
         title={t("page.product.form.successEditTitle")}
         description={t("page.product.form.successEditDesc")}
-        onConfirm={() => navigate("/product-list")}
+        onConfirm={() => setTimeout(() => navigate("/product-list"), 150)}
       />
 
       <Modal
@@ -2087,7 +2087,7 @@ const EditProduct = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/product-list")}
+        onConfirm={() => setTimeout(() => navigate("/product-list"), 150)}
       />
 
       <Modal
