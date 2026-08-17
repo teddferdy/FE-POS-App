@@ -1062,7 +1062,7 @@ const EditDiscount = () => {
           title={t("modal.cancelTitle")}
           description={t("modal.cancelDescription")}
           confirmText={t("modal.yesCancel")}
-          onConfirm={() => navigate("/discount-list")}
+          onConfirm={() => setTimeout(() => navigate("/discount-list"), 150)}
         />
 
         <Modal
@@ -1072,7 +1072,7 @@ const EditDiscount = () => {
           title={t("page.discount.edit.successTitle")}
           description={t("page.discount.edit.successDescription")}
           confirmText={t("page.discount.edit.successConfirm")}
-          onConfirm={() => navigate("/discount-list")}
+          onConfirm={() => setTimeout(() => navigate("/discount-list"), 150)}
         />
 
         <Modal

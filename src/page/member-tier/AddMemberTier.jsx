@@ -523,7 +523,7 @@ const AddMemberTier = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/member-tier")}
+        onConfirm={() => setTimeout(() => navigate("/member-tier"), 150)}
       />
 
       <Modal

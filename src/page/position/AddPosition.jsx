@@ -418,7 +418,7 @@ const AddPosition = () => {
         confirmText={t("modal.yesCancel")}
         onConfirm={() => {
           setCancelModal(false);
-          navigate("/position-list");
+          setTimeout(() => navigate("/position-list"), 150);
         }}
       />
     </div>

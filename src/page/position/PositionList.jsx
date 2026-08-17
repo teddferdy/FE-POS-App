@@ -595,7 +595,7 @@ const PositionList = () => {
         title={t("page.position.modal.noDepartment.title")}
         description={t("page.position.modal.noDepartment.description")}
         confirmText={t("page.position.button.addDepartment")}
-        onConfirm={() => navigate("/add-department")}
+        onConfirm={() => setTimeout(() => navigate("/add-department"), 150)}
       />
     </div>
   );

@@ -1238,7 +1238,7 @@ const EditPurchaseOrder = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/purchase-order")}
+        onConfirm={() => setTimeout(() => navigate("/purchase-order"), 150)}
       />
       <Modal
         type="confirm"

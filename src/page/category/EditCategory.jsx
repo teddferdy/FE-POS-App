@@ -1074,7 +1074,7 @@ const EditCategory = () => {
           open={successModal}
           onOpenChange={setSuccessModal}
           title={t("page.category.modal.successEdit")}
-          onConfirm={() => navigate("/category-list")}
+          onConfirm={() => setTimeout(() => navigate("/category-list"), 150)}
         />
         <Modal
           type="error"
@@ -1090,7 +1090,7 @@ const EditCategory = () => {
           onOpenChange={setCancelModal}
           title={t("page.category.modal.cancelTitle")}
           confirmText={t("page.category.modal.confirmCancel")}
-          onConfirm={() => navigate("/category-list")}
+          onConfirm={() => setTimeout(() => navigate("/category-list"), 150)}
         />
         <Modal
           type="confirm"

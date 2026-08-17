@@ -466,7 +466,7 @@ const EditMember = () => {
         onOpenChange={setSuccessModal}
         title={t("page.member.edit.successTitle")}
         description={t("page.member.edit.successDescription")}
-        onConfirm={() => navigate("/member-list")}
+        onConfirm={() => setTimeout(() => navigate("/member-list"), 150)}
       />
       <Modal
         type="confirm"
@@ -475,7 +475,7 @@ const EditMember = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/member-list")}
+        onConfirm={() => setTimeout(() => navigate("/member-list"), 150)}
       />
       <Modal
         type="confirm"

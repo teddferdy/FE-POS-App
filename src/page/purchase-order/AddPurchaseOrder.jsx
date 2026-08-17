@@ -1281,7 +1281,7 @@ const AddPurchaseOrder = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/purchase-order")}
+        onConfirm={() => setTimeout(() => navigate("/purchase-order"), 150)}
       />
 
       <Modal
@@ -1340,7 +1340,7 @@ const AddPurchaseOrder = () => {
             const storeName = locations.find((l) => storeIdsEqual(l.id, selectedStore))?.name || "";
             setActiveStore(selectedStore, storeName);
           }
-          navigate("/purchase-order");
+          setTimeout(() => navigate("/purchase-order"), 150);
         }}
       />
     </div>

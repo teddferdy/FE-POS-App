@@ -1538,7 +1538,7 @@ const AddLocation = () => {
         title={
           isEdit ? t("page.location.add.successEditTitle") : t("page.location.add.successAddTitle")
         }
-        onConfirm={() => navigate("/location-list")}
+        onConfirm={() => setTimeout(() => navigate("/location-list"), 150)}
       />
       <Modal
         type="error"
@@ -1555,7 +1555,7 @@ const AddLocation = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/location-list")}
+        onConfirm={() => setTimeout(() => navigate("/location-list"), 150)}
       />
       <Modal
         type="confirm"

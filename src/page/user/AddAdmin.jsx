@@ -352,7 +352,7 @@ const AddAdmin = () => {
           open={successModal}
           onOpenChange={setSuccessModal}
           title={t("common.success")}
-          onConfirm={() => navigate("/user-list")}
+          onConfirm={() => setTimeout(() => navigate("/user-list"), 150)}
         />
         <Modal
           type="confirm"
@@ -360,7 +360,7 @@ const AddAdmin = () => {
           onOpenChange={setCancelModal}
           title={t("modal.cancelTitle")}
           confirmText={t("modal.yesCancel")}
-          onConfirm={() => navigate("/user-list")}
+          onConfirm={() => setTimeout(() => navigate("/user-list"), 150)}
         />
         <Modal
           type="confirm"

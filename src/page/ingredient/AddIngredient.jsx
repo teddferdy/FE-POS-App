@@ -907,7 +907,7 @@ const AddIngredient = () => {
         )}
 
         <Modal
-          type="confirm"
+          type="success"
           open={successModal}
           onOpenChange={(o) => !o && setSuccessModal(false)}
           title={t("page.ingredient.add.toastSuccess")}
@@ -916,7 +916,7 @@ const AddIngredient = () => {
           onConfirm={() => {
             setSuccessModal(false);
             queryClient.invalidateQueries(["ingredients"]);
-            navigate("/ingredient");
+            setTimeout(() => navigate("/ingredient"), 150);
           }}
         />
         <Modal
@@ -928,7 +928,7 @@ const AddIngredient = () => {
           confirmText={t("page.ingredient.add.modalCancelConfirm")}
           onConfirm={() => {
             setCancelModal(false);
-            navigate("/ingredient");
+            setTimeout(() => navigate("/ingredient"), 150);
           }}
         />
         <Modal

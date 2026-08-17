@@ -670,7 +670,7 @@ const EditExpense = () => {
           title={t("modal.cancelTitle")}
           description={t("modal.cancelDescription")}
           confirmText={t("modal.yesCancel")}
-          onConfirm={() => navigate("/expense")}
+          onConfirm={() => setTimeout(() => navigate("/expense"), 150)}
         />
         <Modal
           type="success"
@@ -679,7 +679,7 @@ const EditExpense = () => {
           title={t("page.expense.edit.modalSuccessTitle")}
           description={t("page.expense.edit.modalSuccessDesc")}
           confirmText={t("page.expense.edit.modalSuccessConfirm")}
-          onConfirm={() => navigate("/expense")}
+          onConfirm={() => setTimeout(() => navigate("/expense"), 150)}
         />
         <Modal
           type="error"

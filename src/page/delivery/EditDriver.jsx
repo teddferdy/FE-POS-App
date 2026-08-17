@@ -312,7 +312,7 @@ const EditDriver = () => {
         title={t("page.delivery.driver.modal.cancelTitle")}
         description={t("page.delivery.driver.modal.cancelDescription")}
         confirmText={t("page.delivery.driver.modal.confirmCancel")}
-        onConfirm={() => navigate("/driver-list")}
+        onConfirm={() => setTimeout(() => navigate("/driver-list"), 150)}
       />
       <MissingFieldsModal
         open={missingFieldsModal}

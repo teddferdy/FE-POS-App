@@ -290,7 +290,7 @@ const AddProductionOrder = () => {
         confirmText={t("modal.yesCancel")}
         onConfirm={() => {
           setCancelModal(false);
-          navigate("/production-order");
+          setTimeout(() => navigate("/production-order"), 150);
         }}
       />
 

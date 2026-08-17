@@ -491,7 +491,7 @@ const AddReservation = () => {
           title="Batalkan?"
           description="Perubahan yang belum disimpan akan hilang."
           confirmText="Ya, Batalkan"
-          onConfirm={() => navigate("/reservation")}
+          onConfirm={() => setTimeout(() => navigate("/reservation"), 150)}
         />
         <MissingFieldsModal
           open={missingFieldsModal}

@@ -285,7 +285,7 @@ const EditCategory = () => {
         title={t("page.ingredientCategory.add.modalSuccessTitleEdit")}
         onConfirm={() => {
           queryClient.invalidateQueries(["ingredient-categories"]);
-          navigate("/ingredient-category");
+          setTimeout(() => navigate("/ingredient-category"), 150);
         }}
       />
       <Modal
@@ -303,7 +303,7 @@ const EditCategory = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/ingredient-category")}
+        onConfirm={() => setTimeout(() => navigate("/ingredient-category"), 150)}
       />
       <Modal
         type="confirm"

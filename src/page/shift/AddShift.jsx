@@ -623,7 +623,7 @@ const AddShift = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/shift")}
+        onConfirm={() => setTimeout(() => navigate("/shift"), 150)}
       />
       <Modal
         type="success"
@@ -632,7 +632,7 @@ const AddShift = () => {
         title={t("page.shift.edit.modal.successTitle")}
         description={t("page.shift.edit.modal.successDesc")}
         confirmText={t("page.shift.edit.modal.successConfirm")}
-        onConfirm={() => navigate("/shift")}
+        onConfirm={() => setTimeout(() => navigate("/shift"), 150)}
       />
       <Modal
         type="confirm"
