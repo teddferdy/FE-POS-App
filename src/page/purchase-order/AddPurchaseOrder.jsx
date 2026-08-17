@@ -433,7 +433,7 @@ const AddPurchaseOrder = () => {
 
   const parseIDR = (str) => {
     if (!str) return 0;
-    return Number(str.replace(/[^0-9]/g, "")) || 0;
+    return Number(str.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")) || 0;
   };
 
   const [discount, setDiscount] = useState(0);
@@ -1002,14 +1002,14 @@ const AddPurchaseOrder = () => {
                                     <td className="px-3 py-2">
                                       <Input
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         value={item.qty === 0 ? "" : String(item.qty)}
                                         onChange={(e) =>
                                           updateItem(
                                             gIdx,
                                             iIdx,
                                             "qty",
-                                            Number(e.target.value.replace(/[^0-9]/g, "")) || 0
+                                            Number(e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")) || 0
                                           )
                                         }
                                         className="h-8 text-xs text-center w-20 mx-auto"

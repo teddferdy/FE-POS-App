@@ -99,3 +99,88 @@ export const compareSuppliers = async ({ productId, search }) => {
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
+
+// ===================== Supplier Categories =====================
+export const getAllSupplierCategories = async (params = {}) => {
+  const searchParam = params?.search ? `&search=${params.search}` : "";
+  const statusParam = params?.status && params.status !== "all" ? `&status=${params.status}` : "";
+  const { data, status } = await axiosInstance.get(
+    `/supplier-category?page=${params?.page || 1}&limit=${params?.limit || 50}${searchParam}${statusParam}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getSupplierCategoryById = async ({ id }) => {
+  const { data, status } = await axiosInstance.get(`/supplier-category/${id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const addSupplierCategory = async (payload) => {
+  const { data, status } = await axiosInstance.post("/supplier-category", payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const editSupplierCategory = async ({ id, ...payload }) => {
+  const { data, status } = await axiosInstance.put(`/supplier-category/${id}`, payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const deleteSupplierCategory = async ({ id }) => {
+  const { data, status } = await axiosInstance.delete(`/supplier-category/${id}`);
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error || data?.message);
+  return data;
+};
+
+// ===================== Supplier Contacts =====================
+export const getSupplierContacts = async (supplierId) => {
+  const { data, status } = await axiosInstance.get(`/supplier-contact/supplier/${supplierId}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const addSupplierContact = async ({ supplierId, ...payload }) => {
+  const { data, status } = await axiosInstance.post(`/supplier-contact/supplier/${supplierId}`, payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const editSupplierContact = async ({ id, ...payload }) => {
+  const { data, status } = await axiosInstance.put(`/supplier-contact/${id}`, payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const deleteSupplierContact = async ({ id }) => {
+  const { data, status } = await axiosInstance.delete(`/supplier-contact/${id}`);
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error || data?.message);
+  return data;
+};
+
+// ===================== Supplier Bank Accounts =====================
+export const getSupplierBankAccounts = async (supplierId) => {
+  const { data, status } = await axiosInstance.get(`/supplier-bank-account/supplier/${supplierId}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const addSupplierBankAccount = async ({ supplierId, ...payload }) => {
+  const { data, status } = await axiosInstance.post(`/supplier-bank-account/supplier/${supplierId}`, payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const editSupplierBankAccount = async ({ id, ...payload }) => {
+  const { data, status } = await axiosInstance.put(`/supplier-bank-account/${id}`, payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const deleteSupplierBankAccount = async ({ id }) => {
+  const { data, status } = await axiosInstance.delete(`/supplier-bank-account/${id}`);
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error || data?.message);
+  return data;
+};
