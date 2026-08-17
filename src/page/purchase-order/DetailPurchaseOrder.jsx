@@ -95,7 +95,7 @@ export default function DetailPurchaseOrder() {
   const itemGroups = {};
   for (const it of po?.items || []) {
     const name = it.supplierData?.name || "-";
-    if (!itemGroups[name]) itemGroups[name] = [];
+    if (!Object.hasOwn(itemGroups, name)) itemGroups[name] = [];
     itemGroups[name].push(it);
   }
 
@@ -570,7 +570,7 @@ export default function DetailPurchaseOrder() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {Object.entries(itemGroups).map(([name, items]) => {
-                    const collapsed = !!collapsedGroups[name];
+                    const collapsed = Object.hasOwn(collapsedGroups, name) && !!collapsedGroups[name];
                     return (
                       <React.Fragment key={name}>
                         <tr

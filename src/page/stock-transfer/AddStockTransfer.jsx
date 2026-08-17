@@ -279,11 +279,11 @@ const AddStockTransfer = () => {
                 </thead>
                 <tbody>
                   {fields.map((field, idx) => {
-                    const item = watchedItems?.[idx] || {};
+                    const item = Object.hasOwn(watchedItems || {}, idx) ? watchedItems[idx] : {};
                     const selectedProduct = products.find(
                       (p) => String(p.id) === String(item.productId)
                     );
-                    const error = errors.items?.[idx];
+                    const error = Object.hasOwn(errors?.items || {}, idx) ? errors.items[idx] : undefined;
                     return (
                       <tr
                         key={field.id}

@@ -188,10 +188,10 @@ const AddPurchaseOrder = () => {
     const unassigned = [];
     prefillNames.forEach((raw) => {
       const name = raw.trim();
-      const ing = byName[name.toLowerCase()];
+      const ing = Object.hasOwn(byName, name.toLowerCase()) ? byName[name.toLowerCase()] : undefined;
       if (ing?.supplier) {
         const sid = String(ing.supplier);
-        if (!bySupplier[sid]) bySupplier[sid] = [];
+        if (!Object.hasOwn(bySupplier, sid)) bySupplier[sid] = [];
         bySupplier[sid].push({
           ...emptyItem,
           name: ing.name,
@@ -208,7 +208,7 @@ const AddPurchaseOrder = () => {
 
     const resolved = Object.keys(bySupplier).map((sid) => ({
       supplier: Number(sid),
-      items: bySupplier[sid]
+      items: Object.hasOwn(bySupplier, sid) ? bySupplier[sid] : []
     }));
     if (unassigned.length > 0) resolved.push({ supplier: null, items: unassigned });
     if (resolved.length === 0) resolved.push(emptyGroup());
