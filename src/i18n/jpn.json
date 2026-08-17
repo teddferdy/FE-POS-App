@@ -125,5 +125,13 @@
   "page.memberTier.add.draftModalConfirm": "はい、下書きとして保存",
   "page.memberTier.add.toastSuccess": "ランクが正常に保存されました",
   "page.memberTier.add.toastSuccessDesc": "新しい会員ランクがシステムに追加されました。",
-  "page.memberTier.add.toastError": "ランクの保存に失敗しました"
+  "page.memberTier.add.toastError": "ランクの保存に失敗しました",
+  "page.expense.add.mode.single": "単一",
+  "page.expense.add.mode.multi": "複数",
+  "page.expense.add.mode.singleHint": "一度に1件の経費を追加",
+  "page.expense.add.mode.multiHint": "複数の経費をまとめて追加",
+  "page.expense.add.multi.addRow": "行を追加",
+  "page.expense.add.multi.empty": "少なくとも1件の経費を追加してください",
+  "page.expense.add.multi.total": "合計",
+  "page.expense.add.multi.successDescription": "{{count}}件の経費が正常に作成されました。"
 }

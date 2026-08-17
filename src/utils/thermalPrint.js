@@ -40,16 +40,14 @@ export const generateReceiptHTML = (data) => {
     socialMediaVisibility = {}
   } = data;
 
-  const dateObj = new Date(date);
-  const dateStr = dateObj.toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  });
-  const timeStr = dateObj.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  const dateObj = date ? new Date(date) : null;
+  const validDate = dateObj && !isNaN(dateObj.getTime());
+  const dateStr = validDate
+    ? dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })
+    : "-";
+  const timeStr = validDate
+    ? dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+    : "-";
 
   const logoHtml = showLogo && logo ? `<div style="text-align:center;margin-bottom:8px"><img src="${logo}" style="max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto" /></div>` : "";
   
@@ -171,17 +169,14 @@ export const generateESCPOS = (data, opts = {}) => {
   const boldOn = "\x1B\x45\x01";
   const boldOff = "\x1B\x45\x00";
 
-  const dateObj = new Date(date);
-  const dateStr = dateObj.toLocaleDateString("id-ID", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
-  const timeStr = dateObj.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  const dateObj = date ? new Date(date) : null;
+  const validDate = dateObj && !isNaN(dateObj.getTime());
+  const dateStr = validDate
+    ? dateObj.toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+    : "-";
+  const timeStr = validDate
+    ? dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+    : "-";
 
   enc += init;
   if (showStoreName && storeName) {

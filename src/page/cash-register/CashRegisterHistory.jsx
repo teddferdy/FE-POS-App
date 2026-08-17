@@ -131,20 +131,24 @@ const CashRegisterHistory = () => {
     },
     {
       header: t("page.cashRegister.history.open"),
-      render: (item) => (
-        <div className="text-xs">
-          <div>{new Date(item.openedAt).toLocaleDateString("id")}</div>
-          <div className="text-muted-foreground">
-            {new Date(item.openedAt).toTimeString().slice(0, 8)}
+      render: (item) => {
+        const d = item.openedAt ? new Date(item.openedAt) : null;
+        const valid = d && !isNaN(d.getTime());
+        return (
+          <div className="text-xs">
+            <div>{valid ? d.toLocaleDateString("id") : "-"}</div>
+            <div className="text-muted-foreground">
+              {valid ? d.toTimeString().slice(0, 8) : ""}
+            </div>
           </div>
-        </div>
-      )
+        );
+      }
     },
     {
       header: t("page.cashRegister.history.closed"),
       render: (item) => (
         <div className="text-xs">
-          {item.closedAt ? (
+          {item.closedAt && !isNaN(new Date(item.closedAt).getTime()) ? (
             <>
               <div>{new Date(item.closedAt).toLocaleDateString("id")}</div>
               <div className="text-muted-foreground">

@@ -99,7 +99,9 @@ const CustomerDisplay = () => {
                   <p className="text-sm text-gray-400">{order.orderNumber}</p>
                   <p className="text-xs text-gray-500">
                     <Clock size={12} className="inline mr-1" />
-                    {new Date(order.createdAt).toLocaleTimeString("id-ID")}
+                    {order.createdAt && !isNaN(new Date(order.createdAt).getTime())
+                      ? new Date(order.createdAt).toLocaleTimeString("id-ID")
+                      : ""}
                   </p>
                 </div>
                 <span className="px-3 py-1 rounded-full text-sm bg-orange-500/20 text-orange-400">

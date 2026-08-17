@@ -658,11 +658,13 @@ const XZReport = () => {
                     {registers.map((r) => (
                       <option key={r.id} value={r.id}>
                         #{r.id} · {r.userData?.fullName || "-"} ·{" "}
-                        {new Date(r.openedAt).toLocaleDateString("id-ID", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric"
-                        })}
+                        {r.openedAt && !isNaN(new Date(r.openedAt).getTime())
+                          ? new Date(r.openedAt).toLocaleDateString("id-ID", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric"
+                            })
+                          : "-"}
                       </option>
                     ))}
                   </select>

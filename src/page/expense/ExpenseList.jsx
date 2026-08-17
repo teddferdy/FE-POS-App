@@ -284,7 +284,9 @@ const ExpenseList = () => {
 
   const formatDate = (date) => {
     if (!date) return "-";
-    return new Date(date).toLocaleDateString("id-ID", {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString("id-ID", {
       year: "numeric",
       month: "short",
       day: "numeric"

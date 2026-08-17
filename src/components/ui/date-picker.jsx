@@ -18,10 +18,11 @@ function DatePicker({
   captionLayout = "dropdown",
   ...rest
 }) {
-  const [month, setMonth] = React.useState(date || new Date());
+  const isValidDate = date instanceof Date && !isNaN(date.getTime());
+  const [month, setMonth] = React.useState(isValidDate ? date : new Date());
 
   React.useEffect(() => {
-    if (date) setMonth(date);
+    if (date instanceof Date && !isNaN(date.getTime())) setMonth(date);
   }, [date]);
 
   return (
@@ -31,11 +32,11 @@ function DatePicker({
           variant="outline"
           className={cn(
             "w-full justify-start text-left font-normal h-10",
-            !date && "text-muted-foreground",
+            !isValidDate && "text-muted-foreground",
             className
           )}>
           <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-          {date ? format(date, "dd MMM yyyy") : <span>{placeholder}</span>}
+          {isValidDate ? format(date, "dd MMM yyyy") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 overflow-visible" align="start">

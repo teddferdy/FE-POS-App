@@ -2,11 +2,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCookies } from "react-cookie";
-import { X, Save, ArrowLeft } from "lucide-react";
+import { X, Save, ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { parseSalary } from "@/lib/utils";
 import { addExpense, bulkAddExpenses, getExpenseCategories } from "@/services/expense";
 import { getAllEmployee } from "@/services/employee";
@@ -48,6 +48,7 @@ import {
   buildSingleExpensePayload,
   createExpenses
 } from "@/lib/expense-payload";
+import { normalizePayload } from "@/lib/payload-normalizer";
 
 const SectionHeader = ({ step, title, description }) => (
   <div className="flex items-center gap-3 pt-1">
@@ -80,6 +81,7 @@ const AddExpense = () => {
   const [allStores, setAllStores] = useState(false);
   const [selectedSalaryIds, setSelectedSalaryIds] = useState([]);
   const [salaryBasis, setSalaryBasis] = useState("monthly");
+  const [expenseMode, setExpenseMode] = useState("single");
 
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
@@ -153,12 +155,54 @@ const AddExpense = () => {
       paymentMethod: "cash",
       store: "",
       frequency: "once",
-      recurringEndDate: undefined
+      recurringEndDate: undefined,
+      items: [{ categoryId: "", description: "", amount: "", payee: "" }]
     }
   });
 
   const watchedCategoryId = form.watch("categoryId");
   const watchedFrequency = form.watch("frequency");
+  const watchedItems = form.watch("items");
+
+  const {
+    fields: itemFields,
+    append: appendItem,
+    remove: removeItem
+  } = useFieldArray({
+    control: form.control,
+    name: "items"
+  });
+
+  const isMultiMode = expenseMode === "multi";
+
+  const multiTotal = useMemo(() => {
+    if (!isMultiMode) return 0;
+    return (watchedItems || []).reduce((sum, item) => sum + (Number(item?.amount) || 0), 0);
+  }, [isMultiMode, watchedItems]);
+
+  const handleModeSwitch = (newMode) => {
+    if (newMode === expenseMode) return;
+    if (newMode === "multi") {
+      const vals = form.getValues();
+      const hasSingleData = vals.categoryId || vals.description || vals.amount;
+      if (hasSingleData) {
+        appendItem({
+          categoryId: vals.categoryId || "",
+          description: vals.description || "",
+          amount: vals.amount || "",
+          payee: vals.payee || ""
+        });
+      }
+    } else {
+      const items = form.getValues("items") || [];
+      const first = items[0] || {};
+      if (first.categoryId) form.setValue("categoryId", first.categoryId);
+      if (first.description) form.setValue("description", first.description);
+      if (first.amount) form.setValue("amount", first.amount);
+      if (first.payee) form.setValue("payee", first.payee);
+    }
+    setExpenseMode(newMode);
+  };
   const selectedCategory = categories.find((cat) => String(cat.id) === String(watchedCategoryId));
   const isSalary = isSalaryCategoryName(selectedCategory?.name);
 
@@ -208,6 +252,36 @@ const AddExpense = () => {
 
   const validateBeforeSave = () => {
     const data = form.getValues();
+    if (isMultiMode) {
+      const validItems = (data.items || []).filter(
+        (it) => it.categoryId || it.description || it.amount
+      );
+      if (validItems.length === 0) {
+        setMissingFields([t("page.expense.add.multi.empty")]);
+        setMissingFieldsModal(true);
+        return false;
+      }
+      const invalidRows = validItems.filter(
+        (it) => !it.categoryId || !it.amount || Number(it.amount) <= 0
+      );
+      if (invalidRows.length > 0) {
+        setMissingFields([
+          t("page.expense.add.validation.categoryRequired"),
+          t("page.expense.add.validation.amountRequired")
+        ]);
+        setMissingFieldsModal(true);
+        return false;
+      }
+      if (isSalary && selectedSalaryEmps.length === 0) {
+        form.setError("employeeId", {
+          message: t("page.expense.form.salary.employeeRequired")
+        });
+        setMissingFields([expenseFieldLabels.employeeId]);
+        setMissingFieldsModal(true);
+        return false;
+      }
+      return true;
+    }
     const missing = getMissingFields(data, formSchema, expenseFieldLabels);
     if (isSalary && selectedSalaryEmps.length === 0) {
       form.setError("employeeId", { message: t("page.expense.form.salary.employeeRequired") });
@@ -244,9 +318,29 @@ const AddExpense = () => {
       paymentMethod: values.paymentMethod || "cash",
       recurringEndDate: values.recurringEndDate ? format(values.recurringEndDate, "yyyy-MM-dd") : ""
     };
-    const payloads = isSalary
-      ? buildSalaryExpensePayloads({ base, values, selectedSalaryEmps, salaryOf })
-      : [buildSingleExpensePayload({ base, values })];
+    let payloads;
+    if (isMultiMode) {
+      const validItems = (values.items || []).filter(
+        (it) => it.categoryId && it.amount && Number(it.amount) > 0
+      );
+      payloads = validItems.map((item) =>
+        normalizePayload(
+          {
+            ...base,
+            categoryId: item.categoryId,
+            description: item.description || "",
+            amount: Number(item.amount),
+            payee: item.payee || "",
+            notes: values.notes || ""
+          },
+          { isFormData: false }
+        )
+      );
+    } else if (isSalary) {
+      payloads = buildSalaryExpensePayloads({ base, values, selectedSalaryEmps, salaryOf });
+    } else {
+      payloads = [buildSingleExpensePayload({ base, values })];
+    }
     setIsSaving(true);
     createExpenses({ payloads, addExpense, bulkAddExpenses })
       .then(() => {
@@ -348,322 +442,631 @@ const AddExpense = () => {
                   )}
                 />
 
-                <div className="space-y-6 pt-2">
-                  <SectionHeader
-                    step={1}
-                    title={t("page.expense.form.section.detailTitle")}
-                    description={t("page.expense.form.section.detailDesc")}
-                  />
-                  <Separator />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="categoryId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("page.expense.add.category")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <SelectTrigger>
-                              <SelectValue
-                                placeholder={t("page.expense.add.categoryPlaceholder")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {categories.length === 0 ? (
-                                <SelectItem value="__none" disabled>
-                                  {t("page.expense.add.noCategories")}
-                                </SelectItem>
-                              ) : (
-                                categories.map((cat) => (
-                                  <SelectItem
-                                    key={cat.id || cat._id}
-                                    value={String(cat.id || cat._id)}>
-                                    {cat.name}
-                                  </SelectItem>
-                                ))
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>{t("page.expense.form.categoryHint")}</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("page.expense.add.date")} <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <DatePicker date={field.value} setDate={field.onChange} />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {!isSalary && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t("page.expense.add.title")}:
+                    </span>
+                    <div className="flex rounded-lg border border-border overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => handleModeSwitch("single")}
+                        className={`px-4 py-2 text-sm font-medium transition-colors ${
+                          !isMultiMode
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}>
+                        {t("page.expense.add.mode.single")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleModeSwitch("multi")}
+                        className={`px-4 py-2 text-sm font-medium transition-colors border-l border-border ${
+                          isMultiMode
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}>
+                        {t("page.expense.add.mode.multi")}
+                      </button>
+                    </div>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">
+                      {isMultiMode
+                        ? t("page.expense.add.mode.multiHint")
+                        : t("page.expense.add.mode.singleHint")}
+                    </span>
                   </div>
+                )}
 
-                  {isSalary && (
-                    <FormField
-                      control={form.control}
-                      name="employeeId"
-                      render={() => (
-                        <FormItem>
-                          <FormControl>
-                            <EmployeeSalaryPanel
-                              employees={employees}
-                              selectedIds={selectedSalaryIds}
-                              onToggle={handleToggleSalaryEmployee}
-                              onToggleAll={handleToggleAllSalary}
-                              salaryBasis={salaryBasis}
-                              onSalaryBasisChange={setSalaryBasis}
-                              t={t}
-                              loading={employeesLoading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                {isMultiMode && !isSalary ? (
+                  <div className="space-y-6 pt-2">
+                    <SectionHeader
+                      step={1}
+                      title={t("page.expense.form.section.detailTitle")}
+                      description={t("page.expense.add.mode.multiHint")}
                     />
-                  )}
+                    <Separator />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("page.expense.add.description")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Input
-                            placeholder={
-                              isSalary
-                                ? t("page.expense.form.salary.descriptionPlaceholder")
-                                : t("page.expense.add.descriptionPlaceholder")
-                            }
-                            disabled={isSalary}
-                            {...field}
-                          />
-                          {isSalary && (
-                            <FormDescription>
-                              {t("page.expense.form.salary.descriptionHint")}
-                            </FormDescription>
-                          )}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="amount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("page.expense.add.amount")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                              Rp
-                            </span>
-                            <Input
-                              type="text"
-                              inputMode="numeric"
-                              placeholder="0"
-                              className="pl-10"
-                              disabled={isSalary}
-                              value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
-                              onChange={(e) => {
-                                const raw = e.target.value.replace(/[^0-9]/g, "");
-                                field.onChange(raw ? Number(raw) : "");
-                              }}
-                            />
-                          </div>
-                          {isSalary && (
-                            <FormDescription>
-                              {t("page.expense.form.salary.amountHint")}
-                            </FormDescription>
-                          )}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <SectionHeader
-                    step={2}
-                    title={t("page.expense.form.section.paymentTitle")}
-                    description={t("page.expense.form.section.paymentDesc")}
-                  />
-                  <Separator />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="paymentMethod"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("page.expense.form.paymentMethod")}</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <SelectTrigger>
-                              <SelectValue
-                                placeholder={t("page.expense.form.paymentMethodPlaceholder")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="cash">
-                                {t("page.expense.form.paymentMethodCash")}
-                              </SelectItem>
-                              <SelectItem value="bank">
-                                {t("page.expense.form.paymentMethodBank")}
-                              </SelectItem>
-                              <SelectItem value="e-wallet">
-                                {t("page.expense.form.paymentMethodEWallet")}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            {t("page.expense.form.paymentMethodHint")}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="frequency"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("page.expense.form.frequency")}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                            disabled={isSalary}>
-                            <SelectTrigger>
-                              <SelectValue
-                                placeholder={t("page.expense.form.frequencyPlaceholder")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="once">
-                                {t("page.expense.form.frequencyOnce")}
-                              </SelectItem>
-                              <SelectItem value="daily">
-                                {t("page.expense.form.frequencyDaily")}
-                              </SelectItem>
-                              <SelectItem value="weekly">
-                                {t("page.expense.form.frequencyWeekly")}
-                              </SelectItem>
-                              <SelectItem value="monthly">
-                                {t("page.expense.form.frequencyMonthly")}
-                              </SelectItem>
-                              <SelectItem value="yearly">
-                                {t("page.expense.form.frequencyYearly")}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>{t("page.expense.form.frequencyHint")}</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="payee"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("page.expense.form.payee")}</FormLabel>
-                          <Input
-                            placeholder={t("page.expense.form.payeePlaceholder")}
-                            disabled={isSalary}
-                            {...field}
-                          />
-                          <FormDescription>{t("page.expense.form.payeeHint")}</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {watchedFrequency !== "once" && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
                         control={form.control}
-                        name="recurringEndDate"
+                        name="date"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t("page.expense.form.recurringEndDate")}</FormLabel>
+                            <FormLabel>
+                              {t("page.expense.add.date")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
                             <DatePicker date={field.value} setDate={field.onChange} />
-                            <FormDescription>
-                              {t("page.expense.form.recurringEndDateHint")}
-                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    )}
-                    {!isSalary && (
                       <FormField
                         control={form.control}
-                        name="employeeId"
+                        name="paymentMethod"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t("page.expense.form.employee")}</FormLabel>
+                            <FormLabel>{t("page.expense.form.paymentMethod")}</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <SelectTrigger>
                                 <SelectValue
-                                  placeholder={t("page.expense.form.employeePlaceholder")}
+                                  placeholder={t("page.expense.form.paymentMethodPlaceholder")}
                                 />
                               </SelectTrigger>
                               <SelectContent>
-                                {employees.length === 0 ? (
+                                <SelectItem value="cash">
+                                  {t("page.expense.form.paymentMethodCash")}
+                                </SelectItem>
+                                <SelectItem value="bank">
+                                  {t("page.expense.form.paymentMethodBank")}
+                                </SelectItem>
+                                <SelectItem value="e-wallet">
+                                  {t("page.expense.form.paymentMethodEWallet")}
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="frequency"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.expense.form.frequency")}</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={t("page.expense.form.frequencyPlaceholder")}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="once">
+                                  {t("page.expense.form.frequencyOnce")}
+                                </SelectItem>
+                                <SelectItem value="daily">
+                                  {t("page.expense.form.frequencyDaily")}
+                                </SelectItem>
+                                <SelectItem value="weekly">
+                                  {t("page.expense.form.frequencyWeekly")}
+                                </SelectItem>
+                                <SelectItem value="monthly">
+                                  {t("page.expense.form.frequencyMonthly")}
+                                </SelectItem>
+                                <SelectItem value="yearly">
+                                  {t("page.expense.form.frequencyYearly")}
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {watchedFrequency !== "once" && (
+                        <FormField
+                          control={form.control}
+                          name="recurringEndDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.expense.form.recurringEndDate")}</FormLabel>
+                              <DatePicker date={field.value} setDate={field.onChange} />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </div>
+
+                    <div className="border rounded-lg overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm min-w-[640px]">
+                          <thead>
+                            <tr className="bg-muted/40 border-b">
+                              <th className="px-3 py-2.5 text-left font-medium text-muted-foreground">
+                                {t("page.expense.add.category")} *
+                              </th>
+                              <th className="px-3 py-2.5 text-left font-medium text-muted-foreground">
+                                {t("page.expense.form.description")}
+                              </th>
+                              <th className="px-3 py-2.5 text-left font-medium text-muted-foreground">
+                                {t("page.expense.add.amount")} *
+                              </th>
+                              <th className="px-3 py-2.5 text-left font-medium text-muted-foreground">
+                                {t("page.expense.form.payee")}
+                              </th>
+                              <th className="px-3 py-2.5 w-10" />
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {itemFields.map((field, idx) => {
+                              const item = watchedItems?.[idx] || {};
+                              return (
+                                <tr key={field.id} className="border-b border-muted/20">
+                                  <td className="px-3 py-2">
+                                    <Select
+                                      value={item.categoryId || ""}
+                                      onValueChange={(val) =>
+                                        form.setValue(`items.${idx}.categoryId`, val)
+                                      }>
+                                      <SelectTrigger className="h-9">
+                                        <SelectValue
+                                          placeholder={t("page.expense.add.categoryPlaceholder")}
+                                        />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {categories.length === 0 ? (
+                                          <SelectItem value="__none" disabled>
+                                            {t("page.expense.add.noCategories")}
+                                          </SelectItem>
+                                        ) : (
+                                          categories.map((cat) => (
+                                            <SelectItem
+                                              key={cat.id || cat._id}
+                                              value={String(cat.id || cat._id)}>
+                                              {cat.name}
+                                            </SelectItem>
+                                          ))
+                                        )}
+                                      </SelectContent>
+                                    </Select>
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <Input
+                                      className="h-9"
+                                      placeholder={t("page.expense.add.descriptionPlaceholder")}
+                                      value={item.description || ""}
+                                      onChange={(e) =>
+                                        form.setValue(`items.${idx}.description`, e.target.value)
+                                      }
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <div className="relative">
+                                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                                        Rp
+                                      </span>
+                                      <Input
+                                        type="text"
+                                        inputMode="numeric"
+                                        className="h-9 pl-10"
+                                        placeholder="0"
+                                        value={
+                                          item.amount
+                                            ? Number(item.amount).toLocaleString("id-ID")
+                                            : ""
+                                        }
+                                        onChange={(e) => {
+                                          const raw = e.target.value.replace(/[^0-9]/g, "");
+                                          form.setValue(
+                                            `items.${idx}.amount`,
+                                            raw ? Number(raw) : ""
+                                          );
+                                        }}
+                                      />
+                                    </div>
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <Input
+                                      className="h-9"
+                                      placeholder={t("page.expense.form.payeePlaceholder")}
+                                      value={item.payee || ""}
+                                      onChange={(e) =>
+                                        form.setValue(`items.${idx}.payee`, e.target.value)
+                                      }
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2 text-center">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (itemFields.length > 1) removeItem(idx);
+                                      }}
+                                      disabled={itemFields.length <= 1}
+                                      className="text-muted-foreground/30 hover:text-destructive disabled:opacity-30 disabled:cursor-not-allowed">
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="p-3 border-t flex items-center justify-between">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            appendItem({
+                              categoryId: "",
+                              description: "",
+                              amount: "",
+                              payee: ""
+                            })
+                          }
+                          className="gap-1.5">
+                          <Plus size={14} />
+                          {t("page.expense.add.multi.addRow")}
+                        </Button>
+                        <div className="text-sm font-semibold">
+                          {t("page.expense.add.multi.total")}:
+                          <span className="ml-2 text-foreground">
+                            Rp {multiTotal.toLocaleString("id-ID")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <SectionHeader
+                      step={2}
+                      title={t("page.expense.form.section.additionalTitle")}
+                      description={t("page.expense.form.section.additionalDesc")}
+                    />
+                    <Separator />
+
+                    <FormField
+                      control={form.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.expense.add.notes")}</FormLabel>
+                          <Textarea
+                            placeholder={t("page.expense.add.notesPlaceholder")}
+                            rows={3}
+                            {...field}
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-6 pt-2">
+                    <SectionHeader
+                      step={1}
+                      title={t("page.expense.form.section.detailTitle")}
+                      description={t("page.expense.form.section.detailDesc")}
+                    />
+                    <Separator />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="categoryId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t("page.expense.add.category")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={t("page.expense.add.categoryPlaceholder")}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {categories.length === 0 ? (
                                   <SelectItem value="__none" disabled>
-                                    {t("page.expense.form.employeeEmpty")}
+                                    {t("page.expense.add.noCategories")}
                                   </SelectItem>
                                 ) : (
-                                  employees.map((emp) => (
-                                    <SelectItem key={emp.id} value={String(emp.id)}>
-                                      {emp.fullName}
+                                  categories.map((cat) => (
+                                    <SelectItem
+                                      key={cat.id || cat._id}
+                                      value={String(cat.id || cat._id)}>
+                                      {cat.name}
                                     </SelectItem>
                                   ))
                                 )}
                               </SelectContent>
                             </Select>
-                            <FormDescription>{t("page.expense.form.employeeHint")}</FormDescription>
+                            <FormDescription>{t("page.expense.form.categoryHint")}</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="date"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t("page.expense.add.date")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <DatePicker date={field.value} setDate={field.onChange} />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {isSalary && (
+                      <FormField
+                        control={form.control}
+                        name="employeeId"
+                        render={() => (
+                          <FormItem>
+                            <FormControl>
+                              <EmployeeSalaryPanel
+                                employees={employees}
+                                selectedIds={selectedSalaryIds}
+                                onToggle={handleToggleSalaryEmployee}
+                                onToggleAll={handleToggleAllSalary}
+                                salaryBasis={salaryBasis}
+                                onSalaryBasisChange={setSalaryBasis}
+                                t={t}
+                                loading={employeesLoading}
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     )}
-                  </div>
 
-                  <SectionHeader
-                    step={3}
-                    title={t("page.expense.form.section.additionalTitle")}
-                    description={t("page.expense.form.section.additionalDesc")}
-                  />
-                  <Separator />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t("page.expense.add.description")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Input
+                              placeholder={
+                                isSalary
+                                  ? t("page.expense.form.salary.descriptionPlaceholder")
+                                  : t("page.expense.add.descriptionPlaceholder")
+                              }
+                              disabled={isSalary}
+                              {...field}
+                            />
+                            {isSalary && (
+                              <FormDescription>
+                                {t("page.expense.form.salary.descriptionHint")}
+                              </FormDescription>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="amount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t("page.expense.add.amount")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                                Rp
+                              </span>
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="0"
+                                className="pl-10"
+                                disabled={isSalary}
+                                value={
+                                  field.value ? Number(field.value).toLocaleString("id-ID") : ""
+                                }
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                                  field.onChange(raw ? Number(raw) : "");
+                                }}
+                              />
+                            </div>
+                            {isSalary && (
+                              <FormDescription>
+                                {t("page.expense.form.salary.amountHint")}
+                              </FormDescription>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("page.expense.add.notes")}</FormLabel>
-                        <Textarea
-                          placeholder={t("page.expense.add.notesPlaceholder")}
-                          rows={3}
-                          {...field}
+                    <SectionHeader
+                      step={2}
+                      title={t("page.expense.form.section.paymentTitle")}
+                      description={t("page.expense.form.section.paymentDesc")}
+                    />
+                    <Separator />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="paymentMethod"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.expense.form.paymentMethod")}</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={t("page.expense.form.paymentMethodPlaceholder")}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="cash">
+                                  {t("page.expense.form.paymentMethodCash")}
+                                </SelectItem>
+                                <SelectItem value="bank">
+                                  {t("page.expense.form.paymentMethodBank")}
+                                </SelectItem>
+                                <SelectItem value="e-wallet">
+                                  {t("page.expense.form.paymentMethodEWallet")}
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              {t("page.expense.form.paymentMethodHint")}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="frequency"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.expense.form.frequency")}</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              disabled={isSalary}>
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={t("page.expense.form.frequencyPlaceholder")}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="once">
+                                  {t("page.expense.form.frequencyOnce")}
+                                </SelectItem>
+                                <SelectItem value="daily">
+                                  {t("page.expense.form.frequencyDaily")}
+                                </SelectItem>
+                                <SelectItem value="weekly">
+                                  {t("page.expense.form.frequencyWeekly")}
+                                </SelectItem>
+                                <SelectItem value="monthly">
+                                  {t("page.expense.form.frequencyMonthly")}
+                                </SelectItem>
+                                <SelectItem value="yearly">
+                                  {t("page.expense.form.frequencyYearly")}
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              {t("page.expense.form.frequencyHint")}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="payee"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.expense.form.payee")}</FormLabel>
+                            <Input
+                              placeholder={t("page.expense.form.payeePlaceholder")}
+                              disabled={isSalary}
+                              {...field}
+                            />
+                            <FormDescription>{t("page.expense.form.payeeHint")}</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {watchedFrequency !== "once" && (
+                        <FormField
+                          control={form.control}
+                          name="recurringEndDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.expense.form.recurringEndDate")}</FormLabel>
+                              <DatePicker date={field.value} setDate={field.onChange} />
+                              <FormDescription>
+                                {t("page.expense.form.recurringEndDateHint")}
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                      )}
+                      {!isSalary && (
+                        <FormField
+                          control={form.control}
+                          name="employeeId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.expense.form.employee")}</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger>
+                                  <SelectValue
+                                    placeholder={t("page.expense.form.employeePlaceholder")}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {employees.length === 0 ? (
+                                    <SelectItem value="__none" disabled>
+                                      {t("page.expense.form.employeeEmpty")}
+                                    </SelectItem>
+                                  ) : (
+                                    employees.map((emp) => (
+                                      <SelectItem key={emp.id} value={String(emp.id)}>
+                                        {emp.fullName}
+                                      </SelectItem>
+                                    ))
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>
+                                {t("page.expense.form.employeeHint")}
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </div>
+
+                    <SectionHeader
+                      step={3}
+                      title={t("page.expense.form.section.additionalTitle")}
+                      description={t("page.expense.form.section.additionalDesc")}
+                    />
+                    <Separator />
+
+                    <FormField
+                      control={form.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.expense.add.notes")}</FormLabel>
+                          <Textarea
+                            placeholder={t("page.expense.add.notesPlaceholder")}
+                            rows={3}
+                            {...field}
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
                   <Button
@@ -718,7 +1121,13 @@ const AddExpense = () => {
               ? t("page.expense.form.salary.successDescription", {
                   count: selectedSalaryIds.length
                 })
-              : t("page.expense.add.successDescription")
+              : isMultiMode
+                ? t("page.expense.add.multi.successDescription", {
+                    count: (form.getValues("items") || []).filter(
+                      (it) => it.categoryId && it.amount
+                    ).length
+                  })
+                : t("page.expense.add.successDescription")
           }
           confirmText={t("page.expense.add.successConfirm")}
           onConfirm={() => setTimeout(() => navigate("/expense"), 150)}

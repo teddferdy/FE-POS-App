@@ -173,7 +173,9 @@ const DetailStockTransfer = () => {
                     ],
                     [
                       t("page.stockTransfer.detail.field.date"),
-                      new Date(transfer.createdAt).toLocaleDateString("id")
+                      transfer.createdAt && !isNaN(new Date(transfer.createdAt).getTime())
+                        ? new Date(transfer.createdAt).toLocaleDateString("id")
+                        : "-"
                     ],
                     [t("page.stockTransfer.detail.field.notes"), transfer.notes || "-"],
                     [t("page.stockTransfer.detail.field.reason"), transfer.reason || "-"],
