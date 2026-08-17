@@ -84,7 +84,7 @@ const AddGoodsReceipt = () => {
             isFromPo: z.boolean().optional()
           })
         )
-        .min(1, t("page.goodsReceipt.add.toast.poRequired"))
+        .min(1, t("page.goodsReceipt.add.toast.itemRequired"))
     })
     .superRefine((data, ctx) => {
       const validItems = (data.items || []).filter(
