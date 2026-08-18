@@ -5,7 +5,20 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, Check, Plus, Trash2, Upload, Download, Pencil, User, Phone, CreditCard, Receipt } from "lucide-react";
+import {
+  X,
+  Save,
+  Check,
+  Plus,
+  Trash2,
+  Upload,
+  Download,
+  Pencil,
+  User,
+  Phone,
+  CreditCard,
+  Receipt
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { Switch } from "@/components/ui/switch";
@@ -108,7 +121,7 @@ const AddSupplier = () => {
   const [bankIsDefault, setBankIsDefault] = useState(false);
 
   // --- Supplier Categories ---
-  const [categoryId, setCategoryId] = useState(null);
+  // const [categoryId, setCategoryId] = useState(null);
 
   // --- Products Supplied state ---
   const [supplierProducts, setSupplierProducts] = useState([]);
@@ -262,14 +275,26 @@ const AddSupplier = () => {
       setContacts((prev) =>
         prev.map((c) =>
           c.id === editingContactId
-            ? { ...c, fullName: contactName.trim(), position: contactPosition.trim(), email: contactEmail.trim(), phone: contactPhone.trim() }
+            ? {
+                ...c,
+                fullName: contactName.trim(),
+                position: contactPosition.trim(),
+                email: contactEmail.trim(),
+                phone: contactPhone.trim()
+              }
             : c
         )
       );
     } else {
       setContacts((prev) => [
         ...prev,
-        { id: `contact_${Date.now()}`, fullName: contactName.trim(), position: contactPosition.trim(), email: contactEmail.trim(), phone: contactPhone.trim() }
+        {
+          id: `contact_${Date.now()}`,
+          fullName: contactName.trim(),
+          position: contactPosition.trim(),
+          email: contactEmail.trim(),
+          phone: contactPhone.trim()
+        }
       ]);
     }
     setContactName("");
@@ -300,14 +325,27 @@ const AddSupplier = () => {
       setBankAccounts((prev) =>
         prev.map((b) =>
           b.id === editingBankId
-            ? { ...b, bankName: bankName.trim(), accountNumber: accountNumber.trim(), accountName: accountName.trim(), isDefault: bankIsDefault }
+            ? {
+                ...b,
+                bankName: bankName.trim(),
+                accountNumber: accountNumber.trim(),
+                accountName: accountName.trim(),
+                isDefault: bankIsDefault
+              }
             : b
         )
       );
     } else {
       setBankAccounts((prev) => [
         ...prev,
-        { id: `bank_${Date.now()}`, bankName: bankName.trim(), accountNumber: accountNumber.trim(), accountName: accountName.trim(), isDefault: bankIsDefault, status: "active" }
+        {
+          id: `bank_${Date.now()}`,
+          bankName: bankName.trim(),
+          accountNumber: accountNumber.trim(),
+          accountName: accountName.trim(),
+          isDefault: bankIsDefault,
+          status: "active"
+        }
       ]);
     }
     setBankName("");
@@ -524,7 +562,10 @@ const AddSupplier = () => {
                                 {t("page.supplier.form.name")}{" "}
                                 <span className="text-destructive">*</span>
                               </FormLabel>
-                              <Input placeholder={t("page.supplier.form.namePlaceholder")} {...field} />
+                              <Input
+                                placeholder={t("page.supplier.form.namePlaceholder")}
+                                {...field}
+                              />
                               <FormMessage />
                             </FormItem>
                           )}
@@ -607,7 +648,13 @@ const AddSupplier = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t("page.supplier.form.mobile", "Mobile")}</FormLabel>
-                              <Input placeholder={t("page.supplier.form.mobilePlaceholder", "Nomor HP/WA utama")} {...field} />
+                              <Input
+                                placeholder={t(
+                                  "page.supplier.form.mobilePlaceholder",
+                                  "Nomor HP/WA utama"
+                                )}
+                                {...field}
+                              />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
                             </FormItem>
@@ -619,7 +666,13 @@ const AddSupplier = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t("page.supplier.form.whatsapp", "WhatsApp")}</FormLabel>
-                              <Input placeholder={t("page.supplier.form.whatsappPlaceholder", "Nomor WhatsApp")} {...field} />
+                              <Input
+                                placeholder={t(
+                                  "page.supplier.form.whatsappPlaceholder",
+                                  "Nomor WhatsApp"
+                                )}
+                                {...field}
+                              />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
                             </FormItem>
@@ -631,7 +684,10 @@ const AddSupplier = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t("page.supplier.form.fax", "Fax")}</FormLabel>
-                              <Input placeholder={t("page.supplier.form.faxPlaceholder", "Nomor Fax")} {...field} />
+                              <Input
+                                placeholder={t("page.supplier.form.faxPlaceholder", "Nomor Fax")}
+                                {...field}
+                              />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
                             </FormItem>
@@ -643,7 +699,10 @@ const AddSupplier = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t("page.supplier.form.website", "Website")}</FormLabel>
-                              <Input placeholder={t("page.supplier.form.websitePlaceholder", "https://")} {...field} />
+                              <Input
+                                placeholder={t("page.supplier.form.websitePlaceholder", "https://")}
+                                {...field}
+                              />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
                             </FormItem>
@@ -703,7 +762,10 @@ const AddSupplier = () => {
                             {t("page.supplier.contacts.title", "Daftar Kontak")}
                           </h3>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {t("page.supplier.contacts.description", "Kelola kontak person yang dapat dihubungi")}
+                            {t(
+                              "page.supplier.contacts.description",
+                              "Kelola kontak person yang dapat dihubungi"
+                            )}
                           </p>
                         </div>
                         <Button
@@ -711,7 +773,14 @@ const AddSupplier = () => {
                           variant="outline"
                           size="sm"
                           className="gap-1.5"
-                          onClick={() => { setShowContactForm(!showContactForm); setEditingContactId(null); setContactName(""); setContactPosition(""); setContactEmail(""); setContactPhone(""); }}>
+                          onClick={() => {
+                            setShowContactForm(!showContactForm);
+                            setEditingContactId(null);
+                            setContactName("");
+                            setContactPosition("");
+                            setContactEmail("");
+                            setContactPhone("");
+                          }}>
                           <Plus size={14} />
                           {t("page.supplier.contacts.add", "Tambah Kontak")}
                         </Button>
@@ -721,28 +790,71 @@ const AddSupplier = () => {
                         <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="space-y-1">
-                              <label className="text-xs text-muted-foreground">{t("page.supplier.contacts.fullName", "Nama Lengkap")} *</label>
-                              <Input placeholder="Nama kontak" value={contactName} onChange={(e) => setContactName(e.target.value)} />
+                              <label className="text-xs text-muted-foreground">
+                                {t("page.supplier.contacts.fullName", "Nama Lengkap")} *
+                              </label>
+                              <Input
+                                placeholder="Nama kontak"
+                                value={contactName}
+                                onChange={(e) => setContactName(e.target.value)}
+                              />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-xs text-muted-foreground">{t("page.supplier.contacts.position", "Jabatan")}</label>
-                              <Input placeholder="Jabatan" value={contactPosition} onChange={(e) => setContactPosition(e.target.value)} />
+                              <label className="text-xs text-muted-foreground">
+                                {t("page.supplier.contacts.position", "Jabatan")}
+                              </label>
+                              <Input
+                                placeholder="Jabatan"
+                                value={contactPosition}
+                                onChange={(e) => setContactPosition(e.target.value)}
+                              />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-xs text-muted-foreground">{t("page.supplier.contacts.email", "Email")}</label>
-                              <Input placeholder="Email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
+                              <label className="text-xs text-muted-foreground">
+                                {t("page.supplier.contacts.email", "Email")}
+                              </label>
+                              <Input
+                                placeholder="Email"
+                                value={contactEmail}
+                                onChange={(e) => setContactEmail(e.target.value)}
+                              />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-xs text-muted-foreground">{t("page.supplier.contacts.phone", "Telepon")}</label>
-                              <Input placeholder="Telepon" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
+                              <label className="text-xs text-muted-foreground">
+                                {t("page.supplier.contacts.phone", "Telepon")}
+                              </label>
+                              <Input
+                                placeholder="Telepon"
+                                value={contactPhone}
+                                onChange={(e) => setContactPhone(e.target.value)}
+                              />
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button type="button" size="sm" variant="outline" onClick={() => { setShowContactForm(false); setEditingContactId(null); }} className="flex-1">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setShowContactForm(false);
+                                setEditingContactId(null);
+                              }}
+                              className="flex-1">
                               {t("common.cancel")}
                             </Button>
-                            <Button type="button" size="sm" disabled={!contactName.trim()} onClick={handleAddContact} className="flex-1 gap-1.5">
-                              {editingContactId ? t("common.save") : <><Plus size={14} /> {t("page.supplier.contacts.add", "Tambah")}</>}
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={!contactName.trim()}
+                              onClick={handleAddContact}
+                              className="flex-1 gap-1.5">
+                              {editingContactId ? (
+                                t("common.save")
+                              ) : (
+                                <>
+                                  <Plus size={14} /> {t("page.supplier.contacts.add", "Tambah")}
+                                </>
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -753,27 +865,59 @@ const AddSupplier = () => {
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="bg-muted/50 border-b">
-                                <th className="text-center px-3 py-2 font-medium text-muted-foreground w-10">#</th>
-                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("page.supplier.contacts.fullName", "Nama")}</th>
-                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("page.supplier.contacts.position", "Jabatan")}</th>
-                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("page.supplier.contacts.email", "Email")}</th>
-                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("page.supplier.contacts.phone", "Telepon")}</th>
-                                <th className="text-right px-3 py-2 font-medium text-muted-foreground">{t("page.supplier.products.table.action", "Aksi")}</th>
+                                <th className="text-center px-3 py-2 font-medium text-muted-foreground w-10">
+                                  #
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  {t("page.supplier.contacts.fullName", "Nama")}
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  {t("page.supplier.contacts.position", "Jabatan")}
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  {t("page.supplier.contacts.email", "Email")}
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  {t("page.supplier.contacts.phone", "Telepon")}
+                                </th>
+                                <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                                  {t("page.supplier.products.table.action", "Aksi")}
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
                               {contacts.map((c, index) => (
-                                <tr key={c.id} className={`border-b last:border-b-0 ${editingContactId === c.id ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}>
-                                  <td className="px-3 py-2 text-center text-xs text-muted-foreground">{index + 1}</td>
+                                <tr
+                                  key={c.id}
+                                  className={`border-b last:border-b-0 ${editingContactId === c.id ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}>
+                                  <td className="px-3 py-2 text-center text-xs text-muted-foreground">
+                                    {index + 1}
+                                  </td>
                                   <td className="px-3 py-2">{c.fullName}</td>
-                                  <td className="px-3 py-2 text-muted-foreground">{c.position || "-"}</td>
-                                  <td className="px-3 py-2 text-muted-foreground">{c.email || "-"}</td>
-                                  <td className="px-3 py-2 text-muted-foreground">{c.phone || "-"}</td>
+                                  <td className="px-3 py-2 text-muted-foreground">
+                                    {c.position || "-"}
+                                  </td>
+                                  <td className="px-3 py-2 text-muted-foreground">
+                                    {c.email || "-"}
+                                  </td>
+                                  <td className="px-3 py-2 text-muted-foreground">
+                                    {c.phone || "-"}
+                                  </td>
                                   <td className="px-3 py-2 text-right">
-                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => handleEditContact(c)}>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                      onClick={() => handleEditContact(c)}>
                                       <Pencil size={14} />
                                     </Button>
-                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleRemoveContact(c.id)}>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-destructive hover:text-destructive"
+                                      onClick={() => handleRemoveContact(c.id)}>
                                       <Trash2 size={14} />
                                     </Button>
                                   </td>
@@ -785,7 +929,10 @@ const AddSupplier = () => {
                       ) : (
                         <div className="border border-dashed rounded-lg p-6 text-center">
                           <p className="text-sm text-muted-foreground">
-                            {t("page.supplier.contacts.empty", "Belum ada kontak. Klik tombol di atas untuk menambahkan.")}
+                            {t(
+                              "page.supplier.contacts.empty",
+                              "Belum ada kontak. Klik tombol di atas untuk menambahkan."
+                            )}
                           </p>
                         </div>
                       )}
@@ -799,7 +946,9 @@ const AddSupplier = () => {
                           name="paymentType"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t("page.supplier.form.paymentType", "Tipe Pembayaran")}</FormLabel>
+                              <FormLabel>
+                                {t("page.supplier.form.paymentType", "Tipe Pembayaran")}
+                              </FormLabel>
                               <Combobox
                                 options={[
                                   { value: "cbd", label: "CBD (Cash Before Delivery)" },
@@ -821,7 +970,9 @@ const AddSupplier = () => {
                             name="tempoDays"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>{t("page.supplier.form.tempoDays", "Tempo (Hari)")}</FormLabel>
+                                <FormLabel>
+                                  {t("page.supplier.form.tempoDays", "Tempo (Hari)")}
+                                </FormLabel>
                                 <Input
                                   type="number"
                                   min={0}
@@ -829,7 +980,12 @@ const AddSupplier = () => {
                                   value={field.value || ""}
                                   onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                                 />
-                                <FormDescription>{t("page.supplier.form.tempoDaysDesc", "Jatuh tempo pembayaran dalam hari")}</FormDescription>
+                                <FormDescription>
+                                  {t(
+                                    "page.supplier.form.tempoDaysDesc",
+                                    "Jatuh tempo pembayaran dalam hari"
+                                  )}
+                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -840,7 +996,9 @@ const AddSupplier = () => {
                           name="defaultDiscount"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t("page.supplier.form.defaultDiscount", "Diskon Default (%)")}</FormLabel>
+                              <FormLabel>
+                                {t("page.supplier.form.defaultDiscount", "Diskon Default (%)")}
+                              </FormLabel>
                               <Input
                                 type="number"
                                 min={0}
@@ -859,9 +1017,14 @@ const AddSupplier = () => {
                           name="defaultDescription"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t("page.supplier.form.defaultDescription", "Deskripsi Default")}</FormLabel>
+                              <FormLabel>
+                                {t("page.supplier.form.defaultDescription", "Deskripsi Default")}
+                              </FormLabel>
                               <Textarea
-                                placeholder={t("page.supplier.form.defaultDescriptionPlaceholder", "Deskripsi default untuk pembelian")}
+                                placeholder={t(
+                                  "page.supplier.form.defaultDescriptionPlaceholder",
+                                  "Deskripsi default untuk pembelian"
+                                )}
                                 rows={2}
                                 {...field}
                               />
@@ -878,7 +1041,10 @@ const AddSupplier = () => {
                               {t("page.supplier.bankAccounts.title", "Rekening Bank")}
                             </h3>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {t("page.supplier.bankAccounts.description", "Kelola rekening bank supplier untuk pembayaran")}
+                              {t(
+                                "page.supplier.bankAccounts.description",
+                                "Kelola rekening bank supplier untuk pembayaran"
+                              )}
                             </p>
                           </div>
                           <Button
@@ -886,7 +1052,14 @@ const AddSupplier = () => {
                             variant="outline"
                             size="sm"
                             className="gap-1.5"
-                            onClick={() => { setShowBankForm(!showBankForm); setEditingBankId(null); setBankName(""); setAccountNumber(""); setAccountName(""); setBankIsDefault(false); }}>
+                            onClick={() => {
+                              setShowBankForm(!showBankForm);
+                              setEditingBankId(null);
+                              setBankName("");
+                              setAccountNumber("");
+                              setAccountName("");
+                              setBankIsDefault(false);
+                            }}>
                             <Plus size={14} />
                             {t("page.supplier.bankAccounts.add", "Tambah Rekening")}
                           </Button>
@@ -896,29 +1069,73 @@ const AddSupplier = () => {
                           <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                               <div className="space-y-1">
-                                <label className="text-xs text-muted-foreground">{t("page.supplier.bankAccounts.bankName", "Nama Bank")} *</label>
-                                <Input placeholder="BCA, Mandiri, BRI..." value={bankName} onChange={(e) => setBankName(e.target.value)} />
+                                <label className="text-xs text-muted-foreground">
+                                  {t("page.supplier.bankAccounts.bankName", "Nama Bank")} *
+                                </label>
+                                <Input
+                                  placeholder="BCA, Mandiri, BRI..."
+                                  value={bankName}
+                                  onChange={(e) => setBankName(e.target.value)}
+                                />
                               </div>
                               <div className="space-y-1">
-                                <label className="text-xs text-muted-foreground">{t("page.supplier.bankAccounts.accountNumber", "Nomor Rekening")} *</label>
-                                <Input placeholder="0012345678" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
+                                <label className="text-xs text-muted-foreground">
+                                  {t("page.supplier.bankAccounts.accountNumber", "Nomor Rekening")}{" "}
+                                  *
+                                </label>
+                                <Input
+                                  placeholder="0012345678"
+                                  value={accountNumber}
+                                  onChange={(e) => setAccountNumber(e.target.value)}
+                                />
                               </div>
                               <div className="space-y-1">
-                                <label className="text-xs text-muted-foreground">{t("page.supplier.bankAccounts.accountName", "Nama Pemilik")} *</label>
-                                <Input placeholder="Nama pemilik rekening" value={accountName} onChange={(e) => setAccountName(e.target.value)} />
+                                <label className="text-xs text-muted-foreground">
+                                  {t("page.supplier.bankAccounts.accountName", "Nama Pemilik")} *
+                                </label>
+                                <Input
+                                  placeholder="Nama pemilik rekening"
+                                  value={accountName}
+                                  onChange={(e) => setAccountName(e.target.value)}
+                                />
                               </div>
                             </div>
                             <div className="flex items-center justify-between">
                               <label className="flex items-center gap-2 text-sm">
-                                <Switch checked={bankIsDefault} onCheckedChange={setBankIsDefault} />
+                                <Switch
+                                  checked={bankIsDefault}
+                                  onCheckedChange={setBankIsDefault}
+                                />
                                 {t("page.supplier.bankAccounts.isDefault", "Jadikan Default")}
                               </label>
                               <div className="flex gap-2">
-                                <Button type="button" size="sm" variant="outline" onClick={() => { setShowBankForm(false); setEditingBankId(null); }} className="flex-1">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setShowBankForm(false);
+                                    setEditingBankId(null);
+                                  }}
+                                  className="flex-1">
                                   {t("common.cancel")}
                                 </Button>
-                                <Button type="button" size="sm" disabled={!bankName.trim() || !accountNumber.trim() || !accountName.trim()} onClick={handleAddBank} className="flex-1 gap-1.5">
-                                  {editingBankId ? t("common.save") : <><Plus size={14} /> {t("page.supplier.bankAccounts.add", "Tambah")}</>}
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  disabled={
+                                    !bankName.trim() || !accountNumber.trim() || !accountName.trim()
+                                  }
+                                  onClick={handleAddBank}
+                                  className="flex-1 gap-1.5">
+                                  {editingBankId ? (
+                                    t("common.save")
+                                  ) : (
+                                    <>
+                                      <Plus size={14} />{" "}
+                                      {t("page.supplier.bankAccounts.add", "Tambah")}
+                                    </>
+                                  )}
                                 </Button>
                               </div>
                             </div>
@@ -930,29 +1147,63 @@ const AddSupplier = () => {
                             <table className="w-full text-sm">
                               <thead>
                                 <tr className="bg-muted/50 border-b">
-                                  <th className="text-center px-3 py-2 font-medium text-muted-foreground w-10">#</th>
-                                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("page.supplier.bankAccounts.bankName", "Bank")}</th>
-                                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("page.supplier.bankAccounts.accountNumber", "Rekening")}</th>
-                                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("page.supplier.bankAccounts.accountName", "Nama")}</th>
-                                  <th className="text-center px-3 py-2 font-medium text-muted-foreground">{t("page.supplier.bankAccounts.isDefault", "Default")}</th>
-                                  <th className="text-right px-3 py-2 font-medium text-muted-foreground">{t("page.supplier.products.table.action", "Aksi")}</th>
+                                  <th className="text-center px-3 py-2 font-medium text-muted-foreground w-10">
+                                    #
+                                  </th>
+                                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                    {t("page.supplier.bankAccounts.bankName", "Bank")}
+                                  </th>
+                                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                    {t("page.supplier.bankAccounts.accountNumber", "Rekening")}
+                                  </th>
+                                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                    {t("page.supplier.bankAccounts.accountName", "Nama")}
+                                  </th>
+                                  <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                                    {t("page.supplier.bankAccounts.isDefault", "Default")}
+                                  </th>
+                                  <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                                    {t("page.supplier.products.table.action", "Aksi")}
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {bankAccounts.map((b, index) => (
-                                  <tr key={b.id} className={`border-b last:border-b-0 ${editingBankId === b.id ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}>
-                                    <td className="px-3 py-2 text-center text-xs text-muted-foreground">{index + 1}</td>
+                                  <tr
+                                    key={b.id}
+                                    className={`border-b last:border-b-0 ${editingBankId === b.id ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}>
+                                    <td className="px-3 py-2 text-center text-xs text-muted-foreground">
+                                      {index + 1}
+                                    </td>
                                     <td className="px-3 py-2 font-medium">{b.bankName}</td>
-                                    <td className="px-3 py-2 font-mono text-xs">{b.accountNumber}</td>
-                                    <td className="px-3 py-2 text-muted-foreground">{b.accountName}</td>
+                                    <td className="px-3 py-2 font-mono text-xs">
+                                      {b.accountNumber}
+                                    </td>
+                                    <td className="px-3 py-2 text-muted-foreground">
+                                      {b.accountName}
+                                    </td>
                                     <td className="px-3 py-2 text-center">
-                                      {b.isDefault ? <Check size={14} className="text-green-600 mx-auto" /> : <span className="text-muted-foreground">-</span>}
+                                      {b.isDefault ? (
+                                        <Check size={14} className="text-green-600 mx-auto" />
+                                      ) : (
+                                        <span className="text-muted-foreground">-</span>
+                                      )}
                                     </td>
                                     <td className="px-3 py-2 text-right">
-                                      <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => handleEditBank(b)}>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                        onClick={() => handleEditBank(b)}>
                                         <Pencil size={14} />
                                       </Button>
-                                      <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleRemoveBank(b.id)}>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-destructive hover:text-destructive"
+                                        onClick={() => handleRemoveBank(b.id)}>
                                         <Trash2 size={14} />
                                       </Button>
                                     </td>
@@ -964,7 +1215,10 @@ const AddSupplier = () => {
                         ) : (
                           <div className="border border-dashed rounded-lg p-4 text-center">
                             <p className="text-sm text-muted-foreground">
-                              {t("page.supplier.bankAccounts.empty", "Belum ada rekening bank. Klik tombol di atas untuk menambahkan.")}
+                              {t(
+                                "page.supplier.bankAccounts.empty",
+                                "Belum ada rekening bank. Klik tombol di atas untuk menambahkan."
+                              )}
                             </p>
                           </div>
                         )}
@@ -980,8 +1234,15 @@ const AddSupplier = () => {
                           <FormItem>
                             <div className="flex items-center justify-between p-4 rounded-lg border">
                               <div>
-                                <FormLabel>{t("page.supplier.form.taxInclude", "Harga Termasuk Pajak")}</FormLabel>
-                                <FormDescription>{t("page.supplier.form.taxIncludeDesc", "Jika aktif, harga sudah termasuk PPN")}</FormDescription>
+                                <FormLabel>
+                                  {t("page.supplier.form.taxInclude", "Harga Termasuk Pajak")}
+                                </FormLabel>
+                                <FormDescription>
+                                  {t(
+                                    "page.supplier.form.taxIncludeDesc",
+                                    "Jika aktif, harga sudah termasuk PPN"
+                                  )}
+                                </FormDescription>
                               </div>
                               <Switch checked={field.value} onCheckedChange={field.onChange} />
                             </div>
@@ -994,7 +1255,9 @@ const AddSupplier = () => {
                           name="taxType"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t("page.supplier.form.taxType", "Jenis Pajak")}</FormLabel>
+                              <FormLabel>
+                                {t("page.supplier.form.taxType", "Jenis Pajak")}
+                              </FormLabel>
                               <Combobox
                                 options={[
                                   { value: "ppn", label: "PPN" },
@@ -1014,7 +1277,9 @@ const AddSupplier = () => {
                           name="taxTransactionType"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t("page.supplier.form.taxTransactionType", "Tipe Transaksi Pajak")}</FormLabel>
+                              <FormLabel>
+                                {t("page.supplier.form.taxTransactionType", "Tipe Transaksi Pajak")}
+                              </FormLabel>
                               <Combobox
                                 options={[
                                   { value: "purchase", label: "Pembelian" },
@@ -1035,7 +1300,13 @@ const AddSupplier = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t("page.supplier.form.taxNumber", "NPWP")}</FormLabel>
-                              <Input placeholder={t("page.supplier.form.taxNumberPlaceholder", "Nomor NPWP")} {...field} />
+                              <Input
+                                placeholder={t(
+                                  "page.supplier.form.taxNumberPlaceholder",
+                                  "Nomor NPWP"
+                                )}
+                                {...field}
+                              />
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1046,7 +1317,13 @@ const AddSupplier = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t("page.supplier.form.taxName", "Nama NPWP")}</FormLabel>
-                              <Input placeholder={t("page.supplier.form.taxNamePlaceholder", "Nama sesuai NPWP")} {...field} />
+                              <Input
+                                placeholder={t(
+                                  "page.supplier.form.taxNamePlaceholder",
+                                  "Nama sesuai NPWP"
+                                )}
+                                {...field}
+                              />
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1057,7 +1334,10 @@ const AddSupplier = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t("page.supplier.form.nitku", "NITKU")}</FormLabel>
-                              <Input placeholder={t("page.supplier.form.nitkuPlaceholder", "NITKU")} {...field} />
+                              <Input
+                                placeholder={t("page.supplier.form.nitkuPlaceholder", "NITKU")}
+                                {...field}
+                              />
                               <FormMessage />
                             </FormItem>
                           )}

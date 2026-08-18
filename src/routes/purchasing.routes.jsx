@@ -7,6 +7,7 @@ const AddSupplier = React.lazy(() => import("@/page/supplier/AddSupplier"));
 const EditSupplier = React.lazy(() => import("@/page/supplier/EditSupplier"));
 const DetailSupplier = React.lazy(() => import("@/page/supplier/DetailSupplier"));
 const SupplierComparison = React.lazy(() => import("@/page/supplier/SupplierComparison"));
+const SupplierCategoryList = React.lazy(() => import("@/page/supplier/SupplierCategoryList"));
 
 // Purchase Order
 const PurchaseOrderList = React.lazy(() => import("@/page/purchase-order/PurchaseOrderList"));
@@ -43,6 +44,7 @@ export const purchasingRoutes = (
     <Route path="/edit-supplier" element={<EditSupplier />} />
     <Route path="/detail-supplier" element={<DetailSupplier />} />
     <Route path="/supplier-comparison" element={<SupplierComparison />} />
+    <Route path="/supplier-category" element={<SupplierCategoryList />} />
 
     <Route path="/purchase-order" element={<PurchaseOrderList />} />
     <Route path="/add-purchase-order" element={<AddPurchaseOrder />} />
