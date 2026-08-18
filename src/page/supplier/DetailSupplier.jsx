@@ -15,7 +15,10 @@ import {
   ShoppingCart,
   Package,
   Star,
-  Clock
+  Clock,
+  CreditCard,
+  Receipt,
+  Wallet
 } from "lucide-react";
 import { useCookies } from "react-cookie";
 import AbortController from "@/components/organism/abort-controller";
@@ -47,6 +50,7 @@ import {
   PaginationNext
 } from "@/components/ui/pagination";
 import { Combobox } from "@/components/ui/combobox";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { format } from "date-fns";
 const statusMap = {
   pending: { class: "bg-yellow-100 text-yellow-800" },
@@ -71,6 +75,7 @@ const DetailSupplier = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
+  const [activeTab, setActiveTab] = useState("general");
   const [paymentModal, setPaymentModal] = useState(false);
   const [payAmount, setPayAmount] = useState("");
   const [payDate, setPayDate] = useState(new Date());
@@ -233,6 +238,17 @@ const DetailSupplier = () => {
     }
   ];
 
+  const taxFields = [
+    { key: "taxInclude", label: "Tax Include", icon: Receipt },
+    { key: "taxType", label: "Tax Type", icon: Receipt },
+    { key: "taxTransactionType", label: "Tax Transaction Type", icon: Receipt },
+    { key: "taxNumber", label: "Tax Number", icon: CreditCard },
+    { key: "taxName", label: "Tax Name", icon: Receipt },
+    { key: "nitku", label: "NITKU", icon: CreditCard },
+    { key: "paymentType", label: "Payment Type", icon: Wallet },
+    { key: "tempoDays", label: "Tempo Days", icon: Clock }
+  ];
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -267,183 +283,283 @@ const DetailSupplier = () => {
             <Edit3 size={14} className="mr-1.5" />
             {t("page.supplier.detail.editSupplier")}
           </Button>
-          {supplier.status !== "inactive" && supplier.status !== "draft" && (
-            <Button
-              onClick={() => setPaymentModal(true)}
-              className="gap-1.5"
-              disabled={(summary.balance || 0) <= 0}>
-              <Plus size={18} /> {t("page.supplier.detail.catatPembayaran")}
-            </Button>
-          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-5 col-span-1 md:col-span-2">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            {t("page.supplier.detail.section.informasiSupplier")}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-sm">
-            <div className="flex items-center gap-2">
-              <Building2 size={18} className="text-muted-foreground shrink-0" />
-              <span className="font-medium">{supplier.name}</span>
-            </div>
-            {supplier.contactPerson && (
-              <div className="flex items-center gap-2">
-                <User size={18} className="text-muted-foreground shrink-0" />
-                <span>{supplier.contactPerson}</span>
-              </div>
-            )}
-            {supplier.phone && (
-              <div className="flex items-center gap-2">
-                <Phone size={18} className="text-muted-foreground shrink-0" />
-                <span>{supplier.phone}</span>
-              </div>
-            )}
-            {supplier.email && (
-              <div className="flex items-center gap-2">
-                <Mail size={18} className="text-muted-foreground shrink-0" />
-                <span>{supplier.email}</span>
-              </div>
-            )}
-            {supplier.address && (
-              <div className="flex items-start gap-2 md:col-span-2">
-                <MapPin size={18} className="text-muted-foreground mt-0.5 shrink-0" />
-                <span>{supplier.address}</span>
-              </div>
-            )}
-          </div>
-          <div className="border-t pt-3 mt-3 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <User size={13} className="shrink-0" />
-              <span>
-                {t("common.createdBy")}:{" "}
-                {supplier.createdByUser?.fullName || supplier.createdByUser?.userName || "-"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <User size={13} className="shrink-0" />
-              <span>
-                {t("common.modifiedBy")}:{" "}
-                {supplier.modifiedByUser?.fullName || supplier.modifiedByUser?.userName || "-"}
-              </span>
-            </div>
-          </div>
-        </Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="general">
+            {t("page.supplier.detail.tabs.general", "Informasi Umum")}
+          </TabsTrigger>
+          <TabsTrigger value="contacts">
+            {t("page.supplier.detail.tabs.contacts", "Kontak")}
+          </TabsTrigger>
+          <TabsTrigger value="purchase">
+            {t("page.supplier.detail.tabs.purchase", "Pembelian / Produk")}
+          </TabsTrigger>
+          <TabsTrigger value="tax">{t("page.supplier.detail.tabs.tax", "Pajak")}</TabsTrigger>
+          <TabsTrigger value="debt">
+            {t("page.supplier.detail.tabs.debt", "Saldo Utang")}
+          </TabsTrigger>
+        </TabsList>
 
-        <Card className="p-5 text-center flex flex-col">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            {t("page.supplier.detail.card.totalPesanan")}
-          </h3>
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <p className="text-2xl font-bold text-foreground">
-              Rp {(summary.totalOrdered || 0).toLocaleString("id-ID")}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {purchaseOrders.length} {t("page.supplier.detail.card.transaksi")}
-            </p>
-          </div>
-        </Card>
-
-        <Card className="p-5 text-center flex flex-col">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            {t("page.supplier.detail.card.sisaHutang")}
-          </h3>
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <p
-              className={`text-2xl font-bold ${(summary.balance || 0) > 0 ? "text-red-600" : "text-green-600"}`}>
-              Rp {(summary.balance || 0).toLocaleString("id-ID")}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("page.supplier.detail.card.terbayar")}: Rp{" "}
-              {(summary.totalPaid || 0).toLocaleString("id-ID")}
-            </p>
-          </div>
-        </Card>
-      </div>
-
-      {isSuperAdmin && supplier.products && supplier.products.length > 0 && (
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              {t("page.supplier.products.availableProducts")}
+        {/* Tab: General / Informasi Umum */}
+        <TabsContent value="general" className="mt-4">
+          <Card className="p-5">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              {t("page.supplier.detail.section.informasiSupplier")}
             </h3>
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-              {supplier.products.length}{" "}
-              {t("page.supplier.products.productCount", { count: supplier.products.length })
-                .split(" ")
-                .pop()}
-            </span>
-          </div>
-          {(() => {
-            const totalItems = supplier.products.length;
-            const totalPages = Math.ceil(totalItems / productPageSize);
-            const startIdx = (productPage - 1) * productPageSize;
-            const pagedProducts = supplier.products.slice(startIdx, startIdx + productPageSize);
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-sm">
+              <div className="flex items-center gap-2">
+                <Building2 size={18} className="text-muted-foreground shrink-0" />
+                <span className="font-medium">{supplier.name}</span>
+              </div>
+              {supplier.contactPerson && (
+                <div className="flex items-center gap-2">
+                  <User size={18} className="text-muted-foreground shrink-0" />
+                  <span>{supplier.contactPerson}</span>
+                </div>
+              )}
+              {supplier.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone size={18} className="text-muted-foreground shrink-0" />
+                  <span>{supplier.phone}</span>
+                </div>
+              )}
+              {supplier.email && (
+                <div className="flex items-center gap-2">
+                  <Mail size={18} className="text-muted-foreground shrink-0" />
+                  <span>{supplier.email}</span>
+                </div>
+              )}
+              {supplier.address && (
+                <div className="flex items-start gap-2 md:col-span-2">
+                  <MapPin size={18} className="text-muted-foreground mt-0.5 shrink-0" />
+                  <span>{supplier.address}</span>
+                </div>
+              )}
+            </div>
+            <div className="border-t pt-3 mt-3 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <User size={13} className="shrink-0" />
+                <span>
+                  {t("common.createdBy")}:{" "}
+                  {supplier.createdByUser?.fullName || supplier.createdByUser?.userName || "-"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <User size={13} className="shrink-0" />
+                <span>
+                  {t("common.modifiedBy")}:{" "}
+                  {supplier.modifiedByUser?.fullName || supplier.modifiedByUser?.userName || "-"}
+                </span>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
 
-            return (
-              <>
-                {/* Desktop table */}
-                <div className="hidden md:block overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12 font-semibold">#</TableHead>
-                        <TableHead className="font-semibold">
-                          {t("page.supplier.products.table.name")}
-                        </TableHead>
-                        <TableHead className="font-semibold text-right">
-                          {t("page.supplier.products.price")}
-                        </TableHead>
-                        <TableHead className="font-semibold text-center">
-                          {t("page.supplier.products.table.unit")}
-                        </TableHead>
-                        <TableHead className="font-semibold text-right">
-                          {t("page.supplier.products.table.leadTime")}
-                        </TableHead>
-                        <TableHead className="font-semibold text-center">
-                          {t("page.supplier.products.table.quality")}
-                        </TableHead>
-                        <TableHead className="font-semibold text-right">
-                          {t("page.supplier.products.table.minOrder")}
-                        </TableHead>
-                        <TableHead className="font-semibold">
-                          {t("page.supplier.products.table.notes")}
-                        </TableHead>
+        {/* Tab: Contacts */}
+        <TabsContent value="contacts" className="mt-4">
+          <Card className="p-5">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              {t("page.supplier.detail.tabs.contacts", "Kontak")}
+            </h3>
+            {supplier.contacts && supplier.contacts.length > 0 ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="font-semibold">#</TableHead>
+                      <TableHead className="font-semibold">
+                        {t("page.supplier.detail.contacts.name", "Nama")}
+                      </TableHead>
+                      <TableHead className="font-semibold">
+                        {t("page.supplier.detail.contacts.phone", "Telepon")}
+                      </TableHead>
+                      <TableHead className="font-semibold">
+                        {t("page.supplier.detail.contacts.email", "Email")}
+                      </TableHead>
+                      <TableHead className="font-semibold">
+                        {t("page.supplier.detail.contacts.position", "Jabatan")}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {supplier.contacts.map((contact, idx) => (
+                      <TableRow key={contact.id || idx}>
+                        <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
+                        <TableCell className="font-medium">{contact.name || "-"}</TableCell>
+                        <TableCell>{contact.phone || "-"}</TableCell>
+                        <TableCell>{contact.email || "-"}</TableCell>
+                        <TableCell>{contact.position || "-"}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-8">
+                <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
+                  <User size={24} className="text-muted-foreground/60" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.supplier.detail.contacts.empty", "Belum ada data kontak")}
+                </p>
+              </div>
+            )}
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Purchase / Products */}
+        <TabsContent value="purchase" className="mt-4">
+          {isSuperAdmin && supplier.products && supplier.products.length > 0 && (
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  {t("page.supplier.products.availableProducts")}
+                </h3>
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                  {supplier.products.length}{" "}
+                  {t("page.supplier.products.productCount", { count: supplier.products.length })
+                    .split(" ")
+                    .pop()}
+                </span>
+              </div>
+              {(() => {
+                const totalItems = supplier.products.length;
+                const totalPages = Math.ceil(totalItems / productPageSize);
+                const startIdx = (productPage - 1) * productPageSize;
+                const pagedProducts = supplier.products.slice(startIdx, startIdx + productPageSize);
+
+                return (
+                  <>
+                    {/* Desktop table */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-12 font-semibold">#</TableHead>
+                            <TableHead className="font-semibold">
+                              {t("page.supplier.products.table.name")}
+                            </TableHead>
+                            <TableHead className="font-semibold text-right">
+                              {t("page.supplier.products.price")}
+                            </TableHead>
+                            <TableHead className="font-semibold text-center">
+                              {t("page.supplier.products.table.unit")}
+                            </TableHead>
+                            <TableHead className="font-semibold text-right">
+                              {t("page.supplier.products.table.leadTime")}
+                            </TableHead>
+                            <TableHead className="font-semibold text-center">
+                              {t("page.supplier.products.table.quality")}
+                            </TableHead>
+                            <TableHead className="font-semibold text-right">
+                              {t("page.supplier.products.table.minOrder")}
+                            </TableHead>
+                            <TableHead className="font-semibold">
+                              {t("page.supplier.products.table.notes")}
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {pagedProducts.map((product, idx) => (
+                            <TableRow key={product.id}>
+                              <TableCell className="text-xs text-muted-foreground">
+                                {startIdx + idx + 1}
+                              </TableCell>
+                              <TableCell className="font-medium">{product.name}</TableCell>
+                              <TableCell className="text-right font-semibold">
+                                {new Intl.NumberFormat("id-ID", {
+                                  style: "currency",
+                                  currency: "IDR"
+                                }).format(product.price)}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-muted">
+                                  {product.unit || "pcs"}
+                                </span>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Clock size={12} className="text-muted-foreground" />
+                                  <span className="text-sm">
+                                    {product.leadTime || 0} {product.leadTimeUnit || "hari"}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex items-center justify-center gap-0.5">
+                                  {Array.from({ length: 5 }).map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      size={12}
+                                      className={
+                                        i < Math.floor(Number(product.qualityRating) || 0)
+                                          ? "fill-yellow-400 text-yellow-400"
+                                          : "text-gray-300"
+                                      }
+                                    />
+                                  ))}
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    {Number(product.qualityRating) || 0}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right text-sm">
+                                {product.minOrderQty || 1}
+                              </TableCell>
+                              <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">
+                                {product.notes || "-"}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {/* Mobile card list */}
+                    <div className="md:hidden divide-y">
                       {pagedProducts.map((product, idx) => (
-                        <TableRow key={product.id}>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {startIdx + idx + 1}
-                          </TableCell>
-                          <TableCell className="font-medium">{product.name}</TableCell>
-                          <TableCell className="text-right font-semibold">
-                            {new Intl.NumberFormat("id-ID", {
-                              style: "currency",
-                              currency: "IDR"
-                            }).format(product.price)}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-muted">
+                        <div key={product.id} className="py-3 space-y-2.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2.5 min-w-0">
+                              <span className="text-xs text-muted-foreground mt-0.5 shrink-0">
+                                {startIdx + idx + 1}.
+                              </span>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-sm truncate">{product.name}</p>
+                                <p className="text-lg font-bold text-primary mt-0.5">
+                                  {new Intl.NumberFormat("id-ID", {
+                                    style: "currency",
+                                    currency: "IDR"
+                                  }).format(product.price)}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-muted">
                               {product.unit || "pcs"}
                             </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Clock size={12} className="text-muted-foreground" />
-                              <span className="text-sm">
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-2.5 py-1.5">
+                              <Clock size={12} className="text-muted-foreground shrink-0" />
+                              <span className="text-xs">
                                 {product.leadTime || 0} {product.leadTimeUnit || "hari"}
                               </span>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <div className="flex items-center justify-center gap-0.5">
+                            <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-2.5 py-1.5">
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                {t("page.supplier.products.table.minOrder")}:
+                              </span>
+                              <span className="text-xs font-medium">
+                                {product.minOrderQty || 1}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 bg-muted/30 rounded-lg px-2.5 py-1.5">
                               {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
                                   key={i}
-                                  size={12}
+                                  size={10}
                                   className={
                                     i < Math.floor(Number(product.qualityRating) || 0)
                                       ? "fill-yellow-400 text-yellow-400"
@@ -451,240 +567,262 @@ const DetailSupplier = () => {
                                   }
                                 />
                               ))}
-                              <span className="text-xs text-muted-foreground ml-1">
+                              <span className="text-xs text-muted-foreground ml-0.5">
                                 {Number(product.qualityRating) || 0}
                               </span>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-right text-sm">
-                            {product.minOrderQty || 1}
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">
-                            {product.notes || "-"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                {/* Mobile card list */}
-                <div className="md:hidden divide-y">
-                  {pagedProducts.map((product, idx) => (
-                    <div key={product.id} className="py-3 space-y-2.5">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2.5 min-w-0">
-                          <span className="text-xs text-muted-foreground mt-0.5 shrink-0">
-                            {startIdx + idx + 1}.
-                          </span>
-                          <div className="min-w-0">
-                            <p className="font-semibold text-sm truncate">{product.name}</p>
-                            <p className="text-lg font-bold text-primary mt-0.5">
-                              {new Intl.NumberFormat("id-ID", {
-                                style: "currency",
-                                currency: "IDR"
-                              }).format(product.price)}
-                            </p>
                           </div>
+                          {product.notes && (
+                            <p className="text-xs text-muted-foreground italic">{product.notes}</p>
+                          )}
                         </div>
-                        <span className="shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-muted">
-                          {product.unit || "pcs"}
-                        </span>
+                      ))}
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 pt-4 border-t mt-4">
+                      <div className="flex items-center gap-3">
+                        <p className="text-xs text-muted-foreground whitespace-nowrap">
+                          Menampilkan {startIdx + 1}–
+                          {Math.min(startIdx + productPageSize, totalItems)} dari {totalItems}
+                        </p>
+                        <Combobox
+                          options={[
+                            { value: "2", label: "2" },
+                            { value: "5", label: "5" },
+                            { value: "10", label: "10" },
+                            { value: "20", label: "20" },
+                            { value: "25", label: "25" },
+                            { value: "50", label: "50" },
+                            { value: "100", label: "100" }
+                          ]}
+                          value={String(productPageSize)}
+                          onChange={(v) => {
+                            setProductPageSize(Number(v));
+                            setProductPage(1);
+                          }}
+                          placeholder="10"
+                          searchPlaceholder="Cari..."
+                        />
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-2.5 py-1.5">
-                          <Clock size={12} className="text-muted-foreground shrink-0" />
-                          <span className="text-xs">
-                            {product.leadTime || 0} {product.leadTimeUnit || "hari"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-2.5 py-1.5">
-                          <span className="text-xs text-muted-foreground shrink-0">
-                            {t("page.supplier.products.table.minOrder")}:
-                          </span>
-                          <span className="text-xs font-medium">{product.minOrderQty || 1}</span>
-                        </div>
-                        <div className="flex items-center gap-1 bg-muted/30 rounded-lg px-2.5 py-1.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              size={10}
+
+                      <Pagination className="sm:justify-end justify-center">
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious
+                              onClick={() => setProductPage((p) => Math.max(1, p - 1))}
                               className={
-                                i < Math.floor(Number(product.qualityRating) || 0)
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-gray-300"
+                                productPage <= 1
+                                  ? "pointer-events-none opacity-50"
+                                  : "cursor-pointer"
                               }
                             />
-                          ))}
-                          <span className="text-xs text-muted-foreground ml-0.5">
-                            {Number(product.qualityRating) || 0}
-                          </span>
-                        </div>
-                      </div>
-                      {product.notes && (
-                        <p className="text-xs text-muted-foreground italic">{product.notes}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 pt-4 border-t mt-4">
-                  <div className="flex items-center gap-3">
-                    <p className="text-xs text-muted-foreground whitespace-nowrap">
-                      Menampilkan {startIdx + 1}–{Math.min(startIdx + productPageSize, totalItems)}{" "}
-                      dari {totalItems}
-                    </p>
-                    <Combobox
-                      options={[
-                        { value: "2", label: "2" },
-                        { value: "5", label: "5" },
-                        { value: "10", label: "10" },
-                        { value: "20", label: "20" },
-                        { value: "25", label: "25" },
-                        { value: "50", label: "50" },
-                        { value: "100", label: "100" }
-                      ]}
-                      value={String(productPageSize)}
-                      onChange={(v) => {
-                        setProductPageSize(Number(v));
-                        setProductPage(1);
-                      }}
-                      placeholder="10"
-                      searchPlaceholder="Cari..."
-                    />
-                  </div>
-
-                  <Pagination className="sm:justify-end justify-center">
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => setProductPage((p) => Math.max(1, p - 1))}
-                          className={
-                            productPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
-                          }
-                        />
-                      </PaginationItem>
-                      {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (productPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (productPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = productPage - 2 + i;
-                        }
-                        return (
-                          <PaginationItem key={pageNum}>
-                            <PaginationLink
-                              isActive={pageNum === productPage}
-                              onClick={() => setProductPage(pageNum)}
-                              className="cursor-pointer">
-                              {pageNum}
-                            </PaginationLink>
                           </PaginationItem>
-                        );
-                      })}
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => setProductPage((p) => Math.min(totalPages, p + 1))}
-                          className={
-                            productPage >= totalPages
-                              ? "pointer-events-none opacity-50"
-                              : "cursor-pointer"
-                          }
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                          {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
+                            let pageNum;
+                            if (totalPages <= 5) {
+                              pageNum = i + 1;
+                            } else if (productPage <= 3) {
+                              pageNum = i + 1;
+                            } else if (productPage >= totalPages - 2) {
+                              pageNum = totalPages - 4 + i;
+                            } else {
+                              pageNum = productPage - 2 + i;
+                            }
+                            return (
+                              <PaginationItem key={pageNum}>
+                                <PaginationLink
+                                  isActive={pageNum === productPage}
+                                  onClick={() => setProductPage(pageNum)}
+                                  className="cursor-pointer">
+                                  {pageNum}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          })}
+                          <PaginationItem>
+                            <PaginationNext
+                              onClick={() => setProductPage((p) => Math.min(totalPages, p + 1))}
+                              className={
+                                productPage >= totalPages
+                                  ? "pointer-events-none opacity-50"
+                                  : "cursor-pointer"
+                              }
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  </>
+                );
+              })()}
+            </Card>
+          )}
+
+          {isSuperAdmin && supplier.products && supplier.products.length === 0 && (
+            <Card className="p-8 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
+                  <Package size={24} className="text-muted-foreground/60" />
                 </div>
-              </>
-            );
-          })()}
-        </Card>
-      )}
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("page.supplier.products.noProducts")}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+        </TabsContent>
 
-      {isSuperAdmin && supplier.products && supplier.products.length === 0 && (
-        <Card className="p-8 text-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
-              <Package size={24} className="text-muted-foreground/60" />
+        {/* Tab: Tax */}
+        <TabsContent value="tax" className="mt-4">
+          <Card className="p-5">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+              {t("page.supplier.detail.tabs.tax", "Pajak")}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {taxFields.map(({ key, label, icon: Icon }) => (
+                <div key={key} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+                  <div className="w-9 h-9 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
+                    <Icon size={16} className="text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">{label}</p>
+                    <p className="text-sm font-medium truncate">
+                      {supplier[key] != null && supplier[key] !== "" ? String(supplier[key]) : "-"}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                {t("page.supplier.products.noProducts")}
-              </p>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Debt / Saldo Utang */}
+        <TabsContent value="debt" className="mt-4">
+          <div className="space-y-4">
+            {/* Summary cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="p-5 text-center flex flex-col">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  {t("page.supplier.detail.card.totalPesanan")}
+                </h3>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <p className="text-2xl font-bold text-foreground">
+                    Rp {(summary.totalOrdered || 0).toLocaleString("id-ID")}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {purchaseOrders.length} {t("page.supplier.detail.card.transaksi")}
+                  </p>
+                </div>
+              </Card>
+
+              <Card className="p-5 text-center flex flex-col">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  {t("page.supplier.detail.card.sisaHutang")}
+                </h3>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <p
+                    className={`text-2xl font-bold ${(summary.balance || 0) > 0 ? "text-red-600" : "text-green-600"}`}>
+                    Rp {(summary.balance || 0).toLocaleString("id-ID")}
+                  </p>
+                </div>
+              </Card>
+
+              <Card className="p-5 text-center flex flex-col">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  {t("page.supplier.detail.card.totalPaid", "Total Dibayar")}
+                </h3>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <p className="text-2xl font-bold text-green-600">
+                    Rp {(summary.totalPaid || 0).toLocaleString("id-ID")}
+                  </p>
+                </div>
+              </Card>
             </div>
+
+            {/* Action button */}
+            <div className="flex justify-end">
+              {supplier.status !== "inactive" && supplier.status !== "draft" && (
+                <Button
+                  onClick={() => setPaymentModal(true)}
+                  className="gap-1.5"
+                  disabled={(summary.balance || 0) <= 0}>
+                  <Plus size={18} /> {t("page.supplier.detail.catatPembayaran")}
+                </Button>
+              )}
+            </div>
+
+            {/* PO table or empty state */}
+            {loadingPayments ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-64" />
+                <Skeleton className="h-32 w-full" />
+              </div>
+            ) : purchaseOrders.length === 0 ? (
+              <div className="space-y-4">
+                <Card className="p-8 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
+                      <ShoppingCart size={24} className="text-muted-foreground/60" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        {t("page.supplier.detail.emptyTitle")}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t("page.supplier.detail.emptyDesc")}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="mt-1"
+                      onClick={() => navigate(`/add-purchase-order?supplier=${id}`)}>
+                      <Plus size={14} className="mr-1" />
+                      {t("page.supplier.detail.createPo")}
+                    </Button>
+                  </div>
+                </Card>
+                <Card className="p-5 bg-primary/5 border-primary/20">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Lightbulb size={16} className="text-primary" />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-foreground">
+                        {t("page.supplier.detail.tips.title")}
+                      </p>
+                      <ul className="space-y-1.5 text-xs text-muted-foreground">
+                        <li className="flex items-start gap-2">
+                          <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                          {t("page.supplier.detail.tips.1")}
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                          {t("page.supplier.detail.tips.2")}
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                          {t("page.supplier.detail.tips.3")}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            ) : (
+              <DataTable
+                columns={poColumns}
+                data={purchaseOrders}
+                isLoading={false}
+                emptyMessage={t("page.supplier.detail.emptyMessage")}
+                emptyIcon={Building2}
+              />
+            )}
           </div>
-        </Card>
-      )}
-
-      {loadingPayments ? (
-        <div className="space-y-3">
-          <Skeleton className="h-4 w-64" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-      ) : purchaseOrders.length === 0 ? (
-        <div className="space-y-4">
-          <Card className="p-8 text-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
-                <ShoppingCart size={24} className="text-muted-foreground/60" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  {t("page.supplier.detail.emptyTitle")}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t("page.supplier.detail.emptyDesc")}
-                </p>
-              </div>
-              <Button
-                size="sm"
-                className="mt-1"
-                onClick={() => navigate(`/add-purchase-order?supplier=${id}`)}>
-                <Plus size={14} className="mr-1" />
-                {t("page.supplier.detail.createPo")}
-              </Button>
-            </div>
-          </Card>
-          <Card className="p-5 bg-primary/5 border-primary/20">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                <Lightbulb size={16} className="text-primary" />
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-foreground">
-                  {t("page.supplier.detail.tips.title")}
-                </p>
-                <ul className="space-y-1.5 text-xs text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                    {t("page.supplier.detail.tips.1")}
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                    {t("page.supplier.detail.tips.2")}
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                    {t("page.supplier.detail.tips.3")}
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </Card>
-        </div>
-      ) : (
-        <DataTable
-          columns={poColumns}
-          data={purchaseOrders}
-          isLoading={false}
-          emptyMessage={t("page.supplier.detail.emptyMessage")}
-          emptyIcon={Building2}
-        />
-      )}
+        </TabsContent>
+      </Tabs>
 
       <Modal
         type="form"

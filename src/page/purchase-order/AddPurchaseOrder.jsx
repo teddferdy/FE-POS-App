@@ -246,6 +246,22 @@ const AddPurchaseOrder = () => {
     setShowPicList(false);
   }, [selectedStore]);
 
+  useEffect(() => {
+    const firstSupplierId = groups[0]?.supplier;
+    if (!firstSupplierId) return;
+    const sup = suppliers.find((s) => s.id === firstSupplierId);
+    if (!sup) return;
+    const mappedMethod = sup.paymentType === "cad" ? "credit" : "cash";
+    setPaymentMethod(mappedMethod);
+    if (mappedMethod === "credit") {
+      setTenor(sup.tempoDays || 0);
+    } else {
+      setTenor(0);
+      setDpPercent(0);
+      setDueDate(null);
+    }
+  }, [groups[0]?.supplier, suppliers]);
+
   const headerReady = !locationsLoading;
 
   const supplierOptions = useMemo(

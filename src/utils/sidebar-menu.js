@@ -221,8 +221,15 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
-        activePaths: ["/supplier-comparison"],
+        activePaths: ["/supplier-comparison", "/add-supplier", "/edit-supplier", "/detail-supplier"],
         actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
+      {
+        title: "Kategori Supplier",
+        i18nKey: "sidebar.supplierCategory",
+        href: "/supplier-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Kategori Bahan Baku",
@@ -678,8 +685,15 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
-        activePaths: ["/supplier-comparison"],
+        activePaths: ["/supplier-comparison", "/add-supplier", "/edit-supplier", "/detail-supplier"],
         actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
+      {
+        title: "Kategori Supplier",
+        i18nKey: "sidebar.supplierCategory",
+        href: "/supplier-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Kategori Bahan Baku",

@@ -6,14 +6,28 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, Check, Plus, Trash2, Upload, Download, Pencil } from "lucide-react";
+import {
+  X,
+  Save,
+  Check,
+  Plus,
+  Trash2,
+  Upload,
+  Download,
+  Pencil,
+  User,
+  Phone,
+  CreditCard,
+  Receipt
+} from "lucide-react";
 import { useCookies } from "react-cookie";
 import { Switch } from "@/components/ui/switch";
 import {
   editSupplier,
   getSupplierById,
   downloadSupplierProductTemplate,
-  importSupplierProducts
+  importSupplierProducts,
+  getAllSupplierCategories
 } from "@/services/supplier";
 import { Combobox } from "@/components/ui/combobox";
 import { getAllLocation } from "@/services/location";
@@ -39,14 +53,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell
-} from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const EditSupplier = () => {
   const { t } = useTranslation();
@@ -62,7 +69,22 @@ const EditSupplier = () => {
       .or(z.literal("")),
     address: z.string().optional().or(z.literal("")),
     isActive: z.boolean().default(true),
-    store: z.string().optional()
+    store: z.string().optional(),
+    paymentType: z.enum(["cbd", "cad", "tempo"]).default("cbd"),
+    tempoDays: z.number().default(0),
+    categoryId: z.number().optional().nullable(),
+    mobile: z.string().optional().or(z.literal("")),
+    whatsapp: z.string().optional().or(z.literal("")),
+    fax: z.string().optional().or(z.literal("")),
+    website: z.string().optional().or(z.literal("")),
+    taxInclude: z.boolean().default(true),
+    taxType: z.string().optional().or(z.literal("")),
+    taxNumber: z.string().optional().or(z.literal("")),
+    taxName: z.string().optional().or(z.literal("")),
+    nitku: z.string().optional().or(z.literal("")),
+    taxTransactionType: z.string().optional().or(z.literal("")),
+    defaultDiscount: z.number().default(0),
+    defaultDescription: z.string().optional().or(z.literal(""))
   });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -84,9 +106,31 @@ const EditSupplier = () => {
   const [deleteProductId, setDeleteProductId] = useState(null);
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
+  const [activeTab, setActiveTab] = useState("general");
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
+
+  // --- Contacts state ---
+  const [contacts, setContacts] = useState([]);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [editingContactId, setEditingContactId] = useState(null);
+  const [contactName, setContactName] = useState("");
+  const [contactPosition, setContactPosition] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+
+  // --- Bank Accounts state ---
+  const [bankAccounts, setBankAccounts] = useState([]);
+  const [showBankForm, setShowBankForm] = useState(false);
+  const [editingBankId, setEditingBankId] = useState(null);
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [bankIsDefault, setBankIsDefault] = useState(false);
+
+  // --- Supplier Categories ---
+  const [categoryId, setCategoryId] = useState(null);
 
   // Supplier Products state
   const [supplierProducts, setSupplierProducts] = useState([]);
@@ -110,6 +154,10 @@ const EditSupplier = () => {
   } = useQuery(["allLocations"], () => getAllLocation(), { enabled: isSuperAdmin });
   const locations = locationsData?.data || locationsData?.locations || [];
 
+  const { data: categoriesData } = useQuery(["supplierCategories"], () =>
+    getAllSupplierCategories()
+  );
+
   const {
     data: supplierData,
     isLoading,
@@ -128,7 +176,22 @@ const EditSupplier = () => {
       phone: "",
       email: "",
       address: "",
-      isActive: true
+      isActive: true,
+      paymentType: "cbd",
+      tempoDays: 0,
+      categoryId: null,
+      mobile: "",
+      whatsapp: "",
+      fax: "",
+      website: "",
+      taxInclude: true,
+      taxType: "",
+      taxNumber: "",
+      taxName: "",
+      nitku: "",
+      taxTransactionType: "",
+      defaultDiscount: 0,
+      defaultDescription: ""
     }
   });
 
@@ -142,7 +205,22 @@ const EditSupplier = () => {
         phone: supplier.phone || "",
         email: supplier.email || "",
         address: supplier.address || "",
-        isActive: supplier.status === "active" || supplier.status === true
+        isActive: supplier.status === "active" || supplier.status === true,
+        paymentType: supplier.paymentType || "cbd",
+        tempoDays: supplier.tempoDays || 0,
+        categoryId: supplier.categoryId || null,
+        mobile: supplier.mobile || "",
+        whatsapp: supplier.whatsapp || "",
+        fax: supplier.fax || "",
+        website: supplier.website || "",
+        taxInclude: supplier.taxInclude !== false,
+        taxType: supplier.taxType || "",
+        taxNumber: supplier.taxNumber || "",
+        taxName: supplier.taxName || "",
+        nitku: supplier.nitku || "",
+        taxTransactionType: supplier.taxTransactionType || "",
+        defaultDiscount: supplier.defaultDiscount || 0,
+        defaultDescription: supplier.defaultDescription || ""
       });
       if (supplier.store) {
         const storeArr = Array.isArray(supplier.store) ? supplier.store : [];
@@ -153,6 +231,29 @@ const EditSupplier = () => {
           setAllStores(false);
           setSelectedStore(storeArr.map((s) => (typeof s === "object" ? s.id : s)));
         }
+      }
+      if (supplier.contacts && Array.isArray(supplier.contacts)) {
+        setContacts(
+          supplier.contacts.map((c) => ({
+            id: c.id || `contact_${Date.now()}_${Math.random()}`,
+            fullName: c.fullName || "",
+            position: c.position || "",
+            email: c.email || "",
+            phone: c.phone || ""
+          }))
+        );
+      }
+      if (supplier.bankAccounts && Array.isArray(supplier.bankAccounts)) {
+        setBankAccounts(
+          supplier.bankAccounts.map((b) => ({
+            id: b.id || `bank_${Date.now()}_${Math.random()}`,
+            bankName: b.bankName || "",
+            accountNumber: b.accountNumber || "",
+            accountName: b.accountName || "",
+            isDefault: b.isDefault || false,
+            status: b.status || "active"
+          }))
+        );
       }
       if (supplier.products && Array.isArray(supplier.products)) {
         setSupplierProducts(
@@ -308,6 +409,107 @@ const EditSupplier = () => {
     importMutation.mutate({ id: supplierId, file: importFile });
   };
 
+  // --- Contact handlers ---
+  const handleAddContact = () => {
+    if (!contactName.trim()) return;
+    if (editingContactId) {
+      setContacts((prev) =>
+        prev.map((c) =>
+          c.id === editingContactId
+            ? {
+                ...c,
+                fullName: contactName.trim(),
+                position: contactPosition.trim(),
+                email: contactEmail.trim(),
+                phone: contactPhone.trim()
+              }
+            : c
+        )
+      );
+    } else {
+      setContacts((prev) => [
+        ...prev,
+        {
+          id: `contact_${Date.now()}`,
+          fullName: contactName.trim(),
+          position: contactPosition.trim(),
+          email: contactEmail.trim(),
+          phone: contactPhone.trim()
+        }
+      ]);
+    }
+    setContactName("");
+    setContactPosition("");
+    setContactEmail("");
+    setContactPhone("");
+    setEditingContactId(null);
+    setShowContactForm(false);
+  };
+
+  const handleEditContact = (contact) => {
+    setContactName(contact.fullName);
+    setContactPosition(contact.position || "");
+    setContactEmail(contact.email || "");
+    setContactPhone(contact.phone || "");
+    setEditingContactId(contact.id);
+    setShowContactForm(true);
+  };
+
+  const handleRemoveContact = (id) => {
+    setContacts((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  // --- Bank Account handlers ---
+  const handleAddBank = () => {
+    if (!bankName.trim() || !accountNumber.trim() || !accountName.trim()) return;
+    if (editingBankId) {
+      setBankAccounts((prev) =>
+        prev.map((b) =>
+          b.id === editingBankId
+            ? {
+                ...b,
+                bankName: bankName.trim(),
+                accountNumber: accountNumber.trim(),
+                accountName: accountName.trim(),
+                isDefault: bankIsDefault
+              }
+            : b
+        )
+      );
+    } else {
+      setBankAccounts((prev) => [
+        ...prev,
+        {
+          id: `bank_${Date.now()}`,
+          bankName: bankName.trim(),
+          accountNumber: accountNumber.trim(),
+          accountName: accountName.trim(),
+          isDefault: bankIsDefault,
+          status: "active"
+        }
+      ]);
+    }
+    setBankName("");
+    setAccountNumber("");
+    setAccountName("");
+    setBankIsDefault(false);
+    setEditingBankId(null);
+    setShowBankForm(false);
+  };
+
+  const handleEditBank = (bank) => {
+    setBankName(bank.bankName);
+    setAccountNumber(bank.accountNumber);
+    setAccountName(bank.accountName);
+    setBankIsDefault(bank.isDefault);
+    setEditingBankId(bank.id);
+    setShowBankForm(true);
+  };
+
+  const handleRemoveBank = (id) => {
+    setBankAccounts((prev) => prev.filter((b) => b.id !== id));
+  };
+
   const onSubmit = (values, saveAsDraft = false) => {
     if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
       form.setError("store", {
@@ -327,6 +529,20 @@ const EditSupplier = () => {
       ...values,
       status: statusValue,
       store: selectedStore,
+      categoryId: values.categoryId || null,
+      contacts: contacts.map((c) => ({
+        fullName: c.fullName,
+        position: c.position || null,
+        email: c.email || null,
+        phone: c.phone || null
+      })),
+      bankAccounts: bankAccounts.map((b) => ({
+        bankName: b.bankName,
+        accountNumber: b.accountNumber,
+        accountName: b.accountName,
+        isDefault: b.isDefault || false,
+        status: b.status || "active"
+      })),
       products: supplierProducts.map((p) => ({
         name: p.name,
         price: p.price,
@@ -429,92 +645,7 @@ const EditSupplier = () => {
                       )}
                     />
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("page.supplier.form.name")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Input placeholder={t("page.supplier.form.namePlaceholder")} {...field} />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="contactPerson"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("page.supplier.form.contactPerson")}</FormLabel>
-                          <Input
-                            placeholder={t("page.supplier.form.contactPersonPlaceholder")}
-                            {...field}
-                          />
-                          <FormMessage />
-                          <FormDescription>{t("common.optionalField")}</FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("page.supplier.form.phone")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Input
-                            placeholder={t("page.supplier.form.phonePlaceholder")}
-                            inputMode="numeric"
-                            maxLength={16}
-                            {...field}
-                            onChange={(e) => {
-                              const v = e.target.value.replace(/\D/g, "").slice(0, 16);
-                              field.onChange(v);
-                            }}
-                          />
-                          <FormMessage />
-                          <FormDescription>{t("common.phoneHintMin")}</FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("page.supplier.form.email")}</FormLabel>
-                          <Input
-                            placeholder={t("page.supplier.form.emailPlaceholder")}
-                            {...field}
-                          />
-                          <FormMessage />
-                          <FormDescription>{t("common.optionalField")}</FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("page.supplier.form.address")}</FormLabel>
-                        <Textarea
-                          placeholder={t("page.supplier.form.addressPlaceholder")}
-                          rows={3}
-                          {...field}
-                        />
-                        <FormMessage />
-                        <FormDescription>{t("common.optionalField")}</FormDescription>
-                      </FormItem>
-                    )}
-                  />
+
                   <div className="space-y-3">
                     <h3 className="text-sm font-semibold text-foreground">
                       {t("page.supplier.form.status")}
@@ -558,6 +689,779 @@ const EditSupplier = () => {
                       />
                     </div>
                   </div>
+
+                  <Tabs value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="general" className="gap-1.5">
+                        <User size={14} />
+                        {t("page.supplier.tabs.general", "Umum")}
+                      </TabsTrigger>
+                      <TabsTrigger value="contacts" className="gap-1.5">
+                        <Phone size={14} />
+                        {t("page.supplier.tabs.contacts", "Kontak")}
+                      </TabsTrigger>
+                      <TabsTrigger value="purchase" className="gap-1.5">
+                        <CreditCard size={14} />
+                        {t("page.supplier.tabs.purchase", "Pembelian")}
+                      </TabsTrigger>
+                      <TabsTrigger value="tax" className="gap-1.5">
+                        <Receipt size={14} />
+                        {t("page.supplier.tabs.tax", "Pajak")}
+                      </TabsTrigger>
+                    </TabsList>
+
+                    {/* ====== TAB: UMUM (General) ====== */}
+                    <TabsContent value="general" className="space-y-6 mt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t("page.supplier.form.name")}{" "}
+                                <span className="text-destructive">*</span>
+                              </FormLabel>
+                              <Input
+                                placeholder={t("page.supplier.form.namePlaceholder")}
+                                {...field}
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="contactPerson"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.supplier.form.contactPerson")}</FormLabel>
+                              <Input
+                                placeholder={t("page.supplier.form.contactPersonPlaceholder")}
+                                {...field}
+                              />
+                              <FormMessage />
+                              <FormDescription>{t("common.optionalField")}</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t("page.supplier.form.phone")}{" "}
+                                <span className="text-destructive">*</span>
+                              </FormLabel>
+                              <Input
+                                placeholder={t("page.supplier.form.phonePlaceholder")}
+                                inputMode="numeric"
+                                maxLength={16}
+                                {...field}
+                                onChange={(e) => {
+                                  const v = e.target.value.replace(/\D/g, "").slice(0, 16);
+                                  field.onChange(v);
+                                }}
+                              />
+                              <FormMessage />
+                              <FormDescription>{t("common.phoneHintMin")}</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.supplier.form.email")}</FormLabel>
+                              <Input
+                                placeholder={t("page.supplier.form.emailPlaceholder")}
+                                {...field}
+                              />
+                              <FormMessage />
+                              <FormDescription>{t("common.optionalField")}</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="address"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.supplier.form.address")}</FormLabel>
+                            <Textarea
+                              placeholder={t("page.supplier.form.addressPlaceholder")}
+                              rows={3}
+                              {...field}
+                            />
+                            <FormMessage />
+                            <FormDescription>{t("common.optionalField")}</FormDescription>
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="mobile"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.supplier.form.mobile", "Mobile")}</FormLabel>
+                              <Input
+                                placeholder={t(
+                                  "page.supplier.form.mobilePlaceholder",
+                                  "Nomor HP/WA utama"
+                                )}
+                                {...field}
+                              />
+                              <FormMessage />
+                              <FormDescription>{t("common.optionalField")}</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="whatsapp"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.supplier.form.whatsapp", "WhatsApp")}</FormLabel>
+                              <Input
+                                placeholder={t(
+                                  "page.supplier.form.whatsappPlaceholder",
+                                  "Nomor WhatsApp"
+                                )}
+                                {...field}
+                              />
+                              <FormMessage />
+                              <FormDescription>{t("common.optionalField")}</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="fax"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.supplier.form.fax", "Fax")}</FormLabel>
+                              <Input
+                                placeholder={t("page.supplier.form.faxPlaceholder", "Nomor Fax")}
+                                {...field}
+                              />
+                              <FormMessage />
+                              <FormDescription>{t("common.optionalField")}</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="website"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.supplier.form.website", "Website")}</FormLabel>
+                              <Input
+                                placeholder={t("page.supplier.form.websitePlaceholder", "https://")}
+                                {...field}
+                              />
+                              <FormMessage />
+                              <FormDescription>{t("common.optionalField")}</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </TabsContent>
+
+                    {/* ====== TAB: KONTAK (Contacts) ====== */}
+                    <TabsContent value="contacts" className="space-y-4 mt-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground">
+                            {t("page.supplier.contacts.title", "Daftar Kontak")}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {t(
+                              "page.supplier.contacts.description",
+                              "Kelola kontak person yang dapat dihubungi"
+                            )}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5"
+                          onClick={() => {
+                            setShowContactForm(!showContactForm);
+                            setEditingContactId(null);
+                            setContactName("");
+                            setContactPosition("");
+                            setContactEmail("");
+                            setContactPhone("");
+                          }}>
+                          <Plus size={14} />
+                          {t("page.supplier.contacts.add", "Tambah Kontak")}
+                        </Button>
+                      </div>
+
+                      {showContactForm && (
+                        <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-xs text-muted-foreground">
+                                {t("page.supplier.contacts.fullName", "Nama Lengkap")} *
+                              </label>
+                              <Input
+                                placeholder="Nama kontak"
+                                value={contactName}
+                                onChange={(e) => setContactName(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs text-muted-foreground">
+                                {t("page.supplier.contacts.position", "Jabatan")}
+                              </label>
+                              <Input
+                                placeholder="Jabatan"
+                                value={contactPosition}
+                                onChange={(e) => setContactPosition(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs text-muted-foreground">
+                                {t("page.supplier.contacts.email", "Email")}
+                              </label>
+                              <Input
+                                placeholder="Email"
+                                value={contactEmail}
+                                onChange={(e) => setContactEmail(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs text-muted-foreground">
+                                {t("page.supplier.contacts.phone", "Telepon")}
+                              </label>
+                              <Input
+                                placeholder="Telepon"
+                                value={contactPhone}
+                                onChange={(e) => setContactPhone(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setShowContactForm(false);
+                                setEditingContactId(null);
+                              }}
+                              className="flex-1">
+                              {t("common.cancel")}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={!contactName.trim()}
+                              onClick={handleAddContact}
+                              className="flex-1 gap-1.5">
+                              {editingContactId ? (
+                                t("common.save")
+                              ) : (
+                                <>
+                                  <Plus size={14} /> {t("page.supplier.contacts.add", "Tambah")}
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {contacts.length > 0 ? (
+                        <div className="border rounded-lg overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-muted/50 border-b">
+                                <th className="text-center px-3 py-2 font-medium text-muted-foreground w-10">
+                                  #
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  {t("page.supplier.contacts.fullName", "Nama")}
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  {t("page.supplier.contacts.position", "Jabatan")}
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  {t("page.supplier.contacts.email", "Email")}
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  {t("page.supplier.contacts.phone", "Telepon")}
+                                </th>
+                                <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                                  {t("page.supplier.products.table.action", "Aksi")}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {contacts.map((c, index) => (
+                                <tr
+                                  key={c.id}
+                                  className={`border-b last:border-b-0 ${editingContactId === c.id ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}>
+                                  <td className="px-3 py-2 text-center text-xs text-muted-foreground">
+                                    {index + 1}
+                                  </td>
+                                  <td className="px-3 py-2">{c.fullName}</td>
+                                  <td className="px-3 py-2 text-muted-foreground">
+                                    {c.position || "-"}
+                                  </td>
+                                  <td className="px-3 py-2 text-muted-foreground">
+                                    {c.email || "-"}
+                                  </td>
+                                  <td className="px-3 py-2 text-muted-foreground">
+                                    {c.phone || "-"}
+                                  </td>
+                                  <td className="px-3 py-2 text-right">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                      onClick={() => handleEditContact(c)}>
+                                      <Pencil size={14} />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-destructive hover:text-destructive"
+                                      onClick={() => handleRemoveContact(c.id)}>
+                                      <Trash2 size={14} />
+                                    </Button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="border border-dashed rounded-lg p-6 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            {t(
+                              "page.supplier.contacts.empty",
+                              "Belum ada kontak. Klik tombol di atas untuk menambahkan."
+                            )}
+                          </p>
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    {/* ====== TAB: PEMBELIAN (Purchase) ====== */}
+                    <TabsContent value="purchase" className="space-y-6 mt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="paymentType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t("page.supplier.form.paymentType", "Tipe Pembayaran")}
+                              </FormLabel>
+                              <Combobox
+                                options={[
+                                  { value: "cbd", label: "CBD (Cash Before Delivery)" },
+                                  { value: "cad", label: "CAD (Cash After Delivery)" },
+                                  { value: "tempo", label: "Tempo (Kredit)" }
+                                ]}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Pilih tipe pembayaran..."
+                                searchPlaceholder="Cari..."
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {form.watch("paymentType") === "tempo" && (
+                          <FormField
+                            control={form.control}
+                            name="tempoDays"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  {t("page.supplier.form.tempoDays", "Tempo (Hari)")}
+                                </FormLabel>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  placeholder="0"
+                                  value={field.value || ""}
+                                  onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                                />
+                                <FormDescription>
+                                  {t(
+                                    "page.supplier.form.tempoDaysDesc",
+                                    "Jatuh tempo pembayaran dalam hari"
+                                  )}
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                        <FormField
+                          control={form.control}
+                          name="defaultDiscount"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t("page.supplier.form.defaultDiscount", "Diskon Default (%)")}
+                              </FormLabel>
+                              <Input
+                                type="number"
+                                min={0}
+                                max={100}
+                                step={0.01}
+                                placeholder="0"
+                                value={field.value || ""}
+                                onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="defaultDescription"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t("page.supplier.form.defaultDescription", "Deskripsi Default")}
+                              </FormLabel>
+                              <Textarea
+                                placeholder={t(
+                                  "page.supplier.form.defaultDescriptionPlaceholder",
+                                  "Deskripsi default untuk pembelian"
+                                )}
+                                rows={2}
+                                {...field}
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="space-y-4 pt-4 border-t">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-sm font-semibold text-foreground">
+                              {t("page.supplier.bankAccounts.title", "Rekening Bank")}
+                            </h3>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {t(
+                                "page.supplier.bankAccounts.description",
+                                "Kelola rekening bank supplier untuk pembayaran"
+                              )}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5"
+                            onClick={() => {
+                              setShowBankForm(!showBankForm);
+                              setEditingBankId(null);
+                              setBankName("");
+                              setAccountNumber("");
+                              setAccountName("");
+                              setBankIsDefault(false);
+                            }}>
+                            <Plus size={14} />
+                            {t("page.supplier.bankAccounts.add", "Tambah Rekening")}
+                          </Button>
+                        </div>
+
+                        {showBankForm && (
+                          <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-xs text-muted-foreground">
+                                  {t("page.supplier.bankAccounts.bankName", "Nama Bank")} *
+                                </label>
+                                <Input
+                                  placeholder="BCA, Mandiri, BRI..."
+                                  value={bankName}
+                                  onChange={(e) => setBankName(e.target.value)}
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs text-muted-foreground">
+                                  {t("page.supplier.bankAccounts.accountNumber", "Nomor Rekening")}{" "}
+                                  *
+                                </label>
+                                <Input
+                                  placeholder="0012345678"
+                                  value={accountNumber}
+                                  onChange={(e) => setAccountNumber(e.target.value)}
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs text-muted-foreground">
+                                  {t("page.supplier.bankAccounts.accountName", "Nama Pemilik")} *
+                                </label>
+                                <Input
+                                  placeholder="Nama pemilik rekening"
+                                  value={accountName}
+                                  onChange={(e) => setAccountName(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <label className="flex items-center gap-2 text-sm">
+                                <Switch
+                                  checked={bankIsDefault}
+                                  onCheckedChange={setBankIsDefault}
+                                />
+                                {t("page.supplier.bankAccounts.isDefault", "Jadikan Default")}
+                              </label>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setShowBankForm(false);
+                                    setEditingBankId(null);
+                                  }}
+                                  className="flex-1">
+                                  {t("common.cancel")}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  disabled={
+                                    !bankName.trim() || !accountNumber.trim() || !accountName.trim()
+                                  }
+                                  onClick={handleAddBank}
+                                  className="flex-1 gap-1.5">
+                                  {editingBankId ? (
+                                    t("common.save")
+                                  ) : (
+                                    <>
+                                      <Plus size={14} />{" "}
+                                      {t("page.supplier.bankAccounts.add", "Tambah")}
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {bankAccounts.length > 0 ? (
+                          <div className="border rounded-lg overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="bg-muted/50 border-b">
+                                  <th className="text-center px-3 py-2 font-medium text-muted-foreground w-10">
+                                    #
+                                  </th>
+                                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                    {t("page.supplier.bankAccounts.bankName", "Bank")}
+                                  </th>
+                                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                    {t("page.supplier.bankAccounts.accountNumber", "Rekening")}
+                                  </th>
+                                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                    {t("page.supplier.bankAccounts.accountName", "Nama")}
+                                  </th>
+                                  <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                                    {t("page.supplier.bankAccounts.isDefault", "Default")}
+                                  </th>
+                                  <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                                    {t("page.supplier.products.table.action", "Aksi")}
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {bankAccounts.map((b, index) => (
+                                  <tr
+                                    key={b.id}
+                                    className={`border-b last:border-b-0 ${editingBankId === b.id ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}>
+                                    <td className="px-3 py-2 text-center text-xs text-muted-foreground">
+                                      {index + 1}
+                                    </td>
+                                    <td className="px-3 py-2 font-medium">{b.bankName}</td>
+                                    <td className="px-3 py-2 font-mono text-xs">
+                                      {b.accountNumber}
+                                    </td>
+                                    <td className="px-3 py-2 text-muted-foreground">
+                                      {b.accountName}
+                                    </td>
+                                    <td className="px-3 py-2 text-center">
+                                      {b.isDefault ? (
+                                        <Check size={14} className="text-green-600 mx-auto" />
+                                      ) : (
+                                        <span className="text-muted-foreground">-</span>
+                                      )}
+                                    </td>
+                                    <td className="px-3 py-2 text-right">
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                        onClick={() => handleEditBank(b)}>
+                                        <Pencil size={14} />
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-destructive hover:text-destructive"
+                                        onClick={() => handleRemoveBank(b.id)}>
+                                        <Trash2 size={14} />
+                                      </Button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <div className="border border-dashed rounded-lg p-4 text-center">
+                            <p className="text-sm text-muted-foreground">
+                              {t(
+                                "page.supplier.bankAccounts.empty",
+                                "Belum ada rekening bank. Klik tombol di atas untuk menambahkan."
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+
+                    {/* ====== TAB: PAJAK (Tax) ====== */}
+                    <TabsContent value="tax" className="space-y-6 mt-4">
+                      <FormField
+                        control={form.control}
+                        name="taxInclude"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center justify-between p-4 rounded-lg border">
+                              <div>
+                                <FormLabel>
+                                  {t("page.supplier.form.taxInclude", "Harga Termasuk Pajak")}
+                                </FormLabel>
+                                <FormDescription>
+                                  {t(
+                                    "page.supplier.form.taxIncludeDesc",
+                                    "Jika aktif, harga sudah termasuk PPN"
+                                  )}
+                                </FormDescription>
+                              </div>
+                              <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="taxType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t("page.supplier.form.taxType", "Jenis Pajak")}
+                              </FormLabel>
+                              <Combobox
+                                options={[
+                                  { value: "ppn", label: "PPN" },
+                                  { value: "pph", label: "PPH" }
+                                ]}
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                placeholder="Pilih jenis pajak..."
+                                searchPlaceholder="Cari..."
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="taxTransactionType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t("page.supplier.form.taxTransactionType", "Tipe Transaksi Pajak")}
+                              </FormLabel>
+                              <Combobox
+                                options={[
+                                  { value: "purchase", label: "Pembelian" },
+                                  { value: "service", label: "Jasa" }
+                                ]}
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                placeholder="Pilih tipe transaksi..."
+                                searchPlaceholder="Cari..."
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="taxNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.supplier.form.taxNumber", "NPWP")}</FormLabel>
+                              <Input
+                                placeholder={t(
+                                  "page.supplier.form.taxNumberPlaceholder",
+                                  "Nomor NPWP"
+                                )}
+                                {...field}
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="taxName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.supplier.form.taxName", "Nama NPWP")}</FormLabel>
+                              <Input
+                                placeholder={t(
+                                  "page.supplier.form.taxNamePlaceholder",
+                                  "Nama sesuai NPWP"
+                                )}
+                                {...field}
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="nitku"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("page.supplier.form.nitku", "NITKU")}</FormLabel>
+                              <Input
+                                placeholder={t("page.supplier.form.nitkuPlaceholder", "NITKU")}
+                                {...field}
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </form>
               </Form>
               <Modal
@@ -826,58 +1730,70 @@ const EditSupplier = () => {
                   </div>
                 ) : (
                   <div className="border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-center w-10">#</TableHead>
-                          <TableHead className="text-xs">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-muted/50 border-b">
+                          <th className="text-center px-3 py-2 font-medium text-muted-foreground w-10">
+                            #
+                          </th>
+                          <th className="text-left px-3 py-2 font-medium text-muted-foreground">
                             {t("page.supplier.products.table.name")}
-                          </TableHead>
-                          <TableHead className="text-xs text-right">
+                          </th>
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground">
                             {t("page.supplier.products.table.price")}
-                          </TableHead>
-                          <TableHead className="text-xs text-center">Satuan</TableHead>
-                          <TableHead className="text-xs text-right">Lead Time</TableHead>
-                          <TableHead className="text-xs text-right">Kualitas</TableHead>
-                          <TableHead className="text-xs text-right">Min Order</TableHead>
-                          <TableHead className="text-xs">Catatan</TableHead>
-                          <TableHead className="text-xs text-center w-12">
+                          </th>
+                          <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                            Satuan
+                          </th>
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                            Lead Time
+                          </th>
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                            Kualitas
+                          </th>
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                            Min Order
+                          </th>
+                          <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                            Catatan
+                          </th>
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground w-12">
                             {t("page.supplier.products.table.action")}
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
                         {supplierProducts.map((product, index) => (
-                          <TableRow
+                          <tr
                             key={product.id}
                             className={
                               editingProductId === product.id
                                 ? "bg-blue-50 dark:bg-blue-900/20"
                                 : ""
                             }>
-                            <TableCell className="text-center text-xs text-muted-foreground">
+                            <td className="px-3 py-2 text-center text-xs text-muted-foreground">
                               {index + 1}
-                            </TableCell>
-                            <TableCell className="text-sm font-medium">{product.name}</TableCell>
-                            <TableCell className="text-sm text-right">
+                            </td>
+                            <td className="px-3 py-2 text-sm font-medium">{product.name}</td>
+                            <td className="px-3 py-2 text-sm text-right">
                               Rp {Number(product.price).toLocaleString("id-ID")}
-                            </TableCell>
-                            <TableCell className="text-sm text-center text-xs">
+                            </td>
+                            <td className="px-3 py-2 text-sm text-center text-xs">
                               {product.unit || "pcs"}
-                            </TableCell>
-                            <TableCell className="text-sm text-right">
+                            </td>
+                            <td className="px-3 py-2 text-sm text-right">
                               {product.leadTime || 0} {product.leadTimeUnit || "hari"}
-                            </TableCell>
-                            <TableCell className="text-sm text-right">
+                            </td>
+                            <td className="px-3 py-2 text-sm text-right">
                               {product.qualityRating || 0}
-                            </TableCell>
-                            <TableCell className="text-sm text-right">
+                            </td>
+                            <td className="px-3 py-2 text-sm text-right">
                               {product.minOrderQty || 1}
-                            </TableCell>
-                            <TableCell className="text-sm text-left text-muted-foreground max-w-[150px] truncate">
+                            </td>
+                            <td className="px-3 py-2 text-sm text-left text-muted-foreground max-w-[150px] truncate">
                               {product.notes || "-"}
-                            </TableCell>
-                            <TableCell className="text-center">
+                            </td>
+                            <td className="px-3 py-2 text-center">
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -892,11 +1808,11 @@ const EditSupplier = () => {
                                 onClick={() => setDeleteProductId(product.id)}>
                                 <Trash2 size={14} />
                               </Button>
-                            </TableCell>
-                          </TableRow>
+                            </td>
+                          </tr>
                         ))}
-                      </TableBody>
-                    </Table>
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </Card>

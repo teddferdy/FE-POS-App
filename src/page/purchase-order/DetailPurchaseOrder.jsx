@@ -7,6 +7,9 @@ import { getReturnsByPO } from "../../services/purchase-return";
 import { returnPurchaseOrder } from "../../services/purchase-order";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -49,7 +52,9 @@ import {
   ShoppingCart,
   Loader2,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Download,
+  FileSpreadsheet
 } from "lucide-react";
 
 export default function DetailPurchaseOrder() {
@@ -233,6 +238,299 @@ export default function DetailPurchaseOrder() {
     }
   };
 
+  const handleExportExcel = () => {
+    if (!po) return;
+    try {
+      const wb = XLSX.utils.book_new();
+
+      const poInfo = [
+        [t("page.purchaseOrder.detail.orderNumber"), po.orderNumber || "-"],
+        [t("page.purchaseOrder.detail.poDate"), po.orderDate ? format(new Date(po.orderDate), "dd MMM yyyy") : "-"],
+        [t("page.purchaseOrder.detail.dueDate"), po.dueDate ? format(new Date(po.dueDate), "dd MMM yyyy") : "-"],
+        [t("page.purchaseOrder.detail.supplier"), po.supplierData?.name || po.supplierNames?.join(", ") || "-"],
+        [t("page.purchaseOrder.detail.store"), po.storeData?.name || "-"],
+        [t("page.purchaseOrder.detail.pic"), po.picData?.fullName || "-"],
+        [t("page.purchaseOrder.detail.status"), statusMap[po.status]?.label || po.status],
+        [t("page.purchaseOrder.detail.paymentMethod"), po.paymentMethod === "credit" ? t("page.purchaseOrder.add.paymentMethodCredit") : t("page.purchaseOrder.add.paymentMethodCash")],
+        ...(po.tenor ? [[t("page.purchaseOrder.add.tenor"), `${po.tenor} days`]] : []),
+        ...(po.notes ? [[t("page.purchaseOrder.detail.notes"), po.notes]] : [])
+      ];
+      const wsInfo = XLSX.utils.aoa_to_sheet(poInfo);
+      wsInfo["!cols"] = [{ wch: 20 }, { wch: 40 }];
+      XLSX.utils.book_append_sheet(wb, wsInfo, "PO Info");
+
+      const itemHeader = [
+        t("page.purchaseOrder.detail.product"),
+        t("page.purchaseOrder.detail.qty"),
+        t("page.purchaseOrder.detail.price"),
+        t("page.purchaseOrder.detail.total"),
+        t("page.purchaseOrder.detail.receivedCol"),
+        t("page.purchaseOrder.detail.returnedCol")
+      ];
+      const itemRows = (po.items || []).map((it) => [
+        it.ingredientData?.name || it.productData?.nameProduct || it.ingredientName || "-",
+        `${it.quantity || 0} ${it.unit || ""}`,
+        Number(it.price || 0),
+        Number(it.total || 0),
+        it.receivedQuantity || 0,
+        it.returnedQty || 0
+      ]);
+      const wsItems = XLSX.utils.aoa_to_sheet([itemHeader, ...itemRows]);
+      wsItems["!cols"] = [
+        { wch: 30 },
+        { wch: 12 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 12 },
+        { wch: 12 }
+      ];
+      XLSX.utils.book_append_sheet(wb, wsItems, "Items");
+
+      const totalPaid = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
+      const summaryRows = [
+        [t("page.purchaseOrder.detail.total"), Number(po.totalAmount || 0)],
+        [t("page.purchaseOrder.detail.discount"), Number(po.discount || 0)],
+        [t("page.purchaseOrder.detail.additionalCost"), Number(po.additionalCost || 0)],
+        [t("page.purchaseOrder.detail.grandTotal"), Number(po.finalAmount || 0)],
+        [t("page.purchaseOrder.detail.paid"), totalPaid],
+        [t("page.purchaseOrder.detail.remaining"), Number(po.finalAmount || 0) - totalPaid]
+      ];
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+      wsSummary["!cols"] = [{ wch: 25 }, { wch: 15 }];
+      XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+
+      if (payments.length > 0) {
+        const payHeader = [
+          t("page.purchaseOrder.detail.date"),
+          t("page.purchaseOrder.detail.paymentMethod"),
+          t("page.purchaseOrder.detail.reference"),
+          t("page.purchaseOrder.detail.amount")
+        ];
+        const payRows = payments.map((p) => [
+          p.paymentDate ? format(new Date(p.paymentDate), "dd MMM yyyy, HH:mm") : "-",
+          p.paymentMethod || "-",
+          p.reference || "-",
+          Number(p.amount || 0)
+        ]);
+        const wsPay = XLSX.utils.aoa_to_sheet([payHeader, ...payRows]);
+        wsPay["!cols"] = [{ wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 15 }];
+        XLSX.utils.book_append_sheet(wb, wsPay, "Payments");
+      }
+
+      XLSX.writeFile(wb, `PO-${po.orderNumber || po.id}-${format(new Date(), "yyyyMMdd")}.xlsx`);
+      toast.success(t("page.purchaseOrder.detail.exportExcelSuccess"));
+    } catch (err) {
+      toast.error(t("page.purchaseOrder.detail.exportFailed"));
+    }
+  };
+
+  const handleExportPdf = () => {
+    if (!po) return;
+    try {
+      const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      let y = 15;
+
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text("Purchase Order", 14, y);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(po.orderNumber || "-", pageWidth - 14, y, { align: "right" });
+      y += 4;
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+      doc.text(
+        `${t("page.purchaseOrder.detail.status")}: ${statusMap[po.status]?.label || po.status}`,
+        14,
+        y
+      );
+      y += 10;
+
+      const statusColor =
+        po.status === "received"
+          ? [34, 197, 94]
+          : po.status === "cancelled"
+            ? [239, 68, 68]
+            : po.status === "ordered"
+              ? [59, 130, 246]
+              : [156, 163, 175];
+      doc.setFillColor(...statusColor);
+      doc.roundedRect(pageWidth - 14 - 30, y - 12, 30, 8, 2, 2, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.text(statusMap[po.status]?.label || po.status, pageWidth - 14 - 15, y - 7, {
+        align: "center"
+      });
+      doc.setTextColor(0, 0, 0);
+      y += 2;
+
+      doc.setDrawColor(220, 220, 220);
+      doc.line(14, y, pageWidth - 14, y);
+      y += 6;
+
+      const infoData = [
+        [
+          t("page.purchaseOrder.detail.supplier"),
+          po.supplierData?.name || po.supplierNames?.join(", ") || "-"
+        ],
+        [t("page.purchaseOrder.detail.store"), po.storeData?.name || "-"],
+        [t("page.purchaseOrder.detail.pic"), po.picData?.fullName || "-"],
+        [
+          t("page.purchaseOrder.detail.poDate"),
+          po.orderDate ? format(new Date(po.orderDate), "dd MMM yyyy") : "-"
+        ],
+        [
+          t("page.purchaseOrder.detail.dueDate"),
+          po.dueDate ? format(new Date(po.dueDate), "dd MMM yyyy") : "-"
+        ],
+        [
+          t("page.purchaseOrder.detail.paymentMethod"),
+          po.paymentMethod === "credit"
+            ? t("page.purchaseOrder.add.paymentMethodCredit")
+            : t("page.purchaseOrder.add.paymentMethodCash")
+        ],
+        ...(po.tenor ? [[t("page.purchaseOrder.add.tenor"), `${po.tenor} days`]] : [])
+      ];
+
+      autoTable(doc, {
+        startY: y,
+        body: infoData,
+        theme: "plain",
+        styles: { fontSize: 9, cellPadding: 2, textColor: [50, 50, 50] },
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 45, textColor: [100, 100, 100] },
+          1: { cellWidth: 100 }
+        },
+        margin: { left: 14 }
+      });
+      y = doc.lastAutoTable.finalY + 8;
+
+      const itemRows = (po.items || []).map((it) => [
+        it.ingredientData?.name || it.productData?.nameProduct || it.ingredientName || "-",
+        `${it.quantity || 0} ${it.unit || ""}`,
+        `Rp ${Number(it.price || 0).toLocaleString("id-ID")}`,
+        `Rp ${Number(it.total || 0).toLocaleString("id-ID")}`,
+        `${it.receivedQuantity || 0}`,
+        `${it.returnedQty || 0}`
+      ]);
+
+      autoTable(doc, {
+        startY: y,
+        head: [
+          [
+            t("page.purchaseOrder.detail.product"),
+            t("page.purchaseOrder.detail.qty"),
+            t("page.purchaseOrder.detail.price"),
+            t("page.purchaseOrder.detail.total"),
+            t("page.purchaseOrder.detail.receivedCol"),
+            t("page.purchaseOrder.detail.returnedCol")
+          ]
+        ],
+        body: itemRows,
+        headStyles: {
+          fillColor: [59, 130, 246],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          fontSize: 9
+        },
+        styles: { fontSize: 8, cellPadding: 3 },
+        columnStyles: {
+          0: { cellWidth: 80 },
+          1: { halign: "center", cellWidth: 25 },
+          2: { halign: "right", cellWidth: 35 },
+          3: { halign: "right", cellWidth: 35, fontStyle: "bold" },
+          4: { halign: "center", cellWidth: 25 },
+          5: { halign: "center", cellWidth: 25 }
+        },
+        margin: { left: 14 }
+      });
+      y = doc.lastAutoTable.finalY + 8;
+
+      const totalPaid = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
+      const summaryData = [
+        [
+          t("page.purchaseOrder.detail.grandTotal"),
+          `Rp ${Number(po.finalAmount || 0).toLocaleString("id-ID")}`
+        ],
+        [
+          t("page.purchaseOrder.detail.paid"),
+          `Rp ${totalPaid.toLocaleString("id-ID")}`
+        ],
+        [
+          t("page.purchaseOrder.detail.remaining"),
+          `Rp ${(Number(po.finalAmount || 0) - totalPaid).toLocaleString("id-ID")}`
+        ]
+      ];
+      if (po.notes) {
+        summaryData.push([t("page.purchaseOrder.detail.notes"), po.notes]);
+      }
+
+      autoTable(doc, {
+        startY: y,
+        body: summaryData,
+        theme: "plain",
+        styles: { fontSize: 9, cellPadding: 2 },
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 45, textColor: [80, 80, 80] },
+          1: { halign: "right", cellWidth: 100 }
+        },
+        margin: { left: pageWidth - 14 - 145 }
+      });
+      y = doc.lastAutoTable.finalY + 8;
+
+      if (payments.length > 0) {
+        if (y > 180) {
+          doc.addPage();
+          y = 15;
+        }
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text(t("page.purchaseOrder.detail.payment"), 14, y);
+        y += 4;
+
+        const payRows = payments.map((p) => [
+          p.paymentDate ? format(new Date(p.paymentDate), "dd MMM yyyy, HH:mm") : "-",
+          p.paymentMethod || "-",
+          p.reference || "-",
+          `Rp ${Number(p.amount || 0).toLocaleString("id-ID")}`
+        ]);
+        autoTable(doc, {
+          startY: y,
+          head: [
+            [
+              t("page.purchaseOrder.detail.date"),
+              t("page.purchaseOrder.detail.paymentMethod"),
+              t("page.purchaseOrder.detail.reference"),
+              t("page.purchaseOrder.detail.amount")
+            ]
+          ],
+          body: payRows,
+          headStyles: {
+            fillColor: [34, 197, 94],
+            textColor: [255, 255, 255],
+            fontStyle: "bold",
+            fontSize: 9
+          },
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: {
+            0: { cellWidth: 50 },
+            1: { cellWidth: 40 },
+            2: { cellWidth: 60 },
+            3: { halign: "right", cellWidth: 35, fontStyle: "bold" }
+          },
+          margin: { left: 14 }
+        });
+      }
+
+      doc.save(`PO-${po.orderNumber || po.id}-${format(new Date(), "yyyyMMdd")}.pdf`);
+      toast.success(t("page.purchaseOrder.detail.exportPdfSuccess"));
+    } catch (err) {
+      toast.error(t("page.purchaseOrder.detail.exportFailed"));
+    }
+  };
+
   if (!po && !loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
@@ -278,11 +576,29 @@ export default function DetailPurchaseOrder() {
             const StatusIcon =
               po.status === "received" ? CheckCircle2 : po.status === "cancelled" ? XCircle : Clock;
             return (
-              <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
-                <StatusIcon size={14} />
-                {st.label}
-              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportExcel}
+                  className="gap-1.5">
+                  <FileSpreadsheet size={14} />
+                  <span className="hidden sm:inline">Excel</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportPdf}
+                  className="gap-1.5">
+                  <Download size={14} />
+                  <span className="hidden sm:inline">PDF</span>
+                </Button>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
+                  <StatusIcon size={14} />
+                  {st.label}
+                </span>
+              </div>
             );
           })()}
       </div>
