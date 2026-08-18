@@ -249,6 +249,20 @@ const DetailSupplier = () => {
     { key: "tempoDays", label: "Tempo Days", icon: Clock }
   ];
 
+  const getSupplierValue = (fieldName) => {
+    switch (fieldName) {
+      case "taxInclude": return supplier.taxInclude;
+      case "taxType": return supplier.taxType;
+      case "taxTransactionType": return supplier.taxTransactionType;
+      case "taxNumber": return supplier.taxNumber;
+      case "taxName": return supplier.taxName;
+      case "nitku": return supplier.nitku;
+      case "paymentType": return supplier.paymentType;
+      case "tempoDays": return supplier.tempoDays;
+      default: return null;
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -690,7 +704,7 @@ const DetailSupplier = () => {
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">{label}</p>
                     <p className="text-sm font-medium truncate">
-                      {Object.prototype.hasOwnProperty.call(supplier, key) && supplier[key] != null && supplier[key] !== "" ? String(supplier[key]) : "-"}
+                      {(() => { const v = getSupplierValue(key); return v != null && v !== "" ? String(v) : "-"; })()}
                     </p>
                   </div>
                 </div>
