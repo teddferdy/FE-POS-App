@@ -690,7 +690,7 @@ const DetailSupplier = () => {
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">{label}</p>
                     <p className="text-sm font-medium truncate">
-                      {supplier[key] != null && supplier[key] !== "" ? String(supplier[key]) : "-"}
+                      {Object.prototype.hasOwnProperty.call(supplier, key) && supplier[key] != null && supplier[key] !== "" ? String(supplier[key]) : "-"}
                     </p>
                   </div>
                 </div>

@@ -235,7 +235,7 @@ const EditSupplier = () => {
       if (supplier.contacts && Array.isArray(supplier.contacts)) {
         setContacts(
           supplier.contacts.map((c) => ({
-            id: c.id || `contact_${Date.now()}_${Math.random()}`,
+            id: c.id || `contact_${Date.now()}_${crypto.randomUUID()}`,
             fullName: c.fullName || "",
             position: c.position || "",
             email: c.email || "",
@@ -246,7 +246,7 @@ const EditSupplier = () => {
       if (supplier.bankAccounts && Array.isArray(supplier.bankAccounts)) {
         setBankAccounts(
           supplier.bankAccounts.map((b) => ({
-            id: b.id || `bank_${Date.now()}_${Math.random()}`,
+            id: b.id || `bank_${Date.now()}_${crypto.randomUUID()}`,
             bankName: b.bankName || "",
             accountNumber: b.accountNumber || "",
             accountName: b.accountName || "",
