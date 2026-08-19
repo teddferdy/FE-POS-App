@@ -1,5 +1,9 @@
 # Bisa Nota - Frontend
 
+[![CI/CD](https://github.com/teddferdy/FE-POS-App/actions/workflows/ci.yml/badge.svg)](https://github.com/teddferdy/FE-POS-App/actions/workflows/ci.yml)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+
 Point of Sale (POS) web application frontend built with React, Vite, and shadcn/ui.
 
 ## Tech Stack
