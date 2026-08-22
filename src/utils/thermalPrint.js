@@ -1,3 +1,5 @@
+import { escapeHtml as esc } from "@/utils/htmlEscape";
+
 const RECEIPT_WIDTH = 48;
 
 const padBoth = (left, right, width = RECEIPT_WIDTH) => {
@@ -13,14 +15,7 @@ const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;
 
 // ponytail: semua interpolasi data struk (nama toko/member/item dll)
 // wajib lewat esc() — data ini berasal dari input pengguna, tanpa escape
-// innerHTML di printViaBrowser jadi vektor XSS
-const esc = (val) =>
-  String(val ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+// html yang disisipkan ke dokumen cetak jadi vektor XSS
 
 export const generateReceiptHTML = (data) => {
   const {
@@ -87,7 +82,7 @@ export const generateReceiptHTML = (data) => {
       (item) => `
     <tr style="font-size:11px;">
       <td style="padding:4px 0;">${esc(item.name)}</td>
-      <td style="padding:4px 0;text-align:center;">${item.qty}</td>
+      <td style="padding:4px 0;text-align:center;">${esc(item.qty)}</td>
       <td style="padding:4px 0;text-align:right;">${formatPrice(item.price)}</td>
       <td style="padding:4px 0;text-align:right;font-weight:bold;">${formatPrice(item.qty * item.price)}</td>
     </tr>
@@ -276,31 +271,37 @@ export const formatCurrency = (amount) => {
 
 export const printViaBrowser = (data) => {
   const html = generateReceiptHTML(data);
-  const win = window.open("", "_blank");
+  // ponytail: blob URL menghindari document.write/innerHTML (sink XSS
+  // Codacy); kalau popup diblokir, iframe tersembunyi mencetak langsung
+  const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+  const win = window.open(url, "_blank");
   if (win) {
-    win.document.write(html);
-    win.document.close();
-    win.focus();
-    setTimeout(() => win.print(), 500);
+    setTimeout(() => {
+      win.focus();
+      win.print();
+      URL.revokeObjectURL(url);
+    }, 500);
     return;
   }
-  // ponytail: popup blocked — inject receipt overlay, print, remove.
-  // html dibangun sendiri dan semua interpolasi data sudah di-esc()
-  const overlay = document.createElement("div");
-  overlay.innerHTML = html; // codacy-ignore-line (input ter-escape penuh)
-  overlay.style.cssText =
-    "position:fixed;inset:0;z-index:99999;background:#fff;display:flex;align-items:center;justify-content:center";
-  overlay.className = "print-thermal";
+  const iframe = document.createElement("iframe");
+  iframe.src = url;
+  iframe.title = "Struk";
+  iframe.style.cssText =
+    "position:fixed;inset:0;z-index:99999;width:100%;height:100%;border:0;background:#fff";
+  iframe.className = "print-thermal";
   const style = document.createElement("style");
   style.textContent = "@media print{body>*:not(.print-thermal){display:none!important}}";
-  document.body.append(style, overlay);
-  setTimeout(() => {
-    window.print();
+  document.body.append(style, iframe);
+  iframe.onload = () => {
     setTimeout(() => {
-      overlay.remove();
-      style.remove();
+      iframe.contentWindow.print();
+      setTimeout(() => {
+        iframe.remove();
+        style.remove();
+        URL.revokeObjectURL(url);
+      }, 100);
     }, 100);
-  }, 100);
+  };
 };
 
 export const printTestPage = () => {

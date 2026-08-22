@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import Modal from "@/components/organism/modal";
 import { randomToken } from "@/utils/secureRandom";
+import { escapeHtml } from "@/utils/htmlEscape";
 
 const TableQRModal = ({ open, onOpenChange, table }) => {
   const { t } = useTranslation();
@@ -26,11 +27,13 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
   const orderUrl = `${orderAppBaseUrl}/?table=${table.id}&store=${storeId}&source=qr&session=${sessionId}`;
 
   const handlePrint = () => {
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
+    // ponytail: blob URL menggantikan document.write (sink XSS Codacy);
+    // sekalian benahi bug template lama yang menuliskan {t(...)} apa adanya
+    const qrSvg = qrRef.current?.innerHTML || "";
+    const html = `
       <html>
         <head>
-          <title>{t("tableQR.title", { name: table.name })}</title>
+          <title>${escapeHtml(t("tableQR.title", { name: table.name }))}</title>
           <style>
             body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
             .print-area { text-align: center; }
@@ -40,14 +43,16 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
         </head>
         <body>
           <div class="print-area">
-            ${qrRef.current?.innerHTML || ""}
-            <p>{t("tableQR.scanToOrder", { name: table.name })}</p>
+            ${qrSvg}
+            <p>${escapeHtml(t("tableQR.scanToOrder", { name: table.name }))}</p>
           </div>
           <script>window.onload = function() { window.print(); window.close(); }</script>
         </body>
       </html>
-    `);
-    printWindow.document.close();
+    `;
+    const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+    const printWindow = window.open(url, "_blank");
+    if (printWindow) setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
   return (

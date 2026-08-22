@@ -198,7 +198,9 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
         i18nKey: "sidebar.cashRegister",
         href: "/cash-register/current",
         icon: DollarSign,
-        activePattern: "/cash-register/(current|history)"
+        // ponytail: regex literal yang dikompilasi statis — menghindari
+        // new RegExp dinamis (ReDoS sink Codacy)
+        activeRegex: /^\/cash-register\/(current|history)$/
       },
       {
         title: "Laporan X/Z",
@@ -219,11 +221,10 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const renderNavButton = (item, icon, extraClass = "") => {
     const Icon = icon;
-    // ponytail: activePattern adalah konstanta internal di useMemo nav
-    // (mis. "/cash-register/(current|history)") — butuh regex asli, bukan
-    // input pengguna, jadi aman dari ReDoS/injection
-    const active = item.activePattern // codacy-ignore-line
-      ? new RegExp(`^${item.activePattern}$`).test(location.pathname) // codacy-ignore-line
+    // ponytail: activeRegex adalah literal statis dari config posItems,
+    // bukan string dinamis — aman dari ReDoS/injection
+    const active = item.activeRegex
+      ? item.activeRegex.test(location.pathname)
       : isActive(item.href);
     const btn = (
       <button
