@@ -1,6 +1,6 @@
 /* eslint-disable no-empty */
 /* eslint-disable no-unused-vars */
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
@@ -32,7 +32,7 @@ import NavigationModal from "./NavigationModal";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import logoImg from "@/assets/logo-sidebar.png";
 
-const Sidebar = ({ collapsed = true, onToggle, onHoverChange }) => {
+const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHoverChange }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -140,7 +140,44 @@ const Sidebar = ({ collapsed = true, onToggle, onHoverChange }) => {
 
   const DashboardIcon = isSuperAdminRole(user) ? Crown : Crown;
 
-  const isExpanded = isHovered;
+  // ponytail: collapsed=false (drawer iPad/mobile) berarti auto terbuka penuh
+  // tanpa bergantung hover; desktop tetap rail collapse + hover-expand.
+  // expandWidthClass mengatur lebar saat expanded (drawer mobile = w-[68vw]).
+  const isExpanded = !collapsed || isHovered;
+
+  const asideRef = useRef(null);
+
+  // ponytail: modal yang ditutup via ESC/backdrop tidak memicu mouseleave pada
+  // <aside>, sehingga state hover bisa "nyangkut" terbuka. Sinkronkan selalu
+  // dengan realitas DOM (:hover) setelah event yang berpotensi mendesinkronkan.
+  const syncHoverState = useCallback(() => {
+    const hovered = asideRef.current?.matches(":hover") ?? false;
+    setIsHovered(hovered);
+    onHoverChange?.(!hovered);
+  }, [onHoverChange]);
+
+  useEffect(() => {
+    const onKeyUp = (e) => {
+      if (e.key === "Escape") setTimeout(syncHoverState, 0);
+    };
+    const onWindowBlur = () => {
+      setIsHovered(false);
+      onHoverChange?.(true);
+    };
+    document.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onWindowBlur);
+    return () => {
+      document.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onWindowBlur);
+    };
+  }, [syncHoverState]);
+
+  // ponytail: re-check juga saat modal internal sidebar (navigasi/logout) tertutup
+  useEffect(() => {
+    if (navModalOpen || logoutModal) return undefined;
+    const id = setTimeout(syncHoverState, 0);
+    return () => clearTimeout(id);
+  }, [navModalOpen, logoutModal, syncHoverState]);
 
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);
@@ -221,13 +258,18 @@ const Sidebar = ({ collapsed = true, onToggle, onHoverChange }) => {
   return (
     <TooltipProvider delayDuration={0}>
       <aside
+        ref={asideRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         style={{ willChange: "width" }}
         className={`fixed left-0 top-0 h-screen z-50 bg-card border-r border-border/50
           flex flex-col py-4
           transition-[width,padding,box-shadow] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-          ${isExpanded ? "w-64 px-3 shadow-xl shadow-black/5" : "w-16 px-1.5 shadow-sm"}`}>
+          ${
+            isExpanded
+              ? `${expandWidthClass} px-3 shadow-xl shadow-black/5`
+              : "w-16 px-1.5 shadow-sm"
+          }`}>
         {isLoggingOut && (
           <Loading fullscreen size="lg" label={t("header.loggingOut") || "Logging out..."} />
         )}

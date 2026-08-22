@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect, useCallback, createContext, useContext } from "react";
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import { useLocation, Outlet } from "react-router-dom";
@@ -13,6 +13,7 @@ import { TipsCard } from "@/components/ui/tips-card";
 import FloatingTourButton from "@/components/organism/FloatingTourButton";
 import { OfflineIndicator, OfflineBanner } from "@/components/ui/OfflineIndicator";
 import { useStore } from "@/contexts/StoreContext";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 const tipsKeys = {
   "/product-list": ["tips.product", "tips.product2", "tips.product3"],
@@ -207,11 +208,30 @@ const DashboardLayout = () => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleMobileMenuToggle = () => {
-    setMobileSidebarOpen((prev) => !prev);
-  };
+  // ponytail: drawer mobile harus tertutup saat ESC dan saat pindah halaman,
+  // karena prop onToggle di Sidebar tidak pernah dipanggil saat navigasi
+  useEffect(() => {
+    if (!mobileSidebarOpen) return undefined;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setMobileSidebarOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [mobileSidebarOpen]);
 
-  const handleSidebarHoverChange = (collapsed) => setSidebarCollapsed(collapsed);
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [location.pathname]);
+
+  useBodyScrollLock(mobileSidebarOpen || isPaletteOpen);
+
+  const handleMobileMenuToggle = useCallback(() => {
+    setMobileSidebarOpen((prev) => !prev);
+  }, []);
+
+  const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
+
+  const handleSidebarHoverChange = useCallback((collapsed) => setSidebarCollapsed(collapsed), []);
 
   const currentPath = location.pathname;
   const matchedKeys = Object.entries(tipsKeys).find(([path]) => currentPath.startsWith(path));
@@ -229,10 +249,14 @@ const DashboardLayout = () => {
         <div className="fixed inset-0 z-50 xl:hidden">
           <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setMobileSidebarOpen(false)}
+            onClick={closeMobileSidebar}
           />
-          <div className="fixed left-0 top-0 h-screen w-64 shadow-2xl animate-in slide-in-from-left duration-300">
-            <Sidebar collapsed={false} onToggle={() => setMobileSidebarOpen(false)} />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("sidebar.menu", { defaultValue: "Menu" })}
+            className="fixed inset-0">
+            <Sidebar collapsed={false} expandWidthClass="w-[68vw]" onToggle={closeMobileSidebar} />
           </div>
         </div>
       )}
