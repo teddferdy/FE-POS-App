@@ -27,9 +27,6 @@ import { useSocket } from "@/services/socket";
 import { useQueryClient } from "react-query";
 import { axiosInstance } from "@/services";
 import { getUnreadCount } from "@/services/notification";
-import { GlobalSearch } from "@/components/ui/GlobalSearch";
-import { useGlobalSearch } from "@/hooks/useGlobalSearch";
-import CommandPalette from "./CommandPalette";
 import { useTourStore } from "@/state/tour";
 import { useThemeStore } from "@/state/theme";
 import { logOut } from "@/services/auth";
@@ -371,9 +368,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
   const { t } = useTranslation();
   const { translation, updateTranslation } = translationSelect();
   const navigate = useNavigate();
-  const { isOpen, setIsOpen, searchItems, handleSelect: handleGlobalSelect } = useGlobalSearch();
 
-  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const { startTour } = useTourStore();
   const { theme, toggleTheme: toggleThemeStore } = useThemeStore();
   const location = useLocation();
@@ -414,14 +409,6 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
             </kbd>
           </button>
         </div>
-
-        {/* Global Search */}
-        <GlobalSearch
-          isOpen={isOpen}
-          onOpenChange={setIsOpen}
-          searchItems={searchItems}
-          onSelect={handleGlobalSelect}
-        />
 
         {/* Right */}
         <div className="flex items-center gap-1 sm:gap-2">
@@ -475,8 +462,6 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
           <UserDropdown />
         </div>
       </div>
-
-      <CommandPalette open={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
     </header>
   );
 };
