@@ -25,7 +25,6 @@ import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
-import { FormDescription } from "@/components/ui/form";
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -283,7 +282,7 @@ const AddMemberTier = () => {
                           %
                         </span>
                       </div>
-                      <FormDescription>{t("common.percentageHint")}</FormDescription>
+                      <p className="text-sm text-muted-foreground">{t("common.percentageHint")}</p>
                     </div>
                   </div>
                 </div>

@@ -112,7 +112,7 @@ const AccountForm = ({ form, onChange, initial }) => {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">
             {t("page.accounting.accounts.code")}
@@ -131,7 +131,7 @@ const AccountForm = ({ form, onChange, initial }) => {
           <Input value={form.name} onChange={set("name")} />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">
             {t("page.accounting.accounts.type")}
@@ -869,7 +869,7 @@ const JournalTab = ({ storeId, isAll }) => {
         loading={createMut.isLoading}
         onConfirm={submitManualForm}>
         <form ref={formRef} onSubmit={handleManualSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">
                 {t("page.accounting.journal.date")}

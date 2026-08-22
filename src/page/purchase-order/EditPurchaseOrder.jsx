@@ -1195,16 +1195,18 @@ const EditPurchaseOrder = () => {
               </div>
             </Card>
 
-            <div className="sticky bottom-4 flex justify-between items-center gap-4 bg-card border border-border/60 shadow-lg rounded-xl p-4 backdrop-blur-sm">
+            {/* ponytail: mobile = 3 tombol setara memenuhi lebar; desktop
+                tetap satu baris justify-between */}
+            <div className="sticky bottom-4 flex flex-wrap justify-between items-center gap-3 bg-card border border-border/60 shadow-lg rounded-xl p-4 backdrop-blur-sm">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setCancelModal(true)}
-                className="gap-2">
+                className="gap-2 flex-1 sm:flex-none">
                 <X size={18} />
                 {t("common.cancel")}
               </Button>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
                 <div className="text-right hidden sm:block">
                   <p className="text-xs text-muted-foreground">
                     {t("page.purchaseOrder.add.totalAfterDiscount")}
@@ -1222,13 +1224,14 @@ const EditPurchaseOrder = () => {
                     type="button"
                     variant="outline"
                     onClick={() => setDraftModal(true)}
-                    disabled={updateMutation.isLoading}>
+                    disabled={updateMutation.isLoading}
+                    className="flex-1 sm:flex-none">
                     {t("page.purchaseOrder.add.saveDraft")}
                   </Button>
                   <Button
                     type="button"
                     disabled={updateMutation.isLoading}
-                    className="gap-2 min-w-[140px] shadow-md"
+                    className="gap-2 flex-1 sm:flex-none min-w-0 sm:min-w-[140px] shadow-md"
                     onClick={() => {
                       const missing = getMissingFields(
                         {
