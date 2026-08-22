@@ -338,37 +338,37 @@ const AccountsTab = ({ storeId, isAll }) => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                    <th className="px-4 py-3 font-semibold align-top">
+                    <th className="px-2.5 sm:px-4 py3 font-semibold align-top">
                       <span className="block">{t("page.accounting.accounts.code")}</span>
                       <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
                         {t("page.accounting.accounts.codeHint")}
                       </span>
                     </th>
-                    <th className="px-4 py-3 font-semibold align-top">
+                    <th className="px-2.5 sm:px-4 py3 font-semibold align-top">
                       <span className="block">{t("page.accounting.accounts.name")}</span>
                       <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
                         {t("page.accounting.accounts.nameHint")}
                       </span>
                     </th>
-                    <th className="px-4 py-3 font-semibold align-top">
+                    <th className="px-2.5 sm:px-4 py3 font-semibold align-top">
                       <span className="block">{t("page.accounting.accounts.type")}</span>
                       <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
                         {t("page.accounting.accounts.typeHint")}
                       </span>
                     </th>
-                    <th className="px-4 py-3 font-semibold align-top">
+                    <th className="px-2.5 sm:px-4 py3 font-semibold align-top">
                       <span className="block">{t("page.accounting.accounts.normalBalance")}</span>
                       <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
                         {t("page.accounting.accounts.normalBalanceHint")}
                       </span>
                     </th>
-                    <th className="px-4 py-3 font-semibold align-top">
+                    <th className="px-2.5 sm:px-4 py3 font-semibold align-top">
                       <span className="block">{t("page.accounting.accounts.description")}</span>
                       <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
                         {t("page.accounting.accounts.descriptionHint")}
                       </span>
                     </th>
-                    <th className="px-4 py-3 font-semibold text-right align-top">
+                    <th className="px-2.5 sm:px-4 py3 font-semibold text-right align-top">
                       <span className="block">{t("page.accounting.accounts.actions")}</span>
                       <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
                         {t("page.accounting.accounts.actionsHint")}
@@ -379,7 +379,7 @@ const AccountsTab = ({ storeId, isAll }) => {
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-4">
+                      <td colSpan={6} className="px-2.5 sm:px-4 py4">
                         <EmptyState
                           icon={BookOpen}
                           title={
@@ -394,9 +394,9 @@ const AccountsTab = ({ storeId, isAll }) => {
                   ) : (
                     filtered.map((acc) => (
                       <tr key={acc.id} className="border-b border-border/40 hover:bg-accent/30">
-                        <td className="px-4 py-2.5 font-mono text-xs">{acc.code}</td>
-                        <td className="px-4 py-2.5 font-medium">{acc.name}</td>
-                        <td className="px-4 py-2.5">
+                        <td className="px-2.5 sm:px-4 py2.5 font-mono text-xs">{acc.code}</td>
+                        <td className="px-2.5 sm:px-4 py2.5 font-medium">{acc.name}</td>
+                        <td className="px-2.5 sm:px-4 py2.5">
                           <span
                             className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                               TYPE_BADGE[acc.type] || "bg-muted text-muted-foreground"
@@ -404,13 +404,13 @@ const AccountsTab = ({ storeId, isAll }) => {
                             {t(`page.accounting.types.${acc.type}`)}
                           </span>
                         </td>
-                        <td className="px-4 py-2.5 text-xs text-muted-foreground capitalize">
+                        <td className="px-2.5 sm:px-4 py2.5 text-xs text-muted-foreground capitalize">
                           {t(`page.accounting.accounts.${acc.normalBalance}`)}
                         </td>
-                        <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[240px]">
+                        <td className="px-2.5 sm:px-4 py2.5 text-xs text-muted-foreground max-w-[240px]">
                           {acc.description || "-"}
                         </td>
-                        <td className="px-4 py-2.5 text-right">
+                        <td className="px-2.5 sm:px-4 py2.5 text-right">
                           {!isAll && (
                             <div className="inline-flex gap-1">
                               <button
@@ -782,13 +782,13 @@ const JournalTab = ({ storeId, isAll }) => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-t border-b border-border/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                        <th className="px-4 py-2 font-semibold">
+                        <th className="px-2.5 sm:px-4 py2 font-semibold">
                           {t("page.accounting.journal.account")}
                         </th>
-                        <th className="px-4 py-2 font-semibold text-right">
+                        <th className="px-2.5 sm:px-4 py2 font-semibold text-right">
                           {t("page.accounting.journal.debit")}
                         </th>
-                        <th className="px-4 py-2 font-semibold text-right">
+                        <th className="px-2.5 sm:px-4 py2 font-semibold text-right">
                           {t("page.accounting.journal.credit")}
                         </th>
                       </tr>
@@ -796,7 +796,7 @@ const JournalTab = ({ storeId, isAll }) => {
                     <tbody>
                       {(entry.lines || []).map((line) => (
                         <tr key={line.id} className="border-b border-border/30">
-                          <td className="px-4 py-2">
+                          <td className="px-2.5 sm:px-4 py2">
                             <span className="font-mono text-xs text-muted-foreground mr-2">
                               {line.accountData?.code}
                             </span>
@@ -807,10 +807,10 @@ const JournalTab = ({ storeId, isAll }) => {
                               </span>
                             )}
                           </td>
-                          <td className="px-4 py-2 text-right font-mono text-xs">
+                          <td className="px-2.5 sm:px-4 py2 text-right font-mono text-xs">
                             {Number(line.debit) > 0 ? formatIDR(line.debit) : "-"}
                           </td>
-                          <td className="px-4 py-2 text-right font-mono text-xs">
+                          <td className="px-2.5 sm:px-4 py2 text-right font-mono text-xs">
                             {Number(line.credit) > 0 ? formatIDR(line.credit) : "-"}
                           </td>
                         </tr>
@@ -1104,25 +1104,25 @@ const TrialBalanceTab = ({ storeId, isAll }) => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                      <th className="px-4 py-3 font-semibold align-top">
+                      <th className="px-2.5 sm:px-4 py3 font-semibold align-top">
                         <span className="block">{t("page.accounting.trial.code")}</span>
                         <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
                           {t("page.accounting.trial.codeHint")}
                         </span>
                       </th>
-                      <th className="px-4 py-3 font-semibold align-top">
+                      <th className="px-2.5 sm:px-4 py3 font-semibold align-top">
                         <span className="block">{t("page.accounting.trial.account")}</span>
                         <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
                           {t("page.accounting.trial.accountHint")}
                         </span>
                       </th>
-                      <th className="px-4 py-3 font-semibold text-right align-top">
+                      <th className="px-2.5 sm:px-4 py3 font-semibold text-right align-top">
                         <span className="block">{t("page.accounting.trial.debit")}</span>
                         <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
                           {t("page.accounting.trial.debitHint")}
                         </span>
                       </th>
-                      <th className="px-4 py-3 font-semibold text-right align-top">
+                      <th className="px-2.5 sm:px-4 py3 font-semibold text-right align-top">
                         <span className="block">{t("page.accounting.trial.credit")}</span>
                         <span className="block text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70 mt-0.5">
                           {t("page.accounting.trial.creditHint")}
@@ -1133,8 +1133,8 @@ const TrialBalanceTab = ({ storeId, isAll }) => {
                   <tbody>
                     {tb.map((row) => (
                       <tr key={row.code || row.accountId} className="border-b border-border/30">
-                        <td className="px-4 py-2 font-mono text-xs">{row.code}</td>
-                        <td className="px-4 py-2">
+                        <td className="px-2.5 sm:px-4 py2 font-mono text-xs">{row.code}</td>
+                        <td className="px-2.5 sm:px-4 py2">
                           <span className="text-sm">{row.name}</span>
                           {row.type && (
                             <span
@@ -1145,20 +1145,24 @@ const TrialBalanceTab = ({ storeId, isAll }) => {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-2 text-right font-mono text-xs">
+                        <td className="px-2.5 sm:px-4 py2 text-right font-mono text-xs">
                           {row.debit > 0 ? formatIDR(row.debit) : "-"}
                         </td>
-                        <td className="px-4 py-2 text-right font-mono text-xs">
+                        <td className="px-2.5 sm:px-4 py2 text-right font-mono text-xs">
                           {row.credit > 0 ? formatIDR(row.credit) : "-"}
                         </td>
                       </tr>
                     ))}
                     <tr className="bg-accent/30 font-bold">
-                      <td colSpan={2} className="px-4 py-3">
+                      <td colSpan={2} className="px-2.5 sm:px-4 py3">
                         {t("page.accounting.trial.total")}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono">{formatIDR(totalDebit)}</td>
-                      <td className="px-4 py-3 text-right font-mono">{formatIDR(totalCredit)}</td>
+                      <td className="px-2.5 sm:px-4 py3 text-right font-mono">
+                        {formatIDR(totalDebit)}
+                      </td>
+                      <td className="px-2.5 sm:px-4 py3 text-right font-mono">
+                        {formatIDR(totalCredit)}
+                      </td>
                     </tr>
                   </tbody>
                 </table>

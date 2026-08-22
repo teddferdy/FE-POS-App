@@ -147,6 +147,14 @@
   * {
     @apply border-border;
   }
+  /* ponytail: jaring pengaman scroll horizontal di semua browser.
+     overflow-x: clip TIDAK didukung Safari < 16 sehingga di banyak iPhone
+     fallback-nya visible dan halaman tetap bisa digeser — makanya pakai
+     hidden di html DAN body sekaligus. */
+  html,
+  body {
+    overflow-x: hidden;
+  }
   html {
     font-family: "Inter", system-ui, sans-serif;
   }
@@ -156,11 +164,6 @@
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
-    /* ponytail: jaring pengaman scroll horizontal — elemen liar 1-2px di
-       halaman mana pun tidak boleh menggeser seluruh halaman di mobile.
-       overflow-x: clip dipilih (bukan hidden) karena tidak menciptakan
-       scroll container baru. */
-    overflow-x: clip;
   }
 }
 
