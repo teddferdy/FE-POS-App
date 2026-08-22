@@ -89,10 +89,10 @@ const CommandPalette = ({ open, onClose }) => {
   let runningIndex = -1;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-start justify-center pt-[10vh]">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg mx-4 bg-card border border-border rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+      <div className="relative w-[90vw] h-[90vh] bg-card border border-border rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
           <Search size={18} className="text-muted-foreground shrink-0" />
           <input
             ref={inputRef}
@@ -107,7 +107,7 @@ const CommandPalette = ({ open, onClose }) => {
           </kbd>
         </div>
 
-        <div className="max-h-80 overflow-y-auto py-1">
+        <div className="flex-1 overflow-y-auto py-1">
           {flatItems.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm text-muted-foreground">
               {t("commandPalette.notFound", { query })}
