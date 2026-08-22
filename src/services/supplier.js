@@ -143,7 +143,10 @@ export const getSupplierContacts = async (supplierId) => {
 };
 
 export const addSupplierContact = async ({ supplierId, ...payload }) => {
-  const { data, status } = await axiosInstance.post(`/supplier-contact/supplier/${supplierId}`, payload);
+  const { data, status } = await axiosInstance.post(
+    `/supplier-contact/supplier/${supplierId}`,
+    payload
+  );
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
@@ -168,7 +171,10 @@ export const getSupplierBankAccounts = async (supplierId) => {
 };
 
 export const addSupplierBankAccount = async ({ supplierId, ...payload }) => {
-  const { data, status } = await axiosInstance.post(`/supplier-bank-account/supplier/${supplierId}`, payload);
+  const { data, status } = await axiosInstance.post(
+    `/supplier-bank-account/supplier/${supplierId}`,
+    payload
+  );
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };

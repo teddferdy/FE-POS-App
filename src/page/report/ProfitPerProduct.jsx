@@ -7,7 +7,6 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { getProfitPerProduct } from "@/services/report";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
-import { Input } from "@/components/ui/input";
 import { DateInput } from "@/components/ui/date-input";
 import AbortController from "@/components/organism/abort-controller";
 import { formatCurrency } from "@/utils/reportUtils";

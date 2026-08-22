@@ -251,15 +251,24 @@ const DetailSupplier = () => {
 
   const getSupplierValue = (fieldName) => {
     switch (fieldName) {
-      case "taxInclude": return supplier.taxInclude;
-      case "taxType": return supplier.taxType;
-      case "taxTransactionType": return supplier.taxTransactionType;
-      case "taxNumber": return supplier.taxNumber;
-      case "taxName": return supplier.taxName;
-      case "nitku": return supplier.nitku;
-      case "paymentType": return supplier.paymentType;
-      case "tempoDays": return supplier.tempoDays;
-      default: return null;
+      case "taxInclude":
+        return supplier.taxInclude;
+      case "taxType":
+        return supplier.taxType;
+      case "taxTransactionType":
+        return supplier.taxTransactionType;
+      case "taxNumber":
+        return supplier.taxNumber;
+      case "taxName":
+        return supplier.taxName;
+      case "nitku":
+        return supplier.nitku;
+      case "paymentType":
+        return supplier.paymentType;
+      case "tempoDays":
+        return supplier.tempoDays;
+      default:
+        return null;
     }
   };
 
@@ -704,7 +713,10 @@ const DetailSupplier = () => {
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">{label}</p>
                     <p className="text-sm font-medium truncate">
-                      {(() => { const v = getSupplierValue(key); return v != null && v !== "" ? String(v) : "-"; })()}
+                      {(() => {
+                        const v = getSupplierValue(key);
+                        return v != null && v !== "" ? String(v) : "-";
+                      })()}
                     </p>
                   </div>
                 </div>

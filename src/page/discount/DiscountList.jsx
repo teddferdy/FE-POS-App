@@ -163,10 +163,13 @@ const DiscountList = () => {
   const statsTotal = statsFromBE.total || total;
   const activeCount = statsFromBE.active ?? discounts.filter((d) => d.status === "active").length;
   const draftCount = statsFromBE.draft ?? discounts.filter((d) => d.status === "draft").length;
-  const upcomingCount = statsFromBE.upcoming ?? discounts.filter((d) => d.status === "upcoming").length;
+  const upcomingCount =
+    statsFromBE.upcoming ?? discounts.filter((d) => d.status === "upcoming").length;
   const inactiveCount =
     statsFromBE.inactive ??
-    discounts.filter((d) => d.status !== "active" && d.status !== "draft" && d.status !== "upcoming").length;
+    discounts.filter(
+      (d) => d.status !== "active" && d.status !== "draft" && d.status !== "upcoming"
+    ).length;
   const expiringCount =
     statsFromBE.expiring ??
     discounts.filter((d) => {

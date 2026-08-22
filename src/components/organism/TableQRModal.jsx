@@ -11,17 +11,14 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
   const qrRef = useRef(null);
 
   const storeId =
-    table && (typeof table.store === "object" && table.store !== null
+    table &&
+    (typeof table.store === "object" && table.store !== null
       ? String(table.store.id || table.store._id || "")
       : String(table.store || ""));
 
-  const orderAppBaseUrl =
-    import.meta.env.VITE_ORDER_APP_URL || "https://order-app-dun.vercel.app";
+  const orderAppBaseUrl = import.meta.env.VITE_ORDER_APP_URL || "https://order-app-dun.vercel.app";
 
-  const sessionId = React.useMemo(
-    () => Math.random().toString(36).slice(2, 10),
-    []
-  );
+  const sessionId = React.useMemo(() => Math.random().toString(36).slice(2, 10), []);
 
   if (!table) return null;
 

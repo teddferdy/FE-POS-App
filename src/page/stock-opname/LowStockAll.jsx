@@ -215,73 +215,71 @@ const LowStockAll = () => {
 
   const filters = (
     <TableToolbar title={t("sidebar.lowStockAll")} onReset={resetFilters} isFiltered={isFiltered}>
-      {isLoadingLocations || isLoading ? (
-        [
-          <Skeleton key="s1" className="h-9 w-full rounded-md" />,
-          <Skeleton key="s2" className="h-9 w-full rounded-md" />,
-          <Skeleton key="s3" className="h-9 w-full rounded-md" />
-        ]
-      ) : (
-        [
-          <div key="search" className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Cari
-            </label>
-            <SearchInput
-              value={search}
-              onChange={(val) => {
-                setSearch(val);
-                setPage(1);
-              }}
-              placeholder="Cari nama barang..."
-              isLoading={isLoading}
-            />
-          </div>,
-          <div key="store" className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Toko
-            </label>
-            <Select
-              value={storeFilter}
-              onValueChange={(v) => {
-                setGlobalStoreFilter(v);
-                setPage(1);
-              }}>
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="Semua Toko" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Toko</SelectItem>
-                {locations.map((loc) => (
-                  <SelectItem key={loc.id} value={String(loc.id)}>
-                    {loc.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>,
-          <div key="type" className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Tipe
-            </label>
-            <Select
-              value={typeFilter}
-              onValueChange={(v) => {
-                setTypeFilter(v);
-                setPage(1);
-              }}>
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="Semua Tipe" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Tipe</SelectItem>
-                <SelectItem value="product">Produk</SelectItem>
-                <SelectItem value="ingredient">Bahan</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        ]
-      )}
+      {isLoadingLocations || isLoading
+        ? [
+            <Skeleton key="s1" className="h-9 w-full rounded-md" />,
+            <Skeleton key="s2" className="h-9 w-full rounded-md" />,
+            <Skeleton key="s3" className="h-9 w-full rounded-md" />
+          ]
+        : [
+            <div key="search" className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Cari
+              </label>
+              <SearchInput
+                value={search}
+                onChange={(val) => {
+                  setSearch(val);
+                  setPage(1);
+                }}
+                placeholder="Cari nama barang..."
+                isLoading={isLoading}
+              />
+            </div>,
+            <div key="store" className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Toko
+              </label>
+              <Select
+                value={storeFilter}
+                onValueChange={(v) => {
+                  setGlobalStoreFilter(v);
+                  setPage(1);
+                }}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Semua Toko" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Toko</SelectItem>
+                  {locations.map((loc) => (
+                    <SelectItem key={loc.id} value={String(loc.id)}>
+                      {loc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>,
+            <div key="type" className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Tipe
+              </label>
+              <Select
+                value={typeFilter}
+                onValueChange={(v) => {
+                  setTypeFilter(v);
+                  setPage(1);
+                }}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Semua Tipe" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Tipe</SelectItem>
+                  <SelectItem value="product">Produk</SelectItem>
+                  <SelectItem value="ingredient">Bahan</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          ]}
     </TableToolbar>
   );
 

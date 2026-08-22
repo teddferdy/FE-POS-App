@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { WifiOff, Wifi, RefreshCw, AlertCircle, CheckCircle } from "lucide-react";
+import { WifiOff, Wifi, RefreshCw, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import { syncOfflineData, registerBackgroundSync, onOnline, onOffline, isOnline } from "@/services/offline";
+import { registerBackgroundSync, onOnline, onOffline, isOnline } from "@/services/offline";
 
 export const OfflineIndicator = () => {
   const { t } = useTranslation();
@@ -85,8 +85,7 @@ export const OfflineIndicator = () => {
           : "bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400"
       }`}
       role="status"
-      aria-live="polite"
-    >
+      aria-live="polite">
       {!isOnlineState && (
         <>
           <WifiOff className="h-4 w-4 animate-pulse" />
@@ -101,9 +100,7 @@ export const OfflineIndicator = () => {
             <Wifi className="h-4 w-4" />
           )}
           <span className="text-sm font-medium">
-            {isSyncing
-              ? t("offline.syncing")
-              : `${queueCount} ${t("offline.pendingSync")}`}
+            {isSyncing ? t("offline.syncing") : `${queueCount} ${t("offline.pendingSync")}`}
           </span>
         </>
       )}
@@ -115,11 +112,10 @@ export const OfflineIndicator = () => {
           </span>
         </>
       )}
-      {(isOnlineState && queueCount > 0 && !isSyncing) && (
+      {isOnlineState && queueCount > 0 && !isSyncing && (
         <button
           onClick={syncAndNotify}
-          className="ml-1 px-2 py-0.5 text-xs font-medium rounded bg-white/20 hover:bg-white/30 transition-colors"
-        >
+          className="ml-1 px-2 py-0.5 text-xs font-medium rounded bg-white/20 hover:bg-white/30 transition-colors">
           {t("offline.syncNow")}
         </button>
       )}
@@ -147,8 +143,7 @@ export const OfflineBanner = () => {
     <div
       className="fixed top-0 left-0 right-0 z-50 bg-amber-600 text-amber-50 py-2 px-4 text-center text-sm font-medium shadow-lg animate-slide-down"
       role="alert"
-      aria-live="assertive"
-    >
+      aria-live="assertive">
       <div className="flex items-center justify-center gap-2">
         <WifiOff className="h-4 w-4" />
         <span>{t("offline.offlineBanner")}</span>

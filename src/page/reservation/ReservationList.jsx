@@ -407,74 +407,72 @@ const ReservationList = () => {
                       title={t("page.reservation.title")}
                       onReset={resetFilters}
                       isFiltered={isFiltered}>
-                      {isLoadingLocations || isLoading || isFetching ? (
-                        [
-                          <Skeleton key="s1" className="h-9 w-40 rounded-md" />,
-                          <Skeleton key="s2" className="h-9 w-40 rounded-md" />,
-                          <Skeleton key="s3" className="h-9 w-40 rounded-md" />
-                        ]
-                      ) : (
-                        [
-                          <div key="store">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                              Store
-                            </label>
-                            <StoreFilter
-                              locations={locData?.data || []}
-                              value={storeFilter}
-                              onChange={(v) => {
-                                setGlobalStoreFilter(v);
-                                setPage(1);
-                              }}
-                              isSuperAdmin={isSuperAdmin}
-                              t={t}
-                            />
-                          </div>,
-                          <div key="date">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                              {t("page.reservation.columns.date")}
-                            </label>
-                            <DatePicker
-                              date={dateFilter}
-                              setDate={(date) => {
-                                setDateFilter(date);
-                                setPage(1);
-                              }}
-                            />
-                          </div>,
-                          <div key="status">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                              {t("page.reservation.columns.status")}
-                            </label>
-                            <Combobox
-                              options={[
-                                { value: "all", label: t("page.reservation.filter.allStatus") },
-                                { value: "pending", label: t("page.reservation.status.pending") },
-                                {
-                                  value: "confirmed",
-                                  label: t("page.reservation.status.confirmed")
-                                },
-                                {
-                                  value: "cancelled",
-                                  label: t("page.reservation.status.cancelled")
-                                },
-                                {
-                                  value: "completed",
-                                  label: t("page.reservation.status.completed")
-                                },
-                                { value: "no_show", label: t("page.reservation.status.noShow") }
-                              ]}
-                              value={statusFilter}
-                              onChange={(v) => {
-                                setStatusFilter(v);
-                                setPage(1);
-                              }}
-                              placeholder={t("page.reservation.filter.allStatus")}
-                              searchPlaceholder="Cari..."
-                            />
-                          </div>
-                        ]
-                      )}
+                      {isLoadingLocations || isLoading || isFetching
+                        ? [
+                            <Skeleton key="s1" className="h-9 w-40 rounded-md" />,
+                            <Skeleton key="s2" className="h-9 w-40 rounded-md" />,
+                            <Skeleton key="s3" className="h-9 w-40 rounded-md" />
+                          ]
+                        : [
+                            <div key="store">
+                              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                                Store
+                              </label>
+                              <StoreFilter
+                                locations={locData?.data || []}
+                                value={storeFilter}
+                                onChange={(v) => {
+                                  setGlobalStoreFilter(v);
+                                  setPage(1);
+                                }}
+                                isSuperAdmin={isSuperAdmin}
+                                t={t}
+                              />
+                            </div>,
+                            <div key="date">
+                              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                                {t("page.reservation.columns.date")}
+                              </label>
+                              <DatePicker
+                                date={dateFilter}
+                                setDate={(date) => {
+                                  setDateFilter(date);
+                                  setPage(1);
+                                }}
+                              />
+                            </div>,
+                            <div key="status">
+                              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                                {t("page.reservation.columns.status")}
+                              </label>
+                              <Combobox
+                                options={[
+                                  { value: "all", label: t("page.reservation.filter.allStatus") },
+                                  { value: "pending", label: t("page.reservation.status.pending") },
+                                  {
+                                    value: "confirmed",
+                                    label: t("page.reservation.status.confirmed")
+                                  },
+                                  {
+                                    value: "cancelled",
+                                    label: t("page.reservation.status.cancelled")
+                                  },
+                                  {
+                                    value: "completed",
+                                    label: t("page.reservation.status.completed")
+                                  },
+                                  { value: "no_show", label: t("page.reservation.status.noShow") }
+                                ]}
+                                value={statusFilter}
+                                onChange={(v) => {
+                                  setStatusFilter(v);
+                                  setPage(1);
+                                }}
+                                placeholder={t("page.reservation.filter.allStatus")}
+                                searchPlaceholder="Cari..."
+                              />
+                            </div>
+                          ]}
                     </TableToolbar>
                   }
                   pagination={{

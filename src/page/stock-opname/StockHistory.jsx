@@ -269,95 +269,93 @@ const StockHistory = () => {
                   title={t("page.stockHistory.title")}
                   onReset={resetFilters}
                   isFiltered={isFiltered}>
-                  {isLoadingLocations || isLoading ? (
-                    [
-                      <Skeleton key="s1" className="h-9 w-full rounded-md" />,
-                      <Skeleton key="s2" className="h-9 w-full rounded-md" />,
-                      <Skeleton key="s3" className="h-9 w-full rounded-md" />,
-                      <Skeleton key="s4" className="h-9 w-full rounded-md" />,
-                      <Skeleton key="s5" className="h-9 w-full rounded-md" />
-                    ]
-                  ) : (
-                    [
-                      isSuperAdmin && (
-                        <div key="store">
+                  {isLoadingLocations || isLoading
+                    ? [
+                        <Skeleton key="s1" className="h-9 w-full rounded-md" />,
+                        <Skeleton key="s2" className="h-9 w-full rounded-md" />,
+                        <Skeleton key="s3" className="h-9 w-full rounded-md" />,
+                        <Skeleton key="s4" className="h-9 w-full rounded-md" />,
+                        <Skeleton key="s5" className="h-9 w-full rounded-md" />
+                      ]
+                    : [
+                        isSuperAdmin && (
+                          <div key="store">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                              {t("header.selectStore") || "Store"}
+                            </label>
+                            <StoreFilter
+                              locations={locData?.data || []}
+                              value={storeFilter}
+                              onChange={(v) => {
+                                setStoreFilter(v);
+                                setPage(1);
+                              }}
+                              isSuperAdmin={isSuperAdmin}
+                              t={t}
+                            />
+                          </div>
+                        ),
+                        <div key="product">
                           <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                            {t("header.selectStore") || "Store"}
+                            {t("page.stockHistory.filter.product")}
                           </label>
-                          <StoreFilter
-                            locations={locData?.data || []}
-                            value={storeFilter}
+                          <Combobox
+                            options={[
+                              { value: "", label: t("page.stockHistory.filter.allProducts") },
+                              ...products.map((p) => ({
+                                value: String(p.id || p._id),
+                                label: p.name || p.nameProduct
+                              }))
+                            ]}
+                            value={productFilter}
                             onChange={(v) => {
-                              setStoreFilter(v);
+                              setProductFilter(v);
                               setPage(1);
                             }}
-                            isSuperAdmin={isSuperAdmin}
-                            t={t}
+                            placeholder={t("page.stockHistory.filter.allProducts")}
+                            searchPlaceholder={t("common.search")}
+                          />
+                        </div>,
+                        <div key="ref">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                            {t("page.stockHistory.filter.referenceType")}
+                          </label>
+                          <Combobox
+                            options={referenceTypeOptions}
+                            value={referenceFilter}
+                            onChange={(v) => {
+                              setReferenceFilter(v);
+                              setPage(1);
+                            }}
+                            placeholder={t("page.stockHistory.filter.allTypes")}
+                            searchPlaceholder={t("common.search")}
+                          />
+                        </div>,
+                        <div key="start">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                            {t("page.stockHistory.filter.startDate")}
+                          </label>
+                          <DatePicker
+                            date={startDate}
+                            setDate={(date) => {
+                              setStartDate(date);
+                              setPage(1);
+                            }}
+                          />
+                        </div>,
+                        <div key="end">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                            {t("page.stockHistory.filter.endDate")}
+                          </label>
+                          <DatePicker
+                            date={endDate}
+                            setDate={(date) => {
+                              setEndDate(date);
+                              setPage(1);
+                            }}
                           />
                         </div>
-                      ),
-                      <div key="product">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                          {t("page.stockHistory.filter.product")}
-                        </label>
-                        <Combobox
-                          options={[
-                            { value: "", label: t("page.stockHistory.filter.allProducts") },
-                            ...products.map((p) => ({
-                              value: String(p.id || p._id),
-                              label: p.name || p.nameProduct
-                            }))
-                          ]}
-                          value={productFilter}
-                          onChange={(v) => {
-                            setProductFilter(v);
-                            setPage(1);
-                          }}
-                          placeholder={t("page.stockHistory.filter.allProducts")}
-                          searchPlaceholder={t("common.search")}
-                        />
-                      </div>,
-                      <div key="ref">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                          {t("page.stockHistory.filter.referenceType")}
-                        </label>
-                        <Combobox
-                          options={referenceTypeOptions}
-                          value={referenceFilter}
-                          onChange={(v) => {
-                            setReferenceFilter(v);
-                            setPage(1);
-                          }}
-                          placeholder={t("page.stockHistory.filter.allTypes")}
-                          searchPlaceholder={t("common.search")}
-                        />
-                      </div>,
-                      <div key="start">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                          {t("page.stockHistory.filter.startDate")}
-                        </label>
-                        <DatePicker
-                          date={startDate}
-                          setDate={(date) => {
-                            setStartDate(date);
-                            setPage(1);
-                          }}
-                        />
-                      </div>,
-                      <div key="end">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                          {t("page.stockHistory.filter.endDate")}
-                        </label>
-                        <DatePicker
-                          date={endDate}
-                          setDate={(date) => {
-                            setEndDate(date);
-                            setPage(1);
-                          }}
-                        />
-                      </div>
-                    ]
-                  )}
+                      ]}
                 </TableToolbar>
               }
               pagination={{

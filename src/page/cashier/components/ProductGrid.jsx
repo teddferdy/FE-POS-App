@@ -101,9 +101,7 @@ const ProductGrid = ({
 
   const isOutOfStock = useCallback((product) => {
     return (
-      product.stock !== undefined &&
-      Number(product.stock) <= 0 &&
-      product.isAvailable !== false
+      product.stock !== undefined && Number(product.stock) <= 0 && product.isAvailable !== false
     );
   }, []);
 

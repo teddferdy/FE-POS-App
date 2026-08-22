@@ -246,13 +246,27 @@ export default function DetailPurchaseOrder() {
 
       const poInfo = [
         [t("page.purchaseOrder.detail.orderNumber"), po.orderNumber || "-"],
-        [t("page.purchaseOrder.detail.poDate"), po.orderDate ? format(new Date(po.orderDate), "dd MMM yyyy") : "-"],
-        [t("page.purchaseOrder.detail.dueDate"), po.dueDate ? format(new Date(po.dueDate), "dd MMM yyyy") : "-"],
-        [t("page.purchaseOrder.detail.supplier"), po.supplierData?.name || po.supplierNames?.join(", ") || "-"],
+        [
+          t("page.purchaseOrder.detail.poDate"),
+          po.orderDate ? format(new Date(po.orderDate), "dd MMM yyyy") : "-"
+        ],
+        [
+          t("page.purchaseOrder.detail.dueDate"),
+          po.dueDate ? format(new Date(po.dueDate), "dd MMM yyyy") : "-"
+        ],
+        [
+          t("page.purchaseOrder.detail.supplier"),
+          po.supplierData?.name || po.supplierNames?.join(", ") || "-"
+        ],
         [t("page.purchaseOrder.detail.store"), po.storeData?.name || "-"],
         [t("page.purchaseOrder.detail.pic"), po.picData?.fullName || "-"],
         [t("page.purchaseOrder.detail.status"), statusMap[po.status]?.label || po.status],
-        [t("page.purchaseOrder.detail.paymentMethod"), po.paymentMethod === "credit" ? t("page.purchaseOrder.add.paymentMethodCredit") : t("page.purchaseOrder.add.paymentMethodCash")],
+        [
+          t("page.purchaseOrder.detail.paymentMethod"),
+          po.paymentMethod === "credit"
+            ? t("page.purchaseOrder.add.paymentMethodCredit")
+            : t("page.purchaseOrder.add.paymentMethodCash")
+        ],
         ...(po.tenor ? [[t("page.purchaseOrder.add.tenor"), `${po.tenor} days`]] : []),
         ...(po.notes ? [[t("page.purchaseOrder.detail.notes"), po.notes]] : [])
       ];
@@ -320,7 +334,7 @@ export default function DetailPurchaseOrder() {
 
       XLSX.writeFile(wb, `PO-${po.orderNumber || po.id}-${format(new Date(), "yyyyMMdd")}.xlsx`);
       toast.success(t("page.purchaseOrder.detail.exportExcelSuccess"));
-    } catch (err) {
+    } catch {
       toast.error(t("page.purchaseOrder.detail.exportFailed"));
     }
   };
@@ -455,10 +469,7 @@ export default function DetailPurchaseOrder() {
           t("page.purchaseOrder.detail.grandTotal"),
           `Rp ${Number(po.finalAmount || 0).toLocaleString("id-ID")}`
         ],
-        [
-          t("page.purchaseOrder.detail.paid"),
-          `Rp ${totalPaid.toLocaleString("id-ID")}`
-        ],
+        [t("page.purchaseOrder.detail.paid"), `Rp ${totalPaid.toLocaleString("id-ID")}`],
         [
           t("page.purchaseOrder.detail.remaining"),
           `Rp ${(Number(po.finalAmount || 0) - totalPaid).toLocaleString("id-ID")}`
@@ -527,7 +538,7 @@ export default function DetailPurchaseOrder() {
 
       doc.save(`PO-${po.orderNumber || po.id}-${format(new Date(), "yyyyMMdd")}.pdf`);
       toast.success(t("page.purchaseOrder.detail.exportPdfSuccess"));
-    } catch (err) {
+    } catch {
       toast.error(t("page.purchaseOrder.detail.exportFailed"));
     }
   };
@@ -578,19 +589,11 @@ export default function DetailPurchaseOrder() {
               po.status === "received" ? CheckCircle2 : po.status === "cancelled" ? XCircle : Clock;
             return (
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportExcel}
-                  className="gap-1.5">
+                <Button variant="outline" size="sm" onClick={handleExportExcel} className="gap-1.5">
                   <FileSpreadsheet size={14} />
                   <span className="hidden sm:inline">Excel</span>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportPdf}
-                  className="gap-1.5">
+                <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-1.5">
                   <Download size={14} />
                   <span className="hidden sm:inline">PDF</span>
                 </Button>
@@ -887,7 +890,8 @@ export default function DetailPurchaseOrder() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {Object.entries(itemGroups).map(([name, items]) => {
-                    const collapsed = Object.hasOwn(collapsedGroups, name) && !!collapsedGroups[name]; // codacy-ignore-line
+                    const collapsed =
+                      Object.hasOwn(collapsedGroups, name) && !!collapsedGroups[name]; // codacy-ignore-line
                     return (
                       <React.Fragment key={name}>
                         <tr
