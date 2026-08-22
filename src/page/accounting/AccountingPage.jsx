@@ -28,6 +28,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
+import { DateInput } from "@/components/ui/date-input";
 import StoreFilter from "@/components/ui/StoreFilter";
 import StatCard from "@/components/ui/StatCard";
 import EmptyState from "@/components/ui/EmptyState";
@@ -871,8 +872,7 @@ const JournalTab = ({ storeId, isAll }) => {
               <label className="text-xs font-medium text-muted-foreground">
                 {t("page.accounting.journal.date")}
               </label>
-              <Input
-                type="date"
+              <DateInput
                 name="date"
                 defaultValue={new Date().toISOString().slice(0, 10)}
                 required

@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { DateInput } from "@/components/ui/date-input";
 
 const AddBundle = () => {
   const { t } = useTranslation();
@@ -369,7 +370,7 @@ const AddBundle = () => {
               </div>
               <div className="space-y-2">
                 <Label>{t("page.bundle.form.validFrom")}</Label>
-                <Input
+                <DateInput
                   type="datetime-local"
                   value={formData.validFrom}
                   onChange={(e) => updateFormData("validFrom", e.target.value)}
@@ -377,7 +378,7 @@ const AddBundle = () => {
               </div>
               <div className="space-y-2">
                 <Label>{t("page.bundle.form.validUntil")}</Label>
-                <Input
+                <DateInput
                   type="datetime-local"
                   value={formData.validUntil}
                   onChange={(e) => updateFormData("validUntil", e.target.value)}

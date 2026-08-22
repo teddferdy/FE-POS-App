@@ -167,7 +167,6 @@ const tipsKeys = {
 
 const DashboardLayout = () => {
   const { t } = useTranslation();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [cookie] = useCookies();
@@ -207,10 +206,6 @@ const DashboardLayout = () => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleToggleSidebar = () => {
-    setSidebarCollapsed((prev) => !prev);
-  };
-
   const handleMobileMenuToggle = () => {
     setMobileSidebarOpen((prev) => !prev);
   };
@@ -223,7 +218,7 @@ const DashboardLayout = () => {
     <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
       <div className="hidden xl:block">
-        <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
+        <Sidebar />
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -233,21 +228,21 @@ const DashboardLayout = () => {
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed left-0 top-0 h-screen w-64 animate-in slide-in-from-left">
-            <Sidebar collapsed={false} onToggle={() => setMobileSidebarOpen(false)} />
+          <div className="fixed left-0 top-0 h-screen w-16 animate-in slide-in-from-left">
+            <Sidebar />
           </div>
         </div>
       )}
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? "xl:ml-16" : "xl:ml-64"}`}>
+      <div className="transition-all duration-300 xl:ml-16">
         <Header
           onMenuToggle={handleMobileMenuToggle}
           onOpenPalette={() => setIsPaletteOpen(true)}
         />
         <main className="p-4 lg:p-6 flex flex-col">
           <div className="flex-1 min-h-0">
-            <SidebarContext.Provider value={sidebarCollapsed}>
+            <SidebarContext.Provider value={false}>
               <div
                 key={location.pathname}
                 className="animate-in fade-in slide-in-from-bottom-2 duration-500">

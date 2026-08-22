@@ -10,6 +10,7 @@ import { getGoodsRequestById, editGoodsRequest } from "@/services/goods-request"
 import { getAllSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateInput } from "@/components/ui/date-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
@@ -423,7 +424,7 @@ const EditGoodsRequest = () => {
                   size={15}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
-                <Input
+                <DateInput
                   type="date"
                   value={requestDate}
                   max={neededDate || undefined}
@@ -442,7 +443,7 @@ const EditGoodsRequest = () => {
                   size={15}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
-                <Input
+                <DateInput
                   type="date"
                   value={neededDate}
                   min={requestDate || undefined}

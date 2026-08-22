@@ -221,7 +221,12 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
-        activePaths: ["/supplier-comparison", "/add-supplier", "/edit-supplier", "/detail-supplier"],
+        activePaths: [
+          "/supplier-comparison",
+          "/add-supplier",
+          "/edit-supplier",
+          "/detail-supplier"
+        ],
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
@@ -685,7 +690,12 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
-        activePaths: ["/supplier-comparison", "/add-supplier", "/edit-supplier", "/detail-supplier"],
+        activePaths: [
+          "/supplier-comparison",
+          "/add-supplier",
+          "/edit-supplier",
+          "/detail-supplier"
+        ],
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
@@ -1021,6 +1031,575 @@ export const sidebarMenuUser = [
     actions: []
   }
 ];
+
+export const navCategories = {
+  super_admin: [
+    {
+      id: "produk",
+      icon: ShoppingBag,
+      title: "Produk & Promo",
+      i18nKey: "sidebar.section.produkPromo",
+      sections: [
+        {
+          title: "Master Data",
+          i18nKey: "sidebar.section.masterData",
+          items: [
+            {
+              title: "Kelola Toko",
+              i18nKey: "sidebar.kelolaToko",
+              href: "/location-list",
+              icon: Store
+            },
+            {
+              title: "Harga per Toko",
+              i18nKey: "sidebar.pricePerStore",
+              href: "/price-list-template",
+              icon: BadgePercent
+            }
+          ]
+        },
+        {
+          title: "Produk & Promo",
+          i18nKey: "sidebar.section.produkPromo",
+          items: [
+            { title: "Kategori", i18nKey: "sidebar.kategori", href: "/category-list", icon: Tag },
+            {
+              title: "Daftar Produk",
+              i18nKey: "sidebar.daftarProduk",
+              href: "/product-list",
+              icon: UtensilsCrossed
+            },
+            { title: "Paket / Bundle", i18nKey: "sidebar.bundle", href: "/bundle", icon: Package },
+            {
+              title: "Diskon & Voucher",
+              i18nKey: "sidebar.diskon",
+              href: "/discount-list",
+              icon: BadgePercent
+            },
+            {
+              title: "Kampanye Promo",
+              i18nKey: "sidebar.promo",
+              href: "/promo-list",
+              icon: Megaphone
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "inventory",
+      icon: Warehouse,
+      title: "Inventory & Pembelian",
+      i18nKey: "sidebar.section.bahanBakuPembelian",
+      sections: [
+        {
+          title: "Supplier & Bahan Baku",
+          i18nKey: "sidebar.section.bahanBakuPembelian",
+          items: [
+            { title: "Supplier", i18nKey: "sidebar.supplier", href: "/supplier", icon: Building2 },
+            {
+              title: "Kategori Supplier",
+              i18nKey: "sidebar.supplierCategory",
+              href: "/supplier-category",
+              icon: Tag
+            },
+            {
+              title: "Kategori Bahan Baku",
+              i18nKey: "sidebar.ingredientCategory",
+              href: "/ingredient-category",
+              icon: Tag
+            },
+            {
+              title: "Bahan Baku",
+              i18nKey: "sidebar.bahanBaku",
+              href: "/ingredient",
+              icon: Package
+            },
+            {
+              title: "Permintaan Barang",
+              i18nKey: "sidebar.goodsRequest",
+              href: "/goods-request",
+              icon: ClipboardList
+            },
+            {
+              title: "Purchase Order",
+              i18nKey: "sidebar.purchaseOrder",
+              href: "/purchase-order",
+              icon: ShoppingCart
+            },
+            {
+              title: "Dashboard Utang (AP)",
+              i18nKey: "sidebar.apDashboard",
+              href: "/ap-dashboard",
+              icon: Wallet
+            },
+            {
+              title: "Riwayat Pembayaran",
+              i18nKey: "sidebar.purchasePayment",
+              href: "/purchase-payment",
+              icon: Wallet
+            },
+            {
+              title: "Goods Receipt",
+              i18nKey: "sidebar.goodsReceipt",
+              href: "/goods-receipt",
+              icon: FileText
+            },
+            {
+              title: "Purchase Return",
+              i18nKey: "sidebar.purchaseReturn",
+              href: "/purchase-return",
+              icon: ShoppingCart
+            },
+            {
+              title: "Supplier Scores",
+              i18nKey: "sidebar.supplierPerformance",
+              href: "/supplier-score-list",
+              icon: TrendingUp
+            }
+          ]
+        },
+        {
+          title: "Gudang & Produksi",
+          i18nKey: "sidebar.section.gudangOperasional",
+          items: [
+            {
+              title: "Stock Opname",
+              i18nKey: "sidebar.stockOpname",
+              href: "/stock-opname",
+              icon: ClipboardList
+            },
+            { title: "Stock Adjustment", href: "/stock-adjustment", icon: Package },
+            {
+              title: "Transfer Stok",
+              i18nKey: "sidebar.transferStok",
+              href: "/stock-transfer",
+              icon: ArrowRightLeft
+            },
+            {
+              title: "History Stok",
+              i18nKey: "sidebar.historyStok",
+              href: "/stock-history",
+              icon: FileText
+            },
+            {
+              title: "Low Stock",
+              i18nKey: "sidebar.lowStock",
+              href: "/low-stock",
+              icon: TriangleAlert
+            },
+            {
+              title: "Production Order",
+              i18nKey: "sidebar.productionOrder",
+              href: "/production-order",
+              icon: Package
+            },
+            { title: "BOM", i18nKey: "sidebar.bom", href: "/bom", icon: ClipboardList },
+            {
+              title: "Delivery Orders",
+              i18nKey: "sidebar.deliveryOrders",
+              href: "/delivery-orders",
+              icon: Truck
+            },
+            { title: "Driver", i18nKey: "sidebar.driver", href: "/driver-list", icon: Users }
+          ]
+        }
+      ]
+    },
+    {
+      id: "laporan",
+      icon: BarChart3,
+      title: "Laporan & SDM",
+      i18nKey: "sidebar.section.keuanganLaporan",
+      sections: [
+        {
+          title: "Keuangan",
+          i18nKey: "sidebar.section.keuanganLaporan",
+          items: [
+            {
+              title: "Kategori Pengeluaran",
+              i18nKey: "sidebar.kategoriPengeluaran",
+              href: "/expense-category",
+              icon: Tag
+            },
+            {
+              title: "Daftar Pengeluaran",
+              i18nKey: "sidebar.daftarPengeluaran",
+              href: "/expense",
+              icon: Receipt
+            },
+            {
+              title: "Akuntansi",
+              i18nKey: "sidebar.accounting",
+              href: "/accounting",
+              icon: Landmark
+            },
+            {
+              title: "Penjualan",
+              i18nKey: "sidebar.penjualan",
+              href: "/report/sales",
+              icon: TrendingUp
+            },
+            {
+              title: "Produk Terlaris",
+              i18nKey: "sidebar.produkTerlaris",
+              href: "/best-selling",
+              icon: BarChart3
+            },
+            {
+              title: "Laporan Harian",
+              i18nKey: "sidebar.laporanHarian",
+              href: "/report/daily",
+              icon: ClipboardList
+            },
+            {
+              title: "Arus Kas",
+              i18nKey: "sidebar.arusKas",
+              href: "/report/cash-flow",
+              icon: Receipt
+            }
+          ]
+        },
+        {
+          title: "Membership & SDM",
+          i18nKey: "sidebar.section.membershipSdm",
+          items: [
+            {
+              title: "Member Tier",
+              i18nKey: "sidebar.memberTier",
+              href: "/member-tier",
+              icon: Award
+            },
+            {
+              title: "Daftar Member",
+              i18nKey: "sidebar.daftarMember",
+              href: "/member-list",
+              icon: BookUser
+            },
+            {
+              title: "Departemen",
+              i18nKey: "sidebar.departemen",
+              href: "/department-list",
+              icon: Building2
+            },
+            { title: "Posisi", i18nKey: "sidebar.posisi", href: "/position-list", icon: FileText },
+            {
+              title: "Daftar Karyawan",
+              i18nKey: "sidebar.daftarKaryawan",
+              href: "/employee-list",
+              icon: Users
+            },
+            { title: "Shift", i18nKey: "sidebar.shift", href: "/shift-list", icon: CalendarDays }
+          ]
+        }
+      ]
+    },
+    {
+      id: "pengaturan",
+      icon: Settings,
+      title: "Pengaturan",
+      i18nKey: "sidebar.section.pengaturan",
+      sections: [
+        {
+          title: "Pengaturan",
+          i18nKey: "sidebar.section.pengaturan",
+          items: [
+            {
+              title: "Invoice & Struk",
+              i18nKey: "sidebar.invoiceStruk",
+              href: "/invoice-page",
+              icon: FileText
+            },
+            { title: "Pajak", i18nKey: "sidebar.pajak", href: "/tax-list", icon: Percent },
+            {
+              title: "Metode Pembayaran",
+              i18nKey: "sidebar.metodePembayaran",
+              href: "/type-payment-list",
+              icon: CreditCard
+            },
+            {
+              title: "Manajemen Role & Izin",
+              i18nKey: "sidebar.roleManagement",
+              href: "/role-management",
+              icon: Shield
+            },
+            {
+              title: "Backup & Restore",
+              i18nKey: "sidebar.backup",
+              href: "/backup",
+              icon: Database
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  admin: [
+    {
+      id: "produk",
+      icon: ShoppingBag,
+      title: "Produk & Promo",
+      i18nKey: "sidebar.section.produkPromo",
+      sections: [
+        {
+          title: "Produk & Promo",
+          i18nKey: "sidebar.section.produkPromo",
+          items: [
+            { title: "Kategori", i18nKey: "sidebar.kategori", href: "/category-list", icon: Tag },
+            {
+              title: "Daftar Produk",
+              i18nKey: "sidebar.daftarProduk",
+              href: "/product-list",
+              icon: UtensilsCrossed
+            },
+            {
+              title: "Harga per Toko",
+              i18nKey: "sidebar.pricePerStore",
+              href: "/price-list-template",
+              icon: BadgePercent
+            },
+            { title: "Paket / Bundle", i18nKey: "sidebar.bundle", href: "/bundle", icon: Package },
+            {
+              title: "Diskon & Voucher",
+              i18nKey: "sidebar.diskon",
+              href: "/discount-list",
+              icon: BadgePercent
+            },
+            {
+              title: "Kampanye Promo",
+              i18nKey: "sidebar.promo",
+              href: "/promo-list",
+              icon: Megaphone
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "inventory",
+      icon: Warehouse,
+      title: "Inventory & Pembelian",
+      i18nKey: "sidebar.section.bahanBakuPembelian",
+      sections: [
+        {
+          title: "Supplier & Bahan Baku",
+          i18nKey: "sidebar.section.bahanBakuPembelian",
+          items: [
+            { title: "Supplier", i18nKey: "sidebar.supplier", href: "/supplier", icon: Building2 },
+            {
+              title: "Kategori Supplier",
+              i18nKey: "sidebar.supplierCategory",
+              href: "/supplier-category",
+              icon: Tag
+            },
+            {
+              title: "Kategori Bahan Baku",
+              i18nKey: "sidebar.ingredientCategory",
+              href: "/ingredient-category",
+              icon: Tag
+            },
+            {
+              title: "Bahan Baku",
+              i18nKey: "sidebar.bahanBaku",
+              href: "/ingredient",
+              icon: Package
+            },
+            {
+              title: "Permintaan Barang",
+              i18nKey: "sidebar.goodsRequest",
+              href: "/goods-request",
+              icon: ClipboardList
+            },
+            {
+              title: "Purchase Order",
+              i18nKey: "sidebar.purchaseOrder",
+              href: "/purchase-order",
+              icon: ShoppingCart
+            },
+            {
+              title: "Dashboard Utang (AP)",
+              i18nKey: "sidebar.apDashboard",
+              href: "/ap-dashboard",
+              icon: Wallet
+            },
+            {
+              title: "Riwayat Pembayaran",
+              i18nKey: "sidebar.purchasePayment",
+              href: "/purchase-payment",
+              icon: Wallet
+            },
+            {
+              title: "Goods Receipt",
+              i18nKey: "sidebar.goodsReceipt",
+              href: "/goods-receipt",
+              icon: FileText
+            },
+            {
+              title: "Purchase Return",
+              i18nKey: "sidebar.purchaseReturn",
+              href: "/purchase-return",
+              icon: ShoppingCart
+            },
+            {
+              title: "Supplier Scores",
+              i18nKey: "sidebar.supplierPerformance",
+              href: "/supplier-score-list",
+              icon: TrendingUp
+            }
+          ]
+        },
+        {
+          title: "Gudang & Produksi",
+          i18nKey: "sidebar.section.gudangOperasional",
+          items: [
+            {
+              title: "Stock Opname",
+              i18nKey: "sidebar.stockOpname",
+              href: "/stock-opname",
+              icon: ClipboardList
+            },
+            { title: "Stock Adjustment", href: "/stock-adjustment", icon: Package },
+            {
+              title: "Transfer Stok",
+              i18nKey: "sidebar.transferStok",
+              href: "/stock-transfer",
+              icon: ArrowRightLeft
+            },
+            {
+              title: "History Stok",
+              i18nKey: "sidebar.historyStok",
+              href: "/stock-history",
+              icon: FileText
+            },
+            {
+              title: "Low Stock",
+              i18nKey: "sidebar.lowStock",
+              href: "/low-stock",
+              icon: TriangleAlert
+            },
+            {
+              title: "Production Order",
+              i18nKey: "sidebar.productionOrder",
+              href: "/production-order",
+              icon: Package
+            },
+            { title: "BOM", i18nKey: "sidebar.bom", href: "/bom", icon: ClipboardList },
+            {
+              title: "Delivery Orders",
+              i18nKey: "sidebar.deliveryOrders",
+              href: "/delivery-orders",
+              icon: Truck
+            },
+            { title: "Driver", i18nKey: "sidebar.driver", href: "/driver-list", icon: Users }
+          ]
+        }
+      ]
+    },
+    {
+      id: "laporan",
+      icon: BarChart3,
+      title: "Laporan & SDM",
+      i18nKey: "sidebar.section.keuanganLaporan",
+      sections: [
+        {
+          title: "Keuangan",
+          i18nKey: "sidebar.section.keuanganLaporan",
+          items: [
+            {
+              title: "Kategori Pengeluaran",
+              i18nKey: "sidebar.kategoriPengeluaran",
+              href: "/expense-category",
+              icon: Tag
+            },
+            {
+              title: "Daftar Pengeluaran",
+              i18nKey: "sidebar.daftarPengeluaran",
+              href: "/expense",
+              icon: Receipt
+            },
+            { title: "Pajak", i18nKey: "sidebar.pajak", href: "/tax-list", icon: Percent },
+            {
+              title: "Penjualan",
+              i18nKey: "sidebar.penjualan",
+              href: "/report/sales",
+              icon: TrendingUp
+            },
+            {
+              title: "Best Selling",
+              i18nKey: "sidebar.produkTerlaris",
+              href: "/best-selling",
+              icon: BarChart3
+            }
+          ]
+        },
+        {
+          title: "Membership & SDM",
+          i18nKey: "sidebar.section.membershipSdm",
+          items: [
+            {
+              title: "Member Tier",
+              i18nKey: "sidebar.memberTier",
+              href: "/member-tier",
+              icon: TrendingUp
+            },
+            {
+              title: "Daftar Member",
+              i18nKey: "sidebar.daftarMember",
+              href: "/member-list",
+              icon: BookUser
+            },
+            {
+              title: "Departemen",
+              i18nKey: "sidebar.departemen",
+              href: "/department-list",
+              icon: Building2
+            },
+            { title: "Posisi", i18nKey: "sidebar.posisi", href: "/position-list", icon: FileText },
+            {
+              title: "Daftar Karyawan",
+              i18nKey: "sidebar.daftarKaryawan",
+              href: "/user-list",
+              icon: Users
+            },
+            { title: "Shift", i18nKey: "sidebar.shift", href: "/shift-list", icon: CalendarDays }
+          ]
+        }
+      ]
+    },
+    {
+      id: "pengaturan",
+      icon: Settings,
+      title: "Pengaturan",
+      i18nKey: "sidebar.section.pengaturan",
+      sections: [
+        {
+          title: "Pengaturan",
+          i18nKey: "sidebar.section.pengaturan",
+          items: [
+            {
+              title: "Metode Pembayaran",
+              i18nKey: "sidebar.metodePembayaran",
+              href: "/type-payment-list",
+              icon: CreditCard
+            },
+            {
+              title: "Invoice & Struk",
+              i18nKey: "sidebar.invoiceStruk",
+              href: "/invoice-page",
+              icon: FileText
+            },
+            {
+              title: "Backup & Restore",
+              i18nKey: "sidebar.backup",
+              href: "/backup",
+              icon: Database
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
 
 export const urlWithArrowBack = [
   { url: 0, title: "Dashboard", i18nKey: "sidebar.dashboardAdmin", pathName: "/dashboard-admin" },

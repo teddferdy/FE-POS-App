@@ -13,6 +13,7 @@ import autoTable from "jspdf-autotable";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
+import { DateInput } from "@/components/ui/date-input";
 import { Label } from "../../components/ui/label";
 import {
   Select,
@@ -1220,7 +1221,7 @@ export default function DetailPurchaseOrder() {
             </div>
             <div className="space-y-2">
               <Label>{t("page.purchaseOrder.detail.paymentDate")}</Label>
-              <Input type="date" value={payDate} onChange={(e) => setPayDate(e.target.value)} />
+              <DateInput type="date" value={payDate} onChange={(e) => setPayDate(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>{t("page.purchaseOrder.detail.reference")}</Label>

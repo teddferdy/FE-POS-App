@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import { Calendar } from "./calendar";
@@ -25,18 +25,36 @@ function DatePicker({
     if (date instanceof Date && !isNaN(date.getTime())) setMonth(date);
   }, [date]);
 
+  const handleClear = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setDate(null);
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           className={cn(
-            "w-full justify-start text-left font-normal h-10",
+            "w-full justify-start text-left font-normal h-10 pr-8",
             !isValidDate && "text-muted-foreground",
             className
           )}>
           <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
           {isValidDate ? format(date, "dd MMM yyyy") : <span>{placeholder}</span>}
+          {isValidDate && (
+            <span
+              role="button"
+              tabIndex={-1}
+              onClick={handleClear}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") handleClear(e);
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer">
+              <X size={14} />
+            </span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 overflow-visible" align="start">

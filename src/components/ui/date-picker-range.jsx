@@ -1,6 +1,6 @@
 import * as React from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
@@ -8,6 +8,14 @@ import { Calendar } from "./calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 
 export function DatePickerWithRange({ className, date, setDate, placeholder = "Pick a date" }) {
+  const hasValue = date?.from || date?.to;
+
+  const handleClear = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setDate({ from: null, to: null });
+  };
+
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
@@ -16,8 +24,8 @@ export function DatePickerWithRange({ className, date, setDate, placeholder = "P
             id="date"
             variant={"outline"}
             className={cn(
-              "w-[300px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              "w-[300px] justify-start text-left font-normal pr-8",
+              !hasValue && "text-muted-foreground"
             )}>
             <CalendarIcon className="mr-2 h-4 w-4" />
             {date?.from ? (
@@ -30,6 +38,18 @@ export function DatePickerWithRange({ className, date, setDate, placeholder = "P
               )
             ) : (
               <span>{placeholder}</span>
+            )}
+            {hasValue && (
+              <span
+                role="button"
+                tabIndex={-1}
+                onClick={handleClear}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleClear(e);
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer">
+                <X size={14} />
+              </span>
             )}
           </Button>
         </PopoverTrigger>

@@ -29,6 +29,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { DateInput } from "@/components/ui/date-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -598,7 +599,7 @@ const DetailExpense = () => {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="payment-date">{t("page.expense.detail.paymentFormDate")}</Label>
-              <Input
+              <DateInput
                 id="payment-date"
                 type="date"
                 value={paymentForm.paymentDate}
