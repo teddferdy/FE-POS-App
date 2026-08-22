@@ -66,6 +66,38 @@ const formatDate = (d) => {
   });
 };
 
+// ponytail: bar filter tanggal + reset dipakai 4 tab (overview/trial/income/
+// balance) — diekstrak agar konsisten (saran Codacy PR #23)
+function AccountingFilterBar({ label, onReset, disabled, children }) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </label>
+        {children}
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-10 gap-1.5 shrink-0"
+        onClick={onReset}
+        disabled={disabled}>
+        <CalendarDays size={14} />
+        {t("page.accounting.filter.reset")}
+      </Button>
+    </div>
+  );
+}
+
+AccountingFilterBar.propTypes = {
+  label: PropTypes.node.isRequired,
+  onReset: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  children: PropTypes.node
+};
+
 const TYPE_BADGE = {
   asset: "bg-blue-100 text-blue-800",
   liability: "bg-amber-100 text-amber-800",
@@ -1032,27 +1064,16 @@ const TrialBalanceTab = ({ storeId, isAll }) => {
           <h2 className="text-base font-semibold">{t("page.accounting.trial.title")}</h2>
           <p className="text-sm text-muted-foreground">{t("page.accounting.trial.desc")}</p>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {t("page.accounting.filter.dateRange")}
-            </label>
-            <DatePickerWithRange
-              date={dateRange}
-              setDate={setDateRange}
-              placeholder={t("page.accounting.filter.pickDateRange")}
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10 gap-1.5 shrink-0"
-            onClick={resetFilters}
-            disabled={!hasFilter}>
-            <CalendarDays size={14} />
-            {t("page.accounting.filter.reset")}
-          </Button>
-        </div>
+        <AccountingFilterBar
+          label={t("page.accounting.filter.dateRange")}
+          onReset={resetFilters}
+          disabled={!hasFilter}>
+          <DatePickerWithRange
+            date={dateRange}
+            setDate={setDateRange}
+            placeholder={t("page.accounting.filter.pickDateRange")}
+          />
+        </AccountingFilterBar>
       </div>
 
       {isLoading ? (
@@ -1221,27 +1242,16 @@ const IncomeStatementTab = ({ storeId, isAll }) => {
           <h2 className="text-base font-semibold">{t("page.accounting.income.title")}</h2>
           <p className="text-sm text-muted-foreground">{t("page.accounting.income.desc")}</p>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {t("page.accounting.filter.dateRange")}
-            </label>
-            <DatePickerWithRange
-              date={dateRange}
-              setDate={setDateRange}
-              placeholder={t("page.accounting.filter.pickDateRange")}
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10 gap-1.5 shrink-0"
-            onClick={resetFilters}
-            disabled={!hasFilter}>
-            <CalendarDays size={14} />
-            {t("page.accounting.filter.reset")}
-          </Button>
-        </div>
+        <AccountingFilterBar
+          label={t("page.accounting.filter.dateRange")}
+          onReset={resetFilters}
+          disabled={!hasFilter}>
+          <DatePickerWithRange
+            date={dateRange}
+            setDate={setDateRange}
+            placeholder={t("page.accounting.filter.pickDateRange")}
+          />
+        </AccountingFilterBar>
       </div>
 
       {isLoading ? (
@@ -1377,27 +1387,16 @@ const BalanceSheetTab = ({ storeId, isAll }) => {
           <h2 className="text-base font-semibold">{t("page.accounting.balance.title")}</h2>
           <p className="text-sm text-muted-foreground">{t("page.accounting.balance.desc")}</p>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {t("page.accounting.balance.asOf")}
-            </label>
-            <DatePicker
-              date={asOf}
-              setDate={setAsOf}
-              placeholder={t("page.accounting.filter.pickDate")}
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10 gap-1.5 shrink-0"
-            onClick={resetFilter}
-            disabled={!asOf}>
-            <CalendarDays size={14} />
-            {t("page.accounting.filter.reset")}
-          </Button>
-        </div>
+        <AccountingFilterBar
+          label={t("page.accounting.balance.asOf")}
+          onReset={resetFilter}
+          disabled={!asOf}>
+          <DatePicker
+            date={asOf}
+            setDate={setAsOf}
+            placeholder={t("page.accounting.filter.pickDate")}
+          />
+        </AccountingFilterBar>
       </div>
 
       {isLoading ? (
@@ -1519,27 +1518,16 @@ const AccountingOverview = ({ storeId, isAll }) => {
             <p className="text-sm text-muted-foreground">{t("page.accounting.overview.desc")}</p>
           </div>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {t("page.accounting.filter.dateRange")}
-            </label>
-            <DatePickerWithRange
-              date={dateRange}
-              setDate={setDateRange}
-              placeholder={t("page.accounting.filter.pickDateRange")}
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10 gap-1.5 shrink-0"
-            onClick={resetFilters}
-            disabled={!hasFilter}>
-            <CalendarDays size={14} />
-            {t("page.accounting.filter.reset")}
-          </Button>
-        </div>
+        <AccountingFilterBar
+          label={t("page.accounting.filter.dateRange")}
+          onReset={resetFilters}
+          disabled={!hasFilter}>
+          <DatePickerWithRange
+            date={dateRange}
+            setDate={setDateRange}
+            placeholder={t("page.accounting.filter.pickDateRange")}
+          />
+        </AccountingFilterBar>
       </div>
 
       <div className="p-5">
