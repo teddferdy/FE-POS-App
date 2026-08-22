@@ -230,7 +230,7 @@ const DetailExpense = () => {
             <div className="lg:col-span-2 space-y-6">
               <Card className="p-6 space-y-4">
                 <Skeleton className="h-5 w-36" />
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {[...Array(6)].map((_, i) => (
                     <div key={i} className="space-y-2">
                       <Skeleton className="h-3 w-24" />
@@ -263,7 +263,7 @@ const DetailExpense = () => {
                 <h3 className="text-base font-semibold text-foreground mb-6">
                   {t("page.expense.detail.infoTitle")}
                 </h3>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                       {t("page.expense.detail.expenseNumber")}
@@ -354,7 +354,7 @@ const DetailExpense = () => {
                   {employeeLoading ? (
                     <div className="space-y-3">
                       <Skeleton className="h-12 w-full rounded-lg" />
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Skeleton className="h-16 rounded-lg" />
                         <Skeleton className="h-16 rounded-lg" />
                       </div>
@@ -380,7 +380,7 @@ const DetailExpense = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <DetailRow
                           icon={BadgeCheck}
                           label={t("page.expense.form.salary.position")}

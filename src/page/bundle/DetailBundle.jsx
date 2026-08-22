@@ -102,7 +102,7 @@ const DetailBundle = () => {
         </nav>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{bundle.name}</h1>
           <div className="flex items-center gap-2 mt-1">
@@ -164,7 +164,7 @@ const DetailBundle = () => {
                 className="w-full h-48 object-cover rounded-lg mb-4"
               />
             )}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-muted-foreground">{t("page.bundle.form.name")}</p>
                 <p className="font-medium">{bundle.name}</p>

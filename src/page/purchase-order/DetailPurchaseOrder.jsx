@@ -612,7 +612,7 @@ export default function DetailPurchaseOrder() {
           <div className="lg:col-span-2 space-y-4">
             <Card className="p-5 space-y-4">
               <Skeleton className="h-4 w-32" />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Skeleton className="h-3 w-16" />
                   <Skeleton className="h-4 w-32" />

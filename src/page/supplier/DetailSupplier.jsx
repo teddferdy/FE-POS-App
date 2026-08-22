@@ -142,7 +142,7 @@ const DetailSupplier = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
             <Skeleton className="h-4 w-32" />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Skeleton className="h-3 w-16" />
                 <Skeleton className="h-4 w-32" />
@@ -310,21 +310,24 @@ const DetailSupplier = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="general">
-            {t("page.supplier.detail.tabs.general", "Informasi Umum")}
-          </TabsTrigger>
-          <TabsTrigger value="contacts">
-            {t("page.supplier.detail.tabs.contacts", "Kontak")}
-          </TabsTrigger>
-          <TabsTrigger value="purchase">
-            {t("page.supplier.detail.tabs.purchase", "Pembelian / Produk")}
-          </TabsTrigger>
-          <TabsTrigger value="tax">{t("page.supplier.detail.tabs.tax", "Pajak")}</TabsTrigger>
-          <TabsTrigger value="debt">
-            {t("page.supplier.detail.tabs.debt", "Saldo Utang")}
-          </TabsTrigger>
-        </TabsList>
+        {/* ponytail: 5 tab terlalu sempit di ponsel — scroll horizontal */}
+        <div className="overflow-x-auto -mx-1 px-1">
+          <TabsList className="grid w-full grid-cols-5 min-w-[560px]">
+            <TabsTrigger value="general">
+              {t("page.supplier.detail.tabs.general", "Informasi Umum")}
+            </TabsTrigger>
+            <TabsTrigger value="contacts">
+              {t("page.supplier.detail.tabs.contacts", "Kontak")}
+            </TabsTrigger>
+            <TabsTrigger value="purchase">
+              {t("page.supplier.detail.tabs.purchase", "Pembelian / Produk")}
+            </TabsTrigger>
+            <TabsTrigger value="tax">{t("page.supplier.detail.tabs.tax", "Pajak")}</TabsTrigger>
+            <TabsTrigger value="debt">
+              {t("page.supplier.detail.tabs.debt", "Saldo Utang")}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Tab: General / Informasi Umum */}
         <TabsContent value="general" className="mt-4">
@@ -885,7 +888,7 @@ const DetailSupplier = () => {
               placeholder={t("page.supplier.detail.modal.amountPlaceholder")}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t("page.supplier.detail.modal.paymentDateLabel")}</Label>
               <DatePicker date={payDate} setDate={setPayDate} />

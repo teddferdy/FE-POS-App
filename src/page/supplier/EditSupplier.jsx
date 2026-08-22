@@ -691,24 +691,27 @@ const EditSupplier = () => {
                   </div>
 
                   <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="general" className="gap-1.5">
-                        <User size={14} />
-                        {t("page.supplier.tabs.general", "Umum")}
-                      </TabsTrigger>
-                      <TabsTrigger value="contacts" className="gap-1.5">
-                        <Phone size={14} />
-                        {t("page.supplier.tabs.contacts", "Kontak")}
-                      </TabsTrigger>
-                      <TabsTrigger value="purchase" className="gap-1.5">
-                        <CreditCard size={14} />
-                        {t("page.supplier.tabs.purchase", "Pembelian")}
-                      </TabsTrigger>
-                      <TabsTrigger value="tax" className="gap-1.5">
-                        <Receipt size={14} />
-                        {t("page.supplier.tabs.tax", "Pajak")}
-                      </TabsTrigger>
-                    </TabsList>
+                    {/* ponytail: tab scroll horizontal di layar sempit */}
+                    <div className="overflow-x-auto -mx-1 px-1">
+                      <TabsList className="grid w-full grid-cols-4 min-w-[440px]">
+                        <TabsTrigger value="general" className="gap-1.5">
+                          <User size={14} />
+                          {t("page.supplier.tabs.general", "Umum")}
+                        </TabsTrigger>
+                        <TabsTrigger value="contacts" className="gap-1.5">
+                          <Phone size={14} />
+                          {t("page.supplier.tabs.contacts", "Kontak")}
+                        </TabsTrigger>
+                        <TabsTrigger value="purchase" className="gap-1.5">
+                          <CreditCard size={14} />
+                          {t("page.supplier.tabs.purchase", "Pembelian")}
+                        </TabsTrigger>
+                        <TabsTrigger value="tax" className="gap-1.5">
+                          <Receipt size={14} />
+                          {t("page.supplier.tabs.tax", "Pajak")}
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
 
                     {/* ====== TAB: UMUM (General) ====== */}
                     <TabsContent value="general" className="space-y-6 mt-4">

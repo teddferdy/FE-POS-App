@@ -148,7 +148,7 @@ const DetailCategory = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
             <Skeleton className="h-4 w-32" />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Skeleton className="h-3 w-16" />
                 <Skeleton className="h-4 w-32" />
@@ -332,7 +332,7 @@ const DetailCategory = () => {
                       )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
                     {p.brand && (
                       <div className="flex items-center gap-1.5">
                         <span className="text-muted-foreground/60 w-16 shrink-0">Brand</span>

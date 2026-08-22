@@ -100,7 +100,7 @@ const PurchasePaymentDetail = () => {
         <span className="text-primary font-semibold">{t("page.purchasePayment.detail.title")}</span>
       </nav>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="icon" onClick={() => navigate("/purchase-payment")}>
             <ArrowLeft size={16} />
@@ -175,34 +175,36 @@ const PurchasePaymentDetail = () => {
                 <Wallet size={16} className="text-muted-foreground" />
                 {t("page.purchasePayment.detail.paymentInfo")}
               </h3>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-border">
-                  <Row label={t("page.purchasePayment.detail.amount")}>
-                    <span className="text-lg font-bold">
-                      Rp {Number(payment.amount).toLocaleString("id-ID")}
-                    </span>
-                  </Row>
-                  <Row label={t("page.purchasePayment.detail.paymentMethod")}>
-                    <span className="capitalize">
-                      {t(`page.purchaseOrder.paymentMethod.${payment.paymentMethod}`)}
-                    </span>
-                  </Row>
-                  <Row label={t("page.purchasePayment.detail.paymentDate")}>
-                    {payment.paymentDate
-                      ? new Date(payment.paymentDate).toLocaleDateString("id-ID", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric"
-                        })
-                      : "-"}
-                  </Row>
-                  <Row label={t("page.purchasePayment.detail.reference")}>
-                    {payment.reference || "-"}
-                  </Row>
-                  <Row label={t("page.purchasePayment.detail.notes")}>{payment.notes || "-"}</Row>
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody className="divide-y divide-border">
+                    <Row label={t("page.purchasePayment.detail.amount")}>
+                      <span className="text-lg font-bold">
+                        Rp {Number(payment.amount).toLocaleString("id-ID")}
+                      </span>
+                    </Row>
+                    <Row label={t("page.purchasePayment.detail.paymentMethod")}>
+                      <span className="capitalize">
+                        {t(`page.purchaseOrder.paymentMethod.${payment.paymentMethod}`)}
+                      </span>
+                    </Row>
+                    <Row label={t("page.purchasePayment.detail.paymentDate")}>
+                      {payment.paymentDate
+                        ? new Date(payment.paymentDate).toLocaleDateString("id-ID", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric"
+                          })
+                        : "-"}
+                    </Row>
+                    <Row label={t("page.purchasePayment.detail.reference")}>
+                      {payment.reference || "-"}
+                    </Row>
+                    <Row label={t("page.purchasePayment.detail.notes")}>{payment.notes || "-"}</Row>
+                  </tbody>
+                </table>
+              </div>
             </Card>
 
             <Card className="p-6">
@@ -210,37 +212,41 @@ const PurchasePaymentDetail = () => {
                 <FileText size={16} className="text-muted-foreground" />
                 {t("page.purchasePayment.detail.poInfo")}
               </h3>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-border">
-                  <Row label={t("page.purchasePayment.detail.poNumber")}>
-                    {payment.purchaseOrderData?.orderNumber || `PO-${payment.purchaseOrder}`}
-                  </Row>
-                  <Row label={t("page.purchasePayment.detail.supplier")}>
-                    <div className="flex items-center gap-2">
-                      <Building2 size={14} className="text-muted-foreground" />
-                      {payment.supplierData?.name || "-"}
-                    </div>
-                  </Row>
-                  <Row label={t("page.purchasePayment.detail.poStatus")}>
-                    {(() => {
-                      const s =
-                        poStatusBadge[payment.purchaseOrderData?.status] || poStatusBadge.pending;
-                      return (
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${s.class}`}>
-                          {s.label}
-                        </span>
-                      );
-                    })()}
-                  </Row>
-                  <Row label={t("page.purchasePayment.detail.poAmount")}>
-                    <span className="font-medium">
-                      Rp{" "}
-                      {Number(payment.purchaseOrderData?.finalAmount || 0).toLocaleString("id-ID")}
-                    </span>
-                  </Row>
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody className="divide-y divide-border">
+                    <Row label={t("page.purchasePayment.detail.poNumber")}>
+                      {payment.purchaseOrderData?.orderNumber || `PO-${payment.purchaseOrder}`}
+                    </Row>
+                    <Row label={t("page.purchasePayment.detail.supplier")}>
+                      <div className="flex items-center gap-2">
+                        <Building2 size={14} className="text-muted-foreground" />
+                        {payment.supplierData?.name || "-"}
+                      </div>
+                    </Row>
+                    <Row label={t("page.purchasePayment.detail.poStatus")}>
+                      {(() => {
+                        const s =
+                          poStatusBadge[payment.purchaseOrderData?.status] || poStatusBadge.pending;
+                        return (
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${s.class}`}>
+                            {s.label}
+                          </span>
+                        );
+                      })()}
+                    </Row>
+                    <Row label={t("page.purchasePayment.detail.poAmount")}>
+                      <span className="font-medium">
+                        Rp{" "}
+                        {Number(payment.purchaseOrderData?.finalAmount || 0).toLocaleString(
+                          "id-ID"
+                        )}
+                      </span>
+                    </Row>
+                  </tbody>
+                </table>
+              </div>
             </Card>
           </div>
 
@@ -250,50 +256,52 @@ const PurchasePaymentDetail = () => {
                 <User size={16} className="text-muted-foreground" />
                 {t("page.purchasePayment.detail.system")}
               </h3>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-border">
-                  <tr>
-                    <td className="py-2 text-muted-foreground">
-                      {t("page.purchasePayment.detail.createdBy")}
-                    </td>
-                    <td className="py-2 text-right font-medium">
-                      {payment.createdByUser?.fullName || "-"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 text-muted-foreground">
-                      {t("page.purchasePayment.detail.created")}
-                    </td>
-                    <td className="py-2 text-right">
-                      {payment.createdAt
-                        ? new Date(payment.createdAt).toLocaleDateString("id-ID", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })
-                        : "-"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 text-muted-foreground">
-                      {t("page.purchasePayment.detail.updated")}
-                    </td>
-                    <td className="py-2 text-right">
-                      {payment.updatedAt
-                        ? new Date(payment.updatedAt).toLocaleDateString("id-ID", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })
-                        : "-"}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody className="divide-y divide-border">
+                    <tr>
+                      <td className="py-2 text-muted-foreground">
+                        {t("page.purchasePayment.detail.createdBy")}
+                      </td>
+                      <td className="py-2 text-right font-medium">
+                        {payment.createdByUser?.fullName || "-"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 text-muted-foreground">
+                        {t("page.purchasePayment.detail.created")}
+                      </td>
+                      <td className="py-2 text-right">
+                        {payment.createdAt
+                          ? new Date(payment.createdAt).toLocaleDateString("id-ID", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })
+                          : "-"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 text-muted-foreground">
+                        {t("page.purchasePayment.detail.updated")}
+                      </td>
+                      <td className="py-2 text-right">
+                        {payment.updatedAt
+                          ? new Date(payment.updatedAt).toLocaleDateString("id-ID", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })
+                          : "-"}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </Card>
           </div>
         </div>
