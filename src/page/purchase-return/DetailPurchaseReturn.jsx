@@ -180,39 +180,41 @@ const DetailPurchaseReturn = () => {
                 <FileText size={16} className="text-muted-foreground" />
                 {t("page.purchaseReturn.detail.section.informasiRetur")}
               </h3>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-border">
-                  <Row label={t("page.purchaseReturn.detail.field.returnNo")}>
-                    {ret.returnNumber}
-                  </Row>
-                  <Row label={t("page.purchaseReturn.detail.field.store")}>
-                    <div className="flex items-center gap-2">
-                      <Store size={14} className="text-muted-foreground" />
-                      {ret.storeData?.name || "-"}
-                    </div>
-                  </Row>
-                  <Row label={t("page.purchaseReturn.detail.field.reason")}>
-                    {ret.reason || "-"}
-                  </Row>
-                  <Row label={t("page.purchaseReturn.detail.field.returnedBy")}>
-                    <div className="flex items-center gap-2">
-                      <User size={14} className="text-muted-foreground" />
-                      {ret.returnedBy?.name || "-"}
-                    </div>
-                  </Row>
-                  <Row label={t("page.purchaseReturn.detail.field.date")}>
-                    {ret.createdAt
-                      ? new Date(ret.createdAt).toLocaleDateString("id-ID", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })
-                      : "-"}
-                  </Row>
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody className="divide-y divide-border">
+                    <Row label={t("page.purchaseReturn.detail.field.returnNo")}>
+                      {ret.returnNumber}
+                    </Row>
+                    <Row label={t("page.purchaseReturn.detail.field.store")}>
+                      <div className="flex items-center gap-2">
+                        <Store size={14} className="text-muted-foreground" />
+                        {ret.storeData?.name || "-"}
+                      </div>
+                    </Row>
+                    <Row label={t("page.purchaseReturn.detail.field.reason")}>
+                      {ret.reason || "-"}
+                    </Row>
+                    <Row label={t("page.purchaseReturn.detail.field.returnedBy")}>
+                      <div className="flex items-center gap-2">
+                        <User size={14} className="text-muted-foreground" />
+                        {ret.returnedBy?.name || "-"}
+                      </div>
+                    </Row>
+                    <Row label={t("page.purchaseReturn.detail.field.date")}>
+                      {ret.createdAt
+                        ? new Date(ret.createdAt).toLocaleDateString("id-ID", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })
+                        : "-"}
+                    </Row>
+                  </tbody>
+                </table>
+              </div>
             </Card>
 
             <Card className="p-6">
@@ -337,22 +339,24 @@ const DetailPurchaseReturn = () => {
                 <Building2 size={16} className="text-muted-foreground" />
                 {t("page.purchaseReturn.detail.section.poInfo")}
               </h3>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-border">
-                  <tr>
-                    <td className="py-2 text-muted-foreground">
-                      {t("page.purchaseReturn.detail.field.poNumber")}
-                    </td>
-                    <td className="py-2 text-right font-medium">
-                      {ret.purchaseOrder?.orderNumber
-                        ? ret.purchaseOrder.orderNumber
-                        : ret.purchaseOrder
-                          ? `PO-${ret.purchaseOrder}`
-                          : "-"}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody className="divide-y divide-border">
+                    <tr>
+                      <td className="py-2 text-muted-foreground">
+                        {t("page.purchaseReturn.detail.field.poNumber")}
+                      </td>
+                      <td className="py-2 text-right font-medium">
+                        {ret.purchaseOrder?.orderNumber
+                          ? ret.purchaseOrder.orderNumber
+                          : ret.purchaseOrder
+                            ? `PO-${ret.purchaseOrder}`
+                            : "-"}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </Card>
           </div>
         </div>

@@ -128,40 +128,42 @@ const DetailSalesReturn = () => {
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.salesReturn.detail.section.informasiRetur")}
               </h2>
-              <table className="w-full text-sm">
-                <tbody>
-                  {[
-                    [t("page.salesReturn.detail.field.returnNo"), ret.returnNumber],
-                    [t("page.salesReturn.detail.field.store"), ret.storeData?.name || "-"],
-                    [
-                      t("page.salesReturn.detail.field.refundAmount"),
-                      <span
-                        key="refund-amount"
-                        className="font-mono font-semibold text-green-600 dark:text-green-400">
-                        Rp {(ret.refundAmount || 0).toLocaleString("id-ID")}
-                      </span>
-                    ],
-                    [
-                      t("page.salesReturn.detail.field.refundMethod"),
-                      refundMethodLabel(ret.refundMethod)
-                    ],
-                    [t("page.salesReturn.detail.field.reason"), ret.reason || "-"],
-                    [
-                      t("page.salesReturn.detail.field.returnedBy"),
-                      ret.returnedBy || ret.returnedByData?.name || "-"
-                    ],
-                    [
-                      t("page.salesReturn.detail.field.date"),
-                      new Date(ret.createdAt).toLocaleDateString("id")
-                    ]
-                  ].map(([l, v]) => (
-                    <tr key={l} className="border-b border-muted/30">
-                      <td className="py-2 pr-4 text-muted-foreground w-40">{l}</td>
-                      <td className="py-2 font-medium">{v}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {[
+                      [t("page.salesReturn.detail.field.returnNo"), ret.returnNumber],
+                      [t("page.salesReturn.detail.field.store"), ret.storeData?.name || "-"],
+                      [
+                        t("page.salesReturn.detail.field.refundAmount"),
+                        <span
+                          key="refund-amount"
+                          className="font-mono font-semibold text-green-600 dark:text-green-400">
+                          Rp {(ret.refundAmount || 0).toLocaleString("id-ID")}
+                        </span>
+                      ],
+                      [
+                        t("page.salesReturn.detail.field.refundMethod"),
+                        refundMethodLabel(ret.refundMethod)
+                      ],
+                      [t("page.salesReturn.detail.field.reason"), ret.reason || "-"],
+                      [
+                        t("page.salesReturn.detail.field.returnedBy"),
+                        ret.returnedBy || ret.returnedByData?.name || "-"
+                      ],
+                      [
+                        t("page.salesReturn.detail.field.date"),
+                        new Date(ret.createdAt).toLocaleDateString("id")
+                      ]
+                    ].map(([l, v]) => (
+                      <tr key={l} className="border-b border-muted/30">
+                        <td className="py-2 pr-4 text-muted-foreground w-40">{l}</td>
+                        <td className="py-2 font-medium">{v}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className="bg-card p-6 rounded-xl border border-border">

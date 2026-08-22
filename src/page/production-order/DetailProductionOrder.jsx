@@ -153,39 +153,41 @@ const DetailProductionOrder = () => {
                 <h2 className="text-lg font-semibold mb-4">
                   {t("page.productionOrder.detail.informasiProduksi")}
                 </h2>
-                <table className="w-full text-sm">
-                  <tbody>
-                    {[
-                      [t("page.productionOrder.detail.noProduksi"), order.productionNo],
-                      [
-                        t("page.productionOrder.detail.produk"),
-                        order.productData?.nameProduct || "-"
-                      ],
-                      [t("page.productionOrder.detail.sku"), order.productData?.sku || "-"],
-                      [t("page.productionOrder.detail.jumlahRencana"), order.plannedQty],
-                      [t("page.productionOrder.detail.jumlahHasil"), order.producedQty || 0],
-                      [t("page.productionOrder.detail.store"), order.storeData?.name || "-"],
-                      [
-                        t("page.productionOrder.detail.tanggalJadwal"),
-                        order.scheduledDate
-                          ? new Date(order.scheduledDate).toLocaleDateString("id")
-                          : "-"
-                      ],
-                      [
-                        t("page.productionOrder.detail.tanggalSelesai"),
-                        order.completedDate
-                          ? new Date(order.completedDate).toLocaleDateString("id")
-                          : "-"
-                      ],
-                      [t("page.productionOrder.detail.catatan"), order.notes || "-"]
-                    ].map(([label, value]) => (
-                      <tr key={label} className="border-b border-muted/30">
-                        <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
-                        <td className="py-2 font-medium">{value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      {[
+                        [t("page.productionOrder.detail.noProduksi"), order.productionNo],
+                        [
+                          t("page.productionOrder.detail.produk"),
+                          order.productData?.nameProduct || "-"
+                        ],
+                        [t("page.productionOrder.detail.sku"), order.productData?.sku || "-"],
+                        [t("page.productionOrder.detail.jumlahRencana"), order.plannedQty],
+                        [t("page.productionOrder.detail.jumlahHasil"), order.producedQty || 0],
+                        [t("page.productionOrder.detail.store"), order.storeData?.name || "-"],
+                        [
+                          t("page.productionOrder.detail.tanggalJadwal"),
+                          order.scheduledDate
+                            ? new Date(order.scheduledDate).toLocaleDateString("id")
+                            : "-"
+                        ],
+                        [
+                          t("page.productionOrder.detail.tanggalSelesai"),
+                          order.completedDate
+                            ? new Date(order.completedDate).toLocaleDateString("id")
+                            : "-"
+                        ],
+                        [t("page.productionOrder.detail.catatan"), order.notes || "-"]
+                      ].map(([label, value]) => (
+                        <tr key={label} className="border-b border-muted/30">
+                          <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
+                          <td className="py-2 font-medium">{value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 

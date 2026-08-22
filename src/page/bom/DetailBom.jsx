@@ -115,29 +115,31 @@ const DetailBom = () => {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-card p-6 rounded-xl border border-border">
               <h2 className="text-lg font-semibold mb-4">{t("page.bom.detail.bomInfo")}</h2>
-              <table className="w-full text-sm">
-                <tbody>
-                  {[
-                    [t("page.bom.detail.name"), bom.name || `BOM #${bom.id}`],
-                    [t("page.bom.detail.product"), bom.productData?.nameProduct || "-"],
-                    [t("page.bom.detail.sku"), bom.productData?.sku || "-"],
-                    [
-                      t("page.bom.detail.totalItems"),
-                      `${bom.lines?.length || 0} ${t("page.bom.detail.items")}`
-                    ],
-                    [t("page.bom.detail.notes"), bom.notes || "-"],
-                    [
-                      t("page.bom.detail.date"),
-                      new Date(bom.createdAt).toLocaleDateString(i18n.language)
-                    ]
-                  ].map(([l, v]) => (
-                    <tr key={l} className="border-b border-muted/30">
-                      <td className="py-2 pr-4 text-muted-foreground w-40">{l}</td>
-                      <td className="py-2 font-medium">{v}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {[
+                      [t("page.bom.detail.name"), bom.name || `BOM #${bom.id}`],
+                      [t("page.bom.detail.product"), bom.productData?.nameProduct || "-"],
+                      [t("page.bom.detail.sku"), bom.productData?.sku || "-"],
+                      [
+                        t("page.bom.detail.totalItems"),
+                        `${bom.lines?.length || 0} ${t("page.bom.detail.items")}`
+                      ],
+                      [t("page.bom.detail.notes"), bom.notes || "-"],
+                      [
+                        t("page.bom.detail.date"),
+                        new Date(bom.createdAt).toLocaleDateString(i18n.language)
+                      ]
+                    ].map(([l, v]) => (
+                      <tr key={l} className="border-b border-muted/30">
+                        <td className="py-2 pr-4 text-muted-foreground w-40">{l}</td>
+                        <td className="py-2 font-medium">{v}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div>

@@ -156,6 +156,11 @@
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
+    /* ponytail: jaring pengaman scroll horizontal — elemen liar 1-2px di
+       halaman mana pun tidak boleh menggeser seluruh halaman di mobile.
+       overflow-x: clip dipilih (bukan hidden) karena tidak menciptakan
+       scroll container baru. */
+    overflow-x: clip;
   }
 }
 
