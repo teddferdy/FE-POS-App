@@ -204,5 +204,8 @@
   "page.supplierCategory.deleteDesc": "この操作は元に戻せません。このカテゴリを使用している仕入先がないことを確認してください。",
   "page.supplierCategory.deleteSuccess": "カテゴリが正常に削除されました",
   "page.supplierCategory.createSuccess": "カテゴリが正常に作成されました",
-  "page.supplierCategory.updateSuccess": "カテゴリが正常に更新されました"
+  "page.supplierCategory.updateSuccess": "カテゴリが正常に更新されました",
+  "common.legend": "凡例",
+  "common.legendTitle": "表のアクション凡例",
+  "common.legendDescription": "表で使用できるアイコンとアクションの説明。"
 }
