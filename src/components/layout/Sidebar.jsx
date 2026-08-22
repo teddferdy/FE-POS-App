@@ -24,6 +24,7 @@ import {
 } from "@/utils/sidebar-menu";
 import { filterMenuByPermission } from "@/utils/permission";
 import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
+import { useUserSession } from "@/hooks/useUserSession";
 import { logOut } from "@/services/auth";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -43,26 +44,7 @@ const Sidebar = ({ collapsed = true, onToggle, onHoverChange }) => {
   const [navModalOpen, setNavModalOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
 
-  const user = useMemo(() => {
-    const fromSession = () => {
-      try {
-        const stored = sessionStorage.getItem("user");
-        return stored ? JSON.parse(stored) : null;
-      } catch (e) {
-        return null;
-      }
-    };
-    const session = fromSession();
-    if (
-      session &&
-      session.accessMenu &&
-      Array.isArray(session.accessMenu) &&
-      session.accessMenu.length > 0
-    ) {
-      return session;
-    }
-    return cookie?.user;
-  }, [cookie?.user]);
+  const user = useUserSession();
 
   const role = user?.roleType || "user";
   const hasAccessMenu =

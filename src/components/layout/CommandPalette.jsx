@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { Search, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,61 +10,18 @@ import {
   sidebarMenuUser
 } from "@/utils/sidebar-menu";
 import { filterMenuByPermission } from "@/utils/permission";
+import { buildPaletteGroups, filterPaletteGroups } from "@/utils/command-palette";
 import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
-
-// ponytail: halaman di luar struktur section sidebar (form add/edit & utilitas)
-const extraPages = [
-  { path: "/add-product", label: "Tambah Produk", keywords: "tambah produk add product" },
-  { path: "/edit-product", label: "Edit Produk", keywords: "edit produk product" },
-  { path: "/add-category", label: "Tambah Kategori", keywords: "tambah kategori add category" },
-  { path: "/add-supplier", label: "Tambah Supplier", keywords: "tambah supplier add" },
-  {
-    path: "/supplier-comparison",
-    label: "Bandingkan Supplier",
-    keywords: "bandingkan supplier compare"
-  },
-  { path: "/add-member", label: "Tambah Member", keywords: "tambah member add" },
-  { path: "/add-discount", label: "Tambah Diskon", keywords: "tambah diskon add discount" },
-  { path: "/add-stock-opname", label: "Tambah Stock Opname", keywords: "tambah stock opname add" },
-  { path: "/add-purchase-order", label: "Tambah PO", keywords: "tambah purchase order po" },
-  { path: "/add-employee", label: "Tambah Karyawan", keywords: "tambah karyawan add employee" },
-  { path: "/add-location", label: "Tambah Toko", keywords: "tambah toko add location store" },
-  { path: "/store-geospatial", label: "Peta Toko", keywords: "peta toko geospatial map" },
-  { path: "/add-user", label: "Tambah Admin", keywords: "tambah admin add user" },
-  { path: "/support", label: "Support", keywords: "support bantuan help faq kontak cs" },
-  { path: "/add-role", label: "Tambah Role", keywords: "tambah role add" },
-  { path: "/add-tax", label: "Tambah Pajak", keywords: "tambah pajak add tax" },
-  { path: "/notification", label: "Notifikasi", keywords: "notifikasi notification" }
-];
+import { useUserSession } from "@/hooks/useUserSession";
 
 const CommandPalette = ({ open, onClose }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [cookie] = useCookies();
+  const user = useUserSession();
   const inputRef = useRef(null);
   const itemRefs = useRef({});
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  // ponytail: resolusi user sama seperti Sidebar agar grup palette selalu sinkron dengan menu
-  const user = useMemo(() => {
-    let session = null;
-    try {
-      const stored = sessionStorage.getItem("user");
-      session = stored ? JSON.parse(stored) : null;
-    } catch {
-      session = null;
-    }
-    if (
-      session &&
-      session.accessMenu &&
-      Array.isArray(session.accessMenu) &&
-      session.accessMenu.length > 0
-    ) {
-      return session;
-    }
-    return cookie?.user;
-  }, [cookie?.user]);
 
   const groups = useMemo(() => {
     const hasAccessMenu =
@@ -77,56 +33,10 @@ const CommandPalette = ({ open, onClose }) => {
     else if (isCashierRole(user)) baseMenu = sidebarMenuCashier;
     else baseMenu = sidebarMenuUser;
 
-    const menuItems = filterMenuByPermission(baseMenu, user);
-
-    const knownPaths = new Set();
-    const sectionGroups = [];
-    const directItems = [];
-
-    menuItems.forEach((item) => {
-      const children = (item.children || []).filter((c) => c.href);
-      if (children.length > 0) {
-        children.forEach((c) => knownPaths.add(c.href));
-        sectionGroups.push({
-          id: item.i18nKey || item.title,
-          title: t(item.i18nKey, { defaultValue: item.title }),
-          items: children
-        });
-      } else if (item.href) {
-        directItems.push(item);
-        knownPaths.add(item.href);
-      }
-    });
-
-    const result = [];
-    if (directItems.length > 0) {
-      result.push({ id: "main", title: t("commandPalette.groupMain"), items: directItems });
-    }
-    result.push(...sectionGroups);
-
-    const extras = extraPages.filter((p) => !knownPaths.has(p.path));
-    if (extras.length > 0) {
-      result.push({ id: "more", title: t("commandPalette.groupMore"), items: extras });
-    }
-    return result;
+    return buildPaletteGroups(filterMenuByPermission(baseMenu, user), t);
   }, [user, t]);
 
-  const filteredGroups = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return groups;
-    const matchItem = (item) => {
-      const label = item.i18nKey
-        ? t(item.i18nKey, { defaultValue: item.title })
-        : t(item.path, { defaultValue: item.label });
-      const haystack = `${label} ${item.keywords || ""} ${item.title || ""} ${
-        item.href || item.path || ""
-      }`.toLowerCase();
-      return haystack.includes(q);
-    };
-    return groups
-      .map((g) => ({ ...g, items: g.items.filter(matchItem) }))
-      .filter((g) => g.items.length > 0);
-  }, [groups, query, t]);
+  const filteredGroups = useMemo(() => filterPaletteGroups(groups, query), [groups, query]);
 
   const flatItems = useMemo(() => filteredGroups.flatMap((g) => g.items), [filteredGroups]);
 
@@ -146,11 +56,6 @@ const CommandPalette = ({ open, onClose }) => {
     itemRefs.current[selectedIndex]?.scrollIntoView({ block: "nearest" });
   }, [selectedIndex]);
 
-  const getItemLabel = (item) =>
-    item.i18nKey
-      ? t(item.i18nKey, { defaultValue: item.title })
-      : t(item.path, { defaultValue: item.label });
-
   const handleSelect = (path) => {
     navigate(path);
     onClose();
@@ -165,7 +70,7 @@ const CommandPalette = ({ open, onClose }) => {
       setSelectedIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter") {
       const item = flatItems[selectedIndex];
-      if (item) handleSelect(item.href || item.path);
+      if (item) handleSelect(item.path);
     } else if (e.key === "Escape") {
       onClose();
     }
@@ -220,11 +125,11 @@ const CommandPalette = ({ open, onClose }) => {
                   const selected = i === selectedIndex;
                   return (
                     <button
-                      key={item.href || item.path}
+                      key={item.path}
                       ref={(el) => {
                         itemRefs.current[i] = el;
                       }}
-                      onClick={() => handleSelect(item.href || item.path)}
+                      onClick={() => handleSelect(item.path)}
                       onMouseEnter={() => setSelectedIndex(i)}
                       className={cn(
                         "w-full flex items-center gap-3 px-4 py-2 text-sm text-left transition-colors",
@@ -237,9 +142,9 @@ const CommandPalette = ({ open, onClose }) => {
                       ) : (
                         <ArrowRight size={14} className="shrink-0" />
                       )}
-                      <span className="flex-1 truncate">{getItemLabel(item)}</span>
+                      <span className="flex-1 truncate">{item.label}</span>
                       <span className="text-[10px] text-muted-foreground truncate max-w-[120px] hidden sm:inline">
-                        {item.href || item.path}
+                        {item.path}
                       </span>
                     </button>
                   );
