@@ -153,69 +153,71 @@ const CashRegisterCurrent = () => {
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.cashRegister.current.infoTitle")}
               </h2>
-              <table className="w-full text-sm">
-                <tbody>
-                  {[
-                    [
-                      t("page.cashRegister.current.store"),
-                      reg.storeData?.name
-                        ? {
-                            label: reg.storeData.name,
-                            sub:
-                              [reg.storeData.address, reg.storeData.city]
-                                .filter(Boolean)
-                                .join(", ") || null
-                          }
-                        : {
-                            label:
-                              reg.storeName || cookie?.activeStoreName || user?.storeName || "-"
-                          }
-                    ],
-                    [t("page.cashRegister.current.openedBy"), reg.userData?.fullName || "-"],
-                    [
-                      t("page.cashRegister.current.openDate"),
-                      new Date(reg.openedAt).toLocaleDateString("id")
-                    ],
-                    [
-                      t("page.cashRegister.current.openTime"),
-                      new Date(reg.openedAt).toTimeString().slice(0, 8)
-                    ],
-                    [
-                      t("page.cashRegister.current.openingBalance"),
-                      `Rp ${parseInt(reg.openingBalance).toLocaleString("id")}`
-                    ],
-                    [
-                      t("page.cashRegister.current.totalSales"),
-                      `Rp ${parseInt(currentSales).toLocaleString("id")}`
-                    ],
-                    [
-                      t("page.cashRegister.current.status"),
-                      reg.status === "open"
-                        ? t("page.cashRegister.current.statusOpen")
-                        : t("page.cashRegister.current.statusClosed")
-                    ],
-                    [t("page.cashRegister.current.notes"), reg.notes || "-"]
-                  ].map(([l, v]) => (
-                    <tr key={l} className="border-b border-muted/30">
-                      <td className="py-2 pr-4 text-muted-foreground w-44 align-top">{l}</td>
-                      <td className="py-2 font-medium">
-                        {typeof v === "object" ? (
-                          <div>
-                            <div>{v.label}</div>
-                            {v.sub && (
-                              <div className="text-xs text-muted-foreground font-normal">
-                                {v.sub}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          v
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {[
+                      [
+                        t("page.cashRegister.current.store"),
+                        reg.storeData?.name
+                          ? {
+                              label: reg.storeData.name,
+                              sub:
+                                [reg.storeData.address, reg.storeData.city]
+                                  .filter(Boolean)
+                                  .join(", ") || null
+                            }
+                          : {
+                              label:
+                                reg.storeName || cookie?.activeStoreName || user?.storeName || "-"
+                            }
+                      ],
+                      [t("page.cashRegister.current.openedBy"), reg.userData?.fullName || "-"],
+                      [
+                        t("page.cashRegister.current.openDate"),
+                        new Date(reg.openedAt).toLocaleDateString("id")
+                      ],
+                      [
+                        t("page.cashRegister.current.openTime"),
+                        new Date(reg.openedAt).toTimeString().slice(0, 8)
+                      ],
+                      [
+                        t("page.cashRegister.current.openingBalance"),
+                        `Rp ${parseInt(reg.openingBalance).toLocaleString("id")}`
+                      ],
+                      [
+                        t("page.cashRegister.current.totalSales"),
+                        `Rp ${parseInt(currentSales).toLocaleString("id")}`
+                      ],
+                      [
+                        t("page.cashRegister.current.status"),
+                        reg.status === "open"
+                          ? t("page.cashRegister.current.statusOpen")
+                          : t("page.cashRegister.current.statusClosed")
+                      ],
+                      [t("page.cashRegister.current.notes"), reg.notes || "-"]
+                    ].map(([l, v]) => (
+                      <tr key={l} className="border-b border-muted/30">
+                        <td className="py-2 pr-4 text-muted-foreground w-44 align-top">{l}</td>
+                        <td className="py-2 font-medium">
+                          {typeof v === "object" ? (
+                            <div>
+                              <div>{v.label}</div>
+                              {v.sub && (
+                                <div className="text-xs text-muted-foreground font-normal">
+                                  {v.sub}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            v
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className="bg-card p-6 rounded-xl border border-border space-y-4">

@@ -778,44 +778,46 @@ const JournalTab = ({ storeId, isAll }) => {
                 {entry.description && (
                   <div className="px-4 py-2 text-xs text-muted-foreground">{entry.description}</div>
                 )}
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-t border-b border-border/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                      <th className="px-4 py-2 font-semibold">
-                        {t("page.accounting.journal.account")}
-                      </th>
-                      <th className="px-4 py-2 font-semibold text-right">
-                        {t("page.accounting.journal.debit")}
-                      </th>
-                      <th className="px-4 py-2 font-semibold text-right">
-                        {t("page.accounting.journal.credit")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(entry.lines || []).map((line) => (
-                      <tr key={line.id} className="border-b border-border/30">
-                        <td className="px-4 py-2">
-                          <span className="font-mono text-xs text-muted-foreground mr-2">
-                            {line.accountData?.code}
-                          </span>
-                          <span className="text-xs font-medium">{line.accountData?.name}</span>
-                          {line.description && (
-                            <span className="block text-[11px] text-muted-foreground/70 mt-0.5">
-                              {line.description}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-2 text-right font-mono text-xs">
-                          {Number(line.debit) > 0 ? formatIDR(line.debit) : "-"}
-                        </td>
-                        <td className="px-4 py-2 text-right font-mono text-xs">
-                          {Number(line.credit) > 0 ? formatIDR(line.credit) : "-"}
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-t border-b border-border/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                        <th className="px-4 py-2 font-semibold">
+                          {t("page.accounting.journal.account")}
+                        </th>
+                        <th className="px-4 py-2 font-semibold text-right">
+                          {t("page.accounting.journal.debit")}
+                        </th>
+                        <th className="px-4 py-2 font-semibold text-right">
+                          {t("page.accounting.journal.credit")}
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {(entry.lines || []).map((line) => (
+                        <tr key={line.id} className="border-b border-border/30">
+                          <td className="px-4 py-2">
+                            <span className="font-mono text-xs text-muted-foreground mr-2">
+                              {line.accountData?.code}
+                            </span>
+                            <span className="text-xs font-medium">{line.accountData?.name}</span>
+                            {line.description && (
+                              <span className="block text-[11px] text-muted-foreground/70 mt-0.5">
+                                {line.description}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-2 text-right font-mono text-xs">
+                            {Number(line.debit) > 0 ? formatIDR(line.debit) : "-"}
+                          </td>
+                          <td className="px-4 py-2 text-right font-mono text-xs">
+                            {Number(line.credit) > 0 ? formatIDR(line.credit) : "-"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ))}
           </div>

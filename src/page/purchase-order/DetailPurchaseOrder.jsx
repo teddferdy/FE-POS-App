@@ -1137,42 +1137,44 @@ export default function DetailPurchaseOrder() {
               <Clock size={16} className="text-muted-foreground" />
               {t("page.purchaseOrder.detail.system")}
             </h3>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-border">
-                <tr>
-                  <td className="py-2 text-muted-foreground">
-                    {t("page.purchaseOrder.detail.created")}
-                  </td>
-                  <td className="py-2 text-right">
-                    {po.createdAt
-                      ? format(new Date(po.createdAt), "dd MMM yyyy, HH:mm", { locale: localeId })
-                      : "-"}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2 text-muted-foreground">
-                    {t("page.purchaseOrder.detail.updated")}
-                  </td>
-                  <td className="py-2 text-right">
-                    {po.updatedAt
-                      ? format(new Date(po.updatedAt), "dd MMM yyyy, HH:mm", { locale: localeId })
-                      : "-"}
-                  </td>
-                </tr>
-                {po.receivedDate && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-border">
                   <tr>
                     <td className="py-2 text-muted-foreground">
-                      {t("page.purchaseOrder.detail.receivedCol")}
+                      {t("page.purchaseOrder.detail.created")}
                     </td>
                     <td className="py-2 text-right">
-                      {format(new Date(po.receivedDate), "dd MMM yyyy, HH:mm", {
-                        locale: localeId
-                      })}
+                      {po.createdAt
+                        ? format(new Date(po.createdAt), "dd MMM yyyy, HH:mm", { locale: localeId })
+                        : "-"}
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                  <tr>
+                    <td className="py-2 text-muted-foreground">
+                      {t("page.purchaseOrder.detail.updated")}
+                    </td>
+                    <td className="py-2 text-right">
+                      {po.updatedAt
+                        ? format(new Date(po.updatedAt), "dd MMM yyyy, HH:mm", { locale: localeId })
+                        : "-"}
+                    </td>
+                  </tr>
+                  {po.receivedDate && (
+                    <tr>
+                      <td className="py-2 text-muted-foreground">
+                        {t("page.purchaseOrder.detail.receivedCol")}
+                      </td>
+                      <td className="py-2 text-right">
+                        {format(new Date(po.receivedDate), "dd MMM yyyy, HH:mm", {
+                          locale: localeId
+                        })}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </Card>
         </>
       )}

@@ -152,40 +152,45 @@ const DetailGoodsReceipt = () => {
                   <h2 className="text-lg font-semibold mb-4">
                     {t("page.goodsReceipt.detail.receiptInfo")}
                   </h2>
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {[
-                        [t("page.goodsReceipt.detail.receiptNumber"), receipt.receiptNumber],
-                        [
-                          t("page.goodsReceipt.detail.poReference"),
-                          receipt.purchaseOrderData?.orderNumber || "-"
-                        ],
-                        [t("page.goodsReceipt.detail.store"), receipt.storeData?.name || "-"],
-                        [
-                          t("page.goodsReceipt.detail.receivedDate"),
-                          receipt.receivedDate
-                            ? new Date(receipt.receivedDate).toLocaleDateString("id")
-                            : "-"
-                        ],
-                        [
-                          t("page.goodsReceipt.detail.pic"),
-                          receipt.picData?.fullName || receipt.picData?.userName || "-"
-                        ],
-                        [t("page.goodsReceipt.add.form.suratJalan"), receipt.suratJalan || "-"],
-                        [t("page.goodsReceipt.add.form.taxInvoiceNo"), receipt.taxInvoiceNo || "-"],
-                        [
-                          t("page.goodsReceipt.add.form.shippingCost"),
-                          shippingCost > 0 ? "Rp " + shippingCost.toLocaleString("id-ID") : "-"
-                        ],
-                        [t("page.goodsReceipt.detail.notes"), receipt.notes || "-"]
-                      ].map(([label, value]) => (
-                        <tr key={label} className="border-b border-muted/30">
-                          <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
-                          <td className="py-2 font-medium">{value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <tbody>
+                        {[
+                          [t("page.goodsReceipt.detail.receiptNumber"), receipt.receiptNumber],
+                          [
+                            t("page.goodsReceipt.detail.poReference"),
+                            receipt.purchaseOrderData?.orderNumber || "-"
+                          ],
+                          [t("page.goodsReceipt.detail.store"), receipt.storeData?.name || "-"],
+                          [
+                            t("page.goodsReceipt.detail.receivedDate"),
+                            receipt.receivedDate
+                              ? new Date(receipt.receivedDate).toLocaleDateString("id")
+                              : "-"
+                          ],
+                          [
+                            t("page.goodsReceipt.detail.pic"),
+                            receipt.picData?.fullName || receipt.picData?.userName || "-"
+                          ],
+                          [t("page.goodsReceipt.add.form.suratJalan"), receipt.suratJalan || "-"],
+                          [
+                            t("page.goodsReceipt.add.form.taxInvoiceNo"),
+                            receipt.taxInvoiceNo || "-"
+                          ],
+                          [
+                            t("page.goodsReceipt.add.form.shippingCost"),
+                            shippingCost > 0 ? "Rp " + shippingCost.toLocaleString("id-ID") : "-"
+                          ],
+                          [t("page.goodsReceipt.detail.notes"), receipt.notes || "-"]
+                        ].map(([label, value]) => (
+                          <tr key={label} className="border-b border-muted/30">
+                            <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
+                            <td className="py-2 font-medium">{value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
 
                 {docUrls.length > 0 && (
@@ -289,30 +294,34 @@ const DetailGoodsReceipt = () => {
                     <h2 className="text-lg font-semibold mb-4">
                       {t("page.goodsReceipt.detail.poItems")}
                     </h2>
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b text-left text-muted-foreground">
-                          <th className="pb-2">{t("page.goodsReceipt.detail.product")}</th>
-                          <th className="pb-2 text-right">{t("page.goodsReceipt.detail.qtyPo")}</th>
-                          <th className="pb-2 text-right">
-                            {t("page.goodsReceipt.detail.qtyReceived")}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {receipt.purchaseOrderItems.map((poItem, i) => (
-                          <tr key={i} className="border-b border-muted/20">
-                            <td className="py-2">
-                              {poItem.product || poItem.ingredientName || "-"}
-                            </td>
-                            <td className="py-2 text-right font-mono">{poItem.quantity}</td>
-                            <td className="py-2 text-right font-mono">
-                              {poItem.receivedQuantity || 0}
-                            </td>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b text-left text-muted-foreground">
+                            <th className="pb-2">{t("page.goodsReceipt.detail.product")}</th>
+                            <th className="pb-2 text-right">
+                              {t("page.goodsReceipt.detail.qtyPo")}
+                            </th>
+                            <th className="pb-2 text-right">
+                              {t("page.goodsReceipt.detail.qtyReceived")}
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {receipt.purchaseOrderItems.map((poItem, i) => (
+                            <tr key={i} className="border-b border-muted/20">
+                              <td className="py-2">
+                                {poItem.product || poItem.ingredientName || "-"}
+                              </td>
+                              <td className="py-2 text-right font-mono">{poItem.quantity}</td>
+                              <td className="py-2 text-right font-mono">
+                                {poItem.receivedQuantity || 0}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </div>

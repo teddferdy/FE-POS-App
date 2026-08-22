@@ -370,80 +370,82 @@ const PurchaseOrderList = () => {
     const grandTotal = items.reduce((sum, it) => sum + (it.quantity || 0) * (it.price || 0), 0);
     return (
       <div className="rounded-xl border border-border">
-        <table className="w-full text-sm table-fixed">
-          <colgroup>
-            <col className="w-[44%]" />
-            <col className="w-[12%]" />
-            <col className="w-[12%]" />
-            <col className="w-[16%]" />
-            <col className="w-[16%]" />
-          </colgroup>
-          <thead>
-            <tr className="bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-blue-950/20">
-              <th className="text-left px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Item
-              </th>
-              <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Qty
-              </th>
-              <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Satuan
-              </th>
-              <th className="text-right px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Harga
-              </th>
-              <th className="text-right px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Subtotal
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/40">
-            {items.map((it, i) => {
-              const subtotal = (it.quantity || 0) * (it.price || 0);
-              return (
-                <tr
-                  key={it.id || i}
-                  className={cn(
-                    "transition-colors",
-                    i % 2 === 0
-                      ? "bg-white dark:bg-slate-950"
-                      : "bg-slate-50/50 dark:bg-slate-900/50",
-                    "hover:bg-blue-50/50 dark:hover:bg-blue-950/20"
-                  )}>
-                  <td
-                    className="px-4 py-2.5 font-medium text-foreground truncate"
-                    title={it.ingredientName || "-"}>
-                    {it.ingredientName || "-"}
-                  </td>
-                  <td className="px-4 py-2.5 text-center font-medium text-foreground">
-                    {it.quantity || 0}
-                  </td>
-                  <td className="px-4 py-2.5 text-center text-muted-foreground">
-                    {it.unit || "pcs"}
-                  </td>
-                  <td className="px-4 py-2.5 text-right font-mono text-muted-foreground">
-                    Rp {Number(it.price).toLocaleString("id-ID")}
-                  </td>
-                  <td className="px-4 py-2.5 text-right font-mono font-semibold text-foreground">
-                    Rp {Number(subtotal).toLocaleString("id-ID")}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-          <tfoot>
-            <tr className="bg-gradient-to-r from-slate-100 to-blue-50/40 dark:from-slate-800 dark:to-blue-950/30 border-t-2 border-border">
-              <td
-                colSpan={4}
-                className="px-4 py-2.5 text-right text-sm font-semibold text-foreground">
-                Grand Total
-              </td>
-              <td className="px-4 py-2.5 text-right font-mono text-sm font-bold text-foreground">
-                Rp {Number(grandTotal).toLocaleString("id-ID")}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm table-fixed">
+            <colgroup>
+              <col className="w-[44%]" />
+              <col className="w-[12%]" />
+              <col className="w-[12%]" />
+              <col className="w-[16%]" />
+              <col className="w-[16%]" />
+            </colgroup>
+            <thead>
+              <tr className="bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-blue-950/20">
+                <th className="text-left px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Item
+                </th>
+                <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Qty
+                </th>
+                <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Satuan
+                </th>
+                <th className="text-right px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Harga
+                </th>
+                <th className="text-right px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Subtotal
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/40">
+              {items.map((it, i) => {
+                const subtotal = (it.quantity || 0) * (it.price || 0);
+                return (
+                  <tr
+                    key={it.id || i}
+                    className={cn(
+                      "transition-colors",
+                      i % 2 === 0
+                        ? "bg-white dark:bg-slate-950"
+                        : "bg-slate-50/50 dark:bg-slate-900/50",
+                      "hover:bg-blue-50/50 dark:hover:bg-blue-950/20"
+                    )}>
+                    <td
+                      className="px-4 py-2.5 font-medium text-foreground truncate"
+                      title={it.ingredientName || "-"}>
+                      {it.ingredientName || "-"}
+                    </td>
+                    <td className="px-4 py-2.5 text-center font-medium text-foreground">
+                      {it.quantity || 0}
+                    </td>
+                    <td className="px-4 py-2.5 text-center text-muted-foreground">
+                      {it.unit || "pcs"}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono text-muted-foreground">
+                      Rp {Number(it.price).toLocaleString("id-ID")}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono font-semibold text-foreground">
+                      Rp {Number(subtotal).toLocaleString("id-ID")}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="bg-gradient-to-r from-slate-100 to-blue-50/40 dark:from-slate-800 dark:to-blue-950/30 border-t-2 border-border">
+                <td
+                  colSpan={4}
+                  className="px-4 py-2.5 text-right text-sm font-semibold text-foreground">
+                  Grand Total
+                </td>
+                <td className="px-4 py-2.5 text-right font-mono text-sm font-bold text-foreground">
+                  Rp {Number(grandTotal).toLocaleString("id-ID")}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
     );
   };

@@ -245,51 +245,53 @@ const DetailGoodsRequest = () => {
                   <h2 className="text-lg font-semibold mb-4">
                     {t("page.goodsRequest.detail.requestInfo")}
                   </h2>
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {[
-                        [t("page.goodsRequest.detail.requestNumber"), request.requestNumber],
-                        [t("page.goodsRequest.detail.store"), request.storeData?.name || "-"],
-                        [t("page.goodsRequest.detail.requestedBy"), request.requestedBy || "-"],
-                        [
-                          t("page.goodsRequest.detail.requestDate"),
-                          request.requestDate
-                            ? new Date(request.requestDate).toLocaleDateString("id", {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric"
-                              })
-                            : "-"
-                        ],
-                        [
-                          t("page.goodsRequest.detail.neededDate"),
-                          request.neededDate
-                            ? new Date(request.neededDate).toLocaleDateString("id", {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric"
-                              })
-                            : "-"
-                        ],
-                        [
-                          t("page.goodsRequest.detail.createdAt"),
-                          request.createdAt
-                            ? new Date(request.createdAt).toLocaleDateString("id", {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric"
-                              })
-                            : "-"
-                        ],
-                        [t("page.goodsRequest.detail.notes"), request.notes || "-"]
-                      ].map(([label, value]) => (
-                        <tr key={label} className="border-b border-muted/30">
-                          <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
-                          <td className="py-2 font-medium">{value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <tbody>
+                        {[
+                          [t("page.goodsRequest.detail.requestNumber"), request.requestNumber],
+                          [t("page.goodsRequest.detail.store"), request.storeData?.name || "-"],
+                          [t("page.goodsRequest.detail.requestedBy"), request.requestedBy || "-"],
+                          [
+                            t("page.goodsRequest.detail.requestDate"),
+                            request.requestDate
+                              ? new Date(request.requestDate).toLocaleDateString("id", {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric"
+                                })
+                              : "-"
+                          ],
+                          [
+                            t("page.goodsRequest.detail.neededDate"),
+                            request.neededDate
+                              ? new Date(request.neededDate).toLocaleDateString("id", {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric"
+                                })
+                              : "-"
+                          ],
+                          [
+                            t("page.goodsRequest.detail.createdAt"),
+                            request.createdAt
+                              ? new Date(request.createdAt).toLocaleDateString("id", {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric"
+                                })
+                              : "-"
+                          ],
+                          [t("page.goodsRequest.detail.notes"), request.notes || "-"]
+                        ].map(([label, value]) => (
+                          <tr key={label} className="border-b border-muted/30">
+                            <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
+                            <td className="py-2 font-medium">{value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 

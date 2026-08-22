@@ -230,28 +230,32 @@ const InvoicePreview = ({
       )}
 
       <div className="px-5 py-3">
-        <table className="w-full">
-          <thead>
-            <tr className="text-[10px] text-gray-500 uppercase tracking-wider border-b border-gray-200">
-              <th className="text-left py-2 font-semibold">{t("page.invoice.item")}</th>
-              <th className="text-center py-2 font-semibold w-10">Qty</th>
-              <th className="text-right py-2 font-semibold">Harga</th>
-              <th className="text-right py-2 font-semibold">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sampleItems.map((item, i) => (
-              <tr key={i} className={i % 2 === 0 ? "bg-gray-50/50" : ""}>
-                <td className="py-2 text-sm text-gray-800">{item.name}</td>
-                <td className="py-2 text-center text-sm text-gray-600">{item.qty}</td>
-                <td className="py-2 text-right text-sm text-gray-600">{formatPrice(item.price)}</td>
-                <td className="py-2 text-right text-sm font-medium text-gray-900">
-                  {formatPrice(item.qty * item.price)}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="text-[10px] text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                <th className="text-left py-2 font-semibold">{t("page.invoice.item")}</th>
+                <th className="text-center py-2 font-semibold w-10">Qty</th>
+                <th className="text-right py-2 font-semibold">Harga</th>
+                <th className="text-right py-2 font-semibold">Total</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {sampleItems.map((item, i) => (
+                <tr key={i} className={i % 2 === 0 ? "bg-gray-50/50" : ""}>
+                  <td className="py-2 text-sm text-gray-800">{item.name}</td>
+                  <td className="py-2 text-center text-sm text-gray-600">{item.qty}</td>
+                  <td className="py-2 text-right text-sm text-gray-600">
+                    {formatPrice(item.price)}
+                  </td>
+                  <td className="py-2 text-right text-sm font-medium text-gray-900">
+                    {formatPrice(item.qty * item.price)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="px-5 pb-4">

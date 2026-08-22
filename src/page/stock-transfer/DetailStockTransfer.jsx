@@ -158,41 +158,43 @@ const DetailStockTransfer = () => {
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.stockTransfer.detail.section.informasiTransfer")}
               </h2>
-              <table className="w-full text-sm">
-                <tbody>
-                  {[
-                    [t("page.stockTransfer.detail.field.transferNo"), transfer.transferNumber],
-                    [
-                      t("page.stockTransfer.detail.field.from"),
-                      transfer.fromStoreData?.name || "-"
-                    ],
-                    [t("page.stockTransfer.detail.field.to"), transfer.toStoreData?.name || "-"],
-                    [
-                      t("page.stockTransfer.detail.field.transferredBy"),
-                      transfer.transferredBy || transfer.transferredByData?.name || "-"
-                    ],
-                    [
-                      t("page.stockTransfer.detail.field.date"),
-                      transfer.createdAt && !isNaN(new Date(transfer.createdAt).getTime())
-                        ? new Date(transfer.createdAt).toLocaleDateString("id")
-                        : "-"
-                    ],
-                    [t("page.stockTransfer.detail.field.notes"), transfer.notes || "-"],
-                    [t("page.stockTransfer.detail.field.reason"), transfer.reason || "-"],
-                    [
-                      t("page.stockTransfer.detail.field.expectedArrival"),
-                      transfer.expectedArrival
-                        ? new Date(transfer.expectedArrival).toLocaleDateString("id-ID")
-                        : "-"
-                    ]
-                  ].map(([l, v]) => (
-                    <tr key={l} className="border-b border-muted/30">
-                      <td className="py-2 pr-4 text-muted-foreground w-40">{l}</td>
-                      <td className="py-2 font-medium">{v}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {[
+                      [t("page.stockTransfer.detail.field.transferNo"), transfer.transferNumber],
+                      [
+                        t("page.stockTransfer.detail.field.from"),
+                        transfer.fromStoreData?.name || "-"
+                      ],
+                      [t("page.stockTransfer.detail.field.to"), transfer.toStoreData?.name || "-"],
+                      [
+                        t("page.stockTransfer.detail.field.transferredBy"),
+                        transfer.transferredBy || transfer.transferredByData?.name || "-"
+                      ],
+                      [
+                        t("page.stockTransfer.detail.field.date"),
+                        transfer.createdAt && !isNaN(new Date(transfer.createdAt).getTime())
+                          ? new Date(transfer.createdAt).toLocaleDateString("id")
+                          : "-"
+                      ],
+                      [t("page.stockTransfer.detail.field.notes"), transfer.notes || "-"],
+                      [t("page.stockTransfer.detail.field.reason"), transfer.reason || "-"],
+                      [
+                        t("page.stockTransfer.detail.field.expectedArrival"),
+                        transfer.expectedArrival
+                          ? new Date(transfer.expectedArrival).toLocaleDateString("id-ID")
+                          : "-"
+                      ]
+                    ].map(([l, v]) => (
+                      <tr key={l} className="border-b border-muted/30">
+                        <td className="py-2 pr-4 text-muted-foreground w-40">{l}</td>
+                        <td className="py-2 font-medium">{v}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className="bg-card p-6 rounded-xl border border-border">
