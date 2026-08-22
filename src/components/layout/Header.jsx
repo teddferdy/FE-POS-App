@@ -32,6 +32,7 @@ import { useThemeStore } from "@/state/theme";
 import { logOut } from "@/services/auth";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useStore } from "@/contexts/StoreContext";
 
 const StoreSelector = ({ cookie, setCookie }) => {
@@ -155,8 +156,12 @@ const StoreSelector = ({ cookie, setCookie }) => {
 
 export const UserDropdown = () => {
   const { t } = useTranslation();
+  const { translation, updateTranslation } = translationSelect();
+  const { theme, toggleTheme: toggleThemeStore } = useThemeStore();
+  const { startTour } = useTourStore();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const ref = useRef(null);
   const [cookie, , removeCookie] = useCookies();
   const [logoutModal, setLogoutModal] = useState(false);
@@ -168,6 +173,13 @@ export const UserDropdown = () => {
   const userImage = user?.image || null;
   const userFullName = user?.fullName || userName;
   const userRoleName = user?.roleName || userRole.replace("_", " ");
+
+  const toggleTheme = () => toggleThemeStore();
+
+  const languages = [
+    { code: "id", label: "ID" },
+    { code: "en", label: "EN" }
+  ];
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -198,53 +210,157 @@ export const UserDropdown = () => {
 
   const handleLogout = () => setLogoutModal(true);
 
+  const avatarButton = (onClick) => (
+    <button
+      onClick={onClick}
+      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden border-2 border-primary flex items-center justify-center bg-accent text-foreground text-[10px] sm:text-xs font-bold shrink-0 hover:brightness-90 transition-all">
+      {userImage ? (
+        <img src={userImage} alt={userName} className="h-full w-full object-cover" />
+      ) : (
+        userName?.charAt(0)?.toUpperCase() || "A"
+      )}
+    </button>
+  );
+
+  // ponytail: item menu profil dipakai dua kali — dropdown desktop &
+  // modal mobile — agar perilaku keduanya selalu sinkron
+  const menuItemClass =
+    "w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-foreground hover:bg-accent transition-colors";
+
   return (
-    <div data-tour="header-user" className="relative" ref={ref}>
-      {isLoggingOut && (
-        <Loading fullscreen size="lg" label={t("header.loggingOut") || "Logging out..."} />
-      )}
-      <button
-        onClick={() => setOpen(!open)}
-        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden border-2 border-primary flex items-center justify-center bg-accent text-foreground text-[10px] sm:text-xs font-bold shrink-0 hover:brightness-90 transition-all">
-        {userImage ? (
-          <img src={userImage} alt={userName} className="h-full w-full object-cover" />
-        ) : (
-          userName?.charAt(0)?.toUpperCase() || "A"
+    <>
+      {/* Desktop: dropdown inline */}
+      <div data-tour="header-user" className="relative hidden md:block" ref={ref}>
+        {isLoggingOut && (
+          <Loading fullscreen size="lg" label={t("header.loggingOut") || "Logging out..."} />
         )}
-      </button>
+        {avatarButton(() => setOpen(!open))}
 
-      {open && (
-        <div className="absolute top-full mt-2 right-0 w-48 sm:w-56 bg-card border border-border rounded-xl shadow-lg z-50 py-2 overflow-hidden">
-          <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-border">
-            <p className="text-[11px] sm:text-sm font-semibold text-foreground truncate">
-              {userFullName}
-            </p>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground capitalize">
-              {userRoleName}
-            </p>
-          </div>
+        {open && (
+          <div className="absolute top-full mt-2 right-0 w-48 sm:w-56 bg-card border border-border rounded-xl shadow-lg z-50 py-2 overflow-hidden">
+            <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-border">
+              <p className="text-[11px] sm:text-sm font-semibold text-foreground truncate">
+                {userFullName}
+              </p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground capitalize">
+                {userRoleName}
+              </p>
+            </div>
 
-          <button
-            onClick={() => {
-              setOpen(false);
-              navigate("/profile");
-            }}
-            className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-sm text-foreground hover:bg-accent transition-colors">
-            <User size={14} className="sm:size-[16px] text-muted-foreground" />
-            {userName}
-            <ChevronRight size={12} className="sm:size-[14px] ml-auto text-muted-foreground" />
-          </button>
-
-          <div className="border-t border-border mt-1 pt-1">
             <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-sm text-destructive hover:bg-destructive/10 transition-colors">
-              <LogOut size={14} className="sm:size-[16px]" />
-              {t("header.logout")}
+              onClick={() => {
+                setOpen(false);
+                navigate("/profile");
+              }}
+              className={menuItemClass}>
+              <User size={14} className="sm:size-[16px] text-muted-foreground" />
+              {userName}
+              <ChevronRight size={12} className="sm:size-[14px] ml-auto text-muted-foreground" />
             </button>
+
+            <div className="border-t border-border mt-1 pt-1">
+              <button
+                onClick={handleLogout}
+                className={`${menuItemClass} text-destructive hover:bg-destructive/10`}>
+                <LogOut size={14} className="sm:size-[16px]" />
+                {t("header.logout")}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* Mobile: avatar membuka modal profil berisi preferensi & logout */}
+      <div className="md:hidden">
+        {avatarButton(() => setMobileOpen(true))}
+        <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
+          <DialogContent className="w-[calc(100vw-1.5rem)] max-w-xs rounded-2xl p-0 overflow-hidden">
+            <DialogHeader className="px-4 pt-4 pb-3 border-b border-border text-left">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-primary flex items-center justify-center bg-accent text-sm font-bold shrink-0">
+                  {userImage ? (
+                    <img src={userImage} alt={userName} className="h-full w-full object-cover" />
+                  ) : (
+                    userFullName?.charAt(0)?.toUpperCase() || "A"
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <DialogTitle className="text-sm font-semibold truncate">
+                    {userFullName}
+                  </DialogTitle>
+                  <p className="text-xs text-muted-foreground capitalize truncate">
+                    {userRoleName}
+                  </p>
+                </div>
+              </div>
+            </DialogHeader>
+
+            <div className="py-2">
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  navigate("/profile");
+                }}
+                className={menuItemClass}>
+                <User size={16} className="text-muted-foreground" />
+                {userName}
+                <ChevronRight size={14} className="ml-auto text-muted-foreground" />
+              </button>
+
+              <div className="flex items-center justify-between px-4 py-2.5">
+                <span className="flex items-center gap-2.5 text-sm text-foreground">
+                  <Globe size={16} className="text-muted-foreground" />
+                  {t("common.language", { defaultValue: "Bahasa" })}
+                </span>
+                <div className="flex items-center bg-muted/50 rounded-full p-0.5 border border-border">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => updateTranslation(lang.code)}
+                      className={`px-2.5 py-1 text-[10px] font-bold tracking-widest rounded-full transition-all duration-200 ${
+                        translation === lang.code
+                          ? "bg-foreground text-background shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}>
+                      {lang.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button onClick={toggleTheme} className={menuItemClass}>
+                {theme === "dark" ? (
+                  <Sun size={16} className="text-muted-foreground" />
+                ) : (
+                  <Moon size={16} className="text-muted-foreground" />
+                )}
+                {theme === "dark"
+                  ? t("header.lightMode") || "Light Mode"
+                  : t("header.darkMode") || "Dark Mode"}
+              </button>
+
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  startTour();
+                }}
+                className={menuItemClass}>
+                <LifeBuoy size={16} className="text-muted-foreground" />
+                {t("guide.dashboard.startTour")}
+              </button>
+
+              <div className="border-t border-border mt-1 pt-1">
+                <button
+                  onClick={handleLogout}
+                  className={`${menuItemClass} text-destructive hover:bg-destructive/10`}>
+                  <LogOut size={16} />
+                  {t("header.logout")}
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       <Modal
         open={logoutModal}
@@ -255,7 +371,7 @@ export const UserDropdown = () => {
         confirmText={t("header.logoutYes")}
         onConfirm={confirmLogout}
       />
-    </div>
+    </>
   );
 };
 
@@ -419,10 +535,10 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
             <Search size={16} className="sm:size-[18px]" />
           </button>
 
-          {/* Language Switcher */}
+          {/* Language Switcher — desktop saja; di mobile pindah ke modal profil */}
           <div
             data-tour="header-translation"
-            className="flex items-center bg-muted/50 rounded-full p-0.5 border border-border">
+            className="hidden md:flex items-center bg-muted/50 rounded-full p-0.5 border border-border">
             {languages.map((lang) => (
               <button
                 key={lang.code}
@@ -437,20 +553,20 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
             ))}
           </div>
 
-          {/* Theme Toggle */}
+          {/* Theme Toggle — desktop saja; di mobile pindah ke modal profil */}
           <button
             data-tour="header-theme"
             onClick={toggleTheme}
-            className="p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+            className="hidden md:block p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Sun size={16} className="hidden dark:block sm:size-[18px]" />
             <Moon size={16} className="block dark:hidden sm:size-[18px]" />
           </button>
 
-          {/* Tour Guide */}
+          {/* Tour Guide — desktop saja; di mobile pindah ke modal profil */}
           <button
             data-tour="header-tour"
             onClick={() => startTour()}
-            className="p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            className="hidden md:block p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             title={t("guide.dashboard.startTour")}>
             <LifeBuoy size={16} className="sm:size-[18px]" />
           </button>
