@@ -134,6 +134,16 @@ const DetailGoodsReceipt = () => {
             0
           );
           const receivingDone = totalOrdered > 0 && totalReceived >= totalOrdered;
+          let docUrls = [];
+          if (receipt.documentation) {
+            try {
+              const parsed = JSON.parse(receipt.documentation);
+              docUrls = Array.isArray(parsed) ? parsed.filter(Boolean) : [receipt.documentation];
+            } catch {
+              docUrls = [receipt.documentation];
+            }
+          }
+          const shippingCost = Number(receipt.shippingCost) || 0;
 
           return (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -161,6 +171,12 @@ const DetailGoodsReceipt = () => {
                           t("page.goodsReceipt.detail.pic"),
                           receipt.picData?.fullName || receipt.picData?.userName || "-"
                         ],
+                        [t("page.goodsReceipt.add.form.suratJalan"), receipt.suratJalan || "-"],
+                        [t("page.goodsReceipt.add.form.taxInvoiceNo"), receipt.taxInvoiceNo || "-"],
+                        [
+                          t("page.goodsReceipt.add.form.shippingCost"),
+                          shippingCost > 0 ? "Rp " + shippingCost.toLocaleString("id-ID") : "-"
+                        ],
                         [t("page.goodsReceipt.detail.notes"), receipt.notes || "-"]
                       ].map(([label, value]) => (
                         <tr key={label} className="border-b border-muted/30">
@@ -172,17 +188,22 @@ const DetailGoodsReceipt = () => {
                   </table>
                 </div>
 
-                {receipt.documentation && (
+                {docUrls.length > 0 && (
                   <div className="bg-card p-6 rounded-xl border border-border">
                     <h2 className="text-lg font-semibold mb-4">
                       {t("page.goodsReceipt.detail.documentation")}
                     </h2>
-                    <img
-                      src={receipt.documentation}
-                      alt={t("page.goodsReceipt.detail.documentation")}
-                      className="rounded-lg border border-border max-h-80 object-contain cursor-pointer"
-                      onClick={() => window.open(receipt.documentation, "_blank")}
-                    />
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {docUrls.map((url, i) => (
+                        <img
+                          key={url || i}
+                          src={url}
+                          alt={`${t("page.goodsReceipt.detail.documentation")} ${i + 1}`}
+                          className="rounded-lg border border-border h-40 w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => window.open(url, "_blank")}
+                        />
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -202,6 +223,12 @@ const DetailGoodsReceipt = () => {
                           </th>
                           <th className="pb-2 text-right">
                             {t("page.goodsReceipt.detail.costPrice")}
+                          </th>
+                          <th className="pb-2 text-center">
+                            {t("page.goodsReceipt.add.table.batch")}
+                          </th>
+                          <th className="pb-2 text-center">
+                            {t("page.goodsReceipt.add.table.expiry")}
                           </th>
                           <th className="pb-2">{t("page.goodsReceipt.detail.notes")}</th>
                         </tr>
@@ -234,12 +261,20 @@ const DetailGoodsReceipt = () => {
                                   </p>
                                 )}
                               </td>
+                              <td className="py-2 text-center font-mono text-xs">
+                                {item.batchNumber || "-"}
+                              </td>
+                              <td className="py-2 text-center font-mono text-xs">
+                                {item.expiryDate
+                                  ? new Date(item.expiryDate).toLocaleDateString("id")
+                                  : "-"}
+                              </td>
                               <td className="py-2">{item.conditionNotes || "-"}</td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={6} className="py-4 text-center text-muted-foreground">
+                            <td colSpan={8} className="py-4 text-center text-muted-foreground">
                               {t("page.goodsReceipt.detail.noItems")}
                             </td>
                           </tr>
