@@ -1032,7 +1032,7 @@ const TrialBalanceTab = ({ storeId, isAll }) => {
           <h2 className="text-base font-semibold">{t("page.accounting.trial.title")}</h2>
           <p className="text-sm text-muted-foreground">{t("page.accounting.trial.desc")}</p>
         </div>
-        <div className="flex items-end gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {t("page.accounting.filter.dateRange")}
@@ -1221,7 +1221,7 @@ const IncomeStatementTab = ({ storeId, isAll }) => {
           <h2 className="text-base font-semibold">{t("page.accounting.income.title")}</h2>
           <p className="text-sm text-muted-foreground">{t("page.accounting.income.desc")}</p>
         </div>
-        <div className="flex items-end gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {t("page.accounting.filter.dateRange")}
@@ -1377,7 +1377,7 @@ const BalanceSheetTab = ({ storeId, isAll }) => {
           <h2 className="text-base font-semibold">{t("page.accounting.balance.title")}</h2>
           <p className="text-sm text-muted-foreground">{t("page.accounting.balance.desc")}</p>
         </div>
-        <div className="flex items-end gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {t("page.accounting.balance.asOf")}
@@ -1519,7 +1519,7 @@ const AccountingOverview = ({ storeId, isAll }) => {
             <p className="text-sm text-muted-foreground">{t("page.accounting.overview.desc")}</p>
           </div>
         </div>
-        <div className="flex items-end gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {t("page.accounting.filter.dateRange")}
@@ -1715,23 +1715,27 @@ const AccountingPage = () => {
       <AccountingOverview storeId={storeId} isAll={isAll} />
 
       <Tabs defaultValue="accounts">
-        <TabsList>
-          <TabsTrigger value="accounts">
-            <BookOpen size={14} className="mr-1.5" /> {t("page.accounting.tabs.accounts")}
-          </TabsTrigger>
-          <TabsTrigger value="journal">
-            <FileText size={14} className="mr-1.5" /> {t("page.accounting.tabs.journal")}
-          </TabsTrigger>
-          <TabsTrigger value="trial">
-            <Scale size={14} className="mr-1.5" /> {t("page.accounting.tabs.trial")}
-          </TabsTrigger>
-          <TabsTrigger value="income">
-            <TrendingUp size={14} className="mr-1.5" /> {t("page.accounting.tabs.income")}
-          </TabsTrigger>
-          <TabsTrigger value="balance">
-            <Landmark size={14} className="mr-1.5" /> {t("page.accounting.tabs.balance")}
-          </TabsTrigger>
-        </TabsList>
+        {/* ponytail: 5 tab lebih lebar dari layar ponsel — scroll kiri-kanan
+            seperti pola di add-supplier */}
+        <div className="overflow-x-auto -mx-1 px-1">
+          <TabsList className="w-max">
+            <TabsTrigger value="accounts">
+              <BookOpen size={14} className="mr-1.5" /> {t("page.accounting.tabs.accounts")}
+            </TabsTrigger>
+            <TabsTrigger value="journal">
+              <FileText size={14} className="mr-1.5" /> {t("page.accounting.tabs.journal")}
+            </TabsTrigger>
+            <TabsTrigger value="trial">
+              <Scale size={14} className="mr-1.5" /> {t("page.accounting.tabs.trial")}
+            </TabsTrigger>
+            <TabsTrigger value="income">
+              <TrendingUp size={14} className="mr-1.5" /> {t("page.accounting.tabs.income")}
+            </TabsTrigger>
+            <TabsTrigger value="balance">
+              <Landmark size={14} className="mr-1.5" /> {t("page.accounting.tabs.balance")}
+            </TabsTrigger>
+          </TabsList>
+        </div>
         <TabsContent value="accounts">
           <AccountsTab storeId={storeId} isAll={isAll} />
         </TabsContent>
