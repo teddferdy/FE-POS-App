@@ -13,6 +13,7 @@ import { filterMenuByPermission } from "@/utils/permission";
 import { buildPaletteGroups, filterPaletteGroups } from "@/utils/command-palette";
 import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 const CommandPalette = ({ open, onClose }) => {
   const { t } = useTranslation();
@@ -22,6 +23,8 @@ const CommandPalette = ({ open, onClose }) => {
   const itemRefs = useRef({});
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useBodyScrollLock(open);
 
   const groups = useMemo(() => {
     const hasAccessMenu =
