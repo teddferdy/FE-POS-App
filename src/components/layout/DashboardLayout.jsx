@@ -254,9 +254,11 @@ const DashboardLayout = () => {
           <div
             role="dialog"
             aria-modal="true"
-            aria-label={t("sidebar.menu", { defaultValue: "Menu" })}
-            className="fixed inset-0">
-            <Sidebar collapsed={false} expandWidthClass="w-[68vw]" onToggle={closeMobileSidebar} />
+            aria-label={t("sidebar.menu", { defaultValue: "Menu" })}>
+            {/* ponytail: wrapper TANPA fixed inset-0 — kalau full-screen, tap
+                backdrop tak pernah sampai ke handler dan drawer tak bisa
+                ditutup di iPad. Aside sendiri sudah position:fixed. */}
+            <Sidebar collapsed={false} expandWidthClass="w-[50vw]" onToggle={closeMobileSidebar} />
           </div>
         </div>
       )}
