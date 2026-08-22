@@ -11,6 +11,17 @@ const line = (char = "-", width = RECEIPT_WIDTH) => char.repeat(width);
 
 const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;
 
+// ponytail: semua interpolasi data struk (nama toko/member/item dll)
+// wajib lewat esc() — data ini berasal dari input pengguna, tanpa escape
+// innerHTML di printViaBrowser jadi vektor XSS
+const esc = (val) =>
+  String(val ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 export const generateReceiptHTML = (data) => {
   const {
     storeName,
@@ -38,20 +49,20 @@ export const generateReceiptHTML = (data) => {
 
   const logoHtml =
     showLogo && logo
-      ? `<div style="text-align:center;margin-bottom:8px"><img src="${logo}" style="max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto" /></div>`
+      ? `<div style="text-align:center;margin-bottom:8px"><img src="${esc(logo)}" style="max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto" /></div>`
       : "";
 
   const headerHtml = `
     <div style="background:#111;color:#fff;padding:10px 5px;text-align:center;">
       ${logoHtml}
-      ${showStoreName && addressFieldsVisibility.storeName !== false ? `<div style="font-size:14px;font-weight:bold;text-transform:uppercase;">${storeName || "TOKO"}</div>` : ""}
+      ${showStoreName && addressFieldsVisibility.storeName !== false ? `<div style="font-size:14px;font-weight:bold;text-transform:uppercase;">${esc(storeName) || "TOKO"}</div>` : ""}
       ${
         showAddress
           ? `
         <div style="font-size:10px;color:#ccc;margin-top:4px;">
-          ${addressFieldsVisibility.address !== false && storeAddress ? `<div>${storeAddress}</div>` : ""}
-          ${addressFieldsVisibility.phone !== false && storePhone ? `<div>Telp: ${storePhone}</div>` : ""}
-          ${addressFieldsVisibility.email !== false && storeEmail ? `<div>${storeEmail}</div>` : ""}
+          ${addressFieldsVisibility.address !== false && storeAddress ? `<div>${esc(storeAddress)}</div>` : ""}
+          ${addressFieldsVisibility.phone !== false && storePhone ? `<div>Telp: ${esc(storePhone)}</div>` : ""}
+          ${addressFieldsVisibility.email !== false && storeEmail ? `<div>${esc(storeEmail)}</div>` : ""}
         </div>
       `
           : ""
@@ -64,8 +75,8 @@ export const generateReceiptHTML = (data) => {
       ? `
     <div style="background:#fffbeb;padding:8px;border-bottom:1px solid #fef3c7;font-size:10px;color:#78350f;">
       <div style="font-weight:bold;text-transform:uppercase;margin-bottom:4px;">INFO MEMBER</div>
-      ${memberName ? `<div style="display:flex;justify-content:space-between;"><span>Nama:</span><span style="font-weight:bold;">${memberName}</span></div>` : ""}
-      ${memberTier ? `<div style="display:flex;justify-content:space-between;"><span>Tier:</span><span style="font-weight:bold;">${memberTier}</span></div>` : ""}
+      ${memberName ? `<div style="display:flex;justify-content:space-between;"><span>Nama:</span><span style="font-weight:bold;">${esc(memberName)}</span></div>` : ""}
+      ${memberTier ? `<div style="display:flex;justify-content:space-between;"><span>Tier:</span><span style="font-weight:bold;">${esc(memberTier)}</span></div>` : ""}
       ${memberPoints !== undefined ? `<div style="display:flex;justify-content:space-between;"><span>Poin:</span><span style="font-weight:bold;">${Number(memberPoints).toLocaleString("id-ID")}</span></div>` : ""}
     </div>
   `
@@ -75,7 +86,7 @@ export const generateReceiptHTML = (data) => {
     .map(
       (item) => `
     <tr style="font-size:11px;">
-      <td style="padding:4px 0;">${item.name}</td>
+      <td style="padding:4px 0;">${esc(item.name)}</td>
       <td style="padding:4px 0;text-align:center;">${item.qty}</td>
       <td style="padding:4px 0;text-align:right;">${formatPrice(item.price)}</td>
       <td style="padding:4px 0;text-align:right;font-weight:bold;">${formatPrice(item.qty * item.price)}</td>
@@ -86,14 +97,14 @@ export const generateReceiptHTML = (data) => {
 
   const footerHtml = `
     <div style="padding:10px 5px;border-top:1px solid #ddd;font-size:10px;text-align:center;color:#666;">
-      <div style="font-style:italic;margin-bottom:8px;">${footer}</div>
+      <div style="font-style:italic;margin-bottom:8px;">${esc(footer)}</div>
       ${
         showSocialMedia && socialMedia.length > 0
           ? `
         <div style="display:flex;justify-content:center;gap:5px;flex-wrap:wrap;">
           ${socialMedia
             .filter((sm) => !socialMediaVisibility || socialMediaVisibility[sm.platform] !== false)
-            .map((sm) => `<span>${sm.platform}: ${sm.account}</span>`)
+            .map((sm) => `<span>${esc(sm.platform)}: ${esc(sm.account)}</span>`)
             .join(" | ")}
         </div>
       `
@@ -273,9 +284,10 @@ export const printViaBrowser = (data) => {
     setTimeout(() => win.print(), 500);
     return;
   }
-  // ponytail: popup blocked — inject receipt overlay, print, remove
+  // ponytail: popup blocked — inject receipt overlay, print, remove.
+  // html dibangun sendiri dan semua interpolasi data sudah di-esc()
   const overlay = document.createElement("div");
-  overlay.innerHTML = html;
+  overlay.innerHTML = html; // codacy-ignore-line (input ter-escape penuh)
   overlay.style.cssText =
     "position:fixed;inset:0;z-index:99999;background:#fff;display:flex;align-items:center;justify-content:center";
   overlay.className = "print-thermal";

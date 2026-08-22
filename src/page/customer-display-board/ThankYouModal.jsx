@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Check, Clock, PartyPopper, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { secureRandom } from "@/utils/secureRandom";
 
 const CONFETTI_COLORS = [
   "#f97316",
@@ -17,13 +18,13 @@ const Confetti = ({ count = 36 }) => {
     () =>
       Array.from({ length: count }, (_, i) => ({
         id: i,
-        left: Math.random() * 100,
-        delay: Math.random() * 0.8,
-        duration: 2.2 + Math.random() * 1.6,
-        size: 6 + Math.random() * 6,
+        left: secureRandom() * 100,
+        delay: secureRandom() * 0.8,
+        duration: 2.2 + secureRandom() * 1.6,
+        size: 6 + secureRandom() * 6,
         color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-        rotate: Math.random() * 360,
-        drift: (Math.random() - 0.5) * 140
+        rotate: secureRandom() * 360,
+        drift: (secureRandom() - 0.5) * 140
       })),
     [count]
   );

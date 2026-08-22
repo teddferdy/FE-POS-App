@@ -219,8 +219,11 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const renderNavButton = (item, icon, extraClass = "") => {
     const Icon = icon;
-    const active = item.activePattern
-      ? new RegExp(`^${item.activePattern}$`).test(location.pathname)
+    // ponytail: activePattern adalah konstanta internal di useMemo nav
+    // (mis. "/cash-register/(current|history)") — butuh regex asli, bukan
+    // input pengguna, jadi aman dari ReDoS/injection
+    const active = item.activePattern // codacy-ignore-line
+      ? new RegExp(`^${item.activePattern}$`).test(location.pathname) // codacy-ignore-line
       : isActive(item.href);
     const btn = (
       <button

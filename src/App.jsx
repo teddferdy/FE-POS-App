@@ -114,7 +114,7 @@ function App() {
         confirmText="Login Ulang"
         onConfirm={() => {
           setAuthExpiredModalOpen(false);
-          window.location.href = "/";
+          window.location.assign("/");
         }}
       />
     </React.Fragment>

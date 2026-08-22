@@ -1,3 +1,5 @@
+import { randomToken } from "@/utils/secureRandom";
+
 export const CART_MIRROR_KEY = "customer-display-cart";
 export const DISPLAY_EVENT_KEY = "customer-display-event";
 
@@ -22,7 +24,7 @@ export const dispatchDisplayEvent = (payload) => {
       DISPLAY_EVENT_KEY,
       JSON.stringify({
         ...payload,
-        eventId: `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`,
+        eventId: `${Date.now()}_${randomToken()}`,
         dispatchedAt: Date.now()
       })
     );

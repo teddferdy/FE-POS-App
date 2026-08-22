@@ -103,7 +103,7 @@ const StoreSelector = ({ cookie, setCookie }) => {
               <button
                 onClick={() => {
                   setOpen(false);
-                  window.location.href = "/add-location";
+                  window.location.assign("/add-location");
                 }}
                 className="text-[9px] sm:text-sm font-medium text-primary hover:underline">
                 + {t("header.addStore")}

@@ -5,6 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import Modal from "@/components/organism/modal";
+import { randomToken } from "@/utils/secureRandom";
 
 const TableQRModal = ({ open, onOpenChange, table }) => {
   const { t } = useTranslation();
@@ -18,7 +19,7 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
 
   const orderAppBaseUrl = import.meta.env.VITE_ORDER_APP_URL || "https://order-app-dun.vercel.app";
 
-  const sessionId = React.useMemo(() => Math.random().toString(36).slice(2, 10), []);
+  const sessionId = React.useMemo(() => randomToken(), []);
 
   if (!table) return null;
 
