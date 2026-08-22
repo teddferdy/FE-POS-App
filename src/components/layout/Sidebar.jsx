@@ -1,8 +1,20 @@
+/* eslint-disable no-empty */
+/* eslint-disable no-unused-vars */
 import React, { useState, useMemo, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { LogOut, LifeBuoy, Crown, Calculator, ChefHat, MoreHorizontal } from "lucide-react";
+import {
+  LogOut,
+  LifeBuoy,
+  Crown,
+  Calculator,
+  ChefHat,
+  MoreHorizontal,
+  DollarSign,
+  FileText,
+  QrCode
+} from "lucide-react";
 import {
   sidebarMenuSuperAdmin,
   sidebarMenuAdmin,
@@ -17,12 +29,14 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import NavigationModal from "./NavigationModal";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import logoImg from "@/assets/logo-sidebar.png";
 
-const Sidebar = () => {
+const Sidebar = ({ collapsed = true, onToggle, onHoverChange }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [cookie, , removeCookie] = useCookies();
+  const [isHovered, setIsHovered] = useState(false);
 
   const [logoutModal, setLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -139,172 +153,220 @@ const Sidebar = () => {
 
   const isActive = (href) => {
     if (!href) return false;
-    return location.pathname === href;
+    return location.pathname === href || location.pathname.startsWith(href + "/");
   };
 
   const DashboardIcon = isSuperAdminRole(user) ? Crown : Crown;
 
+  const isExpanded = isHovered;
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+    onHoverChange?.(false);
+  }, [onHoverChange]);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    onHoverChange?.(true);
+  }, [onHoverChange]);
+
+  const posItems = useMemo(
+    () => [
+      { title: "POS", i18nKey: "sidebar.cashier", href: "/home", icon: Calculator },
+      {
+        title: "Cash Register",
+        i18nKey: "sidebar.cashRegister",
+        href: "/cash-register/current",
+        icon: DollarSign,
+        activePattern: "/cash-register/(current|history)"
+      },
+      {
+        title: "Laporan X/Z",
+        i18nKey: "sidebar.xzReport",
+        href: "/cash-register/xz-report",
+        icon: FileText
+      },
+      { title: "KDS", i18nKey: "sidebar.kitchenDisplay", href: "/kitchen-display", icon: ChefHat },
+      {
+        title: "QR Orders",
+        i18nKey: "sidebar.qrOrders",
+        href: "/qr-order-management",
+        icon: QrCode
+      }
+    ],
+    []
+  );
+
+  const renderNavButton = (item, icon, extraClass = "") => {
+    const Icon = icon;
+    const active = item.activePattern
+      ? new RegExp(`^${item.activePattern}$`).test(location.pathname)
+      : isActive(item.href);
+    const btn = (
+      <button
+        onClick={() => handleNavigate(item.href)}
+        className={`nav-btn group relative flex items-center gap-3 rounded-xl overflow-hidden
+          h-10 px-3
+          ${extraClass}
+          ${
+            active
+              ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground hover:shadow-sm"
+          }`}>
+        <Icon
+          size={20}
+          className="shrink-0 transition-transform duration-150 group-hover:scale-110"
+        />
+        <span
+          className={`nav-label text-sm font-medium whitespace-nowrap transition-[opacity,transform] duration-200 ease-out
+            ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"}`}>
+          {t(item.i18nKey) || item.title}
+        </span>
+      </button>
+    );
+
+    if (isExpanded) return <div key={item.href}>{btn}</div>;
+    return (
+      <Tooltip key={item.href}>
+        <TooltipTrigger asChild>{btn}</TooltipTrigger>
+        <TooltipContent side="right" sideOffset={12} className="font-medium">
+          {t(item.i18nKey) || item.title}
+        </TooltipContent>
+      </Tooltip>
+    );
+  };
+
   return (
     <TooltipProvider delayDuration={0}>
-      <aside className="fixed left-0 top-0 h-screen z-50 bg-card border-r border-border shadow-sm flex flex-col items-center py-4 px-1.5 w-16 transition-all duration-300">
+      <aside
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        style={{ willChange: "width" }}
+        className={`fixed left-0 top-0 h-screen z-50 bg-card border-r border-border/50
+          flex flex-col py-4
+          transition-[width,padding,box-shadow] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+          ${isExpanded ? "w-64 px-3 shadow-xl shadow-black/5" : "w-16 px-1.5 shadow-sm"}`}>
         {isLoggingOut && (
           <Loading fullscreen size="lg" label={t("header.loggingOut") || "Logging out..."} />
         )}
 
         {/* Brand */}
-        <div className="mb-4 px-1 flex items-center justify-center">
-          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-            <span className="text-sm font-bold text-primary">
-              {(t("sidebar.brandName") || "BN").charAt(0)}
-            </span>
+        <div
+          className={`mb-5 flex items-center overflow-hidden
+            ${isExpanded ? "gap-3 px-1" : "justify-center px-1"}`}>
+          <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 shadow-md shadow-primary/20">
+            <img src={logoImg} alt="Logo" className="w-full h-full object-contain" />
           </div>
+          <span
+            className={`text-sm font-semibold text-foreground whitespace-nowrap overflow-hidden
+              transition-[opacity,transform,max-width] duration-200 ease-out
+              ${
+                isExpanded
+                  ? "opacity-100 translate-x-0 max-w-[160px]"
+                  : "opacity-0 -translate-x-2 pointer-events-none max-w-0"
+              }`}>
+            {t("sidebar.brandName") || "Brand"}
+          </span>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 flex flex-col items-center gap-1 w-full">
+        <nav className="flex-1 flex flex-col gap-0.5 w-full overflow-y-auto overflow-x-hidden">
           {/* Dashboard - always direct navigate */}
           {directItems
             .filter((item) => item.href?.startsWith("/dashboard"))
-            .map((item) => (
-              <Tooltip key={item.href}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => handleNavigate(item.href)}
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all duration-200 ${
-                      isActive(item.href)
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                    }`}>
-                    <DashboardIcon size={20} />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>
-                  {t(item.i18nKey) || item.title}
-                </TooltipContent>
-              </Tooltip>
-            ))}
+            .map((item) => renderNavButton(item, DashboardIcon))}
 
-          {/* Kasir - always direct navigate */}
-          {directItems
-            .filter((item) => item.href === "/home")
-            .map((item) => (
-              <Tooltip key={item.href}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => handleNavigate(item.href)}
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all duration-200 ${
-                      isActive(item.href)
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                    }`}>
-                    <Calculator size={20} />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>
-                  {t(item.i18nKey) || item.title}
-                </TooltipContent>
-              </Tooltip>
-            ))}
+          {/* Kasir - for non-cashier roles */}
+          {!isCashierRole(user) &&
+            directItems
+              .filter((item) => item.href === "/home")
+              .map((item) => renderNavButton(item, Calculator))}
 
-          {/* KDS - direct navigate for cashier */}
+          {/* Cashier role: render ALL directItems */}
           {isCashierRole(user) &&
-            menuItems
-              .filter((item) => item.section && item.children)
-              .forEach((section) => {
-                section.children?.forEach((child) => {
-                  if (child.href === "/kitchen-display") {
-                    directItems.push({
-                      title: child.title,
-                      i18nKey: child.i18nKey,
-                      href: child.href,
-                      icon: ChefHat
-                    });
-                  }
-                });
+            directItems
+              .filter((item) => !item.href?.startsWith("/dashboard"))
+              .map((item) => {
+                const iconMap = { "/home": Calculator, "/kitchen-display": ChefHat };
+                const Icon = iconMap[item.href] || item.icon || MoreHorizontal;
+                return renderNavButton(item, Icon);
               })}
 
-          {/* Divider */}
-          {(categories.length > 0 || directItems.some((i) => i.href === "/home")) && (
-            <div className="w-6 border-t border-border/50 my-1" />
+          {/* Divider before POS */}
+          {!isCashierRole(user) && (
+            <div className="overflow-hidden my-2 mx-auto">
+              <div
+                className={`border-t border-border/40 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+                  ${isExpanded ? "w-full" : "w-6"}`}
+              />
+            </div>
+          )}
+
+          {/* POS & Penjualan - direct buttons for admin/super_admin */}
+          {!isCashierRole(user) && posItems.map((item) => renderNavButton(item, item.icon))}
+
+          {/* Divider before categories */}
+          {categories.length > 0 && (
+            <div className="overflow-hidden my-2 mx-auto">
+              <div
+                className={`border-t border-border/40 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+                  ${isExpanded ? "w-full" : "w-6"}`}
+              />
+            </div>
           )}
 
           {/* Category buttons - open modal */}
-          {categories.map((cat) => (
-            <Tooltip key={cat.id}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => handleOpenCategory(cat.id)}
-                  className="w-11 h-11 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all duration-200">
-                  <cat.icon size={20} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8}>
-                {t(cat.i18nKey) || cat.title}
-              </TooltipContent>
-            </Tooltip>
-          ))}
+          {categories.map((cat) => {
+            const btn = (
+              <button
+                onClick={() => handleOpenCategory(cat.id)}
+                className="nav-btn group relative flex items-center gap-3 rounded-xl overflow-hidden
+                  h-10 px-3
+                  text-muted-foreground hover:bg-accent hover:text-foreground hover:shadow-sm">
+                <cat.icon
+                  size={20}
+                  className="shrink-0 transition-transform duration-150 group-hover:scale-110"
+                />
+                <span
+                  className={`nav-label text-sm font-medium whitespace-nowrap transition-[opacity,transform] duration-200 ease-out
+                    ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"}`}>
+                  {t(cat.i18nKey) || cat.title}
+                </span>
+              </button>
+            );
 
-          {/* More button for cashier/user with extra items */}
-          {isCashierRole(user) && (
-            <>
-              {menuItems
-                .filter((item) => item.section)
-                .map((section) =>
-                  section.children
-                    ?.filter((child) => child.href !== "/home" && child.href !== "/kitchen-display")
-                    .map((child) => (
-                      <Tooltip key={child.href}>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={() => handleNavigate(child.href)}
-                            className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all duration-200 ${
-                              isActive(child.href)
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                            }`}>
-                            {child.icon ? <child.icon size={20} /> : <MoreHorizontal size={20} />}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" sideOffset={8}>
-                          {t(child.i18nKey) || child.title}
-                        </TooltipContent>
-                      </Tooltip>
-                    ))
-                )}
-            </>
-          )}
+            if (isExpanded) return <div key={cat.id}>{btn}</div>;
+            return (
+              <Tooltip key={cat.id}>
+                <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                <TooltipContent side="right" sideOffset={12} className="font-medium">
+                  {t(cat.i18nKey) || cat.title}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
         </nav>
 
         {/* Bottom */}
-        <div className="mt-auto flex flex-col items-center gap-1 w-full pt-2 border-t border-border/50">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={handleSupportClick}
-                className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all duration-200 ${
-                  location.pathname === "/support"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                }`}>
-                <LifeBuoy size={20} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>
-              Support
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={handleLogout}
-                className="w-11 h-11 flex items-center justify-center rounded-xl text-destructive hover:bg-destructive/10 transition-colors">
-                <LogOut size={20} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>
-              {t("header.logout")}
-            </TooltipContent>
-          </Tooltip>
+        <div className="mt-auto flex flex-col gap-0.5 w-full pt-3 border-t border-border/40">
+          <div className="flex flex-col gap-0.5 w-full">
+            {renderNavButton({ title: "Support", i18nKey: "support", href: "/support" }, LifeBuoy)}
+            <button
+              onClick={handleLogout}
+              className="group relative flex items-center gap-3 rounded-xl overflow-hidden
+                h-10 px-3
+                text-destructive hover:bg-destructive/10 hover:shadow-sm">
+              <LogOut
+                size={20}
+                className="shrink-0 transition-transform duration-150 group-hover:scale-110 group-hover:-rotate-12"
+              />
+              <span
+                className={`nav-label text-sm font-medium whitespace-nowrap transition-[opacity,transform] duration-200 ease-out
+                  ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"}`}>
+                {t("header.logout")}
+              </span>
+            </button>
+          </div>
         </div>
 
         <Modal
@@ -322,6 +384,7 @@ const Sidebar = () => {
             open={navModalOpen}
             onOpenChange={setNavModalOpen}
             categories={[activeCategory]}
+            onNavigate={handleMouseLeave}
           />
         )}
       </aside>

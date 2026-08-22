@@ -9,6 +9,9 @@ import { Save, X, Plus, Trash2 } from "lucide-react";
 import { addBom } from "@/services/bom";
 import { getAllProduct } from "@/services/product";
 import { getAllIngredients } from "@/services/ingredient";
+import { getAllSupplier } from "@/services/supplier";
+import { getAllLocation } from "@/services/location";
+import { normalizeStoreId } from "@/utils/storeId";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,12 +35,18 @@ const AddBom = () => {
   const [cookies] = useCookies();
   const user = cookies?.user;
   const preselectedId = searchParams.get("productId");
+  const isSuperAdmin = user?.roleType === "super_admin";
 
+  const [selectedStore, setSelectedStore] = useState(
+    isSuperAdmin ? "" : normalizeStoreId(user?.store) || ""
+  );
   const [productId, setProductId] = useState(preselectedId || "");
   const [disabledProduct] = useState(!!preselectedId);
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
-  const [lines, setLines] = useState([{ ingredientId: "", qty: "", unit: "pcs", notes: "" }]);
+  const [lines, setLines] = useState([
+    { supplierId: "", ingredientId: "", qty: "", unit: "pcs", notes: "" }
+  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -45,6 +54,7 @@ const AddBom = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [deleteLineIdx, setDeleteLineIdx] = useState(null);
 
   const bomFieldLabels = useMemo(
     () => ({
@@ -54,23 +64,81 @@ const AddBom = () => {
     [t]
   );
 
-  const { data: prodData } = useQuery(["products-for-bom"], () => getAllProduct({}), {});
+  const { data: prodData } = useQuery(
+    ["products-for-bom", selectedStore],
+    () => getAllProduct({ location: selectedStore || undefined }),
+    { enabled: !!selectedStore }
+  );
   const products = prodData?.data || [];
 
+  const { data: locationsData } = useQuery(["locations-for-bom"], () => getAllLocation(), {
+    enabled: isSuperAdmin,
+    staleTime: 30000
+  });
+  const locations = locationsData?.data || [];
+
   const { data: ingData } = useQuery(
-    ["ingredients-for-bom", user?.store],
-    () => getAllIngredients({ store: user?.store, limit: 999 }),
-    {}
+    ["ingredients-for-bom", selectedStore],
+    () => getAllIngredients({ store: selectedStore || undefined, limit: 999 }),
+    { enabled: !!selectedStore }
   );
   const ingredients = (ingData?.data || []).filter((i) => i.status === "active");
 
+  const { data: supData } = useQuery(
+    ["suppliers-for-bom", selectedStore],
+    () =>
+      getAllSupplier({ limit: 999, store: selectedStore, status: "active", includeProducts: true }),
+    { enabled: !!selectedStore, staleTime: 30000 }
+  );
+  const suppliers = supData?.data || [];
+
+  const supplierOptions = useMemo(
+    () =>
+      (suppliers || []).map((sup) => ({
+        value: String(sup.id),
+        label: sup.name || sup.supplierName || `Supplier #${sup.id}`
+      })),
+    [suppliers]
+  );
+
+  const supplierItemsBySupplier = useMemo(() => {
+    const map = {};
+    for (const sup of suppliers || []) {
+      map[String(sup.id)] = (sup.products || []).map((p) => {
+        const match = ingredients.find(
+          (ing) =>
+            ing.name && p.name && ing.name.trim().toLowerCase() === p.name.trim().toLowerCase()
+        );
+        return {
+          value: match ? String(match.id) : "",
+          label: p.name,
+          unit: match?.unit || p.unit || "pcs",
+          matched: !!match
+        };
+      });
+    }
+    return map;
+  }, [suppliers, ingredients]);
+
+  const itemsForLine = (line) =>
+    line.supplierId ? supplierItemsBySupplier[String(line.supplierId)] || [] : [];
+
   const addLine = () =>
-    setLines((prev) => [...prev, { ingredientId: "", qty: "", unit: "pcs", notes: "" }]);
+    setLines((prev) => [
+      ...prev,
+      { supplierId: "", ingredientId: "", qty: "", unit: "pcs", notes: "" }
+    ]);
   const removeLine = (idx) => {
     if (lines.length > 1) setLines((prev) => prev.filter((_, i) => i !== idx));
   };
   const updateLine = (idx, field, value) =>
-    setLines((prev) => prev.map((it, i) => (i !== idx ? it : { ...it, [field]: value })));
+    setLines((prev) =>
+      prev.map((it, i) => {
+        if (i !== idx) return it;
+        if (field === "supplierId") return { ...it, supplierId: value, ingredientId: "" };
+        return { ...it, [field]: value };
+      })
+    );
 
   const handleSaveClick = (saveAsDraft = false) => {
     if (!saveAsDraft) {
@@ -148,6 +216,31 @@ const AddBom = () => {
         <form
           onSubmit={(e) => e.preventDefault()}
           className="bg-card p-6 rounded-xl border border-border space-y-6">
+          {isSuperAdmin && (
+            <div className="space-y-2">
+              <Label>
+                {t("page.bom.add.form.store")} <span className="text-destructive">*</span>
+              </Label>
+              <Combobox
+                options={[
+                  { value: "", label: t("page.bom.add.form.selectStore") },
+                  ...locations.map((loc) => ({
+                    value: normalizeStoreId(loc.id),
+                    label: loc.name
+                  }))
+                ]}
+                value={selectedStore}
+                onChange={(val) => {
+                  setSelectedStore(val);
+                  if (!disabledProduct) setProductId("");
+                  setLines([{ supplierId: "", ingredientId: "", qty: "", unit: "pcs", notes: "" }]);
+                }}
+                placeholder={t("page.bom.add.form.selectStore")}
+                searchPlaceholder={t("common.search")}
+              />
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>
@@ -163,8 +256,12 @@ const AddBom = () => {
                 ]}
                 value={productId}
                 onChange={setProductId}
-                disabled={disabledProduct}
-                placeholder={t("page.bom.add.form.selectProduct")}
+                disabled={disabledProduct || !selectedStore}
+                placeholder={
+                  selectedStore
+                    ? t("page.bom.add.form.selectProduct")
+                    : t("page.bom.add.form.selectStoreFirst")
+                }
                 searchPlaceholder={t("common.search")}
               />
             </div>
@@ -180,92 +277,137 @@ const AddBom = () => {
 
           <div className="space-y-2">
             <Label>{t("page.bom.add.form.ingredients")}</Label>
-            <div className="overflow-x-auto border rounded-lg">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/60 border-b">
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                      {t("page.bom.add.table.ingredient")}
-                    </th>
-                    <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
-                      {t("page.bom.add.table.qty")}
-                    </th>
-                    <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                      {t("page.bom.add.table.unit")}
-                    </th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                      {t("page.bom.add.table.notes")}
-                    </th>
-                    <th className="w-10"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lines.map((line, idx) => (
-                    <tr key={idx} className="border-b border-muted/20">
-                      <td className="px-3 py-2">
-                        <Combobox
-                          options={[
-                            { value: "", label: t("page.bom.add.form.selectIngredient") },
-                            ...ingredients.map((ing) => ({
-                              value: ing.id,
-                              label: `${ing.name}${ing.stock === 0 ? " (kosong)" : ""}`
-                            }))
-                          ]}
-                          value={line.ingredientId}
-                          onChange={(val) => updateLine(idx, "ingredientId", val)}
-                          placeholder={t("page.bom.add.form.selectIngredient")}
-                          searchPlaceholder={t("common.search")}
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <Input
-                          type="number"
-                          min="1"
-                          value={line.qty}
-                          onChange={(e) => updateLine(idx, "qty", e.target.value)}
-                          className="h-8 text-xs text-right"
-                          placeholder={t("page.bom.add.placeholder.qty")}
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <Combobox
-                          options={[
-                            { value: "pcs", label: t("unit.pcs") },
-                            { value: "kg", label: t("unit.kg") },
-                            { value: "liter", label: t("unit.liter") },
-                            { value: "box", label: t("unit.box") }
-                          ]}
-                          value={line.unit}
-                          onChange={(val) => updateLine(idx, "unit", val)}
-                          placeholder={t("unit.pcs")}
-                          searchPlaceholder={t("common.search")}
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <Input
-                          value={line.notes}
-                          onChange={(e) => updateLine(idx, "notes", e.target.value)}
-                          className="h-8 text-xs"
-                          placeholder={t("page.bom.add.placeholder.notes")}
-                        />
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        <button
-                          type="button"
-                          disabled={lines.length <= 1}
-                          onClick={() => removeLine(idx)}
-                          className="text-muted-foreground/30 hover:text-destructive disabled:opacity-20">
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <Button type="button" variant="outline" size="sm" onClick={addLine} className="gap-1">
-              <Plus size={14} /> {t("page.bom.add.form.addRow")}
-            </Button>
+            {!selectedStore ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center px-4 border border-dashed border-border rounded-lg bg-muted/30">
+                <p className="text-sm font-medium text-foreground">
+                  {t("page.bom.add.form.selectStoreFirst")}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("page.bom.add.form.selectStoreHint")}
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto border rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-muted/60 border-b">
+                        <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                          {t("page.bom.add.table.supplier")}
+                        </th>
+                        <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                          {t("page.bom.add.table.ingredient")}
+                        </th>
+                        <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                          {t("page.bom.add.table.qty")}
+                        </th>
+                        <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                          {t("page.bom.add.table.unit")}
+                        </th>
+                        <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                          {t("page.bom.add.table.notes")}
+                        </th>
+                        <th className="w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lines.map((line, idx) => (
+                        <tr key={idx} className="border-b border-muted/20">
+                          <td className="px-3 py-2 min-w-[200px]">
+                            <Combobox
+                              options={[
+                                { value: "", label: t("page.bom.add.form.selectSupplier") },
+                                ...supplierOptions
+                              ]}
+                              value={line.supplierId}
+                              onChange={(val) => updateLine(idx, "supplierId", val)}
+                              placeholder={t("page.bom.add.form.selectSupplier")}
+                              searchPlaceholder={t("common.search")}
+                            />
+                          </td>
+                          <td className="px-3 py-2 min-w-[220px]">
+                            <Combobox
+                              options={[
+                                { value: "", label: t("page.bom.add.form.selectIngredient") },
+                                ...itemsForLine(line).map((it) => ({
+                                  value: it.value,
+                                  label: it.matched
+                                    ? it.label
+                                    : `${it.label} ${t("page.bom.add.form.notInIngredients")}`,
+                                  disabled: !it.matched
+                                }))
+                              ]}
+                              value={line.ingredientId}
+                              onChange={(val) => {
+                                const picked = itemsForLine(line).find((o) => o.value === val);
+                                updateLine(idx, "ingredientId", val);
+                                if (picked?.unit) updateLine(idx, "unit", picked.unit);
+                              }}
+                              disabled={!line.supplierId}
+                              placeholder={
+                                line.supplierId
+                                  ? t("page.bom.add.form.selectIngredient")
+                                  : t("page.bom.add.form.selectSupplierFirst")
+                              }
+                              searchPlaceholder={t("common.search")}
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <Input
+                              type="number"
+                              min="1"
+                              value={line.qty}
+                              onChange={(e) => updateLine(idx, "qty", e.target.value)}
+                              className="h-8 text-xs text-right"
+                              placeholder={t("page.bom.add.placeholder.qty")}
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <Combobox
+                              options={[
+                                { value: "pcs", label: t("unit.pcs") },
+                                { value: "kg", label: t("unit.kg") },
+                                { value: "liter", label: t("unit.liter") },
+                                { value: "box", label: t("unit.box") }
+                              ]}
+                              value={line.unit}
+                              onChange={(val) => updateLine(idx, "unit", val)}
+                              placeholder={t("unit.pcs")}
+                              searchPlaceholder={t("common.search")}
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <Input
+                              value={line.notes}
+                              onChange={(e) => updateLine(idx, "notes", e.target.value)}
+                              className="h-8 text-xs"
+                              placeholder={t("page.bom.add.placeholder.notes")}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            <button
+                              type="button"
+                              disabled={lines.length <= 1}
+                              onClick={() => setDeleteLineIdx(idx)}
+                              className="text-muted-foreground/30 hover:text-destructive disabled:opacity-20">
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addLine}
+                  className="gap-1 mt-2">
+                  <Plus size={14} /> {t("page.bom.add.form.addRow")}
+                </Button>
+              </>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -331,6 +473,19 @@ const AddBom = () => {
         onConfirm={() => {
           setDraftModal(false);
           handleSaveClick(true);
+        }}
+      />
+      <Modal
+        type="confirm"
+        open={deleteLineIdx !== null}
+        onOpenChange={(o) => !o && setDeleteLineIdx(null)}
+        title={t("page.bom.add.modal.deleteLineTitle")}
+        description={t("page.bom.add.modal.deleteLineDesc")}
+        confirmText={t("common.yes") || "Ya"}
+        cancelText={t("common.no") || "Batal"}
+        onConfirm={() => {
+          if (deleteLineIdx !== null) removeLine(deleteLineIdx);
+          setDeleteLineIdx(null);
         }}
       />
       <MissingFieldsModal

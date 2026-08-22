@@ -59,6 +59,7 @@ function Calendar({
   toYear = 2100,
   numberOfMonths = 1,
   defaultMonth,
+  disabled,
   ...props
 }) {
   const [internalMonth, setInternalMonth] = React.useState(monthProp || defaultMonth || new Date());
@@ -91,6 +92,7 @@ function Calendar({
             onPrevMonth={monthIndex === 0 ? handlePrevMonth : undefined}
             onNextMonth={monthIndex === months.length - 1 ? handleNextMonth : undefined}
             onMonthChange={setMonthSafe}
+            disabled={disabled}
           />
         ))}
       </div>
@@ -109,7 +111,8 @@ function CalendarMonth({
   toYear,
   onPrevMonth,
   onNextMonth,
-  onMonthChange
+  onMonthChange,
+  disabled
 }) {
   const years = React.useMemo(() => generateYears(fromYear, toYear), [fromYear, toYear]);
   const currentYear = getYear(month);
@@ -261,6 +264,7 @@ function CalendarMonth({
                   const isSelected = isDaySelected(day);
                   const isToday = isSameDay(day, new Date());
                   const isRangeMiddle = isRangeEnd(day) ? false : isDayRangeMiddle(day);
+                  const isDisabled = disabled ? disabled(day) : false;
 
                   return (
                     <td
@@ -272,8 +276,8 @@ function CalendarMonth({
                         isOutside && !showOutsideDays && "invisible"
                       )}>
                       <button
-                        onClick={() => handleSelectDay(day)}
-                        disabled={isOutside && !showOutsideDays}
+                        onClick={() => !isDisabled && handleSelectDay(day)}
+                        disabled={isDisabled || (isOutside && !showOutsideDays)}
                         className={cn(
                           buttonVariants({ variant: "ghost" }),
                           "h-9 w-9 p-0 font-normal",
@@ -281,7 +285,10 @@ function CalendarMonth({
                             "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                           isToday && !isSelected && "bg-accent text-accent-foreground",
                           isOutside && "text-muted-foreground opacity-50",
-                          isRangeMiddle && "text-muted-foreground opacity-50"
+                          isRangeMiddle && "text-muted-foreground opacity-50",
+                          isDisabled &&
+                            !isSelected &&
+                            "text-muted-foreground/50 bg-muted/30 cursor-not-allowed"
                         )}>
                         {format(day, "d")}
                       </button>

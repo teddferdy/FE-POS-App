@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
-import { Save, X, Plus, Trash2, Package, Lightbulb } from "lucide-react";
+import { Save, X, Trash2, Package, Lightbulb, Search, ImagePlus, CloudUpload } from "lucide-react";
 import { toast } from "sonner";
 import { editGoodsReceipt, getGoodsReceiptById } from "@/services/goods-receipt";
 import { getAllPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
 import { getAllIngredients } from "@/services/ingredient";
+import { getAllEmployee } from "@/services/employee";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +44,24 @@ const EditGoodsReceipt = () => {
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
+  const [picSearch, setPicSearch] = useState("");
+  const [picOpen, setPicOpen] = useState(false);
+  const [selectedPic, setSelectedPic] = useState(null);
+  const picRef = useRef(null);
+  const [docFile, setDocFile] = useState(null);
+  const [docPreview, setDocPreview] = useState(null);
+  const docInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (picRef.current && !picRef.current.contains(e.target)) {
+        setPicOpen(false);
+        setPicSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const fieldLabels = {
     poId: t("page.goodsReceipt.edit.form.purchaseOrder"),
@@ -88,6 +107,14 @@ const EditGoodsReceipt = () => {
     setPoId(receipt.purchaseOrderId || "");
     setReceivedDate(receipt.receivedDate ? new Date(receipt.receivedDate) : new Date());
     setNotes(receipt.notes || "");
+    if (receipt.picData) {
+      setSelectedPic({
+        id: receipt.picData.id,
+        fullName: receipt.picData.fullName,
+        userName: receipt.picData.userName
+      });
+    }
+    if (receipt.documentation) setDocPreview(receipt.documentation);
     if (receipt.items) {
       setItems(
         receipt.items.map((item) => ({
@@ -148,22 +175,105 @@ const EditGoodsReceipt = () => {
     }
   }, [poDetail, items.length, loaded]);
 
-  const addItem = () =>
-    setItems((prev) => [
-      ...prev,
-      {
-        ingredient: null,
-        ingredientName: "",
-        product: null,
-        qty: 0,
-        unit: "pcs",
-        qtyReceived: "0",
-        conditionNotes: "",
-        costPrice: 0,
-        conversionToBase: 1,
-        isFromPo: false
-      }
-    ]);
+  const grStoreId = receiptData?.data?.store || selectedPO?.store;
+  const { data: employeesData } = useQuery(
+    ["employees-for-gr-edit", grStoreId],
+    () => getAllEmployee({ limit: 999, status: "active", location: grStoreId || undefined }),
+    { enabled: !!grStoreId }
+  );
+  const employees = employeesData?.data || [];
+  const filteredEmployees = employees.filter((e) =>
+    (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
+  );
+
+  // Max qty per line when editing: PO ordered minus received by OTHER receipts
+  // (this receipt's own previous contribution is reversed on save)
+  const getItemRemaining = (item) => {
+    if (!item.isFromPo && !item.purchaseOrderItem) return Math.max(0, Number(item.qty) || 0);
+    const poItems = poDetail?.data?.items || [];
+    const poItem =
+      poItems.find((p) => p.id === item.purchaseOrderItem) ||
+      (!item.purchaseOrderItem
+        ? poItems.find((p) => (p.ingredientName || p.ingredientData?.name) === item.ingredientName)
+        : null);
+    if (!poItem) return Math.max(0, Number(item.qty) || 0);
+    const ownPrevItem = (receiptData?.data?.items || []).find(
+      (ri) =>
+        ri.purchaseOrderItem === poItem.id ||
+        (!ri.purchaseOrderItem && ri.ingredientName === item.ingredientName)
+    );
+    const ownPrev = ownPrevItem ? Number(ownPrevItem.qtyReceived) || 0 : 0;
+    return Math.max(0, Number(poItem.quantity) - (Number(poItem.receivedQuantity) || 0) + ownPrev);
+  };
+
+  const grSummary = items.reduce(
+    (acc, it) => {
+      if (!(it.ingredientName || it.ingredient)) return acc;
+      const price = parseFloat(it.costPrice) || 0;
+      const poList = poDetail?.data?.items || [];
+      const poItem =
+        poList.find((p) => p.id === it.purchaseOrderItem) ||
+        (!it.purchaseOrderItem
+          ? poList.find((p) => (p.ingredientName || p.ingredientData?.name) === it.ingredientName)
+          : null);
+      const ownPrevItem = poItem
+        ? (receiptData?.data?.items || []).find(
+            (ri) =>
+              ri.purchaseOrderItem === poItem.id ||
+              (!ri.purchaseOrderItem && ri.ingredientName === it.ingredientName)
+          )
+        : null;
+      const ownPrev = ownPrevItem ? Number(ownPrevItem.qtyReceived) || 0 : 0;
+      const qtyPo = poItem
+        ? Math.max(0, Number(poItem.quantity) || 0)
+        : Math.max(0, Number(it.qty) || 0);
+      const othersPrev = poItem ? Math.max(0, (Number(poItem.receivedQuantity) || 0) - ownPrev) : 0;
+      const remaining = Math.max(getItemRemaining(it), 0);
+      const now = Math.min(Math.max(parseFloat(it.qtyReceived) || 0, 0), remaining);
+      acc.target += remaining;
+      acc.filled += now;
+      if (now > 0) acc.count += 1;
+      acc.orderedValue += qtyPo * price;
+      acc.prevValue += othersPrev * price;
+      acc.nowValue += now * price;
+      acc.shortageValue += Math.max(qtyPo - othersPrev - now, 0) * price;
+      if (othersPrev > 0) acc.hasPrev = true;
+      return acc;
+    },
+    {
+      target: 0,
+      filled: 0,
+      count: 0,
+      orderedValue: 0,
+      prevValue: 0,
+      nowValue: 0,
+      shortageValue: 0,
+      hasPrev: false
+    }
+  );
+
+  const receiptProgress = {
+    ...grSummary,
+    done: grSummary.target > 0 && grSummary.filled >= grSummary.target
+  };
+
+  const handleDocChange = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) {
+      toast.error(t("page.goodsReceipt.add.form.fileTooLarge"));
+      e.target.value = "";
+      return;
+    }
+    setDocFile(f);
+    setDocPreview(URL.createObjectURL(f));
+  };
+
+  const clearDoc = () => {
+    setDocFile(null);
+    setDocPreview(null);
+    if (docInputRef.current) docInputRef.current.value = "";
+  };
 
   const removeItem = (idx) => {
     setItems((prev) => prev.filter((_, i) => i !== idx));
@@ -189,12 +299,20 @@ const EditGoodsReceipt = () => {
       });
       return;
     }
+    const overItem = validItems.find((it) => parseFloat(it.qtyReceived) > getItemRemaining(it));
+    if (overItem) {
+      toast.error(t("page.goodsReceipt.edit.toast.validation"), {
+        description: t("page.goodsReceipt.add.toast.qtyExceed")
+      });
+      return;
+    }
     setIsSubmitting(true);
     try {
-      await editGoodsReceipt(id, {
+      const payload = {
         receivedDate:
           receivedDate instanceof Date ? receivedDate.toISOString().split("T")[0] : receivedDate,
         notes,
+        pic: selectedPic?.id || null,
         status: saveAsDraft ? "draft" : "completed",
         items: validItems.map((it) => ({
           purchaseOrderItem: it.purchaseOrderItem || null,
@@ -207,7 +325,9 @@ const EditGoodsReceipt = () => {
           costPrice: parseFloat(it.costPrice) || 0,
           conversionToBase: parseFloat(it.conversionToBase) || 1
         }))
-      });
+      };
+      if (!docFile) payload.documentation = docPreview || null;
+      await editGoodsReceipt(id, payload, docFile);
       toast.success(t("page.goodsReceipt.edit.toast.success"), {
         description: t("page.goodsReceipt.edit.toast.successDesc")
       });
@@ -340,8 +460,137 @@ const EditGoodsReceipt = () => {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>
+                {t("page.goodsReceipt.add.form.pic")}{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  ({t("common.optional")})
+                </span>
+              </Label>
+              <div className="relative" ref={picRef}>
+                <div
+                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm flex items-center cursor-pointer"
+                  onClick={() => setPicOpen(!picOpen)}>
+                  <Search size={14} className="mr-2 text-muted-foreground shrink-0" />
+                  <input
+                    type="text"
+                    value={
+                      picOpen ? picSearch : selectedPic?.fullName || selectedPic?.userName || ""
+                    }
+                    readOnly={!picOpen}
+                    onFocus={() => setPicOpen(true)}
+                    onChange={(e) => setPicSearch(e.target.value)}
+                    placeholder={t("page.goodsReceipt.add.form.picPlaceholder")}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                  />
+                </div>
+                {picOpen && (
+                  <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-md shadow-md max-h-60 overflow-auto">
+                    {filteredEmployees.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-muted-foreground">
+                        {t("page.goodsReceipt.add.form.picEmpty")}
+                      </div>
+                    ) : (
+                      filteredEmployees.map((emp) => (
+                        <div
+                          key={emp.id}
+                          className={`px-3 py-2 text-sm cursor-pointer hover:bg-accent ${
+                            selectedPic?.id === emp.id ? "bg-accent" : ""
+                          }`}
+                          onClick={() => {
+                            setSelectedPic(emp);
+                            setPicSearch("");
+                            setPicOpen(false);
+                          }}>
+                          {emp.fullName || emp.userName}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+              {selectedPic && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedPic(null)}
+                  className="text-xs text-muted-foreground hover:text-destructive">
+                  {t("page.goodsReceipt.add.form.clearPic")}
+                </button>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>
+                {t("page.goodsReceipt.add.form.documentation")}{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  ({t("common.optional")})
+                </span>
+              </Label>
+              <input
+                type="file"
+                accept="image/*"
+                ref={docInputRef}
+                className="hidden"
+                onChange={handleDocChange}
+              />
+              <div
+                onClick={() => docInputRef.current?.click()}
+                className="relative rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center bg-muted/30 overflow-hidden cursor-pointer group min-h-[88px]">
+                {docPreview ? (
+                  <>
+                    <img
+                      src={docPreview}
+                      alt={t("page.goodsReceipt.add.form.documentation")}
+                      className="w-full h-auto max-h-40 object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearDoc();
+                      }}
+                      className="absolute top-2 right-2 z-10 p-2 bg-background/90 rounded-full text-muted-foreground hover:text-destructive shadow-md">
+                      <X size={14} />
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3 text-muted-foreground group-hover:text-primary transition-colors px-4 py-5">
+                    <CloudUpload size={28} />
+                    <span className="text-sm font-semibold">
+                      {t("page.goodsReceipt.add.form.docClick")}
+                    </span>
+                    <ImagePlus size={16} className="opacity-50" />
+                  </div>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {t("page.goodsReceipt.add.form.docHint")}
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label>{t("page.goodsReceipt.edit.form.items")}</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label>{t("page.goodsReceipt.edit.form.items")}</Label>
+              {poId && receiptProgress.target > 0 && (
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                    receiptProgress.done
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                      : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                  }`}>
+                  {receiptProgress.done
+                    ? t("page.goodsReceipt.add.status.selesai")
+                    : t("page.goodsReceipt.add.status.belumSelesai")}
+                  {!receiptProgress.done && (
+                    <span className="font-normal">
+                      ({receiptProgress.filled.toLocaleString("id-ID")}/
+                      {receiptProgress.target.toLocaleString("id-ID")})
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
             {loadingPo ? (
               <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
                 {t("page.goodsReceipt.edit.loading.items")}
@@ -480,7 +729,7 @@ const EditGoodsReceipt = () => {
                           {item.isFromPo ? (
                             <div className="text-center">
                               <span className="inline-flex px-2 py-0.5 rounded text-xs bg-muted">
-                                {item.conversionToBase || 1}
+                                {parseFloat(item.conversionToBase) || 1}
                               </span>
                               {parseFloat(item.qtyReceived) > 0 && (
                                 <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -517,16 +766,31 @@ const EditGoodsReceipt = () => {
                             inputMode="decimal"
                             value={item.qtyReceived === "0" ? "" : item.qtyReceived}
                             onFocus={(e) => e.target.select()}
-                            onChange={(e) =>
-                              updateItem(
-                                idx,
-                                "qtyReceived",
-                                e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
-                              )
-                            }
+                            onChange={(e) => {
+                              const raw = e.target.value
+                                .replace(/[^0-9.]/g, "")
+                                .replace(/(\..*)\./g, "$1");
+                              const max = getItemRemaining(item);
+                              const num = parseFloat(raw);
+                              updateItem(idx, "qtyReceived", num > max ? String(max) : raw);
+                            }}
                             className="h-8 text-xs text-right w-24 ml-auto"
                             placeholder={t("page.goodsReceipt.edit.placeholder.qty")}
                           />
+                          {(() => {
+                            const max = getItemRemaining(item);
+                            const val = parseFloat(item.qtyReceived) || 0;
+                            if (val <= 0 || max <= 0) return null;
+                            return val >= max ? (
+                              <p className="text-[10px] font-medium text-emerald-600 mt-0.5 text-right">
+                                {t("page.goodsReceipt.add.status.pas")}
+                              </p>
+                            ) : (
+                              <p className="text-[10px] font-medium text-amber-600 mt-0.5 text-right">
+                                {t("page.goodsReceipt.add.status.kurang", { qty: max - val })}
+                              </p>
+                            );
+                          })()}
                         </td>
                         <td className="px-3 py-2">
                           <Input
@@ -574,11 +838,6 @@ const EditGoodsReceipt = () => {
                 {t("page.goodsReceipt.edit.form.noPO")}
               </div>
             )}
-            {poId && (
-              <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1">
-                <Plus size={14} /> {t("page.goodsReceipt.edit.form.addItem")}
-              </Button>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -590,6 +849,88 @@ const EditGoodsReceipt = () => {
               placeholder={t("page.goodsReceipt.edit.placeholder.notes")}
             />
           </div>
+
+          {items.length > 0 && (
+            <div className="rounded-lg border bg-muted/30 px-4 py-3 space-y-2 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-muted-foreground">
+                  {t("page.goodsReceipt.add.summary.itemsReceived", { count: grSummary.count })}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                    grSummary.count === 0
+                      ? "bg-muted text-muted-foreground"
+                      : grSummary.shortageValue > 0
+                        ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                  }`}>
+                  {grSummary.count === 0
+                    ? t("page.goodsReceipt.add.summary.pendingLabel")
+                    : grSummary.shortageValue > 0
+                      ? t("page.goodsReceipt.add.summary.mismatchLabel")
+                      : t("page.goodsReceipt.add.summary.matchLabel")}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">
+                  {t("page.goodsReceipt.add.summary.orderedValue")}
+                </span>
+                <span className="font-medium">
+                  Rp {grSummary.orderedValue.toLocaleString("id-ID")}
+                </span>
+              </div>
+              {grSummary.hasPrev && (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-muted-foreground">
+                    {t("page.goodsReceipt.add.summary.prevReceived")}
+                  </span>
+                  <span className="font-medium text-amber-600 dark:text-amber-400">
+                    Rp {grSummary.prevValue.toLocaleString("id-ID")}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">
+                  {t("page.goodsReceipt.add.summary.nowReceived")}
+                </span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                  Rp {grSummary.nowValue.toLocaleString("id-ID")}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">
+                  {t("page.goodsReceipt.add.summary.shortage")}
+                </span>
+                <span
+                  className={`font-medium ${
+                    grSummary.count === 0
+                      ? "text-muted-foreground"
+                      : grSummary.shortageValue > 0
+                        ? "text-red-500"
+                        : "text-emerald-600 dark:text-emerald-400"
+                  }`}>
+                  {grSummary.shortageValue > 0
+                    ? `Rp ${grSummary.shortageValue.toLocaleString("id-ID")}`
+                    : t("page.goodsReceipt.add.status.selesai")}
+                </span>
+              </div>
+              <div className="border-t border-border pt-2 mt-1 flex items-center justify-between gap-2">
+                <span className="font-semibold">{t("page.goodsReceipt.add.summary.variance")}</span>
+                <span
+                  className={`font-bold text-base ${
+                    grSummary.count === 0
+                      ? "text-muted-foreground"
+                      : grSummary.shortageValue > 0
+                        ? "text-red-500"
+                        : "text-emerald-600 dark:text-emerald-400"
+                  }`}>
+                  {grSummary.shortageValue > 0
+                    ? `-Rp ${grSummary.shortageValue.toLocaleString("id-ID")}`
+                    : "Rp 0"}
+                </span>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
             <Button

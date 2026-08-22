@@ -77,11 +77,25 @@ const getLeafItemsGrouped = () => {
   const groups = [];
   sidebarMenuSuperAdmin.forEach((parent) => {
     if (parent.href && (!parent.children || parent.children.length === 0)) {
-      groups.push({ parentTitle: "", parentIcon: null, items: [parent] });
+      groups.push({
+        parentTitle: "",
+        parentIcon: null,
+        subGroups: [{ title: "", items: [parent] }]
+      });
     } else if (parent.children && parent.children.length > 0) {
       const leafChildren = collectLeaves(parent.children);
       if (leafChildren.length > 0) {
-        groups.push({ parentTitle: parent.title, parentIcon: parent.icon, items: leafChildren });
+        const subGroups = [];
+        const indexByTitle = {};
+        leafChildren.forEach((item) => {
+          const gTitle = item.group || "";
+          if (indexByTitle[gTitle] === undefined) {
+            indexByTitle[gTitle] = subGroups.length;
+            subGroups.push({ title: gTitle, items: [] });
+          }
+          subGroups[indexByTitle[gTitle]].items.push(item);
+        });
+        groups.push({ parentTitle: parent.title, parentIcon: parent.icon, subGroups });
       }
     }
   });
@@ -91,15 +105,17 @@ const getLeafItemsGrouped = () => {
 const buildInitialPermissions = (groups, existingPerms = {}) => {
   const perms = {};
   groups.forEach((g) => {
-    g.items.forEach((item) => {
-      const key = item.href;
-      perms[key] = {};
-      allActions.forEach((a) => {
-        if (item.actions?.includes(a)) {
-          perms[key][a] = existingPerms?.[key]?.[a] ?? false;
-        } else {
-          perms[key][a] = null;
-        }
+    g.subGroups.forEach((sg) => {
+      sg.items.forEach((item) => {
+        const key = item.href;
+        perms[key] = {};
+        allActions.forEach((a) => {
+          if (item.actions?.includes(a)) {
+            perms[key][a] = existingPerms?.[key]?.[a] ?? false;
+          } else {
+            perms[key][a] = null;
+          }
+        });
       });
     });
   });
@@ -228,12 +244,14 @@ export default function AccessMenuModal({
         <div className="divide-y divide-border border rounded-lg">
           {groups.map((group, idx) => {
             const visibleActions = getVisibleActions(
-              group.items.reduce((acc, item) => {
-                (item.actions || []).forEach((a) => {
-                  if (!acc.includes(a)) acc.push(a);
-                });
-                return acc;
-              }, [])
+              group.subGroups
+                .flatMap((sg) => sg.items)
+                .reduce((acc, item) => {
+                  (item.actions || []).forEach((a) => {
+                    if (!acc.includes(a)) acc.push(a);
+                  });
+                  return acc;
+                }, [])
             );
             const isCollapsed = collapsed[idx];
 
@@ -268,42 +286,55 @@ export default function AccessMenuModal({
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
-                        {group.items.map((item) => {
-                          const itemActions = getVisibleActions(item.actions || []);
-                          return (
-                            <tr key={item.href} className="hover:bg-muted/10 transition-colors">
-                              <td className="px-4 py-2.5">
-                                <div className="flex items-center gap-2">
-                                  {item.icon && (
-                                    <item.icon
-                                      size={14}
-                                      className="text-muted-foreground shrink-0"
-                                    />
-                                  )}
-                                  <span className="text-sm text-foreground">{item.title}</span>
-                                </div>
-                              </td>
-                              {itemActions.map((action) => {
-                                const val = permissions[item.href]?.[action];
-                                const isDisabled = val === null;
-                                return (
-                                  <td key={action} className="px-2 py-2.5 text-center">
-                                    {isDisabled ? (
-                                      <span className="text-muted-foreground/30">—</span>
-                                    ) : (
-                                      <input
-                                        type="checkbox"
-                                        checked={!!val}
-                                        onChange={() => togglePermission(item.href, action)}
-                                        className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-                                      />
-                                    )}
+                        {group.subGroups.map((sub, subIdx) => (
+                          <React.Fragment key={subIdx}>
+                            {sub.title && (
+                              <tr className="bg-muted/20">
+                                <td colSpan={visibleActions.length + 1} className="px-4 py-1.5">
+                                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                                    {sub.title}
+                                  </span>
+                                </td>
+                              </tr>
+                            )}
+                            {sub.items.map((item) => {
+                              const itemActions = getVisibleActions(item.actions || []);
+                              return (
+                                <tr key={item.href} className="hover:bg-muted/10 transition-colors">
+                                  <td className="px-4 py-2.5">
+                                    <div className="flex items-center gap-2">
+                                      {item.icon && (
+                                        <item.icon
+                                          size={14}
+                                          className="text-muted-foreground shrink-0"
+                                        />
+                                      )}
+                                      <span className="text-sm text-foreground">{item.title}</span>
+                                    </div>
                                   </td>
-                                );
-                              })}
-                            </tr>
-                          );
-                        })}
+                                  {itemActions.map((action) => {
+                                    const val = permissions[item.href]?.[action];
+                                    const isDisabled = val === null;
+                                    return (
+                                      <td key={action} className="px-2 py-2.5 text-center">
+                                        {isDisabled ? (
+                                          <span className="text-muted-foreground/30">—</span>
+                                        ) : (
+                                          <input
+                                            type="checkbox"
+                                            checked={!!val}
+                                            onChange={() => togglePermission(item.href, action)}
+                                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                                          />
+                                        )}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              );
+                            })}
+                          </React.Fragment>
+                        ))}
                       </tbody>
                     </table>
                   </div>

@@ -403,11 +403,6 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
             className="xl:hidden p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Menu size={20} />
           </button>
-          <div>
-            <h1 className="text-lg font-bold text-foreground hidden lg:block">
-              {t("header.appName")}
-            </h1>
-          </div>
           <button
             data-tour="header-search"
             onClick={onOpenPalette}

@@ -972,56 +972,74 @@ const PurchaseOrderList = () => {
             </div>
             <CollapsibleContent>
               {isFetching || isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="bg-card rounded-xl border border-border p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <Skeleton className="h-3 w-24" />
-                        <Skeleton className="h-4 w-4 rounded" />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="bg-card rounded-xl border border-border p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-4 w-4 rounded" />
+                        </div>
+                        <Skeleton className="h-8 w-28 mb-2" />
+                        <Skeleton className="h-3 w-20" />
                       </div>
-                      <Skeleton className="h-8 w-28 mb-2" />
-                      <Skeleton className="h-3 w-20" />
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="bg-card rounded-xl border border-border p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-4 w-4 rounded" />
+                        </div>
+                        <Skeleton className="h-8 w-28 mb-2" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <StatCard
-                    label={t("page.purchaseOrder.list.title")}
-                    value={total}
-                    icon={ShoppingCart}
-                    variant="default"
-                  />
-                  <StatCard
-                    label={t("page.purchaseOrder.status.received")}
-                    value={data?.stats?.received ?? 0}
-                    icon={CheckCircle}
-                    variant="active"
-                  />
-                  <StatCard
-                    label={t("page.purchaseOrder.status.ordered")}
-                    value={data?.stats?.ordered ?? 0}
-                    icon={Clock}
-                    variant="blue"
-                  />
-                  <StatCard
-                    label={t("page.purchaseOrder.status.draft")}
-                    value={data?.stats?.draft ?? 0}
-                    icon={ClipboardList}
-                    variant="gray"
-                  />
-                  <StatCard
-                    label={t("page.purchaseOrder.status.pending")}
-                    value={data?.stats?.pending ?? 0}
-                    icon={FileEdit}
-                    variant="yellow"
-                  />
-                  <StatCard
-                    label={t("page.purchaseOrder.status.cancelled")}
-                    value={data?.stats?.cancelled ?? 0}
-                    icon={XCircle}
-                    variant="red"
-                  />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <StatCard
+                      label={t("page.purchaseOrder.list.title")}
+                      value={total}
+                      icon={ShoppingCart}
+                      variant="default"
+                    />
+                    <StatCard
+                      label={t("page.purchaseOrder.status.received")}
+                      value={data?.stats?.received ?? 0}
+                      icon={CheckCircle}
+                      variant="active"
+                    />
+                    <StatCard
+                      label={t("page.purchaseOrder.status.ordered")}
+                      value={data?.stats?.ordered ?? 0}
+                      icon={Clock}
+                      variant="blue"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <StatCard
+                      label={t("page.purchaseOrder.status.draft")}
+                      value={data?.stats?.draft ?? 0}
+                      icon={ClipboardList}
+                      variant="gray"
+                    />
+                    <StatCard
+                      label={t("page.purchaseOrder.status.pending")}
+                      value={data?.stats?.pending ?? 0}
+                      icon={FileEdit}
+                      variant="yellow"
+                    />
+                    <StatCard
+                      label={t("page.purchaseOrder.status.cancelled")}
+                      value={data?.stats?.cancelled ?? 0}
+                      icon={XCircle}
+                      variant="red"
+                    />
+                  </div>
                 </div>
               )}
             </CollapsibleContent>

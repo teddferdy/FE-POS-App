@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -82,6 +82,7 @@ const EditTaxConfigSkeleton = () => {
 const EditTaxConfig = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -158,6 +159,7 @@ const EditTaxConfig = () => {
 
   const updateMutation = useMutation(editTaxConfig, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["tax-configs"]);
       setSuccessModal(true);
     },
     onError: (err) => {

@@ -17,7 +17,7 @@ export function DatePickerWithRange({ className, date, setDate, placeholder = "P
   };
 
   return (
-    <div className={cn("grid gap-2", className)}>
+    <div className={cn("relative", className)}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -39,18 +39,6 @@ export function DatePickerWithRange({ className, date, setDate, placeholder = "P
             ) : (
               <span>{placeholder}</span>
             )}
-            {hasValue && (
-              <span
-                role="button"
-                tabIndex={-1}
-                onClick={handleClear}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") handleClear(e);
-                }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer">
-                <X size={14} />
-              </span>
-            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -64,6 +52,14 @@ export function DatePickerWithRange({ className, date, setDate, placeholder = "P
           />
         </PopoverContent>
       </Popover>
+      {hasValue && (
+        <button
+          type="button"
+          onClick={handleClear}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer z-10">
+          <X size={14} />
+        </button>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,6 +32,7 @@ import { getMissingFields } from "@/lib/validation";
 
 const EditTypePayment = () => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -145,6 +146,7 @@ const EditTypePayment = () => {
 
   const updateMutation = useMutation(editTypePayment, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["type-payments"]);
       setSuccessModal(true);
     },
     onError: (err) => {

@@ -217,6 +217,13 @@ export const sidebarMenuSuperAdmin = [
     icon: FlaskConical,
     children: [
       {
+        title: "Kategori Supplier",
+        i18nKey: "sidebar.supplierCategory",
+        href: "/supplier-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
         title: "Supplier",
         i18nKey: "sidebar.supplier",
         href: "/supplier",
@@ -230,11 +237,11 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Kategori Supplier",
-        i18nKey: "sidebar.supplierCategory",
-        href: "/supplier-category",
-        icon: Tag,
-        actions: ["add", "edit", "view", "delete"]
+        title: "Supplier Scores",
+        i18nKey: "sidebar.supplierPerformance",
+        href: "/supplier-score-list",
+        icon: TrendingUp,
+        actions: ["view", "add"]
       },
       {
         title: "Kategori Bahan Baku",
@@ -251,14 +258,6 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "Permintaan Barang",
-        i18nKey: "sidebar.goodsRequest",
-        href: "/goods-request",
-        icon: ClipboardList,
-        activePaths: ["/goods-request/detail", "/add-goods-request", "/edit-goods-request"],
-        actions: ["view", "add", "edit", "delete"]
-      },
-      {
         title: "Purchase Order",
         i18nKey: "sidebar.purchaseOrder",
         href: "/purchase-order",
@@ -266,18 +265,12 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view"]
       },
       {
-        title: "Dashboard Utang (AP)",
-        i18nKey: "sidebar.apDashboard",
-        href: "/ap-dashboard",
-        icon: Wallet,
-        actions: ["view"]
-      },
-      {
-        title: "Riwayat Pembayaran",
-        i18nKey: "sidebar.purchasePayment",
-        href: "/purchase-payment",
-        icon: Wallet,
-        actions: ["view"]
+        title: "Permintaan Barang",
+        i18nKey: "sidebar.goodsRequest",
+        href: "/goods-request",
+        icon: ClipboardList,
+        activePaths: ["/goods-request/detail", "/add-goods-request", "/edit-goods-request"],
+        actions: ["view", "add", "edit", "delete"]
       },
       {
         title: "Goods Receipt",
@@ -295,11 +288,18 @@ export const sidebarMenuSuperAdmin = [
         actions: ["view"]
       },
       {
-        title: "Supplier Scores",
-        i18nKey: "sidebar.supplierPerformance",
-        href: "/supplier-score-list",
-        icon: TrendingUp,
-        actions: ["view", "add"]
+        title: "Dashboard Utang (AP)",
+        i18nKey: "sidebar.apDashboard",
+        href: "/ap-dashboard",
+        icon: Wallet,
+        actions: ["view"]
+      },
+      {
+        title: "Riwayat Pembayaran",
+        i18nKey: "sidebar.purchasePayment",
+        href: "/purchase-payment",
+        icon: Wallet,
+        actions: ["view"]
       }
     ]
   },
@@ -686,6 +686,13 @@ export const sidebarMenuAdmin = [
     icon: FlaskConical,
     children: [
       {
+        title: "Kategori Supplier",
+        i18nKey: "sidebar.supplierCategory",
+        href: "/supplier-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
         title: "Supplier",
         i18nKey: "sidebar.supplier",
         href: "/supplier",
@@ -699,11 +706,11 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Kategori Supplier",
-        i18nKey: "sidebar.supplierCategory",
-        href: "/supplier-category",
-        icon: Tag,
-        actions: ["add", "edit", "view", "delete"]
+        title: "Supplier Scores",
+        i18nKey: "sidebar.supplierPerformance",
+        href: "/supplier-score-list",
+        icon: TrendingUp,
+        actions: ["view", "add"]
       },
       {
         title: "Kategori Bahan Baku",
@@ -720,14 +727,6 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "Permintaan Barang",
-        i18nKey: "sidebar.goodsRequest",
-        href: "/goods-request",
-        icon: ClipboardList,
-        activePaths: ["/goods-request/detail", "/add-goods-request", "/edit-goods-request"],
-        actions: ["view", "add", "edit", "delete"]
-      },
-      {
         title: "Purchase Order",
         i18nKey: "sidebar.purchaseOrder",
         href: "/purchase-order",
@@ -735,18 +734,12 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view"]
       },
       {
-        title: "Dashboard Utang (AP)",
-        i18nKey: "sidebar.apDashboard",
-        href: "/ap-dashboard",
-        icon: Wallet,
-        actions: ["view"]
-      },
-      {
-        title: "Riwayat Pembayaran",
-        i18nKey: "sidebar.purchasePayment",
-        href: "/purchase-payment",
-        icon: Wallet,
-        actions: ["view"]
+        title: "Permintaan Barang",
+        i18nKey: "sidebar.goodsRequest",
+        href: "/goods-request",
+        icon: ClipboardList,
+        activePaths: ["/goods-request/detail", "/add-goods-request", "/edit-goods-request"],
+        actions: ["view", "add", "edit", "delete"]
       },
       {
         title: "Goods Receipt",
@@ -764,11 +757,18 @@ export const sidebarMenuAdmin = [
         actions: ["view"]
       },
       {
-        title: "Supplier Scores",
-        i18nKey: "sidebar.supplierPerformance",
-        href: "/supplier-score-list",
-        icon: TrendingUp,
-        actions: ["view", "add"]
+        title: "Dashboard Utang (AP)",
+        i18nKey: "sidebar.apDashboard",
+        href: "/ap-dashboard",
+        icon: Wallet,
+        actions: ["view"]
+      },
+      {
+        title: "Riwayat Pembayaran",
+        i18nKey: "sidebar.purchasePayment",
+        href: "/purchase-payment",
+        icon: Wallet,
+        actions: ["view"]
       }
     ]
   },
@@ -965,6 +965,91 @@ export const sidebarMenuAdmin = [
     ]
   }
 ];
+
+// Pemetaan sub-grup menu (AccessMenuModal & NavigationModal): key = i18nKey section, lalu href -> nama sub-grup
+const accessMenuSubGroups = {
+  "sidebar.section.posPenjualan": {
+    "/home": "Kasir",
+    "/cash-register/current": "Kasir",
+    "/cash-register/xz-report": "Kasir",
+    "/kitchen-display": "Pesanan & Dapur",
+    "/qr-order-management": "Pesanan & Dapur",
+    "/queue-list": "Pesanan & Dapur",
+    "/waiter-request": "Pesanan & Dapur",
+    "/table-list": "Meja & Reservasi",
+    "/reservation": "Meja & Reservasi",
+    "/sales-return": "Retur & Piutang",
+    "/accounts-receivable": "Retur & Piutang"
+  },
+  "sidebar.section.produkPromo": {
+    "/category-list": "Produk",
+    "/product-list": "Produk",
+    "/price-list-template": "Produk",
+    "/bundle": "Promo",
+    "/discount-list": "Promo",
+    "/promo-list": "Promo"
+  },
+  "sidebar.section.bahanBakuPembelian": {
+    "/supplier-category": "Supplier",
+    "/supplier": "Supplier",
+    "/supplier-score-list": "Supplier",
+    "/ingredient-category": "Bahan Baku",
+    "/ingredient": "Bahan Baku",
+    "/purchase-order": "Pembelian",
+    "/goods-request": "Pembelian",
+    "/goods-receipt": "Pembelian",
+    "/purchase-return": "Pembelian",
+    "/ap-dashboard": "Pembayaran",
+    "/purchase-payment": "Pembayaran"
+  },
+  "sidebar.section.gudangOperasional": {
+    "/stock-opname": "Manajemen Stok",
+    "/stock-adjustment": "Manajemen Stok",
+    "/stock-transfer": "Manajemen Stok",
+    "/stock-history": "Monitoring Stok",
+    "/low-stock": "Monitoring Stok",
+    "/production-order": "Produksi",
+    "/bom": "Produksi",
+    "/delivery-orders": "Delivery",
+    "/driver-list": "Delivery"
+  },
+  "sidebar.section.keuanganLaporan": {
+    "/expense-category": "Pengeluaran",
+    "/expense": "Pengeluaran",
+    "/accounting": "Akuntansi & Pajak",
+    "/tax-list": "Akuntansi & Pajak",
+    "/report/sales": "Laporan Penjualan",
+    "/best-selling": "Laporan Penjualan",
+    "/report/daily": "Laporan Keuangan",
+    "/report/cash-flow": "Laporan Keuangan"
+  },
+  "sidebar.section.membershipSdm": {
+    "/member-tier": "Membership",
+    "/member-list": "Membership",
+    "/department-list": "Organisasi",
+    "/position-list": "Organisasi",
+    "/employee-list": "Karyawan & Shift",
+    "/user-list": "Karyawan & Shift",
+    "/shift-list": "Karyawan & Shift"
+  },
+  "sidebar.section.pengaturan": {
+    "/invoice-page": "Struk & Pembayaran",
+    "/type-payment-list": "Struk & Pembayaran",
+    "/tax-list": "Struk & Pembayaran",
+    "/role-management": "Sistem & Keamanan",
+    "/backup": "Sistem & Keamanan"
+  }
+};
+
+[sidebarMenuSuperAdmin, sidebarMenuAdmin].forEach((menu) => {
+  menu.forEach((section) => {
+    const mapping = accessMenuSubGroups[section.i18nKey];
+    if (!mapping || !Array.isArray(section.children)) return;
+    section.children.forEach((child) => {
+      if (mapping[child.href]) child.group = mapping[child.href];
+    });
+  });
+});
 
 export const sidebarMenuCashier = [
   {
@@ -1600,6 +1685,19 @@ export const navCategories = {
     }
   ]
 };
+
+// Terapkan sub-grup juga ke navCategories (dipakai NavigationModal)
+[navCategories.super_admin, navCategories.admin].forEach((cats) => {
+  (cats || []).forEach((cat) => {
+    (cat.sections || []).forEach((section) => {
+      const mapping = accessMenuSubGroups[section.i18nKey];
+      if (!mapping || !Array.isArray(section.items)) return;
+      section.items.forEach((item) => {
+        if (mapping[item.href]) item.group = mapping[item.href];
+      });
+    });
+  });
+});
 
 export const urlWithArrowBack = [
   { url: 0, title: "Dashboard", i18nKey: "sidebar.dashboardAdmin", pathName: "/dashboard-admin" },

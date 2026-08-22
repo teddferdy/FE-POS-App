@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,11 +22,13 @@ export function Combobox({
   searchPlaceholder = "Cari...",
   emptyMessage = "Data tidak ditemukan",
   disabled = false,
-  loading = false
+  loading = false,
+  onClear
 }) {
   const [open, setOpen] = React.useState(false);
 
   const selected = options.find((opt) => opt.value === value);
+  const showClear = !!onClear && !!selected && !disabled && !loading;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -47,7 +49,24 @@ export function Combobox({
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <span className="ml-2 flex items-center gap-1 shrink-0">
+            {showClear && (
+              <span
+                role="button"
+                tabIndex={-1}
+                aria-label="Clear"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onClear?.();
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                className="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-destructive transition-colors">
+                <X size={14} />
+              </span>
+            )}
+            <ChevronsUpDown className="h-4 w-4 opacity-50" />
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">

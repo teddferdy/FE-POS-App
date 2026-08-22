@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { z } from "zod";
 import { getMemberById, editMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
@@ -30,6 +30,7 @@ const editSchema = z.object({
 const EditMember = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,6 +88,7 @@ const EditMember = () => {
 
   const editMutation = useMutation(editMember, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["members"]);
       setIsSubmitting(false);
       setSuccessModal(true);
     },
