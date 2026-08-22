@@ -2867,6 +2867,8 @@
   "tips.promo2": "Set appropriate usage limits to control promotional costs",
   "commandPalette.placeholder": "Search pages...",
   "commandPalette.notFound": "No results for \"{{query}}\"",
+  "commandPalette.groupMain": "Main",
+  "commandPalette.groupMore": "Other Pages",
   "/dashboard-super-admin": "Dashboard Super Admin",
   "/dashboard-admin": "Dashboard Admin",
   "/home": "Cashier",

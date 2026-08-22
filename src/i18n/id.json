@@ -2864,6 +2864,8 @@
   "tips.promo2": "Tetapkan batas penggunaan yang sesuai untuk mengontrol biaya promosi",
   "commandPalette.placeholder": "Cari halaman...",
   "commandPalette.notFound": "Tidak ditemukan untuk \"{{query}}\"",
+  "commandPalette.groupMain": "Utama",
+  "commandPalette.groupMore": "Halaman Lainnya",
   "guide.auth.login.s1": "Selamat Datang",
   "guide.auth.login.s1desc": "Panduan interaktif ini akan membantu kamu memahami halaman Login",
   "guide.auth.login.s2": "Username atau Email",
