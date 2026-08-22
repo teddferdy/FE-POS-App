@@ -38,14 +38,23 @@ export const getGoodsReceiptByPO = async (poId) => {
   return data;
 };
 
-export const addGoodsReceipt = async (payload, file) => {
-  if (file) {
-    const formData = new FormData();
-    formData.append("data", JSON.stringify(payload));
-    formData.append("file", file);
-    const { data, status } = await axiosInstance.post("/goods-receipt/create", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    });
+const buildDocFormData = (payload, files) => {
+  const formData = new FormData();
+  formData.append("data", JSON.stringify(payload));
+  (files || []).forEach((f) => {
+    if (f instanceof File) formData.append("file", f);
+  });
+  return formData;
+};
+
+export const addGoodsReceipt = async (payload, files = []) => {
+  const fileList = Array.isArray(files) ? files : files ? [files] : [];
+  if (fileList.length > 0) {
+    const { data, status } = await axiosInstance.post(
+      "/goods-receipt/create",
+      buildDocFormData(payload, fileList),
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
     if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
     return data;
   }
@@ -54,14 +63,14 @@ export const addGoodsReceipt = async (payload, file) => {
   return data;
 };
 
-export const editGoodsReceipt = async (id, payload, file) => {
-  if (file) {
-    const formData = new FormData();
-    formData.append("data", JSON.stringify(payload));
-    formData.append("file", file);
-    const { data, status } = await axiosInstance.put(`/goods-receipt/update/${id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    });
+export const editGoodsReceipt = async (id, payload, files = []) => {
+  const fileList = Array.isArray(files) ? files : files ? [files] : [];
+  if (fileList.length > 0) {
+    const { data, status } = await axiosInstance.put(
+      `/goods-receipt/update/${id}`,
+      buildDocFormData(payload, fileList),
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
     if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
     return data;
   }

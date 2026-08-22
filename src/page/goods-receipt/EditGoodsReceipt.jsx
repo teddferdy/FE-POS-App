@@ -2,9 +2,24 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
-import { Save, X, Trash2, Package, Lightbulb, Search, ImagePlus, CloudUpload } from "lucide-react";
+import {
+  Save,
+  X,
+  Trash2,
+  Package,
+  Lightbulb,
+  Search,
+  CloudUpload,
+  ClipboardCheck,
+  RotateCcw,
+  History
+} from "lucide-react";
 import { toast } from "sonner";
-import { editGoodsReceipt, getGoodsReceiptById } from "@/services/goods-receipt";
+import {
+  editGoodsReceipt,
+  getGoodsReceiptById,
+  getGoodsReceiptByPO
+} from "@/services/goods-receipt";
 import { getAllPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
 import { getAllIngredients } from "@/services/ingredient";
 import { getAllEmployee } from "@/services/employee";
@@ -48,9 +63,31 @@ const EditGoodsReceipt = () => {
   const [picOpen, setPicOpen] = useState(false);
   const [selectedPic, setSelectedPic] = useState(null);
   const picRef = useRef(null);
-  const [docFile, setDocFile] = useState(null);
-  const [docPreview, setDocPreview] = useState(null);
+  // multiple documentation photos: [{ file?, url, isNew }]
+  const [docs, setDocs] = useState([]);
   const docInputRef = useRef(null);
+  const [suratJalan, setSuratJalan] = useState("");
+  const [taxInvoiceNo, setTaxInvoiceNo] = useState("");
+  const [shippingCost, setShippingCost] = useState("");
+  const [grHistory, setGrHistory] = useState([]);
+
+  const docFiles = docs.filter((d) => d.isNew).map((d) => d.file);
+
+  useEffect(() => {
+    const isDirty =
+      items.some((it) => parseFloat(it.qtyReceived) > 0) ||
+      docs.some((d) => d.isNew) ||
+      suratJalan.trim() ||
+      taxInvoiceNo.trim() ||
+      parseFloat(shippingCost) > 0;
+    if (!isDirty || !loaded) return;
+    const handler = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [items, docs, suratJalan, taxInvoiceNo, shippingCost, loaded]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -107,6 +144,9 @@ const EditGoodsReceipt = () => {
     setPoId(receipt.purchaseOrderId || "");
     setReceivedDate(receipt.receivedDate ? new Date(receipt.receivedDate) : new Date());
     setNotes(receipt.notes || "");
+    setSuratJalan(receipt.suratJalan || "");
+    setTaxInvoiceNo(receipt.taxInvoiceNo || "");
+    setShippingCost(receipt.shippingCost ? String(Number(receipt.shippingCost)) : "");
     if (receipt.picData) {
       setSelectedPic({
         id: receipt.picData.id,
@@ -114,7 +154,18 @@ const EditGoodsReceipt = () => {
         userName: receipt.picData.userName
       });
     }
-    if (receipt.documentation) setDocPreview(receipt.documentation);
+    if (receipt.documentation) {
+      try {
+        const parsed = JSON.parse(receipt.documentation);
+        if (Array.isArray(parsed)) {
+          setDocs(parsed.filter(Boolean).map((url) => ({ url, isNew: false })));
+        } else {
+          setDocs([{ url: receipt.documentation, isNew: false }]);
+        }
+      } catch {
+        setDocs([{ url: receipt.documentation, isNew: false }]);
+      }
+    }
     if (receipt.items) {
       setItems(
         receipt.items.map((item) => ({
@@ -127,6 +178,8 @@ const EditGoodsReceipt = () => {
           unit: item.unit || "pcs",
           qtyReceived: String(item.qtyReceived || 0),
           conditionNotes: item.conditionNotes || "",
+          batchNumber: item.batchNumber || "",
+          expiryDate: item.expiryDate || "",
           costPrice: item.costPrice || 0,
           conversionToBase: item.conversionToBase || 1,
           isFromPo: true
@@ -156,6 +209,8 @@ const EditGoodsReceipt = () => {
           unit: item.unit || "pcs",
           qtyReceived: "0",
           conditionNotes: "",
+          batchNumber: "",
+          expiryDate: "",
           costPrice: item.price || 0,
           conversionToBase: item.conversionToBase || 1,
           isFromPo: true
@@ -185,6 +240,39 @@ const EditGoodsReceipt = () => {
   const filteredEmployees = employees.filter((e) =>
     (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
   );
+
+  // riwayat penerimaan lain utk PO yang sama
+  const { data: grHistoryData } = useQuery(
+    ["gr-history-po-edit", poId],
+    () => getGoodsReceiptByPO(poId),
+    { enabled: !!poId }
+  );
+  useEffect(() => {
+    setGrHistory(
+      (grHistoryData?.data || []).filter(
+        (g) => String(g.id) !== String(id) && g.status !== "cancelled"
+      )
+    );
+  }, [grHistoryData, id]);
+
+  const handleReceiveAll = () => {
+    let filled = 0;
+    const next = items.map((it) => {
+      if (!it.isFromPo) return it;
+      const remaining = getItemRemaining(it);
+      if (remaining > 0 && parseFloat(it.qtyReceived || 0) !== remaining) {
+        filled += 1;
+        return { ...it, qtyReceived: String(remaining) };
+      }
+      return it;
+    });
+    if (filled > 0) {
+      setItems(next);
+      toast.success(t("page.goodsReceipt.add.toast.receiveAllDone", { count: filled }));
+    } else {
+      toast.info(t("page.goodsReceipt.add.toast.receiveAllNone"));
+    }
+  };
 
   // Max qty per line when editing: PO ordered minus received by OTHER receipts
   // (this receipt's own previous contribution is reversed on save)
@@ -258,21 +346,37 @@ const EditGoodsReceipt = () => {
   };
 
   const handleDocChange = (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (f.size > 5 * 1024 * 1024) {
+    const incoming = Array.from(e.target.files || []);
+    if (incoming.length === 0) return;
+    const tooLarge = incoming.find((f) => f.size > 5 * 1024 * 1024);
+    if (tooLarge) {
       toast.error(t("page.goodsReceipt.add.form.fileTooLarge"));
       e.target.value = "";
       return;
     }
-    setDocFile(f);
-    setDocPreview(URL.createObjectURL(f));
+    const room = 5 - docs.length;
+    if (room <= 0) {
+      toast.error(t("page.goodsReceipt.add.form.docMaxReached"));
+      e.target.value = "";
+      return;
+    }
+    const accepted = incoming.slice(0, room);
+    if (accepted.length < incoming.length) {
+      toast.info(t("page.goodsReceipt.add.form.docMaxReached"));
+    }
+    setDocs((prev) => [
+      ...prev,
+      ...accepted.map((f) => ({ file: f, url: URL.createObjectURL(f), isNew: true }))
+    ]);
+    e.target.value = "";
   };
 
-  const clearDoc = () => {
-    setDocFile(null);
-    setDocPreview(null);
-    if (docInputRef.current) docInputRef.current.value = "";
+  const removeDoc = (idx) => {
+    setDocs((prev) => {
+      const target = prev[idx];
+      if (target?.isNew) URL.revokeObjectURL(target.url);
+      return prev.filter((_, i) => i !== idx);
+    });
   };
 
   const removeItem = (idx) => {
@@ -306,6 +410,17 @@ const EditGoodsReceipt = () => {
       });
       return;
     }
+    // tanggal terima tidak boleh sebelum tanggal PO
+    const poOrderDate = poDetail?.data?.orderDate ? new Date(poDetail.data.orderDate) : null;
+    const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    if (
+      poOrderDate &&
+      receivedDate instanceof Date &&
+      startOfDay(receivedDate) < startOfDay(poOrderDate)
+    ) {
+      toast.error(t("page.goodsReceipt.add.toast.dateBeforePo"));
+      return;
+    }
     setIsSubmitting(true);
     try {
       const payload = {
@@ -313,6 +428,9 @@ const EditGoodsReceipt = () => {
           receivedDate instanceof Date ? receivedDate.toISOString().split("T")[0] : receivedDate,
         notes,
         pic: selectedPic?.id || null,
+        suratJalan: suratJalan.trim() || null,
+        taxInvoiceNo: taxInvoiceNo.trim() || null,
+        shippingCost: parseFloat(shippingCost) || 0,
         status: saveAsDraft ? "draft" : "completed",
         items: validItems.map((it) => ({
           purchaseOrderItem: it.purchaseOrderItem || null,
@@ -322,12 +440,15 @@ const EditGoodsReceipt = () => {
           qtyReceived: parseFloat(it.qtyReceived),
           unit: it.unit,
           conditionNotes: it.conditionNotes,
+          batchNumber: it.batchNumber?.trim() || null,
+          expiryDate: it.expiryDate || null,
           costPrice: parseFloat(it.costPrice) || 0,
           conversionToBase: parseFloat(it.conversionToBase) || 1
         }))
       };
-      if (!docFile) payload.documentation = docPreview || null;
-      await editGoodsReceipt(id, payload, docFile);
+      // dokumentasi: kirim ulang URL lama yang dipertahankan sebagai JSON array
+      payload.documentation = docs.filter((d) => !d.isNew).map((d) => d.url);
+      await editGoodsReceipt(id, payload, docFiles);
       toast.success(t("page.goodsReceipt.edit.toast.success"), {
         description: t("page.goodsReceipt.edit.toast.successDesc")
       });
@@ -529,38 +650,35 @@ const EditGoodsReceipt = () => {
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 ref={docInputRef}
                 className="hidden"
                 onChange={handleDocChange}
               />
-              <div
-                onClick={() => docInputRef.current?.click()}
-                className="relative rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center bg-muted/30 overflow-hidden cursor-pointer group min-h-[88px]">
-                {docPreview ? (
-                  <>
-                    <img
-                      src={docPreview}
-                      alt={t("page.goodsReceipt.add.form.documentation")}
-                      className="w-full h-auto max-h-40 object-contain"
-                    />
+              <div className="grid grid-cols-3 gap-2">
+                {docs.map((d, idx) => (
+                  <div
+                    key={`${d.url}-${idx}`}
+                    className="relative rounded-lg border border-border overflow-hidden bg-muted/30">
+                    <img src={d.url} alt={`doc-${idx + 1}`} className="w-full h-20 object-cover" />
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        clearDoc();
-                      }}
-                      className="absolute top-2 right-2 z-10 p-2 bg-background/90 rounded-full text-muted-foreground hover:text-destructive shadow-md">
-                      <X size={14} />
+                      onClick={() => removeDoc(idx)}
+                      className="absolute top-1 right-1 p-1 bg-background/90 rounded-full text-muted-foreground hover:text-destructive shadow">
+                      <X size={12} />
                     </button>
-                  </>
-                ) : (
-                  <div className="flex items-center gap-3 text-muted-foreground group-hover:text-primary transition-colors px-4 py-5">
-                    <CloudUpload size={28} />
-                    <span className="text-sm font-semibold">
-                      {t("page.goodsReceipt.add.form.docClick")}
-                    </span>
-                    <ImagePlus size={16} className="opacity-50" />
                   </div>
+                ))}
+                {docs.length < 5 && (
+                  <button
+                    type="button"
+                    onClick={() => docInputRef.current?.click()}
+                    className="h-20 rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary bg-muted/30">
+                    <CloudUpload size={18} />
+                    <span className="text-[11px] font-medium">
+                      {t("page.goodsReceipt.add.form.docAdd")}
+                    </span>
+                  </button>
                 )}
               </div>
               <p className="text-[11px] text-muted-foreground">
@@ -569,27 +687,99 @@ const EditGoodsReceipt = () => {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>
+                {t("page.goodsReceipt.add.form.suratJalan")}{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  ({t("common.optional")})
+                </span>
+              </Label>
+              <Input
+                type="text"
+                value={suratJalan}
+                onChange={(e) => setSuratJalan(e.target.value)}
+                placeholder={t("page.goodsReceipt.add.placeholder.suratJalan")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>
+                {t("page.goodsReceipt.add.form.taxInvoiceNo")}{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  ({t("common.optional")})
+                </span>
+              </Label>
+              <Input
+                type="text"
+                value={taxInvoiceNo}
+                onChange={(e) => setTaxInvoiceNo(e.target.value)}
+                placeholder={t("page.goodsReceipt.add.placeholder.taxInvoiceNo")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>
+                {t("page.goodsReceipt.add.form.shippingCost")}{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  ({t("common.optional")})
+                </span>
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                  Rp
+                </span>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={shippingCost ? Number(shippingCost).toLocaleString("id-ID") : ""}
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9]/g, "");
+                    setShippingCost(raw);
+                  }}
+                  className="pl-10"
+                  placeholder="0"
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {t("page.goodsReceipt.add.form.shippingHint")}
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <Label>{t("page.goodsReceipt.edit.form.items")}</Label>
-              {poId && receiptProgress.target > 0 && (
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                    receiptProgress.done
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
-                      : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
-                  }`}>
-                  {receiptProgress.done
-                    ? t("page.goodsReceipt.add.status.selesai")
-                    : t("page.goodsReceipt.add.status.belumSelesai")}
-                  {!receiptProgress.done && (
-                    <span className="font-normal">
-                      ({receiptProgress.filled.toLocaleString("id-ID")}/
-                      {receiptProgress.target.toLocaleString("id-ID")})
-                    </span>
-                  )}
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {poId && items.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 h-8"
+                    onClick={handleReceiveAll}>
+                    <ClipboardCheck size={14} />
+                    {t("page.goodsReceipt.add.form.receiveAll")}
+                  </Button>
+                )}
+                {poId && receiptProgress.target > 0 && (
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                      receiptProgress.done
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                        : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                    }`}>
+                    {receiptProgress.done
+                      ? t("page.goodsReceipt.add.status.selesai")
+                      : t("page.goodsReceipt.add.status.belumSelesai")}
+                    {!receiptProgress.done && (
+                      <span className="font-normal">
+                        ({receiptProgress.filled.toLocaleString("id-ID")}/
+                        {receiptProgress.target.toLocaleString("id-ID")})
+                      </span>
+                    )}
+                  </span>
+                )}
+              </div>
             </div>
             {loadingPo ? (
               <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
@@ -617,6 +807,12 @@ const EditGoodsReceipt = () => {
                       </th>
                       <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
                         {t("page.goodsReceipt.add.table.costPrice")}
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                        {t("page.goodsReceipt.add.table.batch")}
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                        {t("page.goodsReceipt.add.table.expiry")}
                       </th>
                       <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
                         {t("page.goodsReceipt.edit.table.notes")}
@@ -812,6 +1008,23 @@ const EditGoodsReceipt = () => {
                         <td className="px-3 py-2">
                           <Input
                             type="text"
+                            value={item.batchNumber || ""}
+                            onChange={(e) => updateItem(idx, "batchNumber", e.target.value)}
+                            className="h-8 text-xs w-24"
+                            placeholder={t("page.goodsReceipt.add.placeholder.batch")}
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <Input
+                            type="date"
+                            value={item.expiryDate || ""}
+                            onChange={(e) => updateItem(idx, "expiryDate", e.target.value)}
+                            className="h-8 text-xs w-36"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <Input
+                            type="text"
                             value={item.conditionNotes}
                             onChange={(e) => updateItem(idx, "conditionNotes", e.target.value)}
                             className="h-8 text-xs"
@@ -849,6 +1062,48 @@ const EditGoodsReceipt = () => {
               placeholder={t("page.goodsReceipt.edit.placeholder.notes")}
             />
           </div>
+
+          {grHistory.length > 0 && (
+            <div className="rounded-lg border bg-muted/30 px-4 py-3">
+              <div className="flex items-center gap-2 mb-2">
+                <History size={14} className="text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">
+                  {t("page.goodsReceipt.add.history.title", { count: grHistory.length })}
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                {grHistory.map((g) => {
+                  const totalQty = (g.items || []).reduce(
+                    (s, it) => s + (Number(it.qtyReceived) || 0),
+                    0
+                  );
+                  return (
+                    <div key={g.id} className="flex items-center justify-between gap-3 text-xs">
+                      <span className="font-medium">{g.receiptNumber}</span>
+                      <span className="text-muted-foreground">
+                        {g.receivedDate
+                          ? new Date(g.receivedDate).toLocaleDateString("id-ID")
+                          : "-"}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {totalQty.toLocaleString("id-ID")} unit
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                          g.status === "completed"
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                        }`}>
+                        {g.status === "completed"
+                          ? t("page.goodsReceipt.add.history.completed")
+                          : t("page.goodsReceipt.add.history.draft")}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {items.length > 0 && (
             <div className="rounded-lg border bg-muted/30 px-4 py-3 space-y-2 text-sm">
@@ -929,6 +1184,17 @@ const EditGoodsReceipt = () => {
                     : "Rp 0"}
                 </span>
               </div>
+              {grSummary.shortageValue > 0 && poId && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-2 gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20"
+                  onClick={() => navigate(`/purchase-order/detail?id=${poId}`)}>
+                  <RotateCcw size={14} />
+                  {t("page.goodsReceipt.add.summary.createReturnCta")}
+                </Button>
+              )}
             </div>
           )}
 
@@ -947,7 +1213,7 @@ const EditGoodsReceipt = () => {
                 className="w-full sm:w-auto justify-center"
                 onClick={() => setDraftModal(true)}
                 disabled={isSubmitting}>
-                Simpan sebagai Draft
+                {t("common.saveAsDraft")}
               </Button>
               <Button
                 type="button"
@@ -991,9 +1257,9 @@ const EditGoodsReceipt = () => {
           type="confirm"
           open={draftModal}
           onOpenChange={setDraftModal}
-          title="Simpan sebagai Draft"
-          description="Data akan disimpan sebagai draft"
-          confirmText="Ya, Simpan"
+          title={t("common.saveAsDraftTitle")}
+          description={t("common.saveAsDraftDesc")}
+          confirmText={t("common.yesSaveDraft")}
           onConfirm={() => {
             setDraftModal(false);
             doSubmit(true);
