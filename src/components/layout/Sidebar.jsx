@@ -13,7 +13,8 @@ import {
   MoreHorizontal,
   DollarSign,
   FileText,
-  QrCode
+  QrCode,
+  X
 } from "lucide-react";
 import {
   sidebarMenuSuperAdmin,
@@ -291,6 +292,17 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
               }`}>
             {t("sidebar.brandName") || "Brand"}
           </span>
+          {!collapsed && onToggle && (
+            // ponytail: tombol tutup khusus drawer (iPad/mobile) — di desktop
+            // collapsed tetap true sehingga tombol ini tidak pernah muncul
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-label={t("common.close", { defaultValue: "Tutup" })}
+              className="ml-auto shrink-0 p-2 -mr-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
