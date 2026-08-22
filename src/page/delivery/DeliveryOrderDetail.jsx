@@ -182,7 +182,7 @@ const DeliveryOrderDetail = () => {
                 {t("page.delivery.detail.deliveryInfo")}
               </h3>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">
                   {t("page.delivery.detail.orderNumber")}

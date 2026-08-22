@@ -208,7 +208,7 @@ const CashRegisterDetail = () => {
           </span>
         </nav>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
@@ -238,21 +238,23 @@ const CashRegisterDetail = () => {
               <h2 className="text-sm font-semibold">{t("page.cashRegister.detail.infoTitle")}</h2>
             </div>
             <div className="p-6">
-              <table className="w-full text-sm">
-                <tbody>
-                  {leftCol.map((r) => (
-                    <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                      <td className="py-2.5 pr-4 w-40">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <r.icon size={14} />
-                          <span>{r.label}</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 font-medium">{r.value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {leftCol.map((r) => (
+                      <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                        <td className="py-2.5 pr-4 w-40">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <r.icon size={14} />
+                            <span>{r.label}</span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 font-medium">{r.value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
           <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -262,24 +264,26 @@ const CashRegisterDetail = () => {
               </h2>
             </div>
             <div className="p-6">
-              <table className="w-full text-sm">
-                <tbody>
-                  {rightCol.map((r) => (
-                    <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                      <td className="py-2.5 pr-4 w-40">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <r.icon size={14} />
-                          <span>{r.label}</span>
-                        </div>
-                      </td>
-                      <td
-                        className={`py-2.5 ${r.mono ? "font-mono font-semibold" : "font-medium"}`}>
-                        {r.value}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {rightCol.map((r) => (
+                      <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                        <td className="py-2.5 pr-4 w-40">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <r.icon size={14} />
+                            <span>{r.label}</span>
+                          </div>
+                        </td>
+                        <td
+                          className={`py-2.5 ${r.mono ? "font-mono font-semibold" : "font-medium"}`}>
+                          {r.value}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
