@@ -1471,7 +1471,7 @@ const AddSupplier = () => {
                           searchPlaceholder="Cari satuan..."
                         />
                       </div>
-                      <div className="col-span-4 space-y-1">
+                      <div className="col-span-6 space-y-1">
                         <label className="text-xs text-muted-foreground">
                           {t("page.supplier.comparison.table.leadTime")}
                         </label>
@@ -1485,22 +1485,24 @@ const AddSupplier = () => {
                               const v = e.target.value.replace(/[^0-9]/g, "");
                               setProductLeadTime(v);
                             }}
-                            className="flex-1"
+                            className="flex-1 min-w-0"
                           />
-                          <Combobox
-                            options={[
-                              { value: "hari", label: "Hari" },
-                              { value: "jam", label: "Jam" },
-                              { value: "menit", label: "Menit" }
-                            ]}
-                            value={productLeadTimeUnit}
-                            onChange={(v) => setProductLeadTimeUnit(v)}
-                            placeholder="Pilih..."
-                            searchPlaceholder="Cari..."
-                          />
+                          <div className="flex-1 min-w-0">
+                            <Combobox
+                              options={[
+                                { value: "hari", label: "Hari" },
+                                { value: "jam", label: "Jam" },
+                                { value: "menit", label: "Menit" }
+                              ]}
+                              value={productLeadTimeUnit}
+                              onChange={(v) => setProductLeadTimeUnit(v)}
+                              placeholder="Pilih..."
+                              searchPlaceholder="Cari..."
+                            />
+                          </div>
                         </div>
                       </div>
-                      <div className="col-span-4 space-y-1">
+                      <div className="col-span-3 space-y-1">
                         <label className="text-xs text-muted-foreground">Kualitas (0-5)</label>
                         <Input
                           type="text"
@@ -1517,7 +1519,7 @@ const AddSupplier = () => {
                           }}
                         />
                       </div>
-                      <div className="col-span-4 space-y-1">
+                      <div className="col-span-3 space-y-1">
                         <label className="text-xs text-muted-foreground">Min Order</label>
                         <Input
                           type="text"

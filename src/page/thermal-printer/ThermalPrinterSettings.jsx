@@ -1,12 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useCookies } from "react-cookie";
 import {
   Printer,
-  Wifi,
-  Usb,
-  Bluetooth,
   CheckCircle,
   XCircle,
   RefreshCw,
@@ -24,26 +20,24 @@ import { toast } from "sonner";
 import { testPrint, getPrinterStatus, configurePrinter } from "@/services/thermalPrinter";
 
 const printerTypes = [
-  { value: 'auto', label: 'Otomatis (Disarankan)', icon: '🔍' },
-  { value: 'network', label: 'Jaringan (LAN/WiFi)', icon: '🌐' },
-  { value: 'usb', label: 'USB (Thermal Printer)', icon: '🔌' },
-  { value: 'bluetooth', label: 'Bluetooth (macOS)', icon: '📱' },
-  { value: 'file', label: 'File (Testing)', icon: '📄' }
+  { value: "auto", label: "Otomatis (Disarankan)", icon: "🔍" },
+  { value: "network", label: "Jaringan (LAN/WiFi)", icon: "🌐" },
+  { value: "usb", label: "USB (Thermal Printer)", icon: "🔌" },
+  { value: "bluetooth", label: "Bluetooth (macOS)", icon: "📱" },
+  { value: "file", label: "File (Testing)", icon: "📄" }
 ];
 
 const ThermalPrinterSettings = () => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
   const isSuperAdmin = cookie?.user?.roleType === "super_admin";
-  const store = cookie?.activeStore || cookie.user?.store;
-  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
   const [printerConfig, setPrinterConfig] = useState({
-    type: 'auto',
-    devicePath: '/dev/usb/lp0',
-    ipAddress: '',
+    type: "auto",
+    devicePath: "/dev/usb/lp0",
+    ipAddress: "",
     port: 9100,
-    macAddress: '',
+    macAddress: "",
     columns: 32
   });
   const [status, setStatus] = useState(null);
@@ -56,7 +50,7 @@ const ThermalPrinterSettings = () => {
       const data = await getPrinterStatus();
       setStatus(data.data);
     } catch (error) {
-      console.error('Failed to get printer status:', error);
+      console.error("Failed to get printer status:", error);
       setStatus({ connected: false, error: error.message });
     }
   }, []);
@@ -103,9 +97,7 @@ const ThermalPrinterSettings = () => {
       <Card className="p-6 text-center">
         <Printer className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">{t("page.thermalPrinter.adminOnly")}</h3>
-        <p className="text-muted-foreground">
-          {t("page.thermalPrinter.adminOnlyDesc")}
-        </p>
+        <p className="text-muted-foreground">{t("page.thermalPrinter.adminOnlyDesc")}</p>
       </Card>
     );
   }
@@ -117,9 +109,7 @@ const ThermalPrinterSettings = () => {
           <Printer className="h-6 w-6" />
           {t("sidebar.thermalPrinter")}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t("page.thermalPrinter.description")}
-        </p>
+        <p className="text-sm text-muted-foreground mt-1">{t("page.thermalPrinter.description")}</p>
       </div>
 
       {/* Status Card */}
@@ -130,7 +120,11 @@ const ThermalPrinterSettings = () => {
             {t("page.thermalPrinter.status")}
           </h2>
           <Button variant="outline" size="sm" onClick={fetchStatus} disabled={testing}>
-            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            {testing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
           </Button>
         </div>
         <div className="p-4 space-y-3">
@@ -140,12 +134,16 @@ const ThermalPrinterSettings = () => {
               {status?.connected ? (
                 <>
                   <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span className="text-green-600 font-medium">{t("page.thermalPrinter.connected")}</span>
+                  <span className="text-green-600 font-medium">
+                    {t("page.thermalPrinter.connected")}
+                  </span>
                 </>
               ) : (
                 <>
                   <XCircle className="h-4 w-4 text-red-500" />
-                  <span className="text-red-600 font-medium">{t("page.thermalPrinter.disconnected")}</span>
+                  <span className="text-red-600 font-medium">
+                    {t("page.thermalPrinter.disconnected")}
+                  </span>
                 </>
               )}
             </div>
@@ -165,7 +163,9 @@ const ThermalPrinterSettings = () => {
           {status?.ipAddress && (
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t("page.thermalPrinter.ipAddress")}</span>
-              <span className="font-mono text-sm text-muted-foreground">{status.ipAddress}:{status.port || 9100}</span>
+              <span className="font-mono text-sm text-muted-foreground">
+                {status.ipAddress}:{status.port || 9100}
+              </span>
             </div>
           )}
           {status?.error && (
@@ -185,7 +185,7 @@ const ThermalPrinterSettings = () => {
             <Select
               value={printerConfig.type}
               onChange={(v) => setPrinterConfig({ ...printerConfig, type: v })}
-              options={printerTypes.map(t => ({ value: t.value, label: `${t.icon} ${t.label}` }))}
+              options={printerTypes.map((t) => ({ value: t.value, label: `${t.icon} ${t.label}` }))}
               className="w-full sm:w-64"
             />
             <p className="text-xs text-muted-foreground mt-1">
@@ -193,7 +193,7 @@ const ThermalPrinterSettings = () => {
             </p>
           </div>
 
-          {printerConfig.type === 'network' && (
+          {printerConfig.type === "network" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="ipAddress">{t("page.thermalPrinter.ipAddress")}</Label>
@@ -202,7 +202,9 @@ const ThermalPrinterSettings = () => {
                   type="text"
                   placeholder="192.168.1.100"
                   value={printerConfig.ipAddress}
-                  onChange={(e) => setPrinterConfig({ ...printerConfig, ipAddress: e.target.value })}
+                  onChange={(e) =>
+                    setPrinterConfig({ ...printerConfig, ipAddress: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -212,13 +214,15 @@ const ThermalPrinterSettings = () => {
                   type="number"
                   placeholder="9100"
                   value={printerConfig.port}
-                  onChange={(e) => setPrinterConfig({ ...printerConfig, port: parseInt(e.target.value) || 9100 })}
+                  onChange={(e) =>
+                    setPrinterConfig({ ...printerConfig, port: parseInt(e.target.value) || 9100 })
+                  }
                 />
               </div>
             </div>
           )}
 
-          {printerConfig.type === 'usb' && (
+          {printerConfig.type === "usb" && (
             <div>
               <Label htmlFor="devicePath">{t("page.thermalPrinter.devicePath")}</Label>
               <Input
@@ -234,7 +238,7 @@ const ThermalPrinterSettings = () => {
             </div>
           )}
 
-          {printerConfig.type === 'bluetooth' && (
+          {printerConfig.type === "bluetooth" && (
             <div>
               <Label htmlFor="macAddress">{t("page.thermalPrinter.macAddress")}</Label>
               <Input
@@ -242,7 +246,9 @@ const ThermalPrinterSettings = () => {
                 type="text"
                 placeholder="AA:BB:CC:DD:EE:FF"
                 value={printerConfig.macAddress}
-                onChange={(e) => setPrinterConfig({ ...printerConfig, macAddress: e.target.value.toUpperCase() })}
+                onChange={(e) =>
+                  setPrinterConfig({ ...printerConfig, macAddress: e.target.value.toUpperCase() })
+                }
               />
               <p className="text-xs text-muted-foreground mt-1">
                 {t("page.thermalPrinter.macAddressDesc")}
@@ -254,7 +260,9 @@ const ThermalPrinterSettings = () => {
             <Label htmlFor="columns">{t("page.thermalPrinter.columns")}</Label>
             <Select
               value={String(printerConfig.columns)}
-              onChange={(e) => setPrinterConfig({ ...printerConfig, columns: parseInt(e.target.value) })}
+              onChange={(e) =>
+                setPrinterConfig({ ...printerConfig, columns: parseInt(e.target.value) })
+              }
               options={[
                 { value: "32", label: "32 kolom (58mm)" },
                 { value: "48", label: "48 kolom (80mm)" }
@@ -265,7 +273,11 @@ const ThermalPrinterSettings = () => {
 
           <div className="pt-4 border-t">
             <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
               {t("page.thermalPrinter.save")}
             </Button>
           </div>
@@ -285,14 +297,18 @@ const ThermalPrinterSettings = () => {
             onClick={handleTestPrint}
             disabled={testing || !status?.connected}
             className="w-full sm:w-auto flex items-center gap-2"
-            size="lg"
-          >
-            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+            size="lg">
+            {testing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Printer className="h-4 w-4" />
+            )}
             {testing ? t("page.thermalPrinter.printing") : t("page.thermalPrinter.testPrintBtn")}
           </Button>
 
           {lastTest && (
-            <div className={`p-3 rounded-lg ${lastTest.success ? 'bg-green-50 dark:bg-green-900/20 border border-green-200' : 'bg-red-50 dark:bg-red-900/20 border border-red-200'}`}>
+            <div
+              className={`p-3 rounded-lg ${lastTest.success ? "bg-green-50 dark:bg-green-900/20 border border-green-200" : "bg-red-50 dark:bg-red-900/20 border border-red-200"}`}>
               <div className="flex items-center gap-2">
                 {lastTest.success ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
@@ -300,7 +316,11 @@ const ThermalPrinterSettings = () => {
                   <XCircle className="h-4 w-4 text-red-500" />
                 )}
                 <div className="flex-1">
-                  <p className="font-medium">{lastTest.success ? t("page.thermalPrinter.testSuccess") : t("page.thermalPrinter.testFailed")}</p>
+                  <p className="font-medium">
+                    {lastTest.success
+                      ? t("page.thermalPrinter.testSuccess")
+                      : t("page.thermalPrinter.testFailed")}
+                  </p>
                   <p className="text-sm text-muted-foreground">{lastTest.message}</p>
                 </div>
                 <span className="text-xs text-muted-foreground">
@@ -316,9 +336,11 @@ const ThermalPrinterSettings = () => {
       <Card>
         <h2 className="font-semibold p-4 border-b">{t("page.thermalPrinter.preview")}</h2>
         <div className="p-4">
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 font-mono text-sm max-w-xs mx-auto" style={{ width: '200px', fontSize: '11px', lineHeight: '1.4' }}>
-            <pre className="text-left whitespace-pre-wrap" style={{ fontSize: '10px' }}>
-{`TOKO CONTOH
+          <div
+            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 font-mono text-sm max-w-xs mx-auto"
+            style={{ width: "200px", fontSize: "11px", lineHeight: "1.4" }}>
+            <pre className="text-left whitespace-pre-wrap" style={{ fontSize: "10px" }}>
+              {`TOKO CONTOH
 Jl. Raya No. 123
 Telp: 021-1234567
 ==============================
@@ -356,19 +378,41 @@ Terima kasih telah berbelanja!
         <h2 className="font-semibold p-4 border-b">{t("page.thermalPrinter.supportedPrinters")}</h2>
         <div className="p-4 space-y-3">
           {[
-            { name: 'Epson TM-T20/T20II/T88', interface: 'USB / Ethernet / Bluetooth', note: 'Fully supported' },
-            { name: 'Star Micronics TSP100/TSP143', interface: 'USB / Ethernet / Bluetooth', note: 'Fully supported' },
-            { name: 'Bixolon SRP-350/350plus', interface: 'USB / Ethernet / Bluetooth', note: 'Fully supported' },
-            { name: 'Citizen CT-S310/CT-S400', interface: 'USB / Ethernet', note: 'Fully supported' },
-            { name: 'Generic 58mm/80mm Thermal', interface: 'USB / Serial', note: 'Basic support' },
-            { name: 'RPP02N / RPP300 (Bluetooth)', interface: 'Bluetooth (macOS)', note: 'Via thermal-bt.py' }
+            {
+              name: "Epson TM-T20/T20II/T88",
+              interface: "USB / Ethernet / Bluetooth",
+              note: "Fully supported"
+            },
+            {
+              name: "Star Micronics TSP100/TSP143",
+              interface: "USB / Ethernet / Bluetooth",
+              note: "Fully supported"
+            },
+            {
+              name: "Bixolon SRP-350/350plus",
+              interface: "USB / Ethernet / Bluetooth",
+              note: "Fully supported"
+            },
+            {
+              name: "Citizen CT-S310/CT-S400",
+              interface: "USB / Ethernet",
+              note: "Fully supported"
+            },
+            { name: "Generic 58mm/80mm Thermal", interface: "USB / Serial", note: "Basic support" },
+            {
+              name: "RPP02N / RPP300 (Bluetooth)",
+              interface: "Bluetooth (macOS)",
+              note: "Via thermal-bt.py"
+            }
           ].map((p, i) => (
             <div key={i} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
               <div>
                 <p className="font-medium">{p.name}</p>
                 <p className="text-xs text-muted-foreground">{p.interface}</p>
               </div>
-              <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">{p.note}</span>
+              <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                {p.note}
+              </span>
             </div>
           ))}
         </div>

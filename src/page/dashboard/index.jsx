@@ -4,8 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import {
-  TrendingUp,
-  TrendingDown,
   Download,
   Eye,
   Printer,
@@ -16,8 +14,7 @@ import {
   ShoppingCart,
   DollarSign,
   Target,
-  Wallet,
-  ReceiptText
+  Wallet
 } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";

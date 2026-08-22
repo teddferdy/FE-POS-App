@@ -283,7 +283,9 @@ const AddStockTransfer = () => {
                     const selectedProduct = products.find(
                       (p) => String(p.id) === String(item.productId)
                     );
-                    const error = Object.hasOwn(errors?.items || {}, idx) ? errors.items[idx] : undefined; // codacy-ignore-line
+                    const error = Object.hasOwn(errors?.items || {}, idx)
+                      ? errors.items[idx]
+                      : undefined; // codacy-ignore-line
                     return (
                       <tr
                         key={field.id}

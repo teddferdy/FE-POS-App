@@ -165,6 +165,7 @@ const AddDiscount = () => {
   });
 
   const promoType = form.watch("promoType");
+  const startDate = form.watch("startDate");
 
   const saveSchema = useMemo(() => {
     const required = (label) => z.string().min(1, label);
@@ -880,7 +881,17 @@ const AddDiscount = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("page.discount.form.endDate")}</FormLabel>
-                      <DatePicker date={field.value} setDate={field.onChange} />
+                      <DatePicker
+                        date={field.value}
+                        setDate={field.onChange}
+                        disabled={!startDate}
+                        minDate={startDate || undefined}
+                        placeholder={
+                          !startDate
+                            ? t("page.discount.form.fillStartDateFirst")
+                            : t("page.discount.form.endDatePlaceholder")
+                        }
+                      />
                       <FormMessage />
                     </FormItem>
                   )}

@@ -617,7 +617,9 @@ const AddEmployee = () => {
                                         </FormLabel>
                                         <Input
                                           {...field}
-                                          placeholder={t("page.employee.add.placeOfBirthPlaceholder")}
+                                          placeholder={t(
+                                            "page.employee.add.placeOfBirthPlaceholder"
+                                          )}
                                         />
                                         <FormMessage />
                                       </FormItem>
@@ -739,7 +741,9 @@ const AddEmployee = () => {
                                             }))}
                                             value={field.value || ""}
                                             onChange={field.onChange}
-                                            placeholder={t("page.employee.add.departmentPlaceholder")}
+                                            placeholder={t(
+                                              "page.employee.add.departmentPlaceholder"
+                                            )}
                                           />
                                         </div>
                                         <Button
@@ -899,7 +903,9 @@ const AddEmployee = () => {
                                     <Select onValueChange={field.onChange} value={field.value}>
                                       <SelectTrigger>
                                         <SelectValue
-                                          placeholder={t("page.employee.add.employmentTypePlaceholder")}
+                                          placeholder={t(
+                                            "page.employee.add.employmentTypePlaceholder"
+                                          )}
                                         />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -957,7 +963,9 @@ const AddEmployee = () => {
                                     </FormLabel>
                                     <DatePicker
                                       date={field.value ? new Date(field.value) : undefined}
-                                      setDate={(date) => field.onChange(date ? date.toISOString() : "")}
+                                      setDate={(date) =>
+                                        field.onChange(date ? date.toISOString() : "")
+                                      }
                                     />
                                     <FormMessage />
                                   </FormItem>
@@ -978,7 +986,9 @@ const AddEmployee = () => {
                                         <Select onValueChange={field.onChange} value={field.value}>
                                           <SelectTrigger>
                                             <SelectValue
-                                              placeholder={t("page.employee.add.durationPlaceholder")}
+                                              placeholder={t(
+                                                "page.employee.add.durationPlaceholder"
+                                              )}
                                             />
                                           </SelectTrigger>
                                           <SelectContent>
@@ -1052,7 +1062,10 @@ const AddEmployee = () => {
                                         </p>
                                       </div>
                                     </div>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
                                   </div>
                                 )}
                               />
@@ -1063,7 +1076,9 @@ const AddEmployee = () => {
                         <TabsContent value="salary">
                           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                              <span className="material-symbols-outlined text-primary">payments</span>
+                              <span className="material-symbols-outlined text-primary">
+                                payments
+                              </span>
                               <h4 className="text-base font-semibold text-foreground">
                                 {t("page.employee.add.salarySection")}
                               </h4>
@@ -1086,7 +1101,9 @@ const AddEmployee = () => {
                                         className="pl-10"
                                         placeholder={t("page.employee.add.salaryPlaceholder")}
                                         value={
-                                          field.value ? Number(field.value).toLocaleString("id-ID") : ""
+                                          field.value
+                                            ? Number(field.value).toLocaleString("id-ID")
+                                            : ""
                                         }
                                         onChange={(e) => {
                                           const raw = e.target.value.replace(/\D/g, "");

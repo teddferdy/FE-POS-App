@@ -167,8 +167,8 @@ const tipsKeys = {
 
 const DashboardLayout = () => {
   const { t } = useTranslation();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [cookie] = useCookies();
   const location = useLocation();
@@ -207,13 +207,11 @@ const DashboardLayout = () => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleToggleSidebar = () => {
-    setSidebarCollapsed((prev) => !prev);
-  };
-
   const handleMobileMenuToggle = () => {
     setMobileSidebarOpen((prev) => !prev);
   };
+
+  const handleSidebarHoverChange = (collapsed) => setSidebarCollapsed(collapsed);
 
   const currentPath = location.pathname;
   const matchedKeys = Object.entries(tipsKeys).find(([path]) => currentPath.startsWith(path));
@@ -223,7 +221,7 @@ const DashboardLayout = () => {
     <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
       <div className="hidden xl:block">
-        <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
+        <Sidebar collapsed={sidebarCollapsed} onHoverChange={handleSidebarHoverChange} />
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -233,14 +231,18 @@ const DashboardLayout = () => {
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed left-0 top-0 h-screen w-64 animate-in slide-in-from-left">
+          <div className="fixed left-0 top-0 h-screen w-64 shadow-2xl animate-in slide-in-from-left duration-300">
             <Sidebar collapsed={false} onToggle={() => setMobileSidebarOpen(false)} />
           </div>
         </div>
       )}
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? "xl:ml-16" : "xl:ml-64"}`}>
+      <div
+        style={{ willChange: "margin-left" }}
+        className={`transition-[margin-left] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          sidebarCollapsed ? "xl:ml-16" : "xl:ml-64"
+        }`}>
         <Header
           onMenuToggle={handleMobileMenuToggle}
           onOpenPalette={() => setIsPaletteOpen(true)}

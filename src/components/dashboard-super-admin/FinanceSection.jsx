@@ -26,12 +26,13 @@ const miniAmount = (val) =>
 const FinanceSection = ({ finance, summary }) => {
   const cashFlow = (finance?.cashFlow || []).map((d) => ({
     ...d,
-    label: d.date && !isNaN(new Date(`${d.date}T00:00:00`).getTime())
-      ? new Date(`${d.date}T00:00:00`).toLocaleDateString("id-ID", {
-          day: "2-digit",
-          month: "short"
-        })
-      : "-"
+    label:
+      d.date && !isNaN(new Date(`${d.date}T00:00:00`).getTime())
+        ? new Date(`${d.date}T00:00:00`).toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short"
+          })
+        : "-"
   }));
 
   const expenseCat = finance?.expenseByCategory || [];

@@ -17,6 +17,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { Form, FormDescription } from "@/components/ui/form";
 import { Combobox } from "@/components/ui/combobox";
+import { DateInput } from "@/components/ui/date-input";
 
 const EditPromoCampaign = () => {
   const { t } = useTranslation();
@@ -414,7 +415,7 @@ const EditPromoCampaign = () => {
                   <label className="text-sm font-medium text-foreground">
                     {t("page.promo.form.startDate")} <span className="text-destructive">*</span>
                   </label>
-                  <input
+                  <DateInput
                     type="datetime-local"
                     {...form.register("startDate")}
                     className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
@@ -424,7 +425,7 @@ const EditPromoCampaign = () => {
                   <label className="text-sm font-medium text-foreground">
                     {t("page.promo.form.endDate")} <span className="text-destructive">*</span>
                   </label>
-                  <input
+                  <DateInput
                     type="datetime-local"
                     {...form.register("endDate")}
                     className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"

@@ -33,9 +33,7 @@ const EditReservation = React.lazy(() => import("@/page/reservation/EditReservat
 const DetailReservation = React.lazy(() => import("@/page/reservation/DetailReservation"));
 
 // Member Loyalty
-const MemberLoyalty = React.lazy(
-  () => import("@/page/member-loyalty/MemberLoyalty")
-);
+const MemberLoyalty = React.lazy(() => import("@/page/member-loyalty/MemberLoyalty"));
 
 export const crmRoutes = (
   <>

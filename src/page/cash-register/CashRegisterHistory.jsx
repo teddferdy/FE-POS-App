@@ -137,9 +137,7 @@ const CashRegisterHistory = () => {
         return (
           <div className="text-xs">
             <div>{valid ? d.toLocaleDateString("id") : "-"}</div>
-            <div className="text-muted-foreground">
-              {valid ? d.toTimeString().slice(0, 8) : ""}
-            </div>
+            <div className="text-muted-foreground">{valid ? d.toTimeString().slice(0, 8) : ""}</div>
           </div>
         );
       }

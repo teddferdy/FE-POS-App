@@ -1,15 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
-import {
-  FolderOpen,
-  Trash2,
-  Edit,
-  Plus,
-  CheckCircle,
-  XCircle,
-  Tag
-} from "lucide-react";
+import { FolderOpen, Trash2, Edit, Plus, CheckCircle, XCircle, Tag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   getAllSupplierCategories,
@@ -87,8 +79,7 @@ const SupplierCategoryList = () => {
   const stats = data?.stats || {};
 
   const activeCount =
-    stats.active ??
-    categories.filter((c) => c.status === "active" || c.isActive === true).length;
+    stats.active ?? categories.filter((c) => c.status === "active" || c.isActive === true).length;
   const inactiveCount =
     stats.inactive ??
     categories.filter((c) => c.status === "inactive" || c.isActive === false).length;
@@ -251,14 +242,18 @@ const SupplierCategoryList = () => {
   if (isError) return <AbortController refetch={refetch} />;
 
   return (
-    <div data-tour="page-supplier-category" className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      {deleteMutation.isLoading && (
-        <Loading fullscreen size="lg" label={t("common.loadingData")} />
-      )}
+    <div
+      data-tour="page-supplier-category"
+      className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
 
       <PageHeader
         breadcrumbs={[
-          { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           { label: t("breadcrumb.supplier"), href: "/supplier", i18nKey: "breadcrumb.supplier" },
           { label: t("page.supplierCategory.title"), i18nKey: "page.supplierCategory.title" }
         ]}

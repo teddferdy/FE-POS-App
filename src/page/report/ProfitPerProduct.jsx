@@ -7,7 +7,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { getProfitPerProduct } from "@/services/report";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
-import { Input } from "@/components/ui/input";
+import { DateInput } from "@/components/ui/date-input";
 import AbortController from "@/components/organism/abort-controller";
 import { formatCurrency } from "@/utils/reportUtils";
 
@@ -60,13 +60,13 @@ const ProfitPerProduct = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Input
+          <DateInput
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             className="w-40"
           />
-          <Input
+          <DateInput
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}

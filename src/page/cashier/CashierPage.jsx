@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
+import { useSearchParams } from "react-router-dom";
 import {
   ShoppingCart,
   X,
@@ -10,7 +11,8 @@ import {
   Moon,
   Store,
   ChevronRight,
-  MonitorPlay
+  MonitorPlay,
+  Loader2
 } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { useTranslation } from "react-i18next";
@@ -70,18 +72,27 @@ const CashierPage = () => {
   }, [cookie?.user]);
   const role = user?.roleType;
   const isSuperAdmin = role === "super_admin";
+  const [searchParams, setSearchParams] = useSearchParams();
+  const storeParam = searchParams.get("store");
   const [pickedStore, setPickedStore] = useState(null);
-  const store = isSuperAdmin ? pickedStore : cookie?.activeStore || user?.store;
+  const store = storeParam || (isSuperAdmin ? pickedStore : cookie?.activeStore || user?.store);
   const boardTabRef = useRef(0);
 
   const openBoardTab = (storeId) => {
     const now = Date.now();
-    if (now - boardTabRef.current < 500) return;
+    if (now - boardTabRef.current < 500 || isOpeningBoard) return;
     boardTabRef.current = now;
-    window.open(
+    setIsOpeningBoard(true);
+    const boardWindow = window.open(
       storeId ? `/customer-display-board?store=${storeId}` : "/customer-display-board",
       "_blank"
     );
+    if (!boardWindow) {
+      setIsOpeningBoard(false);
+      toast.error(t("page.cashier.popupBlocked"));
+      return;
+    }
+    setTimeout(() => setIsOpeningBoard(false), 800);
   };
 
   const { data: locsData, isLoading: locsLoading } = useQuery(
@@ -113,9 +124,10 @@ const CashierPage = () => {
   const [barcode, setBarcode] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [showCartMobile, setShowCartMobile] = useState(false);
+  const [isOpeningBoard, setIsOpeningBoard] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [clearCartOpen, setClearCartOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
@@ -155,7 +167,7 @@ const CashierPage = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleToggleSidebar = () => setSidebarCollapsed((prev) => !prev);
+  const handleSidebarHoverChange = (collapsed) => setSidebarCollapsed(collapsed);
   const handleMobileMenuToggle = () => setMobileSidebarOpen((prev) => !prev);
 
   const cart = orderList();
@@ -322,7 +334,7 @@ const CashierPage = () => {
 
       {/* Desktop Sidebar */}
       <div className="hidden xl:block">
-        <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
+        <Sidebar collapsed={sidebarCollapsed} onHoverChange={handleSidebarHoverChange} />
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -369,23 +381,33 @@ const CashierPage = () => {
                 {/* <StoreSelector cookie={cookie} setCookie={setCookie} /> */}
               </div>
               <div className="flex items-center gap-1 sm:gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="relative rounded-xl border-border/60 hidden sm:inline-flex"
-                      onClick={() => openBoardTab(store)}>
-                      <MonitorPlay size={16} />
-                      <span className="hidden lg:inline">
-                        {t("page.cashier.openCustomerDisplay")}
-                      </span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" align="center">
-                    {t("page.cashier.openCustomerDisplay")}
-                  </TooltipContent>
-                </Tooltip>
+                {storeParam && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isOpeningBoard}
+                        className="relative rounded-xl border-border/60 bg-card/60 hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all px-4 lg:px-6 hidden sm:inline-flex group"
+                        onClick={() => openBoardTab(store)}>
+                        {isOpeningBoard ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <MonitorPlay
+                            size={16}
+                            className="transition-transform duration-200 group-hover:scale-110"
+                          />
+                        )}
+                        <span className="hidden lg:inline">
+                          {t("page.cashier.openCustomerDisplay")}
+                        </span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="center">
+                      {t("page.cashier.openCustomerDisplay")}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
@@ -457,6 +479,7 @@ const CashierPage = () => {
                           key={loc.id}
                           onClick={() => {
                             setPickedStore(loc.id);
+                            setSearchParams({ store: loc.id });
                             openBoardTab(loc.id);
                           }}
                           className="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg transition-all text-left group">

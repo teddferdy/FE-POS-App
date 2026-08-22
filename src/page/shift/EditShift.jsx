@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,6 +23,7 @@ import AbortController from "@/components/organism/abort-controller";
 
 const EditShift = () => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const formSchema = z.object({
     nama_shift: z.string().min(1, t("page.shift.edit.validation.namaShift")),
     jam_mulai: z.string().min(1, t("page.shift.edit.validation.jamMulai")),
@@ -84,6 +85,7 @@ const EditShift = () => {
 
   const updateMutation = useMutation(editShift, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["shifts"]);
       setSuccessModal(true);
     },
     onError: (err) => {

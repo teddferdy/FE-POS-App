@@ -269,50 +269,68 @@ const DriverList = () => {
       </PageHeader>
 
       {isFetching || isLoading ? (
-        <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-card rounded-xl border border-border p-4">
-              <div className="flex items-start justify-between mb-3">
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-4 w-4 rounded" />
+        <div className="space-y-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-4 w-4 rounded" />
+                </div>
+                <Skeleton className="h-8 w-28 mb-2" />
+                <Skeleton className="h-3 w-20" />
               </div>
-              <Skeleton className="h-8 w-28 mb-2" />
-              <Skeleton className="h-3 w-20" />
-            </div>
-          ))}
+            ))}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-4 w-4 rounded" />
+                </div>
+                <Skeleton className="h-8 w-28 mb-2" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-5">
-          <StatCard
-            label={t("page.delivery.driver.stats.total")}
-            value={stats.total}
-            icon={Users}
-            variant="default"
-          />
-          <StatCard
-            label={t("page.delivery.driver.stats.active")}
-            value={stats.active}
-            icon={Truck}
-            variant="active"
-          />
-          <StatCard
-            label={t("page.delivery.driver.stats.busy")}
-            value={stats.busy}
-            icon={Bike}
-            variant="draft"
-          />
-          <StatCard
-            label={t("page.delivery.driver.stats.draft")}
-            value={stats.draft || 0}
-            icon={FileEdit}
-            variant="draft"
-          />
-          <StatCard
-            label={t("page.delivery.driver.stats.offline")}
-            value={stats.offline + stats.inactive}
-            icon={Car}
-            variant="inactive"
-          />
+        <div className="space-y-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <StatCard
+              label={t("page.delivery.driver.stats.total")}
+              value={stats.total}
+              icon={Users}
+              variant="default"
+            />
+            <StatCard
+              label={t("page.delivery.driver.stats.active")}
+              value={stats.active}
+              icon={Truck}
+              variant="active"
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard
+              label={t("page.delivery.driver.stats.busy")}
+              value={stats.busy}
+              icon={Bike}
+              variant="draft"
+            />
+            <StatCard
+              label={t("page.delivery.driver.stats.draft")}
+              value={stats.draft || 0}
+              icon={FileEdit}
+              variant="draft"
+            />
+            <StatCard
+              label={t("page.delivery.driver.stats.offline")}
+              value={stats.offline + stats.inactive}
+              icon={Car}
+              variant="inactive"
+            />
+          </div>
         </div>
       )}
 

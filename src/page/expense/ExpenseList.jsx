@@ -627,50 +627,68 @@ const ExpenseList = () => {
           ) : (
             <>
               {isFetching || isLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="bg-card rounded-xl border border-border p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <Skeleton className="h-3 w-24" />
-                        <Skeleton className="h-4 w-4 rounded" />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[...Array(2)].map((_, i) => (
+                      <div key={i} className="bg-card rounded-xl border border-border p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-4 w-4 rounded" />
+                        </div>
+                        <Skeleton className="h-8 w-28 mb-2" />
+                        <Skeleton className="h-3 w-20" />
                       </div>
-                      <Skeleton className="h-8 w-28 mb-2" />
-                      <Skeleton className="h-3 w-20" />
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="bg-card rounded-xl border border-border p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-4 w-4 rounded" />
+                        </div>
+                        <Skeleton className="h-8 w-28 mb-2" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                  <StatCard
-                    label={t("page.expense.list.total")}
-                    value={total}
-                    icon={Wallet}
-                    variant="default"
-                  />
-                  <StatCard
-                    label={t("page.expense.list.draft")}
-                    value={stats.draft || 0}
-                    icon={FileEdit}
-                    variant="draft"
-                  />
-                  <StatCard
-                    label={t("page.expense.list.pending")}
-                    value={stats.pending || 0}
-                    icon={FileEdit}
-                    variant="warning"
-                  />
-                  <StatCard
-                    label={t("page.expense.list.approved")}
-                    value={stats.approved || 0}
-                    icon={CheckCircle}
-                    variant="active"
-                  />
-                  <StatCard
-                    label={t("page.expense.list.rejected")}
-                    value={stats.rejected || 0}
-                    icon={XCircle}
-                    variant="inactive"
-                  />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <StatCard
+                      label={t("page.expense.list.total")}
+                      value={total}
+                      icon={Wallet}
+                      variant="default"
+                    />
+                    <StatCard
+                      label={t("page.expense.list.draft")}
+                      value={stats.draft || 0}
+                      icon={FileEdit}
+                      variant="draft"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <StatCard
+                      label={t("page.expense.list.pending")}
+                      value={stats.pending || 0}
+                      icon={FileEdit}
+                      variant="warning"
+                    />
+                    <StatCard
+                      label={t("page.expense.list.approved")}
+                      value={stats.approved || 0}
+                      icon={CheckCircle}
+                      variant="active"
+                    />
+                    <StatCard
+                      label={t("page.expense.list.rejected")}
+                      value={stats.rejected || 0}
+                      icon={XCircle}
+                      variant="inactive"
+                    />
+                  </div>
                 </div>
               )}
 

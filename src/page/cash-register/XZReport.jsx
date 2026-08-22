@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
@@ -19,14 +19,13 @@ import {
 import { getXReport, getZReport, getCashRegisterHistory } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
 import { isCashPayment } from "@/utils/payment";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 
 const formatIDR = (num) => {
   if (num == null || isNaN(num)) return "Rp 0";
@@ -120,7 +119,10 @@ const handlePrintReport = (elementId) => {
 };
 
 const Dashed = () => (
-  <div className="border-t border-dashed border-border/80 my-3 w-full animate-pulse-subtle" aria-hidden="true" />
+  <div
+    className="border-t border-dashed border-border/80 my-3 w-full animate-pulse-subtle"
+    aria-hidden="true"
+  />
 );
 
 const Row = ({ label, value, strong, accent }) => (
@@ -157,27 +159,31 @@ const ReportView = ({ data, reportType }) => {
     paymentGroups[key].count += p.count;
   }
 
-  const uniqueId = `report-${reportType === "Z" ? (data.register?.id || "z") : "current"}`;
+  const uniqueId = `report-${reportType === "Z" ? data.register?.id || "z" : "current"}`;
 
   return (
     <div
       id={uniqueId}
-      className="relative max-w-[400px] mx-auto bg-card text-card-foreground rounded-2xl border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.03)] dark:shadow-none overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.07)]"
-    >
+      className="relative mx-auto bg-card text-card-foreground rounded-2xl border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.03)] dark:shadow-none overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.07)]">
       {/* Decorative Brand Top-border */}
-      <div className={`h-1.5 w-full bg-gradient-to-r ${reportType === "Z" ? "from-amber-500 to-orange-500" : "from-blue-500 to-indigo-500"}`} />
+      <div
+        className={`h-1.5 w-full bg-gradient-to-r ${reportType === "Z" ? "from-amber-500 to-orange-500" : "from-blue-500 to-indigo-500"}`}
+      />
 
-      <div className="p-6">
+      <div className="p-4">
         {/* Store Header */}
         <div className="text-center space-y-1.5 mb-4">
-          <div className={`inline-flex p-2.5 rounded-full mb-1 ${reportType === "Z" ? "bg-amber-100/60 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400" : "bg-blue-100/60 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400"}`}>
+          <div
+            className={`inline-flex p-2.5 rounded-full mb-1 ${reportType === "Z" ? "bg-amber-100/60 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400" : "bg-blue-100/60 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400"}`}>
             <Store size={18} className="animate-pulse" />
           </div>
           <p className="font-bold uppercase tracking-wider text-sm text-foreground">
             {data.store?.name || t("page.cashRegister.xz.storeFallback")}
           </p>
           {data.store?.address && (
-            <p className="text-[11px] text-muted-foreground leading-relaxed px-4">{data.store.address}</p>
+            <p className="text-[11px] text-muted-foreground leading-relaxed px-4">
+              {data.store.address}
+            </p>
           )}
           {data.store?.phone && (
             <p className="text-[11px] text-muted-foreground/80 mt-0.5 font-mono">
@@ -191,10 +197,18 @@ const ReportView = ({ data, reportType }) => {
         {/* Report Identification */}
         <div className="space-y-2 my-3">
           <div className="flex items-center justify-center gap-1.5 mb-2 text-muted-foreground">
-            <FileBarChart size={14} className={reportType === "Z" ? "text-amber-500" : "text-blue-500"} />
-            <p className="font-bold text-xs uppercase tracking-widest">{t("page.cashRegister.xz.reportTitle")}</p>
+            <FileBarChart
+              size={14}
+              className={reportType === "Z" ? "text-amber-500" : "text-blue-500"}
+            />
+            <p className="font-bold text-xs uppercase tracking-widest">
+              {t("page.cashRegister.xz.reportTitle")}
+            </p>
           </div>
-          <Row label={t("page.cashRegister.xz.registerNo")} value={`#${data.register?.id || "-"}`} />
+          <Row
+            label={t("page.cashRegister.xz.registerNo")}
+            value={`#${data.register?.id || "-"}`}
+          />
           <Row
             label={t("page.cashRegister.xz.cashier")}
             value={
@@ -282,7 +296,11 @@ const ReportView = ({ data, reportType }) => {
               label={t("page.cashRegister.xz.totalSales")}
               value={formatIDR(summary.totalSales)}
               strong
-              accent={reportType === "Z" ? "text-amber-600 dark:text-amber-400 text-base font-extrabold" : "text-blue-600 dark:text-blue-400 text-base font-extrabold"}
+              accent={
+                reportType === "Z"
+                  ? "text-amber-600 dark:text-amber-400 text-base font-extrabold"
+                  : "text-blue-600 dark:text-blue-400 text-base font-extrabold"
+              }
             />
           </div>
         </div>
@@ -304,9 +322,14 @@ const ReportView = ({ data, reportType }) => {
                     ) : (
                       <CreditCard size={13} className="text-blue-500/80" />
                     )}
-                    {type} <span className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.2 rounded font-mono font-medium">({p.count})</span>
+                    {type}{" "}
+                    <span className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.2 rounded font-mono font-medium">
+                      ({p.count})
+                    </span>
                   </span>
-                  <span className="font-mono text-xs font-semibold text-foreground">{formatIDR(p.amount)}</span>
+                  <span className="font-mono text-xs font-semibold text-foreground">
+                    {formatIDR(p.amount)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -327,9 +350,14 @@ const ReportView = ({ data, reportType }) => {
                   <div key={i} className="flex items-center justify-between gap-4 py-0.5">
                     <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-destructive/70" />
-                      {e.category} <span className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.2 rounded font-mono font-medium">({e.count})</span>
+                      {e.category}{" "}
+                      <span className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.2 rounded font-mono font-medium">
+                        ({e.count})
+                      </span>
                     </span>
-                    <span className="font-mono text-xs font-semibold text-destructive">{formatIDR(e.amount)}</span>
+                    <span className="font-mono text-xs font-semibold text-destructive">
+                      {formatIDR(e.amount)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -356,8 +384,12 @@ const ReportView = ({ data, reportType }) => {
           />
 
           <div className="flex items-center justify-between pt-2.5 mt-2.5 border-t border-dashed border-border/60">
-            <span className="font-bold text-xs text-foreground">{t("page.cashRegister.xz.expectedCash")}</span>
-            <span className="font-mono font-bold text-sm text-primary">{formatIDR(summary.expectedCash)}</span>
+            <span className="font-bold text-xs text-foreground">
+              {t("page.cashRegister.xz.expectedCash")}
+            </span>
+            <span className="font-mono font-bold text-sm text-primary">
+              {formatIDR(summary.expectedCash)}
+            </span>
           </div>
 
           {data.register?.status === "closed" && (
@@ -403,10 +435,10 @@ const ReportView = ({ data, reportType }) => {
             variant="outline"
             size="sm"
             className="w-full h-10 rounded-xl flex items-center justify-center gap-2 font-semibold transition-all duration-300 hover:bg-primary hover:text-primary-foreground border-dashed"
-            onClick={() => handlePrintReport(uniqueId)}
-          >
+            onClick={() => handlePrintReport(uniqueId)}>
             <Printer size={14} />
-            {t("page.cashRegister.xz.print")} Laporan {reportType === "Z" ? `#${data.register?.id || ""}` : "X"}
+            {t("page.cashRegister.xz.print")} Laporan{" "}
+            {reportType === "Z" ? `#${data.register?.id || ""}` : "X"}
           </Button>
         </div>
       </div>
@@ -474,17 +506,22 @@ const XZReport = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const cookieStoreId = cookie?.activeStore || user?.store;
+  // super_admin memilih toko lewat store selector (global filter); "all" = Semua Toko
+  const [storeFilter, setStoreFilter] = useGlobalStoreFilter();
   const [selectedRegister, setSelectedRegister] = useState(null);
 
-  // super_admin does not get an auto-assigned store (DashboardLayout skips auto-select),
-  // so fall back to the first active location so the report can still render.
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
-    enabled: !cookieStoreId
+    enabled: isSuperAdmin
   });
   const locations = locationsData?.data || [];
-  const fallbackStoreId = locations.length ? locations[0].id || locations[0]._id : null;
-  const storeId = cookieStoreId || fallbackStoreId;
+
+  const storeId = isSuperAdmin ? (storeFilter !== "all" ? storeFilter : null) : cookieStoreId;
+
+  useEffect(() => {
+    setSelectedRegister(null);
+  }, [storeFilter]);
 
   const {
     data: xData,
@@ -522,7 +559,7 @@ const XZReport = () => {
     }
   };
 
-  if (!storeId) {
+  if (!isSuperAdmin && !cookieStoreId) {
     return (
       <div className="space-y-6">
         <PageHeader breadcrumbs={[{ i18nKey: "page.cashRegister.xz.breadcrumb" }]} />
@@ -548,7 +585,11 @@ const XZReport = () => {
         title={t("page.cashRegister.xz.title")}
         description={t("page.cashRegister.xz.desc")}>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handlePrint} className="shadow-sm font-semibold h-9 rounded-lg">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrint}
+            className="shadow-sm font-semibold h-9 rounded-lg">
             <Printer size={15} className="mr-1.5" /> {t("page.cashRegister.xz.print")}
           </Button>
           <Button
@@ -559,56 +600,105 @@ const XZReport = () => {
               if (selectedRegister) refetchZ();
             }}
             className="shadow-sm font-semibold h-9 rounded-lg">
-            <RefreshCw size={15} className="mr-1.5 animate-spin-hover" /> {t("page.cashRegister.xz.refresh")}
+            <RefreshCw size={15} className="mr-1.5 animate-spin-hover" />{" "}
+            {t("page.cashRegister.xz.refresh")}
           </Button>
         </div>
       </PageHeader>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      {isSuperAdmin && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60 p-3 shadow-[0_4px_20px_rgb(0,0,0,0.015)]">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
+              <Store size={16} />
+            </div>
+            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+              Pilih Toko
+            </label>
+          </div>
+          <div className="relative w-full sm:w-72">
+            <select
+              value={storeFilter}
+              onChange={(e) => setStoreFilter(e.target.value)}
+              className="w-full h-9 pl-3 pr-8 rounded-lg bg-background border border-border/80 text-xs font-semibold appearance-none outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer shadow-sm hover:border-border">
+              <option value="all">Semua Toko</option>
+              {locations.map((loc) => {
+                const id = loc.id || loc._id;
+                return (
+                  <option key={id} value={id}>
+                    {loc.name}
+                  </option>
+                );
+              })}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/60">
+              <ChevronDown size={14} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* X Report Column */}
-        <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60 p-6 space-y-5 shadow-[0_4px_20px_rgb(0,0,0,0.015)]">
-          <div className="flex items-center justify-between border-b border-border/40 pb-4">
+        <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60 p-4 space-y-4 shadow-[0_4px_20px_rgb(0,0,0,0.015)]">
+          <div className="flex items-center justify-between border-b border-border/40 pb-3">
             <div className="flex items-center gap-3 flex-1">
-              <div className="p-2.5 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-950/20 text-blue-600 dark:text-blue-400 rounded-xl shadow-sm">
+              <div className="p-2 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-950/20 text-blue-600 dark:text-blue-400 rounded-xl shadow-sm">
                 <Wallet size={18} className="animate-pulse" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-foreground">{t("page.cashRegister.xz.xTitle")}</h2>
-                <p className="text-xs text-muted-foreground">Status kasir saat ini · Tidak ada penyesuaian</p>
+                <h2 className="text-base font-bold text-foreground">
+                  {t("page.cashRegister.xz.xTitle")}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Status kasir saat ini · Tidak ada penyesuaian
+                </p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-950/60 dark:to-blue-950/30 text-blue-700 dark:text-blue-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm border border-blue-200/50 dark:border-blue-900/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-100 to-emerald-50 dark:from-emerald-950/60 dark:to-emerald-950/30 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm border border-emerald-200/50 dark:border-emerald-900/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Aktif
             </span>
           </div>
 
-           {xLoading ? (
-            <div className="flex justify-center p-6">
-              <Skeleton className="h-[450px] w-full max-w-[400px] rounded-2xl" />
+          {isSuperAdmin && !storeId ? (
+            <div className="bg-card/60 dark:bg-card/30 p-6 rounded-2xl border border-dashed border-border/60 text-center mx-auto shadow-sm my-6">
+              <div className="p-4 bg-accent/40 dark:bg-accent/20 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-3 text-muted-foreground/30">
+                <Store size={32} />
+              </div>
+              <h3 className="font-bold text-sm text-foreground mb-1">Pilih Toko Terlebih Dahulu</h3>
+              <p className="text-xs text-muted-foreground px-4 leading-relaxed">
+                Pilih toko tertentu pada selector di atas untuk melihat register aktif atau membuka
+                register baru.
+              </p>
             </div>
-           ) : xError ? (
+          ) : xLoading ? (
+            <div className="flex justify-center p-6">
+              <Skeleton className="h-[450px] w-full rounded-2xl" />
+            </div>
+          ) : xError ? (
             <div className="py-6">
               <AbortController refetch={refetchX} />
             </div>
-           ) : xData?.data ? (
+          ) : xData?.data ? (
             <div className="space-y-4">
               <ReportView data={xData.data} reportType="X" />
-              <div className="flex items-start gap-2.5 max-w-[400px] mx-auto bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-950/20 dark:to-blue-950/10 p-4 rounded-xl border border-blue-200/60 dark:border-blue-900/40 shadow-sm">
+              <div className="flex items-start gap-2.5 mx-auto bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-950/20 dark:to-blue-950/10 p-3 rounded-xl border border-blue-200/60 dark:border-blue-900/40 shadow-sm">
                 <span className="text-blue-500 text-lg flex-shrink-0 mt-0">ℹ️</span>
                 <div>
                   <p className="text-[11px] font-semibold text-blue-900 dark:text-blue-200 mb-0.5">
                     {t("page.cashRegister.xz.xNote")}
                   </p>
                   <p className="text-[10px] text-blue-700/80 dark:text-blue-300/70 leading-relaxed">
-                    Laporan X dapat dicetak berkali-kali tanpa mereset transaksi. Gunakan ini untuk verifikasi harian.
+                    Laporan X dapat dicetak berkali-kali tanpa mereset transaksi. Gunakan ini untuk
+                    verifikasi harian.
                   </p>
                 </div>
               </div>
             </div>
-           ) : (
-            <div className="bg-card/60 dark:bg-card/30 p-8 rounded-2xl border border-dashed border-border/60 text-center max-w-[400px] mx-auto shadow-sm my-6">
-              <div className="p-4 bg-accent/40 dark:bg-accent/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-muted-foreground/30">
+          ) : (
+            <div className="bg-card/60 dark:bg-card/30 p-6 rounded-2xl border border-dashed border-border/60 text-center mx-auto shadow-sm my-6">
+              <div className="p-4 bg-accent/40 dark:bg-accent/20 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-3 text-muted-foreground/30">
                 <ReceiptText size={32} />
               </div>
               <h3 className="font-bold text-sm text-foreground mb-1">Tidak Ada Register Aktif</h3>
@@ -622,91 +712,111 @@ const XZReport = () => {
                 {t("page.cashRegister.xz.openRegister")}
               </Button>
             </div>
-           )}
+          )}
         </div>
 
         {/* Z Report Column */}
-        <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60 p-6 space-y-5 shadow-[0_4px_20px_rgb(0,0,0,0.015)]">
-          <div className="flex items-center justify-between border-b border-border/40 pb-4">
+        <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60 p-4 space-y-4 shadow-[0_4px_20px_rgb(0,0,0,0.015)]">
+          <div className="flex items-center justify-between border-b border-border/40 pb-3">
             <div className="flex items-center gap-3 flex-1">
-              <div className="p-2.5 bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950/40 dark:to-amber-950/20 text-amber-600 dark:text-amber-400 rounded-xl shadow-sm">
+              <div className="p-2 bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950/40 dark:to-amber-950/20 text-amber-600 dark:text-amber-400 rounded-xl shadow-sm">
                 <FileBarChart size={18} className="animate-pulse" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-foreground">{t("page.cashRegister.xz.zTitle")}</h2>
-                <p className="text-xs text-muted-foreground">Laporan akhir shift · Arsip permanen</p>
+                <h2 className="text-base font-bold text-foreground">
+                  {t("page.cashRegister.xz.zTitle")}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Laporan akhir shift · Arsip permanen
+                </p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-100 to-orange-50 dark:from-amber-950/60 dark:to-amber-950/30 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm border border-amber-200/50 dark:border-amber-900/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-red-100 to-red-50 dark:from-red-950/60 dark:to-red-950/30 text-red-700 dark:text-red-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm border border-red-200/50 dark:border-red-900/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
               Tertutup
             </span>
           </div>
 
-          <div className="bg-card rounded-2xl border border-border/80 shadow-sm max-w-[400px] mx-auto overflow-hidden">
-            <div className="p-4 bg-gradient-to-r from-accent/30 to-accent/10 dark:from-accent/15 dark:to-accent/5 border-b border-border/40 flex items-center gap-4">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/90 whitespace-nowrap">
-                {t("page.cashRegister.xz.selectRegister")}
-              </label>
-              {registers.length > 0 ? (
-                <div className="relative flex-1">
-                  <select
-                    value={selectedRegister || ""}
-                    onChange={(e) => setSelectedRegister(e.target.value)}
-                    className="w-full h-9 pl-3 pr-8 rounded-lg bg-background border border-border/80 text-xs font-semibold appearance-none outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer shadow-sm hover:border-border">
-                    <option value="">{t("page.cashRegister.xz.selectPlaceholder")}</option>
-                    {registers.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        #{r.id} · {r.userData?.fullName || "-"} ·{" "}
-                        {r.openedAt && !isNaN(new Date(r.openedAt).getTime())
-                          ? new Date(r.openedAt).toLocaleDateString("id-ID", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric"
-                            })
-                          : "-"}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/60">
-                    <ChevronDown size={14} />
-                  </div>
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground italic font-medium flex-1">
-                  {t("page.cashRegister.xz.noClosedRegister")}
-                </p>
-              )}
+          {isSuperAdmin && !storeId ? (
+            <div className="bg-card/60 dark:bg-card/30 p-6 rounded-2xl border border-dashed border-border/60 text-center mx-auto shadow-sm">
+              <div className="p-4 bg-accent/40 dark:bg-accent/20 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-3 text-muted-foreground/30">
+                <FileBarChart size={32} />
+              </div>
+              <h3 className="font-bold text-sm text-foreground mb-1">Pilih Toko Terlebih Dahulu</h3>
+              <p className="text-xs text-muted-foreground px-4 leading-relaxed">
+                Pilih toko tertentu pada selector di atas untuk melihat daftar register yang telah
+                ditutup.
+              </p>
             </div>
+          ) : (
+            <div className="bg-card rounded-2xl border border-border/80 shadow-sm mx-auto overflow-hidden">
+              <div className="p-3 bg-gradient-to-r from-accent/30 to-accent/10 dark:from-accent/15 dark:to-accent/5 border-b border-border/40 flex items-center gap-4">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/90 whitespace-nowrap">
+                  {t("page.cashRegister.xz.selectRegister")}
+                </label>
+                {registers.length > 0 ? (
+                  <div className="relative flex-1">
+                    <select
+                      value={selectedRegister || ""}
+                      onChange={(e) => setSelectedRegister(e.target.value)}
+                      className="w-full h-9 pl-3 pr-8 rounded-lg bg-background border border-border/80 text-xs font-semibold appearance-none outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer shadow-sm hover:border-border">
+                      <option value="">{t("page.cashRegister.xz.selectPlaceholder")}</option>
+                      {registers.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          #{r.id} · {r.userData?.fullName || "-"} ·{" "}
+                          {r.openedAt && !isNaN(new Date(r.openedAt).getTime())
+                            ? new Date(r.openedAt).toLocaleDateString("id-ID", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric"
+                              })
+                            : "-"}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/60">
+                      <ChevronDown size={14} />
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic font-medium flex-1">
+                    {t("page.cashRegister.xz.noClosedRegister")}
+                  </p>
+                )}
+              </div>
 
-            <ScrollArea className="min-h-[350px] [&>[data-radix-scroll-area-viewport]]:max-h-[580px]">
-               {selectedRegister ? (
-                 zLoading ? (
-                   <div className="p-6">
-                     <Skeleton className="h-[400px] w-full rounded-2xl animate-pulse" />
-                   </div>
-                 ) : zError ? (
-                   <div className="p-6">
-                     <AbortController refetch={refetchZ} />
-                   </div>
-                 ) : zData?.data ? (
-                   <div className="p-4">
-                     <ReportView data={zData.data} reportType="Z" />
-                   </div>
-                 ) : null
-               ) : (
-                 <div className="flex flex-col items-center justify-center p-8 text-center min-h-[350px]">
-                   <div className="p-4 bg-gradient-to-br from-accent/40 to-accent/20 dark:from-accent/20 dark:to-accent/10 rounded-2xl text-muted-foreground/40 mb-4 animate-pulse">
-                     <ReceiptText size={32} />
-                   </div>
-                   <h4 className="text-xs font-bold text-foreground mb-1.5">{t("page.cashRegister.xz.zHint")}</h4>
-                   <p className="text-[11px] text-muted-foreground max-w-[240px] leading-relaxed font-medium">
-                     Pilih salah satu sesi kasir yang telah ditutup dari daftar di atas untuk melihat ringkasan final laporan Z beserta perhitungan varians kas.
-                   </p>
-                 </div>
-               )}
-            </ScrollArea>
-          </div>
+              <ScrollArea className="min-h-[300px] [&>[data-radix-scroll-area-viewport]]:max-h-[580px]">
+                {selectedRegister ? (
+                  zLoading ? (
+                    <div className="p-6">
+                      <Skeleton className="h-[400px] w-full rounded-2xl animate-pulse" />
+                    </div>
+                  ) : zError ? (
+                    <div className="p-6">
+                      <AbortController refetch={refetchZ} />
+                    </div>
+                  ) : zData?.data ? (
+                    <div className="p-4">
+                      <ReportView data={zData.data} reportType="Z" />
+                    </div>
+                  ) : null
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-6 text-center min-h-[300px]">
+                    <div className="p-4 bg-gradient-to-br from-accent/40 to-accent/20 dark:from-accent/20 dark:to-accent/10 rounded-2xl text-muted-foreground/40 mb-4 animate-pulse">
+                      <ReceiptText size={32} />
+                    </div>
+                    <h4 className="text-xs font-bold text-foreground mb-1.5">
+                      {t("page.cashRegister.xz.zHint")}
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground max-w-[240px] leading-relaxed font-medium">
+                      Pilih salah satu sesi kasir yang telah ditutup dari daftar di atas untuk
+                      melihat ringkasan final laporan Z beserta perhitungan varians kas.
+                    </p>
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
+          )}
         </div>
       </div>
     </div>

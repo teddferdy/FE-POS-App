@@ -127,6 +127,13 @@ const DetailGoodsReceipt = () => {
       ) : (
         (() => {
           const st = statusDetail[receipt.status] || statusDetail.draft;
+          const poItems = receipt.purchaseOrderItems || [];
+          const totalOrdered = poItems.reduce((s, pi) => s + (Number(pi.quantity) || 0), 0);
+          const totalReceived = poItems.reduce(
+            (s, pi) => s + (Number(pi.receivedQuantity) || 0),
+            0
+          );
+          const receivingDone = totalOrdered > 0 && totalReceived >= totalOrdered;
 
           return (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -150,6 +157,10 @@ const DetailGoodsReceipt = () => {
                             ? new Date(receipt.receivedDate).toLocaleDateString("id")
                             : "-"
                         ],
+                        [
+                          t("page.goodsReceipt.detail.pic"),
+                          receipt.picData?.fullName || receipt.picData?.userName || "-"
+                        ],
                         [t("page.goodsReceipt.detail.notes"), receipt.notes || "-"]
                       ].map(([label, value]) => (
                         <tr key={label} className="border-b border-muted/30">
@@ -160,6 +171,20 @@ const DetailGoodsReceipt = () => {
                     </tbody>
                   </table>
                 </div>
+
+                {receipt.documentation && (
+                  <div className="bg-card p-6 rounded-xl border border-border">
+                    <h2 className="text-lg font-semibold mb-4">
+                      {t("page.goodsReceipt.detail.documentation")}
+                    </h2>
+                    <img
+                      src={receipt.documentation}
+                      alt={t("page.goodsReceipt.detail.documentation")}
+                      className="rounded-lg border border-border max-h-80 object-contain cursor-pointer"
+                      onClick={() => window.open(receipt.documentation, "_blank")}
+                    />
+                  </div>
+                )}
 
                 <div className="bg-card p-6 rounded-xl border border-border">
                   <h2 className="text-lg font-semibold mb-4">
@@ -267,6 +292,30 @@ const DetailGoodsReceipt = () => {
                     <FileText size={14} />{" "}
                     {t(`page.goodsReceipt.detail.status.${receipt.status || "draft"}`)}
                   </div>
+                  {totalOrdered > 0 && (
+                    <>
+                      <div className="border-t border-border my-4" />
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {t("page.goodsReceipt.detail.receivingStatus")}
+                      </p>
+                      <div
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
+                          receivingDone
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                        }`}>
+                        {receivingDone
+                          ? t("page.goodsReceipt.add.status.selesai")
+                          : t("page.goodsReceipt.add.status.belumSelesai")}
+                        {!receivingDone && (
+                          <span className="font-normal">
+                            ({totalReceived.toLocaleString("id-ID")}/
+                            {totalOrdered.toLocaleString("id-ID")})
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="bg-card p-6 rounded-xl border border-border">

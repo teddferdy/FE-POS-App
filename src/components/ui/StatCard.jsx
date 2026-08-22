@@ -72,6 +72,14 @@ const variantStyles = {
     subtitle: "text-amber-600 dark:text-amber-400",
     label: "text-amber-700 dark:text-amber-400",
     value: "text-amber-900 dark:text-amber-100"
+  },
+  expiring: {
+    card: "bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900/50",
+    iconBg: "bg-orange-100 dark:bg-orange-900/40",
+    iconColor: "text-orange-600 dark:text-orange-400",
+    subtitle: "text-orange-600 dark:text-orange-400",
+    label: "text-orange-700 dark:text-amber-400",
+    value: "text-orange-900 dark:text-orange-100"
   }
 };
 

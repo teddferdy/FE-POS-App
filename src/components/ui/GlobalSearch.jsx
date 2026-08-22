@@ -1,15 +1,24 @@
 import React from "react";
-import { 
-  Command, 
-  CommandDialog, 
-  CommandInput, 
-  CommandList, 
-  CommandEmpty, 
-  CommandGroup, 
+import {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
   CommandItem,
-  CommandShortcut 
+  CommandShortcut
 } from "./command";
-import { LayoutDashboard, ShoppingCart, QrCode, Package, Users, List, BarChart3, Settings } from "lucide-react";
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  QrCode,
+  Package,
+  Users,
+  List,
+  BarChart3,
+  Settings
+} from "lucide-react";
 
 const iconMap = {
   LayoutDashboard,
@@ -19,7 +28,7 @@ const iconMap = {
   Users,
   List,
   BarChart3,
-  Settings,
+  Settings
 };
 
 export const GlobalSearch = ({ isOpen, onOpenChange, searchItems, onSelect }) => {

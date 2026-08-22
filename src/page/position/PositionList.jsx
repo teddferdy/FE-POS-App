@@ -12,7 +12,16 @@ import {
 } from "@/services/position";
 import { getAllDepartmentTable } from "@/services/department";
 import { getAllLocation } from "@/services/location";
-import { Loader2, Briefcase, CheckCircle, FileEdit, XCircle, Eye, Edit, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  Briefcase,
+  CheckCircle,
+  FileEdit,
+  XCircle,
+  Eye,
+  Edit,
+  Trash2
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";

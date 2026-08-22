@@ -4,8 +4,22 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Tags, Gift, Eye, CheckCircle, XCircle, FileEdit } from "lucide-react";
-import { getAllDiscount, deleteDiscount } from "@/services/discount";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Tags,
+  Gift,
+  Eye,
+  CheckCircle,
+  XCircle,
+  FileEdit,
+  Clock,
+  RotateCcw,
+  CalendarRange,
+  X
+} from "lucide-react";
+import { getAllDiscount, deleteDiscount, editDiscount } from "@/services/discount";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
@@ -20,6 +34,14 @@ import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
 import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from "@/components/ui/dialog";
 
 const PROMO_TYPE_LABELS = {
   bogo: "BOGO",
@@ -36,6 +58,19 @@ const getPromoLabel = (item) => {
     : item.type === "nominal"
       ? "Nominal"
       : item.type || "-";
+};
+
+const getExpiryStatus = (item) => {
+  const now = new Date();
+  if (item.status === "upcoming") return null;
+  if (item.startDate && new Date(item.startDate) > now) return null;
+  const endDate = item.endDate ? new Date(item.endDate) : null;
+  if (!endDate) return null;
+  const diffTime = endDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return "expired";
+  if (diffDays <= 7) return "expiring";
+  return null;
 };
 
 const DiscountList = () => {
@@ -91,6 +126,34 @@ const DiscountList = () => {
     }
   });
 
+  const reactivateMutation = useMutation(editDiscount, {
+    onSuccess: () => {
+      toast.success(t("page.discount.list.toast.reactivated"), {
+        description: t("page.discount.list.toast.reactivatedDescription")
+      });
+      queryClient.invalidateQueries(["discounts"]);
+    },
+    onError: (err) => {
+      toast.error(t("page.discount.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
+
+  const extendMutation = useMutation(editDiscount, {
+    onSuccess: () => {
+      toast.success(t("page.discount.list.extend.success"), {
+        description: t("page.discount.list.extend.successDescription")
+      });
+      queryClient.invalidateQueries(["discounts"]);
+    },
+    onError: (err) => {
+      toast.error(t("page.discount.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
+
   const discounts = data?.data || [];
   const pagination = data?.pagination || {};
   const total = pagination?.total || pagination?.totalItems || data?.total || 0;
@@ -100,9 +163,22 @@ const DiscountList = () => {
   const statsTotal = statsFromBE.total || total;
   const activeCount = statsFromBE.active ?? discounts.filter((d) => d.status === "active").length;
   const draftCount = statsFromBE.draft ?? discounts.filter((d) => d.status === "draft").length;
+  const upcomingCount =
+    statsFromBE.upcoming ?? discounts.filter((d) => d.status === "upcoming").length;
   const inactiveCount =
     statsFromBE.inactive ??
-    discounts.filter((d) => d.status !== "active" && d.status !== "draft").length;
+    discounts.filter(
+      (d) => d.status !== "active" && d.status !== "draft" && d.status !== "upcoming"
+    ).length;
+  const expiringCount =
+    statsFromBE.expiring ??
+    discounts.filter((d) => {
+      if (d.status !== "active" || !d.endDate) return false;
+      const endDate = new Date(d.endDate);
+      const now = new Date();
+      const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 7;
+    }).length;
 
   const handleDelete = (discount) => {
     setDeleteTarget(discount);
@@ -112,6 +188,69 @@ const DiscountList = () => {
     if (deleteTarget) {
       deleteMutation.mutate({ id: deleteTarget.id });
       setDeleteTarget(null);
+    }
+  };
+
+  const [reactivateTarget, setReactivateTarget] = useState(null);
+
+  const handleReactivate = (discount) => {
+    setReactivateTarget(discount);
+  };
+
+  const confirmReactivate = () => {
+    if (reactivateTarget) {
+      const now = new Date();
+      reactivateMutation.mutate({
+        id: reactivateTarget.id,
+        status: "active",
+        endDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+      });
+      setReactivateTarget(null);
+    }
+  };
+
+  const [extendTarget, setExtendTarget] = useState(null);
+  const [extendStartDate, setExtendStartDate] = useState(null);
+  const [extendEndDate, setExtendEndDate] = useState(null);
+  const [confirmExtendModal, setConfirmExtendModal] = useState(false);
+
+  const handleExtend = (discount) => {
+    setExtendTarget(discount);
+    setExtendStartDate(discount.startDate ? new Date(discount.startDate) : new Date());
+    setExtendEndDate(null);
+  };
+
+  const handleSaveExtend = () => {
+    if (!extendStartDate || !extendEndDate) {
+      toast.error(t("page.discount.list.extend.error"), {
+        description: t("page.discount.list.extend.errorDescription")
+      });
+      return;
+    }
+    setConfirmExtendModal(true);
+  };
+
+  const confirmExtend = () => {
+    if (extendTarget && extendStartDate && extendEndDate) {
+      extendMutation.mutate({
+        id: extendTarget.id,
+        name: extendTarget.name,
+        type: extendTarget.type,
+        value: extendTarget.value,
+        startDate: extendStartDate.toISOString().split("T")[0],
+        endDate: extendEndDate.toISOString().split("T")[0],
+        minimumOrder: extendTarget.minimumOrder || 0,
+        maximumDiscount: extendTarget.maximumDiscount || 0,
+        code: extendTarget.code || null,
+        conditions: extendTarget.conditions || {},
+        store: extendTarget.store || null,
+        description: extendTarget.description || null,
+        status: extendTarget.status
+      });
+      setConfirmExtendModal(false);
+      setExtendTarget(null);
+      setExtendStartDate(null);
+      setExtendEndDate(null);
     }
   };
 
@@ -159,7 +298,40 @@ const DiscountList = () => {
     },
     {
       header: t("page.discount.table.validity"),
-      render: (item) => `${formatDate(item.startDate)} - ${formatDate(item.endDate)}`
+      render: (item) => {
+        const expiryStatus = getExpiryStatus(item);
+        const hasStart = !!item.startDate;
+        const hasEnd = !!item.endDate;
+
+        let validityText = "";
+        if (!hasStart && !hasEnd) {
+          validityText = t("page.discount.list.validity.unlimited");
+        } else if (hasStart && !hasEnd) {
+          validityText = `${formatDate(item.startDate)} →`;
+        } else if (!hasStart && hasEnd) {
+          validityText = `→ ${formatDate(item.endDate)}`;
+        } else {
+          validityText = `${formatDate(item.startDate)} - ${formatDate(item.endDate)}`;
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-xs">{validityText}</span>
+            {expiryStatus === "expiring" && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
+                <Clock size={12} />
+                {t("page.discount.list.expiringSoon")}
+              </span>
+            )}
+            {expiryStatus === "expired" && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                <XCircle size={12} />
+                {t("page.discount.list.expired")}
+              </span>
+            )}
+          </div>
+        );
+      }
     },
     {
       header: t("page.discount.table.status"),
@@ -170,13 +342,17 @@ const DiscountList = () => {
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
               : item.status === "draft"
                 ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                : item.status === "upcoming"
+                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
           }`}>
           {item.status === "active"
             ? t("page.discount.list.active")
             : item.status === "draft"
               ? t("page.discount.list.draft")
-              : t("page.discount.list.inactive")}
+              : item.status === "upcoming"
+                ? t("page.discount.list.upcoming")
+                : t("page.discount.list.inactive")}
         </span>
       )
     },
@@ -203,37 +379,64 @@ const DiscountList = () => {
       legend: [
         { icon: Eye, label: t("common.view") },
         { icon: Edit, label: t("common.edit") },
-        { icon: Trash2, label: t("common.delete") }
+        { icon: Trash2, label: t("common.delete") },
+        { icon: RotateCcw, label: t("page.discount.list.reactivate") },
+        { icon: CalendarRange, label: t("page.discount.list.extend.title") }
       ],
-      render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-foreground"
-            onClick={() => navigate(`/detail-discount?id=${item.id || item._id}`)}>
-            <Eye size={18} />
-          </Button>
-          {canAccess(user, MENU_KEY, "edit") && (
+      render: (item) => {
+        const expiryStatus = getExpiryStatus(item);
+        const isExpired = expiryStatus === "expired" || item.status === "inactive";
+        const isExpiring = expiryStatus === "expiring";
+        return (
+          <div className="flex items-center justify-end gap-1">
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/edit-discount?id=${item.id || item._id}`)}>
-              <Edit size={18} />
+              className="h-8 w-8 text-foreground"
+              onClick={() => navigate(`/detail-discount?id=${item.id || item._id}`)}>
+              <Eye size={18} />
             </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => handleDelete(item)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
-      )
+            {canAccess(user, MENU_KEY, "edit") && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-primary"
+                onClick={() => navigate(`/edit-discount?id=${item.id || item._id}`)}>
+                <Edit size={18} />
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "edit") && isExpiring && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-blue-600"
+                onClick={() => handleExtend(item)}
+                title={t("page.discount.list.extend.title")}>
+                <CalendarRange size={18} />
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "edit") && isExpired && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-green-600"
+                onClick={() => handleReactivate(item)}
+                title={t("page.discount.list.reactivate")}>
+                <RotateCcw size={18} />
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "delete") && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive"
+                onClick={() => handleDelete(item)}>
+                <Trash2 size={18} />
+              </Button>
+            )}
+          </div>
+        );
+      }
     }
   ];
 
@@ -273,48 +476,80 @@ const DiscountList = () => {
       ) : (
         <>
           {isFetching || isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-card rounded-xl border border-border p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <Skeleton className="h-3 w-24" />
-                    <Skeleton className="h-4 w-4 rounded" />
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
                   </div>
-                  <Skeleton className="h-8 w-28 mb-2" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              ))}
+                ))}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                label={t("page.discount.list.total")}
-                value={statsTotal}
-                icon={Tags}
-                variant="default"
-                subtitle={t("page.discount.list.totalBadge", { count: discounts.length })}
-              />
-              <StatCard
-                label={t("page.discount.list.active")}
-                value={activeCount}
-                icon={CheckCircle}
-                variant="active"
-                subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
-              />
-              <StatCard
-                label={t("common.draft")}
-                value={draftCount}
-                icon={FileEdit}
-                variant="draft"
-                subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
-              />
-              <StatCard
-                label={t("page.discount.list.inactive")}
-                value={inactiveCount}
-                icon={XCircle}
-                variant="inactive"
-                subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
-              />
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <StatCard
+                  label={t("page.discount.list.total")}
+                  value={statsTotal}
+                  icon={Tags}
+                  variant="default"
+                  subtitle={t("page.discount.list.totalBadge", { count: discounts.length })}
+                />
+                <StatCard
+                  label={t("page.discount.list.active")}
+                  value={activeCount}
+                  icon={CheckCircle}
+                  variant="active"
+                  subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
+                />
+                <StatCard
+                  label={t("page.discount.list.upcoming")}
+                  value={upcomingCount}
+                  icon={CalendarRange}
+                  variant="blue"
+                  subtitle={`${statsTotal > 0 ? Math.round((upcomingCount / statsTotal) * 100) : 0}%`}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <StatCard
+                  label={t("common.draft")}
+                  value={draftCount}
+                  icon={FileEdit}
+                  variant="draft"
+                  subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
+                />
+                <StatCard
+                  label={t("page.discount.list.inactive")}
+                  value={inactiveCount}
+                  icon={XCircle}
+                  variant="inactive"
+                  subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
+                />
+                <StatCard
+                  label={t("page.discount.list.expiringSoon")}
+                  value={expiringCount}
+                  icon={Clock}
+                  variant="expiring"
+                  subtitle={`${activeCount > 0 ? Math.round((expiringCount / activeCount) * 100) : 0}% ${t("page.discount.list.ofActive")}`}
+                />
+              </div>
             </div>
           )}
 
@@ -353,6 +588,7 @@ const DiscountList = () => {
                       options={[
                         { value: "all", label: t("common.all") },
                         { value: "active", label: t("common.active") },
+                        { value: "upcoming", label: t("page.discount.list.upcoming") },
                         { value: "inactive", label: t("common.inactive") },
                         { value: "draft", label: t("common.draft") }
                       ]}
@@ -406,6 +642,117 @@ const DiscountList = () => {
         confirmText={t("page.discount.modal.deleteConfirm")}
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
+      />
+      <Modal
+        type="confirm"
+        open={!!reactivateTarget}
+        onOpenChange={(open) => !open && setReactivateTarget(null)}
+        title={t("page.discount.modal.reactivateTitle")}
+        description={t("page.discount.modal.reactivateDesc", {
+          name: reactivateTarget?.name || ""
+        })}
+        confirmText={t("page.discount.modal.reactivateConfirm")}
+        loading={reactivateMutation.isLoading}
+        onConfirm={confirmReactivate}
+      />
+
+      <Dialog open={!!extendTarget} onOpenChange={(open) => !open && setExtendTarget(null)}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarRange size={20} className="text-blue-600" />
+              {t("page.discount.list.extend.modalTitle")}
+            </DialogTitle>
+          </DialogHeader>
+
+          {extendTarget && (
+            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                  {extendTarget.name}
+                </span>
+                <span className="text-xs font-mono text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded">
+                  {extendTarget.code || "-"}
+                </span>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-blue-700 dark:text-blue-300">
+                <span>{getPromoLabel(extendTarget)}</span>
+                <span>•</span>
+                <span>
+                  {extendTarget.type === "percent"
+                    ? `${extendTarget.value}%`
+                    : `Rp${extendTarget.value?.toLocaleString("id-ID")}`}
+                </span>
+              </div>
+              <div className="text-xs text-blue-600 dark:text-blue-400">
+                {t("page.discount.table.validity")}: {formatDate(extendTarget.startDate)} -{" "}
+                {formatDate(extendTarget.endDate)}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-5 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                {t("page.discount.form.startDateLabel")} <span className="text-destructive">*</span>
+              </label>
+              <DatePicker date={extendStartDate} setDate={setExtendStartDate} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                {t("page.discount.form.endDate")} <span className="text-destructive">*</span>
+              </label>
+              <DatePicker
+                date={extendEndDate}
+                setDate={setExtendEndDate}
+                disabled={!extendStartDate}
+                minDate={extendStartDate || undefined}
+                placeholder={
+                  !extendStartDate
+                    ? t("page.discount.form.fillStartDateFirst")
+                    : t("page.discount.form.endDatePlaceholder")
+                }
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t">
+            <Button variant="outline" onClick={() => setExtendTarget(null)} className="gap-1">
+              <X size={16} />
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleSaveExtend} className="gap-1">
+              {t("button.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Modal
+        type="confirm"
+        open={confirmExtendModal}
+        onOpenChange={(open) => !open && setConfirmExtendModal(false)}
+        title={t("page.discount.list.extend.confirmTitle")}
+        description={t("page.discount.list.extend.confirmDesc", {
+          name: extendTarget?.name || "",
+          startDate: extendStartDate
+            ? extendStartDate.toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+              })
+            : "",
+          endDate: extendEndDate
+            ? extendEndDate.toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+              })
+            : ""
+        })}
+        confirmText={t("page.discount.list.extend.confirmSave")}
+        loading={extendMutation.isLoading}
+        onConfirm={confirmExtend}
       />
       {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
     </div>

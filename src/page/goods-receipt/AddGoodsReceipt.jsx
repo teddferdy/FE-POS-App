@@ -5,10 +5,22 @@ import { useQuery, useQueryClient } from "react-query";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Save, X, Plus, Trash2, Package, Search, ArrowLeft, Eye } from "lucide-react";
+import {
+  Save,
+  X,
+  Plus,
+  Trash2,
+  Package,
+  Search,
+  ArrowLeft,
+  Eye,
+  ImagePlus,
+  CloudUpload
+} from "lucide-react";
 import { toast } from "sonner";
 import { addGoodsReceipt } from "@/services/goods-receipt";
 import { getAllPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
+import { getAllEmployee } from "@/services/employee";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,12 +46,23 @@ const AddGoodsReceipt = () => {
   const [poSearch, setPoSearch] = useState("");
   const [poOpen, setPoOpen] = useState(false);
   const poRef = useRef(null);
+  const [picSearch, setPicSearch] = useState("");
+  const [picOpen, setPicOpen] = useState(false);
+  const [selectedPic, setSelectedPic] = useState(null);
+  const picRef = useRef(null);
+  const [docFile, setDocFile] = useState(null);
+  const [docPreview, setDocPreview] = useState(null);
+  const docInputRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (poRef.current && !poRef.current.contains(e.target)) {
         setPoOpen(false);
         setPoSearch("");
+      }
+      if (picRef.current && !picRef.current.contains(e.target)) {
+        setPicOpen(false);
+        setPicSearch("");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -61,43 +84,40 @@ const AddGoodsReceipt = () => {
     { value: "karton", label: t("unit.karton") }
   ];
 
-  const grSchema = z
-    .object({
-      poId: z.string().min(1, t("page.goodsReceipt.add.toast.poRequired")),
-      receivedDate: z.date().nullable().optional(),
-      notes: z.string().optional(),
-      items: z
-        .array(
-          z.object({
-            ingredient: z.any().nullable().optional(),
-            ingredientName: z.string().optional(),
-            product: z.any().nullable().optional(),
-            purchaseOrderItem: z.any().nullable().optional(),
-            qty: z.any().optional(),
-            returnedQty: z.any().optional(),
-            receivedQuantity: z.any().optional(),
-            unit: z.string().optional(),
-            qtyReceived: z.string().optional(),
-            conditionNotes: z.string().optional(),
-            costPrice: z.any().optional(),
-            conversionToBase: z.any().optional(),
-            isFromPo: z.boolean().optional()
-          })
+  const getItemRemaining = (item) =>
+    item.isFromPo
+      ? Math.max(
+          0,
+          (Number(item.qty) || 0) -
+            (Number(item.returnedQty) || 0) -
+            (Number(item.receivedQuantity) || 0)
         )
-        .min(1, t("page.goodsReceipt.add.toast.itemRequired"))
-    })
-    .superRefine((data, ctx) => {
-      const validItems = (data.items || []).filter(
-        (it) => parseFloat(it.qtyReceived) > 0 && (it.ingredientName || it.ingredient)
-      );
-      if (validItems.length === 0) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["items"],
-          message: t("page.goodsReceipt.add.toast.itemRequired")
-        });
-      }
-    });
+      : Math.max(0, Number(item.qty) || 0);
+
+  const grSchema = z.object({
+    poId: z.string().min(1, t("page.goodsReceipt.add.toast.poRequired")),
+    receivedDate: z.date().nullable().optional(),
+    notes: z.string().optional(),
+    items: z
+      .array(
+        z.object({
+          ingredient: z.any().nullable().optional(),
+          ingredientName: z.string().optional(),
+          product: z.any().nullable().optional(),
+          purchaseOrderItem: z.any().nullable().optional(),
+          qty: z.any().optional(),
+          returnedQty: z.any().optional(),
+          receivedQuantity: z.any().optional(),
+          unit: z.string().optional(),
+          qtyReceived: z.string().optional(),
+          conditionNotes: z.string().optional(),
+          costPrice: z.any().optional(),
+          conversionToBase: z.any().optional(),
+          isFromPo: z.boolean().optional()
+        })
+      )
+      .min(1, t("page.goodsReceipt.add.toast.itemRequired"))
+  });
 
   const form = useForm({
     resolver: zodResolver(grSchema),
@@ -117,12 +137,13 @@ const AddGoodsReceipt = () => {
     trigger,
     getValues,
     setValue,
-    watch
+    watch,
+    clearErrors
   } = form;
 
   const isPoFromUrl = !!searchParams.get("poId");
 
-  const { fields, append, remove, replace } = useFieldArray({
+  const { fields, remove, replace } = useFieldArray({
     control,
     name: "items"
   });
@@ -167,6 +188,7 @@ const AddGoodsReceipt = () => {
         isFromPo: true
       }));
       replace(mapped);
+      clearErrors("items");
     }
   }, [poDetail]);
 
@@ -183,19 +205,71 @@ const AddGoodsReceipt = () => {
     return map;
   }, [poDetail]);
 
-  const addItem = () =>
-    append({
-      ingredient: null,
-      ingredientName: "",
-      product: null,
-      qty: 0,
-      unit: "pcs",
-      qtyReceived: "0",
-      conditionNotes: "",
-      costPrice: 0,
-      conversionToBase: 1,
-      isFromPo: false
-    });
+  const grStoreId = poDetail?.data?.store || selectedPO?.store;
+  const { data: employeesData } = useQuery(
+    ["employees-for-gr", grStoreId],
+    () => getAllEmployee({ limit: 999, status: "active", location: grStoreId || undefined }),
+    { enabled: !!grStoreId }
+  );
+  const employees = employeesData?.data || [];
+  const filteredEmployees = employees.filter((e) =>
+    (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
+  );
+
+  const grSummary = items.reduce(
+    (acc, it) => {
+      if (!(it.ingredientName || it.ingredient)) return acc;
+      const price = parseFloat(it.costPrice) || 0;
+      const ordered = it.isFromPo
+        ? Math.max(0, (Number(it.qty) || 0) - (Number(it.returnedQty) || 0))
+        : Number(it.qty) || 0;
+      const prev = it.isFromPo ? Number(it.receivedQuantity) || 0 : 0;
+      const remaining = Math.max(getItemRemaining(it), 0);
+      const now = Math.min(Math.max(parseFloat(it.qtyReceived) || 0, 0), remaining);
+      acc.target += Math.max(ordered - prev, 0);
+      acc.filled += now;
+      if (now > 0) acc.count += 1;
+      acc.orderedValue += ordered * price;
+      acc.prevValue += prev * price;
+      acc.nowValue += now * price;
+      acc.shortageValue += Math.max(remaining - now, 0) * price;
+      if (prev > 0) acc.hasPrev = true;
+      return acc;
+    },
+    {
+      target: 0,
+      filled: 0,
+      count: 0,
+      orderedValue: 0,
+      prevValue: 0,
+      nowValue: 0,
+      shortageValue: 0,
+      hasPrev: false
+    }
+  );
+
+  const receiptProgress = {
+    ...grSummary,
+    done: grSummary.target > 0 && grSummary.filled >= grSummary.target
+  };
+
+  const handleDocChange = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) {
+      toast.error(t("page.goodsReceipt.add.form.fileTooLarge"));
+      e.target.value = "";
+      return;
+    }
+    setDocFile(f);
+    setDocPreview(URL.createObjectURL(f));
+  };
+
+  const clearDoc = () => {
+    setDocFile(null);
+    setDocPreview(null);
+    if (docInputRef.current) docInputRef.current.value = "";
+  };
 
   const updateItem = (idx, field, value) => setValue(`items.${idx}.${field}`, value);
 
@@ -205,6 +279,17 @@ const AddGoodsReceipt = () => {
       const validItems = data.items.filter(
         (it) => parseFloat(it.qtyReceived) > 0 && (it.ingredientName || it.ingredient)
       );
+      if (validItems.length === 0) {
+        toast.error(t("page.goodsReceipt.add.toast.itemRequired"));
+        return;
+      }
+      const overReceived = validItems.some(
+        (it) => parseFloat(it.qtyReceived) > getItemRemaining(it)
+      );
+      if (overReceived) {
+        toast.error(t("page.goodsReceipt.add.toast.qtyExceed"));
+        return;
+      }
       const payload = {
         purchaseOrderId: parseInt(data.poId),
         receivedDate:
@@ -212,6 +297,7 @@ const AddGoodsReceipt = () => {
             ? data.receivedDate.toISOString().split("T")[0]
             : data.receivedDate,
         notes: data.notes,
+        pic: selectedPic?.id || null,
         status: saveAsDraft ? "draft" : "completed",
         items: validItems.map((it) => ({
           purchaseOrderItem: it.purchaseOrderItem,
@@ -225,7 +311,7 @@ const AddGoodsReceipt = () => {
           conversionToBase: parseFloat(it.conversionToBase) || 1
         }))
       };
-      await addGoodsReceipt(payload);
+      await addGoodsReceipt(payload, docFile);
       toast.success(t("page.goodsReceipt.add.toast.success"), {
         description: t("page.goodsReceipt.add.toast.successDesc")
       });
@@ -381,6 +467,115 @@ const AddGoodsReceipt = () => {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>
+                {t("page.goodsReceipt.add.form.pic")}{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  ({t("common.optional")})
+                </span>
+              </Label>
+              <div className="relative" ref={picRef}>
+                <div
+                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm flex items-center cursor-pointer"
+                  onClick={() => setPicOpen(!picOpen)}>
+                  <Search size={14} className="mr-2 text-muted-foreground shrink-0" />
+                  <input
+                    type="text"
+                    value={
+                      picOpen ? picSearch : selectedPic?.fullName || selectedPic?.userName || ""
+                    }
+                    readOnly={!picOpen}
+                    onFocus={() => setPicOpen(true)}
+                    onChange={(e) => setPicSearch(e.target.value)}
+                    placeholder={t("page.goodsReceipt.add.form.picPlaceholder")}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                  />
+                </div>
+                {picOpen && (
+                  <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-md shadow-md max-h-60 overflow-auto">
+                    {filteredEmployees.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-muted-foreground">
+                        {t("page.goodsReceipt.add.form.picEmpty")}
+                      </div>
+                    ) : (
+                      filteredEmployees.map((emp) => (
+                        <div
+                          key={emp.id}
+                          className={`px-3 py-2 text-sm cursor-pointer hover:bg-accent ${
+                            selectedPic?.id === emp.id ? "bg-accent" : ""
+                          }`}
+                          onClick={() => {
+                            setSelectedPic(emp);
+                            setPicSearch("");
+                            setPicOpen(false);
+                          }}>
+                          {emp.fullName || emp.userName}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+              {selectedPic && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedPic(null)}
+                  className="text-xs text-muted-foreground hover:text-destructive">
+                  {t("page.goodsReceipt.add.form.clearPic")}
+                </button>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>
+                {t("page.goodsReceipt.add.form.documentation")}{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  ({t("common.optional")})
+                </span>
+              </Label>
+              <input
+                type="file"
+                accept="image/*"
+                ref={docInputRef}
+                className="hidden"
+                onChange={handleDocChange}
+              />
+              <div
+                onClick={() => docInputRef.current?.click()}
+                className="relative rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center bg-muted/30 overflow-hidden cursor-pointer group min-h-[88px]">
+                {docPreview ? (
+                  <>
+                    <img
+                      src={docPreview}
+                      alt={t("page.goodsReceipt.add.form.documentation")}
+                      className="w-full h-auto max-h-40 object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearDoc();
+                      }}
+                      className="absolute top-2 right-2 z-10 p-2 bg-background/90 rounded-full text-muted-foreground hover:text-destructive shadow-md">
+                      <X size={14} />
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3 text-muted-foreground group-hover:text-primary transition-colors px-4 py-5">
+                    <CloudUpload size={28} />
+                    <span className="text-sm font-semibold">
+                      {t("page.goodsReceipt.add.form.docClick")}
+                    </span>
+                    <ImagePlus size={16} className="opacity-50" />
+                  </div>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {t("page.goodsReceipt.add.form.docHint")}
+              </p>
+            </div>
+          </div>
+
           {(() => {
             const po = selectedPO || poDetail?.data;
             if (!po || po.paymentMethod !== "credit") return null;
@@ -408,7 +603,27 @@ const AddGoodsReceipt = () => {
           })()}
 
           <div className="space-y-2">
-            <Label>{t("page.goodsReceipt.add.form.items")}</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label>{t("page.goodsReceipt.add.form.items")}</Label>
+              {poId && receiptProgress.target > 0 && (
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                    receiptProgress.done
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                      : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                  }`}>
+                  {receiptProgress.done
+                    ? t("page.goodsReceipt.add.status.selesai")
+                    : t("page.goodsReceipt.add.status.belumSelesai")}
+                  {!receiptProgress.done && (
+                    <span className="font-normal">
+                      ({receiptProgress.filled.toLocaleString("id-ID")}/
+                      {receiptProgress.target.toLocaleString("id-ID")})
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
             {loadingPo && poId ? (
               <div className="space-y-2">
                 <Skeleton className="h-8 w-full" />
@@ -536,7 +751,7 @@ const AddGoodsReceipt = () => {
                             {item.isFromPo ? (
                               <div>
                                 <span className="inline-flex px-2 py-1 rounded text-xs bg-muted">
-                                  {item.conversionToBase || 1}
+                                  {parseFloat(item.conversionToBase) || 1}
                                 </span>
                                 {parseFloat(item.qtyReceived) > 0 && (
                                   <p className="text-[10px] text-muted-foreground mt-1">
@@ -574,16 +789,31 @@ const AddGoodsReceipt = () => {
                               inputMode="decimal"
                               value={item.qtyReceived === "0" ? "" : item.qtyReceived}
                               onFocus={(e) => e.target.select()}
-                              onChange={(e) =>
-                                updateItem(
-                                  idx,
-                                  "qtyReceived",
-                                  e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
-                                )
-                              }
+                              onChange={(e) => {
+                                const raw = e.target.value
+                                  .replace(/[^0-9.]/g, "")
+                                  .replace(/(\..*)\./g, "$1");
+                                const max = getItemRemaining(item);
+                                const num = parseFloat(raw);
+                                updateItem(idx, "qtyReceived", num > max ? String(max) : raw);
+                              }}
                               className="h-9 text-sm"
                               placeholder={t("page.goodsReceipt.add.placeholder.qty")}
                             />
+                            {(() => {
+                              const max = getItemRemaining(item);
+                              const val = parseFloat(item.qtyReceived) || 0;
+                              if (val <= 0 || max <= 0) return null;
+                              return val >= max ? (
+                                <p className="text-[10px] font-medium text-emerald-600 mt-1">
+                                  {t("page.goodsReceipt.add.status.pas")}
+                                </p>
+                              ) : (
+                                <p className="text-[10px] font-medium text-amber-600 mt-1">
+                                  {t("page.goodsReceipt.add.status.kurang", { qty: max - val })}
+                                </p>
+                              );
+                            })()}
                           </div>
                           <div>
                             <span className="block text-[11px] font-medium text-muted-foreground mb-1.5">
@@ -761,7 +991,7 @@ const AddGoodsReceipt = () => {
                               {item.isFromPo ? (
                                 <div className="text-center">
                                   <span className="inline-flex px-2 py-0.5 rounded text-xs bg-muted">
-                                    {item.conversionToBase || 1}
+                                    {parseFloat(item.conversionToBase) || 1}
                                   </span>
                                   {parseFloat(item.qtyReceived) > 0 && (
                                     <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -800,18 +1030,31 @@ const AddGoodsReceipt = () => {
                                 inputMode="decimal"
                                 value={item.qtyReceived === "0" ? "" : item.qtyReceived}
                                 onFocus={(e) => e.target.select()}
-                                onChange={(e) =>
-                                  updateItem(
-                                    idx,
-                                    "qtyReceived",
-                                    e.target.value
-                                      .replace(/[^0-9.]/g, "")
-                                      .replace(/(\..*)\./g, "$1")
-                                  )
-                                }
+                                onChange={(e) => {
+                                  const raw = e.target.value
+                                    .replace(/[^0-9.]/g, "")
+                                    .replace(/(\..*)\./g, "$1");
+                                  const max = getItemRemaining(item);
+                                  const num = parseFloat(raw);
+                                  updateItem(idx, "qtyReceived", num > max ? String(max) : raw);
+                                }}
                                 className="h-8 text-xs text-right w-24 ml-auto"
                                 placeholder={t("page.goodsReceipt.add.placeholder.qty")}
                               />
+                              {(() => {
+                                const max = getItemRemaining(item);
+                                const val = parseFloat(item.qtyReceived) || 0;
+                                if (val <= 0 || max <= 0) return null;
+                                return val >= max ? (
+                                  <p className="text-[10px] font-medium text-emerald-600 mt-0.5 text-right">
+                                    {t("page.goodsReceipt.add.status.pas")}
+                                  </p>
+                                ) : (
+                                  <p className="text-[10px] font-medium text-amber-600 mt-0.5 text-right">
+                                    {t("page.goodsReceipt.add.status.kurang", { qty: max - val })}
+                                  </p>
+                                );
+                              })()}
                             </td>
                             <td className="px-3 py-2">
                               <Input
@@ -879,11 +1122,6 @@ const AddGoodsReceipt = () => {
             {errors.items?.message && (
               <p className="text-xs text-destructive">{errors.items.message}</p>
             )}
-            {poId && (
-              <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1">
-                <Plus size={14} /> {t("page.goodsReceipt.add.form.addItem")}
-              </Button>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -898,6 +1136,88 @@ const AddGoodsReceipt = () => {
               />
             )}
           </div>
+
+          {items.length > 0 && (
+            <div className="rounded-lg border bg-muted/30 px-4 py-3 space-y-2 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-muted-foreground">
+                  {t("page.goodsReceipt.add.summary.itemsReceived", { count: grSummary.count })}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                    grSummary.count === 0
+                      ? "bg-muted text-muted-foreground"
+                      : grSummary.shortageValue > 0
+                        ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                  }`}>
+                  {grSummary.count === 0
+                    ? t("page.goodsReceipt.add.summary.pendingLabel")
+                    : grSummary.shortageValue > 0
+                      ? t("page.goodsReceipt.add.summary.mismatchLabel")
+                      : t("page.goodsReceipt.add.summary.matchLabel")}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">
+                  {t("page.goodsReceipt.add.summary.orderedValue")}
+                </span>
+                <span className="font-medium">
+                  Rp {grSummary.orderedValue.toLocaleString("id-ID")}
+                </span>
+              </div>
+              {grSummary.hasPrev && (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-muted-foreground">
+                    {t("page.goodsReceipt.add.summary.prevReceived")}
+                  </span>
+                  <span className="font-medium text-amber-600 dark:text-amber-400">
+                    Rp {grSummary.prevValue.toLocaleString("id-ID")}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">
+                  {t("page.goodsReceipt.add.summary.nowReceived")}
+                </span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                  Rp {grSummary.nowValue.toLocaleString("id-ID")}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">
+                  {t("page.goodsReceipt.add.summary.shortage")}
+                </span>
+                <span
+                  className={`font-medium ${
+                    grSummary.count === 0
+                      ? "text-muted-foreground"
+                      : grSummary.shortageValue > 0
+                        ? "text-red-500"
+                        : "text-emerald-600 dark:text-emerald-400"
+                  }`}>
+                  {grSummary.shortageValue > 0
+                    ? `Rp ${grSummary.shortageValue.toLocaleString("id-ID")}`
+                    : t("page.goodsReceipt.add.status.selesai")}
+                </span>
+              </div>
+              <div className="border-t border-border pt-2 mt-1 flex items-center justify-between gap-2">
+                <span className="font-semibold">{t("page.goodsReceipt.add.summary.variance")}</span>
+                <span
+                  className={`font-bold text-base ${
+                    grSummary.count === 0
+                      ? "text-muted-foreground"
+                      : grSummary.shortageValue > 0
+                        ? "text-red-500"
+                        : "text-emerald-600 dark:text-emerald-400"
+                  }`}>
+                  {grSummary.shortageValue > 0
+                    ? `-Rp ${grSummary.shortageValue.toLocaleString("id-ID")}`
+                    : "Rp 0"}
+                </span>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
             <Button

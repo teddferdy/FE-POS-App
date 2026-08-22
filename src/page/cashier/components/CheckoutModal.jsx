@@ -127,7 +127,7 @@ const CheckoutModal = ({
   );
   const { data: discountsData } = useQuery(
     ["discounts-active", store],
-    () => getAllDiscount({ page: 1, limit: 999, location: store }),
+    () => getAllDiscount({ page: 1, limit: 999, location: store, status: "active" }),
     { enabled: !!store }
   );
   const { data: tiersData } = useQuery(["member-tiers-active"], () =>

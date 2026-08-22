@@ -38,13 +38,33 @@ export const getGoodsReceiptByPO = async (poId) => {
   return data;
 };
 
-export const addGoodsReceipt = async (payload) => {
+export const addGoodsReceipt = async (payload, file) => {
+  if (file) {
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(payload));
+    formData.append("file", file);
+    const { data, status } = await axiosInstance.post("/goods-receipt/create", formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+    if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+    return data;
+  }
   const { data, status } = await axiosInstance.post("/goods-receipt/create", payload);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };
 
-export const editGoodsReceipt = async (id, payload) => {
+export const editGoodsReceipt = async (id, payload, file) => {
+  if (file) {
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(payload));
+    formData.append("file", file);
+    const { data, status } = await axiosInstance.put(`/goods-receipt/update/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+    if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+    return data;
+  }
   const { data, status } = await axiosInstance.put(`/goods-receipt/update/${id}`, payload);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;

@@ -209,9 +209,16 @@ const PromoCampaignList = () => {
       accessorKey: "startDate",
       cell: ({ row }) => (
         <div className="text-xs">
-          <div>{row.original.startDate && !isNaN(new Date(row.original.startDate).getTime()) ? new Date(row.original.startDate).toLocaleDateString() : "-"}</div>
+          <div>
+            {row.original.startDate && !isNaN(new Date(row.original.startDate).getTime())
+              ? new Date(row.original.startDate).toLocaleDateString()
+              : "-"}
+          </div>
           <div className="text-muted-foreground">
-            to {row.original.endDate && !isNaN(new Date(row.original.endDate).getTime()) ? new Date(row.original.endDate).toLocaleDateString() : "-"}
+            to{" "}
+            {row.original.endDate && !isNaN(new Date(row.original.endDate).getTime())
+              ? new Date(row.original.endDate).toLocaleDateString()
+              : "-"}
           </div>
         </div>
       )

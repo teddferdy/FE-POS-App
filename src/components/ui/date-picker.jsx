@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import { Calendar } from "./calendar";
@@ -13,9 +13,11 @@ function DatePicker({
   setDate,
   placeholder = "Pilih tanggal",
   className,
+  disabled = false,
   fromYear = 1945,
   toYear = 2999,
   captionLayout = "dropdown",
+  minDate,
   ...rest
 }) {
   const isValidDate = date instanceof Date && !isNaN(date.getTime());
@@ -25,38 +27,64 @@ function DatePicker({
     if (date instanceof Date && !isNaN(date.getTime())) setMonth(date);
   }, [date]);
 
+  const handleClear = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setDate(null);
+  };
+
+  const isBeforeMinDate = (d) => {
+    if (!minDate || !(minDate instanceof Date)) return false;
+    const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const minOnly = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+    return dateOnly < minOnly;
+  };
+
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "w-full justify-start text-left font-normal h-10",
-            !isValidDate && "text-muted-foreground",
-            className
-          )}>
-          <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-          {isValidDate ? format(date, "dd MMM yyyy") : <span>{placeholder}</span>}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 overflow-visible" align="start">
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={(d) => {
-            setDate(d);
-            if (d) setMonth(d);
-          }}
-          month={month}
-          onMonthChange={setMonth}
-          initialFocus
-          captionLayout={captionLayout}
-          fromYear={fromYear}
-          toYear={toYear}
-          {...rest}
-        />
-      </PopoverContent>
-    </Popover>
+    <div className={cn("relative", className)}>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            disabled={disabled}
+            className={cn(
+              "w-full justify-start text-left font-normal h-10 pr-8",
+              !isValidDate && "text-muted-foreground",
+              disabled && "opacity-50 cursor-not-allowed"
+            )}>
+            <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+            {isValidDate ? format(date, "dd MMM yyyy") : <span>{placeholder}</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0 overflow-visible" align="start">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={(d) => {
+              if (d && isBeforeMinDate(d)) return;
+              setDate(d);
+              if (d) setMonth(d);
+            }}
+            month={month}
+            onMonthChange={setMonth}
+            disabled={isBeforeMinDate}
+            initialFocus
+            captionLayout={captionLayout}
+            fromYear={fromYear}
+            toYear={toYear}
+            {...rest}
+          />
+        </PopoverContent>
+      </Popover>
+      {isValidDate && !disabled && (
+        <button
+          type="button"
+          onClick={handleClear}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer z-10">
+          <X size={14} />
+        </button>
+      )}
+    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -83,6 +83,7 @@ const EditDiscount = () => {
   const draftSchema = useMemo(() => z.object(baseFields), [baseFields]);
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [cookie] = useCookies();
@@ -147,6 +148,7 @@ const EditDiscount = () => {
   const [modalMessage, setModalMessage] = useState("");
 
   const currentPromoType = form.watch("promoType");
+  const startDate = form.watch("startDate");
 
   const discountFieldLabels = useMemo(
     () => ({
@@ -245,6 +247,7 @@ const EditDiscount = () => {
 
   const updateMutation = useMutation(editDiscount, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["discounts"]);
       setSuccessModal(true);
     },
     onError: (err) => {
@@ -875,7 +878,17 @@ const EditDiscount = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("page.discount.form.endDate")}</FormLabel>
-                      <DatePicker date={field.value} setDate={field.onChange} />
+                      <DatePicker
+                        date={field.value}
+                        setDate={field.onChange}
+                        disabled={!startDate}
+                        minDate={startDate || undefined}
+                        placeholder={
+                          !startDate
+                            ? t("page.discount.form.fillStartDateFirst")
+                            : t("page.discount.form.endDatePlaceholder")
+                        }
+                      />
                       <FormMessage />
                     </FormItem>
                   )}

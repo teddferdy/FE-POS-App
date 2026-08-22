@@ -21,12 +21,8 @@ export const generateReceiptHTML = (data) => {
     memberName,
     memberTier,
     memberPoints,
-    orderNumber,
-    cashier,
-    date = new Date().toLocaleString("id-ID"),
     items = [],
     subtotal = 0,
-    discount = 0,
     tax = 0,
     total = 0,
     footer,
@@ -40,57 +36,69 @@ export const generateReceiptHTML = (data) => {
     socialMediaVisibility = {}
   } = data;
 
-  const dateObj = date ? new Date(date) : null;
-  const validDate = dateObj && !isNaN(dateObj.getTime());
-  const dateStr = validDate
-    ? dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })
-    : "-";
-  const timeStr = validDate
-    ? dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
-    : "-";
+  const logoHtml =
+    showLogo && logo
+      ? `<div style="text-align:center;margin-bottom:8px"><img src="${logo}" style="max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto" /></div>`
+      : "";
 
-  const logoHtml = showLogo && logo ? `<div style="text-align:center;margin-bottom:8px"><img src="${logo}" style="max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto" /></div>` : "";
-  
   const headerHtml = `
     <div style="background:#111;color:#fff;padding:10px 5px;text-align:center;">
       ${logoHtml}
       ${showStoreName && addressFieldsVisibility.storeName !== false ? `<div style="font-size:14px;font-weight:bold;text-transform:uppercase;">${storeName || "TOKO"}</div>` : ""}
-      ${showAddress ? `
+      ${
+        showAddress
+          ? `
         <div style="font-size:10px;color:#ccc;margin-top:4px;">
           ${addressFieldsVisibility.address !== false && storeAddress ? `<div>${storeAddress}</div>` : ""}
           ${addressFieldsVisibility.phone !== false && storePhone ? `<div>Telp: ${storePhone}</div>` : ""}
           ${addressFieldsVisibility.email !== false && storeEmail ? `<div>${storeEmail}</div>` : ""}
         </div>
-      ` : ""}
+      `
+          : ""
+      }
     </div>
   `;
 
-  const memberHtml = (showMemberInfo && (memberName || memberTier)) ? `
+  const memberHtml =
+    showMemberInfo && (memberName || memberTier)
+      ? `
     <div style="background:#fffbeb;padding:8px;border-bottom:1px solid #fef3c7;font-size:10px;color:#78350f;">
       <div style="font-weight:bold;text-transform:uppercase;margin-bottom:4px;">INFO MEMBER</div>
       ${memberName ? `<div style="display:flex;justify-content:space-between;"><span>Nama:</span><span style="font-weight:bold;">${memberName}</span></div>` : ""}
       ${memberTier ? `<div style="display:flex;justify-content:space-between;"><span>Tier:</span><span style="font-weight:bold;">${memberTier}</span></div>` : ""}
       ${memberPoints !== undefined ? `<div style="display:flex;justify-content:space-between;"><span>Poin:</span><span style="font-weight:bold;">${Number(memberPoints).toLocaleString("id-ID")}</span></div>` : ""}
     </div>
-  ` : "";
+  `
+      : "";
 
-  const itemsHtml = items.map(item => `
+  const itemsHtml = items
+    .map(
+      (item) => `
     <tr style="font-size:11px;">
       <td style="padding:4px 0;">${item.name}</td>
       <td style="padding:4px 0;text-align:center;">${item.qty}</td>
       <td style="padding:4px 0;text-align:right;">${formatPrice(item.price)}</td>
       <td style="padding:4px 0;text-align:right;font-weight:bold;">${formatPrice(item.qty * item.price)}</td>
     </tr>
-  `).join("");
+  `
+    )
+    .join("");
 
   const footerHtml = `
     <div style="padding:10px 5px;border-top:1px solid #ddd;font-size:10px;text-align:center;color:#666;">
       <div style="font-style:italic;margin-bottom:8px;">${footer}</div>
-      ${showSocialMedia && socialMedia.length > 0 ? `
+      ${
+        showSocialMedia && socialMedia.length > 0
+          ? `
         <div style="display:flex;justify-content:center;gap:5px;flex-wrap:wrap;">
-          ${socialMedia.filter(sm => !socialMediaVisibility || socialMediaVisibility[sm.platform] !== false).map(sm => `<span>${sm.platform}: ${sm.account}</span>`).join(" | ")}
+          ${socialMedia
+            .filter((sm) => !socialMediaVisibility || socialMediaVisibility[sm.platform] !== false)
+            .map((sm) => `<span>${sm.platform}: ${sm.account}</span>`)
+            .join(" | ")}
         </div>
-      ` : ""}
+      `
+          : ""
+      }
     </div>
   `;
 
@@ -172,7 +180,12 @@ export const generateESCPOS = (data, opts = {}) => {
   const dateObj = date ? new Date(date) : null;
   const validDate = dateObj && !isNaN(dateObj.getTime());
   const dateStr = validDate
-    ? dateObj.toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+    ? dateObj.toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      })
     : "-";
   const timeStr = validDate
     ? dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })

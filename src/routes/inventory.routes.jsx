@@ -48,9 +48,7 @@ const DetailGoodsReceipt = React.lazy(() => import("@/page/goods-receipt/DetailG
 const EditGoodsReceipt = React.lazy(() => import("@/page/goods-receipt/EditGoodsReceipt"));
 
 // Stock Forecast
-const StockForecast = React.lazy(
-  () => import("@/page/stock-forecast/StockForecast")
-);
+const StockForecast = React.lazy(() => import("@/page/stock-forecast/StockForecast"));
 
 export const inventoryRoutes = (
   <>

@@ -563,7 +563,9 @@ const EditEmployee = () => {
                         value="profile"
                         className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
                         <User size={16} />
-                        <span className="hidden sm:inline">{t("page.employee.edit.personalInfo")}</span>
+                        <span className="hidden sm:inline">
+                          {t("page.employee.edit.personalInfo")}
+                        </span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="employment"
@@ -581,13 +583,17 @@ const EditEmployee = () => {
                         value="account"
                         className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
                         <Lock size={16} />
-                        <span className="hidden sm:inline">{t("page.employee.edit.accountAccess")}</span>
+                        <span className="hidden sm:inline">
+                          {t("page.employee.edit.accountAccess")}
+                        </span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="documents"
                         className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
                         <FileText size={16} />
-                        <span className="hidden sm:inline">{t("page.employee.edit.documents")}</span>
+                        <span className="hidden sm:inline">
+                          {t("page.employee.edit.documents")}
+                        </span>
                       </TabsTrigger>
                     </TabsList>
 
@@ -700,7 +706,9 @@ const EditEmployee = () => {
                                       placeholder={t("page.employee.form.phonePlaceholder")}
                                       maxLength={16}
                                       onChange={(e) => {
-                                        const value = e.target.value.replace(/\D/g, "").slice(0, 16);
+                                        const value = e.target.value
+                                          .replace(/\D/g, "")
+                                          .slice(0, 16);
                                         field.onChange(value);
                                       }}
                                     />
@@ -767,7 +775,9 @@ const EditEmployee = () => {
                                     </FormLabel>
                                     <DatePicker
                                       date={field.value ? new Date(field.value) : undefined}
-                                      setDate={(date) => field.onChange(date ? date.toISOString() : "")}
+                                      setDate={(date) =>
+                                        field.onChange(date ? date.toISOString() : "")
+                                      }
                                     />
                                     <FormMessage />
                                   </FormItem>
@@ -855,7 +865,9 @@ const EditEmployee = () => {
                                       size="sm"
                                       onClick={() => navigate("/add-department")}
                                       className="gap-2">
-                                      <span className="material-symbols-outlined text-base">add</span>
+                                      <span className="material-symbols-outlined text-base">
+                                        add
+                                      </span>
                                       {t("page.employee.edit.addDepartment")}
                                     </Button>
                                   </div>
@@ -879,7 +891,9 @@ const EditEmployee = () => {
                                       className="shrink-0"
                                       onClick={() => navigate("/add-department")}
                                       title={t("page.employee.edit.addDepartmentNew")}>
-                                      <span className="material-symbols-outlined text-base">add</span>
+                                      <span className="material-symbols-outlined text-base">
+                                        add
+                                      </span>
                                     </Button>
                                   </div>
                                 )}
@@ -914,7 +928,9 @@ const EditEmployee = () => {
                                       size="sm"
                                       onClick={() => navigate("/add-position")}
                                       className="gap-2">
-                                      <span className="material-symbols-outlined text-base">add</span>
+                                      <span className="material-symbols-outlined text-base">
+                                        add
+                                      </span>
                                       {t("page.employee.edit.addPosition")}
                                     </Button>
                                   </div>
@@ -938,7 +954,9 @@ const EditEmployee = () => {
                                       className="shrink-0"
                                       onClick={() => navigate("/add-position")}
                                       title={t("page.employee.edit.addPositionNew")}>
-                                      <span className="material-symbols-outlined text-base">add</span>
+                                      <span className="material-symbols-outlined text-base">
+                                        add
+                                      </span>
                                     </Button>
                                   </div>
                                 )}
@@ -973,7 +991,9 @@ const EditEmployee = () => {
                                       size="sm"
                                       onClick={() => navigate("/add-location")}
                                       className="gap-2">
-                                      <span className="material-symbols-outlined text-base">add</span>
+                                      <span className="material-symbols-outlined text-base">
+                                        add
+                                      </span>
                                       {t("page.employee.edit.addStore")}
                                     </Button>
                                   </div>
@@ -1000,7 +1020,9 @@ const EditEmployee = () => {
                                       className="shrink-0"
                                       onClick={() => navigate("/add-location")}
                                       title={t("page.employee.edit.addStoreNew")}>
-                                      <span className="material-symbols-outlined text-base">add</span>
+                                      <span className="material-symbols-outlined text-base">
+                                        add
+                                      </span>
                                     </Button>
                                   </div>
                                 )}
@@ -1019,7 +1041,9 @@ const EditEmployee = () => {
                                 <Select onValueChange={field.onChange} value={field.value}>
                                   <SelectTrigger>
                                     <SelectValue
-                                      placeholder={t("page.employee.form.employmentTypePlaceholder")}
+                                      placeholder={t(
+                                        "page.employee.form.employmentTypePlaceholder"
+                                      )}
                                     />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -1391,7 +1415,9 @@ const EditEmployee = () => {
                     <TabsContent value="documents" className="mt-6">
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                          <span className="material-symbols-outlined text-primary">description</span>
+                          <span className="material-symbols-outlined text-primary">
+                            description
+                          </span>
                           <h4 className="text-base font-semibold text-foreground">
                             {t("page.employee.edit.documents")}
                             <span className="text-destructive">*</span>
