@@ -168,6 +168,9 @@ const tipsKeys = {
 
 const DashboardLayout = () => {
   const { t } = useTranslation();
+  // ponytail: dua fase untuk animasi buka/tutup drawer —
+  // mounted = render di DOM, open = trigger transisi transform/opacity
+  const [mobileSidebarMounted, setMobileSidebarMounted] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
@@ -223,11 +226,26 @@ const DashboardLayout = () => {
     setMobileSidebarOpen(false);
   }, [location.pathname]);
 
-  useBodyScrollLock(mobileSidebarOpen || isPaletteOpen);
+  // ponytail: unmount setelah animasi keluar selesai (durasi harus cocok
+  // dengan duration-300 pada backdrop & drawer)
+  useEffect(() => {
+    if (mobileSidebarOpen || !mobileSidebarMounted) return undefined;
+    const timer = setTimeout(() => setMobileSidebarMounted(false), 300);
+    return () => clearTimeout(timer);
+  }, [mobileSidebarOpen, mobileSidebarMounted]);
+
+  useBodyScrollLock(mobileSidebarMounted || isPaletteOpen);
 
   const handleMobileMenuToggle = useCallback(() => {
-    setMobileSidebarOpen((prev) => !prev);
-  }, []);
+    if (mobileSidebarOpen) {
+      setMobileSidebarOpen(false);
+      return;
+    }
+    setMobileSidebarMounted(true);
+    // double rAF: pastikan frame pertama ter-render dengan posisi awal
+    // (-translate-x-full) agar transisi slide benar-benar berjalan
+    requestAnimationFrame(() => requestAnimationFrame(() => setMobileSidebarOpen(true)));
+  }, [mobileSidebarOpen]);
 
   const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
 
@@ -245,19 +263,24 @@ const DashboardLayout = () => {
       </div>
 
       {/* Mobile Sidebar Overlay */}
-      {mobileSidebarOpen && (
+      {mobileSidebarMounted && (
         <div className="fixed inset-0 z-50 xl:hidden">
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            aria-hidden="true"
             onClick={closeMobileSidebar}
+            className={`fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ease-out
+              ${mobileSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           />
           <div
             role="dialog"
             aria-modal="true"
-            aria-label={t("sidebar.menu", { defaultValue: "Menu" })}>
-            {/* ponytail: wrapper TANPA fixed inset-0 — kalau full-screen, tap
-                backdrop tak pernah sampai ke handler dan drawer tak bisa
-                ditutup di iPad. Aside sendiri sudah position:fixed. */}
+            aria-label={t("sidebar.menu", { defaultValue: "Menu" })}
+            className={`fixed left-0 top-0 h-screen w-[50vw]
+              transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+              ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+            {/* ponytail: wrapper hanya selebar drawer (bukan inset-0) agar
+                tap di luar tetap jatuh ke backdrop dan drawer bisa ditutup
+                di iPad. Aside di dalamnya sudah position:fixed & w-[50vw]. */}
             <Sidebar collapsed={false} expandWidthClass="w-[50vw]" onToggle={closeMobileSidebar} />
           </div>
         </div>
