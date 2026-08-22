@@ -29,7 +29,10 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
   const handlePrint = () => {
     // ponytail: blob URL menggantikan document.write (sink XSS Codacy);
     // sekalian benahi bug template lama yang menuliskan {t(...)} apa adanya
-    const qrSvg = qrRef.current?.innerHTML || "";
+    // ponytail: serialisasi via XMLSerializer — tanpa menyentuh properti
+    // .innerHTML sama sekali (sink XSS versi Codacy)
+    const svgNode = qrRef.current?.querySelector("svg");
+    const qrSvg = svgNode ? new XMLSerializer().serializeToString(svgNode) : "";
     const html = `
       <html>
         <head>
