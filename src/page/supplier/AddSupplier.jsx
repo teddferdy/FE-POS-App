@@ -23,6 +23,7 @@ import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { Switch } from "@/components/ui/switch";
 import { addSupplier } from "@/services/supplier";
+import { getAllSupplierCategories } from "@/services/supplier";
 import { downloadSupplierProductTemplate, importSupplierProducts } from "@/services/supplier";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
@@ -144,6 +145,14 @@ const AddSupplier = () => {
     isFetching: locsFetching
   } = useQuery(["allLocations"], () => getAllLocation(), { enabled: isSuperAdmin });
   const locations = locationsData?.data || locationsData?.locations || [];
+
+  const { data: categoriesData } = useQuery(["supplierCategoryOptions"], () =>
+    getAllSupplierCategories({ limit: 100 })
+  );
+  const categoryOptions = (categoriesData?.data || []).map((c) => ({
+    value: String(c.id),
+    label: c.name
+  }));
 
   const excelImportMutation = useMutation(({ id, file }) => importSupplierProducts({ id, file }), {
     onSuccess: (data) => {
@@ -621,6 +630,29 @@ const AddSupplier = () => {
                               <Input
                                 placeholder={t("page.supplier.form.emailPlaceholder")}
                                 {...field}
+                              />
+                              <FormMessage />
+                              <FormDescription>{t("common.optionalField")}</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="categoryId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t("page.supplierCategory.title", "Kategori Supplier")}
+                              </FormLabel>
+                              <Combobox
+                                options={categoryOptions}
+                                value={field.value ? String(field.value) : ""}
+                                onChange={(v) => field.onChange(v ? Number(v) : null)}
+                                placeholder={t(
+                                  "page.supplier.categoryPlaceholder",
+                                  "Pilih kategori..."
+                                )}
+                                searchPlaceholder={t("common.search")}
                               />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
