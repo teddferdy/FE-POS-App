@@ -151,13 +151,19 @@ const ReportView = ({ data, reportType }) => {
   const payments = data.payments || [];
   const expenses = data.expenses || [];
 
-  const paymentGroups = {};
+  // ponytail: Map agregasi + fromEntries — O(N), bebas object injection
+  const paymentMap = new Map();
   for (const p of payments) {
     const key = p.type || "cash";
-    if (!paymentGroups[key]) paymentGroups[key] = { amount: 0, count: 0 };
-    paymentGroups[key].amount += p.amount;
-    paymentGroups[key].count += p.count;
+    const existing = paymentMap.get(key);
+    if (existing) {
+      existing.amount += p.amount;
+      existing.count += p.count;
+    } else {
+      paymentMap.set(key, { amount: p.amount, count: p.count });
+    }
   }
+  const paymentGroups = Object.fromEntries(paymentMap);
 
   const uniqueId = `report-${reportType === "Z" ? data.register?.id || "z" : "current"}`;
 

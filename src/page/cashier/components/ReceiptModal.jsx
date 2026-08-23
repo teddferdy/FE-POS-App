@@ -160,9 +160,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   };
 
   const handleSplitAmountChange = (idx, val) => {
-    const next = [...splitAmounts];
-    next[idx] = Number(val) || 0;
-    setSplitAmounts(next);
+    setSplitAmounts(splitAmounts.map((amt, i) => (i === idx ? Number(val) || 0 : amt)));
   };
 
   const handleSplitSubmit = () => {

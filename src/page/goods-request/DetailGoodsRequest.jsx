@@ -401,21 +401,22 @@ const DetailGoodsRequest = () => {
                 {request.items?.length > 0 ? (
                   (() => {
                     const groups = [];
-                    const groupMap = {};
+                    // ponytail: Map menghindari object injection
+                    const groupMap = new Map();
                     for (const it of request.items) {
                       const sid = it.supplier;
                       const key = sid ? String(sid) : "unassigned";
-                      if (!groupMap[key]) {
-                        groupMap[key] = {
+                      if (!groupMap.has(key)) {
+                        groupMap.set(key, {
                           supplierId: key,
                           supplierName: sid
                             ? it.supplierData?.name || `Supplier #${sid}`
                             : t("page.goodsRequest.detail.unassignedSupplier"),
                           items: []
-                        };
-                        groups.push(groupMap[key]);
+                        });
+                        groups.push(groupMap.get(key));
                       }
-                      groupMap[key].items.push(it);
+                      groupMap.get(key).items.push(it);
                     }
                     return (
                       <div className="space-y-3">

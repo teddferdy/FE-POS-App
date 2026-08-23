@@ -103,19 +103,21 @@ const CreateSalesReturn = () => {
   const todayStr = new Date().toISOString().slice(0, 10);
 
   const productExpiry = useMemo(() => {
-    const map = {};
+    // ponytail: Map — bebas object injection
+    const map = new Map();
     (batchData?.data || []).forEach((b) => {
       const id = Number(b.product);
       const date = b.expiryDate;
       if (!id || !date) return;
-      if (!map[id] || date < map[id].expiryDate) {
-        map[id] = { expiryDate: date, expired: date < todayStr };
+      const existing = map.get(id);
+      if (!existing || date < existing.expiryDate) {
+        map.set(id, { expiryDate: date, expired: date < todayStr });
       }
     });
     return map;
   }, [batchData, todayStr]);
 
-  const hasExpiredSelected = items.some((i) => productExpiry[Number(i.productId)]?.expired);
+  const hasExpiredSelected = items.some((i) => productExpiry.get(Number(i.productId))?.expired);
 
   const { data: ordersData, isLoading: ordersLoading } = useQuery(
     ["paid-orders-picker"],
@@ -334,7 +336,7 @@ const CreateSalesReturn = () => {
                           {formatRupiah(item.price)} × {item.qty} = {formatRupiah(itemTotal)}
                         </p>
                         {(() => {
-                          const exp = productExpiry[Number(item.productId)];
+                          const exp = productExpiry.get(Number(item.productId));
                           if (!exp) return null;
                           if (exp.expired) {
                             return (

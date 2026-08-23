@@ -164,7 +164,7 @@ export const filterMenuByPermission = (menuItems, user) => {
     const perm = normalizePermissionActions(findMenuPermission(permissions, href));
     if (!perm) return false;
     if (actions && actions.length > 0) {
-      return actions.some((a) => !!perm[a]);
+      return actions.some((a) => !!safeGet(perm, a));
     }
     return !!perm.view;
   };

@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
@@ -48,12 +49,9 @@ const CartPanel = ({
   const itemKey = (item) => item.cartKey || item.id || item.ID || item.idProduct || item._id;
 
   useEffect(() => {
-    const next = {};
-    items.forEach((item) => {
-      const key = itemKey(item);
-      next[key] = item.count || item.qty || 0;
-    });
-    setQuantities(next);
+    setQuantities(
+      Object.fromEntries(items.map((item) => [itemKey(item), item.count || item.qty || 0]))
+    );
   }, [items]);
 
   const handleDecrement = useCallback(
@@ -108,9 +106,7 @@ const CartPanel = ({
     onUpdatePrice?.(item, val);
     setEditingPrice(null);
     setPriceErrors((prev) => {
-      const copy = { ...prev };
-      delete copy[key];
-      return copy;
+      return Object.fromEntries(Object.entries(prev).filter(([k]) => k !== key));
     });
   };
 
@@ -151,7 +147,7 @@ const CartPanel = ({
           items.map((item, idx) => {
             const key = itemKey(item);
             const isEditing = editingPrice === key;
-            const err = priceErrors[key];
+            const err = safeGet(priceErrors, key);
             const price = item.price || item.unitPrice || 0;
             const count = item.count || item.qty || 0;
             const lineTotal = item.totalPrice || price * count;
@@ -220,15 +216,19 @@ const CartPanel = ({
                           <input
                             type="number"
                             min="1"
-                            value={quantities[key] !== undefined ? quantities[key] : count}
+                            value={
+                              safeGet(quantities, key) !== undefined
+                                ? safeGet(quantities, key)
+                                : count
+                            }
                             onChange={(e) => {
                               const val = parseInt(e.target.value) || 0;
                               setQuantities((prev) => ({ ...prev, [key]: val }));
                             }}
-                            onBlur={() => handleQtyChange(item, quantities[key])}
+                            onBlur={() => handleQtyChange(item, safeGet(quantities, key))}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
-                                handleQtyChange(item, quantities[key]);
+                                handleQtyChange(item, safeGet(quantities, key));
                                 e.target.blur();
                               }
                             }}

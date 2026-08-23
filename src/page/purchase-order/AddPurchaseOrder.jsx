@@ -189,7 +189,7 @@ const AddPurchaseOrder = () => {
       if (ing?.name) byName[String(ing.name).trim().toLowerCase()] = ing;
     });
 
-    const bySupplier = {};
+    const bySupplier = new Map();
     const unassigned = [];
     prefillNames.forEach((raw) => {
       const name = raw.trim();
@@ -198,9 +198,8 @@ const AddPurchaseOrder = () => {
         : undefined;
       if (ing?.supplier) {
         const sid = String(ing.supplier);
-        if (!Object.hasOwn(bySupplier, sid)) bySupplier[sid] = []; // codacy-ignore-line
-        bySupplier[sid].push({
-          // codacy-ignore-line
+        if (!bySupplier.has(sid)) bySupplier.set(sid, []);
+        bySupplier.get(sid).push({
           ...emptyItem,
           name: ing.name,
           ingredient: ing.id,
@@ -214,9 +213,9 @@ const AddPurchaseOrder = () => {
       }
     });
 
-    const resolved = Object.keys(bySupplier).map((sid) => ({
+    const resolved = [...bySupplier.entries()].map(([sid, items]) => ({
       supplier: Number(sid),
-      items: Object.hasOwn(bySupplier, sid) ? bySupplier[sid] : [] // codacy-ignore-line
+      items
     }));
     if (unassigned.length > 0) resolved.push({ supplier: null, items: unassigned });
     if (resolved.length === 0) resolved.push(emptyGroup());
@@ -547,14 +546,17 @@ const AddPurchaseOrder = () => {
       });
 
       if (!result.success) {
-        const fieldErrors = {};
+        // ponytail: kumpulkan entri lalu fromEntries — tanpa penulisan berkunci variabel
+        const fieldErrorEntries = [];
         result.error.errors.forEach((err) => {
           const path = err.path[0];
-          if (!fieldErrors[path]) fieldErrors[path] = err.message;
+          if (!fieldErrorEntries.some(([k]) => k === path)) {
+            fieldErrorEntries.push([path, err.message]);
+          }
         });
-        setErrors(fieldErrors);
+        setErrors(Object.fromEntries(fieldErrorEntries));
         toast.error(t("page.purchaseOrder.add.validation.validationFailed"), {
-          description: fieldErrors[Object.keys(fieldErrors)[0]]
+          description: fieldErrorEntries[0]?.[1]
         });
         return;
       }
