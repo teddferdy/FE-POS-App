@@ -12,6 +12,23 @@ try {
   /* fallback tetap "unknown" */
 }
 
+// ponytail: HANYA isolasi lib super-heavy ke chunk sendiri beserta seluruh
+// dependensinya; sisanya default Rollup. Object-form/manualChunks granuler
+// terbukti membuat simbol lintas-chunk diekspor lewat chunk charts sehingga
+// SEMUA halaman ikut memuat recharts (423KB).
+const chartDeps = [
+  "/node_modules/recharts/",
+  "/node_modules/react-resizable-panels/",
+  "/node_modules/react-smooth/",
+  "/node_modules/victory-vendor/",
+  "/node_modules/victory/",
+  "/node_modules/d3-",
+  "/node_modules/internmap/",
+  "/node_modules/lodash/",
+  "/node_modules/react-transition-group/",
+  "/node_modules/recharts-scale/"
+];
+
 export default defineConfig({
   plugins: [react()],
   define: {
@@ -27,49 +44,21 @@ export default defineConfig({
     chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom", "react-router-dom", "zustand", "lucide-react"],
-          query: ["react-query", "axios"],
-          i18n: [
-            "i18next",
-            "react-i18next",
-            "i18next-browser-languagedetector",
-            "i18next-http-backend"
-          ],
-          ui: [
-            "@radix-ui/react-accordion",
-            "@radix-ui/react-avatar",
-            "@radix-ui/react-checkbox",
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-hover-card",
-            "@radix-ui/react-label",
-            "@radix-ui/react-popover",
-            "@radix-ui/react-radio-group",
-            "@radix-ui/react-scroll-area",
-            "@radix-ui/react-select",
-            "@radix-ui/react-separator",
-            "@radix-ui/react-slot",
-            "@radix-ui/react-switch",
-            "@radix-ui/react-tabs",
-            "class-variance-authority",
-            "clsx",
-            "tailwind-merge",
-            "cmdk",
-            "vaul"
-          ],
-          charts: ["recharts", "react-resizable-panels"],
-          sentry: ["@sentry/react"],
-          misc: [
-            "socket.io-client",
-            "sonner",
-            "qrcode.react",
-            "date-fns",
-            "next-themes",
-            "react-cookie"
-          ],
-          form: ["react-hook-form", "@hookform/resolvers", "zod"],
-          map: ["leaflet", "react-leaflet"]
+        // ponytail: manualChunks dinonaktifkan — chunking default Rollup
+        // tidak membuat re-export lintas-chunk seperti config manual sebelumnya
+        manualChunksDisabled(id) {
+          if (!id.includes("node_modules")) return;
+          // ponytail: prop-types dipakai eager & oleh dep recharts — wajib
+          // terpisah agar entry tidak menyeret chunk charts
+          if (
+            id.includes("/node_modules/prop-types/") ||
+            id.includes("/node_modules/react-is/")
+          )
+            return "pt";
+          if (chartDeps.some((n) => id.includes(n))) return "charts";
+          if (id.includes("@sentry")) return "sentry";
+          if (id.includes("/leaflet") || id.includes("react-leaflet"))
+            return "map";
         }
       }
     }
