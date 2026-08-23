@@ -18,6 +18,16 @@ import {
   Clock,
   CreditCard,
   Receipt,
+  Globe,
+  Smartphone,
+  Printer,
+  MessageCircle,
+  Landmark,
+  CalendarDays,
+  Percent,
+  Store,
+  Tag,
+  FileText,
   Wallet
 } from "lucide-react";
 import { useCookies } from "react-cookie";
@@ -29,6 +39,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import {
@@ -52,6 +63,8 @@ import {
 import { Combobox } from "@/components/ui/combobox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { format } from "date-fns";
+import { formatCurrencyRupiah } from "@/utils/formatter-currency";
+
 const statusMap = {
   pending: { class: "bg-yellow-100 text-yellow-800" },
   ordered: { class: "bg-blue-100 text-blue-800" },
@@ -64,6 +77,15 @@ const statusKeys = {
   received: "received",
   cancelled: "cancelled"
 };
+
+const supplierStatusBadge = {
+  active: { class: "bg-green-100 text-green-800", labelKey: "active" },
+  inactive: { class: "bg-gray-200 text-gray-700", labelKey: "inactive" },
+  draft: { class: "bg-yellow-100 text-yellow-800", labelKey: "draft" }
+};
+
+// ponytail: price dari BE kini string (bigint pg) — Number() sebelum diformat
+const rupiah = (value) => formatCurrencyRupiah(Number(value) || 0);
 
 const DetailSupplier = () => {
   const { t } = useTranslation();
@@ -238,39 +260,33 @@ const DetailSupplier = () => {
     }
   ];
 
-  const taxFields = [
-    { key: "taxInclude", label: "Tax Include", icon: Receipt },
-    { key: "taxType", label: "Tax Type", icon: Receipt },
-    { key: "taxTransactionType", label: "Tax Transaction Type", icon: Receipt },
-    { key: "taxNumber", label: "Tax Number", icon: CreditCard },
-    { key: "taxName", label: "Tax Name", icon: Receipt },
-    { key: "nitku", label: "NITKU", icon: CreditCard },
-    { key: "paymentType", label: "Payment Type", icon: Wallet },
-    { key: "tempoDays", label: "Tempo Days", icon: Clock }
+  const taxInfo = [
+    {
+      label: "Tax Include",
+      icon: Receipt,
+      value: supplier.taxInclude ? "Ya" : "Tidak"
+    },
+    {
+      label: "Tipe Pajak",
+      icon: Receipt,
+      value: supplier.taxType ? String(supplier.taxType).toUpperCase() : null,
+      badge: true
+    },
+    {
+      label: "Transaksi Pajak",
+      icon: Receipt,
+      value: supplier.taxTransactionType
+        ? supplier.taxTransactionType === "purchase"
+          ? "Pembelian"
+          : supplier.taxTransactionType === "sales"
+            ? "Penjualan"
+            : String(supplier.taxTransactionType)
+        : null
+    },
+    { label: "NPWP / Tax Number", icon: CreditCard, value: supplier.taxNumber },
+    { label: "Nama Pajak", icon: Receipt, value: supplier.taxName },
+    { label: "NITKU", icon: CreditCard, value: supplier.nitku }
   ];
-
-  const getSupplierValue = (fieldName) => {
-    switch (fieldName) {
-      case "taxInclude":
-        return supplier.taxInclude;
-      case "taxType":
-        return supplier.taxType;
-      case "taxTransactionType":
-        return supplier.taxTransactionType;
-      case "taxNumber":
-        return supplier.taxNumber;
-      case "taxName":
-        return supplier.taxName;
-      case "nitku":
-        return supplier.nitku;
-      case "paymentType":
-        return supplier.paymentType;
-      case "tempoDays":
-        return supplier.tempoDays;
-      default:
-        return null;
-    }
-  };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -288,21 +304,52 @@ const DetailSupplier = () => {
         </span>
       </nav>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0">
           <Button variant="outline" size="icon" onClick={() => navigate("/supplier")}>
             <ArrowLeft size={16} />
           </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
             <Building2 size={24} />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">{supplier.name || "-"}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.supplier.detail.subtitle")}</p>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold truncate">{supplier.name || "-"}</h1>
+              {(() => {
+                const st = supplierStatusBadge[supplier.status] || {
+                  class: "bg-muted text-muted-foreground",
+                  labelKey: ""
+                };
+                return (
+                  <span
+                    className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold capitalize ${st.class}`}>
+                    {supplier.status || "-"}
+                  </span>
+                );
+              })()}
+              {supplier.categoryData?.name && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                  <Tag size={11} />
+                  {supplier.categoryData.name}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground truncate">
+              {supplier.website ? `${supplier.website} · ` : ""}
+              {t("page.supplier.detail.subtitle")}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(`/edit-supplier?id=${id}`)}>
+          {supplier.status !== "inactive" && supplier.status !== "draft" && (
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/add-purchase-order?supplier=${id}`)}>
+              <ShoppingCart size={14} className="mr-1.5" />
+              {t("page.supplier.detail.createPo", "Buat PO")}
+            </Button>
+          )}
+          <Button onClick={() => navigate(`/edit-supplier?id=${id}`)}>
             <Edit3 size={14} className="mr-1.5" />
             {t("page.supplier.detail.editSupplier")}
           </Button>
@@ -310,9 +357,9 @@ const DetailSupplier = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        {/* ponytail: 5 tab terlalu sempit di ponsel — scroll horizontal */}
+        {/* ponytail: 6 tab terlalu sempit di ponsel — scroll horizontal */}
         <div className="overflow-x-auto -mx-1 px-1">
-          <TabsList className="grid w-full grid-cols-5 min-w-[560px]">
+          <TabsList className="grid w-full grid-cols-6 min-w-[660px]">
             <TabsTrigger value="general">
               {t("page.supplier.detail.tabs.general", "Informasi Umum")}
             </TabsTrigger>
@@ -323,6 +370,9 @@ const DetailSupplier = () => {
               {t("page.supplier.detail.tabs.purchase", "Pembelian / Produk")}
             </TabsTrigger>
             <TabsTrigger value="tax">{t("page.supplier.detail.tabs.tax", "Pajak")}</TabsTrigger>
+            <TabsTrigger value="bank">
+              {t("page.supplier.detail.tabs.bank", "Rekening Bank")}
+            </TabsTrigger>
             <TabsTrigger value="debt">
               {t("page.supplier.detail.tabs.debt", "Saldo Utang")}
             </TabsTrigger>
@@ -330,58 +380,212 @@ const DetailSupplier = () => {
         </div>
 
         {/* Tab: General / Informasi Umum */}
-        <TabsContent value="general" className="mt-4">
-          <Card className="p-5">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              {t("page.supplier.detail.section.informasiSupplier")}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-sm">
-              <div className="flex items-center gap-2">
-                <Building2 size={18} className="text-muted-foreground shrink-0" />
-                <span className="font-medium">{supplier.name}</span>
+        <TabsContent value="general" className="mt-4 space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Profil */}
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                {t("page.supplier.detail.section.informasiSupplier")}
+              </h3>
+              <div className="space-y-2.5 text-sm">
+                {supplier.contactPerson && (
+                  <div className="flex items-center gap-2">
+                    <User size={16} className="text-muted-foreground shrink-0" />
+                    <span className="text-muted-foreground w-28 shrink-0">Contact Person</span>
+                    <span className="font-medium">{supplier.contactPerson}</span>
+                  </div>
+                )}
+                {supplier.description && (
+                  <div className="flex items-start gap-2">
+                    <FileText size={16} className="text-muted-foreground mt-0.5 shrink-0" />
+                    <span className="text-muted-foreground w-28 shrink-0">Deskripsi</span>
+                    <span>{supplier.description}</span>
+                  </div>
+                )}
+                {supplier.address && (
+                  <div className="flex items-start gap-2">
+                    <MapPin size={16} className="text-muted-foreground mt-0.5 shrink-0" />
+                    <span className="text-muted-foreground w-28 shrink-0">Alamat</span>
+                    <span>{supplier.address}</span>
+                  </div>
+                )}
               </div>
-              {supplier.contactPerson && (
+              <div className="border-t pt-3 mt-3 space-y-1.5 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <User size={18} className="text-muted-foreground shrink-0" />
-                  <span>{supplier.contactPerson}</span>
+                  <CalendarDays size={12} className="shrink-0" />
+                  <span>
+                    Dibuat:{" "}
+                    {supplier.createdAt
+                      ? format(new Date(supplier.createdAt), "dd MMM yyyy HH:mm")
+                      : "-"}
+                  </span>
                 </div>
-              )}
-              {supplier.phone && (
                 <div className="flex items-center gap-2">
-                  <Phone size={18} className="text-muted-foreground shrink-0" />
-                  <span>{supplier.phone}</span>
+                  <CalendarDays size={12} className="shrink-0" />
+                  <span>
+                    Diubah:{" "}
+                    {supplier.updatedAt
+                      ? format(new Date(supplier.updatedAt), "dd MMM yyyy HH:mm")
+                      : "-"}
+                  </span>
                 </div>
-              )}
-              {supplier.email && (
                 <div className="flex items-center gap-2">
-                  <Mail size={18} className="text-muted-foreground shrink-0" />
-                  <span>{supplier.email}</span>
+                  <User size={12} className="shrink-0" />
+                  <span>
+                    {t("common.createdBy")}:{" "}
+                    {supplier.createdByUser?.fullName || supplier.createdByUser?.userName || "-"}
+                  </span>
                 </div>
-              )}
-              {supplier.address && (
-                <div className="flex items-start gap-2 md:col-span-2">
-                  <MapPin size={18} className="text-muted-foreground mt-0.5 shrink-0" />
-                  <span>{supplier.address}</span>
-                </div>
-              )}
-            </div>
-            <div className="border-t pt-3 mt-3 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <User size={13} className="shrink-0" />
-                <span>
-                  {t("common.createdBy")}:{" "}
-                  {supplier.createdByUser?.fullName || supplier.createdByUser?.userName || "-"}
-                </span>
+                {supplier.modifiedBy && (
+                  <div className="flex items-center gap-2">
+                    <User size={12} className="shrink-0" />
+                    <span>
+                      {t("common.modifiedBy")}:{" "}
+                      {supplier.modifiedByUser?.fullName ||
+                        supplier.modifiedByUser?.userName ||
+                        supplier.modifiedBy}
+                    </span>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <User size={13} className="shrink-0" />
-                <span>
-                  {t("common.modifiedBy")}:{" "}
-                  {supplier.modifiedByUser?.fullName || supplier.modifiedByUser?.userName || "-"}
-                </span>
+            </Card>
+
+            {/* Kanal kontak */}
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                Kanal Kontak
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
+                {[
+                  {
+                    icon: Phone,
+                    label: "Telepon",
+                    value: supplier.phone,
+                    href: supplier.phone ? `tel:${supplier.phone}` : null
+                  },
+                  {
+                    icon: Smartphone,
+                    label: "Mobile",
+                    value: supplier.mobile,
+                    href: supplier.mobile ? `tel:${supplier.mobile}` : null
+                  },
+                  {
+                    icon: MessageCircle,
+                    label: "WhatsApp",
+                    value: supplier.whatsapp,
+                    href: supplier.whatsapp
+                      ? `https://wa.me/${String(supplier.whatsapp).replace(/[^0-9]/g, "")}`
+                      : null
+                  },
+                  {
+                    icon: Mail,
+                    label: "Email",
+                    value: supplier.email,
+                    href: supplier.email ? `mailto:${supplier.email}` : null
+                  },
+                  {
+                    icon: Printer,
+                    label: "Fax",
+                    value: supplier.fax,
+                    href: null
+                  },
+                  {
+                    icon: Globe,
+                    label: "Website",
+                    value: supplier.website,
+                    href: supplier.website
+                      ? supplier.website.startsWith("http")
+                        ? supplier.website
+                        : `https://${supplier.website}`
+                      : null
+                  }
+                ].map(({ icon: Icon, label, value, href }) => (
+                  <div
+                    key={label}
+                    className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
+                      <Icon size={14} className="text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">{label}</p>
+                      {value ? (
+                        <a
+                          href={href}
+                          target={href?.startsWith("http") ? "_blank" : undefined}
+                          rel="noreferrer"
+                          className={`text-sm font-medium truncate block max-w-[180px] ${
+                            href ? "hover:text-primary hover:underline" : ""
+                          }`}>
+                          {value}
+                        </a>
+                      ) : (
+                        <p className="text-sm text-muted-foreground/50">-</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          </Card>
+            </Card>
+
+            {/* Cabang terhubung */}
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+                <Store size={14} />
+                Cabang Terhubung
+              </h3>
+              {supplier.store?.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {supplier.store.map((s) => (
+                    <span
+                      key={s.id}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                      <Building2 size={12} />
+                      {s.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground/50">Tidak terhubung ke cabang</p>
+              )}
+            </Card>
+
+            {/* Termin pembayaran */}
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+                <Wallet size={14} />
+                Informasi Pembayaran
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="p-3 rounded-lg bg-muted/30">
+                  <p className="text-xs text-muted-foreground mb-1">Tipe Pembayaran</p>
+                  <Badge variant="outline" className="capitalize font-semibold">
+                    {supplier.paymentType === "cbd"
+                      ? "CBD (Bayar Di Muka)"
+                      : supplier.paymentType === "tempo"
+                        ? "Tempo"
+                        : supplier.paymentType || "-"}
+                  </Badge>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/30">
+                  <p className="text-xs text-muted-foreground mb-1">Tempo</p>
+                  <p className="text-sm font-medium">
+                    {supplier.paymentType === "tempo" ? `${supplier.tempoDays ?? 0} hari` : "-"}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/30">
+                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                    <Percent size={11} /> Diskon Default
+                  </p>
+                  <p className="text-sm font-medium">{Number(supplier.defaultDiscount || 0)}%</p>
+                </div>
+              </div>
+              {supplier.defaultDescription && (
+                <p className="text-xs text-muted-foreground italic mt-2.5">
+                  Catatan default: {supplier.defaultDescription}
+                </p>
+              )}
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Tab: Contacts */}
@@ -414,7 +618,7 @@ const DetailSupplier = () => {
                     {supplier.contacts.map((contact, idx) => (
                       <TableRow key={contact.id || idx}>
                         <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
-                        <TableCell className="font-medium">{contact.name || "-"}</TableCell>
+                        <TableCell className="font-medium">{contact.fullName || "-"}</TableCell>
                         <TableCell>{contact.phone || "-"}</TableCell>
                         <TableCell>{contact.email || "-"}</TableCell>
                         <TableCell>{contact.position || "-"}</TableCell>
@@ -496,10 +700,7 @@ const DetailSupplier = () => {
                               </TableCell>
                               <TableCell className="font-medium">{product.name}</TableCell>
                               <TableCell className="text-right font-semibold">
-                                {new Intl.NumberFormat("id-ID", {
-                                  style: "currency",
-                                  currency: "IDR"
-                                }).format(product.price)}
+                                {rupiah(product.price)}
                               </TableCell>
                               <TableCell className="text-center">
                                 <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-muted">
@@ -555,10 +756,7 @@ const DetailSupplier = () => {
                               <div className="min-w-0">
                                 <p className="font-semibold text-sm truncate">{product.name}</p>
                                 <p className="text-lg font-bold text-primary mt-0.5">
-                                  {new Intl.NumberFormat("id-ID", {
-                                    style: "currency",
-                                    currency: "IDR"
-                                  }).format(product.price)}
+                                  {rupiah(product.price)}
                                 </p>
                               </div>
                             </div>
@@ -708,23 +906,72 @@ const DetailSupplier = () => {
               {t("page.supplier.detail.tabs.tax", "Pajak")}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {taxFields.map(({ key, label, icon: Icon }) => (
-                <div key={key} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+              {taxInfo.map(({ label, icon: Icon, value, badge }) => (
+                <div key={label} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                   <div className="w-9 h-9 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
                     <Icon size={16} className="text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">{label}</p>
-                    <p className="text-sm font-medium truncate">
-                      {(() => {
-                        const v = getSupplierValue(key);
-                        return v != null && v !== "" ? String(v) : "-";
-                      })()}
-                    </p>
+                    {value ? (
+                      badge ? (
+                        <Badge variant="outline" className="font-semibold mt-0.5">
+                          {value}
+                        </Badge>
+                      ) : (
+                        <p className="text-sm font-medium truncate">{value}</p>
+                      )
+                    ) : (
+                      <p className="text-sm text-muted-foreground/50">-</p>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Rekening Bank */}
+        <TabsContent value="bank" className="mt-4">
+          <Card className="p-5">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+              <Landmark size={14} />
+              Rekening Bank
+            </h3>
+            {supplier.bankAccounts?.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {supplier.bankAccounts.map((acc, i) => (
+                  <div
+                    key={acc.id || i}
+                    className="flex items-start gap-3 p-4 rounded-xl border bg-gradient-to-br from-primary/5 to-transparent">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Landmark size={18} className="text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold">{acc.bankName || "-"}</p>
+                      <p className="text-sm font-mono tracking-wider">{acc.accountNumber || "-"}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        a.n. {acc.accountName || "-"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-8">
+                <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
+                  <Landmark size={24} className="text-muted-foreground/60" />
+                </div>
+                <p className="text-sm text-muted-foreground">Belum ada rekening bank terdaftar</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/edit-supplier?id=${id}`)}>
+                  <Plus size={13} className="mr-1" />
+                  Tambah via Edit Supplier
+                </Button>
+              </div>
+            )}
           </Card>
         </TabsContent>
 
