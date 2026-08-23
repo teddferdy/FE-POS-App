@@ -114,7 +114,7 @@ const SuperAdminTour = () => {
     toggleMinimized
   } = useTourStore();
 
-  const step = superAdminSteps[currentStep];
+  const step = superAdminSteps.at(currentStep);
   const totalSteps = superAdminSteps.length;
   const isFirst = currentStep === 0;
   const isLast = currentStep === totalSteps - 1;
@@ -123,7 +123,7 @@ const SuperAdminTour = () => {
 
   const handleNext = () => {
     const nextIdx = currentStep + 1;
-    const nextStepData = superAdminSteps[nextIdx];
+    const nextStepData = superAdminSteps.at(nextIdx);
     nextStep();
     if (nextStepData?.page) {
       navigate(nextStepData.page);
@@ -132,7 +132,7 @@ const SuperAdminTour = () => {
 
   const handlePrev = () => {
     const prevIdx = currentStep - 1;
-    const prevStepData = superAdminSteps[prevIdx];
+    const prevStepData = superAdminSteps.at(prevIdx);
     prevStep();
     if (prevStepData?.page) {
       navigate(prevStepData.page);

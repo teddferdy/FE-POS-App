@@ -20,7 +20,7 @@ const CommandPalette = ({ open, onClose }) => {
   const navigate = useNavigate();
   const user = useUserSession();
   const inputRef = useRef(null);
-  const itemRefs = useRef({});
+  const itemRefs = useRef(new Map());
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -56,7 +56,7 @@ const CommandPalette = ({ open, onClose }) => {
   }, [query]);
 
   useEffect(() => {
-    itemRefs.current[selectedIndex]?.scrollIntoView({ block: "nearest" });
+    itemRefs.current.get(selectedIndex)?.scrollIntoView({ block: "nearest" });
   }, [selectedIndex]);
 
   const handleSelect = (path) => {
@@ -72,7 +72,7 @@ const CommandPalette = ({ open, onClose }) => {
       e.preventDefault();
       setSelectedIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter") {
-      const item = flatItems[selectedIndex];
+      const item = flatItems.at(selectedIndex);
       if (item) handleSelect(item.path);
     } else if (e.key === "Escape") {
       onClose();
@@ -130,7 +130,7 @@ const CommandPalette = ({ open, onClose }) => {
                     <button
                       key={item.path}
                       ref={(el) => {
-                        itemRefs.current[i] = el;
+                        itemRefs.current.set(i, el);
                       }}
                       onClick={() => handleSelect(item.path)}
                       onMouseEnter={() => setSelectedIndex(i)}

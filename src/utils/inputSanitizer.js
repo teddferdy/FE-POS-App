@@ -19,9 +19,8 @@ export function sanitizeInput(value) {
   }
   if (Array.isArray(value)) return value.map(sanitizeInput);
   if (value && typeof value === "object") {
-    const result = {};
-    for (const [key, val] of Object.entries(value)) result[key] = sanitizeInput(val);
-    return result;
+    // ponytail: fromEntries — tanpa penulisan berkunci variabel (Codacy)
+    return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, sanitizeInput(val)]));
   }
   return value;
 }

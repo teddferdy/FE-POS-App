@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { BookOpen } from "lucide-react";
@@ -192,7 +193,7 @@ const guides = {
 const UserGuide = ({ guideKey }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const guide = guides[guideKey];
+  const guide = safeGet(guides, guideKey);
 
   if (!guide) return null;
 

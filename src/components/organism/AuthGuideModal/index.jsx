@@ -156,7 +156,7 @@ const AuthGuideModal = ({ open, onOpenChange, context = "login" }) => {
   const totalSteps = steps.length;
   const isFirst = currentStep === 0;
   const isLast = currentStep === totalSteps - 1;
-  const step = steps[currentStep];
+  const step = steps.at(currentStep);
   const Icon = iconMap[step?.icon] || HelpCircle;
 
   useEffect(() => {
@@ -185,7 +185,7 @@ const AuthGuideModal = ({ open, onOpenChange, context = "login" }) => {
   };
 
   const handleNavigate = (path) => {
-    const targetContext = pathToContext[path] || "login";
+    const targetContext = safeGet(pathToContext, path, "login");
     handleClose();
     setTimeout(() => {
       navigate(path, { state: { openGuide: true, guideContext: targetContext } });

@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
@@ -58,11 +59,11 @@ export default function Modal({
     confirm: t("modal.confirmDescription")
   };
 
-  const Icon = isKnownType ? IconOverride || iconMap[type] : null;
+  const Icon = isKnownType ? IconOverride || safeGet(iconMap, type) : null;
   const isNotification = type === "success" || type === "error";
-  const confirmLabel = confirmText || defaultText[type]?.confirm || t("common.confirm");
-  const cancelLabel = cancelText || defaultText[type]?.cancel || t("common.cancel");
-  const desc = description || defaultDescription[type] || "";
+  const confirmLabel = confirmText || safeGet(defaultText, type)?.confirm || t("common.confirm");
+  const cancelLabel = cancelText || safeGet(defaultText, type)?.cancel || t("common.cancel");
+  const desc = description || safeGet(defaultDescription, type, "");
 
   const confirmBtnVariant = confirmVariant || (type === "error" ? "destructive" : "default");
 
@@ -87,7 +88,7 @@ export default function Modal({
         {isKnownType ? (
           <>
             <DialogHeader className="items-center text-center gap-0">
-              <div className={cn("mb-4", iconColorMap[type])}>
+              <div className={cn("mb-4", safeGet(iconColorMap, type))}>
                 <Icon className="w-16 h-16" strokeWidth={1.5} />
               </div>
               <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
