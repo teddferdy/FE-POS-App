@@ -13,7 +13,8 @@ import {
   FileEdit,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  Package
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -169,6 +170,14 @@ const CategoryList = () => {
 
   const columns = [
     {
+      header: "#",
+      render: (cat, idx) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {(page - 1) * limit + idx + 1}
+        </span>
+      )
+    },
+    {
       header: t("page.category.table.id"),
       render: (cat) => (
         <span className="font-mono text-sm text-foreground">
@@ -180,9 +189,10 @@ const CategoryList = () => {
       header: t("page.category.table.name"),
       render: (cat) => {
         const parent = categories.find((c) => String(c.id) === String(cat.parentId));
+        const description = (cat.description || "").trim();
         return (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
               {cat.image ? (
                 cat.image.startsWith("http") ? (
                   <img
@@ -199,15 +209,31 @@ const CategoryList = () => {
                 </span>
               )}
             </div>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-0.5 min-w-0">
               <span className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <span
                   className="w-2.5 h-2.5 rounded-full inline-block shrink-0"
                   style={{ backgroundColor: cat.color || "#0f172a" }}
                 />
-                {cat.name}
+                <span className="truncate">{cat.name}</span>
+                {cat.value && (
+                  <span
+                    title={t("page.category.value")}
+                    className="hidden xl:inline-flex text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border/60 shrink-0">
+                    {cat.value}
+                  </span>
+                )}
               </span>
-              {parent && <span className="text-[11px] text-muted-foreground">{parent.name}</span>}
+              {description && (
+                <span className="text-[11px] text-muted-foreground truncate max-w-[220px]">
+                  {description}
+                </span>
+              )}
+              {!description && parent && (
+                <span className="text-[11px] text-muted-foreground truncate max-w-[220px]">
+                  ↳ {parent.name}
+                </span>
+              )}
             </div>
           </div>
         );
@@ -215,21 +241,52 @@ const CategoryList = () => {
     },
     {
       header: t("page.category.table.store"),
-      render: (cat) => (
-        <span className="text-sm text-muted-foreground">
-          {Array.isArray(cat.store) && cat.store.length > 0
-            ? cat.store.map((s) => s.name || `Store #${s.id}`).join(", ")
-            : t("page.category.form.storeSection.allStores")}
-        </span>
-      )
+      render: (cat) => {
+        const stores = Array.isArray(cat.store) ? cat.store : [];
+        if (stores.length === 0)
+          return (
+            <span className="text-xs text-muted-foreground italic">
+              {t("page.category.form.storeSection.allStores")}
+            </span>
+          );
+        const shown = stores.slice(0, 2);
+        return (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {shown.map((s) => (
+              <span
+                key={s.id}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border border-border bg-muted/50 text-foreground/80">
+                <span className="material-symbols-outlined text-sm text-muted-foreground">
+                  store
+                </span>
+                {s.name || `Store #${s.id}`}
+              </span>
+            ))}
+            {stores.length > 2 && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                +{stores.length - 2}
+              </span>
+            )}
+          </div>
+        );
+      }
     },
     {
       header: t("page.category.table.productCount"),
-      render: (cat) => (
-        <span className="text-sm text-muted-foreground">
-          {cat.productCount || cat.totalProduct || 0} Item
-        </span>
-      )
+      render: (cat) => {
+        const count = cat.productCount || cat.totalProduct || 0;
+        return (
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+              count > 0
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-muted text-muted-foreground border border-border"
+            }`}>
+            <Package size={12} />
+            {count} Item
+          </span>
+        );
+      }
     },
     {
       header: t("page.category.table.status"),
@@ -263,11 +320,17 @@ const CategoryList = () => {
     },
     {
       header: t("common.createdBy"),
-      hideOn: "lg",
       render: (cat) => (
-        <span className="text-sm text-muted-foreground">
-          {cat.createdByUser?.fullName || cat.createdByUser?.userName || "-"}
-        </span>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0">
+            {(cat.createdByUser?.fullName || cat.createdByUser?.userName || "?")
+              .slice(0, 2)
+              .toUpperCase()}
+          </div>
+          <span className="text-sm text-muted-foreground">
+            {cat.createdByUser?.fullName || cat.createdByUser?.userName || "-"}
+          </span>
+        </div>
       )
     },
     {
@@ -278,16 +341,21 @@ const CategoryList = () => {
     },
     {
       header: t("common.modifiedBy"),
-      hideOn: "lg",
-      render: (cat) => (
-        <span className="text-sm text-muted-foreground">
-          {cat.modifiedByUser?.fullName || cat.modifiedByUser?.userName || "-"}
-        </span>
-      )
+      render: (cat) => {
+        const name = cat.modifiedByUser?.fullName || cat.modifiedByUser?.userName;
+        if (!name) return <span className="text-sm text-muted-foreground italic">-</span>;
+        return (
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-muted text-foreground/70 flex items-center justify-center text-[10px] font-bold shrink-0">
+              {name.slice(0, 2).toUpperCase()}
+            </div>
+            <span className="text-sm text-muted-foreground">{name}</span>
+          </div>
+        );
+      }
     },
     {
       header: t("page.category.table.updatedDate"),
-      hideOn: "lg",
       render: (cat) => (
         <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.updatedAt)}</span>
       )
