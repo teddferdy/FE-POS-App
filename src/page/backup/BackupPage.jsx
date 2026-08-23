@@ -50,6 +50,24 @@ const formatDate = (d) => {
   });
 };
 
+// ponytail: validasi cron terprogram — mengganti regex besar berpol quantifier (Codacy DoS)
+const isDigitField = (part) => part.length > 0 && [...part].every((ch) => ch >= "0" && ch <= "9");
+
+const isValidCronExpression = (expr) => {
+  const fields = expr.trim().split(" ").filter(Boolean);
+  if (fields.length !== 5) return false;
+  const maxByField = [59, 23, 31, 12, 6];
+  return fields.every((field, i) => {
+    if (field === "*") return true;
+    const maxValue = maxByField[i];
+    return field.split(",").every((part) => {
+      if (!isDigitField(part)) return false;
+      const value = Number(part);
+      return value >= 0 && value <= maxValue;
+    });
+  });
+};
+
 const BackupPage = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -115,11 +133,7 @@ const BackupPage = () => {
   });
 
   const handleScheduleSave = () => {
-    if (
-      !/^(\*|[0-9]{1,2}(,[0-9]{1,2})*) (\*|[0-9]{1,2}(,[0-9]{1,2})*) (\*|[0-9]{1,2}(,[0-9]{1,2})*) (\*|[0-9]{1,2}(,[0-9]{1,2})*) (\*|[0-6](,[0-6])*)$/.test(
-        cron.trim()
-      )
-    ) {
+    if (!isValidCronExpression(cron)) {
       toast.error(t("page.backup.cronInvalid"));
       return;
     }

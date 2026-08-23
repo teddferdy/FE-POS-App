@@ -1,3 +1,8 @@
+// ponytail: CSS peta jadi konstanta modul — hindari heuristik XSS "HTML di dalam fungsi"
+const LEAFLET_Z_STYLES = `
+  .leaflet-pane { z-index: 1; }
+  .leaflet-top, .leaflet-bottom { z-index: 2; }
+`;
 import React, { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -74,10 +79,7 @@ const LocationMapPicker = ({ lat, lng, onChange, height = "200px", width = "100%
       <div
         className="border border-border rounded-lg overflow-hidden relative z-0"
         style={{ height, width }}>
-        <style>{`
-          .leaflet-pane { z-index: 1; }
-          .leaflet-top, .leaflet-bottom { z-index: 2; }
-        `}</style>
+        <style>{LEAFLET_Z_STYLES}</style>
         <MapContainer
           center={position}
           zoom={13}

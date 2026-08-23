@@ -143,9 +143,7 @@ const AddPromoCampaign = () => {
   };
 
   const updateReward = (index, field, value) => {
-    const updated = [...rewards];
-    updated[index] = { ...updated[index], [field]: value };
-    setRewards(updated);
+    setRewards(rewards.map((reward, i) => (i === index ? { ...reward, [field]: value } : reward)));
   };
 
   const watchedType = form.watch("type");

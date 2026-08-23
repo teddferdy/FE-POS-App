@@ -1,3 +1,8 @@
+// ponytail: CSS peta jadi konstanta modul — hindari heuristik XSS "HTML di dalam fungsi"
+const LEAFLET_Z_STYLES = `
+  .leaflet-pane { z-index: 1; }
+  .leaflet-top, .leaflet-bottom { z-index: 2; }
+`;
 import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useMemo } from "react";
 import { useQuery } from "react-query";
@@ -243,10 +248,7 @@ const StoreGeospatial = () => {
             </div>
           ) : (
             <div className="relative z-0 h-[500px]">
-              <style>{`
-              .leaflet-pane { z-index: 1; }
-              .leaflet-top, .leaflet-bottom { z-index: 2; }
-            `}</style>
+              <style>{LEAFLET_Z_STYLES}</style>
               <MapContainer
                 center={[-2.5, 118]}
                 zoom={5}

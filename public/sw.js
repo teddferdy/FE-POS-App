@@ -83,25 +83,33 @@ async function networkFirst(request) {
 }
 
 async function staleWhileRevalidate(request) {
-  const cache = await caches.open(POS_DATA_CACHE);
-  const cached = await cache.match(request);
+  // ponytail: guard penuh — kegagalan cache/network tak boleh jadi unhandled rejection
+  try {
+    const cache = await caches.open(POS_DATA_CACHE);
+    const cached = await cache.match(request);
 
-  const networkPromise = fetch(request)
-    .then((response) => {
-      if (response.ok) {
-        cache.put(request, response.clone());
-      }
-      return response;
-    })
-    .catch(() => cached);
+    const networkPromise = fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          cache.put(request, response.clone());
+        }
+        return response;
+      })
+      .catch(() => cached);
 
-  if (cached) {
-    const age = Date.now() - (cached.headers.get("sw-cache-timestamp") || 0);
-    const isStale = age > 5 * 60 * 1000; // 5 minutes
-    if (!isStale) return cached;
+    if (cached) {
+      const age = Date.now() - (cached.headers.get("sw-cache-timestamp") || 0);
+      const isStale = age > 5 * 60 * 1000; // 5 minutes
+      if (!isStale) return cached;
+    }
+
+    return networkPromise;
+  } catch {
+    return new Response(JSON.stringify({ offline: true, message: "You are offline" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" }
+    });
   }
-
-  return networkPromise;
 }
 
 async function offlineQueue(request) {

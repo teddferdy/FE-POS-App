@@ -83,8 +83,8 @@ export const generateReceiptHTML = (data) => {
     <tr style="font-size:11px;">
       <td style="padding:4px 0;">${esc(item.name)}</td>
       <td style="padding:4px 0;text-align:center;">${esc(item.qty)}</td>
-      <td style="padding:4px 0;text-align:right;">${formatPrice(item.price)}</td>
-      <td style="padding:4px 0;text-align:right;font-weight:bold;">${formatPrice(item.qty * item.price)}</td>
+      <td style="padding:4px 0;text-align:right;">${esc(formatPrice(item.price))}</td>
+      <td style="padding:4px 0;text-align:right;font-weight:bold;">${esc(formatPrice(item.qty * item.price))}</td>
     </tr>
   `
     )
@@ -126,9 +126,9 @@ export const generateReceiptHTML = (data) => {
       ${itemsHtml}
     </table>
     <div style="padding:5px;background:#f9f9f9;font-size:11px;">
-      <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span>${formatPrice(subtotal)}</span></div>
-      <div style="display:flex;justify-content:space-between;"><span>Pajak</span><span>${formatPrice(tax)}</span></div>
-      <div style="display:flex;justify-content:space-between;font-weight:bold;margin-top:5px;font-size:13px;"><span>Total</span><span>${formatPrice(total)}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span>${esc(formatPrice(subtotal))}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span>Pajak</span><span>${esc(formatPrice(tax))}</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:bold;margin-top:5px;font-size:13px;"><span>Total</span><span>${esc(formatPrice(total))}</span></div>
     </div>
     ${footerHtml}
   </div>
