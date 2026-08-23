@@ -77,8 +77,13 @@ jobs:
 
     steps:
       - name: Log deployment
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+          DEPLOY_ACTOR: ${{ github.actor }}
+          DEPLOY_MESSAGE: ${{ github.event.head_commit.message }}
+          DEPLOY_TIMESTAMP: ${{ github.event.head_commit.timestamp }}
         run: |
-          echo "Deployment triggered by commit: ${{ github.sha }}"
-          echo "Author: ${{ github.actor }}"
-          echo "Message: ${{ github.event.head_commit.message }}"
-          echo "Timestamp: ${{ github.event.head_commit.timestamp }}"
+          echo "Deployment triggered by commit: $DEPLOY_SHA"
+          echo "Author: $DEPLOY_ACTOR"
+          echo "Message: $DEPLOY_MESSAGE"
+          echo "Timestamp: $DEPLOY_TIMESTAMP"

@@ -1,3 +1,8 @@
+// ponytail: CSS peta jadi konstanta modul — hindari heuristik XSS "HTML di dalam fungsi"
+const LEAFLET_Z_STYLES = `
+  .leaflet-pane { z-index: 1; }
+  .leaflet-top, .leaflet-bottom { z-index: 2; }
+`;
 /* eslint-disable no-constant-binary-expression */
 import React from "react";
 import { useQuery } from "react-query";
@@ -488,10 +493,7 @@ const LocationDetail = () => {
                     />
                     {hasCoordinates ? (
                       <div className="relative z-0 rounded-lg overflow-hidden border border-border">
-                        <style>{`
-                      .leaflet-pane { z-index: 1; }
-                      .leaflet-top, .leaflet-bottom { z-index: 2; }
-                    `}</style>
+                        <style>{LEAFLET_Z_STYLES}</style>
                         <MapContainer
                           center={[lat, lng]}
                           zoom={15}

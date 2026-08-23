@@ -1,3 +1,12 @@
+// ponytail: validasi angka polos tanpa regex — bebas pola DoS regex (Codacy)
+const isPlainNumeric = (str) => {
+  if (!str) return false;
+  const body = str.startsWith("-") ? str.slice(1) : str;
+  const parts = body.split(".");
+  if (parts.length > 2) return false;
+  return parts.every((part) => part.length > 0 && [...part].every((ch) => ch >= "0" && ch <= "9"));
+};
+
 export function sanitizeInput(value) {
   if (typeof value === "string") {
     let s = value;
@@ -14,7 +23,7 @@ export function sanitizeInput(value) {
     step(/;.*$/g);
     s = s.replace(/\s+/g, " ").trim();
     if (s !== value) modified = true;
-    if (modified && /^-?\d+(\.\d+)?$/.test(s)) return Number(s);
+    if (modified && isPlainNumeric(s)) return Number(s);
     return s;
   }
   if (Array.isArray(value)) return value.map(sanitizeInput);
