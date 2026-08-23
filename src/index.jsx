@@ -3,6 +3,11 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { QueryClient, QueryClientProvider } from "react-query";
 // import { LoadingProvider } from "./components/organism/loading";
+// ponytail: Inter self-host — hapus rantai render-blocking ke fonts.googleapis.com
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
 import "./index.css";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nextProvider } from "react-i18next";
