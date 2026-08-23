@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
-import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { getSalesSummary } from "@/services/report";
 import { getAllLocation } from "@/services/location";
@@ -53,6 +52,7 @@ const SalesReportPage = () => {
         ],
         ...(d.stores || []).map((s) => [s.name, s.city || "-", s.sales || 0, s.transactions || 0])
       ];
+      const XLSX = await import("xlsx");
       const ws = XLSX.utils.aoa_to_sheet(rows);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "SalesReport");

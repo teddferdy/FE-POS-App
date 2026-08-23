@@ -8,9 +8,6 @@ import { getReturnsByPO } from "../../services/purchase-return";
 import { returnPurchaseOrder } from "../../services/purchase-order";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -242,9 +239,11 @@ export default function DetailPurchaseOrder() {
     }
   };
 
-  const handleExportExcel = () => {
+  // ponytail: xlsx/jspdf dimuat on-click — jangan ikut chunk halaman (~400KB)
+  const handleExportExcel = async () => {
     if (!po) return;
     try {
+      const XLSX = await import("xlsx");
       const wb = XLSX.utils.book_new();
 
       const poInfo = [
@@ -342,9 +341,13 @@ export default function DetailPurchaseOrder() {
     }
   };
 
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
     if (!po) return;
     try {
+      const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+        import("jspdf"),
+        import("jspdf-autotable")
+      ]);
       const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
       const pageWidth = doc.internal.pageSize.getWidth();
       let y = 15;

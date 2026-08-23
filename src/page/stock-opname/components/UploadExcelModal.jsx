@@ -12,7 +12,6 @@ import {
   Loader2,
   ArrowUpToLine
 } from "lucide-react";
-import * as XLSX from "xlsx";
 
 import { Button } from "@/components/ui/button";
 import { uploadStockOpnameExcel } from "@/services/stock";
@@ -33,9 +32,10 @@ const formatFileSize = (bytes) => {
 const parseExcelFile = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = new Uint8Array(e.target.result);
+        const XLSX = await import("xlsx");
         const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const sheet = safeGet(workbook.Sheets, sheetName);
