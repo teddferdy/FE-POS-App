@@ -599,7 +599,7 @@ const AddExpense = () => {
                           </thead>
                           <tbody>
                             {itemFields.map((field, idx) => {
-                              const item = watchedItems?.[idx] || {};
+                              const item = (watchedItems || []).at(idx) || {};
                               return (
                                 <tr key={field.id} className="border-b border-muted/20">
                                   <td className="px-3 py-2">
