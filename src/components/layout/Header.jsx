@@ -382,8 +382,9 @@ export const NotificationBell = () => {
   const [localUnread, setLocalUnread] = useState(0);
 
   const { data: unreadData } = useQuery("unread-notifications", getUnreadCount, {
+    // ponytail: BE membalut payload dalam data.unreadCount — bukan count
     onSuccess: (data) => {
-      const count = data?.data?.count || data?.count || 0;
+      const count = data?.data?.unreadCount ?? 0;
       setLocalUnread(count);
     }
   });
