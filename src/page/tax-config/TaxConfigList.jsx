@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { safeGet } from "@/lib/safe-lookup";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -125,7 +126,7 @@ const TaxConfigList = () => {
         const taxType = getTaxType(item.name);
         return (
           <span
-            className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${typeColors[taxType] || typeColors["Non-Pajak"]}`}>
+            className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${safeGet(typeColors, taxType, typeColors["Non-Pajak"])}`}>
             {taxType}
           </span>
         );

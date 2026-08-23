@@ -57,11 +57,12 @@ const DashboardUtang = () => {
   const [expandedPoId, setExpandedPoId] = useState(null);
 
   const poGroups = useMemo(() => {
-    const map = {};
+    // ponytail: Map menghindari object injection (Codacy), kunci = id PO
+    const map = new Map();
     for (const po of outstandingPOs) {
       const key = po.id;
-      if (!map[key]) {
-        map[key] = {
+      if (!map.has(key)) {
+        map.set(key, {
           id: po.id,
           orderNumber: po.orderNumber,
           orderDate: po.orderDate,
@@ -72,20 +73,21 @@ const DashboardUtang = () => {
           totalPaid: 0,
           totalOutstanding: 0,
           suppliers: []
-        };
+        });
       }
-      map[key].suppliers.push({
+      const entry = map.get(key);
+      entry.suppliers.push({
         supplierId: po.supplierId,
         supplierName: po.supplierName,
         finalAmount: po.finalAmount,
         totalPaid: po.totalPaid,
         outstanding: po.outstanding
       });
-      map[key].totalFinalAmount += po.finalAmount;
-      map[key].totalPaid += po.totalPaid;
-      map[key].totalOutstanding += po.outstanding;
+      entry.totalFinalAmount += po.finalAmount;
+      entry.totalPaid += po.totalPaid;
+      entry.totalOutstanding += po.outstanding;
     }
-    return Object.values(map).sort((a, b) => {
+    return [...map.values()].sort((a, b) => {
       if (a.dueDate && b.dueDate) return new Date(a.dueDate) - new Date(b.dueDate);
       if (a.dueDate) return -1;
       if (b.dueDate) return 1;
