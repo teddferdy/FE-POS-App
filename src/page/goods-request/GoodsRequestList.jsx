@@ -335,21 +335,23 @@ const GoodsRequestList = () => {
   const renderExpandedItems = (row) => {
     const items = row.items || [];
     const groups = [];
-    const groupMap = {};
+    // ponytail: Map menghindari object injection (Codacy)
+    const groupMap = new Map();
     for (const it of items) {
       const sid = it.supplier;
       const key = sid ? String(sid) : "unassigned";
-      if (!groupMap[key]) {
-        groupMap[key] = {
+      if (!groupMap.has(key)) {
+        const group = {
           supplierId: key,
           supplierName: sid
             ? it.supplierData?.name || `Supplier #${sid}`
             : t("page.goodsRequest.list.unassignedSupplier"),
           items: []
         };
-        groups.push(groupMap[key]);
+        groupMap.set(key, group);
+        groups.push(group);
       }
-      groupMap[key].items.push(it);
+      groupMap.get(key).items.push(it);
     }
 
     if (groups.length === 0) {

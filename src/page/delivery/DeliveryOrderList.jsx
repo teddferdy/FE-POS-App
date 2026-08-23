@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -51,7 +52,7 @@ const statusBadge = (status) => {
     cancelled:
       "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
   };
-  return map[status] || "bg-gray-100 text-gray-800";
+  return safeGet(map, status, "bg-gray-100 text-gray-800");
 };
 
 const DeliveryOrderList = () => {

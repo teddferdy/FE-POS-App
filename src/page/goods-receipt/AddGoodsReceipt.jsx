@@ -61,7 +61,7 @@ const AddGoodsReceipt = () => {
   const [taxInvoiceNo, setTaxInvoiceNo] = useState("");
   const [shippingCost, setShippingCost] = useState("");
   const [scanValue, setScanValue] = useState("");
-  const qtyInputRefs = useRef({});
+  const qtyInputRefs = useRef(new Map());
 
   const docFiles = docs.filter((d) => d.isNew).map((d) => d.file);
 
@@ -261,33 +261,34 @@ const AddGoodsReceipt = () => {
     () => getAllProduct({ location: grStoreId }),
     { enabled: !!grStoreId }
   );
-  const barcodeToIdx = {};
+  // ponytail: Map untuk indeks barcode & refs — bebas object injection
+  const barcodeToIdx = new Map();
   if (items.length && productsData?.data) {
-    const productIdToBarcode = {};
+    const productIdToBarcode = new Map();
     productsData.data.forEach((p) => {
-      if (p.barcode) productIdToBarcode[p.id] = String(p.barcode);
+      if (p.barcode) productIdToBarcode.set(p.id, String(p.barcode));
     });
     items.forEach((it, idx) => {
-      const bc = it.product ? productIdToBarcode[it.product] : null;
-      if (bc && !(bc in barcodeToIdx)) barcodeToIdx[bc] = idx;
+      const bc = it.product ? productIdToBarcode.get(it.product) : null;
+      if (bc && !barcodeToIdx.has(bc)) barcodeToIdx.set(bc, idx);
     });
   }
-  const hasScannableRows = Object.keys(barcodeToIdx).length > 0;
+  const hasScannableRows = barcodeToIdx.size > 0;
 
   const handleScan = (e) => {
     const value = e.target.value;
     setScanValue(value);
     const exact = value.trim();
     if (!exact) return;
-    const idx = barcodeToIdx[exact];
+    const idx = barcodeToIdx.get(exact);
     if (idx !== undefined) {
-      const input = qtyInputRefs.current[idx];
+      const input = qtyInputRefs.current.get(idx);
       if (input) {
         input.focus();
         input.select?.();
       }
       toast.success(
-        t("page.goodsReceipt.add.scan.found", { name: items[idx]?.ingredientName || "" })
+        t("page.goodsReceipt.add.scan.found", { name: items.at(idx)?.ingredientName || "" })
       );
       setScanValue("");
     }
@@ -997,7 +998,7 @@ const AddGoodsReceipt = () => {
                             <Input
                               type="text"
                               inputMode="decimal"
-                              ref={(el) => (qtyInputRefs.current[idx] = el)}
+                              ref={(el) => qtyInputRefs.current.set(idx, el)}
                               value={item.qtyReceived === "0" ? "" : item.qtyReceived}
                               onFocus={(e) => e.target.select()}
                               onChange={(e) => {
@@ -1268,7 +1269,7 @@ const AddGoodsReceipt = () => {
                               <Input
                                 type="text"
                                 inputMode="decimal"
-                                ref={(el) => (qtyInputRefs.current[idx] = el)}
+                                ref={(el) => qtyInputRefs.current.set(idx, el)}
                                 value={item.qtyReceived === "0" ? "" : item.qtyReceived}
                                 onFocus={(e) => e.target.select()}
                                 onChange={(e) => {
