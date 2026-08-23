@@ -5,16 +5,19 @@ import { Search, X, ArrowRight } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
+// ponytail: Map menghindari akses objek berkunci variabel (object
+// injection Codacy) sekaligus hilangkan lookup ganda per item
 const partitionBySubGroup = (items) => {
   const subs = [];
-  const indexByTitle = {};
+  const byTitle = new Map();
   items.forEach((item) => {
     const gTitle = item.group || "";
-    if (indexByTitle[gTitle] === undefined) {
-      indexByTitle[gTitle] = subs.length;
-      subs.push({ title: gTitle, items: [] });
+    if (!byTitle.has(gTitle)) {
+      const group = { title: gTitle, items: [] };
+      byTitle.set(gTitle, group);
+      subs.push(group);
     }
-    subs[indexByTitle[gTitle]].items.push(item);
+    byTitle.get(gTitle).items.push(item);
   });
   return subs;
 };
@@ -25,7 +28,7 @@ const NavigationModal = ({ open, onOpenChange, categories = [], onNavigate }) =>
   const location = useLocation();
   const inputRef = useRef(null);
   const scrollRef = useRef(null);
-  const itemRefs = useRef({});
+  const itemRefs = useRef(new Map());
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -57,21 +60,22 @@ const NavigationModal = ({ open, onOpenChange, categories = [], onNavigate }) =>
   }, [query, flatItems, t]);
 
   const groupedFiltered = useMemo(() => {
-    const groups = {};
+    // ponytail: Map menghindari object injection (Codacy)
+    const map = new Map();
     filtered.forEach((item) => {
       const key = item.sectionTitle;
-      if (!groups[key]) {
-        groups[key] = {
+      if (!map.has(key)) {
+        map.set(key, {
           title: item.sectionTitle,
           i18nKey: item.sectionI18nKey,
           categoryTitle: item.categoryTitle,
           categoryI18nKey: item.categoryI18nKey,
           items: []
-        };
+        });
       }
-      groups[key].items.push(item);
+      map.get(key).items.push(item);
     });
-    return Object.values(groups);
+    return [...map.values()];
   }, [filtered]);
 
   useEffect(() => {
@@ -87,7 +91,7 @@ const NavigationModal = ({ open, onOpenChange, categories = [], onNavigate }) =>
   }, [query]);
 
   useEffect(() => {
-    const el = itemRefs.current[selectedIndex];
+    const el = itemRefs.current.get(selectedIndex);
     if (el) {
       el.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
@@ -111,8 +115,9 @@ const NavigationModal = ({ open, onOpenChange, categories = [], onNavigate }) =>
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedIndex((i) => Math.max(i - 1, 0));
-      } else if (e.key === "Enter" && filtered[selectedIndex]) {
-        handleSelect(filtered[selectedIndex].href);
+      } else if (e.key === "Enter") {
+        const selected = filtered.at(selectedIndex);
+        if (selected) handleSelect(selected.href);
       } else if (e.key === "Escape") {
         onOpenChange(false);
       }
@@ -213,7 +218,7 @@ const NavigationModal = ({ open, onOpenChange, categories = [], onNavigate }) =>
                               <button
                                 key={item.href}
                                 ref={(el) => {
-                                  itemRefs.current[idx] = el;
+                                  itemRefs.current.set(idx, el);
                                 }}
                                 data-index={idx}
                                 onClick={() => handleSelect(item.href)}

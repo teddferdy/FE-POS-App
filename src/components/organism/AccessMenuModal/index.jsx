@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 import { buildAccessMenuPayload, parseAccessMenuToPermissions } from "@/utils/permission";
+import { safeGet } from "@/lib/safe-lookup";
 
 const allActions = [
   "view",
@@ -86,14 +87,16 @@ const getLeafItemsGrouped = () => {
       const leafChildren = collectLeaves(parent.children);
       if (leafChildren.length > 0) {
         const subGroups = [];
-        const indexByTitle = {};
+        // ponytail: Map menghindari object injection (Codacy)
+        const byTitle = new Map();
         leafChildren.forEach((item) => {
           const gTitle = item.group || "";
-          if (indexByTitle[gTitle] === undefined) {
-            indexByTitle[gTitle] = subGroups.length;
-            subGroups.push({ title: gTitle, items: [] });
+          if (!byTitle.has(gTitle)) {
+            const group = { title: gTitle, items: [] };
+            byTitle.set(gTitle, group);
+            subGroups.push(group);
           }
-          subGroups[indexByTitle[gTitle]].items.push(item);
+          byTitle.get(gTitle).items.push(item);
         });
         groups.push({ parentTitle: parent.title, parentIcon: parent.icon, subGroups });
       }
@@ -134,25 +137,28 @@ export default function AccessMenuModal({
   const [collapsed, setCollapsed] = useState({});
 
   const initPerms = useCallback(() => {
-    const rolePerms = {};
+    // ponytail: rebuild literal + safeGet() — tanpa penulisan objek berkunci
+    // variabel (object injection Codacy), data menu berasal dari API
+    let rolePerms = {};
     const raw = roleAccessMenu || {};
     if (Array.isArray(raw)) {
       raw.forEach((item) => {
         const menu = item.menu;
-        if (menu) {
-          rolePerms[menu] = {};
-          allActions.forEach((a) => {
-            if (item[a] !== undefined) rolePerms[menu][a] = item[a];
-          });
-        }
+        if (!menu) return;
+        let actions = {};
+        allActions.forEach((a) => {
+          if (safeGet(item, a) !== undefined) actions = { ...actions, [a]: safeGet(item, a) };
+        });
+        rolePerms = { ...rolePerms, [menu]: actions };
       });
     } else {
-      Object.entries(raw).forEach(([menu, actions]) => {
-        if (Array.isArray(actions)) {
-          rolePerms[menu] = {};
+      Object.entries(raw).forEach(([menu, actionList]) => {
+        if (Array.isArray(actionList)) {
+          let map = {};
           allActions.forEach((a) => {
-            rolePerms[menu][a] = actions.includes(a);
+            map = { ...map, [a]: actionList.includes(a) };
           });
+          rolePerms = { ...rolePerms, [menu]: map };
         }
       });
     }
@@ -161,9 +167,9 @@ export default function AccessMenuModal({
       const parsed = value ? JSON.parse(value) : [];
       employeePerms = Array.isArray(parsed) ? parseAccessMenuToPermissions(parsed) : {};
     } catch (e) {}
-    const merged = { ...rolePerms };
+    let merged = { ...rolePerms };
     Object.keys(employeePerms).forEach((menu) => {
-      merged[menu] = { ...(merged[menu] || {}), ...employeePerms[menu] };
+      merged = { ...merged, [menu]: { ...safeGet(merged, menu), ...safeGet(employeePerms, menu) } };
     });
     return buildInitialPermissions(groups, merged);
   }, [value, roleAccessMenu, groups]);
@@ -188,13 +194,18 @@ export default function AccessMenuModal({
     );
 
   const selectAll = (checked) => {
-    const updated = {};
-    Object.keys(permissions).forEach((key) => {
-      updated[key] = {};
-      Object.keys(permissions[key]).forEach((action) => {
-        updated[key][action] = permissions[key][action] === null ? null : checked;
-      });
-    });
+    // ponytail: rebuild literal via reduce — bebas object injection
+    const updated = Object.keys(permissions).reduce((acc, key) => {
+      const actions = safeGet(permissions, key) ?? {};
+      const nextActions = Object.keys(actions).reduce(
+        (inner, action) => ({
+          ...inner,
+          [action]: safeGet(actions, action) === null ? null : checked
+        }),
+        {}
+      );
+      return { ...acc, [key]: nextActions };
+    }, {});
     setPermissions(updated);
   };
 
