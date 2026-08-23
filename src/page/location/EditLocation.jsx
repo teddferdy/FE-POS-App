@@ -167,9 +167,7 @@ const EditLocation = () => {
 
   const addSocialRow = () => setSocialLinks([...socialLinks, { platform: "", account: "" }]);
   const updateSocial = (idx, field, val) => {
-    const updated = [...socialLinks];
-    updated[idx] = { ...updated[idx], [field]: val };
-    setSocialLinks(updated);
+    setSocialLinks(socialLinks.map((row, i) => (i === idx ? { ...row, [field]: val } : row)));
   };
   const removeSocial = (idx) => {
     if (socialLinks.length <= 1) return;

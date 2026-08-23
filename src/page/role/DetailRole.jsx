@@ -306,7 +306,7 @@ const DetailRole = () => {
                       return acc;
                     }, [])
                   );
-                  const isCollapsed = collapsedGroups[idx];
+                  const isCollapsed = safeGet(collapsedGroups, idx, false);
 
                   return (
                     <div key={idx}>

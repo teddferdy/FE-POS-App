@@ -267,7 +267,7 @@ const EditRole = () => {
   };
 
   const toggleGroup = (idx) => {
-    setCollapsedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
+    setCollapsedGroups((prev) => ({ ...prev, [idx]: !safeGet(prev, idx, false) }));
   };
 
   if (isError) return <AbortController refetch={refetch} />;
@@ -427,7 +427,7 @@ const EditRole = () => {
                       return acc;
                     }, [])
                   );
-                  const isCollapsed = collapsedGroups[idx];
+                  const isCollapsed = safeGet(collapsedGroups, idx, false);
 
                   return (
                     <div key={idx}>
