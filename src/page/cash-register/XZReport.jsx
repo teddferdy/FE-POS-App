@@ -151,13 +151,19 @@ const ReportView = ({ data, reportType }) => {
   const payments = data.payments || [];
   const expenses = data.expenses || [];
 
-  const paymentGroups = {};
+  // ponytail: kumpulkan entri lalu fromEntries — tanpa penulisan berkunci variabel
+  const paymentEntries = [];
   for (const p of payments) {
     const key = p.type || "cash";
-    if (!paymentGroups[key]) paymentGroups[key] = { amount: 0, count: 0 };
-    paymentGroups[key].amount += p.amount;
-    paymentGroups[key].count += p.count;
+    const found = paymentEntries.find(([k]) => k === key);
+    if (found) {
+      found[1].amount += p.amount;
+      found[1].count += p.count;
+    } else {
+      paymentEntries.push([key, { amount: p.amount, count: p.count }]);
+    }
   }
+  const paymentGroups = Object.fromEntries(paymentEntries);
 
   const uniqueId = `report-${reportType === "Z" ? data.register?.id || "z" : "current"}`;
 

@@ -141,17 +141,16 @@ const EditBundle = () => {
 
   const updateBundleItem = (index, key, value) => {
     setBundleItems((prev) => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [key]: value };
-
+      // ponytail: map + rebuild literal — bebas object injection
+      const current = prev.at(index) ?? {};
+      let row = { ...current, [key]: value };
       if (key === "product") {
         const product = products.find((p) => p.id === Number(value));
         if (product) {
-          updated[index].unitPrice = product.price;
+          row = { ...row, unitPrice: product.price };
         }
       }
-
-      return updated;
+      return prev.map((item, i) => (i === index ? row : item));
     });
   };
 

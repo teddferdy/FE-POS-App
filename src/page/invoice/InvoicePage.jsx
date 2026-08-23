@@ -1,3 +1,4 @@
+import { safeGet, hasOwn } from "@/lib/safe-lookup";
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -286,17 +287,18 @@ const InvoicePreview = ({
           }}>
           {footerText || t("page.invoice.footerDefault")}
         </p>
-        {showSocialMedia && socialMedia.filter((_, i) => socialMediaVisible[i]).length > 0 && (
-          <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-gray-200">
-            {socialMedia
-              .filter((_, i) => socialMediaVisible[i])
-              .map((sm, i) => (
-                <span key={i} className="text-gray-400 text-[10px]">
-                  {sm.platform}: {sm.account}
-                </span>
-              ))}
-          </div>
-        )}
+        {showSocialMedia &&
+          socialMedia.filter((_, i) => safeGet(socialMediaVisible, i)).length > 0 && (
+            <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-gray-200">
+              {socialMedia
+                .filter((_, i) => safeGet(socialMediaVisible, i))
+                .map((sm, i) => (
+                  <span key={i} className="text-gray-400 text-[10px]">
+                    {sm.platform}: {sm.account}
+                  </span>
+                ))}
+            </div>
+          )}
       </div>
     </div>
   );
@@ -484,16 +486,11 @@ const InvoicePage = () => {
 
   useEffect(() => {
     if (locationDetail?.socialMedia?.length) {
-      const init = {};
-      locationDetail.socialMedia.forEach((_, i) => {
-        init[i] = true;
-      });
+      // ponytail: fromEntries + hasOwn — bebas object injection
+      const base = Object.fromEntries(locationDetail.socialMedia.map((_, i) => [i, true]));
       setSocialMediaVisible((prev) => {
-        const merged = { ...init };
-        Object.keys(prev).forEach((k) => {
-          if (init[k] !== undefined) merged[k] = prev[k];
-        });
-        return merged;
+        const overrides = Object.entries(prev).filter(([k]) => hasOwn(base, k));
+        return { ...base, ...Object.fromEntries(overrides) };
       });
     }
   }, [locationDetail?.socialMedia]);
@@ -961,7 +958,7 @@ const InvoicePage = () => {
                             </div>
                           </div>
                           <Switch
-                            checked={addressFieldsVisible[key] ?? true}
+                            checked={safeGet(addressFieldsVisible, key) ?? true}
                             disabled={isEmpty}
                             onCheckedChange={(v) =>
                               setAddressFieldsVisible((prev) => ({ ...prev, [key]: v }))
@@ -1074,7 +1071,7 @@ const InvoicePage = () => {
                           </span>
                         </div>
                         <Switch
-                          checked={socialMediaVisible[i] ?? true}
+                          checked={safeGet(socialMediaVisible, i) ?? true}
                           onCheckedChange={(v) =>
                             setSocialMediaVisible((prev) => ({ ...prev, [i]: v }))
                           }

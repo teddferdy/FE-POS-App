@@ -237,20 +237,22 @@ const PurchaseOrderList = () => {
   const todayStr = new Date().toISOString().slice(0, 10);
 
   const productExpiry = useMemo(() => {
-    const map = {};
+    // ponytail: Map — bebas object injection
+    const map = new Map();
     (returBatchData?.data || []).forEach((b) => {
       const id = Number(b.product);
       const date = b.expiryDate;
       if (!id || !date) return;
-      if (!map[id] || date < map[id].expiryDate) {
-        map[id] = { expiryDate: date, expired: date < todayStr };
+      const existing = map.get(id);
+      if (!existing || date < existing.expiryDate) {
+        map.set(id, { expiryDate: date, expired: date < todayStr });
       }
     });
     return map;
   }, [returBatchData, todayStr]);
 
   const hasExpiredReturnItem = returItems.some(
-    (it) => parseFloat(it.returnQty) > 0 && productExpiry[Number(it.product)]?.expired
+    (it) => parseFloat(it.returnQty) > 0 && productExpiry.get(Number(it.product))?.expired
   );
 
   const user = cookie?.user;
@@ -1200,7 +1202,7 @@ const PurchaseOrderList = () => {
                 }}
                 renderExpandedRow={(po) => {
                   const items = po.items || [];
-                  const supplierMap = {};
+                  const supplierMap = new Map();
                   const unassignedItems = [];
                   items.forEach((it) => {
                     const sid = it.supplier;
@@ -1208,16 +1210,16 @@ const PurchaseOrderList = () => {
                       unassignedItems.push(it);
                       return;
                     }
-                    if (!supplierMap[sid]) {
-                      supplierMap[sid] = {
+                    if (!supplierMap.has(sid)) {
+                      supplierMap.set(sid, {
                         supplierId: sid,
-                        supplierName: it.supplierData?.name || `Supplier #${sid}`,
+                        supplierName: it.supplierData?.name || `Supplier #`,
                         items: []
-                      };
+                      });
                     }
-                    supplierMap[sid].items.push(it);
+                    supplierMap.get(sid).items.push(it);
                   });
-                  const suppliers = Object.values(supplierMap);
+                  const suppliers = [...supplierMap.values()];
                   if (unassignedItems.length > 0) {
                     suppliers.push({
                       supplierId: "unassigned",
@@ -1399,7 +1401,7 @@ const PurchaseOrderList = () => {
                                   <td className="px-3 py-2.5 text-sm font-medium">
                                     {item.productData?.nameProduct || item.ingredientName || "-"}
                                     {(() => {
-                                      const exp = productExpiry[Number(item.product)];
+                                      const exp = productExpiry.get(Number(item.product));
                                       if (!exp) return null;
                                       if (exp.expired) {
                                         return (

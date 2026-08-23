@@ -168,9 +168,7 @@ const EditPromoCampaign = () => {
   };
 
   const updateRule = (index, field, value) => {
-    const updated = [...rules];
-    updated[index] = { ...updated[index], [field]: value };
-    setRules(updated);
+    setRules(rules.map((rule, i) => (i === index ? { ...rule, [field]: value } : rule)));
   };
 
   const addReward = () => {

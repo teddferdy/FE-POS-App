@@ -156,11 +156,11 @@ const EditPurchaseOrder = () => {
     setTenor(po.tenor || 0);
     setDpPercent(po.dpPercent || 0);
     if (po.items && po.items.length > 0) {
-      const bySupplier = {};
+      const bySupplier = new Map();
       po.items.forEach((item) => {
         const supId = item.supplier || null;
-        if (!bySupplier[supId]) bySupplier[supId] = [];
-        bySupplier[supId].push({
+        if (!bySupplier.has(supId)) bySupplier.set(supId, []);
+        bySupplier.get(supId).push({
           name: item.ingredientName || item.productData?.nameProduct || "",
           product: item.product || null,
           productName: item.productData?.nameProduct || null,
@@ -172,9 +172,9 @@ const EditPurchaseOrder = () => {
           conversionToBase: item.conversionToBase || 1
         });
       });
-      const grouped = Object.keys(bySupplier).map((supId) => ({
-        supplier: supId === "null" ? null : Number(supId),
-        items: bySupplier[supId]
+      const grouped = [...bySupplier.entries()].map(([supId, items]) => ({
+        supplier: supId,
+        items
       }));
       setGroups(grouped.length > 0 ? grouped : [emptyGroup()]);
     } else {

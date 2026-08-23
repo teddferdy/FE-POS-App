@@ -1301,9 +1301,9 @@ export default function DetailPurchaseOrder() {
                       value={item.qty || ""}
                       onChange={(e) => {
                         const val = Math.min(Math.max(0, Number(e.target.value)), item.maxQty);
-                        const next = [...returnItems];
-                        next[idx].qty = val;
-                        setReturnItems(next);
+                        setReturnItems(
+                          returnItems.map((row, i) => (i === idx ? { ...row, qty: val } : row))
+                        );
                       }}
                       className="w-20 text-right"
                       placeholder="0"

@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import { Search, Barcode, Grid3X3, List, Tag, Package, X } from "lucide-react";
@@ -62,20 +63,24 @@ const ProductGrid = ({
   }, []);
 
   const productsByCategory = useMemo(() => {
-    const catMap = {};
-    categories?.forEach((cat) => {
-      catMap[cat.id || cat._id] = cat;
-    });
-    const groups = {};
+    // ponytail: fromEntries + daftar grup berkunci catId — bebas object injection
+    const catMap = Object.fromEntries((categories || []).map((cat) => [cat.id || cat._id, cat]));
+    const groupList = [];
     products.forEach((p) => {
       const catId = getCatId(p);
-      if (!groups[catId]) groups[catId] = { category: catMap[catId] || null, products: [] };
-      groups[catId].products.push(p);
+      let group = groupList.find((g) => g.catId === catId);
+      if (!group) {
+        group = { catId, category: safeGet(catMap, catId, null), products: [] };
+        groupList.push(group);
+      }
+      group.products.push(p);
     });
-    if (!categories?.length) return Object.values(groups);
+    const toPublic = ({ category, products }) => ({ category, products });
+    if (!categories?.length) return groupList.map(toPublic);
     return categories.map((cat) => {
       const catId = cat.id || cat._id;
-      return groups[catId] || { category: cat, products: [] };
+      const found = groupList.find((g) => g.catId === catId);
+      return found ? toPublic(found) : { category: cat, products: [] };
     });
   }, [categories, products, getCatId]);
 
