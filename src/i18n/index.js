@@ -3,33 +3,22 @@ import Backend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
-// Import Language
-import translationEn from "./en.json";
-import translationJpn from "./jpn.json";
-import translationId from "./id.json";
-
+// ponytail: translasi TIDAK di-inline (920KB JSON membuat entry chunk 921KB & LCP 8.3s).
+// Dimuat runtime dari /locales/{lng}/translation.json — hanya bahasa aktif yang turun.
 i18n
   .use(Backend)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    debug: true,
+    debug: false,
     fallbackLng: "en",
     load: "languageOnly",
     supportedLngs: ["en", "id", "jpn"],
-    preload: ["en", "id", "jpn"],
     keySeparator: false,
     interpolation: { escapeValue: false },
-    resources: {
-      en: {
-        translation: translationEn
-      },
-      jpn: {
-        translation: translationJpn
-      },
-      id: {
-        translation: translationId
-      }
-    }
+    backend: {
+      loadPath: "/locales/{{lng}}/{{ns}}.json"
+    },
+    react: { useSuspense: false }
   });
 export default i18n;
