@@ -7286,5 +7286,14 @@
   },
   "page.product.form.sameUnitHelper": "Same unit, conversion factor is 1",
   "page.stockTransfer.list.approveTitle": "Approve",
-  "sidebar.thermalPrinter": "Thermal Printer"
+  "sidebar.thermalPrinter": "Thermal Printer",
+  "guide.posWelcome.title": "🎉 Welcome to your POS!",
+  "guide.posWelcome.subtitle": "Let's start your first transaction",
+  "guide.posWelcome.cart.title": "Order Cart",
+  "guide.posWelcome.cart.desc": "Items you add will appear here. You can change quantities, remove them, or continue to payment.",
+  "guide.posWelcome.products.title": "Product List",
+  "guide.posWelcome.products.desc": "Search products by name or SKU. Click a product to add it to the cart.",
+  "guide.posWelcome.payment.title": "Payment",
+  "guide.posWelcome.payment.desc": "Once you've finished selecting products, click the payment button to proceed to checkout.",
+  "guide.posWelcome.cta": "Get Started"
 }

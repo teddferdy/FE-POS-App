@@ -7286,5 +7286,14 @@
   "page.employee.edit.validation.dateOfBirthRequired": "Tanggal lahir wajib diisi",
   "page.stockTransfer.list.modal.cancelConfirm": "Ya, Batalkan",
   "page.stockTransfer.list.modal.cancelDesc": "Semua perubahan yang belum disimpan akan hilang.",
-  "page.stockTransfer.list.modal.cancelTitle": "Batalkan Transfer?"
+  "page.stockTransfer.list.modal.cancelTitle": "Batalkan Transfer?",
+  "guide.posWelcome.title": "🎉 Selamat Datang di POS!",
+  "guide.posWelcome.subtitle": "Mari mulai transaksi pertama Anda",
+  "guide.posWelcome.cart.title": "Keranjang Pesanan",
+  "guide.posWelcome.cart.desc": "Item yang Anda tambahkan akan muncul di sini. Anda bisa mengubah jumlah, menghapus, atau melanjutkan ke pembayaran.",
+  "guide.posWelcome.products.title": "Daftar Produk",
+  "guide.posWelcome.products.desc": "Cari produk dengan mengetik nama atau SKU. Klik produk untuk menambahkannya ke keranjang.",
+  "guide.posWelcome.payment.title": "Pembayaran",
+  "guide.posWelcome.payment.desc": "Setelah selesai memilih produk, klik tombol pembayaran untuk melanjutkan ke proses bayar.",
+  "guide.posWelcome.cta": "Mulai Gunakan"
 }
