@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import PropTypes from "prop-types";
@@ -18,7 +19,7 @@ const colorMap = {
 };
 
 function ToastItem({ icon, title, onClose }) {
-  const Icon = iconMap[icon] || Info;
+  const Icon = safeGet(iconMap, icon, Info);
 
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
@@ -27,7 +28,7 @@ function ToastItem({ icon, title, onClose }) {
 
   return (
     <div
-      className={`fixed top-4 right-4 z-[9999] flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg animate-fade-in ${colorMap[icon] || colorMap.info}`}>
+      className={`fixed top-4 right-4 z-[9999] flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg animate-fade-in ${safeGet(colorMap, icon, colorMap.info)}`}>
       <Icon className="w-5 h-5 shrink-0" />
       <span className="text-sm font-medium">{title}</span>
       <button onClick={onClose} className="ml-2 shrink-0 opacity-60 hover:opacity-100">

@@ -166,7 +166,7 @@ function CalendarMonth({
     return isSameDay(day, selected.to);
   };
 
-  const captionLabel = `${MONTHS[currentMonthIdx]} ${currentYear}`;
+  const captionLabel = `${MONTHS.at(currentMonthIdx)} ${currentYear}`;
 
   return (
     <div className="space-y-4">
@@ -180,7 +180,7 @@ function CalendarMonth({
                 onMonthChange?.(newDate);
               }}>
               <SelectTrigger className="w-[110px] h-8 text-sm font-medium">
-                <SelectValue>{MONTHS[currentMonthIdx]}</SelectValue>
+                <SelectValue>{MONTHS.at(currentMonthIdx)}</SelectValue>
               </SelectTrigger>
               <SelectContent className="z-[200]">
                 <ScrollArea className="h-80">

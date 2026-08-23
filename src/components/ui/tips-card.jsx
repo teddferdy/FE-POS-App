@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Lightbulb, Info, AlertTriangle, X } from "lucide-react";
@@ -40,12 +41,12 @@ const TipsCard = ({ tips = [], title: titleProp, variant = "default", className,
   if (dismissed) return null;
 
   const title = titleProp ?? t("common.tips");
-  const Icon = variantIcons[variant];
+  const Icon = safeGet(variantIcons, variant);
   return (
     <div
       className={cn(
         "rounded-xl p-5 flex flex-col relative group",
-        variantStyles[variant],
+        safeGet(variantStyles, variant, ""),
         className
       )}>
       {dismissKey && (

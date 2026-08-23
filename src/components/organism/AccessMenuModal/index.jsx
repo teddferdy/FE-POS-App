@@ -106,23 +106,26 @@ const getLeafItemsGrouped = () => {
 };
 
 const buildInitialPermissions = (groups, existingPerms = {}) => {
-  const perms = {};
+  // ponytail: kumpulkan entri lalu fromEntries — tanpa penulisan berkunci variabel
+  const entries = [];
   groups.forEach((g) => {
     g.subGroups.forEach((sg) => {
       sg.items.forEach((item) => {
-        const key = item.href;
-        perms[key] = {};
-        allActions.forEach((a) => {
-          if (item.actions?.includes(a)) {
-            perms[key][a] = existingPerms?.[key]?.[a] ?? false;
-          } else {
-            perms[key][a] = null;
-          }
-        });
+        entries.push([
+          item.href,
+          Object.fromEntries(
+            allActions.map((a) => [
+              a,
+              item.actions?.includes(a)
+                ? (safeGet(safeGet(existingPerms, item.href), a) ?? false)
+                : null
+            ])
+          )
+        ]);
       });
     });
   });
-  return perms;
+  return Object.fromEntries(entries);
 };
 
 export default function AccessMenuModal({
@@ -182,9 +185,9 @@ export default function AccessMenuModal({
 
   const togglePermission = (href, action) => {
     setPermissions((prev) => {
-      const current = prev[href]?.[action];
+      const current = safeGet(safeGet(prev, href), action);
       if (current === null) return prev;
-      return { ...prev, [href]: { ...prev[href], [action]: !current } };
+      return { ...prev, [href]: { ...safeGet(prev, href), [action]: !current } };
     });
   };
 
@@ -224,7 +227,7 @@ export default function AccessMenuModal({
   };
 
   const toggleGroup = (idx) => {
-    setCollapsed((prev) => ({ ...prev, [idx]: !prev[idx] }));
+    setCollapsed((prev) => ({ ...prev, [idx]: !safeGet(prev, idx, false) }));
   };
 
   return (
@@ -264,7 +267,7 @@ export default function AccessMenuModal({
                   return acc;
                 }, [])
             );
-            const isCollapsed = collapsed[idx];
+            const isCollapsed = safeGet(collapsed, idx, false);
 
             return (
               <div key={idx}>
@@ -290,8 +293,8 @@ export default function AccessMenuModal({
                           {visibleActions.map((action) => (
                             <th
                               key={action}
-                              className={`px-2 py-2 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${actionColors[action] || "text-muted-foreground"}`}>
-                              {actionLabels[action] || action}
+                              className={`px-2 py-2 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${safeGet(actionColors, action, "text-muted-foreground")}`}>
+                              {safeGet(actionLabels, action) || action}
                             </th>
                           ))}
                         </tr>
@@ -324,7 +327,7 @@ export default function AccessMenuModal({
                                     </div>
                                   </td>
                                   {itemActions.map((action) => {
-                                    const val = permissions[item.href]?.[action];
+                                    const val = safeGet(safeGet(permissions, item.href), action);
                                     const isDisabled = val === null;
                                     return (
                                       <td key={action} className="px-2 py-2.5 text-center">

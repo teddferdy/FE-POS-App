@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, X, Send, ChevronDown, Sparkles, Bot } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -58,7 +59,7 @@ function FaqChat() {
 
   const switchMode = useCallback((newMode) => {
     setMode(newMode);
-    setMessages([GREETINGS[newMode]]);
+    setMessages([safeGet(GREETINGS, newMode)]);
     setInput("");
   }, []);
 
@@ -115,7 +116,7 @@ function FaqChat() {
   }, [open]);
 
   const handleReset = () => {
-    setMessages([GREETINGS[mode]]);
+    setMessages([safeGet(GREETINGS, mode)]);
     setInput("");
   };
 

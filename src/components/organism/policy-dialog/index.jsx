@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -138,7 +139,8 @@ const PolicyDialog = ({ type, open, onOpenChange }) => {
   const { t, i18n } = useTranslation();
   const lang = i18n.language?.startsWith("en") ? "en" : "id";
 
-  const content = policyContent[type]?.[lang] || policyContent[type]?.id;
+  const content =
+    safeGet(safeGet(policyContent, type), lang) || safeGet(safeGet(policyContent, type), "id");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

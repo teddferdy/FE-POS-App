@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
@@ -37,13 +38,14 @@ const DataTable = ({
   const [expandedRows, setExpandedRows] = React.useState(new Set());
   const scrollRef = React.useRef(null);
   const roRef = React.useRef(null);
-  const stickyThRefs = React.useRef({});
+  const stickyThRefs = React.useRef(new Map());
   const [stickyLeftOffsets, setStickyLeftOffsets] = React.useState({});
   const [containerWidth, setContainerWidth] = React.useState(0);
 
   const getCellStyle = (col, colIndex) => {
     const style = col.width ? { width: col.width } : {};
-    if (col.stickyLeft) style.left = stickyLeftOffsets[colIndex] ?? col.stickyLeftOffset ?? 0;
+    if (col.stickyLeft)
+      style.left = safeGet(stickyLeftOffsets, colIndex) ?? col.stickyLeftOffset ?? 0;
     return style;
   };
 
@@ -70,7 +72,7 @@ const DataTable = ({
   };
 
   const getRowId = (row) => {
-    if (rowKey) return typeof rowKey === "function" ? rowKey(row) : row[rowKey];
+    if (rowKey) return typeof rowKey === "function" ? rowKey(row) : safeGet(row, rowKey);
     return row.id || row._id;
   };
 
@@ -163,14 +165,16 @@ const DataTable = ({
   ];
 
   const measureStickyLeft = React.useCallback(() => {
-    const offsets = {};
+    // ponytail: kumpulkan pasangan dulu, bangun objek via fromEntries — bebas object injection
+    const entries = [];
     let cumulative = 0;
     allColumns.forEach((col, i) => {
       if (!col.stickyLeft) return;
-      offsets[i] = cumulative;
-      const el = stickyThRefs.current[i];
+      entries.push([i, cumulative]);
+      const el = stickyThRefs.current.get(i);
       cumulative += el ? el.getBoundingClientRect().width : 0;
     });
+    const offsets = Object.fromEntries(entries);
     setStickyLeftOffsets((prev) =>
       JSON.stringify(prev) === JSON.stringify(offsets) ? prev : offsets
     );
@@ -178,7 +182,7 @@ const DataTable = ({
 
   React.useEffect(() => {
     measureStickyLeft();
-    const els = Object.values(stickyThRefs.current).filter(Boolean);
+    const els = [...stickyThRefs.current.values()].filter(Boolean);
     if (els.length === 0) return;
     const ro = new ResizeObserver(measureStickyLeft);
     els.forEach((el) => ro.observe(el));
@@ -204,7 +208,7 @@ const DataTable = ({
                 <th
                   key={i}
                   ref={(el) => {
-                    stickyThRefs.current[i] = el;
+                    stickyThRefs.current.set(i, el);
                   }}
                   style={getCellStyle(col, i)}
                   className={cn(
@@ -409,7 +413,7 @@ const DataTable = ({
                     <th
                       key={i}
                       ref={(el) => {
-                        stickyThRefs.current[i] = el;
+                        stickyThRefs.current.set(i, el);
                       }}
                       style={getCellStyle(col, i)}
                       className={cn(

@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -177,7 +178,7 @@ const GuidePanel = ({ onClose }) => {
                                 {page.actions && page.actions.length > 0 && (
                                   <div className="flex flex-wrap gap-1 mt-1.5">
                                     {page.actions.map((action) => {
-                                      const config = actionConfig[action];
+                                      const config = safeGet(actionConfig, action);
                                       if (!config) return null;
                                       const ActionIcon = config.icon;
                                       return (
