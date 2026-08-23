@@ -26,6 +26,23 @@
       }
     </style>
     <title>Bisa Nota - Demo</title>
+    <script>
+      // ponytail: mulai fetch translasi SEJAJAR dengan entry JS — tanpa ini,
+      // fetch baru jalan setelah i18n init (menunggu JS selesai parse+exec).
+      // Baca bahasa dari sessionStorage yang sama dengan zustand persist.
+      try {
+        var t = JSON.parse(sessionStorage.getItem("translation") || "{}");
+        var lng = (t.state && t.state.translation) || "id";
+        var supported = ["en", "id", "jpn"];
+        if (supported.indexOf(lng) === -1) lng = "id";
+        var l = document.createElement("link");
+        l.rel = "preload";
+        l.as = "fetch";
+        l.type = "application/json";
+        l.href = "/locales/" + lng + "/translation.json";
+        document.head.appendChild(l);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
