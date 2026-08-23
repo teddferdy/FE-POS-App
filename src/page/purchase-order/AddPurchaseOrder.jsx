@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -296,7 +297,7 @@ const AddPurchaseOrder = () => {
 
   const selectedItemValue = (item, supplier) => {
     if (!supplier) return "";
-    const list = supplierItemsBySupplier[supplier] || [];
+    const list = safeGet(supplierItemsBySupplier, supplier, []);
     const match = list.find(
       (opt) =>
         (item.product && item.product === opt.productId) ||
@@ -308,9 +309,9 @@ const AddPurchaseOrder = () => {
 
   const itemOptionsForRow = (gIdx, iIdx, supplier) => {
     if (!supplier) return [];
-    const list = supplierItemsBySupplier[supplier] || [];
+    const list = safeGet(supplierItemsBySupplier, supplier, []);
     const taken = new Set();
-    const group = groups[gIdx];
+    const group = groups.at(gIdx);
     (group?.items || []).forEach((other, j) => {
       if (j === iIdx) return;
       const val = selectedItemValue(other, supplier);
@@ -363,7 +364,7 @@ const AddPurchaseOrder = () => {
 
   const pickGroupSupplier = (gIdx, value) => {
     const supplierId = value ? Number(value) : null;
-    const group = groups[gIdx];
+    const group = groups.at(gIdx);
     const hasFilledItems = (group?.items || []).some((it) => it.name.trim());
     const isSameSupplier = (group?.supplier || null) === supplierId;
     if (hasFilledItems && !isSameSupplier) {
@@ -374,7 +375,7 @@ const AddPurchaseOrder = () => {
   };
 
   const handleClearSupplierClick = (gIdx) => {
-    const group = groups[gIdx];
+    const group = groups.at(gIdx);
     const hasFilledItems = (group?.items || []).some((it) => it.name.trim());
     if (hasFilledItems) {
       setSupplierRemove({ gIdx });
@@ -384,7 +385,7 @@ const AddPurchaseOrder = () => {
   };
 
   const handleRemoveItemClick = (gIdx, iIdx) => {
-    if ((groups[gIdx]?.items || []).length > 1) {
+    if ((groups.at(gIdx)?.items || []).length > 1) {
       setItemRemove({ gIdx, iIdx });
       return;
     }
@@ -403,7 +404,7 @@ const AddPurchaseOrder = () => {
     setGroups((prev) =>
       prev.map((g, gi) => {
         if (gi !== gIdx) return g;
-        const list = supplierItemsBySupplier[g.supplier] || [];
+        const list = safeGet(supplierItemsBySupplier, g.supplier, []);
         const opt = list.find((o) => o.value === value);
         return {
           ...g,
@@ -985,7 +986,7 @@ const AddPurchaseOrder = () => {
                           </div>
 
                           {group.supplier &&
-                          (supplierItemsBySupplier[group.supplier] || []).length === 0 ? (
+                          safeGet(supplierItemsBySupplier, group.supplier, []).length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-10 text-center px-4">
                               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
                                 <Package size={20} className="text-muted-foreground" />

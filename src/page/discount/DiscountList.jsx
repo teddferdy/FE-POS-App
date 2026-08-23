@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -52,7 +53,8 @@ const PROMO_TYPE_LABELS = {
 
 const getPromoLabel = (item) => {
   const promoType = item.conditions?.promoType;
-  if (promoType && PROMO_TYPE_LABELS[promoType]) return PROMO_TYPE_LABELS[promoType];
+  if (promoType && safeGet(PROMO_TYPE_LABELS, promoType))
+    return safeGet(PROMO_TYPE_LABELS, promoType);
   return item.type === "percent"
     ? "Persentase"
     : item.type === "nominal"

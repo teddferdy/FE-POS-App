@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 /* eslint-disable no-unused-vars */
 import React, { useState, useCallback, useRef } from "react";
 import {
@@ -37,7 +38,7 @@ const parseExcelFile = (file) =>
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
+        const sheet = safeGet(workbook.Sheets, sheetName);
         const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
         resolve(json);
       } catch (err) {
@@ -61,13 +62,14 @@ const COLUMN_MAP = {
 };
 
 const mapRow = (row) => {
-  const result = {};
+  // ponytail: fromEntries — tanpa penulisan berkunci variabel (Codacy)
   const keys = Object.keys(row);
-  for (const [excelCol, field] of Object.entries(COLUMN_MAP)) {
-    const match = keys.find((k) => k.trim().toLowerCase() === excelCol.toLowerCase());
-    result[field] = match ? String(row[match]).trim() : "";
-  }
-  return result;
+  return Object.fromEntries(
+    Object.entries(COLUMN_MAP).map(([excelCol, field]) => {
+      const match = keys.find((k) => k.trim().toLowerCase() === excelCol.toLowerCase());
+      return [field, match ? String(safeGet(row, match, "")).trim() : ""];
+    })
+  );
 };
 
 const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, auditDate }) => {

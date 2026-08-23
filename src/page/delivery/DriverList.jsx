@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -61,7 +62,7 @@ const statusBadge = (status) => {
     draft:
       "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400 border border-slate-200 dark:border-slate-800"
   };
-  return map[status] || "bg-gray-100 text-gray-800";
+  return safeGet(map, status, "bg-gray-100 text-gray-800");
 };
 
 const vehicleIcon = (type) => {

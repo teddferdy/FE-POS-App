@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -24,11 +25,11 @@ const statusBadge = (status, t) => {
   };
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${colors[status] || colors.available}`}>
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${safeGet(colors, status, colors.available)}`}>
       <span
         className={`w-1.5 h-1.5 rounded-full ${status === "available" ? "bg-green-500" : status === "occupied" ? "bg-red-500" : "bg-amber-500"}`}
       />
-      {labels[status] || labels.available}
+      {safeGet(labels, status, labels.available)}
     </span>
   );
 };

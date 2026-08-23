@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
@@ -148,7 +149,7 @@ const AdvancedReporting = () => {
       category: categoryData,
       kasir: kasirData
     };
-    const data = dataMap[type]?.data;
+    const data = safeGet(dataMap, type)?.data;
     if (!data) return;
     const rows = [["Laporan", type, "Periode", period, "Toko", storeId || "Semua"]];
     rows.push([]);

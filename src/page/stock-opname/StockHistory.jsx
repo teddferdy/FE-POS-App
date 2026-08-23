@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
@@ -172,8 +173,8 @@ const StockHistory = () => {
     };
     return (
       <span
-        className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${map[type] || "bg-gray-100 text-gray-700"}`}>
-        {labels[type] || type}
+        className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${safeGet(map, type, "bg-gray-100 text-gray-700")}`}>
+        {safeGet(labels, type) || type}
       </span>
     );
   };

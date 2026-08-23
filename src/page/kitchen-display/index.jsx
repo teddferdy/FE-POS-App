@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useEffect, useCallback } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 // import { useNavigate } from "react-router-dom";
@@ -220,7 +221,7 @@ const KitchenDisplay = () => {
             // ponytail: flex-1 min-h-0 fills remaining space instead of hardcoded calc — tips card now lives above
             <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-4">
               {statusColumns.map((colStatus) => {
-                const cfg = statusConfig[colStatus];
+                const cfg = safeGet(statusConfig, colStatus);
                 const Icon = cfg.icon;
                 const colOrders = getOrdersByStatus(colStatus);
 

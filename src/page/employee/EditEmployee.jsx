@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -206,7 +207,7 @@ const EditEmployee = () => {
     const normalizeDuration = (val) => {
       if (!val) return "";
       const lower = String(val).toLowerCase();
-      if (durationMap[lower]) return durationMap[lower];
+      if (safeGet(durationMap, lower)) return safeGet(durationMap, lower);
       const num = parseInt(val);
       if (!isNaN(num)) return String(num);
       return String(val);
@@ -396,7 +397,7 @@ const EditEmployee = () => {
 
   const removeDocument = (index) => {
     setDocuments((prev) => {
-      const doc = prev[index];
+      const doc = prev.at(index);
       if (doc.previewUrl) URL.revokeObjectURL(doc.previewUrl);
       return prev.filter((_, i) => i !== index);
     });
@@ -404,7 +405,7 @@ const EditEmployee = () => {
 
   const removeExistingDocument = (index) => {
     setExistingDocuments((prev) => {
-      const doc = prev[index];
+      const doc = prev.at(index);
       setDeletedDocs((d) => [...d, doc.fileUrl || doc]);
       return prev.filter((_, i) => i !== index);
     });

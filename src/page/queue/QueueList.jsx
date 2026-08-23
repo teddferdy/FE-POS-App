@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -48,7 +49,7 @@ const statusBadge = (status) => {
     expired:
       "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
   };
-  return map[status] || "bg-gray-100 text-gray-800";
+  return safeGet(map, status, "bg-gray-100 text-gray-800");
 };
 
 const priorityBadge = (priority) => {
@@ -59,7 +60,7 @@ const priorityBadge = (priority) => {
     pregnant: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400",
     disabled: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400"
   };
-  return map[priority] || "bg-gray-100 text-gray-800";
+  return safeGet(map, priority, "bg-gray-100 text-gray-800");
 };
 
 const QueueList = () => {

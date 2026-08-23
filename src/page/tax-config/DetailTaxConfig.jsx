@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -48,7 +49,7 @@ const typeBadge = (name) => {
   };
   return (
     <span
-      className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${colors[taxType] || colors["Non-Pajak"]}`}>
+      className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${safeGet(colors, taxType, colors["Non-Pajak"])}`}>
       {taxType}
     </span>
   );

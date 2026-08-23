@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -138,7 +139,7 @@ const BundleList = () => {
         label: t("common.inactive")
       }
     };
-    return map[status] || map.draft;
+    return safeGet(map, status) ?? map.draft;
   };
 
   const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;

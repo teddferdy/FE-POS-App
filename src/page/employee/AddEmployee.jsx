@@ -340,7 +340,7 @@ const AddEmployee = () => {
 
   const removeDocument = (index) => {
     setDocuments((prev) => {
-      const doc = prev[index];
+      const doc = prev.at(index);
       if (doc.previewUrl) URL.revokeObjectURL(doc.previewUrl);
       return prev.filter((_, i) => i !== index);
     });

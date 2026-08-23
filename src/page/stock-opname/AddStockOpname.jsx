@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
@@ -634,11 +635,11 @@ const AddStockOpname = () => {
                       </tr>
                     ) : (
                       fields.map((field, index) => {
-                        const row = watchedItems[index] || {};
+                        const row = watchedItems.at(index) || {};
                         const stokAkhir = calculateStockAkhir(row);
                         const selisih = calculateSelisih(row);
                         const availability = getAvailabilityStatus(stokAkhir, t);
-                        const rowErrors = errors.items?.[index];
+                        const rowErrors = errors.items?.at(index);
 
                         return (
                           <tr
@@ -816,7 +817,7 @@ const AddStockOpname = () => {
                                   })}
                                   placeholder="0"
                                   className={`w-full bg-transparent border-0 border-b text-sm text-right outline-none transition-colors px-0 py-1 tabular-nums ${
-                                    rowErrors?.[fieldName]
+                                    safeGet(rowErrors, fieldName)
                                       ? "border-destructive focus:border-solid"
                                       : "border-dashed border-muted-foreground/20 focus:border-primary focus:border-solid"
                                   }`}

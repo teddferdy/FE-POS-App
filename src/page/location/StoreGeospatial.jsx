@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useMemo } from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -89,19 +90,21 @@ const StoreGeospatial = () => {
     const detailItems = detailData?.data || detailData?.locations || [];
     const tableItems = tableData?.data || tableData?.locations || [];
 
-    const coordMap = {};
+    // ponytail: kumpulkan entri lalu fromEntries — tanpa penulisan berkunci variabel
+    const coordEntries = [];
     detailItems.forEach((item) => {
       if (item.latitude && item.longitude) {
         const key = String(item.store ?? item.id);
-        coordMap[key] = { latitude: item.latitude, longitude: item.longitude };
+        coordEntries.push([key, { latitude: item.latitude, longitude: item.longitude }]);
       }
     });
+    const coordMap = Object.fromEntries(coordEntries);
 
     return tableItems.map((loc) => {
       const num = parseInt(loc.storeId?.replace(/^ST-/i, ""), 10);
       const key = String(isNaN(num) ? loc.id : num);
       const hasOwnCoords = loc.latitude && loc.longitude;
-      return { ...loc, ...(hasOwnCoords ? {} : coordMap[key] || {}) };
+      return { ...loc, ...(hasOwnCoords ? {} : safeGet(coordMap, key, {})) };
     });
   }, [detailData, tableData]);
 
@@ -281,7 +284,7 @@ const StoreGeospatial = () => {
                               <Building2 size={12} className="text-muted-foreground shrink-0" />
                               <span
                                 className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                                  categoryColors[category] ||
+                                  safeGet(categoryColors, category) ||
                                   "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
                                 }`}>
                                 {category}
