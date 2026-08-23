@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
-import { FolderOpen, Trash2, Edit, Plus, CheckCircle, XCircle, Tag } from "lucide-react";
+import { FolderOpen, Trash2, Edit, Plus, CheckCircle, XCircle, Tag, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
 import {
   getAllSupplierCategories,
   addSupplierCategory,
@@ -44,6 +45,7 @@ const SupplierCategoryList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [detailTarget, setDetailTarget] = useState(null);
   const [formModal, setFormModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
@@ -165,19 +167,24 @@ const SupplierCategoryList = () => {
     {
       header: t("page.supplierCategory.name"),
       render: (cat) => (
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          className="flex items-center gap-3 text-left hover:opacity-80 transition-opacity"
+          onClick={() => setDetailTarget(cat)}>
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Tag size={18} className="text-primary" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate">{cat.name}</p>
+            <p className="text-sm font-semibold text-foreground truncate hover:text-primary">
+              {cat.name}
+            </p>
             {cat.description && (
               <p className="text-xs text-muted-foreground truncate max-w-[250px]">
                 {cat.description}
               </p>
             )}
           </div>
-        </div>
+        </button>
       )
     },
     {
@@ -211,15 +218,32 @@ const SupplierCategoryList = () => {
       )
     },
     {
+      header: t("common.createdAt", "Dibuat"),
+      hideOn: "md",
+      render: (cat) => (
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
+          {cat.createdAt ? format(new Date(cat.createdAt), "dd MMM yyyy HH:mm") : "-"}
+        </span>
+      )
+    },
+    {
       header: t("common.actions"),
       align: "center",
       stickyRight: true,
       legend: [
+        { icon: Eye, label: t("common.detail", "Detail") },
         { icon: Edit, label: t("common.edit") },
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (cat) => (
         <div className="flex items-center justify-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-primary"
+            onClick={() => setDetailTarget(cat)}>
+            <Eye size={14} />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -447,6 +471,82 @@ const SupplierCategoryList = () => {
             />
           </div>
         </Form>
+      </Modal>
+
+      {/* Detail Modal */}
+      <Modal
+        open={!!detailTarget}
+        onOpenChange={(o) => !o && setDetailTarget(null)}
+        title={t("page.supplierCategory.detailTitle", "Detail Kategori Supplier")}>
+        {detailTarget && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+              <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Tag size={20} className="text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold truncate">{detailTarget.name}</p>
+                {(() => {
+                  const isActive =
+                    detailTarget.status === "active" || detailTarget.isActive === true;
+                  return (
+                    <span
+                      className={`mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      }`}>
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          isActive ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      />
+                      {isActive ? t("common.active") : t("common.inactive")}
+                    </span>
+                  );
+                })()}
+              </div>
+            </div>
+            <div className="space-y-2.5 text-sm">
+              <div className="flex items-start gap-3">
+                <span className="text-muted-foreground w-24 shrink-0">Deskripsi</span>
+                <span>{detailTarget.description || "-"}</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-muted-foreground w-24 shrink-0">Dibuat</span>
+                <span>
+                  {detailTarget.createdAt
+                    ? format(new Date(detailTarget.createdAt), "dd MMM yyyy HH:mm")
+                    : "-"}
+                </span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-muted-foreground w-24 shrink-0">Diubah</span>
+                <span>
+                  {detailTarget.updatedAt
+                    ? format(new Date(detailTarget.updatedAt), "dd MMM yyyy HH:mm")
+                    : "-"}
+                </span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-muted-foreground w-24 shrink-0">Dibuat Oleh</span>
+                <span>
+                  {detailTarget.createdByUser?.fullName ||
+                    detailTarget.createdByUser?.userName ||
+                    "-"}
+                </span>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setDetailTarget(null);
+                handleEdit(detailTarget);
+              }}>
+              <Edit size={14} className="mr-1.5" />
+              {t("common.edit", "Edit")}
+            </Button>
+          </div>
+        )}
       </Modal>
 
       {/* Delete Modal */}

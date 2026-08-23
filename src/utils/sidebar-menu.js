@@ -1181,12 +1181,18 @@ export const navCategories = {
           title: "Supplier & Bahan Baku",
           i18nKey: "sidebar.section.bahanBakuPembelian",
           items: [
-            { title: "Supplier", i18nKey: "sidebar.supplier", href: "/supplier", icon: Building2 },
             {
               title: "Kategori Supplier",
               i18nKey: "sidebar.supplierCategory",
               href: "/supplier-category",
               icon: Tag
+            },
+            { title: "Supplier", i18nKey: "sidebar.supplier", href: "/supplier", icon: Building2 },
+            {
+              title: "Supplier Scores",
+              i18nKey: "sidebar.supplierPerformance",
+              href: "/supplier-score-list",
+              icon: TrendingUp
             },
             {
               title: "Kategori Bahan Baku",
@@ -1235,12 +1241,6 @@ export const navCategories = {
               i18nKey: "sidebar.purchaseReturn",
               href: "/purchase-return",
               icon: ShoppingCart
-            },
-            {
-              title: "Supplier Scores",
-              i18nKey: "sidebar.supplierPerformance",
-              href: "/supplier-score-list",
-              icon: TrendingUp
             }
           ]
         },
@@ -1470,12 +1470,18 @@ export const navCategories = {
           title: "Supplier & Bahan Baku",
           i18nKey: "sidebar.section.bahanBakuPembelian",
           items: [
-            { title: "Supplier", i18nKey: "sidebar.supplier", href: "/supplier", icon: Building2 },
             {
               title: "Kategori Supplier",
               i18nKey: "sidebar.supplierCategory",
               href: "/supplier-category",
               icon: Tag
+            },
+            { title: "Supplier", i18nKey: "sidebar.supplier", href: "/supplier", icon: Building2 },
+            {
+              title: "Supplier Scores",
+              i18nKey: "sidebar.supplierPerformance",
+              href: "/supplier-score-list",
+              icon: TrendingUp
             },
             {
               title: "Kategori Bahan Baku",
@@ -1524,12 +1530,6 @@ export const navCategories = {
               i18nKey: "sidebar.purchaseReturn",
               href: "/purchase-return",
               icon: ShoppingCart
-            },
-            {
-              title: "Supplier Scores",
-              i18nKey: "sidebar.supplierPerformance",
-              href: "/supplier-score-list",
-              icon: TrendingUp
             }
           ]
         },

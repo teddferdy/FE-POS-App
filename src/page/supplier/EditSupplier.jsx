@@ -787,6 +787,32 @@ const EditSupplier = () => {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={form.control}
+                          name="categoryId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t("page.supplierCategory.title", "Kategori Supplier")}
+                              </FormLabel>
+                              <Combobox
+                                options={(categoriesData?.data || []).map((c) => ({
+                                  value: String(c.id),
+                                  label: c.name
+                                }))}
+                                value={field.value ? String(field.value) : ""}
+                                onChange={(v) => field.onChange(v ? Number(v) : null)}
+                                placeholder={t(
+                                  "page.supplier.categoryPlaceholder",
+                                  "Pilih kategori..."
+                                )}
+                                searchPlaceholder={t("common.search")}
+                              />
+                              <FormMessage />
+                              <FormDescription>{t("common.optionalField")}</FormDescription>
+                            </FormItem>
+                          )}
+                        />
                       </div>
                       <FormField
                         control={form.control}
