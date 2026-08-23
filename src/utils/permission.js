@@ -106,11 +106,10 @@ const ACTION_MAP = {
 
 export const normalizePermissionActions = (perm) => {
   if (!perm) return perm;
-  // ponytail: reduce + safeGet — tanpa penulisan objek berkunci variabel
-  return Object.entries(perm).reduce((acc, [key, val]) => {
-    const mapped = safeGet(ACTION_MAP, key) || key;
-    return { ...acc, [mapped]: val };
-  }, {});
+  // ponytail: fromEntries — O(N) & tanpa penulisan objek berkunci variabel
+  return Object.fromEntries(
+    Object.entries(perm).map(([key, val]) => [safeGet(ACTION_MAP, key) || key, val])
+  );
 };
 
 export const canAccess = (user, menuKey, action) => {

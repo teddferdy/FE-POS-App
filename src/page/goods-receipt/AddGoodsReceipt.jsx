@@ -261,18 +261,22 @@ const AddGoodsReceipt = () => {
     () => getAllProduct({ location: grStoreId }),
     { enabled: !!grStoreId }
   );
-  // ponytail: Map untuk indeks barcode & refs — bebas object injection
-  const barcodeToIdx = new Map();
-  if (items.length && productsData?.data) {
-    const productIdToBarcode = new Map();
-    productsData.data.forEach((p) => {
-      if (p.barcode) productIdToBarcode.set(p.id, String(p.barcode));
-    });
-    items.forEach((it, idx) => {
-      const bc = it.product ? productIdToBarcode.get(it.product) : null;
-      if (bc && !barcodeToIdx.has(bc)) barcodeToIdx.set(bc, idx);
-    });
-  }
+  // ponytail: Map untuk indeks barcode & refs — bebas object injection;
+  // useMemo agar tidak dibangun ulang tiap render/keystroke scan
+  const barcodeToIdx = useMemo(() => {
+    const map = new Map();
+    if (items.length && productsData?.data) {
+      const productIdToBarcode = new Map();
+      productsData.data.forEach((p) => {
+        if (p.barcode) productIdToBarcode.set(p.id, String(p.barcode));
+      });
+      items.forEach((it, idx) => {
+        const bc = it.product ? productIdToBarcode.get(it.product) : null;
+        if (bc && !map.has(bc)) map.set(bc, idx);
+      });
+    }
+    return map;
+  }, [items, productsData]);
   const hasScannableRows = barcodeToIdx.size > 0;
 
   const handleScan = (e) => {
