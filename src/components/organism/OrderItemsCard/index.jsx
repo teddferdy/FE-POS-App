@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
+import { safeGet } from "@/lib/safe-lookup";
 
 const COMMON_CONVERSION = {
   "kg->gram": 1000,
@@ -23,8 +24,9 @@ const COMMON_CONVERSION = {
 
 const getSuggestedConversion = (from, to) => {
   const key = `${from}->${to}`;
-  if (COMMON_CONVERSION[key] !== undefined) return COMMON_CONVERSION[key];
-  return 1;
+  // ponytail: safeGet() anti object-injection (Codacy)
+  const found = safeGet(COMMON_CONVERSION, key);
+  return found !== undefined ? found : 1;
 };
 
 function SupplierPriceChips({ suppliersForItem, item, minPrice, formatIDR, onUpdate, idx, t }) {

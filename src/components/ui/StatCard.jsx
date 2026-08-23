@@ -1,5 +1,6 @@
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { safeGet } from "@/lib/safe-lookup";
 const variantStyles = {
   default: {
     card: "bg-card border border-border",
@@ -93,7 +94,7 @@ const StatCard = ({
   "data-tour": dataTour,
   className = ""
 }) => {
-  const s = variantStyles[variant] || variantStyles.default;
+  const s = safeGet(variantStyles, variant, variantStyles.default); // ponytail: akses aman anti object-injection
   const isLucide = typeof icon !== "string";
   return (
     <div

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { safeGet } from "@/lib/safe-lookup";
 
 const SpotlightOverlay = ({ target, stepIndex }) => {
   const [rect, setRect] = useState(null);
@@ -149,8 +150,8 @@ const navActions = {
 const AuthGuideModal = ({ open, onOpenChange, context = "login" }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const steps = authSteps[context] || authSteps.login;
-  const actions = navActions[context] || navActions.login;
+  const steps = safeGet(authSteps, context, authSteps.login);
+  const actions = safeGet(navActions, context, navActions.login);
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = steps.length;
   const isFirst = currentStep === 0;

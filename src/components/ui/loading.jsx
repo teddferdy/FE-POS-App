@@ -1,5 +1,6 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
+import { safeGet } from "@/lib/safe-lookup";
 import { cn } from "@/lib/utils";
 
 const sizes = {
@@ -53,7 +54,7 @@ const Loading = React.forwardRef(
     { className, size = "default", label, fullscreen = true, variant = "ring", progress, ...props },
     ref
   ) => {
-    const sizeClass = sizes[size] || sizes.default;
+    const sizeClass = safeGet(sizes, size, sizes.default); // ponytail: akses aman anti object-injection
 
     const indicator =
       progress !== undefined ? (
