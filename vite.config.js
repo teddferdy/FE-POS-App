@@ -1,9 +1,22 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { execSync } from "child_process";
+
+// ponytail: git SHA di-build-time → tag release Sentry, biar error bisa
+// dikaitkan dengan deploy tertentu
+let gitSha = "unknown";
+try {
+  gitSha = execSync("git rev-parse --short HEAD").toString().trim();
+} catch {
+  /* fallback tetap "unknown" */
+}
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __GIT_SHA__: JSON.stringify(gitSha)
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src")

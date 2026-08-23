@@ -1,12 +1,21 @@
+/* global __GIT_SHA__ */
 import * as Sentry from "@sentry/react";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 export const sentryReactOptions = {
   dsn: "https://8ef705f2d617308ee20d72e17ec27204@o4508045420421952.ingest.us.sentry.io/4508045432255488",
+  // ponytail: __GIT_SHA__ di-inject vite.config define — kaitkan error dgn deploy
+  release: typeof __GIT_SHA__ !== "undefined" ? `fe@${__GIT_SHA__}` : undefined,
+  environment: import.meta.env.MODE,
   integrations: [
     Sentry.browserTracingIntegration({
-      tracePropagationTargets: ["localhost", "127.0.0.1", "https://pos-app.duckdns.org"]
+      tracePropagationTargets: [
+        "localhost",
+        "127.0.0.1",
+        /\.vercel\.app$/,
+        /pos-app\.duckdns\.org$/
+      ]
     }),
     Sentry.replayIntegration()
   ],
