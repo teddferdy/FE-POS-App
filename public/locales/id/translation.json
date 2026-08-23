@@ -7280,5 +7280,11 @@
         }
       }
     }
-  }
+  },
+  "page.employee.add.guidanceRequired": "Kolom bertanda * wajib diisi.",
+  "page.employee.add.roleDefaultInfo": "Peran otomatis menjadi User jika tidak dipilih.",
+  "page.employee.edit.validation.dateOfBirthRequired": "Tanggal lahir wajib diisi",
+  "page.stockTransfer.list.modal.cancelConfirm": "Ya, Batalkan",
+  "page.stockTransfer.list.modal.cancelDesc": "Semua perubahan yang belum disimpan akan hilang.",
+  "page.stockTransfer.list.modal.cancelTitle": "Batalkan Transfer?"
 }
