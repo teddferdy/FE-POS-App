@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
-import * as XLSX from "xlsx";
 import { TrendingUp, Package, Users, DollarSign, Download } from "lucide-react";
 import {
   getReportingSalesSummary,
@@ -142,7 +141,7 @@ const AdvancedReporting = () => {
   //   return map[activeTab];
   // };
 
-  const handleExport = (type) => {
+  const handleExport = async (type) => {
     const dataMap = {
       sales: salesData,
       product: productData,
@@ -158,6 +157,7 @@ const AdvancedReporting = () => {
         rows.push(Object.values(item));
       });
     }
+    const XLSX = await import("xlsx");
     const ws = XLSX.utils.aoa_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, type);

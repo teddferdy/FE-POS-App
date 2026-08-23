@@ -33,7 +33,6 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { Combobox } from "@/components/ui/combobox";
-import * as XLSX from "xlsx";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 
@@ -115,6 +114,7 @@ const GoodsReceiptList = () => {
         [t("page.goodsReceipt.list.export.status")]: r.status || "",
         [t("page.goodsReceipt.list.export.itemCount")]: r.items?.length || 0
       }));
+      const XLSX = await import("xlsx");
       const ws = XLSX.utils.json_to_sheet(xlsData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, t("page.goodsReceipt.list.export.sheetName"));
