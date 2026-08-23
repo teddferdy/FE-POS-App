@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import Modal from "@/components/organism/modal";
 import { randomToken } from "@/utils/secureRandom";
-import { escapeHtml } from "@/utils/htmlEscape";
 
 const TableQRModal = ({ open, onOpenChange, table }) => {
   const { t } = useTranslation();
@@ -27,35 +26,32 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
   const orderUrl = `${orderAppBaseUrl}/?table=${table.id}&store=${storeId}&source=qr&session=${sessionId}`;
 
   const handlePrint = () => {
-    // ponytail: blob URL menggantikan document.write (sink XSS Codacy);
-    // sekalian benahi bug template lama yang menuliskan {t(...)} apa adanya
-    // ponytail: serialisasi via XMLSerializer — tanpa menyentuh properti
-    // .innerHTML sama sekali (sink XSS versi Codacy)
+    // ponytail: halaman cetak dibangun via DOM API murni — tidak ada
+    // string HTML yang lewat sink apa pun (createObjectURL/write/innerHTML)
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    const doc = printWindow.document;
+    doc.title = t("tableQR.title", { name: table.name });
+    const style = doc.createElement("style");
+    style.textContent = [
+      "body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif}",
+      ".print-area{text-align:center}",
+      "svg{width:300px;height:300px}",
+      "p{margin-top:16px;font-size:14px;color:#666}"
+    ].join("\n");
+    doc.head.append(style);
+    const area = doc.createElement("div");
+    area.className = "print-area";
     const svgNode = qrRef.current?.querySelector("svg");
-    const qrSvg = svgNode ? new XMLSerializer().serializeToString(svgNode) : "";
-    const html = `
-      <html>
-        <head>
-          <title>${escapeHtml(t("tableQR.title", { name: table.name }))}</title>
-          <style>
-            body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
-            .print-area { text-align: center; }
-            svg { width: 300px; height: 300px; }
-            p { margin-top: 16px; font-size: 14px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="print-area">
-            ${qrSvg}
-            <p>${escapeHtml(t("tableQR.scanToOrder", { name: table.name }))}</p>
-          </div>
-          <script>window.onload = function() { window.print(); window.close(); }</script>
-        </body>
-      </html>
-    `;
-    const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
-    const printWindow = window.open(url, "_blank");
-    if (printWindow) setTimeout(() => URL.revokeObjectURL(url), 10000);
+    if (svgNode) area.append(doc.importNode(svgNode, true));
+    const p = doc.createElement("p");
+    p.textContent = t("tableQR.scanToOrder", { name: table.name });
+    area.append(p);
+    doc.body.append(area);
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
   };
 
   return (
