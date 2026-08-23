@@ -20,7 +20,7 @@ const useKeyboardShortcuts = () => {
           return;
         }
         const m = window.location.pathname.match(/\/(.+?)(?:\/|$)/);
-        if (m) window.location.href = `/add-${m[1].replace(/-list$/, "")}`;
+        if (m) window.location.assign(`/add-${m[1].replace(/-list$/, "")}`);
       }
     };
     window.addEventListener("keydown", handler);

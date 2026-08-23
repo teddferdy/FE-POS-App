@@ -25,7 +25,7 @@ const getDateRangeForPeriod = (period) => {
   if (p === "today") {
     return {
       startDate: todayStart.toISOString(),
-      endDate: new Date(todayStart.getTime() + 86400000 - 1).toISOString()
+      endDate: new Date(todayStart.getTime() + 86_400_000 - 1).toISOString()
     };
   }
   if (p === "monthly") {
@@ -38,7 +38,7 @@ const getDateRangeForPeriod = (period) => {
   monday.setDate(todayStart.getDate() - daysSinceMonday);
   return {
     startDate: monday.toISOString(),
-    endDate: new Date(monday.getTime() + 7 * 86400000 - 1).toISOString()
+    endDate: new Date(monday.getTime() + 7 * 86_400_000 - 1).toISOString()
   };
 };
 

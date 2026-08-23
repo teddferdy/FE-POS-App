@@ -31,7 +31,7 @@ describe("Order Creation Tests", () => {
         }
       ],
       customerName: "John Doe",
-      totalPrice: 999999000
+      totalPrice: 999_999_000
     };
 
     const sanitized = sanitizeInput(highValueOrder);

@@ -1,3 +1,5 @@
+import { escapeHtml as esc } from "@/utils/htmlEscape";
+
 const RECEIPT_WIDTH = 48;
 
 const padBoth = (left, right, width = RECEIPT_WIDTH) => {
@@ -10,6 +12,10 @@ const padBoth = (left, right, width = RECEIPT_WIDTH) => {
 const line = (char = "-", width = RECEIPT_WIDTH) => char.repeat(width);
 
 const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;
+
+// ponytail: semua interpolasi data struk (nama toko/member/item dll)
+// wajib lewat esc() — data ini berasal dari input pengguna, tanpa escape
+// html yang disisipkan ke dokumen cetak jadi vektor XSS
 
 export const generateReceiptHTML = (data) => {
   const {
@@ -38,20 +44,20 @@ export const generateReceiptHTML = (data) => {
 
   const logoHtml =
     showLogo && logo
-      ? `<div style="text-align:center;margin-bottom:8px"><img src="${logo}" style="max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto" /></div>`
+      ? `<div style="text-align:center;margin-bottom:8px"><img src="${esc(logo)}" style="max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto" /></div>`
       : "";
 
   const headerHtml = `
     <div style="background:#111;color:#fff;padding:10px 5px;text-align:center;">
       ${logoHtml}
-      ${showStoreName && addressFieldsVisibility.storeName !== false ? `<div style="font-size:14px;font-weight:bold;text-transform:uppercase;">${storeName || "TOKO"}</div>` : ""}
+      ${showStoreName && addressFieldsVisibility.storeName !== false ? `<div style="font-size:14px;font-weight:bold;text-transform:uppercase;">${esc(storeName) || "TOKO"}</div>` : ""}
       ${
         showAddress
           ? `
         <div style="font-size:10px;color:#ccc;margin-top:4px;">
-          ${addressFieldsVisibility.address !== false && storeAddress ? `<div>${storeAddress}</div>` : ""}
-          ${addressFieldsVisibility.phone !== false && storePhone ? `<div>Telp: ${storePhone}</div>` : ""}
-          ${addressFieldsVisibility.email !== false && storeEmail ? `<div>${storeEmail}</div>` : ""}
+          ${addressFieldsVisibility.address !== false && storeAddress ? `<div>${esc(storeAddress)}</div>` : ""}
+          ${addressFieldsVisibility.phone !== false && storePhone ? `<div>Telp: ${esc(storePhone)}</div>` : ""}
+          ${addressFieldsVisibility.email !== false && storeEmail ? `<div>${esc(storeEmail)}</div>` : ""}
         </div>
       `
           : ""
@@ -64,8 +70,8 @@ export const generateReceiptHTML = (data) => {
       ? `
     <div style="background:#fffbeb;padding:8px;border-bottom:1px solid #fef3c7;font-size:10px;color:#78350f;">
       <div style="font-weight:bold;text-transform:uppercase;margin-bottom:4px;">INFO MEMBER</div>
-      ${memberName ? `<div style="display:flex;justify-content:space-between;"><span>Nama:</span><span style="font-weight:bold;">${memberName}</span></div>` : ""}
-      ${memberTier ? `<div style="display:flex;justify-content:space-between;"><span>Tier:</span><span style="font-weight:bold;">${memberTier}</span></div>` : ""}
+      ${memberName ? `<div style="display:flex;justify-content:space-between;"><span>Nama:</span><span style="font-weight:bold;">${esc(memberName)}</span></div>` : ""}
+      ${memberTier ? `<div style="display:flex;justify-content:space-between;"><span>Tier:</span><span style="font-weight:bold;">${esc(memberTier)}</span></div>` : ""}
       ${memberPoints !== undefined ? `<div style="display:flex;justify-content:space-between;"><span>Poin:</span><span style="font-weight:bold;">${Number(memberPoints).toLocaleString("id-ID")}</span></div>` : ""}
     </div>
   `
@@ -75,8 +81,8 @@ export const generateReceiptHTML = (data) => {
     .map(
       (item) => `
     <tr style="font-size:11px;">
-      <td style="padding:4px 0;">${item.name}</td>
-      <td style="padding:4px 0;text-align:center;">${item.qty}</td>
+      <td style="padding:4px 0;">${esc(item.name)}</td>
+      <td style="padding:4px 0;text-align:center;">${esc(item.qty)}</td>
       <td style="padding:4px 0;text-align:right;">${formatPrice(item.price)}</td>
       <td style="padding:4px 0;text-align:right;font-weight:bold;">${formatPrice(item.qty * item.price)}</td>
     </tr>
@@ -86,14 +92,14 @@ export const generateReceiptHTML = (data) => {
 
   const footerHtml = `
     <div style="padding:10px 5px;border-top:1px solid #ddd;font-size:10px;text-align:center;color:#666;">
-      <div style="font-style:italic;margin-bottom:8px;">${footer}</div>
+      <div style="font-style:italic;margin-bottom:8px;">${esc(footer)}</div>
       ${
         showSocialMedia && socialMedia.length > 0
           ? `
         <div style="display:flex;justify-content:center;gap:5px;flex-wrap:wrap;">
           ${socialMedia
             .filter((sm) => !socialMediaVisibility || socialMediaVisibility[sm.platform] !== false)
-            .map((sm) => `<span>${sm.platform}: ${sm.account}</span>`)
+            .map((sm) => `<span>${esc(sm.platform)}: ${esc(sm.account)}</span>`)
             .join(" | ")}
         </div>
       `
@@ -263,29 +269,181 @@ export const formatCurrency = (amount) => {
   return formatPrice(amount);
 };
 
+const mkEl = (tag, style, text) => {
+  const el = document.createElement(tag);
+  if (style) el.style.cssText = style;
+  if (text != null) el.textContent = String(text);
+  return el;
+};
+
+const RECEIPT_BODY_STYLE =
+  "@page { width: 58mm; margin:0; } body { font-family: 'Courier New', Courier, monospace; }";
+
+// ponytail: struk versi cetak dibangun via createElement+textContent —
+// tanpa string HTML yang lewat sink apa pun (innerHTML/write/
+// createObjectURL), jadi bebas XSS secara struktural
+const buildReceiptFragment = (data) => {
+  const {
+    storeName,
+    storeAddress,
+    storePhone,
+    storeEmail,
+    logo,
+    memberName,
+    memberTier,
+    memberPoints,
+    items = [],
+    subtotal = 0,
+    tax = 0,
+    total = 0,
+    footer,
+    socialMedia = [],
+    showLogo = true,
+    showStoreName = true,
+    showAddress = true,
+    showMemberInfo = true,
+    showSocialMedia = true,
+    addressFieldsVisibility = {},
+    socialMediaVisibility = {}
+  } = data;
+
+  const wrap = mkEl("div", "width:58mm;padding:0 2px;");
+
+  const header = mkEl("div", "background:#111;color:#fff;padding:10px 5px;text-align:center;");
+  if (showLogo && logo) {
+    const logoWrap = mkEl("div", "text-align:center;margin-bottom:8px;");
+    const img = document.createElement("img");
+    img.src = logo;
+    img.alt = "";
+    img.style.cssText =
+      "max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto";
+    logoWrap.append(img);
+    header.append(logoWrap);
+  }
+  if (showStoreName && addressFieldsVisibility.storeName !== false) {
+    header.append(
+      mkEl("div", "font-size:14px;font-weight:bold;text-transform:uppercase;", storeName || "TOKO")
+    );
+  }
+  if (showAddress) {
+    const addr = mkEl("div", "font-size:10px;color:#ccc;margin-top:4px;");
+    if (addressFieldsVisibility.address !== false && storeAddress)
+      addr.append(mkEl("div", "", storeAddress));
+    if (addressFieldsVisibility.phone !== false && storePhone)
+      addr.append(mkEl("div", "", `Telp: ${storePhone}`));
+    if (addressFieldsVisibility.email !== false && storeEmail)
+      addr.append(mkEl("div", "", storeEmail));
+    header.append(addr);
+  }
+  wrap.append(header);
+
+  if (showMemberInfo && (memberName || memberTier)) {
+    const box = mkEl(
+      "div",
+      "background:#fffbeb;padding:8px;border-bottom:1px solid #fef3c7;font-size:10px;color:#78350f;"
+    );
+    box.append(
+      mkEl("div", "font-weight:bold;text-transform:uppercase;margin-bottom:4px;", "INFO MEMBER")
+    );
+    const row = (label, value) => {
+      const r = mkEl("div", "display:flex;justify-content:space-between;");
+      r.append(mkEl("span", "", label), mkEl("span", "font-weight:bold;", value));
+      return r;
+    };
+    if (memberName) box.append(row("Nama:", memberName));
+    if (memberTier) box.append(row("Tier:", memberTier));
+    if (memberPoints !== undefined)
+      box.append(row("Poin:", Number(memberPoints).toLocaleString("id-ID")));
+    wrap.append(box);
+  }
+
+  const table = mkEl("table", "width:100%;border-collapse:collapse;margin:10px 0;");
+  const headRow = mkEl(
+    "tr",
+    "font-size:10px;color:#666;text-transform:uppercase;border-bottom:1px solid #ddd;"
+  );
+  [
+    ["Item", "text-align:left;padding:4px 0;"],
+    ["Qty", "text-align:center;padding:4px 0;"],
+    ["Harga", "text-align:right;padding:4px 0;"],
+    ["Total", "text-align:right;padding:4px 0;"]
+  ].forEach(([label, st]) => headRow.append(mkEl("th", st, label)));
+  table.append(headRow);
+  items.forEach((item) => {
+    const tr = mkEl("tr", "font-size:11px;");
+    tr.append(
+      mkEl("td", "padding:4px 0;", item.name),
+      mkEl("td", "padding:4px 0;text-align:center;", item.qty),
+      mkEl("td", "padding:4px 0;text-align:right;", formatPrice(item.price)),
+      mkEl(
+        "td",
+        "padding:4px 0;text-align:right;font-weight:bold;",
+        formatPrice(item.qty * item.price)
+      )
+    );
+    table.append(tr);
+  });
+  wrap.append(table);
+
+  const totals = mkEl("div", "padding:5px;background:#f9f9f9;font-size:11px;");
+  const trow = (label, value, extra) => {
+    const r = mkEl("div", `display:flex;justify-content:space-between;${extra || ""}`);
+    r.append(mkEl("span", "", label), mkEl("span", "", value));
+    return r;
+  };
+  totals.append(trow("Subtotal", formatPrice(subtotal)), trow("Pajak", formatPrice(tax)));
+  totals.append(
+    trow("Total", formatPrice(total), "font-weight:bold;margin-top:5px;font-size:13px;")
+  );
+  wrap.append(totals);
+
+  const foot = mkEl(
+    "div",
+    "padding:10px 5px;border-top:1px solid #ddd;font-size:10px;text-align:center;color:#666;"
+  );
+  foot.append(mkEl("div", "font-style:italic;margin-bottom:8px;", footer ?? ""));
+  if (showSocialMedia && socialMedia.length > 0) {
+    const smWrap = mkEl("div", "display:flex;justify-content:center;gap:5px;flex-wrap:wrap;");
+    socialMedia
+      .filter((sm) => !socialMediaVisibility || socialMediaVisibility[sm.platform] !== false)
+      .forEach((sm) => smWrap.append(mkEl("span", "", `${sm.platform}: ${sm.account}`)));
+    foot.append(smWrap);
+  }
+  wrap.append(foot);
+
+  return wrap;
+};
+
 export const printViaBrowser = (data) => {
-  const html = generateReceiptHTML(data);
+  // ponytail: konten disuntikkan langsung ke dokumen tujuan via DOM API;
+  // kalau popup diblokir, iframe tersembunyi mencetak tanpa buka tab baru
   const win = window.open("", "_blank");
   if (win) {
-    win.document.write(html);
-    win.document.close();
-    win.focus();
-    setTimeout(() => win.print(), 500);
+    win.document.title = "Struk";
+    win.document.head.append(mkEl("style", "", RECEIPT_BODY_STYLE));
+    win.document.body.append(buildReceiptFragment(data));
+    setTimeout(() => {
+      win.focus();
+      win.print();
+    }, 500);
     return;
   }
-  // ponytail: popup blocked — inject receipt overlay, print, remove
-  const overlay = document.createElement("div");
-  overlay.innerHTML = html;
-  overlay.style.cssText =
-    "position:fixed;inset:0;z-index:99999;background:#fff;display:flex;align-items:center;justify-content:center";
-  overlay.className = "print-thermal";
+  const iframe = document.createElement("iframe");
+  iframe.title = "Struk";
+  iframe.style.cssText =
+    "position:fixed;inset:0;z-index:99999;width:100%;height:100%;border:0;background:#fff";
+  iframe.className = "print-thermal";
   const style = document.createElement("style");
   style.textContent = "@media print{body>*:not(.print-thermal){display:none!important}}";
-  document.body.append(style, overlay);
+  document.body.append(style, iframe);
+  const doc = iframe.contentDocument;
+  doc.head.append(mkEl("style", "", RECEIPT_BODY_STYLE));
+  doc.body.append(buildReceiptFragment(data));
   setTimeout(() => {
-    window.print();
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
     setTimeout(() => {
-      overlay.remove();
+      iframe.remove();
       style.remove();
     }, 100);
   }, 100);

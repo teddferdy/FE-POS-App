@@ -5,6 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import Modal from "@/components/organism/modal";
+import { randomToken } from "@/utils/secureRandom";
 
 const TableQRModal = ({ open, onOpenChange, table }) => {
   const { t } = useTranslation();
@@ -18,35 +19,39 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
 
   const orderAppBaseUrl = import.meta.env.VITE_ORDER_APP_URL || "https://order-app-dun.vercel.app";
 
-  const sessionId = React.useMemo(() => Math.random().toString(36).slice(2, 10), []);
+  const sessionId = React.useMemo(() => randomToken(), []);
 
   if (!table) return null;
 
   const orderUrl = `${orderAppBaseUrl}/?table=${table.id}&store=${storeId}&source=qr&session=${sessionId}`;
 
   const handlePrint = () => {
+    // ponytail: halaman cetak dibangun via DOM API murni — tidak ada
+    // string HTML yang lewat sink apa pun (createObjectURL/write/innerHTML)
     const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>{t("tableQR.title", { name: table.name })}</title>
-          <style>
-            body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
-            .print-area { text-align: center; }
-            svg { width: 300px; height: 300px; }
-            p { margin-top: 16px; font-size: 14px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="print-area">
-            ${qrRef.current?.innerHTML || ""}
-            <p>{t("tableQR.scanToOrder", { name: table.name })}</p>
-          </div>
-          <script>window.onload = function() { window.print(); window.close(); }</script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+    if (!printWindow) return;
+    const doc = printWindow.document;
+    doc.title = t("tableQR.title", { name: table.name });
+    const style = doc.createElement("style");
+    style.textContent = [
+      "body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif}",
+      ".print-area{text-align:center}",
+      "svg{width:300px;height:300px}",
+      "p{margin-top:16px;font-size:14px;color:#666}"
+    ].join("\n");
+    doc.head.append(style);
+    const area = doc.createElement("div");
+    area.className = "print-area";
+    const svgNode = qrRef.current?.querySelector("svg");
+    if (svgNode) area.append(doc.importNode(svgNode, true));
+    const p = doc.createElement("p");
+    p.textContent = t("tableQR.scanToOrder", { name: table.name });
+    area.append(p);
+    doc.body.append(area);
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
   };
 
   return (
