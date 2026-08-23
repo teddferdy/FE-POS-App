@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { safeGet } from "@/lib/safe-lookup";
 import { getPurchaseOrderById } from "../../services/purchase-order";
 import { getPaymentsByPO, deletePayment, recordPayment } from "../../services/purchase-payment";
 import { getReturnsByPO } from "../../services/purchase-return";
@@ -98,11 +99,13 @@ export default function DetailPurchaseOrder() {
   const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const remaining = (po?.finalAmount || 0) - totalPaid;
 
-  const itemGroups = {};
+  // ponytail: Map menghindari object injection (Codacy); konsumen di
+  // bawah memakai [...itemGroups] yang menghasilkan pasangan [nama, item]
+  const itemGroups = new Map();
   for (const it of po?.items || []) {
     const name = it.supplierData?.name || "-";
-    if (!Object.hasOwn(itemGroups, name)) itemGroups[name] = []; // codacy-ignore-line
-    itemGroups[name].push(it); // codacy-ignore-line
+    if (!itemGroups.has(name)) itemGroups.set(name, []);
+    itemGroups.get(name).push(it);
   }
 
   const statusMap = {
@@ -889,9 +892,8 @@ export default function DetailPurchaseOrder() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {Object.entries(itemGroups).map(([name, items]) => {
-                    const collapsed =
-                      Object.hasOwn(collapsedGroups, name) && !!collapsedGroups[name]; // codacy-ignore-line
+                  {[...itemGroups].map(([name, items]) => {
+                    const collapsed = !!safeGet(collapsedGroups, name, false);
                     return (
                       <React.Fragment key={name}>
                         <tr

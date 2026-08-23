@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { safeGet } from "@/lib/safe-lookup";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -200,7 +201,7 @@ const EditDiscount = () => {
 
     return z.object({
       ...baseFields,
-      ...(promoTypeFields[currentPromoType] || {})
+      ...(safeGet(promoTypeFields, currentPromoType) ?? {})
     });
   }, [baseFields, currentPromoType]);
 

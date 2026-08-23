@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { ENDPOINT } from "@/utils/endpoints";
+import { hasOwn } from "@/lib/safe-lookup";
 import { getToken, getCookie } from "@/utils/cookies";
 
 const axiosInstance = axios.create({
@@ -34,7 +35,7 @@ axiosInstance.interceptors.request.use(
     if (req.data instanceof FormData) {
       dataHasStore = STORE_KEYS.some((k) => req.data.has(k));
     } else if (typeof req.data === "object" && req.data !== null) {
-      dataHasStore = STORE_KEYS.some((k) => req.data[k] !== undefined);
+      dataHasStore = STORE_KEYS.some((k) => hasOwn(req.data, k));
     }
 
     if (isSuperAdmin) {
