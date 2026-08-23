@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -238,7 +239,7 @@ const EditIngredient = () => {
   }, [watchCategory]);
 
   useEffect(() => {
-    const hint = conversionHints[watchUnit];
+    const hint = safeGet(conversionHints, watchUnit);
     if (hint) {
       form.setValue("baseUnit", hint.base);
       form.setValue("conversionFactor", String(hint.factor));

@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -197,7 +198,7 @@ const AddDiscount = () => {
 
     return z.object({
       ...baseFields,
-      ...(promoTypeFields[promoType] || {})
+      ...(safeGet(promoTypeFields, promoType) || {})
     });
   }, [baseFields, promoType]);
 

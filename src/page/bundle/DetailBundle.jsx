@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useParams } from "react-router-dom";
@@ -74,7 +75,7 @@ const DetailBundle = () => {
         label: t("common.inactive")
       }
     };
-    return map[status] || map.draft;
+    return safeGet(map, status) ?? map.draft;
   };
 
   const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;

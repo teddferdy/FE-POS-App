@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
@@ -34,7 +35,7 @@ const AccountsReceivableDetail = () => {
   const ar = data?.data;
   const statusKey = ar?.status || "UNPAID";
   const statusInfo = {
-    ...STATUS_MAP[statusKey],
+    ...safeGet(STATUS_MAP, statusKey),
     label: t(`page.accountsReceivable.detail.status.${statusKey?.toLowerCase()}`)
   };
   const payments = ar?.payments || [];

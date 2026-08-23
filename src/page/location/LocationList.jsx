@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -210,10 +211,12 @@ const LocationList = () => {
         };
         return (
           <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
-              styles[status] || styles.inactive
-            }`}>
-            {labels[status] || labels.inactive}
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${safeGet(
+              styles,
+              status,
+              styles.inactive
+            )}`}>
+            {safeGet(labels, status, labels.inactive)}
           </span>
         );
       }

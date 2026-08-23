@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "react-query";
@@ -36,7 +37,7 @@ const orderStatusBadge = (status) => {
     ready: "bg-teal-100 text-teal-800",
     served: "bg-gray-100 text-gray-800"
   };
-  return map[status] || "bg-gray-100 text-gray-800";
+  return safeGet(map, status, "bg-gray-100 text-gray-800");
 };
 
 const getDateOnly = (dateStr) => {

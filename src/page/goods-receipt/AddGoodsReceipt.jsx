@@ -380,7 +380,7 @@ const AddGoodsReceipt = () => {
 
   const removeDoc = (idx) => {
     setDocs((prev) => {
-      const target = prev[idx];
+      const target = prev.at(idx);
       if (target?.isNew) URL.revokeObjectURL(target.url);
       return prev.filter((_, i) => i !== idx);
     });

@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -18,7 +19,7 @@ const gradeBadge = (grade) => {
     D: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
     F: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
   };
-  return map[grade] || "bg-gray-100 text-gray-800";
+  return safeGet(map, grade, "bg-gray-100 text-gray-800");
 };
 
 const SupplierScoreDetail = () => {

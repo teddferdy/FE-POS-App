@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -92,11 +93,11 @@ const ARPaymentList = () => {
           ar.status === "OVERDUE" || (ar.status !== "PAID" && ar.overdueDays > 0)
             ? "OVERDUE"
             : ar.status || "UNPAID";
-        const st = STATUS_LABELS[rawStatus] || STATUS_LABELS.UNPAID;
+        const st = safeGet(STATUS_LABELS, rawStatus, STATUS_LABELS.UNPAID);
         return (
           <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${st.color}`}>
             {t(
-              `page.accountsReceivable.list.status.${statusLabelKeys[rawStatus] || rawStatus.toLowerCase()}`
+              `page.accountsReceivable.list.status.${safeGet(statusLabelKeys, rawStatus) || rawStatus.toLowerCase()}`
             )}
             {ar.overdueDays > 0 && ` (+${ar.overdueDays}h)`}
           </span>
@@ -190,7 +191,7 @@ const ARPaymentList = () => {
                 : "border-border text-muted-foreground hover:bg-accent"
             }`}>
             {s
-              ? t(`page.accountsReceivable.list.status.${statusLabelKeys[s] || s}`)
+              ? t(`page.accountsReceivable.list.status.${safeGet(statusLabelKeys, s) || s}`)
               : t("page.accountsReceivable.list.filterAll")}
           </button>
         ))}

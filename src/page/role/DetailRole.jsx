@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -92,7 +93,7 @@ const DetailRole = () => {
   };
 
   const toggleGroup = (idx) => {
-    setCollapsedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
+    setCollapsedGroups((prev) => ({ ...prev, [idx]: !safeGet(prev, idx, false) }));
   };
 
   if (isError) return <AbortController refetch={refetch} />;
@@ -332,7 +333,7 @@ const DetailRole = () => {
                                   <th
                                     key={action}
                                     className="px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center min-w-[60px]">
-                                    {t(actionLabelKeys[action]) || action}
+                                    {t(safeGet(actionLabelKeys, action)) || action}
                                   </th>
                                 ))}
                               </tr>
@@ -363,7 +364,7 @@ const DetailRole = () => {
                                     </td>
                                     {itemActions.map((action) => {
                                       const isSuperAdmin = role?.roleType === "super_admin";
-                                      const val = isSuperAdmin ? true : perm[action];
+                                      const val = isSuperAdmin ? true : safeGet(perm, action);
                                       const isDisabled =
                                         !isSuperAdmin && (val === undefined || val === null);
                                       return (

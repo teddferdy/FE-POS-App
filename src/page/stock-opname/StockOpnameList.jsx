@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -253,7 +254,7 @@ const StockOpnameList = () => {
       align: "center",
       render: (item) => {
         const status = item.status || "draft";
-        const statusStyle = statusColors[status] || statusColors.draft;
+        const statusStyle = safeGet(statusColors, status, statusColors.draft);
         return (
           <span
             className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${statusStyle.bg}`}>

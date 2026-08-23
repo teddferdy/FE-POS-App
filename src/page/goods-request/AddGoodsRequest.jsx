@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -82,7 +83,7 @@ const GoodsRequestGroup = ({
 
   const selectedItemValue = (item) => {
     if (!supplier) return "";
-    const list = supplierItemsBySupplier[supplier] || [];
+    const list = safeGet(supplierItemsBySupplier, supplier, []);
     const match = list.find(
       (opt) =>
         (item.product && item.product === opt.productId) ||
@@ -94,7 +95,7 @@ const GoodsRequestGroup = ({
 
   const itemOptionsForRow = (iIdx) => {
     if (!supplier) return [];
-    const list = supplierItemsBySupplier[supplier] || [];
+    const list = safeGet(supplierItemsBySupplier, supplier, []);
     const taken = new Set();
     (items || []).forEach((other, j) => {
       if (j === iIdx) return;
@@ -107,7 +108,7 @@ const GoodsRequestGroup = ({
   };
 
   const pickItemOption = (iIdx, value) => {
-    const list = supplierItemsBySupplier[supplier] || [];
+    const list = safeGet(supplierItemsBySupplier, supplier, []);
     const opt = list.find((o) => o.value === value);
     const current = getValues(`groups.${groupIndex}.items.${iIdx}`) || {};
     if (!opt) {
@@ -214,7 +215,7 @@ const GoodsRequestGroup = ({
           </thead>
           <tbody>
             {fields.map((field, iIdx) => {
-              const item = Object.hasOwn(items, iIdx) ? items[iIdx] : {}; // codacy-ignore-line
+              const item = items.at(iIdx) || {};
               return (
                 <tr key={field.id} className="border-b border-muted/20">
                   <td className="px-3 py-2 min-w-[280px]">

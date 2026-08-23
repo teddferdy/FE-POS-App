@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -77,7 +78,7 @@ const PromoCampaignDetail = () => {
     };
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || styles.draft}`}>
+        className={`px-2 py-1 rounded-full text-xs font-medium ${safeGet(styles, status, styles.draft)}`}>
         {status?.charAt(0).toUpperCase() + status?.slice(1)}
       </span>
     );

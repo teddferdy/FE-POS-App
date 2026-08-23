@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -145,7 +146,7 @@ const EditGoodsRequest = () => {
 
   const selectedItemValue = (item, supplier) => {
     if (!supplier) return "";
-    const list = supplierItemsBySupplier[supplier] || [];
+    const list = safeGet(supplierItemsBySupplier, supplier, []);
     const match = list.find(
       (opt) =>
         (item.product && item.product === opt.productId) ||
@@ -157,9 +158,9 @@ const EditGoodsRequest = () => {
 
   const itemOptionsForRow = (gIdx, iIdx, supplier) => {
     if (!supplier) return [];
-    const list = supplierItemsBySupplier[supplier] || [];
+    const list = safeGet(supplierItemsBySupplier, supplier, []);
     const taken = new Set();
-    const group = groups[gIdx];
+    const group = groups.at(gIdx);
     (group?.items || []).forEach((other, j) => {
       if (j === iIdx) return;
       const val = selectedItemValue(other, supplier);
@@ -205,7 +206,7 @@ const EditGoodsRequest = () => {
     setGroups((prev) =>
       prev.map((g, gi) => {
         if (gi !== gIdx) return g;
-        const list = supplierItemsBySupplier[g.supplier] || [];
+        const list = safeGet(supplierItemsBySupplier, g.supplier, []);
         const opt = list.find((o) => o.value === value);
         return {
           ...g,

@@ -310,7 +310,7 @@ const AddPurchaseOrder = () => {
     if (!supplier) return [];
     const list = supplierItemsBySupplier[supplier] || [];
     const taken = new Set();
-    const group = groups[gIdx];
+    const group = groups.at(gIdx);
     (group?.items || []).forEach((other, j) => {
       if (j === iIdx) return;
       const val = selectedItemValue(other, supplier);
@@ -363,7 +363,7 @@ const AddPurchaseOrder = () => {
 
   const pickGroupSupplier = (gIdx, value) => {
     const supplierId = value ? Number(value) : null;
-    const group = groups[gIdx];
+    const group = groups.at(gIdx);
     const hasFilledItems = (group?.items || []).some((it) => it.name.trim());
     const isSameSupplier = (group?.supplier || null) === supplierId;
     if (hasFilledItems && !isSameSupplier) {
@@ -374,7 +374,7 @@ const AddPurchaseOrder = () => {
   };
 
   const handleClearSupplierClick = (gIdx) => {
-    const group = groups[gIdx];
+    const group = groups.at(gIdx);
     const hasFilledItems = (group?.items || []).some((it) => it.name.trim());
     if (hasFilledItems) {
       setSupplierRemove({ gIdx });
@@ -384,7 +384,7 @@ const AddPurchaseOrder = () => {
   };
 
   const handleRemoveItemClick = (gIdx, iIdx) => {
-    if ((groups[gIdx]?.items || []).length > 1) {
+    if ((groups.at(gIdx)?.items || []).length > 1) {
       setItemRemove({ gIdx, iIdx });
       return;
     }

@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -47,7 +48,7 @@ const categoryIcon = {
 
 const getCategoryIcon = (name) => {
   const key = (name || "").toLowerCase();
-  return categoryIcon[key] || "category";
+  return safeGet(categoryIcon, key, "category");
 };
 
 const formatDate = (dateStr) => {

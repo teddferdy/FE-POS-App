@@ -280,7 +280,7 @@ const AccountsReceivableList = () => {
                     : "border-border text-muted-foreground hover:bg-accent"
                 }`}>
                 {s
-                  ? t(`page.accountsReceivable.list.status.${statusLabelKeys[s] || s}`)
+                  ? t(`page.accountsReceivable.list.status.${safeGet(statusLabelKeys, s) || s}`)
                   : t("page.accountsReceivable.list.filterAll")}
               </button>
             ))}

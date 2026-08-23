@@ -214,7 +214,7 @@ const AddRole = () => {
   };
 
   const toggleGroup = (idx) => {
-    setCollapsedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
+    setCollapsedGroups((prev) => ({ ...prev, [idx]: !safeGet(prev, idx, false) }));
   };
 
   return (
@@ -340,7 +340,7 @@ const AddRole = () => {
                                   <th
                                     key={action}
                                     className={`px-2 py-3 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${safeGet(actionColors, action, "text-muted-foreground")}`}>
-                                    {actionLabels[action] || action}
+                                    {safeGet(actionLabels, action) || action}
                                   </th>
                                 ))}
                               </tr>
