@@ -64,6 +64,13 @@ function isPOSDataRequest(url) {
   return CACHEABLE_API_PATTERNS.some((pattern) => url.pathname.startsWith(pattern));
 }
 
+// ponytail: fallback offline tunggal — tak ada jalur yang resolve ke null
+const OFFLINE_RESPONSE = () =>
+  new Response(JSON.stringify({ offline: true, message: "You are offline" }), {
+    status: 503,
+    headers: { "Content-Type": "application/json" }
+  });
+
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
@@ -75,40 +82,47 @@ async function networkFirst(request) {
   } catch {
     const cached = await caches.match(request);
     if (cached) return cached;
-    return new Response(JSON.stringify({ offline: true, message: "You are offline" }), {
-      status: 503,
-      headers: { "Content-Type": "application/json" }
-    });
+    return OFFLINE_RESPONSE();
   }
 }
 
 async function staleWhileRevalidate(request) {
-  // ponytail: guard penuh — kegagalan cache/network tak boleh jadi unhandled rejection
+  // ponytail: guard penuh + timestamp saat cache.put agar cek freshness efektif
   try {
     const cache = await caches.open(POS_DATA_CACHE);
     const cached = await cache.match(request);
 
     const networkPromise = fetch(request)
-      .then((response) => {
-        if (response.ok) {
-          cache.put(request, response.clone());
-        }
-        return response;
+      .then(async (response) => {
+        if (!response.ok) return response;
+        const headers = new Headers(response.headers);
+        headers.set("sw-cache-timestamp", String(Date.now()));
+        const body = await response.arrayBuffer();
+        cache.put(
+          request,
+          new Response(body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers
+          })
+        );
+        return new Response(body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers
+        });
       })
-      .catch(() => cached);
+      .catch(() => cached || OFFLINE_RESPONSE());
 
     if (cached) {
-      const age = Date.now() - (cached.headers.get("sw-cache-timestamp") || 0);
+      const age = Date.now() - Number(cached.headers.get("sw-cache-timestamp") || 0);
       const isStale = age > 5 * 60 * 1000; // 5 minutes
       if (!isStale) return cached;
     }
 
-    return networkPromise;
+    return await networkPromise;
   } catch {
-    return new Response(JSON.stringify({ offline: true, message: "You are offline" }), {
-      status: 503,
-      headers: { "Content-Type": "application/json" }
-    });
+    return OFFLINE_RESPONSE();
   }
 }
 

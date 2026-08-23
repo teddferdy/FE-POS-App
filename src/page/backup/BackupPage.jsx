@@ -59,7 +59,7 @@ const isValidCronExpression = (expr) => {
   const maxByField = [59, 23, 31, 12, 6];
   return fields.every((field, i) => {
     if (field === "*") return true;
-    const maxValue = maxByField[i];
+    const maxValue = maxByField.at(i);
     return field.split(",").every((part) => {
       if (!isDigitField(part)) return false;
       const value = Number(part);
