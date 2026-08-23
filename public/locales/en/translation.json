@@ -7283,5 +7283,8 @@
         }
       }
     }
-  }
+  },
+  "page.product.form.sameUnitHelper": "Same unit, conversion factor is 1",
+  "page.stockTransfer.list.approveTitle": "Approve",
+  "sidebar.thermalPrinter": "Thermal Printer"
 }
