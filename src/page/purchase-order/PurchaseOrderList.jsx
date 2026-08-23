@@ -1213,7 +1213,7 @@ const PurchaseOrderList = () => {
                     if (!supplierMap.has(sid)) {
                       supplierMap.set(sid, {
                         supplierId: sid,
-                        supplierName: it.supplierData?.name || `Supplier #`,
+                        supplierName: it.supplierData?.name || `Supplier #${sid}`,
                         items: []
                       });
                     }

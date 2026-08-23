@@ -173,7 +173,7 @@ const EditPurchaseOrder = () => {
         });
       });
       const grouped = [...bySupplier.entries()].map(([supId, items]) => ({
-        supplier: supId,
+        supplier: supId === null ? null : Number(supId),
         items
       }));
       setGroups(grouped.length > 0 ? grouped : [emptyGroup()]);
