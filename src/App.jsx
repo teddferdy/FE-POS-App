@@ -45,6 +45,27 @@ const ShortcutHandler = () => {
   return null;
 };
 
+// ponytail: Sentry (chunk 92KB) jangan bersaing di critical path —
+// baru dimuat setelah halaman idle, error awal tetap ter-queue oleh browser? Tidak:
+// error sebelum init memang tidak terekam; trade-off disengaja demi LCP.
+const DeferredSentry = () => {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const start = () => setReady(true);
+    // ponytail: minimum 1.5s — rIC saja bisa fire di t=200ms saat browser
+    // menganggap idle sebelum puncak beban render
+    const t = setTimeout(() => {
+      if ("requestIdleCallback" in window) {
+        const id = window.requestIdleCallback(start, { timeout: 3000 });
+        return () => window.cancelIdleCallback(id);
+      }
+      start();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, []);
+  return ready ? <SentryInitializer /> : null;
+};
+
 function App() {
   const { i18n } = useTranslation();
   const { translation } = translationSelect();
@@ -75,7 +96,7 @@ function App() {
           <SupportComponent />
           <RouteProgress />
           <ShortcutHandler />
-          <SentryInitializer />
+          <DeferredSentry />
           <ErrorBoundary>
             <Routes>
               {/* Standalone routes (no layout) */}

@@ -44,21 +44,11 @@ export default defineConfig({
     chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
-        // ponytail: manualChunks dinonaktifkan — chunking default Rollup
-        // tidak membuat re-export lintas-chunk seperti config manual sebelumnya
-        manualChunksDisabled(id) {
-          if (!id.includes("node_modules")) return;
-          // ponytail: prop-types dipakai eager & oleh dep recharts — wajib
-          // terpisah agar entry tidak menyeret chunk charts
-          if (
-            id.includes("/node_modules/prop-types/") ||
-            id.includes("/node_modules/react-is/")
-          )
-            return "pt";
-          if (chartDeps.some((n) => id.includes(n))) return "charts";
-          if (id.includes("@sentry")) return "sentry";
-          if (id.includes("/leaflet") || id.includes("react-leaflet"))
-            return "map";
+        // ponytail: lucide-react dipecah jadi ±150 file ikon 0.5KB oleh default
+        // splitting — digabung 1 chunk agar critical chain page dalam tidak
+        // menumpuk request kecil. Leaf dep (hanya butuh react), aman dari bleeding.
+        manualChunks(id) {
+          if (id.includes("/node_modules/lucide-react/")) return "icons";
         }
       }
     }
