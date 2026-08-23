@@ -131,8 +131,9 @@ const SuperAdminTour = () => {
   };
 
   const handlePrev = () => {
+    // ponytail: .at(-1) wrap-around — guard indeks non-negatif agar tetap undefined
     const prevIdx = currentStep - 1;
-    const prevStepData = superAdminSteps.at(prevIdx);
+    const prevStepData = prevIdx >= 0 ? superAdminSteps.at(prevIdx) : undefined;
     prevStep();
     if (prevStepData?.page) {
       navigate(prevStepData.page);
