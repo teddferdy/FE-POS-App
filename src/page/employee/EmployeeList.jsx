@@ -1,3 +1,4 @@
+import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -32,7 +33,7 @@ const positionColors = {
 
 const getPositionClass = (position) => {
   const pos = typeof position === "string" ? position.toLowerCase() : "";
-  return positionColors[pos] || "bg-surface-variant text-on-surface-variant";
+  return safeGet(positionColors, pos, "bg-surface-variant text-on-surface-variant");
 };
 
 const EmployeeList = () => {

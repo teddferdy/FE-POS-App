@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { safeGet } from "@/lib/safe-lookup";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
@@ -46,8 +47,8 @@ const statusBadge = (status) => {
   const key = Object.keys(styles).find((k) => s.includes(k)) || "paid";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${styles[key]}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${dotColors[key]}`} />
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${safeGet(styles, key, "")}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${safeGet(dotColors, key, "bg-green-500")}`} />
       {status}
     </span>
   );
@@ -209,13 +210,13 @@ const Dashboard = () => {
 
     if (chartFilter === "daily") {
       for (let h = 8; h <= 22; h++) {
-        result.push({ day: `${String(h).padStart(2, "0")}:00`, value: map[h] || 0 });
+        result.push({ day: `${String(h).padStart(2, "0")}:00`, value: safeGet(map, h, 0) });
       }
     } else if (chartFilter === "monthly") {
       const now = new Date();
       const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
       for (let d = 1; d <= lastDay; d++) {
-        result.push({ day: String(d), value: map[d] || 0 });
+        result.push({ day: String(d), value: safeGet(map, d, 0) });
       }
     } else {
       const now = new Date();
@@ -227,7 +228,7 @@ const Dashboard = () => {
         d.setDate(monday.getDate() + i);
         result.push({
           day: `${dayNames[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`,
-          value: map[d.getDay()] || 0
+          value: safeGet(map, d.getDay(), 0)
         });
       }
     }

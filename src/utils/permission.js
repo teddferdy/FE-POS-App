@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
+import { safeGet } from "@/lib/safe-lookup";
 
 export const parseAccessMenu = (accessMenu) => {
   if (Array.isArray(accessMenu)) return accessMenu;
@@ -77,13 +78,15 @@ export const parseAccessMenuToPermissions = (accessMenu = []) => {
 };
 
 export const findMenuPermission = (permissions, href) => {
-  if (permissions[href]) return permissions[href];
+  // ponytail: safeGet — akses berkunci variabel lolos object injection
+  const direct = safeGet(permissions, href);
+  if (direct) return direct;
   const pathPart = href
     ?.replace("/", "")
     .replace("-list", "")
     .replace("-page", "")
     .replace("-super-admin", "");
-  const result = permissions[pathPart];
+  const result = safeGet(permissions, pathPart);
   if (!result) return null;
   return result;
 };
@@ -103,12 +106,10 @@ const ACTION_MAP = {
 
 export const normalizePermissionActions = (perm) => {
   if (!perm) return perm;
-  const normalized = {};
-  Object.entries(perm).forEach(([key, val]) => {
-    const mapped = ACTION_MAP[key] || key;
-    normalized[mapped] = val;
-  });
-  return normalized;
+  // ponytail: fromEntries — O(N) & tanpa penulisan objek berkunci variabel
+  return Object.fromEntries(
+    Object.entries(perm).map(([key, val]) => [safeGet(ACTION_MAP, key) || key, val])
+  );
 };
 
 export const canAccess = (user, menuKey, action) => {
@@ -138,7 +139,7 @@ export const canAccess = (user, menuKey, action) => {
   );
   if (!menu) return false;
   const normalized = normalizePermissionActions(menu);
-  return !!normalized[action];
+  return !!safeGet(normalized, action, false);
 };
 
 export const filterMenuByPermission = (menuItems, user) => {

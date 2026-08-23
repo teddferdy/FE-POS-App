@@ -10,23 +10,24 @@ export const sanitizeJsonPayload = (payload) => {
       return item;
     });
 
-  const sanitized = {};
-  for (const [key, value] of Object.entries(payload)) {
-    if (typeof value === "string") {
-      sanitized[key] = sanitizeInput(value);
-    } else if (Array.isArray(value)) {
-      sanitized[key] = value.map((item) => {
-        if (typeof item === "string") return sanitizeInput(item);
-        if (item && typeof item === "object") return sanitizeJsonPayload(item);
-        return item;
-      });
-    } else if (value && typeof value === "object") {
-      sanitized[key] = sanitizeJsonPayload(value);
-    } else {
-      sanitized[key] = value;
-    }
-  }
-  return sanitized;
+  // ponytail: fromEntries + map — O(N), tanpa object injection (Codacy)
+  return Object.fromEntries(
+    Object.entries(payload).map(([key, value]) => {
+      if (typeof value === "string") return [key, sanitizeInput(value)];
+      if (Array.isArray(value)) {
+        return [
+          key,
+          value.map((item) => {
+            if (typeof item === "string") return sanitizeInput(item);
+            if (item && typeof item === "object") return sanitizeJsonPayload(item);
+            return item;
+          })
+        ];
+      }
+      if (value && typeof value === "object") return [key, sanitizeJsonPayload(value)];
+      return [key, value];
+    })
+  );
 };
 
 export const sanitizeForStorage = (input) => {
