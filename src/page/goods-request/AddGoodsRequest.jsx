@@ -643,7 +643,7 @@ const AddGoodsRequest = () => {
                 setValue={setValue}
                 register={form.register}
                 onRemove={() => removeGroup(gIdx)}
-                takenSupplierIds={takenSupplierIdsByGroupIndex[gIdx] || new Set()}
+                takenSupplierIds={takenSupplierIdsByGroupIndex.at(gIdx) || new Set()}
                 t={t}
               />
             ))}
