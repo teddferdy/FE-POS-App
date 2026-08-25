@@ -39,9 +39,10 @@ export const deleteBundle = async (id) => {
   return data;
 };
 
-export const changeBundleStatus = async (id, status) => {
+export const changeBundleStatus = async (id, status, extra = {}) => {
   const { data, status: httpStatus } = await axiosInstance.patch(`/product-bundle/status/${id}`, {
-    status
+    status,
+    ...extra
   });
   if (httpStatus !== 200 && httpStatus !== 201) throw Error(`${data.message}`);
   return data;

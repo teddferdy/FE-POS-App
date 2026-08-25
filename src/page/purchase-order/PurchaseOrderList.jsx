@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -29,7 +29,8 @@ import {
   Send,
   Edit,
   AlertTriangle,
-  ChevronDown
+  ChevronDown,
+  CloudUpload
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -166,6 +167,8 @@ const PurchaseOrderList = () => {
   const [returPo, setReturPo] = useState(null);
   const [returReason, setReturReason] = useState("");
   const [returItems, setReturItems] = useState([]);
+  const [returDocs, setReturDocs] = useState([]);
+  const returDocInputRef = useRef(null);
   const [importModal, setImportModal] = useState(false);
   const [payModal, setPayModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
@@ -295,12 +298,16 @@ const PurchaseOrderList = () => {
   );
 
   const returnMutation = useMutation(
-    ({ po, reason, items }) =>
-      returnPurchaseOrder(po.id, {
-        reason,
-        items,
-        returnedBy: user?.id
-      }),
+    ({ po, reason, items, files }) =>
+      returnPurchaseOrder(
+        po.id,
+        {
+          reason,
+          items,
+          returnedBy: user?.id
+        },
+        files
+      ),
     {
       onSuccess: () => {
         toast.success(t("common.success"), {
@@ -312,6 +319,7 @@ const PurchaseOrderList = () => {
         setReturPo(null);
         setReturReason("");
         setReturItems([]);
+        setReturDocs([]);
         navigate("/purchase-return");
       },
       onError: (err) => {
@@ -321,6 +329,37 @@ const PurchaseOrderList = () => {
       }
     }
   );
+
+  const handleReturDocChange = (e) => {
+    const incoming = Array.from(e.target.files || []);
+    if (incoming.length === 0) return;
+    const tooLarge = incoming.find((f) => f.size > 5 * 1024 * 1024);
+    if (tooLarge) {
+      toast.error(t("page.goodsReceipt.add.form.fileTooLarge"));
+      e.target.value = "";
+      return;
+    }
+    const room = 5 - returDocs.length;
+    if (room <= 0) {
+      toast.error(t("page.goodsReceipt.add.form.docMaxReached"));
+      e.target.value = "";
+      return;
+    }
+    const accepted = incoming.slice(0, room);
+    setReturDocs((prev) => [
+      ...prev,
+      ...accepted.map((f) => ({ file: f, url: URL.createObjectURL(f) }))
+    ]);
+    e.target.value = "";
+  };
+
+  const removeReturDoc = (idx) => {
+    setReturDocs((prev) => {
+      const target = prev.at(idx);
+      if (target?.url) URL.revokeObjectURL(target.url);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
 
   const cancelMutation = useMutation(cancelPurchaseOrder, {
     onSuccess: () => {
@@ -1538,6 +1577,76 @@ const PurchaseOrderList = () => {
                         onChange={(e) => setReturReason(e.target.value)}
                       />
                     </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-foreground">
+                          {t("page.purchaseOrder.list.returInfo.documentation")}{" "}
+                          <span className="text-xs font-normal text-muted-foreground">
+                            ({t("common.optional")})
+                          </span>
+                        </label>
+                        {returDocs.length > 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            {returDocs.length} / 5
+                          </span>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        ref={returDocInputRef}
+                        className="hidden"
+                        onChange={handleReturDocChange}
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        {returDocs.map((d, idx) => (
+                          <div
+                            key={`${d.url}-${idx}`}
+                            className="group relative rounded-lg border border-border overflow-hidden bg-card">
+                            <div className="relative aspect-[4/3] bg-muted">
+                              <img
+                                src={d.url}
+                                alt={`Doc ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  type="button"
+                                  onClick={() => window.open(d.url, "_blank")}
+                                  className="p-1 bg-background/90 rounded-full text-muted-foreground hover:text-foreground shadow-sm">
+                                  <Eye size={12} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeReturDoc(idx)}
+                                  className="p-1 bg-background/90 rounded-full text-muted-foreground hover:text-destructive shadow-sm">
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="px-2 py-1 flex items-center gap-1">
+                              <CloudUpload size={10} className="text-muted-foreground shrink-0" />
+                              <span className="text-[10px] text-muted-foreground truncate">
+                                {d.file?.name || `doc-${idx + 1}`}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                        {returDocs.length < 5 && (
+                          <button
+                            type="button"
+                            onClick={() => returDocInputRef.current?.click()}
+                            className="aspect-[4/3] rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary bg-muted/20">
+                            <CloudUpload size={18} />
+                            <span className="text-[10px] font-medium">
+                              {t("page.goodsReceipt.add.form.docAdd")}
+                            </span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </>
                 )}
               </div>
@@ -1553,6 +1662,7 @@ const PurchaseOrderList = () => {
                       setReturPo(null);
                       setReturReason("");
                       setReturItems([]);
+                      setReturDocs([]);
                     }}>
                     {t("common.cancel")}
                   </Button>
@@ -1581,7 +1691,8 @@ const PurchaseOrderList = () => {
                       returnMutation.mutate({
                         po: returPo,
                         reason: returReason,
-                        items: itemsToReturn
+                        items: itemsToReturn,
+                        files: returDocs.map((d) => d.file)
                       });
                     }}
                     disabled={!returReason.trim() || returnMutation.isLoading}>

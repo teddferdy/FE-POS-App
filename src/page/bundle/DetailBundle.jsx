@@ -4,7 +4,16 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Edit, Trash2, Package, CheckCircle, XCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Package,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Receipt
+} from "lucide-react";
 import { toast } from "sonner";
 import { getBundleById, deleteBundle, changeBundleStatus } from "@/services/productBundle";
 import { Button } from "@/components/ui/button";
@@ -90,6 +99,20 @@ const DetailBundle = () => {
 
   const s = statusBadge(bundle.status);
 
+  // ponytail: indikator masa berlaku, pola sama dengan DiscountList
+  const getExpiryStatus = () => {
+    const now = new Date();
+    if (bundle.validFrom && new Date(bundle.validFrom) > now) return null;
+    if (!bundle.validUntil) return null;
+    const endDate = new Date(bundle.validUntil);
+    if (isNaN(endDate.getTime())) return null;
+    const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return "expired";
+    if (diffDays <= 7) return "expiring";
+    return null;
+  };
+  const expiryStatus = getExpiryStatus();
+
   return (
     <div className="space-y-6">
       <div>
@@ -106,12 +129,24 @@ const DetailBundle = () => {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{bundle.name}</h1>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${s.bg}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
               {s.label}
             </span>
+            {expiryStatus === "expiring" && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
+                <Clock size={12} />
+                {t("page.bundle.list.expiringSoon")}
+              </span>
+            )}
+            {expiryStatus === "expired" && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                <XCircle size={12} />
+                {t("page.bundle.list.expired")}
+              </span>
+            )}
             <span className="text-sm text-muted-foreground">{bundle.sku}</span>
           </div>
         </div>
@@ -221,6 +256,17 @@ const DetailBundle = () => {
         </div>
 
         <div className="space-y-6">
+          {/* ponytail: jumlah transaksi pemakai bundle — pola kartu di DetailDiscount */}
+          <Card className="p-5 flex flex-col items-center justify-center text-center">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+              <Receipt size={20} />
+            </div>
+            <p className="text-2xl font-bold">{bundle.usageCount ?? 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("page.bundle.detail.totalTransactions")}
+            </p>
+          </Card>
+
           <Card className="p-6">
             <h3 className="font-semibold text-sm mb-4">{t("page.bundle.form.pricing")}</h3>
             <div className="space-y-3">

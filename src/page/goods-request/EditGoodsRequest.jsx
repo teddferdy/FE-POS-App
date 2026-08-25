@@ -4,14 +4,14 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
-import { Save, X, Plus, Trash2, ArrowLeft, User, CalendarDays } from "lucide-react";
+import { Save, X, Plus, Trash2, ArrowLeft, User } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { getGoodsRequestById, editGoodsRequest } from "@/services/goods-request";
 import { getAllSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DateInput } from "@/components/ui/date-input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
@@ -57,8 +57,8 @@ const EditGoodsRequest = () => {
   const user = cookie?.user;
 
   const [requestedBy, setRequestedBy] = useState("");
-  const [requestDate, setRequestDate] = useState("");
-  const [neededDate, setNeededDate] = useState("");
+  const [requestDate, setRequestDate] = useState(null);
+  const [neededDate, setNeededDate] = useState(null);
   const [notes, setNotes] = useState("");
   const [groups, setGroups] = useState([emptyGroup()]);
   const [loaded, setLoaded] = useState(false);
@@ -99,8 +99,8 @@ const EditGoodsRequest = () => {
   useEffect(() => {
     if (request && !loaded) {
       setRequestedBy(request.requestedBy || "");
-      setRequestDate(request.requestDate || format(new Date(), "yyyy-MM-dd"));
-      setNeededDate(request.neededDate || "");
+      setRequestDate(request.requestDate ? parseISO(request.requestDate) : new Date());
+      setNeededDate(request.neededDate ? parseISO(request.neededDate) : null);
       setNotes(request.notes || "");
       setGroups(groupItems(request.items));
       setLoaded(true);
@@ -122,14 +122,20 @@ const EditGoodsRequest = () => {
   );
   const suppliers = suppliersData?.data || [];
 
-  const supplierOptions = useMemo(
-    () =>
-      (suppliers || []).map((sup) => ({
+  const supplierOptionsForGroup = (gIdx) => {
+    const taken = new Set();
+    groups.forEach((g, otherIdx) => {
+      if (otherIdx !== gIdx && g.supplier) {
+        taken.add(String(g.supplier));
+      }
+    });
+    return (suppliers || [])
+      .filter((sup) => !taken.has(String(sup.id)))
+      .map((sup) => ({
         value: String(sup.id),
         label: sup.name || sup.supplierName || `Supplier #${sup.id}`
-      })),
-    [suppliers]
-  );
+      }));
+  };
 
   const supplierItemsBySupplier = useMemo(() => {
     const map = {};
@@ -299,7 +305,7 @@ const EditGoodsRequest = () => {
       });
       return;
     }
-    if (requestDate && neededDate && new Date(neededDate) < new Date(requestDate)) {
+    if (requestDate && neededDate && neededDate < requestDate) {
       toast.error(t("page.goodsRequest.edit.toast.validation"), {
         description: t("page.goodsRequest.edit.toast.neededDateBeforeRequest")
       });
@@ -307,8 +313,8 @@ const EditGoodsRequest = () => {
     }
     updateMutation.mutate({
       requestedBy,
-      requestDate: requestDate || null,
-      neededDate: neededDate || null,
+      requestDate: requestDate ? format(requestDate, "yyyy-MM-dd") : null,
+      neededDate: neededDate ? format(neededDate, "yyyy-MM-dd") : null,
       notes,
       items: validItems.map((it) => ({
         ingredient: it.ingredient,
@@ -335,7 +341,7 @@ const EditGoodsRequest = () => {
     );
   }
 
-  if (!request || (request.status && request.status !== "pending")) {
+  if (!request || (request.status && !["pending", "cancelled"].includes(request.status))) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
@@ -420,39 +426,23 @@ const EditGoodsRequest = () => {
             </div>
             <div className="space-y-2">
               <Label>{t("page.goodsRequest.edit.form.requestDate")}</Label>
-              <div className="relative">
-                <CalendarDays
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <DateInput
-                  type="date"
-                  value={requestDate}
-                  max={neededDate || undefined}
-                  onChange={(e) => setRequestDate(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+              <DatePicker
+                date={requestDate}
+                setDate={setRequestDate}
+                placeholder={t("page.goodsRequest.edit.form.requestDate")}
+              />
             </div>
             <div className="space-y-2">
               <Label>
                 {t("page.goodsRequest.edit.form.neededDate")}{" "}
                 <span className="text-destructive">*</span>
               </Label>
-              <div className="relative">
-                <CalendarDays
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <DateInput
-                  type="date"
-                  value={neededDate}
-                  min={requestDate || undefined}
-                  onChange={(e) => setNeededDate(e.target.value)}
-                  placeholder={t("page.goodsRequest.edit.placeholder.neededDate")}
-                  className="pl-9"
-                />
-              </div>
+              <DatePicker
+                date={neededDate}
+                setDate={setNeededDate}
+                placeholder={t("page.goodsRequest.edit.placeholder.neededDate")}
+                minDate={requestDate || undefined}
+              />
             </div>
           </div>
 
@@ -469,7 +459,7 @@ const EditGoodsRequest = () => {
                   </Label>
                   <div className="flex-1 min-w-[220px]">
                     <Combobox
-                      options={supplierOptions}
+                      options={supplierOptionsForGroup(gIdx)}
                       value={group.supplier ? String(group.supplier) : ""}
                       onChange={(val) => pickGroupSupplier(gIdx, val)}
                       placeholder={t("page.goodsRequest.edit.placeholder.selectSupplier")}

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { FolderOpen, Trash2, Edit, Plus, CheckCircle, XCircle, Tag, Eye } from "lucide-react";
@@ -39,13 +40,14 @@ import { z } from "zod";
 const SupplierCategoryList = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [detailTarget, setDetailTarget] = useState(null);
   const [formModal, setFormModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
@@ -76,7 +78,8 @@ const SupplierCategoryList = () => {
   );
 
   const categories = data?.data || data?.categories || [];
-  const total = data?.total || data?.pagination?.total || 0;
+  // ponytail: BE /supplier-category mengembalikan { data: [], stats: { total } } tanpa pagination
+  const total = data?.total || data?.pagination?.total || data?.stats?.total || categories.length;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
   const stats = data?.stats || {};
 
@@ -157,38 +160,59 @@ const SupplierCategoryList = () => {
     }
   };
 
+  // ponytail: ?edit=<id> dari halaman detail — buka modal edit otomatis
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (!editId || isLoading || categories.length === 0) return;
+    const cat = categories.find((c) => String(c.id) === String(editId));
+    if (cat) {
+      handleEdit(cat);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, isLoading, categories]);
+
   const columns = [
     {
       header: "#",
+      align: "center",
+      stickyLeft: true,
       render: (_, idx) => (
         <span className="text-sm text-muted-foreground">{(page - 1) * limit + idx + 1}</span>
       )
     },
     {
       header: t("page.supplierCategory.name"),
+      align: "center",
+      stickyLeft: true,
       render: (cat) => (
         <button
           type="button"
-          className="flex items-center gap-3 text-left hover:opacity-80 transition-opacity"
-          onClick={() => setDetailTarget(cat)}>
+          className="flex items-center justify-center gap-3 hover:opacity-80 transition-opacity"
+          onClick={() => navigate(`/detail-supplier-category?id=${cat.id}`)}>
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <Tag size={18} className="text-primary" />
+            <Tag size={20} className="text-primary" />
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate hover:text-primary">
-              {cat.name}
-            </p>
-            {cat.description && (
-              <p className="text-xs text-muted-foreground truncate max-w-[250px]">
-                {cat.description}
-              </p>
-            )}
-          </div>
+          <p className="text-sm font-semibold text-foreground truncate max-w-[220px] hover:text-primary">
+            {cat.name}
+          </p>
         </button>
       )
     },
     {
+      header: t("page.supplierCategory.descriptionField", "Deskripsi"),
+      align: "center",
+      render: (cat) => (
+        <span
+          className={`text-sm max-w-[250px] truncate inline-block ${
+            cat.description ? "text-muted-foreground" : "text-muted-foreground/50"
+          }`}>
+          {cat.description || "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.supplierCategory.status"),
+      align: "center",
       render: (cat) => {
         const isActive = cat.status === "active" || cat.isActive === true;
         return (
@@ -210,7 +234,7 @@ const SupplierCategoryList = () => {
     },
     {
       header: t("common.createdBy"),
-      hideOn: "lg",
+      align: "center",
       render: (cat) => (
         <span className="text-sm text-muted-foreground">
           {cat.createdByUser?.fullName || cat.createdByUser?.userName || "-"}
@@ -219,10 +243,30 @@ const SupplierCategoryList = () => {
     },
     {
       header: t("common.createdAt", "Dibuat"),
-      hideOn: "md",
+      align: "center",
       render: (cat) => (
         <span className="text-sm text-muted-foreground whitespace-nowrap">
           {cat.createdAt ? format(new Date(cat.createdAt), "dd MMM yyyy HH:mm") : "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.modifiedBy", "Diubah Oleh"),
+      align: "center",
+      render: (cat) => (
+        <span className="text-sm text-muted-foreground">
+          {cat.modifiedByUser?.fullName ||
+            cat.modifiedByUser?.userName ||
+            (cat.modifiedBy ? `#${cat.modifiedBy}` : "-")}
+        </span>
+      )
+    },
+    {
+      header: t("page.supplier.table.updatedAt", "Terakhir Diubah"),
+      align: "center",
+      render: (cat) => (
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
+          {cat.updatedAt ? format(new Date(cat.updatedAt), "dd MMM yyyy HH:mm") : "-"}
         </span>
       )
     },
@@ -241,22 +285,22 @@ const SupplierCategoryList = () => {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-muted-foreground hover:text-primary"
-            onClick={() => setDetailTarget(cat)}>
-            <Eye size={14} />
+            onClick={() => navigate(`/detail-supplier-category?id=${cat.id}`)}>
+            <Eye size={18} />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-muted-foreground hover:text-foreground"
             onClick={() => handleEdit(cat)}>
-            <Edit size={14} />
+            <Edit size={18} />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
             onClick={() => setDeleteTarget(cat)}>
-            <Trash2 size={14} />
+            <Trash2 size={18} />
           </Button>
         </div>
       )
@@ -471,82 +515,6 @@ const SupplierCategoryList = () => {
             />
           </div>
         </Form>
-      </Modal>
-
-      {/* Detail Modal */}
-      <Modal
-        open={!!detailTarget}
-        onOpenChange={(o) => !o && setDetailTarget(null)}
-        title={t("page.supplierCategory.detailTitle", "Detail Kategori Supplier")}>
-        {detailTarget && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
-              <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Tag size={20} className="text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold truncate">{detailTarget.name}</p>
-                {(() => {
-                  const isActive =
-                    detailTarget.status === "active" || detailTarget.isActive === true;
-                  return (
-                    <span
-                      className={`mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                      }`}>
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          isActive ? "bg-green-500" : "bg-red-500"
-                        }`}
-                      />
-                      {isActive ? t("common.active") : t("common.inactive")}
-                    </span>
-                  );
-                })()}
-              </div>
-            </div>
-            <div className="space-y-2.5 text-sm">
-              <div className="flex items-start gap-3">
-                <span className="text-muted-foreground w-24 shrink-0">Deskripsi</span>
-                <span>{detailTarget.description || "-"}</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-muted-foreground w-24 shrink-0">Dibuat</span>
-                <span>
-                  {detailTarget.createdAt
-                    ? format(new Date(detailTarget.createdAt), "dd MMM yyyy HH:mm")
-                    : "-"}
-                </span>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-muted-foreground w-24 shrink-0">Diubah</span>
-                <span>
-                  {detailTarget.updatedAt
-                    ? format(new Date(detailTarget.updatedAt), "dd MMM yyyy HH:mm")
-                    : "-"}
-                </span>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-muted-foreground w-24 shrink-0">Dibuat Oleh</span>
-                <span>
-                  {detailTarget.createdByUser?.fullName ||
-                    detailTarget.createdByUser?.userName ||
-                    "-"}
-                </span>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                setDetailTarget(null);
-                handleEdit(detailTarget);
-              }}>
-              <Edit size={14} className="mr-1.5" />
-              {t("common.edit", "Edit")}
-            </Button>
-          </div>
-        )}
       </Modal>
 
       {/* Delete Modal */}

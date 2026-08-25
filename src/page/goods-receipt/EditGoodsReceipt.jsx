@@ -37,6 +37,10 @@ import PageHeader from "@/components/ui/PageHeader";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { Loading } from "@/components/ui/loading";
+import { useStore } from "@/contexts/StoreContext";
+import { getAllLocation } from "@/services/location";
+import { useCookies } from "react-cookie";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 
 const EditGoodsReceipt = () => {
   const navigate = useNavigate();
@@ -70,8 +74,22 @@ const EditGoodsReceipt = () => {
   const [taxInvoiceNo, setTaxInvoiceNo] = useState("");
   const [shippingCost, setShippingCost] = useState("");
   const [grHistory, setGrHistory] = useState([]);
+  const { isSuperAdmin } = useStore();
+  const [cookies] = useCookies(["user"]);
+  const user = cookies?.user;
+  const [selectedStores, setSelectedStores] = useState([]);
+  const [allStores, setAllStores] = useState(true);
+
+  const { data: locationsData, isLoading: locationsLoading } = useQuery(
+    ["allLocations"],
+    getAllLocation,
+    { enabled: isSuperAdmin }
+  );
+  const locations = locationsData?.data || [];
 
   const docFiles = docs.filter((d) => d.isNew).map((d) => d.file);
+  const storeFilterParam =
+    allStores || selectedStores.length === 0 ? null : selectedStores.join(",");
 
   useEffect(() => {
     const isDirty =
@@ -118,19 +136,22 @@ const EditGoodsReceipt = () => {
   } = useQuery(["goods-receipt-edit", id], () => getGoodsReceiptById(id), { enabled: !!id });
 
   const { data: poData } = useQuery(
-    ["pos-for-gr-edit"],
-    () => getAllPurchaseOrder({ limit: 50 }),
+    ["pos-for-gr-edit", storeFilterParam],
+    () =>
+      getAllPurchaseOrder({
+        limit: 50,
+        ...(storeFilterParam ? { stores: storeFilterParam } : {})
+      }),
     {}
   );
   const purchaseOrders = poData?.data || [];
 
   const selectedPO = purchaseOrders.find((po) => po.id === parseInt(poId));
-  const storeId = selectedPO?.store || receiptData?.data?.store;
 
   const { data: ingredientsData } = useQuery(
-    ["ingredients-gr-edit", storeId],
-    () => getAllIngredients({ store: storeId, limit: 999 }),
-    { enabled: !!storeId }
+    ["ingredients-gr-edit", effectiveStoreId],
+    () => getAllIngredients({ store: effectiveStoreId, limit: 999 }),
+    { enabled: !!effectiveStoreId }
   );
   const ingredients = ingredientsData?.data || [];
   const activeIngredients = ingredients.filter((i) => i.status === "active");
@@ -231,10 +252,11 @@ const EditGoodsReceipt = () => {
   }, [poDetail, items.length, loaded]);
 
   const grStoreId = receiptData?.data?.store || selectedPO?.store;
+  const effectiveStoreId = grStoreId || (storeFilterParam ? storeFilterParam.split(",")[0] : null);
   const { data: employeesData } = useQuery(
-    ["employees-for-gr-edit", grStoreId],
-    () => getAllEmployee({ limit: 999, status: "active", location: grStoreId || undefined }),
-    { enabled: !!grStoreId }
+    ["employees-for-gr-edit", effectiveStoreId],
+    () => getAllEmployee({ limit: 999, status: "active", location: effectiveStoreId || undefined }),
+    { enabled: !!effectiveStoreId }
   );
   const employees = employeesData?.data || [];
   const filteredEmployees = employees.filter((e) =>
@@ -544,6 +566,27 @@ const EditGoodsReceipt = () => {
             doSubmit(false);
           }}
           className="bg-card p-6 rounded-xl border border-border space-y-6">
+          {isSuperAdmin && (
+            <StoreSelectCard
+              locations={locations}
+              selectedStores={selectedStores}
+              onChange={setSelectedStores}
+              isSuperAdmin={isSuperAdmin}
+              user={user}
+              t={t}
+              title={t("page.goodsReceipt.add.form.storeFilter")}
+              description={t("page.goodsReceipt.add.form.storeFilterDesc")}
+              noStoreLabel={t("header.noStore")}
+              addStoreLabel={t("header.addStore")}
+              storeInfoLabel={t("header.activeStore")}
+              allStores={allStores}
+              onAllStoresChange={setAllStores}
+              navigate={navigate}
+              mandatory={false}
+              locationsLoading={locationsLoading}
+            />
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>
@@ -993,14 +1036,7 @@ const EditGoodsReceipt = () => {
                             type="text"
                             inputMode="decimal"
                             value={item.costPrice ? String(item.costPrice) : ""}
-                            onFocus={(e) => e.target.select()}
-                            onChange={(e) =>
-                              updateItem(
-                                idx,
-                                "costPrice",
-                                e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
-                              )
-                            }
+                            disabled
                             className="h-8 text-xs text-right w-28 ml-auto"
                             placeholder={t("page.goodsReceipt.add.placeholder.costPrice")}
                           />

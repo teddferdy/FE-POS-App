@@ -13,7 +13,6 @@ import {
   Trash2,
   ShoppingCart,
   User,
-  Store,
   Truck,
   FileText
 } from "lucide-react";
@@ -282,7 +281,23 @@ const DetailGoodsRequest = () => {
                                 })
                               : "-"
                           ],
-                          [t("page.goodsRequest.detail.notes"), request.notes || "-"]
+                          [t("page.goodsRequest.detail.notes"), request.notes || "-"],
+                          [
+                            t("page.goodsRequest.detail.createdBy"),
+                            request.createdByUser?.fullName ||
+                              request.createdByUser?.userName ||
+                              "-"
+                          ],
+                          [
+                            t("page.goodsRequest.detail.updatedAt"),
+                            request.updatedAt
+                              ? new Date(request.updatedAt).toLocaleDateString("id", {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric"
+                                })
+                              : "-"
+                          ]
                         ].map(([label, value]) => (
                           <tr key={label} className="border-b border-muted/30">
                             <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
@@ -356,42 +371,6 @@ const DetailGoodsRequest = () => {
                     </div>
                   </div>
                 )}
-
-                <div className="bg-card p-6 rounded-xl border border-border">
-                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                    {t("page.goodsRequest.detail.systemInfo")}
-                  </h2>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        {t("page.goodsRequest.detail.createdBy")}
-                      </p>
-                      <p className="text-sm font-medium">
-                        {request.createdByUser?.fullName || request.createdByUser?.userName || "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        {t("page.goodsRequest.detail.updatedAt")}
-                      </p>
-                      <p className="text-sm font-medium">
-                        {request.updatedAt
-                          ? new Date(request.updatedAt).toLocaleDateString("id", {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric"
-                            })
-                          : "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Store size={12} /> {t("page.goodsRequest.detail.store")}
-                      </p>
-                      <p className="text-sm font-medium">{request.storeData?.name || "-"}</p>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <div className="bg-card p-6 rounded-xl border border-border lg:col-span-3">

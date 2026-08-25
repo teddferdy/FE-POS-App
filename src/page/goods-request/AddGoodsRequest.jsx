@@ -7,14 +7,14 @@ import { useCookies } from "react-cookie";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Save, X, Plus, Trash2, ArrowLeft, User, CalendarDays } from "lucide-react";
+import { Save, X, Plus, Trash2, ArrowLeft, User } from "lucide-react";
 import { format } from "date-fns";
 import { addGoodsRequest } from "@/services/goods-request";
 import { getAllLocation } from "@/services/location";
 import { getAllSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DateInput } from "@/components/ui/date-input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
@@ -62,6 +62,7 @@ const GoodsRequestGroup = ({
   setValue,
   register,
   onRemove,
+  takenSupplierIds,
   t
 }) => {
   const { fields, append, remove, replace } = useFieldArray({
@@ -74,11 +75,13 @@ const GoodsRequestGroup = ({
 
   const supplierOptions = useMemo(
     () =>
-      (suppliers || []).map((sup) => ({
-        value: String(sup.id),
-        label: sup.name || sup.supplierName || `Supplier #${sup.id}`
-      })),
-    [suppliers]
+      (suppliers || [])
+        .filter((sup) => !takenSupplierIds.has(String(sup.id)))
+        .map((sup) => ({
+          value: String(sup.id),
+          label: sup.name || sup.supplierName || `Supplier #${sup.id}`
+        })),
+    [suppliers, takenSupplierIds]
   );
 
   const selectedItemValue = (item) => {
@@ -327,8 +330,8 @@ const AddGoodsRequest = () => {
         z.number()
       ]),
       requestedBy: z.string().optional(),
-      requestDate: z.string().min(1),
-      neededDate: z.string().min(1, t("page.goodsRequest.add.toast.neededDateRequired")),
+      requestDate: z.date({ required_error: t("page.goodsRequest.add.toast.neededDateRequired") }),
+      neededDate: z.date({ required_error: t("page.goodsRequest.add.toast.neededDateRequired") }),
       notes: z.string().optional(),
       groups: z
         .array(
@@ -347,11 +350,7 @@ const AddGoodsRequest = () => {
         .min(1, t("page.goodsRequest.add.toast.itemRequired"))
     })
     .superRefine((data, ctx) => {
-      if (
-        data.requestDate &&
-        data.neededDate &&
-        new Date(data.neededDate) < new Date(data.requestDate)
-      ) {
+      if (data.requestDate && data.neededDate && data.neededDate < data.requestDate) {
         ctx.addIssue({
           code: "custom",
           path: ["neededDate"],
@@ -374,8 +373,8 @@ const AddGoodsRequest = () => {
     defaultValues: {
       storeId: isSuperAdmin ? "" : user?.store || "",
       requestedBy: "",
-      requestDate: format(new Date(), "yyyy-MM-dd"),
-      neededDate: "",
+      requestDate: new Date(),
+      neededDate: null,
       notes: "",
       groups: [emptyGroup()]
     }
@@ -401,6 +400,19 @@ const AddGoodsRequest = () => {
   });
 
   const storeId = watch("storeId");
+  const allGroups = watch("groups") || [];
+
+  const takenSupplierIdsByGroupIndex = useMemo(() => {
+    return allGroups.map((_, gIdx) => {
+      const taken = new Set();
+      allGroups.forEach((g, otherIdx) => {
+        if (otherIdx !== gIdx && g.supplier) {
+          taken.add(String(g.supplier));
+        }
+      });
+      return taken;
+    });
+  }, [allGroups]);
 
   const { data: locData } = useQuery(["locations-goods-request-add"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -466,8 +478,8 @@ const AddGoodsRequest = () => {
       await addGoodsRequest({
         store: data.storeId,
         requestedBy: data.requestedBy,
-        requestDate: data.requestDate || null,
-        neededDate: data.neededDate || null,
+        requestDate: data.requestDate ? format(data.requestDate, "yyyy-MM-dd") : null,
+        neededDate: data.neededDate ? format(data.neededDate, "yyyy-MM-dd") : null,
         notes: data.notes,
         items: validItems.map((it) => ({
           ingredient: it.ingredient,
@@ -576,37 +588,35 @@ const AddGoodsRequest = () => {
             </div>
             <div className="space-y-2">
               <Label>{t("page.goodsRequest.add.form.requestDate")}</Label>
-              <div className="relative">
-                <CalendarDays
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <DateInput
-                  type="date"
-                  {...form.register("requestDate")}
-                  max={watch("neededDate") || undefined}
-                  className="pl-9"
-                />
-              </div>
+              <Controller
+                control={control}
+                name="requestDate"
+                render={({ field }) => (
+                  <DatePicker
+                    date={field.value}
+                    setDate={field.onChange}
+                    placeholder={t("page.goodsRequest.add.form.requestDate")}
+                  />
+                )}
+              />
             </div>
             <div className="space-y-2">
               <Label>
                 {t("page.goodsRequest.add.form.neededDate")}{" "}
                 <span className="text-destructive">*</span>
               </Label>
-              <div className="relative">
-                <CalendarDays
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <DateInput
-                  type="date"
-                  {...form.register("neededDate")}
-                  min={watch("requestDate") || undefined}
-                  placeholder={t("page.goodsRequest.add.placeholder.neededDate")}
-                  className="pl-9"
-                />
-              </div>
+              <Controller
+                control={control}
+                name="neededDate"
+                render={({ field }) => (
+                  <DatePicker
+                    date={field.value}
+                    setDate={field.onChange}
+                    placeholder={t("page.goodsRequest.add.placeholder.neededDate")}
+                    minDate={watch("requestDate") || undefined}
+                  />
+                )}
+              />
               {errors.neededDate && (
                 <p className="text-xs text-destructive">{errors.neededDate.message}</p>
               )}
@@ -633,6 +643,7 @@ const AddGoodsRequest = () => {
                 setValue={setValue}
                 register={form.register}
                 onRemove={() => removeGroup(gIdx)}
+                takenSupplierIds={takenSupplierIdsByGroupIndex.at(gIdx) || new Set()}
                 t={t}
               />
             ))}

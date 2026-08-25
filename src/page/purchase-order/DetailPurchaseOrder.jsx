@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { safeGet } from "@/lib/safe-lookup";
@@ -30,8 +30,8 @@ import {
   DialogFooter
 } from "../../components/ui/dialog";
 import { Skeleton } from "../../components/ui/skeleton";
+import PageHeader from "../../components/ui/PageHeader";
 import {
-  ArrowLeft,
   FileText,
   ShoppingBag,
   Plus,
@@ -48,12 +48,13 @@ import {
   XCircle,
   Phone,
   Banknote,
-  ShoppingCart,
   Loader2,
   ChevronDown,
   ChevronRight,
   Download,
-  FileSpreadsheet
+  FileSpreadsheet,
+  CloudUpload,
+  Eye
 } from "lucide-react";
 
 export default function DetailPurchaseOrder() {
@@ -91,6 +92,8 @@ export default function DetailPurchaseOrder() {
   const [returnReason, setReturnReason] = useState("");
   const [returnedByName, setReturnedByName] = useState("");
   const [returnSubmitting, setReturnSubmitting] = useState(false);
+  const [returnDocs, setReturnDocs] = useState([]);
+  const docInputRef = useRef(null);
   const [collapsedGroups, setCollapsedGroups] = useState({});
 
   const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
@@ -135,14 +138,14 @@ export default function DetailPurchaseOrder() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [poRes, paymentRes, returnRes] = await Promise.all([
-        getPurchaseOrderById(id),
+      const poRes = await getPurchaseOrderById(id);
+      setPo(poRes.data);
+      const [paymentRes, returnRes] = await Promise.allSettled([
         getPaymentsByPO(id),
         getReturnsByPO(id)
       ]);
-      setPo(poRes.data);
-      setPayments(paymentRes.data || []);
-      setReturns(returnRes.data || []);
+      setPayments(paymentRes.status === "fulfilled" ? paymentRes.value?.data || [] : []);
+      setReturns(returnRes.status === "fulfilled" ? returnRes.value?.data || [] : []);
     } catch (err) {
       toast.error(err.response?.data?.message || t("page.purchaseOrder.detail.loadFailed"));
     } finally {
@@ -208,7 +211,39 @@ export default function DetailPurchaseOrder() {
     );
     setReturnReason("");
     setReturnedByName("");
+    setReturnDocs([]);
     setReturnModalOpen(true);
+  };
+
+  const handleReturnDocChange = (e) => {
+    const incoming = Array.from(e.target.files || []);
+    if (incoming.length === 0) return;
+    const tooLarge = incoming.find((f) => f.size > 5 * 1024 * 1024);
+    if (tooLarge) {
+      toast.error(t("page.goodsReceipt.add.form.fileTooLarge"));
+      e.target.value = "";
+      return;
+    }
+    const room = 5 - returnDocs.length;
+    if (room <= 0) {
+      toast.error(t("page.goodsReceipt.add.form.docMaxReached"));
+      e.target.value = "";
+      return;
+    }
+    const accepted = incoming.slice(0, room);
+    setReturnDocs((prev) => [
+      ...prev,
+      ...accepted.map((f) => ({ file: f, url: URL.createObjectURL(f) }))
+    ]);
+    e.target.value = "";
+  };
+
+  const removeReturnDoc = (idx) => {
+    setReturnDocs((prev) => {
+      const target = prev.at(idx);
+      if (target?.url) URL.revokeObjectURL(target.url);
+      return prev.filter((_, i) => i !== idx);
+    });
   };
 
   const handleCreateReturn = async () => {
@@ -218,17 +253,21 @@ export default function DetailPurchaseOrder() {
     }
     try {
       setReturnSubmitting(true);
-      await returnPurchaseOrder(po.id, {
-        items: selected.map((i) => ({
-          productId: i.product,
-          ingredient: i.ingredient,
-          ingredientName: i.ingredientName || null,
-          qty: Number(i.qty),
-          unit: i.unit
-        })),
-        reason: returnReason || null,
-        returnedBy: returnedByName || null
-      });
+      await returnPurchaseOrder(
+        po.id,
+        {
+          items: selected.map((i) => ({
+            productId: i.product,
+            ingredient: i.ingredient,
+            ingredientName: i.ingredientName || null,
+            qty: Number(i.qty),
+            unit: i.unit
+          })),
+          reason: returnReason || null,
+          returnedBy: returnedByName || null
+        },
+        returnDocs.map((d) => d.file)
+      );
       toast.success(t("page.purchaseOrder.detail.toast.returnSuccess"));
       setReturnModalOpen(false);
       loadData();
@@ -549,69 +588,109 @@ export default function DetailPurchaseOrder() {
     }
   };
 
-  if (!po && !loading) {
+  if (!po) {
+    if (loading) {
+      return (
+        <div className="space-y-6">
+          <PageHeader
+            breadcrumbs={[
+              {
+                label: t("breadcrumb.home"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.home"
+              },
+              {
+                label: t("page.purchaseOrder.list.title"),
+                href: "/purchase-order",
+                i18nKey: "page.purchaseOrder.list.title"
+              },
+              {
+                label: t("page.purchaseOrder.detail.title"),
+                i18nKey: "page.purchaseOrder.detail.title"
+              }
+            ]}
+            title={<Skeleton className="h-7 w-48" />}
+            description={<Skeleton className="h-4 w-64" />}
+            backLink="/purchase-order"
+          />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 space-y-4">
+              <Card className="p-5 space-y-4">
+                <Skeleton className="h-40 w-full" />
+              </Card>
+            </div>
+            <Card className="p-5 space-y-4">
+              <Skeleton className="h-40 w-full" />
+            </Card>
+          </div>
+        </div>
+      );
+    }
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-muted-foreground">{t("page.purchaseOrder.detail.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/purchase-order")}>
-          <ArrowLeft size={16} className="mr-1" />
-          {t("page.purchaseOrder.detail.back")}
-        </Button>
+      <div className="space-y-6">
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.purchaseOrder.list.title"),
+              href: "/purchase-order",
+              i18nKey: "page.purchaseOrder.list.title"
+            },
+            {
+              label: t("page.purchaseOrder.detail.title"),
+              i18nKey: "page.purchaseOrder.detail.title"
+            }
+          ]}
+          title={t("page.purchaseOrder.detail.notFound")}
+          backLink="/purchase-order"
+        />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/purchase-order")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <ShoppingCart size={24} />
-          </div>
-          <div>
-            {loading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{po?.orderNumber || "-"}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.purchaseOrder.detail.subtitle")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-        {!loading &&
-          po &&
-          (() => {
-            const st = statusMap[po.status] || statusMap.pending;
-            const StatusIcon =
-              po.status === "received" ? CheckCircle2 : po.status === "cancelled" ? XCircle : Clock;
-            return (
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={handleExportExcel} className="gap-1.5">
-                  <FileSpreadsheet size={14} />
-                  <span className="hidden sm:inline">Excel</span>
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-1.5">
-                  <Download size={14} />
-                  <span className="hidden sm:inline">PDF</span>
-                </Button>
-                <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
-                  <StatusIcon size={14} />
-                  {st.label}
-                </span>
-              </div>
-            );
-          })()}
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.purchaseOrder.list.title"),
+            href: "/purchase-order",
+            i18nKey: "page.purchaseOrder.list.title"
+          },
+          {
+            label: po.orderNumber || t("page.purchaseOrder.detail.title"),
+            i18nKey: "page.purchaseOrder.detail.title"
+          }
+        ]}
+        title={po.orderNumber || "-"}
+        description={t("page.purchaseOrder.detail.subtitle")}
+        backLink="/purchase-order">
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${(statusMap[po.status] || statusMap.pending).class}`}>
+          {React.createElement(
+            po.status === "received" ? CheckCircle2 : po.status === "cancelled" ? XCircle : Clock,
+            { size: 14 }
+          )}
+          {(statusMap[po.status] || statusMap.pending).label}
+        </span>
+        <Button variant="outline" size="sm" onClick={handleExportExcel} className="gap-1.5">
+          <FileSpreadsheet size={14} />
+          <span className="hidden sm:inline">Excel</span>
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-1.5">
+          <Download size={14} />
+          <span className="hidden sm:inline">PDF</span>
+        </Button>
+      </PageHeader>
 
       {loading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -935,7 +1014,7 @@ export default function DetailPurchaseOrder() {
                                 </p>
                               </td>
                               <td className="py-3 px-4 text-right font-mono">
-                                {item.quantity || 0}
+                                {Math.round(Number(item.quantity) || 0)}
                                 <span className="text-xs text-muted-foreground ml-1">
                                   {item.unit || ""}
                                 </span>
@@ -961,7 +1040,8 @@ export default function DetailPurchaseOrder() {
                                       ? "text-green-600"
                                       : "text-yellow-600"
                                   }>
-                                  {item.receivedQuantity || 0} / {item.quantity || 0}
+                                  {Math.round(Number(item.receivedQuantity) || 0)} /{" "}
+                                  {Math.round(Number(item.quantity) || 0)}
                                 </span>
                               </td>
                               <td className="py-3 px-4 text-right font-mono">
@@ -1185,75 +1265,128 @@ export default function DetailPurchaseOrder() {
       )}
 
       {/* Payment Modal */}
-      <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("page.purchaseOrder.detail.recordPaymentTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("page.purchaseOrder.detail.remainingBill")}: Rp{" "}
-              {Number(remaining).toLocaleString("id-ID")}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>{t("page.purchaseOrder.detail.paymentAmount")}</Label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                min={1}
-                max={remaining}
-                value={payAmount ? formatIDR(payAmount) : ""}
-                onChange={(e) => setPayAmount(parseIDR(e.target.value))}
-                onFocus={(e) => e.target.select()}
-                placeholder="Rp 0"
-              />
+      {paymentModalOpen && po && (
+        <Dialog open onOpenChange={setPaymentModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("page.purchaseOrder.detail.recordPaymentTitle")}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              {/* ponytail: ringkasan pembayaran di modal */}
+              <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.total")}
+                  </span>
+                  <span className="font-medium">
+                    Rp {Number(po.totalAmount || 0).toLocaleString("id-ID")}
+                  </span>
+                </div>
+                {po.discount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {t("page.purchaseOrder.detail.discount")}
+                    </span>
+                    <span className="font-medium text-red-500">
+                      - Rp {Number(po.discount).toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                )}
+                {po.additionalCost > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {t("page.purchaseOrder.detail.additionalCost")}
+                    </span>
+                    <span className="font-medium text-emerald-600">
+                      + Rp {Number(po.additionalCost).toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                )}
+                <div className="border-t border-border pt-2 flex justify-between text-sm font-bold">
+                  <span>{t("page.purchaseOrder.detail.grandTotal")}</span>
+                  <span>Rp {Number(po.finalAmount || 0).toLocaleString("id-ID")}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.paid")}
+                  </span>
+                  <span className="font-medium text-green-600">
+                    Rp {Number(totalPaid).toLocaleString("id-ID")}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm border-t border-border pt-2">
+                  <span className="text-muted-foreground font-medium">
+                    {t("page.purchaseOrder.detail.remaining")}
+                  </span>
+                  <span className="font-bold text-red-500">
+                    Rp {Number(remaining).toLocaleString("id-ID")}
+                  </span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>{t("page.purchaseOrder.detail.paymentAmount")}</Label>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  min={1}
+                  max={remaining}
+                  value={payAmount ? formatIDR(payAmount) : ""}
+                  onChange={(e) => setPayAmount(parseIDR(e.target.value))}
+                  onFocus={(e) => e.target.select()}
+                  placeholder="Rp 0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("page.purchaseOrder.detail.paymentMethod")}</Label>
+                <Select value={payMethod} onValueChange={setPayMethod}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">
+                      {t("page.purchaseOrder.detail.payMethodCash")}
+                    </SelectItem>
+                    <SelectItem value="transfer">
+                      {t("page.purchaseOrder.detail.payMethodTransfer")}
+                    </SelectItem>
+                    <SelectItem value="credit_card">
+                      {t("page.purchaseOrder.detail.payMethodCreditCard")}
+                    </SelectItem>
+                    <SelectItem value="debit_card">
+                      {t("page.purchaseOrder.detail.payMethodDebitCard")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t("page.purchaseOrder.detail.paymentDate")}</Label>
+                <DateInput
+                  type="date"
+                  value={payDate}
+                  onChange={(e) => setPayDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("page.purchaseOrder.detail.reference")}</Label>
+                <Input
+                  value={payRef}
+                  onChange={(e) => setPayRef(e.target.value)}
+                  placeholder={t("page.purchaseOrder.detail.referencePlaceholder")}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>{t("page.purchaseOrder.detail.paymentMethod")}</Label>
-              <Select value={payMethod} onValueChange={setPayMethod}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">
-                    {t("page.purchaseOrder.detail.payMethodCash")}
-                  </SelectItem>
-                  <SelectItem value="transfer">
-                    {t("page.purchaseOrder.detail.payMethodTransfer")}
-                  </SelectItem>
-                  <SelectItem value="credit_card">
-                    {t("page.purchaseOrder.detail.payMethodCreditCard")}
-                  </SelectItem>
-                  <SelectItem value="debit_card">
-                    {t("page.purchaseOrder.detail.payMethodDebitCard")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t("page.purchaseOrder.detail.paymentDate")}</Label>
-              <DateInput type="date" value={payDate} onChange={(e) => setPayDate(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("page.purchaseOrder.detail.reference")}</Label>
-              <Input
-                value={payRef}
-                onChange={(e) => setPayRef(e.target.value)}
-                placeholder={t("page.purchaseOrder.detail.referencePlaceholder")}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPaymentModalOpen(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button onClick={handleRecordPayment} disabled={paySubmitting}>
-              {paySubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {paySubmitting ? t("common.processing") : t("page.purchaseOrder.detail.pay")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setPaymentModalOpen(false)}>
+                {t("common.cancel")}
+              </Button>
+              <Button onClick={handleRecordPayment} disabled={paySubmitting}>
+                {paySubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {paySubmitting ? t("common.processing") : t("page.purchaseOrder.detail.pay")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Delete Payment Confirmation */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
@@ -1334,6 +1467,73 @@ export default function DetailPurchaseOrder() {
                 onChange={(e) => setReturnedByName(e.target.value)}
                 placeholder={t("page.purchaseOrder.detail.returnedByNamePlaceholder")}
               />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>
+                  {t("page.purchaseOrder.list.returInfo.documentation")}{" "}
+                  <span className="text-xs font-normal text-muted-foreground">
+                    ({t("common.optional")})
+                  </span>
+                </Label>
+                {returnDocs.length > 0 && (
+                  <span className="text-xs text-muted-foreground">{returnDocs.length} / 5</span>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                ref={docInputRef}
+                className="hidden"
+                onChange={handleReturnDocChange}
+              />
+              <div className="grid grid-cols-2 gap-2">
+                {returnDocs.map((d, idx) => (
+                  <div
+                    key={`${d.url}-${idx}`}
+                    className="group relative rounded-lg border border-border overflow-hidden bg-card">
+                    <div className="relative aspect-[4/3] bg-muted">
+                      <img
+                        src={d.url}
+                        alt={`Doc ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          type="button"
+                          onClick={() => window.open(d.url, "_blank")}
+                          className="p-1 bg-background/90 rounded-full text-muted-foreground hover:text-foreground shadow-sm">
+                          <Eye size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeReturnDoc(idx)}
+                          className="p-1 bg-background/90 rounded-full text-muted-foreground hover:text-destructive shadow-sm">
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="px-2 py-1 flex items-center gap-1">
+                      <CloudUpload size={10} className="text-muted-foreground shrink-0" />
+                      <span className="text-[10px] text-muted-foreground truncate">
+                        {d.file?.name || `doc-${idx + 1}`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {returnDocs.length < 5 && (
+                  <button
+                    type="button"
+                    onClick={() => docInputRef.current?.click()}
+                    className="aspect-[4/3] rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary bg-muted/20">
+                    <CloudUpload size={18} />
+                    <span className="text-[10px] font-medium">
+                      {t("page.goodsReceipt.add.form.docAdd")}
+                    </span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>

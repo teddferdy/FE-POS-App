@@ -106,6 +106,7 @@ const EditPurchaseOrder = () => {
   const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
   const [additionalCost, setAdditionalCost] = useState(0);
+  const [additionalCostNotes, setAdditionalCostNotes] = useState("");
   const [overDeliveryTolerance, setOverDeliveryTolerance] = useState(10);
   const [groups, setGroups] = useState([emptyGroup()]);
   const [cancelModal, setCancelModal] = useState(false);
@@ -127,6 +128,7 @@ const EditPurchaseOrder = () => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [tenor, setTenor] = useState(0);
   const [dpPercent, setDpPercent] = useState(0);
+  const [goodsRequestData, setGoodsRequestData] = useState(null);
   const [picSearch, setPicSearch] = useState("");
   const [picId, setPicId] = useState(null);
   const [showPicList, setShowPicList] = useState(false);
@@ -146,6 +148,7 @@ const EditPurchaseOrder = () => {
     setNotes(po.notes || "");
     setDiscount(po.discount || 0);
     setAdditionalCost(po.additionalCost || 0);
+    setAdditionalCostNotes(po.additionalCostNotes || "");
     setOverDeliveryTolerance(po.overDeliveryTolerance ?? 10);
     setOrderDate(po.orderDate ? new Date(po.orderDate) : new Date());
     setOrderTime(
@@ -155,6 +158,7 @@ const EditPurchaseOrder = () => {
     setPaymentMethod(po.paymentMethod || "cash");
     setTenor(po.tenor || 0);
     setDpPercent(po.dpPercent || 0);
+    setGoodsRequestData(po.goodsRequestData || null);
     if (po.items && po.items.length > 0) {
       const bySupplier = new Map();
       po.items.forEach((item) => {
@@ -166,7 +170,7 @@ const EditPurchaseOrder = () => {
           productName: item.productData?.nameProduct || null,
           ingredient: item.ingredient || null,
           ingredientName: item.ingredientName || null,
-          qty: item.quantity,
+          qty: Math.round(item.quantity) || 1,
           price: item.price,
           unit: item.unit || "pcs",
           conversionToBase: item.conversionToBase || 1
@@ -402,7 +406,7 @@ const EditPurchaseOrder = () => {
 
   const parseIDR = (str) => {
     if (!str) return 0;
-    return Number(str.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")) || 0;
+    return Number(str.replace(/[^0-9.]/g, "").replace(/\./g, "")) || 0;
   };
 
   const totalAmount = useMemo(
@@ -499,6 +503,7 @@ const EditPurchaseOrder = () => {
       pic: picId,
       discount,
       additionalCost,
+      additionalCostNotes: additionalCostNotes || null,
       overDeliveryTolerance,
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       paymentMethod,
@@ -511,7 +516,7 @@ const EditPurchaseOrder = () => {
         return d;
       })(),
       items: itemsPayload,
-      status: saveAsDraft ? "draft" : po.status
+      status: saveAsDraft ? "draft" : po.status === "draft" ? "pending" : po.status
     };
 
     updateMutation.mutate(normalizePayload(payload, { isFormData: false }));
@@ -852,6 +857,97 @@ const EditPurchaseOrder = () => {
                       </p>
                     </div>
                   )}
+                  {/* ponytail: info permintaan barang jika PO berasal dari goods request */}
+                  {goodsRequestData && (
+                    <div className="md:col-span-2">
+                      <div className="rounded-lg border border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/30 p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-md bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                            <ShoppingCart size={14} className="text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+                              {t("page.purchaseOrder.edit.fromGoodsRequest")}
+                            </p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400">
+                              {goodsRequestData.requestNumber}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                          <div>
+                            <p className="text-blue-500 dark:text-blue-400 mb-0.5">
+                              {t("page.purchaseOrder.edit.requestedBy")}
+                            </p>
+                            <p className="font-medium text-blue-800 dark:text-blue-300">
+                              {goodsRequestData.requestedBy || "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-blue-500 dark:text-blue-400 mb-0.5">
+                              {t("page.purchaseOrder.edit.requestDate")}
+                            </p>
+                            <p className="font-medium text-blue-800 dark:text-blue-300">
+                              {goodsRequestData.requestDate
+                                ? format(new Date(goodsRequestData.requestDate), "dd MMM yyyy")
+                                : "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-blue-500 dark:text-blue-400 mb-0.5">
+                              {t("page.purchaseOrder.edit.neededDate")}
+                            </p>
+                            <p className="font-medium text-blue-800 dark:text-blue-300">
+                              {goodsRequestData.neededDate
+                                ? format(new Date(goodsRequestData.neededDate), "dd MMM yyyy")
+                                : "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-blue-500 dark:text-blue-400 mb-0.5">
+                              {t("page.purchaseOrder.edit.grStatus")}
+                            </p>
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold capitalize bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                              {goodsRequestData.status}
+                            </span>
+                          </div>
+                        </div>
+                        {goodsRequestData.items && goodsRequestData.items.length > 0 && (
+                          <div className="border-t border-blue-200 dark:border-blue-800 pt-2">
+                            <p className="text-[10px] text-blue-500 dark:text-blue-400 font-medium uppercase tracking-wider mb-1.5">
+                              {t("page.purchaseOrder.edit.requestedItems")}
+                            </p>
+                            <div className="space-y-1">
+                              {goodsRequestData.items.map((grItem, grIdx) => (
+                                <div
+                                  key={grIdx}
+                                  className="flex items-center justify-between text-xs">
+                                  <span className="text-blue-800 dark:text-blue-300">
+                                    {grItem.ingredientName || grItem.productName || "-"}
+                                  </span>
+                                  <span className="text-blue-600 dark:text-blue-400 font-medium">
+                                    {grItem.qty} {grItem.unit}
+                                    {grItem.notes ? ` · ${grItem.notes}` : ""}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {goodsRequestData.notes && (
+                          <div className="border-t border-blue-200 dark:border-blue-800 pt-2">
+                            <p className="text-[10px] text-blue-500 dark:text-blue-400 font-medium uppercase tracking-wider mb-0.5">
+                              {t("page.purchaseOrder.edit.grNotes")}
+                            </p>
+                            <p className="text-xs text-blue-700 dark:text-blue-300">
+                              {goodsRequestData.notes}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
                       {t("page.purchaseOrder.add.notes")}
@@ -913,7 +1009,7 @@ const EditPurchaseOrder = () => {
                             placeholder={t("page.purchaseOrder.add.selectSupplier")}
                             searchPlaceholder={t("common.search")}
                             emptyMessage={t("page.purchaseOrder.add.noSupplierFound")}
-                            disabled={!selectedStore || suppliersLoading}
+                            disabled={!selectedStore || suppliersLoading || !!goodsRequestData}
                           />
                         </div>
                         <Button
@@ -922,7 +1018,7 @@ const EditPurchaseOrder = () => {
                           size="icon"
                           className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
                           onClick={() => handleRemoveGroupClick(gIdx)}
-                          disabled={groups.length === 1}>
+                          disabled={groups.length === 1 || !!goodsRequestData}>
                           <Trash2 size={14} />
                         </Button>
                       </div>
@@ -1080,7 +1176,7 @@ const EditPurchaseOrder = () => {
                                       <button
                                         type="button"
                                         onClick={() => handleRemoveItemClick(gIdx, iIdx)}
-                                        disabled={group.items.length === 1}
+                                        disabled={group.items.length === 1 || !!goodsRequestData}
                                         className="text-muted-foreground/40 hover:text-destructive disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-muted-foreground/40">
                                         <Trash2 size={14} />
                                       </button>
@@ -1097,6 +1193,7 @@ const EditPurchaseOrder = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => addItem(gIdx)}
+                              disabled={!!goodsRequestData}
                               className="gap-1">
                               <Plus size={14} /> {t("page.purchaseOrder.add.form.addItem")}
                             </Button>
@@ -1111,7 +1208,7 @@ const EditPurchaseOrder = () => {
                     variant="outline"
                     size="sm"
                     onClick={addGroup}
-                    disabled={!selectedStore || suppliersLoading}
+                    disabled={!selectedStore || suppliersLoading || !!goodsRequestData}
                     className="gap-1">
                     <Plus size={14} /> {t("page.purchaseOrder.add.form.addSupplier")}
                   </Button>
@@ -1141,6 +1238,21 @@ const EditPurchaseOrder = () => {
                             className="h-9 text-sm w-32 sm:w-36 text-right"
                           />
                         </div>
+                        {additionalCost > 0 && (
+                          <div className="flex items-center gap-3">
+                            <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                              {t("page.purchaseOrder.add.additionalCostNotes")}
+                            </Label>
+                            <Input
+                              placeholder={t(
+                                "page.purchaseOrder.add.additionalCostNotesPlaceholder"
+                              )}
+                              value={additionalCostNotes}
+                              onChange={(e) => setAdditionalCostNotes(e.target.value)}
+                              className="h-9 text-sm flex-1 min-w-[160px]"
+                            />
+                          </div>
+                        )}
                         <div className="flex items-center gap-3">
                           <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
                             {t("page.purchaseOrder.add.overDeliveryTolerance")}
