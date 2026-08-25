@@ -2,18 +2,25 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, FileText, Package, Printer } from "lucide-react";
+import {
+  ArrowLeft,
+  FileText,
+  Package,
+  Printer,
+  CheckCircle2,
+  AlertTriangle,
+  BarChart3,
+  Store,
+  User,
+  Calendar,
+  Truck,
+  Hash
+} from "lucide-react";
 import { getGoodsReceiptById } from "@/services/goods-receipt";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
-
-const statusDetail = {
-  draft: { class: "bg-yellow-100 text-yellow-800" },
-  completed: { class: "bg-green-100 text-green-800" },
-  cancelled: { class: "bg-red-100 text-red-800" }
-};
 
 const DetailGoodsReceipt = () => {
   const { t } = useTranslation();
@@ -87,25 +94,21 @@ const DetailGoodsReceipt = () => {
           <div className="lg:col-span-2 space-y-6">
             <Card className="p-6 space-y-4">
               <Skeleton className="h-5 w-36" />
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="flex gap-4">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-48" />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="space-y-1">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-5 w-28" />
                   </div>
                 ))}
               </div>
             </Card>
             <Card className="p-6 space-y-4">
               <Skeleton className="h-5 w-40" />
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex gap-4">
-                    <Skeleton className="h-4 w-36" />
-                    <Skeleton className="h-4 w-16" />
-                    <Skeleton className="h-4 w-12" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
+              <Skeleton className="h-3 w-full rounded-full" />
+              <div className="space-y-4">
+                {[...Array(2)].map((_, i) => (
+                  <Skeleton key={i} className="h-32 w-full rounded-xl" />
                 ))}
               </div>
             </Card>
@@ -114,6 +117,13 @@ const DetailGoodsReceipt = () => {
             <Card className="p-6 space-y-3">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-6 w-32 rounded-full" />
+              <Skeleton className="h-3 w-full rounded-full" />
+            </Card>
+            <Card className="p-6 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-4 w-full" />
+              ))}
             </Card>
           </div>
         </div>
@@ -126,14 +136,23 @@ const DetailGoodsReceipt = () => {
         </div>
       ) : (
         (() => {
-          const st = statusDetail[receipt.status] || statusDetail.draft;
           const poItems = receipt.purchaseOrderItems || [];
+          const grItems = receipt.items || [];
+
           const totalOrdered = poItems.reduce((s, pi) => s + (Number(pi.quantity) || 0), 0);
-          const totalReceived = poItems.reduce(
-            (s, pi) => s + (Number(pi.receivedQuantity) || 0),
-            0
-          );
-          const receivingDone = totalOrdered > 0 && totalReceived >= totalOrdered;
+          const totalReceivedNow = grItems.reduce((s, gi) => s + (Number(gi.qtyReceived) || 0), 0);
+          const receivingDone = totalOrdered > 0 && totalReceivedNow >= totalOrdered;
+          const receivingPct =
+            totalOrdered > 0 ? Math.min(100, (totalReceivedNow / totalOrdered) * 100) : 0;
+
+          const completedItems = poItems.filter((pi) => {
+            const matched = grItems.find(
+              (gi) =>
+                gi.ingredientName === (pi.ingredientName || pi.product) || gi.product === pi.product
+            );
+            return matched && Number(matched.qtyReceived) >= Number(pi.quantity);
+          }).length;
+
           let docUrls = [];
           if (receipt.documentation) {
             try {
@@ -145,59 +164,101 @@ const DetailGoodsReceipt = () => {
           }
           const shippingCost = Number(receipt.shippingCost) || 0;
 
+          const stBadgeClass = receivingDone
+            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+            : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400";
+          const stLabel = receivingDone
+            ? t("page.goodsReceipt.add.status.selesai")
+            : t("page.goodsReceipt.add.status.belumSelesai");
+
           return (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <div className="bg-card p-6 rounded-xl border border-border">
-                  <h2 className="text-lg font-semibold mb-4">
+                <div className="bg-card p-6 rounded-xl border border-border space-y-4">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    <FileText size={14} />
                     {t("page.goodsReceipt.detail.receiptInfo")}
-                  </h2>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <tbody>
-                        {[
-                          [t("page.goodsReceipt.detail.receiptNumber"), receipt.receiptNumber],
-                          [
-                            t("page.goodsReceipt.detail.poReference"),
-                            receipt.purchaseOrderData?.orderNumber || "-"
-                          ],
-                          [t("page.goodsReceipt.detail.store"), receipt.storeData?.name || "-"],
-                          [
-                            t("page.goodsReceipt.detail.receivedDate"),
-                            receipt.receivedDate
-                              ? new Date(receipt.receivedDate).toLocaleDateString("id")
-                              : "-"
-                          ],
-                          [
-                            t("page.goodsReceipt.detail.pic"),
-                            receipt.picData?.fullName || receipt.picData?.userName || "-"
-                          ],
-                          [t("page.goodsReceipt.add.form.suratJalan"), receipt.suratJalan || "-"],
-                          [
-                            t("page.goodsReceipt.add.form.taxInvoiceNo"),
-                            receipt.taxInvoiceNo || "-"
-                          ],
-                          [
-                            t("page.goodsReceipt.add.form.shippingCost"),
-                            shippingCost > 0 ? "Rp " + shippingCost.toLocaleString("id-ID") : "-"
-                          ],
-                          [t("page.goodsReceipt.detail.notes"), receipt.notes || "-"]
-                        ].map(([label, value]) => (
-                          <tr key={label} className="border-b border-muted/30">
-                            <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
-                            <td className="py-2 font-medium">{value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-[11px] text-muted-foreground block mb-0.5">
+                        {t("page.goodsReceipt.detail.receiptNumber")}
+                      </span>
+                      <span className="font-semibold text-primary">{receipt.receiptNumber}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-muted-foreground block mb-0.5">
+                        {t("page.goodsReceipt.detail.poReference")}
+                      </span>
+                      <span className="font-semibold">
+                        {receipt.purchaseOrderData?.orderNumber || "-"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-muted-foreground block mb-0.5 flex items-center gap-1">
+                        <Store size={10} /> {t("page.goodsReceipt.detail.store")}
+                      </span>
+                      <span className="font-semibold">{receipt.storeData?.name || "-"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-muted-foreground block mb-0.5 flex items-center gap-1">
+                        <Calendar size={10} /> {t("page.goodsReceipt.detail.receivedDate")}
+                      </span>
+                      <span className="font-semibold">
+                        {receipt.receivedDate
+                          ? new Date(receipt.receivedDate).toLocaleDateString("id", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric"
+                            })
+                          : "-"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-[11px] text-muted-foreground block mb-0.5 flex items-center gap-1">
+                        <User size={10} /> {t("page.goodsReceipt.detail.pic")}
+                      </span>
+                      <span className="font-medium">{receipt.picData?.fullName || "-"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-muted-foreground block mb-0.5 flex items-center gap-1">
+                        <Truck size={10} /> {t("page.goodsReceipt.add.form.suratJalan")}
+                      </span>
+                      <span className="font-medium">{receipt.suratJalan || "-"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-muted-foreground block mb-0.5 flex items-center gap-1">
+                        <Hash size={10} /> {t("page.goodsReceipt.add.form.taxInvoiceNo")}
+                      </span>
+                      <span className="font-medium">{receipt.taxInvoiceNo || "-"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-muted-foreground block mb-0.5">
+                        {t("page.goodsReceipt.add.form.shippingCost")}
+                      </span>
+                      <span className="font-medium">
+                        {shippingCost > 0 ? "Rp " + shippingCost.toLocaleString("id-ID") : "-"}
+                      </span>
+                    </div>
+                  </div>
+                  {receipt.notes && (
+                    <div className="border-t border-border/60 pt-3">
+                      <span className="text-[11px] text-muted-foreground block mb-0.5">
+                        {t("page.goodsReceipt.detail.notes")}
+                      </span>
+                      <p className="text-sm">{receipt.notes}</p>
+                    </div>
+                  )}
                 </div>
 
                 {docUrls.length > 0 && (
-                  <div className="bg-card p-6 rounded-xl border border-border">
-                    <h2 className="text-lg font-semibold mb-4">
+                  <div className="bg-card p-6 rounded-xl border border-border space-y-4">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      <FileText size={14} />
                       {t("page.goodsReceipt.detail.documentation")}
-                    </h2>
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {docUrls.map((url, i) => (
                         <img
@@ -212,113 +273,178 @@ const DetailGoodsReceipt = () => {
                   </div>
                 )}
 
-                <div className="bg-card p-6 rounded-xl border border-border">
-                  <h2 className="text-lg font-semibold mb-4">
+                <div className="bg-card p-6 rounded-xl border border-border space-y-4">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    <Package size={14} />
                     {t("page.goodsReceipt.detail.itemsReceived")}
-                  </h2>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[640px]">
-                      <thead>
-                        <tr className="border-b text-left text-muted-foreground">
-                          <th className="pb-2">{t("page.goodsReceipt.detail.product")}</th>
-                          <th className="pb-2 text-right">{t("page.goodsReceipt.detail.qty")}</th>
-                          <th className="pb-2 text-center">{t("page.goodsReceipt.detail.unit")}</th>
-                          <th className="pb-2 text-center">
-                            {t("page.goodsReceipt.detail.conversion")}
-                          </th>
-                          <th className="pb-2 text-right">
-                            {t("page.goodsReceipt.detail.costPrice")}
-                          </th>
-                          <th className="pb-2 text-center">
-                            {t("page.goodsReceipt.add.table.batch")}
-                          </th>
-                          <th className="pb-2 text-center">
-                            {t("page.goodsReceipt.add.table.expiry")}
-                          </th>
-                          <th className="pb-2">{t("page.goodsReceipt.detail.notes")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {receipt.items?.length > 0 ? (
-                          receipt.items.map((item, i) => (
-                            <tr key={i} className="border-b border-muted/20">
-                              <td className="py-2">
+                  </div>
+                  {grItems.length > 0 ? (
+                    <div className="space-y-3">
+                      {grItems.map((item, i) => (
+                        <div
+                          key={i}
+                          className="rounded-xl border border-border bg-background overflow-hidden">
+                          <div className="flex items-center justify-between gap-3 px-4 py-3 bg-muted/40 border-b border-border/60">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Package size={14} className="text-muted-foreground shrink-0" />
+                              <span className="text-sm font-semibold truncate">
                                 {item.productData?.nameProduct || item.ingredientName || "-"}
-                              </td>
-                              <td className="py-2 text-right font-mono">{item.qtyReceived}</td>
-                              <td className="py-2 text-center">{item.unit || "pcs"}</td>
-                              <td className="py-2 text-center">
-                                <span className="font-mono">{item.conversionToBase || 1}</span>
-                                {Number(item.qtyStock) > 0 && (
-                                  <span className="text-xs text-muted-foreground ml-1">
-                                    (= {Number(item.qtyStock).toLocaleString("id-ID")} stok)
-                                  </span>
-                                )}
-                              </td>
-                              <td className="py-2 text-right font-mono">
+                              </span>
+                            </div>
+                            {Number(item.qtyReceived) > 0 ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0">
+                                <CheckCircle2 size={10} />
+                                {t("page.goodsReceipt.add.status.pas")}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 shrink-0">
+                                <AlertTriangle size={10} />0
+                              </span>
+                            )}
+                          </div>
+                          <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <span className="text-[11px] text-muted-foreground block mb-0.5">
+                                {t("page.goodsReceipt.detail.qty")}
+                              </span>
+                              <span className="font-semibold">{item.qtyReceived || 0}</span>
+                            </div>
+                            <div>
+                              <span className="text-[11px] text-muted-foreground block mb-0.5">
+                                {t("page.goodsReceipt.detail.unit")}
+                              </span>
+                              <span className="inline-flex px-2 py-0.5 rounded text-xs bg-muted capitalize">
+                                {item.unit || "pcs"}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[11px] text-muted-foreground block mb-0.5">
+                                {t("page.goodsReceipt.detail.conversion")}
+                              </span>
+                              <span className="font-mono text-xs">
+                                {item.conversionToBase || 1}{" "}
+                                <span className="text-muted-foreground">
+                                  ={" "}
+                                  {Number(
+                                    item.qtyStock ||
+                                      Number(item.qtyReceived) * (item.conversionToBase || 1)
+                                  ).toLocaleString("id-ID")}{" "}
+                                  stok
+                                </span>
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[11px] text-muted-foreground block mb-0.5">
+                                {t("page.goodsReceipt.detail.costPrice")}
+                              </span>
+                              <span className="font-semibold">
                                 {Number(item.costPrice) > 0
                                   ? "Rp " + Number(item.costPrice).toLocaleString("id-ID")
                                   : "-"}
-                                {Number(item.landedCost) > 0 && (
-                                  <p className="text-[10px] text-emerald-600 font-normal">
-                                    {t("page.goodsReceipt.detail.landed")}: +Rp{" "}
-                                    {Number(item.landedCost).toLocaleString("id-ID")}
-                                  </p>
-                                )}
-                              </td>
-                              <td className="py-2 text-center font-mono text-xs">
-                                {item.batchNumber || "-"}
-                              </td>
-                              <td className="py-2 text-center font-mono text-xs">
+                              </span>
+                              {Number(item.landedCost) > 0 && (
+                                <p className="text-[10px] text-emerald-600 mt-0.5">
+                                  {t("page.goodsReceipt.detail.landed")}: +Rp{" "}
+                                  {Number(item.landedCost).toLocaleString("id-ID")}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="px-4 pb-4 grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <span className="text-[11px] text-muted-foreground block mb-0.5">
+                                {t("page.goodsReceipt.add.table.batch")}
+                              </span>
+                              <span className="font-mono text-xs">{item.batchNumber || "-"}</span>
+                            </div>
+                            <div>
+                              <span className="text-[11px] text-muted-foreground block mb-0.5">
+                                {t("page.goodsReceipt.add.table.expiry")}
+                              </span>
+                              <span className="font-mono text-xs">
                                 {item.expiryDate
                                   ? new Date(item.expiryDate).toLocaleDateString("id")
                                   : "-"}
-                              </td>
-                              <td className="py-2">{item.conditionNotes || "-"}</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={8} className="py-4 text-center text-muted-foreground">
-                              {t("page.goodsReceipt.detail.noItems")}
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[11px] text-muted-foreground block mb-0.5">
+                                {t("page.goodsReceipt.detail.notes")}
+                              </span>
+                              <span className="text-xs">{item.conditionNotes || "-"}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {t("page.goodsReceipt.detail.noItems")}
+                    </p>
+                  )}
                 </div>
 
-                {receipt.purchaseOrderItems?.length > 0 && (
-                  <div className="bg-card p-6 rounded-xl border border-border">
-                    <h2 className="text-lg font-semibold mb-4">
+                {poItems.length > 0 && (
+                  <div className="bg-card p-6 rounded-xl border border-border space-y-4">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      <BarChart3 size={14} />
                       {t("page.goodsReceipt.detail.poItems")}
-                    </h2>
+                    </div>
                     <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
+                      <table className="w-full text-sm min-w-[500px]">
                         <thead>
                           <tr className="border-b text-left text-muted-foreground">
-                            <th className="pb-2">{t("page.goodsReceipt.detail.product")}</th>
-                            <th className="pb-2 text-right">
+                            <th className="pb-2 font-semibold text-xs">
+                              {t("page.goodsReceipt.detail.product")}
+                            </th>
+                            <th className="pb-2 text-right font-semibold text-xs">
                               {t("page.goodsReceipt.detail.qtyPo")}
                             </th>
-                            <th className="pb-2 text-right">
+                            <th className="pb-2 text-right font-semibold text-xs">
                               {t("page.goodsReceipt.detail.qtyReceived")}
                             </th>
+                            <th className="pb-2 text-center font-semibold text-xs w-32">Status</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {receipt.purchaseOrderItems.map((poItem, i) => (
-                            <tr key={i} className="border-b border-muted/20">
-                              <td className="py-2">
-                                {poItem.product || poItem.ingredientName || "-"}
-                              </td>
-                              <td className="py-2 text-right font-mono">{poItem.quantity}</td>
-                              <td className="py-2 text-right font-mono">
-                                {poItem.receivedQuantity || 0}
-                              </td>
-                            </tr>
-                          ))}
+                          {poItems.map((pi, i) => {
+                            const ordered = Number(pi.quantity) || 0;
+                            const received = Number(pi.receivedQuantity) || 0;
+                            const isDone = ordered > 0 && received >= ordered;
+                            const pct = ordered > 0 ? Math.min(100, (received / ordered) * 100) : 0;
+                            return (
+                              <tr key={i} className="border-b border-muted/20">
+                                <td className="py-2.5 font-medium">
+                                  {pi.product || pi.ingredientName || "-"}
+                                </td>
+                                <td className="py-2.5 text-right font-mono">{ordered}</td>
+                                <td className="py-2.5 text-right font-mono">
+                                  <span className={isDone ? "text-emerald-600 font-semibold" : ""}>
+                                    {received}
+                                  </span>
+                                </td>
+                                <td className="py-2.5">
+                                  <div className="flex items-center gap-2 justify-center">
+                                    <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden max-w-[80px]">
+                                      <div
+                                        className={`h-full rounded-full ${
+                                          isDone ? "bg-emerald-500" : "bg-amber-500"
+                                        }`}
+                                        style={{ width: `${pct}%` }}
+                                      />
+                                    </div>
+                                    {isDone ? (
+                                      <CheckCircle2 size={12} className="text-emerald-500" />
+                                    ) : (
+                                      <span className="text-[10px] text-muted-foreground font-medium">
+                                        {received}/{ordered}
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -327,87 +453,146 @@ const DetailGoodsReceipt = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="bg-card p-6 rounded-xl border border-border">
-                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                <div className="bg-card p-6 rounded-xl border border-border space-y-4">
+                  <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.goodsReceipt.detail.statusLabel")}
                   </h2>
                   <div
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${st.class}`}>
-                    <FileText size={14} />{" "}
-                    {t(`page.goodsReceipt.detail.status.${receipt.status || "draft"}`)}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${stBadgeClass}`}>
+                    <FileText size={14} /> {stLabel}
                   </div>
+
                   {totalOrdered > 0 && (
                     <>
-                      <div className="border-t border-border my-4" />
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {t("page.goodsReceipt.detail.receivingStatus")}
-                      </p>
-                      <div
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
-                          receivingDone
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
-                            : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
-                        }`}>
-                        {receivingDone
-                          ? t("page.goodsReceipt.add.status.selesai")
-                          : t("page.goodsReceipt.add.status.belumSelesai")}
-                        {!receivingDone && (
-                          <span className="font-normal">
-                            ({totalReceived.toLocaleString("id-ID")}/
-                            {totalOrdered.toLocaleString("id-ID")})
-                          </span>
-                        )}
+                      <div className="border-t border-border" />
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {t("page.goodsReceipt.detail.receivingStatus")}
+                        </p>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span
+                              className={
+                                receivingDone
+                                  ? "text-emerald-600 font-medium"
+                                  : "text-muted-foreground"
+                              }>
+                              {receivingDone
+                                ? t("page.goodsReceipt.add.items.summaryCompleted")
+                                : t("page.goodsReceipt.add.items.summaryPending")}
+                            </span>
+                            <span className="font-medium text-muted-foreground">
+                              {completedItems}/{poItems.length} item
+                            </span>
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${
+                                receivingDone ? "bg-emerald-500" : "bg-amber-500"
+                              }`}
+                              style={{ width: `${receivingPct}%` }}
+                            />
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            {totalReceivedNow.toLocaleString("id-ID")} /{" "}
+                            {totalOrdered.toLocaleString("id-ID")} unit
+                          </p>
+                        </div>
                       </div>
                     </>
                   )}
                 </div>
 
+                <div className="bg-card p-6 rounded-xl border border-border space-y-4">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    <BarChart3 size={14} />
+                    {t("page.goodsReceipt.add.items.summaryTitle")}
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">
+                        {t("page.goodsReceipt.add.items.summaryTotalReceived")}
+                      </span>
+                      <span className="font-semibold text-emerald-600">
+                        {totalReceivedNow.toLocaleString("id-ID")} /{" "}
+                        {totalOrdered.toLocaleString("id-ID")}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">
+                        {t("page.goodsReceipt.add.items.summaryRemaining")}
+                      </span>
+                      <span className="font-semibold text-amber-600">
+                        {Math.max(0, totalOrdered - totalReceivedNow).toLocaleString("id-ID")}
+                      </span>
+                    </div>
+                    {shippingCost > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">
+                          {t("page.goodsReceipt.add.form.shippingCost")}
+                        </span>
+                        <span className="font-semibold">
+                          Rp {shippingCost.toLocaleString("id-ID")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="bg-card p-6 rounded-xl border border-border">
-                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                  <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
                     {t("page.goodsReceipt.detail.systemInfo")}
                   </h2>
-                  <div className="space-y-3">
+                  <div className="space-y-3 text-sm">
                     <div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground">
                         {t("page.goodsReceipt.detail.createdAt")}
                       </p>
-                      <p className="text-sm font-medium">
+                      <p className="font-medium">
                         {receipt.createdAt
                           ? new Date(receipt.createdAt).toLocaleDateString("id", {
                               day: "numeric",
                               month: "long",
-                              year: "numeric"
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
                             })
                           : "-"}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground">
                         {t("page.goodsReceipt.detail.updatedAt")}
                       </p>
-                      <p className="text-sm font-medium">
+                      <p className="font-medium">
                         {receipt.updatedAt
                           ? new Date(receipt.updatedAt).toLocaleDateString("id", {
                               day: "numeric",
                               month: "long",
-                              year: "numeric"
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
                             })
                           : "-"}
                       </p>
                     </div>
                     <div className="border-t border-border pt-3">
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground">
                         {t("page.goodsReceipt.detail.createdBy")}
                       </p>
-                      <p className="text-sm font-medium">
+                      <p className="font-medium">
                         {receipt.createdByUser?.fullName || receipt.createdByUser?.userName || "-"}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground">
                         {t("page.goodsReceipt.detail.updatedBy")}
                       </p>
-                      <p className="text-sm font-medium">-</p>
+                      <p className="font-medium">
+                        {receipt.modifiedByUser?.fullName ||
+                          receipt.modifiedByUser?.userName ||
+                          "-"}
+                      </p>
                     </div>
                   </div>
                 </div>

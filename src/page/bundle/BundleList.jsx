@@ -5,10 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
-import { Plus, Eye, Edit, Trash2, Package, Zap } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Package, Zap, Clock, XCircle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { getBundles, deleteBundle } from "@/services/productBundle";
+import { getBundles, deleteBundle, changeBundleStatus } from "@/services/productBundle";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
 import { SearchInput } from "@/components/ui/SearchInput";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
@@ -40,6 +43,37 @@ const BundleList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [statusTarget, setStatusTarget] = useState(null);
+  // ponytail: masa berlaku bisa diubah langsung dari modal aktivasi
+  const [activateForm, setActivateForm] = useState({
+    fromDate: null,
+    fromTime: "00:00",
+    untilDate: null,
+    untilTime: "23:59"
+  });
+
+  const openStatusModal = (row) => {
+    setStatusTarget(row);
+    if (row.status === "active") return;
+    const from = row.validFrom ? new Date(row.validFrom) : null;
+    const until = row.validUntil ? new Date(row.validUntil) : null;
+    const fmtTime = (d) =>
+      `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    setActivateForm({
+      fromDate: from,
+      fromTime: from ? fmtTime(from) : "00:00",
+      untilDate: until,
+      untilTime: until ? fmtTime(until) : "23:59"
+    });
+  };
+
+  const combineDateTime = (date, time) => {
+    if (!date) return null;
+    const d = new Date(date);
+    const [hours, minutes] = (time || "00:00").split(":");
+    d.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    return d;
+  };
 
   const isFiltered = search !== "" || statusFilter !== "all" || storeFilter !== "all";
 
@@ -74,6 +108,24 @@ const BundleList = () => {
       });
       queryClient.invalidateQueries(["bundles"]);
       setDeleteTarget(null);
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
+
+  const statusMutation = useMutation(({ id, status }) => changeBundleStatus(id, status), {
+    onSuccess: (_data, variables) => {
+      toast.success(t("common.success"), {
+        description:
+          variables.status === "active"
+            ? t("page.bundle.activateSuccess")
+            : t("page.bundle.deactivateSuccess")
+      });
+      queryClient.invalidateQueries(["bundles"]);
+      setStatusTarget(null);
     },
     onError: (err) => {
       toast.error(t("common.error"), {
@@ -140,6 +192,20 @@ const BundleList = () => {
       }
     };
     return safeGet(map, status) ?? map.draft;
+  };
+
+  // ponytail: indikator masa berlaku, pola sama dengan DiscountList —
+  // expired kalau lewat validUntil, expiring kalau sisa <= 7 hari
+  const getExpiryStatus = (row) => {
+    const now = new Date();
+    if (row.validFrom && new Date(row.validFrom) > now) return null;
+    if (!row.validUntil) return null;
+    const endDate = new Date(row.validUntil);
+    if (isNaN(endDate.getTime())) return null;
+    const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return "expired";
+    if (diffDays <= 7) return "expiring";
+    return null;
   };
 
   const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;
@@ -238,6 +304,43 @@ const BundleList = () => {
       )
     },
     {
+      header: t("page.bundle.list.validity"),
+      render: (row) => {
+        const expiryStatus = getExpiryStatus(row);
+        const hasStart = !!row.validFrom;
+        const hasEnd = !!row.validUntil;
+
+        let validityText = "";
+        if (!hasStart && !hasEnd) {
+          validityText = t("page.bundle.list.validity.unlimited");
+        } else if (hasStart && !hasEnd) {
+          validityText = `${formatDate(row.validFrom)} →`;
+        } else if (!hasStart && hasEnd) {
+          validityText = `→ ${formatDate(row.validUntil)}`;
+        } else {
+          validityText = `${formatDate(row.validFrom)} - ${formatDate(row.validUntil)}`;
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-xs">{validityText}</span>
+            {expiryStatus === "expiring" && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
+                <Clock size={12} />
+                {t("page.bundle.list.expiringSoon")}
+              </span>
+            )}
+            {expiryStatus === "expired" && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                <XCircle size={12} />
+                {t("page.bundle.list.expired")}
+              </span>
+            )}
+          </div>
+        );
+      }
+    },
+    {
       header: t("common.status"),
       render: (row) => {
         const s = statusBadge(row.status);
@@ -284,6 +387,8 @@ const BundleList = () => {
       legend: [
         { icon: Eye, label: t("common.view") },
         { icon: Edit, label: t("common.edit") },
+        { icon: RotateCcw, label: t("common.activate") },
+        { icon: XCircle, label: t("common.deactivate") },
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (row) => (
@@ -291,23 +396,41 @@ const BundleList = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-8 w-8 text-foreground"
             onClick={() => navigate(`/bundle/${row.id}`)}>
-            <Eye size={14} />
+            <Eye size={18} />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-8 w-8 text-primary"
             onClick={() => navigate(`/bundle/edit/${row.id}`)}>
-            <Edit size={14} />
+            <Edit size={18} />
           </Button>
+          {row.status === "active" ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-600 hover:text-red-700"
+              onClick={() => openStatusModal(row)}>
+              <XCircle size={18} />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-green-600 hover:text-green-700"
+              disabled={row.validUntil && new Date(row.validUntil) < new Date()}
+              onClick={() => openStatusModal(row)}>
+              <RotateCcw size={18} />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-destructive hover:text-destructive"
+            className="h-8 w-8 text-destructive hover:text-destructive"
             onClick={() => setDeleteTarget(row)}>
-            <Trash2 size={14} />
+            <Trash2 size={18} />
           </Button>
         </div>
       )
@@ -453,6 +576,92 @@ const BundleList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={() => deleteMutation.mutate(deleteTarget?.id)}
       />
+
+      {/* ponytail: konfirmasi aktif/non-aktif dari tabel. Saat mengaktifkan,
+          tampilkan tanggal mulai & berakhir — pakai type="form" agar children
+          (info masa berlaku) ikut dirender */}
+      <Modal
+        open={!!statusTarget}
+        onOpenChange={() => setStatusTarget(null)}
+        type={statusTarget?.status === "active" ? "confirm" : "form"}
+        className="w-[90vw] sm:max-w-[60vw]"
+        title={
+          statusTarget?.status === "active"
+            ? t("page.bundle.modal.deactivateTitle")
+            : t("page.bundle.modal.activateTitle")
+        }
+        description={
+          statusTarget?.status === "active"
+            ? t("page.bundle.modal.deactivateDescription", { name: statusTarget?.name || "" })
+            : t("page.bundle.modal.activateDescription", { name: statusTarget?.name || "" })
+        }
+        confirmText={
+          statusTarget?.status === "active" ? t("common.deactivate") : t("common.activate")
+        }
+        cancelText={t("common.cancel")}
+        loading={statusMutation.isLoading}
+        onConfirm={() => {
+          if (statusTarget.status === "active") {
+            statusMutation.mutate({ id: statusTarget.id, status: "inactive" });
+            return;
+          }
+          // ponytail: saat aktivasi, kirim masa berlaku terbaru dari picker
+          statusMutation.mutate({
+            id: statusTarget.id,
+            status: "active",
+            validFrom:
+              combineDateTime(activateForm.fromDate, activateForm.fromTime)?.toISOString() ?? null,
+            validUntil:
+              combineDateTime(activateForm.untilDate, activateForm.untilTime)?.toISOString() ?? null
+          });
+        }}>
+        {statusTarget && statusTarget.status !== "active" && (
+          <div className="space-y-3 rounded-lg border border-border bg-muted/40 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("page.bundle.list.validity")}
+            </p>
+            <div className="grid grid-cols-12 gap-2 items-end">
+              <div className="col-span-6 space-y-1">
+                <Label className="text-xs">{t("page.bundle.form.validFrom")}</Label>
+                <DatePicker
+                  date={activateForm.fromDate}
+                  setDate={(d) => setActivateForm((f) => ({ ...f, fromDate: d }))}
+                  placeholder={t("page.bundle.form.validFrom")}
+                />
+              </div>
+              <div className="col-span-6">
+                <TimePicker
+                  value={activateForm.fromTime}
+                  onChange={(v) => setActivateForm((f) => ({ ...f, fromTime: v }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-12 gap-2 items-end">
+              <div className="col-span-6 space-y-1">
+                <Label className="text-xs">{t("page.bundle.form.validUntil")}</Label>
+                <DatePicker
+                  date={activateForm.untilDate}
+                  setDate={(d) => setActivateForm((f) => ({ ...f, untilDate: d }))}
+                  minDate={activateForm.fromDate || undefined}
+                  disabled={!activateForm.fromDate}
+                  placeholder={
+                    !activateForm.fromDate
+                      ? t("page.bundle.form.validFromFirst")
+                      : t("page.bundle.form.validUntil")
+                  }
+                />
+              </div>
+              <div className="col-span-6">
+                <TimePicker
+                  value={activateForm.untilTime}
+                  onChange={(v) => setActivateForm((f) => ({ ...f, untilTime: v }))}
+                  disabled={!activateForm.fromDate}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

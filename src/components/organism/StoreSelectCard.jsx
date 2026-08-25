@@ -1,7 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Store, Plus, Check, Info, Loader2 } from "lucide-react";
+import { Store, Plus, Check, Info, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const StoreSelectCardSkeleton = () => (
+  <div className="space-y-3">
+    <Skeleton className="h-10 w-full rounded-lg" />
+    <Skeleton className="h-[72px] w-full rounded-lg" />
+  </div>
+);
 
 const StoreSelectCard = ({
   locations,
@@ -76,10 +84,7 @@ const StoreSelectCard = ({
         )}
       </div>
       {locationsLoading ? (
-        <div className="flex items-center gap-3 pl-9">
-          <Loader2 size={18} className="animate-spin text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Memuat toko...</p>
-        </div>
+        <StoreSelectCardSkeleton />
       ) : locations.length === 0 ? (
         <div className="flex items-center gap-3 pl-9">
           <p className="text-sm text-muted-foreground">{noStoreLabel}</p>
@@ -89,108 +94,96 @@ const StoreSelectCard = ({
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div
-            className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-              allStores
-                ? "bg-primary/10 border-primary"
-                : "bg-background border-border hover:border-primary/50 cursor-pointer"
-            }`}
-            onClick={() => {
-              if (!allStores) {
-                onAllStoresChange?.(true);
-                onChange([]);
+        <div className="space-y-3">
+          {/* ponytail: tab segmented — Semua Toko vs pilih spesifik, state ikut allStores */}
+          <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-lg">
+            {[
+              { id: "all", label: t("page.category.form.storeSection.allStores"), icon: Store },
+              {
+                id: "specific",
+                label: t("page.category.form.storeSection.specificTab"),
+                icon: LayoutGrid
               }
-            }}>
-            <div
-              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${
-                allStores ? "border-primary" : "border-muted-foreground"
-              }`}>
-              {allStores && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p
-                className={`text-sm font-medium ${allStores ? "text-primary" : "text-foreground"}`}>
-                {t("page.category.form.storeSection.allStores")}
-              </p>
+            ].map((tab) => {
+              const isActive = allStores ? tab.id === "all" : tab.id === "specific";
+              const TabIcon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    if (isActive) return;
+                    if (tab.id === "all") {
+                      onAllStoresChange?.(true);
+                      onChange([]);
+                    } else {
+                      onAllStoresChange?.(false);
+                    }
+                  }}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-background text-primary shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}>
+                  <TabIcon size={14} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {allStores ? (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/40 border border-border/50">
+              <Info size={14} className="text-muted-foreground shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground">
                 {t("page.category.form.storeSection.allStoresDesc")}
               </p>
             </div>
-            {allStores && <Check size={16} className="text-primary shrink-0 mt-0.5" />}
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                {t("page.category.form.storeSection.orSpecific")}
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            {locations.length > 1 && !allStores && (
-              <button
-                type="button"
-                onClick={handleSelectAll}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground">
-                <div
-                  className={`w-4 h-4 rounded border flex items-center justify-center ${
-                    allSelected
-                      ? "bg-primary border-primary text-primary-foreground"
-                      : "border-muted-foreground"
-                  }`}>
-                  {allSelected && <Check size={12} strokeWidth={3} />}
-                </div>
-                {t("common.selectAll")}
-              </button>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {locations.map((loc) => {
-                const isChecked = selectedStores.includes(loc.id);
-                return (
-                  <button
-                    key={loc.id}
-                    type="button"
-                    onClick={() => {
-                      if (allStores) {
-                        onAllStoresChange?.(false);
-                        onChange([loc.id]);
-                      } else {
+          ) : (
+            <div className="space-y-2">
+              {locations.length > 1 && (
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground">
+                  <div
+                    className={`w-4 h-4 rounded border flex items-center justify-center ${
+                      allSelected
+                        ? "bg-primary border-primary text-primary-foreground"
+                        : "border-muted-foreground"
+                    }`}>
+                    {allSelected && <Check size={12} strokeWidth={3} />}
+                  </div>
+                  {t("common.selectAll")}
+                </button>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {locations.map((loc) => {
+                  const isChecked = selectedStores.includes(loc.id);
+                  return (
+                    <button
+                      key={loc.id}
+                      type="button"
+                      onClick={() =>
                         onChange(
                           isChecked
                             ? selectedStores.filter((id) => id !== loc.id)
                             : [...selectedStores, loc.id]
-                        );
+                        )
                       }
-                    }}
-                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                      allStores
-                        ? "bg-muted/30 border-border/50 text-muted-foreground/50"
-                        : isChecked
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                        isChecked
                           ? "bg-primary/10 border-primary text-primary"
                           : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    }`}>
-                    {loc.name}
-                    {isChecked && <Check size={14} strokeWidth={2.5} />}
-                  </button>
-                );
-              })}
-            </div>
-            {allStores && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/40 border border-border/50">
-                <Info size={14} className="text-muted-foreground shrink-0 mt-0.5" />
-                <p className="text-xs text-muted-foreground">
-                  {t("page.category.form.storeSection.allStoresDisableHint", {
-                    allStores: t("page.category.form.storeSection.allStores")
-                  })}
-                </p>
+                      }`}>
+                      {loc.name}
+                      {isChecked && <Check size={14} strokeWidth={2.5} />}
+                    </button>
+                  );
+                })}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

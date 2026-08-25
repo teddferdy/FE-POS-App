@@ -2,7 +2,7 @@ import { axiosInstance } from ".";
 
 export const getAllPurchaseOrder = async (payload) => {
   const query = new URLSearchParams({
-    store: payload?.location || "",
+    ...(payload?.stores ? { stores: payload.stores } : {}),
     page: payload?.page || 1,
     limit: payload?.limit || 10,
     search: payload?.search || "",
@@ -56,11 +56,22 @@ export const receivePurchaseOrder = async (id) => {
   return data;
 };
 
-export const returnPurchaseOrder = async (id, payload) => {
-  const { data, status } = await axiosInstance.post(`/purchase-return/create`, {
-    purchaseOrder: id,
-    ...payload
-  });
+export const returnPurchaseOrder = async (id, payload, files = []) => {
+  const fileList = Array.isArray(files) ? files : files ? [files] : [];
+  const body = { purchaseOrder: id, ...payload };
+  if (fileList.length > 0) {
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(body));
+    fileList.forEach((f) => {
+      if (f instanceof File) formData.append("file", f);
+    });
+    const { data, status } = await axiosInstance.post(`/purchase-return/create`, formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+    if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+    return data;
+  }
+  const { data, status } = await axiosInstance.post(`/purchase-return/create`, body);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };

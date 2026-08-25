@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Save, X, Check } from "lucide-react";
+import { Save, X, Check, Info, ArrowRightLeft, Package, ToggleLeft } from "lucide-react";
 import { getIngredientById, editIngredient, getProductNamesByFilters } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllIngredientCategory } from "@/services/ingredientCategory";
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Combobox } from "@/components/ui/combobox";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Form,
   FormField,
@@ -62,6 +63,7 @@ const EditIngredient = () => {
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("informasi");
 
   const unitOptions = [
     { value: "pcs", label: t("page.ingredient.form.unitPcs") },
@@ -378,7 +380,10 @@ const EditIngredient = () => {
                         Toko <span className="text-destructive">*</span>
                       </FormLabel>
                       <Combobox
-                        options={locations.map((l) => ({ value: String(l.id), label: l.name }))}
+                        options={locations.map((l) => ({
+                          value: String(l.id),
+                          label: l.name
+                        }))}
                         value={field.value || ""}
                         onChange={(v) => field.onChange(v || null)}
                         placeholder={t("page.ingredient.edit.selectStorePlaceholder")}
@@ -390,11 +395,31 @@ const EditIngredient = () => {
                   )}
                 />
               )}
-              <div className="space-y-6">
-                <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                  <h3 className="text-base font-semibold text-foreground mb-6">
-                    {t("page.ingredient.add.sectionInformasi")}
-                  </h3>
+
+              {/* ponytail: tab layout pola /add-supplier */}
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <div className="overflow-x-auto -mx-1 px-1 mb-4">
+                  <TabsList className="grid w-full grid-cols-4 min-w-[480px]">
+                    <TabsTrigger value="informasi" className="gap-1.5">
+                      <Info size={14} />
+                      {t("page.ingredient.add.sectionInformasi")}
+                    </TabsTrigger>
+                    <TabsTrigger value="konversi" className="gap-1.5">
+                      <ArrowRightLeft size={14} />
+                      {t("page.ingredient.form.sectionKonversi")}
+                    </TabsTrigger>
+                    <TabsTrigger value="stok" className="gap-1.5">
+                      <Package size={14} />
+                      {t("page.ingredient.form.sectionStok")}
+                    </TabsTrigger>
+                    <TabsTrigger value="status" className="gap-1.5">
+                      <ToggleLeft size={14} />
+                      {t("page.ingredient.form.sectionStatus")}
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="informasi" className="mt-0">
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
                       <FormField
@@ -409,7 +434,10 @@ const EditIngredient = () => {
                             <Combobox
                               options={suppliers
                                 .filter((s) => s.status === "active")
-                                .map((s) => ({ value: String(s.id), label: s.name }))}
+                                .map((s) => ({
+                                  value: String(s.id),
+                                  label: s.name
+                                }))}
                               value={field.value || ""}
                               onChange={(v) => field.onChange(v || null)}
                               placeholder={
@@ -434,11 +462,15 @@ const EditIngredient = () => {
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                               {t("page.ingredient.form.categoryLabel")}
+                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <Combobox
                               options={categories
                                 .filter((c) => c.status === "active")
-                                .map((c) => ({ value: String(c.id), label: c.name }))}
+                                .map((c) => ({
+                                  value: String(c.id),
+                                  label: c.name
+                                }))}
                               value={field.value || ""}
                               onChange={(v) => field.onChange(v || null)}
                               placeholder={
@@ -497,108 +529,105 @@ const EditIngredient = () => {
                         )}
                       />
                     </div>
-                  </div>
 
-                  {!!watchSupplier && (
-                    <div className="mt-6 border rounded-lg overflow-hidden">
-                      <div className="bg-muted/50 px-4 py-3 border-b">
-                        <p className="text-sm font-semibold text-foreground">
-                          Produk yang Disediakan
-                        </p>
-                      </div>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="border-b bg-muted/30">
-                              <th className="text-left px-3 py-2 font-medium text-muted-foreground w-8">
-                                No
-                              </th>
-                              <th className="text-left px-3 py-2 font-medium text-muted-foreground">
-                                Nama Produk
-                              </th>
-                              <th className="text-right px-3 py-2 font-medium text-muted-foreground">
-                                Harga
-                              </th>
-                              <th className="text-center px-3 py-2 font-medium text-muted-foreground">
-                                Satuan
-                              </th>
-                              <th className="text-center px-3 py-2 font-medium text-muted-foreground">
-                                Lead Time
-                              </th>
-                              <th className="text-center px-3 py-2 font-medium text-muted-foreground">
-                                Kualitas
-                              </th>
-                              <th className="text-center px-3 py-2 font-medium text-muted-foreground">
-                                Min Order
-                              </th>
-                              <th className="text-left px-3 py-2 font-medium text-muted-foreground">
-                                Catatan
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {allSupplierProductsLoading ? (
-                              <tr>
-                                <td
-                                  colSpan={8}
-                                  className="px-3 py-8 text-center text-muted-foreground">
-                                  Loading...
-                                </td>
+                    {!!watchSupplier && (
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="bg-muted/50 px-4 py-3 border-b">
+                          <p className="text-sm font-semibold text-foreground">
+                            Produk yang Disediakan
+                          </p>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b bg-muted/30">
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground w-8">
+                                  No
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  Nama Produk
+                                </th>
+                                <th className="text-right px-3 py-2 font-medium text-muted-foreground">
+                                  Harga
+                                </th>
+                                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                                  Satuan
+                                </th>
+                                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                                  Lead Time
+                                </th>
+                                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                                  Kualitas
+                                </th>
+                                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
+                                  Min Order
+                                </th>
+                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                                  Catatan
+                                </th>
                               </tr>
-                            ) : !allSupplierProductsData?.data?.length ? (
-                              <tr>
-                                <td
-                                  colSpan={8}
-                                  className="px-3 py-8 text-center text-muted-foreground">
-                                  Tidak ada produk tersedia
-                                </td>
-                              </tr>
-                            ) : (
-                              allSupplierProductsData.data.map((product, idx) => (
-                                <tr
-                                  key={product.id || idx}
-                                  className={`border-b last:border-b-0 transition-colors ${
-                                    watchName?.toLowerCase().trim() ===
-                                    product.name?.toLowerCase().trim()
-                                      ? "bg-primary/5"
-                                      : "hover:bg-muted/30"
-                                  }`}>
-                                  <td className="px-3 py-2 text-muted-foreground">{idx + 1}</td>
-                                  <td className="px-3 py-2 font-medium text-foreground">
-                                    {product.name}
-                                  </td>
-                                  <td className="px-3 py-2 text-right font-mono">
-                                    {product.price?.toLocaleString("id-ID") || "-"}
-                                  </td>
-                                  <td className="px-3 py-2 text-center">{product.unit || "-"}</td>
-                                  <td className="px-3 py-2 text-center">
-                                    {product.leadTime
-                                      ? `${product.leadTime} ${product.leadTimeUnit || ""}`
-                                      : "-"}
-                                  </td>
-                                  <td className="px-3 py-2 text-center">
-                                    {product.qualityRating || "-"}
-                                  </td>
-                                  <td className="px-3 py-2 text-center">
-                                    {product.minOrderQty || "-"}
-                                  </td>
-                                  <td className="px-3 py-2 text-muted-foreground max-w-[150px] truncate">
-                                    {product.notes || "-"}
+                            </thead>
+                            <tbody>
+                              {allSupplierProductsLoading ? (
+                                <tr>
+                                  <td
+                                    colSpan={8}
+                                    className="px-3 py-8 text-center text-muted-foreground">
+                                    Loading...
                                   </td>
                                 </tr>
-                              ))
-                            )}
-                          </tbody>
-                        </table>
+                              ) : !allSupplierProductsData?.data?.length ? (
+                                <tr>
+                                  <td
+                                    colSpan={8}
+                                    className="px-3 py-8 text-center text-muted-foreground">
+                                    Tidak ada produk tersedia
+                                  </td>
+                                </tr>
+                              ) : (
+                                allSupplierProductsData.data.map((product, idx) => (
+                                  <tr
+                                    key={product.id || idx}
+                                    className={`border-b last:border-b-0 transition-colors ${
+                                      watchName?.toLowerCase().trim() ===
+                                      product.name?.toLowerCase().trim()
+                                        ? "bg-primary/5"
+                                        : "hover:bg-muted/30"
+                                    }`}>
+                                    <td className="px-3 py-2 text-muted-foreground">{idx + 1}</td>
+                                    <td className="px-3 py-2 font-medium text-foreground">
+                                      {product.name}
+                                    </td>
+                                    <td className="px-3 py-2 text-right font-mono">
+                                      {product.price?.toLocaleString("id-ID") || "-"}
+                                    </td>
+                                    <td className="px-3 py-2 text-center">{product.unit || "-"}</td>
+                                    <td className="px-3 py-2 text-center">
+                                      {product.leadTime
+                                        ? `${product.leadTime} ${product.leadTimeUnit || ""}`
+                                        : "-"}
+                                    </td>
+                                    <td className="px-3 py-2 text-center">
+                                      {product.qualityRating || "-"}
+                                    </td>
+                                    <td className="px-3 py-2 text-center">
+                                      {product.minOrderQty || "-"}
+                                    </td>
+                                    <td className="px-3 py-2 text-muted-foreground max-w-[150px] truncate">
+                                      {product.notes || "-"}
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                </TabsContent>
 
-                <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                  <h3 className="text-base font-semibold text-foreground mb-6">
-                    {t("page.ingredient.form.sectionKonversi")}
-                  </h3>
+                <TabsContent value="konversi" className="mt-0">
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <FormField
@@ -724,115 +753,111 @@ const EditIngredient = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </TabsContent>
 
-                <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                  <h3 className="text-base font-semibold text-foreground mb-6">
-                    {t("page.ingredient.form.sectionStok")}
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="stock"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.ingredient.form.stockLabel")}
-                          </FormLabel>
-                          <Input
-                            type="text"
-                            inputMode="numeric"
-                            className="h-12"
-                            value={field.value}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
-                            }
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            {t("page.ingredient.form.stockDesc")}
-                          </p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="minStock"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <TabsContent value="stok" className="mt-0">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="stock"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.stockLabel")}
+                            </FormLabel>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              className="h-12"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                              }
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              {t("page.ingredient.form.stockDesc")}
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="minStock"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.minStockLabel")}
+                            </FormLabel>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              className="h-12"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                              }
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              {t("page.ingredient.form.minStockDesc")}
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="costPrice"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.priceLabel")}
+                            </FormLabel>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              className="h-12"
+                              value={field.value ? field.value.toLocaleString("id-ID") : "0"}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                              }
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="border-t border-border pt-4 mt-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="material-symbols-outlined text-primary text-base">
+                          inventory_2
+                        </span>
+                        <span className="text-sm font-semibold text-foreground">
+                          {t("page.ingredient.form.sidebarManajemenStok")}
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
+                        <p>
+                          {t("page.ingredient.form.sidebarStokDesc")}{" "}
+                          <span className="text-foreground font-medium">
                             {t("page.ingredient.form.minStockLabel")}
-                          </FormLabel>
-                          <Input
-                            type="text"
-                            inputMode="numeric"
-                            className="h-12"
-                            value={field.value}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
-                            }
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            {t("page.ingredient.form.minStockDesc")}
-                          </p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="costPrice"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.ingredient.form.priceLabel")}
-                          </FormLabel>
-                          <Input
-                            type="text"
-                            inputMode="numeric"
-                            className="h-12"
-                            value={field.value ? field.value.toLocaleString("id-ID") : "0"}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
-                            }
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="border-t border-border pt-4 mt-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="material-symbols-outlined text-primary text-base">
-                        inventory_2
-                      </span>
-                      <span className="text-sm font-semibold text-foreground">
-                        {t("page.ingredient.form.sidebarManajemenStok")}
-                      </span>
-                    </div>
-                    <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
-                      <p>
-                        {t("page.ingredient.form.sidebarStokDesc")}{" "}
-                        <span className="text-foreground font-medium">
-                          {t("page.ingredient.form.minStockLabel")}
-                        </span>{" "}
-                        {t("page.ingredient.form.sidebarStokDesc2")}
-                      </p>
+                          </span>{" "}
+                          {t("page.ingredient.form.sidebarStokDesc2")}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </TabsContent>
 
-                <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                  <h3 className="text-base font-semibold text-foreground mb-6">
-                    {t("page.ingredient.form.sectionStatus")}
-                  </h3>
+                <TabsContent value="status" className="mt-0">
                   <FormField
                     control={form.control}
                     name="isActive"
                     render={({ field }) => (
                       <FormItem>
                         <div
-                          className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                          className={`flex items-center justify-between p-4 rounded-lg ${
                             field.value
                               ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
                               : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
@@ -873,8 +898,8 @@ const EditIngredient = () => {
                       </FormItem>
                     )}
                   />
-                </div>
-              </div>
+                </TabsContent>
+              </Tabs>
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-6 mt-6 border-t">
                 <Button

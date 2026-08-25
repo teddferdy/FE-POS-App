@@ -326,6 +326,29 @@ const GoodsRequestList = () => {
               )}
             </>
           )}
+          {item.status === "cancelled" && (
+            <>
+              {canAccess(user, MENU_KEY, "update") && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-blue-600"
+                  onClick={() => navigate(`/edit-goods-request?id=${item.id}`)}
+                  title={t("page.goodsRequest.list.editTitle")}>
+                  <Edit size={18} />
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "delete") && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive"
+                  onClick={() => setDeleteTarget(item.id)}>
+                  <Trash2 size={18} />
+                </Button>
+              )}
+            </>
+          )}
         </div>
       )
     }
