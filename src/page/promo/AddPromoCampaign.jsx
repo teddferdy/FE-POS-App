@@ -261,7 +261,9 @@ const AddPromoCampaign = () => {
             birthday: {},
             first_purchase: {}
           };
-          const defaultCondition = Object.prototype.hasOwnProperty.call(defaults, value) ? defaults[value] : {};
+          const defaultCondition = Object.prototype.hasOwnProperty.call(defaults, value)
+            ? defaults[value]
+            : {};
           return { ...rule, ruleType: value, condition: defaultCondition };
         }
         if (field.startsWith("condition.")) {
