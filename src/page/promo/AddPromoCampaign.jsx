@@ -253,17 +253,16 @@ const AddPromoCampaign = () => {
       rules.map((rule, i) => {
         if (i !== index) return rule;
         if (field === "ruleType") {
-          const defaults = {
-            buy_x_get_y: { productIdX: null, qtyX: 1, productIdY: null, qtyY: 1 },
-            spend_threshold: { minAmount: 0 },
-            member_tier: { tierId: null },
-            time: {},
-            birthday: {},
-            first_purchase: {}
-          };
-          const defaultCondition = Object.prototype.hasOwnProperty.call(defaults, value)
-            ? defaults[value]
-            : {};
+          let defaultCondition = {};
+          if (value === "buy_x_get_y") {
+            defaultCondition = { productIdX: null, qtyX: 1, productIdY: null, qtyY: 1 };
+          } else if (value === "spend_threshold") {
+            defaultCondition = { minAmount: 0 };
+          } else if (value === "member_tier") {
+            defaultCondition = { tierId: null };
+          } else {
+            defaultCondition = {};
+          }
           return { ...rule, ruleType: value, condition: defaultCondition };
         }
         if (field.startsWith("condition.")) {
