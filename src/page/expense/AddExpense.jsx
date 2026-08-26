@@ -341,7 +341,7 @@ const AddExpense = () => {
       payloads = [buildSingleExpensePayload({ base, values })];
     }
     setIsSaving(true);
-    createExpenses({ payloads, addExpense, bulkAddExpenses })
+    createExpenses({ payloads, singleCreate: addExpense, bulkCreate: bulkAddExpenses })
       .then(() => {
         queryClient.invalidateQueries(["expenses"]);
         setSuccessModal(true);

@@ -111,7 +111,7 @@ const AddPurchaseOrder = () => {
 
   const poSchema = z.object({
     store: z.number().min(1, t("page.purchaseOrder.add.validation.store")),
-    pic: z.number().min(1, t("page.purchaseOrder.add.validation.pic")),
+    pic: z.number().optional().nullable(),
     orderDate: z.date({ required_error: t("page.purchaseOrder.add.validation.orderDate") }),
     orderTime: z.string().min(1, t("page.purchaseOrder.add.validation.orderTime")),
     dueDate: z.date().nullable().optional(),
