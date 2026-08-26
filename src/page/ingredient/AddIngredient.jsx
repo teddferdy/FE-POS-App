@@ -89,7 +89,15 @@ const AddIngredient = () => {
   const ingredientFieldLabels = {
     name: "Nama Bahan Baku",
     supplier: "Supplier",
-    store: "Toko"
+    store: "Toko",
+    category: "Kategori",
+    unit: "Satuan",
+    baseUnit: "Satuan Dasar",
+    conversionFactor: "Faktor Konversi",
+    stock: "Stok",
+    minStock: "Stok Minimum",
+    costPrice: "Harga Beli",
+    isActive: "Status"
   };
 
   const formSchema = z.object({
