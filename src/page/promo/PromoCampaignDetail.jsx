@@ -2,7 +2,6 @@ import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { getCampaignById, updateCampaignStatus } from "@/services/promo";
@@ -91,8 +90,6 @@ const PromoCampaignDetail = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const queryClient = useQueryClient();
-  const [cookie] = useCookies();
-  const user = cookie?.user;
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [statusAction, setStatusAction] = useState(null);
 
