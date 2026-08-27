@@ -1,0 +1,397 @@
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { toast } from "sonner";
+import {
+  ArrowRightLeft,
+  BadgeCheck,
+  CalendarDays,
+  Check,
+  Clock,
+  Inbox,
+  MessageSquareText,
+  Store,
+  X,
+  XCircle
+} from "lucide-react";
+import { getShiftSwaps, updateShiftSwapStatus } from "@/services/shiftSwap";
+import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Loading } from "@/components/ui/loading";
+import Modal from "@/components/organism/modal";
+
+const fmt = (d) => {
+  if (!d) return "-";
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+};
+
+const fmtTime = (t) => (t ? String(t).slice(0, 5) : "??:??");
+
+const fmtDateTime = (d) => {
+  if (!d) return "-";
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+};
+
+const EmpAvatar = ({ emp, size = "w-10 h-10" }) => {
+  const name = emp?.fullName || emp?.userName || "?";
+  if (emp?.image) {
+    return (
+      <img
+        src={emp.image}
+        alt={name}
+        className={`${size} rounded-full object-cover shrink-0 bg-muted`}
+      />
+    );
+  }
+  return (
+    <div
+      className={`${size} rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 font-bold`}>
+      {name.charAt(0).toUpperCase()}
+    </div>
+  );
+};
+
+const roleLabel = (u) =>
+  u?.positionData?.name || u?.departmentData?.name || u?.roleType || "Karyawan";
+
+const statusBadge = (status) => {
+  const map = {
+    pending:
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+    approved:
+      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800",
+    rejected:
+      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800",
+    cancelled: "bg-muted text-muted-foreground border-border"
+  };
+  const labels = {
+    pending: "Menunggu",
+    approved: "Disetujui",
+    rejected: "Ditolak",
+    cancelled: "Dibatalkan"
+  };
+  return (
+    <span
+      className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border capitalize ${map[status] || map.pending}`}>
+      {labels[status] || status}
+    </span>
+  );
+};
+
+const shiftLabel = (s) => {
+  if (!s) return "-";
+  return `${s.name || "-"} (${fmtTime(s.startTime)} - ${fmtTime(s.endTime)})`;
+};
+
+const SwapApproval = ({ user, store, locations }) => {
+  const queryClient = useQueryClient();
+  const [status, setStatus] = useState("pending");
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
+  const [decisionTarget, setDecisionTarget] = useState(null);
+
+  const isAuthorized = user?.roleType === "super_admin" || user?.roleType === "admin";
+
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
+    ["shift-swaps", store, page, pageSize, status],
+    () => getShiftSwaps({ store, page, pageSize, status }),
+    { keepPreviousData: true, enabled: isAuthorized }
+  );
+
+  const swaps = data?.data || [];
+  const stats = data?.stats || {};
+  const pagination = data?.pagination || {};
+  const total = pagination?.total || 0;
+  const totalPages = pagination?.totalPage || Math.ceil(total / pageSize) || 1;
+
+  const decideMutation = useMutation(
+    ({ id, decision }) => updateShiftSwapStatus({ id, status: decision }),
+    {
+      onSuccess: (_res, vars) => {
+        toast.success("Berhasil", {
+          description:
+            vars.decision === "approved"
+              ? "Permintaan ubah jadwal disetujui."
+              : "Permintaan ubah jadwal ditolak."
+        });
+        queryClient.invalidateQueries(["shift-swaps"]);
+        setDecisionTarget(null);
+      },
+      onError: (err) => {
+        toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      }
+    }
+  );
+
+  const locationName = (sid) => locations.find((l) => String(l.id) === String(sid))?.name || null;
+
+  const confirmDecide = () => {
+    if (decisionTarget) {
+      decideMutation.mutate({
+        id: decisionTarget.swap.id || decisionTarget.swap._id,
+        decision: decisionTarget.decision
+      });
+    }
+  };
+
+  const statItem = (label, value, cls) => (
+    <div className="bg-card rounded-xl border border-border p-4">
+      <div className="flex items-start justify-between mb-3">
+        <span className="text-xs text-muted-foreground">{label}</span>
+      </div>
+      <p className={`text-2xl font-bold ${cls || "text-foreground"}`}>{value}</p>
+    </div>
+  );
+
+  const emptyState = !isLoading && swaps.length === 0 && !isError;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        {statItem("Menunggu", stats.pending || 0, "text-amber-600 dark:text-amber-400")}
+        {statItem("Disetujui", stats.approved || 0, "text-green-600 dark:text-green-400")}
+        {statItem("Ditolak", stats.rejected || 0, "text-red-600 dark:text-red-400")}
+        {statItem("Total", stats.total || 0, "text-foreground")}
+      </div>
+
+      {isAuthorized && (
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Status
+            </label>
+            <Combobox
+              options={[
+                { value: "pending", label: "Menunggu" },
+                { value: "approved", label: "Disetujui" },
+                { value: "rejected", label: "Ditolak" },
+                { value: "", label: "Semua" }
+              ]}
+              value={status}
+              onChange={(v) => {
+                setStatus(v);
+                setPage(1);
+              }}
+              placeholder="Pilih status"
+              searchPlaceholder="Cari..."
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Menampilkan permintaan ubah jadwal untuk{" "}
+            <span className="font-medium text-foreground">
+              {locationName(store) || `Toko #${store || "-"}`}
+            </span>
+          </p>
+        </div>
+      )}
+
+      {isError ? (
+        <div className="rounded-xl border border-dashed border-border p-10 text-center">
+          <p className="text-sm text-muted-foreground">Gagal memuat permintaan ubah jadwal.</p>
+          <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
+            Muat Ulang
+          </Button>
+        </div>
+      ) : isLoading || isFetching ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-card rounded-xl border border-border p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-5 w-20 rounded-full" />
+              </div>
+              <div className="flex items-center gap-3">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+              <Skeleton className="h-3 w-40" />
+            </div>
+          ))}
+        </div>
+      ) : emptyState ? (
+        <div className="rounded-xl border border-dashed border-border p-12 flex flex-col items-center justify-center text-center gap-3 bg-card">
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+            <Inbox size={22} className="text-muted-foreground" />
+          </div>
+          <p className="text-sm font-medium text-foreground">Belum ada permintaan ubah jadwal</p>
+          <p className="text-xs text-muted-foreground max-w-sm">
+            Permintaan dari karyawan untuk menukar jadwal shift akan muncul di sini untuk
+            dikonfirmasi.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {swaps.map((sw) => {
+            const reqUser = sw.requesterUser || null;
+            const tgtUser = sw.targetUser || null;
+            return (
+              <div
+                key={sw.id || sw._id}
+                className="rounded-xl border border-border bg-card p-4 flex flex-col">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground min-w-0">
+                    <Store size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">
+                      {locationName(sw.store) || `Toko #${sw.store || "-"}`}
+                    </span>
+                  </div>
+                  {statusBadge(sw.status)}
+                </div>
+
+                <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                  <div className="min-w-0">
+                    <EmpAvatar emp={reqUser} />
+                    <p className="font-medium text-sm text-foreground truncate mt-1.5">
+                      {reqUser?.fullName || reqUser?.userName || "-"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {roleLabel(reqUser)}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate mt-1 font-mono">
+                      {shiftLabel(sw.requesterShift)}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-center justify-center px-1">
+                    <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                      <ArrowRightLeft size={14} />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground mt-1">TUKAR</span>
+                  </div>
+                  <div className="min-w-0 text-right">
+                    <div className="flex justify-end">
+                      <EmpAvatar emp={tgtUser} />
+                    </div>
+                    <p className="font-medium text-sm text-foreground truncate mt-1.5">
+                      {tgtUser?.fullName || tgtUser?.userName || "-"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {roleLabel(tgtUser)}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate mt-1 font-mono">
+                      {shiftLabel(sw.targetShift)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-border/60 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CalendarDays size={12} className="shrink-0" />
+                    <span>
+                      {fmt(sw.tanggal_mulai)} – {fmt(sw.tanggal_selesai)}
+                    </span>
+                  </div>
+                  {sw.note && (
+                    <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                      <MessageSquareText size={12} className="shrink-0 mt-0.5" />
+                      <span className="line-clamp-2">{sw.note}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <Clock size={11} className="shrink-0" />
+                    <span>Diajukan {fmtDateTime(sw.createdAt)}</span>
+                  </div>
+                  {sw.status !== "pending" && sw.decidedByUser && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      {sw.status === "approved" ? (
+                        <BadgeCheck size={11} className="shrink-0 text-green-500" />
+                      ) : (
+                        <XCircle size={11} className="shrink-0 text-red-500" />
+                      )}
+                      <span>
+                        Diputus oleh {sw.decidedByUser.fullName || sw.decidedByUser.userName} ·{" "}
+                        {fmtDateTime(sw.decidedAt)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {sw.status === "pending" && (
+                  <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-end gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/10"
+                      onClick={() => setDecisionTarget({ swap: sw, decision: "rejected" })}>
+                      <X size={14} />
+                      Tolak
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+                      onClick={() => setDecisionTarget({ swap: sw, decision: "approved" })}>
+                      <Check size={14} />
+                      Terima
+                    </Button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {total > 0 && (
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            {total} permintaan · halaman {page} / {totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}>
+              Sebelumnya
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}>
+              Berikutnya
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <Modal
+        type="confirm"
+        open={!!decisionTarget}
+        onOpenChange={(open) => !open && setDecisionTarget(null)}
+        title={
+          decisionTarget?.decision === "approved"
+            ? "Terima permintaan ubah jadwal?"
+            : "Tolak permintaan ubah jadwal?"
+        }
+        description={
+          decisionTarget?.decision === "approved"
+            ? `Anda akan menyetujui tukar jadwal ${
+                decisionTarget?.swap?.requesterUser?.fullName || "pemohon"
+              } dengan ${decisionTarget?.swap?.targetUser?.fullName || "target"}.`
+            : `Permintaan tukar jadwal dari ${
+                decisionTarget?.swap?.requesterUser?.fullName || "pemohon"
+              } akan ditolak.`
+        }
+        confirmText={decisionTarget?.decision === "approved" ? "Terima" : "Tolak"}
+        loading={decideMutation.isLoading}
+        onConfirm={confirmDecide}
+      />
+      {decideMutation.isLoading && <Loading fullscreen size="lg" label="Menyimpan keputusan..." />}
+    </div>
+  );
+};
+
+export default SwapApproval;

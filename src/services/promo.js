@@ -12,7 +12,7 @@ export const getCampaigns = ({ store, page = 1, limit = 10, search, status, type
 };
 
 export const getCampaignById = (id) =>
-  axiosInstance.get(`/promo/campaigns/${id}`).then((r) => r.data);
+  axiosInstance.get(`/promo/campaigns/${id}`).then((r) => r.data?.data || r.data);
 
 export const getCampaignStats = ({ store } = {}) => {
   const params = new URLSearchParams();

@@ -100,20 +100,6 @@ export const sidebarMenuSuperAdmin = [
         actions: ["view"]
       },
       {
-        title: "Meja",
-        i18nKey: "sidebar.meja",
-        href: "/table-list",
-        icon: Table,
-        actions: ["add", "edit", "view", "delete", "update-status"]
-      },
-      {
-        title: "Reservasi Meja",
-        i18nKey: "sidebar.reservation",
-        href: "/reservation",
-        icon: CalendarDays,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
         title: "Queue Management",
         i18nKey: "sidebar.queue",
         href: "/queue-list",
@@ -145,13 +131,13 @@ export const sidebarMenuSuperAdmin = [
     ]
   },
   {
-    title: "Master Data",
+    title: "Location",
     section: true,
-    i18nKey: "sidebar.section.masterData",
+    i18nKey: "sidebar.section.location",
     icon: Store,
     children: [
       {
-        title: "Kelola Toko",
+        title: "Master Data",
         i18nKey: "sidebar.kelolaToko",
         href: "/location-list",
         icon: Store,
@@ -163,6 +149,20 @@ export const sidebarMenuSuperAdmin = [
         href: "/price-list-template",
         icon: BadgePercent,
         actions: ["view", "edit"]
+      },
+      {
+        title: "Meja",
+        i18nKey: "sidebar.meja",
+        href: "/table-list",
+        icon: Table,
+        actions: ["add", "edit", "view", "delete", "update-status"]
+      },
+      {
+        title: "Reservasi Meja",
+        i18nKey: "sidebar.reservation",
+        href: "/reservation",
+        icon: CalendarDays,
+        actions: ["add", "edit", "view", "delete"]
       }
     ]
   },
@@ -477,13 +477,20 @@ export const sidebarMenuSuperAdmin = [
         href: "/shift-list",
         icon: CalendarDays,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Template Shift",
+        i18nKey: "sidebar.shiftTemplate",
+        href: "/shift-template-list",
+        icon: Clock,
+        actions: ["add", "edit", "view", "delete"]
       }
     ]
   },
   {
     title: "Pengaturan",
     section: true,
-    i18nKey: "sidebar.section.pengaturan",
+    i18nKey: "sidebar.section.settings",
     icon: Settings,
     children: [
       {
@@ -976,10 +983,14 @@ const accessMenuSubGroups = {
     "/qr-order-management": "Pesanan & Dapur",
     "/queue-list": "Pesanan & Dapur",
     "/waiter-request": "Pesanan & Dapur",
-    "/table-list": "Meja & Reservasi",
-    "/reservation": "Meja & Reservasi",
     "/sales-return": "Retur & Piutang",
     "/accounts-receivable": "Retur & Piutang"
+  },
+  "sidebar.section.location": {
+    "/location-list": "Master Data",
+    "/price-list-template": "Harga",
+    "/table-list": "Meja & Reservasi",
+    "/reservation": "Meja & Reservasi"
   },
   "sidebar.section.produkPromo": {
     "/category-list": "Produk",
@@ -1026,11 +1037,12 @@ const accessMenuSubGroups = {
   "sidebar.section.membershipSdm": {
     "/member-tier": "Membership",
     "/member-list": "Membership",
-    "/department-list": "Organisasi",
-    "/position-list": "Organisasi",
-    "/employee-list": "Karyawan & Shift",
-    "/user-list": "Karyawan & Shift",
-    "/shift-list": "Karyawan & Shift"
+    "/department-list": "SDM",
+    "/position-list": "SDM",
+    "/employee-list": "SDM",
+    "/user-list": "SDM",
+    "/shift-list": "Shift",
+    "/shift-template-list": "Shift"
   },
   "sidebar.section.pengaturan": {
     "/invoice-page": "Struk & Pembayaran",
@@ -1120,21 +1132,27 @@ export const sidebarMenuUser = [
 export const navCategories = {
   super_admin: [
     {
-      id: "produk",
-      icon: ShoppingBag,
-      title: "Produk & Promo",
-      i18nKey: "sidebar.section.produkPromo",
+      id: "location",
+      icon: Store,
+      title: "Location",
+      i18nKey: "sidebar.section.location",
       sections: [
         {
           title: "Master Data",
-          i18nKey: "sidebar.section.masterData",
+          i18nKey: "sidebar.section.kelolaToko",
           items: [
             {
               title: "Kelola Toko",
               i18nKey: "sidebar.kelolaToko",
               href: "/location-list",
               icon: Store
-            },
+            }
+          ]
+        },
+        {
+          title: "Harga",
+          i18nKey: "sidebar.section.harga",
+          items: [
             {
               title: "Harga per Toko",
               i18nKey: "sidebar.pricePerStore",
@@ -1144,7 +1162,101 @@ export const navCategories = {
           ]
         },
         {
-          title: "Produk & Promo",
+          title: "Meja & Reservasi",
+          i18nKey: "sidebar.section.mejaReservasi",
+          items: [
+            {
+              title: "Meja",
+              i18nKey: "sidebar.meja",
+              href: "/table-list",
+              icon: Table
+            },
+            {
+              title: "Reservasi Meja",
+              i18nKey: "sidebar.reservation",
+              href: "/reservation",
+              icon: CalendarDays
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "membershipSdm",
+      icon: BookUser,
+      title: "Membership & SDM",
+      i18nKey: "sidebar.section.membershipSdm",
+      sections: [
+        {
+          title: "SDM",
+          i18nKey: "sidebar.section.sdm",
+          items: [
+            {
+              title: "Departemen",
+              i18nKey: "sidebar.departemen",
+              href: "/department-list",
+              icon: Building2
+            },
+            {
+              title: "Posisi",
+              i18nKey: "sidebar.posisi",
+              href: "/position-list",
+              icon: FileText
+            },
+            {
+              title: "Daftar Karyawan",
+              i18nKey: "sidebar.daftarKaryawan",
+              href: "/employee-list",
+              icon: Users
+            }
+          ]
+        },
+        {
+          title: "Shift",
+          i18nKey: "sidebar.shift",
+          items: [
+            {
+              title: "Template Shift",
+              i18nKey: "sidebar.shiftTemplate",
+              href: "/shift-template-list",
+              icon: Clock
+            },
+            {
+              title: "Shift",
+              i18nKey: "sidebar.shift",
+              href: "/shift-list",
+              icon: CalendarDays
+            }
+          ]
+        },
+        {
+          title: "Membership",
+          i18nKey: "sidebar.section.membership",
+          items: [
+            {
+              title: "Member Tier",
+              i18nKey: "sidebar.memberTier",
+              href: "/member-tier",
+              icon: Award
+            },
+            {
+              title: "Daftar Member",
+              i18nKey: "sidebar.daftarMember",
+              href: "/member-list",
+              icon: Users
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "produk",
+      icon: ShoppingBag,
+      title: "Produk & Promo",
+      i18nKey: "sidebar.section.produkPromo",
+      sections: [
+        {
+          title: "Produk",
           i18nKey: "sidebar.section.produkPromo",
           items: [
             { title: "Kategori", i18nKey: "sidebar.kategori", href: "/category-list", icon: Tag },
@@ -1153,10 +1265,16 @@ export const navCategories = {
               i18nKey: "sidebar.daftarProduk",
               href: "/product-list",
               icon: UtensilsCrossed
-            },
-            { title: "Paket / Bundle", i18nKey: "sidebar.bundle", href: "/bundle", icon: Package },
+            }
+          ]
+        },
+        {
+          title: "Promo",
+          i18nKey: "sidebar.section.produkPromo",
+          items: [
+            { title: "Bundle / Combo", i18nKey: "sidebar.bundle", href: "/bundle", icon: Package },
             {
-              title: "Diskon & Voucher",
+              title: "Diskon",
               i18nKey: "sidebar.diskon",
               href: "/discount-list",
               icon: BadgePercent
@@ -1616,37 +1734,67 @@ export const navCategories = {
               icon: BarChart3
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      id: "membershipSdm",
+      icon: BookUser,
+      title: "Membership & SDM",
+      i18nKey: "sidebar.section.membershipSdm",
+      sections: [
         {
-          title: "Membership & SDM",
-          i18nKey: "sidebar.section.membershipSdm",
+          title: "Membership",
+          i18nKey: "sidebar.section.membership",
           items: [
             {
               title: "Member Tier",
               i18nKey: "sidebar.memberTier",
               href: "/member-tier",
-              icon: TrendingUp
+              icon: Award
             },
             {
               title: "Daftar Member",
               i18nKey: "sidebar.daftarMember",
               href: "/member-list",
-              icon: BookUser
-            },
+              icon: Users
+            }
+          ]
+        },
+        {
+          title: "Organisasi",
+          i18nKey: "sidebar.section.sdm",
+          items: [
             {
               title: "Departemen",
               i18nKey: "sidebar.departemen",
               href: "/department-list",
               icon: Building2
             },
-            { title: "Posisi", i18nKey: "sidebar.posisi", href: "/position-list", icon: FileText },
+            {
+              title: "Posisi",
+              i18nKey: "sidebar.posisi",
+              href: "/position-list",
+              icon: FileText
+            }
+          ]
+        },
+        {
+          title: "Karyawan & Shift",
+          i18nKey: "sidebar.section.sdm",
+          items: [
             {
               title: "Daftar Karyawan",
               i18nKey: "sidebar.daftarKaryawan",
-              href: "/user-list",
+              href: "/employee-list",
               icon: Users
             },
-            { title: "Shift", i18nKey: "sidebar.shift", href: "/shift-list", icon: CalendarDays }
+            {
+              title: "Shift",
+              i18nKey: "sidebar.shift",
+              href: "/shift-list",
+              icon: CalendarDays
+            }
           ]
         }
       ]

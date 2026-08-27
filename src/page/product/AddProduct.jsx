@@ -99,7 +99,7 @@ const AddProduct = () => {
   const [selectedStores, setSelectedStores] = useState(
     searchParams.get("location") ? [searchParams.get("location")] : user?.store ? [user?.store] : []
   );
-  const [allStores, setAllStores] = useState(false);
+  const [allStores, setAllStores] = useState(role === "super_admin");
   const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
