@@ -8,7 +8,7 @@ describe("buildPaletteGroups", () => {
     const groups = buildPaletteGroups(sidebarMenuSuperAdmin, t);
     const titles = groups.map((g) => g.title);
     expect(titles).toContain("POS & Penjualan");
-    expect(titles).toContain("Master Data");
+    expect(titles).toContain("Membership & SDM");
     expect(titles).toContain("Pengaturan");
     // grup Utama berisi item direct (Dashboard) dan muncul paling awal
     expect(groups[0].id).toBe("main");
