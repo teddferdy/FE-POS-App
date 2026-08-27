@@ -95,6 +95,7 @@ const PromoCampaignList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [statusTarget, setStatusTarget] = useState(null);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
   const isFiltered =
@@ -167,18 +168,19 @@ const PromoCampaignList = () => {
   const columns = [
     {
       header: t("page.promo.list.name"),
-      accessorKey: "name",
-      cell: ({ row }) => {
-        const Icon = typeIcon(row.original.type);
+      accessor: "name",
+      stickyLeft: true,
+      render: (row) => {
+        const Icon = typeIcon(row.type);
         return (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Icon size={16} className="text-primary" />
+            <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Icon size={26} className="text-primary" />
             </div>
             <div>
-              <div className="font-medium text-foreground">{row.original.name}</div>
-              {row.original.code && (
-                <div className="text-xs font-mono text-muted-foreground">{row.original.code}</div>
+              <div className="font-medium text-foreground">{row.name}</div>
+              {row.code && (
+                <div className="text-xs font-mono text-muted-foreground">{row.code}</div>
               )}
             </div>
           </div>
@@ -187,17 +189,15 @@ const PromoCampaignList = () => {
     },
     {
       header: t("page.promo.list.type"),
-      accessorKey: "type",
-      cell: ({ row }) => (
-        <span className="text-sm capitalize">{row.original.type?.replace("_", " ")}</span>
-      )
+      accessor: "type",
+      render: (row) => <span className="text-sm capitalize">{row.type?.replace("_", " ")}</span>
     },
     {
       header: t("page.promo.list.discount"),
-      accessorKey: "discountValue",
-      cell: ({ row }) => {
-        const type = row.original.discountType;
-        const val = row.original.discountValue;
+      accessor: "discountValue",
+      render: (row) => {
+        const type = row.discountType;
+        const val = row.discountValue;
         if (type === "percentage") return <span className="font-semibold">{val}%</span>;
         if (type === "fixed")
           return <span className="font-semibold">Rp{val?.toLocaleString()}</span>;
@@ -207,18 +207,18 @@ const PromoCampaignList = () => {
     },
     {
       header: t("page.promo.list.period"),
-      accessorKey: "startDate",
-      cell: ({ row }) => (
+      accessor: "startDate",
+      render: (row) => (
         <div className="text-xs">
           <div>
-            {row.original.startDate && !isNaN(new Date(row.original.startDate).getTime())
-              ? new Date(row.original.startDate).toLocaleDateString()
+            {row.startDate && !isNaN(new Date(row.startDate).getTime())
+              ? new Date(row.startDate).toLocaleDateString()
               : "-"}
           </div>
           <div className="text-muted-foreground">
             to{" "}
-            {row.original.endDate && !isNaN(new Date(row.original.endDate).getTime())
-              ? new Date(row.original.endDate).toLocaleDateString()
+            {row.endDate && !isNaN(new Date(row.endDate).getTime())
+              ? new Date(row.endDate).toLocaleDateString()
               : "-"}
           </div>
         </div>
@@ -226,29 +226,58 @@ const PromoCampaignList = () => {
     },
     {
       header: t("page.promo.list.usage"),
-      accessorKey: "currentUsage",
-      cell: ({ row }) => (
+      accessor: "currentUsage",
+      render: (row) => (
         <div className="text-sm">
-          <span className="font-medium">{row.original.currentUsage || 0}</span>
-          {row.original.maxUsageTotal && (
-            <span className="text-muted-foreground"> / {row.original.maxUsageTotal}</span>
+          <span className="font-medium">{row.currentUsage || 0}</span>
+          {row.maxUsageTotal && (
+            <span className="text-muted-foreground"> / {row.maxUsageTotal}</span>
           )}
         </div>
       )
     },
     {
       header: t("page.promo.list.status"),
-      accessorKey: "status",
-      cell: ({ row }) => (
+      accessor: "status",
+      render: (row) => (
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge(row.original.status)}`}>
-          {row.original.status?.toUpperCase()}
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge(row.status)}`}>
+          {row.status?.toUpperCase()}
+        </span>
+      )
+    },
+    {
+      header: t("common.createdBy"),
+      accessor: "createdByUser",
+      render: (row) => <span className="text-xs">{row.createdByUser?.fullName || "-"}</span>
+    },
+    {
+      header: t("common.createdAt"),
+      accessor: "createdAt",
+      render: (row) => (
+        <span className="text-xs">
+          {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      accessor: "modifiedByUser",
+      render: (row) => <span className="text-xs">{row.modifiedByUser?.fullName || "-"}</span>
+    },
+    {
+      header: t("common.updatedAt"),
+      accessor: "updatedAt",
+      render: (row) => (
+        <span className="text-xs">
+          {row.updatedAt ? new Date(row.updatedAt).toLocaleDateString() : "-"}
         </span>
       )
     },
     {
       header: t("common.action"),
-      accessorKey: "actions",
+      accessor: "actions",
+      stickyRight: true,
       legend: [
         { icon: Eye, label: t("common.view") },
         { icon: Edit, label: t("common.edit") },
@@ -256,8 +285,7 @@ const PromoCampaignList = () => {
         { icon: Play, label: t("common.resume") },
         { icon: Trash2, label: t("common.delete") }
       ],
-      cell: ({ row }) => {
-        const item = row.original;
+      render: (item) => {
         return (
           <div className="flex items-center gap-1">
             <Button
@@ -265,7 +293,7 @@ const PromoCampaignList = () => {
               size="icon"
               className="h-8 w-8"
               onClick={() => navigate(`/detail-promo?id=${item.id}`)}>
-              <Eye size={14} />
+              <Eye size={18} />
             </Button>
             {canAccess(user, MENU_KEY, "edit") && (
               <>
@@ -281,8 +309,10 @@ const PromoCampaignList = () => {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-yellow-600"
-                    onClick={() => statusMutation.mutate({ id: item.id, status: "paused" })}>
-                    <Pause size={14} />
+                    onClick={() =>
+                      setStatusTarget({ id: item.id, name: item.name, status: "paused" })
+                    }>
+                    <Pause size={18} />
                   </Button>
                 )}
                 {item.status === "paused" && (
@@ -290,8 +320,10 @@ const PromoCampaignList = () => {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-green-600"
-                    onClick={() => statusMutation.mutate({ id: item.id, status: "active" })}>
-                    <Play size={14} />
+                    onClick={() =>
+                      setStatusTarget({ id: item.id, name: item.name, status: "active" })
+                    }>
+                    <Play size={18} />
                   </Button>
                 )}
                 {item.status !== "cancelled" && item.status !== "expired" && (
@@ -300,7 +332,7 @@ const PromoCampaignList = () => {
                     size="icon"
                     className="h-8 w-8 text-red-600"
                     onClick={() => setDeleteTarget(item)}>
-                    <Trash2 size={14} />
+                    <Trash2 size={18} />
                   </Button>
                 )}
               </>
@@ -438,6 +470,33 @@ const PromoCampaignList = () => {
         confirmText={t("common.delete")}
         onConfirm={() => deleteMutation.mutate(deleteTarget?.id)}
         isLoading={deleteMutation.isLoading}
+      />
+
+      {/* Status Change Modal */}
+      <Modal
+        type="confirm"
+        open={!!statusTarget}
+        onOpenChange={(open) => !open && setStatusTarget(null)}
+        title={
+          statusTarget?.status === "paused"
+            ? t("page.promo.modal.pauseTitle")
+            : t("page.promo.modal.activateTitle")
+        }
+        description={
+          statusTarget?.status === "paused"
+            ? t("page.promo.modal.pauseDescription")
+            : t("page.promo.modal.activateDescription")
+        }
+        confirmText={
+          statusTarget?.status === "paused"
+            ? t("page.promo.modal.confirmPause")
+            : t("page.promo.modal.confirmActivate")
+        }
+        onConfirm={() => {
+          statusMutation.mutate({ id: statusTarget?.id, status: statusTarget?.status });
+          setStatusTarget(null);
+        }}
+        isLoading={statusMutation.isLoading}
       />
     </div>
   );

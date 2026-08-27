@@ -156,8 +156,14 @@ const AddPromoCampaign = () => {
     startTime: z.string().optional().nullable(),
     endTime: z.string().optional().nullable(),
     applicableTo: z.string().default("all"),
-    maxUsageTotal: z.number().optional().nullable(),
-    maxUsagePerMember: z.number().optional().nullable(),
+    maxUsageTotal: z.preprocess(
+      (v) => (v === "" || v === undefined || Number.isNaN(v) ? null : v),
+      z.number().optional().nullable()
+    ),
+    maxUsagePerMember: z.preprocess(
+      (v) => (v === "" || v === undefined || Number.isNaN(v) ? null : v),
+      z.number().optional().nullable()
+    ),
     priority: z.number().min(0).default(0),
     isCombinable: z.boolean().default(false),
     autoActivate: z.boolean().default(false)
