@@ -4045,6 +4045,7 @@
   "page.expense.add.mode.multi": "Multi",
   "page.expense.add.mode.singleHint": "Add one expense at a time",
   "page.expense.add.mode.multiHint": "Add multiple expenses at once",
+  "page.expense.add.mode.salaryNote": "Salary can only be created in Single mode",
   "page.expense.add.multi.addRow": "Add Row",
   "page.expense.add.multi.empty": "Add at least one expense",
   "page.expense.add.multi.total": "Total",

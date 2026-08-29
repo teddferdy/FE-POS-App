@@ -3985,6 +3985,7 @@
   "page.expense.add.mode.multi": "Multi",
   "page.expense.add.mode.singleHint": "Tambah pengeluaran satu per satu",
   "page.expense.add.mode.multiHint": "Tambah beberapa pengeluaran sekaligus",
+  "page.expense.add.mode.salaryNote": "Gaji Karyawan hanya bisa dibuat di mode Satuan",
   "page.expense.add.multi.addRow": "Tambah Baris",
   "page.expense.add.multi.empty": "Tambah minimal satu pengeluaran",
   "page.expense.add.multi.total": "Total",

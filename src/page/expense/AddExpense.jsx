@@ -111,6 +111,10 @@ const AddExpense = () => {
   const categories = (categoriesData?.data || categoriesData || []).filter(
     (cat) => cat.status === "active"
   );
+  const nonSalaryCategories = useMemo(
+    () => categories.filter((cat) => !isSalaryCategoryName(cat.name)),
+    [categories]
+  );
 
   const { data: employeesData, isLoading: employeesLoading } = useQuery(["expense-employees"], () =>
     getAllEmployee({ page: 1, limit: 100, status: "active" })
@@ -470,7 +474,9 @@ const AddExpense = () => {
                     </div>
                     <span className="text-xs text-muted-foreground hidden sm:inline">
                       {isMultiMode
-                        ? t("page.expense.add.mode.multiHint")
+                        ? `${t("page.expense.add.mode.multiHint")} · ${t(
+                            "page.expense.add.mode.salaryNote"
+                          )}`
                         : t("page.expense.add.mode.singleHint")}
                     </span>
                   </div>
@@ -614,12 +620,14 @@ const AddExpense = () => {
                                         />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {categories.length === 0 ? (
+                                        {nonSalaryCategories.length === 0 ? (
                                           <SelectItem value="__none" disabled>
-                                            {t("page.expense.add.noCategories")}
+                                            {categories.length === 0
+                                              ? t("page.expense.add.noCategories")
+                                              : t("page.expense.add.mode.salaryNote")}
                                           </SelectItem>
                                         ) : (
-                                          categories.map((cat) => (
+                                          nonSalaryCategories.map((cat) => (
                                             <SelectItem
                                               key={cat.id || cat._id}
                                               value={String(cat.id || cat._id)}>
