@@ -36,6 +36,7 @@ const ShiftList = React.lazy(() => import("@/page/shift/ShiftList"));
 const AddShift = React.lazy(() => import("@/page/shift/AddShift"));
 const EditShift = React.lazy(() => import("@/page/shift/EditShift"));
 const DetailShift = React.lazy(() => import("@/page/shift/DetailShift"));
+const MyShift = React.lazy(() => import("@/page/shift/MyShift"));
 
 // Shift Template
 const ShiftTemplateList = React.lazy(() => import("@/page/shift-template/ShiftTemplateList"));
@@ -99,6 +100,7 @@ export const hrRoutes = (
     <Route path="/add-shift" element={<AddShift />} />
     <Route path="/edit-shift" element={<EditShift />} />
     <Route path="/detail-shift" element={<DetailShift />} />
+    <Route path="/my-shift" element={<MyShift />} />
 
     <Route path="/shift-template-list" element={<ShiftTemplateList />} />
     <Route path="/add-shift-template" element={<AddShiftTemplate />} />

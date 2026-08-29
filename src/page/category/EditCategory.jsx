@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
-import { Check } from "lucide-react";
+import { Check, Eye } from "lucide-react";
 
 import Modal from "@/components/organism/modal";
 // Removed useConfirmSubmit - replaced with MissingFieldsModal pattern
@@ -31,6 +31,7 @@ import {
 import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import CategoryPreviewModal from "./CategoryPreviewModal";
 
 const iconSections = [
   {
@@ -378,6 +379,7 @@ const EditCategory = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
@@ -911,6 +913,14 @@ const EditCategory = () => {
                   <Button
                     type="button"
                     variant="outline"
+                    className="w-full sm:w-auto justify-center gap-2"
+                    onClick={() => setPreviewOpen(true)}>
+                    <Eye size={16} />
+                    {t("page.category.label.preview")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
                     className="w-full sm:w-auto justify-center"
                     onClick={() => form.handleSubmit((v) => onSubmit(v, true))()}
                     disabled={isSubmitting}>
@@ -1122,6 +1132,22 @@ const EditCategory = () => {
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}
           fields={missingFieldsList}
+        />
+
+        <CategoryPreviewModal
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          category={{
+            name: form.watch("name"),
+            description: form.watch("description"),
+            color: form.watch("color") || "#0f172a",
+            isActive: form.watch("isActive") !== false,
+            icon: selectedIcon,
+            image: imagePreview,
+            storeName: locations.find(
+              (l) => selectedStore.length > 0 && selectedStore.includes(String(l.id))
+            )?.name
+          }}
         />
       </div>
     </div>

@@ -23,7 +23,7 @@ import {
   sidebarMenuUser,
   navCategories
 } from "@/utils/sidebar-menu";
-import { filterMenuByPermission } from "@/utils/permission";
+import { filterMenuByPermission, filterNavCategoriesByPermission } from "@/utils/permission";
 import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
 import { logOut } from "@/services/auth";
@@ -47,9 +47,11 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const user = useUserSession();
 
-  const role = user?.roleType || "user";
   const hasAccessMenu =
     user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
+  // ponytail: user non-super_admin yang memiliki accessMenu wajib mengikuti
+  // daftar menu persis sesuai accessMenu (tanpa item/bagian tambahan)
+  const isMenuControlled = hasAccessMenu && !isSuperAdminRole(user);
 
   const baseMenu = useMemo(() => {
     if (hasAccessMenu || isSuperAdminRole(user)) return sidebarMenuSuperAdmin;
@@ -61,10 +63,35 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
   const menuItems = useMemo(() => filterMenuByPermission(baseMenu, user), [baseMenu, user]);
 
   const categories = useMemo(() => {
-    if (hasAccessMenu || isSuperAdminRole(user)) return navCategories.super_admin || [];
+    const raw = hasAccessMenu || isSuperAdminRole(user) ? navCategories.super_admin || [] : [];
+    if (isMenuControlled) return filterNavCategoriesByPermission(raw, user);
+    if (isSuperAdminRole(user)) return raw;
     if (isAdminRole(user)) return navCategories.admin || [];
-    return [];
-  }, [hasAccessMenu, user]);
+    return raw;
+  }, [hasAccessMenu, isMenuControlled, user]);
+
+  const grantedLeaves = useMemo(() => {
+    if (!isMenuControlled) return [];
+    const leaves = [];
+    const walk = (items) => {
+      items.forEach((item) => {
+        if (item.section) {
+          if (item.children?.length) walk(item.children);
+          return;
+        }
+        if (item.children && item.children.length > 0) {
+          item.children.forEach((child) => {
+            if (child.href) leaves.push(child);
+            else if (child.children?.length) walk([child]);
+          });
+        } else if (item.href) {
+          leaves.push(item);
+        }
+      });
+    };
+    walk(menuItems);
+    return leaves;
+  }, [isMenuControlled, menuItems]);
 
   const directItems = useMemo(() => {
     const items = [];
@@ -311,80 +338,101 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
         {/* Navigation */}
         <nav className="flex-1 flex flex-col gap-0.5 w-full overflow-y-auto overflow-x-hidden">
-          {/* Dashboard - always direct navigate */}
-          {directItems
-            .filter((item) => item.href?.startsWith("/dashboard"))
-            .map((item) => renderNavButton(item, DashboardIcon))}
+          {/* Menu-controlled: render persis sesuai accessMenu */}
+          {isMenuControlled &&
+            grantedLeaves.map((item) =>
+              renderNavButton(
+                {
+                  ...item,
+                  i18nKey: item.i18nKey,
+                  href: item.href?.startsWith("/dashboard")
+                    ? isSuperAdminRole(user)
+                      ? "/dashboard-super-admin"
+                      : "/dashboard-admin"
+                    : item.href
+                },
+                item.icon || MoreHorizontal
+              )
+            )}
 
-          {/* Kasir - for non-cashier roles */}
-          {!isCashierRole(user) &&
-            directItems
-              .filter((item) => item.href === "/home")
-              .map((item) => renderNavButton(item, Calculator))}
+          {!isMenuControlled && (
+            <>
+              {/* Dashboard - always direct navigate */}
+              {directItems
+                .filter((item) => item.href?.startsWith("/dashboard"))
+                .map((item) => renderNavButton(item, DashboardIcon))}
 
-          {/* Cashier role: render ALL directItems */}
-          {isCashierRole(user) &&
-            directItems
-              .filter((item) => !item.href?.startsWith("/dashboard"))
-              .map((item) => {
-                const iconMap = { "/home": Calculator, "/kitchen-display": ChefHat };
-                const Icon = iconMap[item.href] || item.icon || MoreHorizontal;
-                return renderNavButton(item, Icon);
+              {/* Kasir - for non-cashier roles */}
+              {!isCashierRole(user) &&
+                directItems
+                  .filter((item) => item.href === "/home")
+                  .map((item) => renderNavButton(item, Calculator))}
+
+              {/* Cashier role: render ALL directItems */}
+              {isCashierRole(user) &&
+                directItems
+                  .filter((item) => !item.href?.startsWith("/dashboard"))
+                  .map((item) => {
+                    const iconMap = { "/home": Calculator, "/kitchen-display": ChefHat };
+                    const Icon = iconMap[item.href] || item.icon || MoreHorizontal;
+                    return renderNavButton(item, Icon);
+                  })}
+
+              {/* Divider before POS */}
+              {!isCashierRole(user) && (
+                <div className="overflow-hidden my-2 mx-auto">
+                  <div
+                    className={`border-t border-border/40 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+                      ${isExpanded ? "w-full" : "w-6"}`}
+                  />
+                </div>
+              )}
+
+              {/* POS & Penjualan - direct buttons for admin/super_admin */}
+              {!isCashierRole(user) && posItems.map((item) => renderNavButton(item, item.icon))}
+
+              {/* Divider before categories */}
+              {categories.length > 0 && (
+                <div className="overflow-hidden my-2 mx-auto">
+                  <div
+                    className={`border-t border-border/40 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+                      ${isExpanded ? "w-full" : "w-6"}`}
+                  />
+                </div>
+              )}
+
+              {/* Category buttons - open modal */}
+              {categories.map((cat) => {
+                const btn = (
+                  <button
+                    onClick={() => handleOpenCategory(cat.id)}
+                    className="nav-btn group relative flex items-center gap-3 rounded-xl overflow-hidden
+                      h-10 px-3
+                      text-muted-foreground hover:bg-accent hover:text-foreground hover:shadow-sm">
+                    <cat.icon
+                      size={20}
+                      className="shrink-0 transition-transform duration-150 group-hover:scale-110"
+                    />
+                    <span
+                      className={`nav-label text-sm font-medium whitespace-nowrap transition-[opacity,transform] duration-200 ease-out
+                        ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"}`}>
+                      {t(cat.i18nKey) || cat.title}
+                    </span>
+                  </button>
+                );
+
+                if (isExpanded) return <div key={cat.id}>{btn}</div>;
+                return (
+                  <Tooltip key={cat.id}>
+                    <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={12} className="font-medium">
+                      {t(cat.i18nKey) || cat.title}
+                    </TooltipContent>
+                  </Tooltip>
+                );
               })}
-
-          {/* Divider before POS */}
-          {!isCashierRole(user) && (
-            <div className="overflow-hidden my-2 mx-auto">
-              <div
-                className={`border-t border-border/40 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-                  ${isExpanded ? "w-full" : "w-6"}`}
-              />
-            </div>
+            </>
           )}
-
-          {/* POS & Penjualan - direct buttons for admin/super_admin */}
-          {!isCashierRole(user) && posItems.map((item) => renderNavButton(item, item.icon))}
-
-          {/* Divider before categories */}
-          {categories.length > 0 && (
-            <div className="overflow-hidden my-2 mx-auto">
-              <div
-                className={`border-t border-border/40 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-                  ${isExpanded ? "w-full" : "w-6"}`}
-              />
-            </div>
-          )}
-
-          {/* Category buttons - open modal */}
-          {categories.map((cat) => {
-            const btn = (
-              <button
-                onClick={() => handleOpenCategory(cat.id)}
-                className="nav-btn group relative flex items-center gap-3 rounded-xl overflow-hidden
-                  h-10 px-3
-                  text-muted-foreground hover:bg-accent hover:text-foreground hover:shadow-sm">
-                <cat.icon
-                  size={20}
-                  className="shrink-0 transition-transform duration-150 group-hover:scale-110"
-                />
-                <span
-                  className={`nav-label text-sm font-medium whitespace-nowrap transition-[opacity,transform] duration-200 ease-out
-                    ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"}`}>
-                  {t(cat.i18nKey) || cat.title}
-                </span>
-              </button>
-            );
-
-            if (isExpanded) return <div key={cat.id}>{btn}</div>;
-            return (
-              <Tooltip key={cat.id}>
-                <TooltipTrigger asChild>{btn}</TooltipTrigger>
-                <TooltipContent side="right" sideOffset={12} className="font-medium">
-                  {t(cat.i18nKey) || cat.title}
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
         </nav>
 
         {/* Bottom */}

@@ -142,11 +142,10 @@ export const canAccess = (user, menuKey, action) => {
   return !!safeGet(normalized, action, false);
 };
 
-export const filterMenuByPermission = (menuItems, user) => {
-  if (!user) return [];
-  const role = user.roleType;
-  if (role === "super_admin") return menuItems;
-  // ponytail: accessMenu stripped from cookie, read from sessionStorage
+export const hasMenuAccess = (user, href, actions) => {
+  if (!user) return false;
+  if (user.roleType === "super_admin") return true;
+  // ponytail: accessMenu stripped from cookie to fit 4KB limit, read from sessionStorage
   let accessMenu = parseAccessMenu(user.accessMenu);
   if (!accessMenu || accessMenu.length === 0) {
     try {
@@ -156,18 +155,22 @@ export const filterMenuByPermission = (menuItems, user) => {
       /* ignore invalid session data */
     }
   }
-  if (!accessMenu || accessMenu.length === 0) return [];
+  if (!accessMenu || accessMenu.length === 0) return false;
 
   const permissions = parseAccessMenuToPermissions(accessMenu);
+  const perm = normalizePermissionActions(findMenuPermission(permissions, href));
+  if (!perm) return false;
+  if (actions && actions.length > 0) {
+    return actions.some((a) => !!safeGet(perm, a));
+  }
+  return !!perm.view;
+};
 
-  const hasAccess = (href, actions) => {
-    const perm = normalizePermissionActions(findMenuPermission(permissions, href));
-    if (!perm) return false;
-    if (actions && actions.length > 0) {
-      return actions.some((a) => !!safeGet(perm, a));
-    }
-    return !!perm.view;
-  };
+export const filterMenuByPermission = (menuItems, user) => {
+  if (!user) return [];
+  if (user.roleType === "super_admin") return menuItems;
+
+  const hasAccess = (href, actions) => hasMenuAccess(user, href, actions);
 
   const filterItems = (items) => {
     return items.filter((item) => {
@@ -179,6 +182,29 @@ export const filterMenuByPermission = (menuItems, user) => {
       return hasAccess(item.href, item.actions);
     });
   };
-
   return filterItems([...menuItems]);
+};
+
+export const filterNavCategoriesByPermission = (categories, user) => {
+  if (!user) return [];
+  if (user.roleType === "super_admin") return categories;
+
+  const hasAccess = (href, actions) => hasMenuAccess(user, href, actions);
+
+  const result = [];
+  categories.forEach((cat) => {
+    const sections = [];
+    (cat.sections || []).forEach((section) => {
+      const items = (section.items || []).filter(
+        (item) => item.href == null || hasAccess(item.href, item.actions)
+      );
+      if (items.length > 0) {
+        sections.push({ ...section, items });
+      }
+    });
+    if (sections.length > 0) {
+      result.push({ ...cat, sections });
+    }
+  });
+  return result;
 };

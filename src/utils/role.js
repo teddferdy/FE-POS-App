@@ -12,4 +12,9 @@ export const getRoleDashboard = (roleType) => {
   return "/home";
 };
 
+// ponytail: "Beranda" breadcrumb/menu — super_admin ke dashboard global,
+// semua role lain (admin/kasir/user) ke dashboard per-toko.
+export const getDashboardHref = (user) =>
+  isSuperAdminRole(user) ? "/dashboard-super-admin" : "/dashboard-admin";
+
 export const getHomePath = (user) => getRoleDashboard(user?.roleType);

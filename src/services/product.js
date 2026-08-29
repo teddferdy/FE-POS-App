@@ -6,6 +6,12 @@ export const getProductById = async (id) => {
   return data;
 };
 
+export const getProductReviews = async (id) => {
+  const { data, status } = await axiosInstance.get(`/order/customer-reviews?productId=${id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data?.data;
+};
+
 export const getAllProduct = async ({ location, nameProduct, category, status } = {}) => {
   const params = {};
   if (location) params.store = location;
@@ -22,6 +28,17 @@ export const getProductByOutlet = async ({ location, search }) => {
   if (location) params.append("store", location);
   if (search) params.append("search", search);
   const { data, status } = await axiosInstance.get(`/product/get-product-by-super-admin?${params}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getIngredients = async ({ store, search } = {}) => {
+  const params = new URLSearchParams();
+  if (store) params.append("store", store);
+  if (search) params.append("search", search);
+  params.append("limit", "500");
+  params.append("status", "active");
+  const { data, status } = await axiosInstance.get(`/ingredient/get-all?${params}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
