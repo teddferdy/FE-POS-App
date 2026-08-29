@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import Modal from "@/components/organism/modal";
 import { cn } from "@/lib/utils";
+import { safeGet } from "@/lib/safe-lookup";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -56,7 +57,7 @@ const ProductImageGallery = ({ images = [], onChange, maxImages = 6, compact = f
   };
 
   const confirmRemove = (idx) => {
-    const target = images[idx];
+    const target = safeGet(images, idx);
     if (!target?.isNew) {
       setRemoveTarget(idx);
       return;
@@ -85,14 +86,16 @@ const ProductImageGallery = ({ images = [], onChange, maxImages = 6, compact = f
     if (target < 0 || target >= images.length) return;
     onChange((prev) => {
       const next = [...prev];
-      [next[idx], next[target]] = [next[target], next[idx]];
+      const moving = safeGet(next, idx);
+      next[idx] = safeGet(next, target);
+      next[target] = moving;
       return next;
     });
   };
 
   const setPrimary = (idx) => {
     if (idx === 0) return;
-    onChange((prev) => [prev[idx], ...prev.filter((_, i) => i !== idx)]);
+    onChange((prev) => [safeGet(prev, idx), ...prev.filter((_, i) => i !== idx)]);
     toast.success(t("page.product.form.imgPrimarySet"));
   };
 
@@ -244,9 +247,9 @@ const ProductImageGallery = ({ images = [], onChange, maxImages = 6, compact = f
 
       <Dialog open={zoomIndex !== null} onOpenChange={() => setZoomIndex(null)}>
         <DialogContent withX className="sm:max-w-3xl p-3">
-          {zoomIndex !== null && images[zoomIndex] && (
+          {safeGet(images, zoomIndex) && (
             <img
-              src={images[zoomIndex].url}
+              src={safeGet(images, zoomIndex)?.url}
               alt={`${t("page.product.form.imageN")} ${zoomIndex + 1}`}
               className="w-full max-h-[85vh] object-contain rounded-lg"
             />

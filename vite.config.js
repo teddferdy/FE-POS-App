@@ -18,16 +18,16 @@ try {
 // /locales berubah kalau file bahasa berubah walaupun BELUM di-commit
 // (git SHA saja tidak cukup: key baru muncul mentah karena URL lama tetap
 // sama dan browser/Vercel memakai respons JSON basi).
+// Safety: setiap path ditulis literal (tanpa iterasi array) supaya static
+// analyzer tidak menganggap argumen fs/path berasal dari input eksternal.
 let translationRev = "0";
 try {
   const revSeed = [
-    "src/i18n/id.json",
-    "src/i18n/en.json",
-    "public/locales/id/translation.json",
-    "public/locales/en/translation.json"
-  ]
-    .map((f) => fs.statSync(path.resolve(__dirname, f)).mtimeMs.toString())
-    .join("|");
+    fs.statSync(path.resolve(__dirname, "src/i18n/id.json")).mtimeMs.toString(),
+    fs.statSync(path.resolve(__dirname, "src/i18n/en.json")).mtimeMs.toString(),
+    fs.statSync(path.resolve(__dirname, "public/locales/id/translation.json")).mtimeMs.toString(),
+    fs.statSync(path.resolve(__dirname, "public/locales/en/translation.json")).mtimeMs.toString()
+  ].join("|");
   translationRev = crypto.createHash("md5").update(revSeed).digest("hex").slice(0, 8);
 } catch {
   /* fallback tetap "0" */

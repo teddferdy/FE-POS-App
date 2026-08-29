@@ -32,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { getProductById, getProductReviews } from "@/services/product";
 import ProductPreview from "./ProductPreview";
+import { safeGet } from "@/lib/safe-lookup";
 
 const formatPrice = (value) => {
   if (value == null || isNaN(value)) return "0";
@@ -486,7 +487,7 @@ const DetailProduct = () => {
             <div className="space-y-3">
               <div className="relative group w-full aspect-[16/9] sm:aspect-[21/9] max-h-[70vh] rounded-2xl overflow-hidden border border-border/50 bg-muted/30">
                 <img
-                  src={allImages[safeIndex]}
+                  src={safeGet(allImages, safeIndex)}
                   alt={product.nameProduct || product.name || ""}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                 />

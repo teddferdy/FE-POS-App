@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import StatCard from "@/components/ui/StatCard";
 import { useUserSession } from "@/hooks/useUserSession";
 import SwapShiftModal from "./SwapShiftModal";
+import { safeGet } from "@/lib/safe-lookup";
 import PageHeader from "@/components/ui/PageHeader";
 
 const DAY_MS = 86400000;
@@ -103,7 +104,7 @@ const MyShift = () => {
   const grouped = { ongoing: [], upcoming: [], past: [] };
   rows.forEach((s) => grouped[category(s)].push(s));
   Object.keys(grouped).forEach((k) =>
-    grouped[k].sort((a, b) => new Date(a.tanggal_mulai) - new Date(b.tanggal_mulai))
+    safeGet(grouped, k)?.sort((a, b) => new Date(a.tanggal_mulai) - new Date(b.tanggal_mulai))
   );
 
   const swappableShifts = [...grouped.ongoing, ...grouped.upcoming];
@@ -159,8 +160,8 @@ const MyShift = () => {
             </p>
           </div>
           <span
-            className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${badgeCls[cat]}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${dotCls[cat]}`} />
+            className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${safeGet(badgeCls, cat, "")}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${safeGet(dotCls, cat, "")}`} />
             {statusLabel(s, cat)}
           </span>
         </div>
@@ -294,7 +295,7 @@ const MyShift = () => {
             ["upcoming", "secUpcoming"],
             ["past", "secPast"]
           ].map(([cat, secKey]) => {
-            const list = grouped[cat];
+            const list = safeGet(grouped, cat, []);
             if (list.length === 0) return null;
             return (
               <section key={cat} className="mb-8 last:mb-0">
