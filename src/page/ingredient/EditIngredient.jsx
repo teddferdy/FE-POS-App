@@ -224,7 +224,7 @@ const EditIngredient = () => {
       conversionFactor: String(d.conversionFactor || "1"),
       stock: d.stock || 0,
       minStock: d.minStock || 0,
-      costPrice: d.costPrice || 0,
+      costPrice: d.costPrice ? Number(d.costPrice) : 0,
       isActive: d.status === "active",
       store: d.store ? String(d.store) : null
     });
@@ -524,7 +524,7 @@ const EditIngredient = () => {
                                     (p) => p.name?.toLowerCase().trim() === v.toLowerCase().trim()
                                   );
                                   if (product) {
-                                    form.setValue("costPrice", product.price || 0);
+                                    form.setValue("costPrice", Number(product.price) || 0);
                                     form.setValue("unit", product.unit || "pcs");
                                   }
                                 }
