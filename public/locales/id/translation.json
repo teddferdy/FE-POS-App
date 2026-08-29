@@ -411,6 +411,7 @@
   "page.expense.form.payee": "Dibayar Kepada",
   "page.expense.form.payeePlaceholder": "Nama penerima (vendor, kasir, dll)",
   "page.expense.form.payeeHint": "Opsional. Penerima pembayaran untuk audit trail",
+  "page.expense.form.payeeSalaryHint": "Daftar karyawan yang akan menerima pembayaran gaji ini.",
   "page.expense.form.employee": "Karyawan",
   "page.expense.form.employeePlaceholder": "Pilih karyawan",
   "page.expense.form.employeeEmpty": "Tidak ada karyawan aktif",

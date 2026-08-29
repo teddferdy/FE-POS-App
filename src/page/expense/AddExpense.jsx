@@ -1003,12 +1003,35 @@ const AddExpense = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{t("page.expense.form.payee")}</FormLabel>
-                            <Input
-                              placeholder={t("page.expense.form.payeePlaceholder")}
-                              disabled={isSalary}
-                              {...field}
-                            />
-                            <FormDescription>{t("page.expense.form.payeeHint")}</FormDescription>
+                            {isSalary ? (
+                              <FormControl>
+                                <div className="flex flex-wrap gap-1.5 rounded-md border border-border bg-muted/20 p-2 min-h-9 items-center">
+                                  {selectedSalaryEmps.length === 0 ? (
+                                    <span className="px-1 text-xs text-muted-foreground">
+                                      {t("page.expense.form.salary.employeePlaceholder")}
+                                    </span>
+                                  ) : (
+                                    selectedSalaryEmps.map((emp) => (
+                                      <span
+                                        key={emp.id}
+                                        className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                        {emp.fullName}
+                                      </span>
+                                    ))
+                                  )}
+                                </div>
+                              </FormControl>
+                            ) : (
+                              <Input
+                                placeholder={t("page.expense.form.payeePlaceholder")}
+                                {...field}
+                              />
+                            )}
+                            <FormDescription>
+                              {isSalary
+                                ? t("page.expense.form.payeeSalaryHint")
+                                : t("page.expense.form.payeeHint")}
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}

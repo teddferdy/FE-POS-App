@@ -411,6 +411,7 @@
   "page.expense.form.payee": "Paid To",
   "page.expense.form.payeePlaceholder": "Recipient name (vendor, cashier, etc.)",
   "page.expense.form.payeeHint": "Optional. Payment recipient for audit trail",
+  "page.expense.form.payeeSalaryHint": "Employees who will receive this salary payment.",
   "page.expense.form.employee": "Employee",
   "page.expense.form.employeePlaceholder": "Select employee",
   "page.expense.form.employeeEmpty": "No active employees",
