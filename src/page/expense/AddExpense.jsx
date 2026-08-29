@@ -223,6 +223,11 @@ const AddExpense = () => {
   const hasNoSalaryEmps = selectedSalaryEmps.some((e) => salaryOf(e) <= 0);
 
   useEffect(() => {
+    if (isSalary) {
+      const salaryFrequency = salaryBasis === "daily" ? "daily" : "monthly";
+      if (form.getValues("frequency") !== salaryFrequency)
+        form.setValue("frequency", salaryFrequency);
+    }
     if (!isSalary || selectedSalaryEmps.length === 0) {
       if (!isSalary && selectedSalaryIds.length > 0) setSelectedSalaryIds([]);
       form.clearErrors(["employeeId", "amount"]);
@@ -236,7 +241,6 @@ const AddExpense = () => {
     if (form.getValues("payee") !== nextPayee) form.setValue("payee", nextPayee);
     if (form.getValues("description") !== nextDescription)
       form.setValue("description", nextDescription);
-    if (form.getValues("frequency") !== "monthly") form.setValue("frequency", "monthly");
     if (Number(form.getValues("amount")) !== totalSalary) form.setValue("amount", totalSalary);
     if (hasNoSalaryEmps) {
       form.setError("amount", { message: t("page.expense.form.salary.employeeNoSalary") });
