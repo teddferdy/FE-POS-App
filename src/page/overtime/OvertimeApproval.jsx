@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { getOvertimes, updateOvertimeStatus, postOvertimePayroll } from "@/services/overtime";
 import { getAllLocation } from "@/services/location";
+import { safeGet } from "@/lib/safe-lookup";
 import { useUserSession } from "@/hooks/useUserSession";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -97,8 +98,8 @@ const statusBadge = (status) => {
   };
   return (
     <span
-      className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border capitalize ${map[status] || map.pending}`}>
-      {labels[status] || status}
+      className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border capitalize ${safeGet(map, status, map.pending)}`}>
+      {safeGet(labels, status, status)}
     </span>
   );
 };

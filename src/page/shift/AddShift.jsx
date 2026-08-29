@@ -38,6 +38,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { SHIFT_TYPES, DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS } from "@/constants/shiftTypes";
+import { safeGet } from "@/lib/safe-lookup";
 
 const AddShift = () => {
   const { t } = useTranslation();
@@ -512,7 +513,7 @@ const AddShift = () => {
                                 ? "bg-primary text-primary-foreground border-primary shadow-sm"
                                 : "bg-background text-muted-foreground border-border hover:border-primary/50"
                             }`}>
-                            {SHIFT_TYPE_LABELS[type] || type}
+                            {safeGet(SHIFT_TYPE_LABELS, type, type)}
                           </button>
                         ))}
                       </div>

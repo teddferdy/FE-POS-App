@@ -25,6 +25,7 @@ import { useTranslation } from "react-i18next";
 import { getAllShift, deleteShift, editShift } from "@/services/shift";
 import { getShiftSwaps } from "@/services/shiftSwap";
 import { DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS, SHIFT_TYPES } from "@/constants/shiftTypes";
+import { safeGet } from "@/lib/safe-lookup";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -181,8 +182,8 @@ const ShiftList = () => {
             <p className="font-medium text-foreground">{row.nama_shift || "-"}</p>
             <p className="text-[11px] text-muted-foreground capitalize">
               {SHIFT_TYPES.includes(row.tipe_shift)
-                ? SHIFT_TYPE_LABELS[row.tipe_shift]
-                : SHIFT_TYPE_LABELS[DEFAULT_SHIFT_TYPE]}
+                ? safeGet(SHIFT_TYPE_LABELS, row.tipe_shift, row.tipe_shift)
+                : safeGet(SHIFT_TYPE_LABELS, DEFAULT_SHIFT_TYPE, DEFAULT_SHIFT_TYPE)}
             </p>
           </div>
         </div>

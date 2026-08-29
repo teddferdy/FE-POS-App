@@ -17,6 +17,7 @@ import {
 import { resolveKaryawan } from "./shiftMembers";
 import { getAllEmployee } from "@/services/employee";
 import { createShiftSwap } from "@/services/shiftSwap";
+import { safeGet } from "@/lib/safe-lookup";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -139,7 +140,7 @@ const AvailabilityCalendar = ({ month, busyDates, selectedDate, onSelectDate, di
     <div className="rounded-xl border border-border bg-card p-3">
       <div className="flex items-center justify-between mb-2">
         <p className="text-sm font-semibold text-foreground">
-          {MONTHS_ID[mIdx]} {year}
+          {safeGet(MONTHS_ID, mIdx, mIdx)} {year}
         </p>
         <span className="text-[10px] text-muted-foreground font-medium">
           {busyDates.size > 0 ? `${busyDates.size} hari sibuk` : "Semua kosong"}

@@ -7,6 +7,13 @@ export function cn(...inputs) {
 
 export function parseSalary(val) {
   if (val === null || val === undefined || val === "") return 0;
-  const num = typeof val === "number" ? val : Number(String(val).replace(/[^0-9]/g, ""));
-  return Number.isFinite(num) && num > 0 ? num : 0;
+  if (typeof val === "number") {
+    return Number.isFinite(val) && val > 0 ? val : 0;
+  }
+  const direct = Number(val);
+  if (Number.isFinite(direct)) {
+    return direct > 0 ? direct : 0;
+  }
+  const cleaned = Number(String(val).replace(/[^0-9]/g, ""));
+  return Number.isFinite(cleaned) && cleaned > 0 ? cleaned : 0;
 }

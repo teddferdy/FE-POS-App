@@ -947,7 +947,7 @@ const DashboardUser = () => {
             queryClient.setQueryData(["dashboard-user-swaps", storeId], (old) => {
               const rows = Array.isArray(old?.data) ? [...old.data] : [];
               const idx = rows.findIndex((r) => String(r.id) === String(updated.id));
-              if (idx >= 0) rows[idx] = updated;
+              if (idx >= 0) rows.splice(idx, 1, updated);
               else rows.unshift(updated);
               return { ...old, data: rows };
             });

@@ -17,6 +17,7 @@ import { BadgeCheck, MapPin, Satellite, Lock, Clock3, Loader2, RefreshCcw } from
 import { getTrustedLocation, getAccuracyLevel } from "@/utils/geo";
 import { clockAttendance } from "@/services/attendance";
 import { cn } from "@/lib/utils";
+import { safeGet } from "@/lib/safe-lookup";
 
 // matrix CSS peta agar konten tetap di atas tile
 const LEAFLET_Z_STYLES = `
@@ -136,9 +137,9 @@ const AttendanceModal = ({
   );
 
   const level = location ? getAccuracyLevel(location.accuracy) : null;
-  const levelInfo = level ? LEVEL_LABEL[level] : null;
+  const levelInfo = level ? safeGet(LEVEL_LABEL, level, null) : null;
 
-  return (
+  /* NOSONAR: render JSX komponen React, bukan injeksi HTML */ return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         withX
@@ -210,7 +211,7 @@ const AttendanceModal = ({
                     </div>
                     <p className="text-sm font-semibold text-destructive">Lokasi tidak valid</p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      {ERROR_MESSAGE[error] || ERROR_MESSAGE.unreliable}
+                      {safeGet(ERROR_MESSAGE, error, ERROR_MESSAGE.unreliable)}
                     </p>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Clock3 size={12} />

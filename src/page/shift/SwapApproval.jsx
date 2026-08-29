@@ -15,6 +15,7 @@ import {
   XCircle
 } from "lucide-react";
 import { getShiftSwaps, updateShiftSwapStatus } from "@/services/shiftSwap";
+import { safeGet } from "@/lib/safe-lookup";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -86,8 +87,8 @@ const statusBadge = (status) => {
   };
   return (
     <span
-      className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border capitalize ${map[status] || map.pending}`}>
-      {labels[status] || status}
+      className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border capitalize ${safeGet(map, status, map.pending)}`}>
+      {safeGet(labels, status, status)}
     </span>
   );
 };
@@ -129,9 +130,10 @@ const AuditTrailPanel = ({ store, locations }) => {
   const trail = data?.data || [];
   const days = trail.reduce((acc, sw) => {
     const d = fmt(sw.decidedAt || sw.createdAt);
-    (acc[d] = acc[d] || []).push(sw);
-    return acc;
-  }, {});
+    const list = acc.has(d) ? acc.get(d) : [];
+    list.push(sw);
+    return acc.set(d, list);
+  }, new Map());
 
   const locationName = (sid) => locations.find((l) => String(l.id) === String(sid))?.name || null;
 
@@ -196,7 +198,7 @@ const AuditTrailPanel = ({ store, locations }) => {
             </div>
           ) : (
             <div className="space-y-4">
-              {Object.entries(days)
+              {Array.from(days)
                 .sort((a, b) => (a[0] < b[0] ? 1 : -1))
                 .map(([day, items]) => (
                   <div key={day}>

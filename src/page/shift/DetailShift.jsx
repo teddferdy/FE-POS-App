@@ -27,6 +27,7 @@ import { getAllLocation } from "@/services/location";
 import { getAttendanceByShift } from "@/services/attendance";
 import { resolveKaryawan, splitKaryawanByStore } from "./shiftMembers";
 import { cn } from "@/lib/utils";
+import { safeGet } from "@/lib/safe-lookup";
 import { DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS, SHIFT_TYPES } from "@/constants/shiftTypes";
 
 const statusBadge = (status, t) => {
@@ -63,7 +64,7 @@ const typeBadge = (type) => {
           : "bg-sky-100 text-sky-700 border border-sky-200 dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-800"
       )}>
       <RefreshCcw size={11} />
-      {SHIFT_TYPE_LABELS[safeType] || safeType}
+      {safeGet(SHIFT_TYPE_LABELS, safeType, safeType)}
     </span>
   );
 };
@@ -141,12 +142,12 @@ const DetailShift = () => {
     [memberRows, shift?.store]
   );
   const mismatchGroups = useMemo(() => {
-    const byTarget = {};
+    const byTarget = new Map();
     mismatch.forEach((row) => {
       const label = row.emp?.storeData?.name || `Toko #${row.emp?.store ?? "-"}`;
-      byTarget[label] = (byTarget[label] || 0) + 1;
+      byTarget.set(label, (byTarget.get(label) || 0) + 1);
     });
-    return Object.entries(byTarget).map(([label, count]) => ({ label, count }));
+    return [...byTarget].map(([label, count]) => ({ label, count }));
   }, [mismatch]);
   const resolvedCount = matching.filter((r) => r.emp).length;
 
@@ -163,7 +164,7 @@ const DetailShift = () => {
   const attendanceRows = Array.isArray(attQuery?.data) ? attQuery.data : [];
 
   const attendanceMap = useMemo(() => {
-    const map = {};
+    const map = new Map();
     const todayStr = new Date().toLocaleDateString("en-CA");
     attendanceRows.forEach((r) => {
       const d = new Date(r.absenAt);
@@ -171,15 +172,16 @@ const DetailShift = () => {
       if (d.toLocaleDateString("en-CA") !== todayStr) return;
       if (r.status === "cancelled") return;
       const uid = String(r.userId);
-      if (!map[uid]) map[uid] = { checkIn: null, checkOut: null };
+      if (!map.has(uid)) map.set(uid, { checkIn: null, checkOut: null });
+      const cur = map.get(uid);
       const ts = d.getTime();
       if (r.type === "check-in") {
-        if (!map[uid].checkIn || ts < new Date(map[uid].checkIn.absenAt).getTime()) {
-          map[uid].checkIn = r;
+        if (!cur.checkIn || ts < new Date(cur.checkIn.absenAt).getTime()) {
+          cur.checkIn = r;
         }
       } else if (r.type === "check-out") {
-        if (!map[uid].checkOut || ts > new Date(map[uid].checkOut.absenAt).getTime()) {
-          map[uid].checkOut = r;
+        if (!cur.checkOut || ts > new Date(cur.checkOut.absenAt).getTime()) {
+          cur.checkOut = r;
         }
       }
     });
@@ -187,8 +189,8 @@ const DetailShift = () => {
   }, [attendanceRows]);
 
   const counts = useMemo(() => {
-    const masuk = memberRows.filter((row) => attendanceMap[String(row.id)]?.checkIn).length;
-    const keluar = memberRows.filter((row) => attendanceMap[String(row.id)]?.checkOut).length;
+    const masuk = memberRows.filter((row) => attendanceMap.get(String(row.id))?.checkIn).length;
+    const keluar = memberRows.filter((row) => attendanceMap.get(String(row.id))?.checkOut).length;
     return {
       total: memberRows.length,
       masuk,
@@ -328,8 +330,8 @@ const DetailShift = () => {
             <InfoRow icon={RefreshCcw} label="Tipe Shift">
               <span className="capitalize">
                 {SHIFT_TYPES.includes(shift.tipe_shift)
-                  ? SHIFT_TYPE_LABELS[shift.tipe_shift]
-                  : SHIFT_TYPE_LABELS[DEFAULT_SHIFT_TYPE]}
+                  ? safeGet(SHIFT_TYPE_LABELS, shift.tipe_shift, shift.tipe_shift)
+                  : safeGet(SHIFT_TYPE_LABELS, DEFAULT_SHIFT_TYPE, DEFAULT_SHIFT_TYPE)}
               </span>
             </InfoRow>
             <InfoRow icon={BadgeCheck} label={t("page.shift.table.status")}>
@@ -559,7 +561,7 @@ const DetailShift = () => {
               <tbody>
                 {memberRows.map((row, idx) => {
                   const emp = row.emp;
-                  const att = attendanceMap[String(row.id)] || {};
+                  const att = attendanceMap.get(String(row.id)) || {};
                   const checkIn = att.checkIn || null;
                   const checkOut = att.checkOut || null;
                   return (

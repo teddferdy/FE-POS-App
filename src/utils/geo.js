@@ -1,5 +1,6 @@
 export const MAX_ACCURACY_M = 150;
 export const FAS_INACCURATE_ACCURACY_M = 50;
+const ORIGIN_EPSILON = 1e-6;
 
 export const haversineDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371000;
@@ -27,7 +28,7 @@ const validationError = (sample) => {
     latitude > 90 ||
     longitude < -180 ||
     longitude > 180 ||
-    (Math.abs(latitude) < 0.000001 && Math.abs(longitude) < 0.000001)
+    (Math.abs(latitude) < ORIGIN_EPSILON && Math.abs(longitude) < ORIGIN_EPSILON)
   )
     return "origin";
   if (!isFiniteNumber(accuracy) || accuracy <= 0) return "accuracy-zero";

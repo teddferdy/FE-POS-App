@@ -244,8 +244,8 @@ const MyShift = () => {
               <p className="font-semibold text-foreground truncate">{s.nama_shift || "-"}</p>
               <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-semibold capitalize">
                 {SHIFT_TYPES.includes(s.tipe_shift)
-                  ? SHIFT_TYPE_LABELS[s.tipe_shift]
-                  : SHIFT_TYPE_LABELS[DEFAULT_SHIFT_TYPE]}
+                  ? safeGet(SHIFT_TYPE_LABELS, s.tipe_shift, s.tipe_shift)
+                  : safeGet(SHIFT_TYPE_LABELS, DEFAULT_SHIFT_TYPE, DEFAULT_SHIFT_TYPE)}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 truncate">
@@ -613,7 +613,7 @@ const MyShift = () => {
             queryClient.setQueryData(["my-shift-swaps", storeId], (old) => {
               const rows = Array.isArray(old?.data) ? [...old.data] : [];
               const idx = rows.findIndex((r) => String(r.id) === String(updated.id));
-              if (idx >= 0) rows[idx] = updated;
+              if (idx >= 0) rows.splice(idx, 1, updated);
               else rows.unshift(updated);
               return { ...old, data: rows };
             });
