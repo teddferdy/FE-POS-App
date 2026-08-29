@@ -81,6 +81,7 @@ const AddExpense = () => {
   const [selectedSalaryIds, setSelectedSalaryIds] = useState([]);
   const [salaryBasis, setSalaryBasis] = useState("monthly");
   const [expenseMode, setExpenseMode] = useState("single");
+  const [confirmModeSwitch, setConfirmModeSwitch] = useState(null);
 
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
@@ -170,7 +171,8 @@ const AddExpense = () => {
   const {
     fields: itemFields,
     append: appendItem,
-    remove: removeItem
+    remove: removeItem,
+    replace: replaceItem
   } = useFieldArray({
     control: form.control,
     name: "items"
@@ -183,28 +185,32 @@ const AddExpense = () => {
     return (watchedItems || []).reduce((sum, item) => sum + (Number(item?.amount) || 0), 0);
   }, [isMultiMode, watchedItems]);
 
+  const hasMultiData = (values) =>
+    (values.items || []).some((it) => it.categoryId || it.description || it.amount || it.payee);
+
+  const applyModeSwitch = (newMode) => {
+    form.setValue("categoryId", "");
+    form.setValue("description", "");
+    form.setValue("amount", "");
+    form.setValue("payee", "");
+    replaceItem([{ categoryId: "", description: "", amount: "", payee: "" }]);
+    setSelectedSalaryIds([]);
+    setExpenseMode(newMode);
+    setConfirmModeSwitch(null);
+  };
+
   const handleModeSwitch = (newMode) => {
     if (newMode === expenseMode) return;
-    if (newMode === "multi") {
-      const vals = form.getValues();
-      const hasSingleData = vals.categoryId || vals.description || vals.amount;
-      if (hasSingleData) {
-        appendItem({
-          categoryId: vals.categoryId || "",
-          description: vals.description || "",
-          amount: vals.amount || "",
-          payee: vals.payee || ""
-        });
-      }
-    } else {
-      const items = form.getValues("items") || [];
-      const first = items[0] || {};
-      if (first.categoryId) form.setValue("categoryId", first.categoryId);
-      if (first.description) form.setValue("description", first.description);
-      if (first.amount) form.setValue("amount", first.amount);
-      if (first.payee) form.setValue("payee", first.payee);
+    const values = form.getValues();
+    const hasFilledData =
+      newMode === "multi"
+        ? !!(values.categoryId || values.description || values.amount || values.payee)
+        : hasMultiData(values);
+    if (hasFilledData) {
+      setConfirmModeSwitch(newMode);
+      return;
     }
-    setExpenseMode(newMode);
+    applyModeSwitch(newMode);
   };
   const selectedCategory = categories.find((cat) => String(cat.id) === String(watchedCategoryId));
   const isSalary = isSalaryCategoryName(selectedCategory?.name);
@@ -606,6 +612,12 @@ const AddExpense = () => {
                           <tbody>
                             {itemFields.map((field, idx) => {
                               const item = (watchedItems || []).at(idx) || {};
+                              const usedElsewhere = (watchedItems || [])
+                                .map((it, i) => (i !== idx ? String(it.categoryId || "") : ""))
+                                .filter(Boolean);
+                              const availableCategories = nonSalaryCategories.filter(
+                                (cat) => !usedElsewhere.includes(String(cat.id || cat._id))
+                              );
                               return (
                                 <tr key={field.id} className="border-b border-muted/20">
                                   <td className="px-3 py-2">
@@ -620,14 +632,14 @@ const AddExpense = () => {
                                         />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {nonSalaryCategories.length === 0 ? (
+                                        {availableCategories.length === 0 ? (
                                           <SelectItem value="__none" disabled>
                                             {categories.length === 0
                                               ? t("page.expense.add.noCategories")
-                                              : t("page.expense.add.mode.salaryNote")}
+                                              : t("page.expense.add.mode.exhausted")}
                                           </SelectItem>
                                         ) : (
-                                          nonSalaryCategories.map((cat) => (
+                                          availableCategories.map((cat) => (
                                             <SelectItem
                                               key={cat.id || cat._id}
                                               value={String(cat.id || cat._id)}>
@@ -1117,6 +1129,20 @@ const AddExpense = () => {
           description={t("modal.cancelDescription")}
           confirmText={t("modal.yesCancel")}
           onConfirm={() => setTimeout(() => navigate("/expense"), 150)}
+        />
+        <Modal
+          type="confirm"
+          open={!!confirmModeSwitch}
+          onOpenChange={(v) => !v && setConfirmModeSwitch(null)}
+          title={t("page.expense.add.mode.switchTitle")}
+          description={t("page.expense.add.mode.switchDesc")}
+          confirmText={t("page.expense.add.mode.switchConfirm")}
+          confirmVariant="destructive"
+          onConfirm={() => {
+            if (!confirmModeSwitch) return;
+            applyModeSwitch(confirmModeSwitch);
+          }}
+          onCancel={() => setConfirmModeSwitch(null)}
         />
         <Modal
           type="success"
