@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { useQuery } from "react-query";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import {
   ArrowRightLeft,
   CalendarClock,
@@ -9,17 +10,28 @@ import {
   Clock,
   Clock3,
   Store,
-  RefreshCcw
+  RefreshCcw,
+  Fingerprint,
+  LogOut,
+  CheckCircle2,
+  CircleDashed,
+  XCircle,
+  Loader2
 } from "lucide-react";
 import { getAllShift } from "@/services/shift";
 import { getAllLocation } from "@/services/location";
+import { getMyAttendance } from "@/services/attendance";
+import { getShiftSwaps } from "@/services/shiftSwap";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/ui/StatCard";
 import { useUserSession } from "@/hooks/useUserSession";
 import SwapShiftModal from "./SwapShiftModal";
+import CancelSwapDialog from "./CancelSwapDialog";
+import AttendanceModal from "@/components/organism/AttendanceModal";
 import { safeGet } from "@/lib/safe-lookup";
 import PageHeader from "@/components/ui/PageHeader";
+import { DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS, SHIFT_TYPES } from "@/constants/shiftTypes";
 
 const DAY_MS = 86400000;
 
@@ -43,6 +55,20 @@ const hoursBetween = (start, end) => {
   return minutes / 60;
 };
 
+const nowHM = () => {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+};
+
+const isShiftWindowNow = (s) => {
+  const now = nowHM();
+  const start = (s?.jam_mulai || "").slice(0, 5);
+  const end = (s?.jam_selesai || "").slice(0, 5);
+  if (!start || !end || start.length !== 5 || end.length !== 5) return false;
+  if (start <= end) return now >= start && now <= end;
+  return now >= start || now <= end;
+};
+
 const MetadataTile = ({ icon: Icon, children }) => (
   <span className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground">
     <Icon size={14} className="shrink-0 text-muted-foreground/70" />
@@ -52,12 +78,25 @@ const MetadataTile = ({ icon: Icon, children }) => (
 
 const MyShift = () => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = useUserSession() || cookie?.user || {};
   const [swapShift, setSwapShift] = useState(null);
+  const [cancelSwap, setCancelSwap] = useState(null);
+  const [attendanceShift, setAttendanceShift] = useState(null);
 
   const currentUserId = user?.id;
   const storeId = user?.store || "";
+
+  const { data: myAttData, refetch: refetchAttendance } = useQuery(
+    ["my-shift-attendance", currentUserId],
+    () => getMyAttendance(),
+    { enabled: !!currentUserId, retry: 0 }
+  );
+
+  const myAtt = Array.isArray(myAttData?.data) ? myAttData.data : [];
+  const hasCheckedIn = myAtt.some((r) => r.type === "check-in" && r.status !== "cancelled");
+  const hasCheckedOut = myAtt.some((r) => r.type === "check-out" && r.status !== "cancelled");
 
   const { data, isLoading, isError, isFetching, refetch } = useQuery(
     ["my-shift", storeId],
@@ -73,6 +112,59 @@ const MyShift = () => {
   const rows = allShifts.filter((s) =>
     (s.karyawan || []).some((k) => String(k) === String(currentUserId))
   );
+
+  const {
+    data: swapData,
+    isLoading: swapLoading,
+    refetch: refetchSwaps
+  } = useQuery(
+    ["my-shift-swaps", storeId],
+    () => getShiftSwaps({ store: storeId, page: 1, pageSize: 50, status: "", mine: 1 }),
+    {
+      enabled: !!storeId && !!currentUserId,
+      retry: 0,
+      refetchInterval: 30000
+    }
+  );
+
+  const seenApprovedRef = useRef(new Set());
+  const swapToastInitRef = useRef(false);
+
+  const mySwaps = useMemo(() => {
+    const swapRows = Array.isArray(swapData?.data) ? swapData.data : [];
+    return swapRows
+      .filter(
+        (s) =>
+          String(s.requesterId) === String(currentUserId) ||
+          String(s.targetId) === String(currentUserId)
+      )
+      .sort((a, b) => {
+        const order = { pending: 0, approved: 1, rejected: 2, cancelled: 3 };
+        if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      });
+  }, [swapData, currentUserId]);
+
+  useEffect(() => {
+    const approved = mySwaps.filter((s) => s.status === "approved");
+    if (!approved.length) return;
+    if (!swapToastInitRef.current) {
+      approved.forEach((s) => seenApprovedRef.current.add(s.id));
+      swapToastInitRef.current = true;
+      return;
+    }
+    approved.forEach((s) => {
+      if (seenApprovedRef.current.has(s.id)) return;
+      seenApprovedRef.current.add(s.id);
+      const other =
+        String(s.requesterId) === String(currentUserId) ? s.requesterUser : s.targetUser;
+      toast.success("Pertukaran Shift Berhasil", {
+        description: `Pertukaran shift kamu dengan ${
+          other?.fullName || "rekan kerja"
+        } telah disetujui.`
+      });
+    });
+  }, [mySwaps, currentUserId]);
 
   const { data: locData } = useQuery(
     ["my-shift-locations", storeId],
@@ -151,7 +243,9 @@ const MyShift = () => {
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-semibold text-foreground truncate">{s.nama_shift || "-"}</p>
               <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-semibold capitalize">
-                {s.tipe_shift || "harian"}
+                {SHIFT_TYPES.includes(s.tipe_shift)
+                  ? SHIFT_TYPE_LABELS[s.tipe_shift]
+                  : SHIFT_TYPE_LABELS[DEFAULT_SHIFT_TYPE]}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 truncate">
@@ -159,11 +253,40 @@ const MyShift = () => {
               {name || t("page.shift.myShift.allStore")}
             </p>
           </div>
-          <span
-            className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${safeGet(badgeCls, cat, "")}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${safeGet(dotCls, cat, "")}`} />
-            {statusLabel(s, cat)}
-          </span>
+          <div className="shrink-0 flex flex-col items-end gap-1.5">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${safeGet(badgeCls, cat, "")}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${safeGet(dotCls, cat, "")}`} />
+              {statusLabel(s, cat)}
+            </span>
+            {cat === "ongoing" && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                  hasCheckedIn && hasCheckedOut
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    : hasCheckedIn
+                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                      : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                }`}>
+                {hasCheckedIn && hasCheckedOut ? (
+                  <>
+                    <CheckCircle2 size={10} />
+                    Absen Masuk & Pulang
+                  </>
+                ) : hasCheckedIn ? (
+                  <>
+                    <CheckCircle2 size={10} />
+                    Absen Masuk • Belum Pulang
+                  </>
+                ) : (
+                  <>
+                    <CircleDashed size={10} />
+                    Belum Absen
+                  </>
+                )}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-5 py-3 bg-muted/40 border-t border-border/50 text-[13px]">
           <MetadataTile icon={Clock3}>
@@ -187,14 +310,37 @@ const MyShift = () => {
             </>
           )}
           {cat !== "past" && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="ml-auto h-8 gap-1.5 text-xs"
-              onClick={() => setSwapShift(s)}>
-              <ArrowRightLeft size={13} className="text-primary" />
-              {t("page.shift.myShift.swap")}
-            </Button>
+            <span className="ml-auto flex flex-wrap items-center gap-2">
+              {cat === "ongoing" && isShiftWindowNow(s) && (
+                <Button
+                  size="sm"
+                  disabled={hasCheckedIn && hasCheckedOut}
+                  className="h-8 gap-1.5 text-xs"
+                  onClick={() => setAttendanceShift(s)}>
+                  {hasCheckedIn && hasCheckedOut ? (
+                    "Sudah Absen"
+                  ) : hasCheckedIn ? (
+                    <>
+                      <LogOut size={13} />
+                      Absen Pulang
+                    </>
+                  ) : (
+                    <>
+                      <Fingerprint size={13} />
+                      Absen Masuk
+                    </>
+                  )}
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 gap-1.5 text-xs"
+                onClick={() => setSwapShift(s)}>
+                <ArrowRightLeft size={13} className="text-primary" />
+                {t("page.shift.myShift.swap")}
+              </Button>
+            </span>
           )}
         </div>
       </div>
@@ -241,6 +387,13 @@ const MyShift = () => {
           </>
         )}
       </PageHeader>
+
+      {isFetching && !isLoading && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground px-1 -mt-2">
+          <Loader2 size={13} className="animate-spin text-primary" />
+          <span>{t("page.shift.myShift.refreshing")}</span>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-6">
@@ -314,6 +467,127 @@ const MyShift = () => {
         </>
       )}
 
+      {!swapLoading && mySwaps.length > 0 && (
+        <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm mt-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <ArrowRightLeft size={18} />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-foreground">Pertukaran Shift</h2>
+                <p className="text-xs text-muted-foreground">
+                  {mySwaps.filter((s) => s.status === "pending").length} sedang diproses ·{" "}
+                  {mySwaps.filter((s) => s.status === "approved").length} berhasil
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {mySwaps.map((s) => {
+              const isRequester = String(s.requesterId) === String(currentUserId);
+              const requester = s.requesterUser?.fullName || `Karyawan #${s.requesterId}`;
+              const target = s.targetUser?.fullName || `Karyawan #${s.targetId}`;
+              const statusCfg =
+                s.status === "pending"
+                  ? {
+                      label: "Sedang Diproses",
+                      cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                      icon: Loader2
+                    }
+                  : s.status === "approved"
+                    ? {
+                        label: "Berhasil",
+                        cls: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+                        icon: CheckCircle2
+                      }
+                    : s.status === "rejected"
+                      ? {
+                          label: "Ditolak",
+                          cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+                          icon: XCircle
+                        }
+                      : {
+                          label: "Dibatalkan",
+                          cls: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+                          icon: CircleDashed
+                        };
+              const StatusIcon = statusCfg.icon;
+              const dateTxt = s.tanggal_mulai
+                ? s.tanggal_mulai === s.tanggal_selesai
+                  ? new Date(`${s.tanggal_mulai}T00:00:00`).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric"
+                    })
+                  : `${new Date(`${s.tanggal_mulai}T00:00:00`).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short"
+                    })} – ${new Date(`${s.tanggal_selesai}T00:00:00`).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric"
+                    })}`
+                : "-";
+              return (
+                <div
+                  key={s.id}
+                  className={`rounded-xl border p-4 ${
+                    s.status === "approved"
+                      ? "border-green-200 dark:border-green-900/40 bg-green-50/50 dark:bg-green-900/10"
+                      : "border-border bg-muted/20"
+                  }`}>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${statusCfg.cls}`}>
+                      {s.status === "pending" ? (
+                        <StatusIcon size={12} className="animate-spin" />
+                      ) : (
+                        <StatusIcon size={12} />
+                      )}
+                      {statusCfg.label}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-mono">{dateTxt}</span>
+                  </div>
+                  <p className="text-sm font-semibold text-foreground flex items-center flex-wrap gap-x-2 gap-y-1">
+                    <span>{requester}</span>
+                    <ArrowRightLeft size={14} className="text-primary shrink-0" />
+                    <span>{target}</span>
+                  </p>
+                  {s.note && (
+                    <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">{s.note}</p>
+                  )}
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    {isRequester ? "Kamu mengajukan" : "Diajukan untukmu"} ·{" "}
+                    {s.createdAt
+                      ? new Date(s.createdAt).toLocaleString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })
+                      : "-"}
+                  </p>
+                  {s.status === "pending" && (
+                    <div className="mt-3 pt-2 border-t border-border/60 flex justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 text-xs text-red-600 dark:text-red-400 hover:text-red-600 dark:hover:text-red-400"
+                        onClick={() => setCancelSwap(s)}>
+                        <XCircle size={13} />
+                        Batalkan
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <SwapShiftModal
         open={!!swapShift}
         onOpenChange={(v) => {
@@ -324,6 +598,41 @@ const MyShift = () => {
         swappableShifts={swappableShifts}
         allShifts={allShifts}
         initialShift={swapShift && swapShift.id ? swapShift : null}
+        onSuccess={() => refetchSwaps()}
+      />
+
+      <CancelSwapDialog
+        open={!!cancelSwap}
+        onOpenChange={(v) => {
+          if (!v) setCancelSwap(null);
+        }}
+        swap={cancelSwap}
+        onSuccess={(res) => {
+          const updated = res?.data;
+          if (updated?.id) {
+            queryClient.setQueryData(["my-shift-swaps", storeId], (old) => {
+              const rows = Array.isArray(old?.data) ? [...old.data] : [];
+              const idx = rows.findIndex((r) => String(r.id) === String(updated.id));
+              if (idx >= 0) rows[idx] = updated;
+              else rows.unshift(updated);
+              return { ...old, data: rows };
+            });
+          }
+          refetchSwaps();
+        }}
+      />
+
+      <AttendanceModal
+        open={!!attendanceShift}
+        onOpenChange={(v) => {
+          if (!v) setAttendanceShift(null);
+        }}
+        type={hasCheckedIn && !hasCheckedOut ? "check-out" : "check-in"}
+        storeId={storeId}
+        storeName={attendanceShift ? locName(attendanceShift.store) : ""}
+        shiftId={attendanceShift?.id}
+        shiftName={attendanceShift?.nama_shift}
+        onSuccess={() => refetchAttendance()}
       />
     </div>
   );

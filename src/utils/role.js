@@ -9,12 +9,16 @@ export const isCashierRole = (user) => user?.roleType === "kasir" || user?.roleT
 export const getRoleDashboard = (roleType) => {
   if (roleType === "super_admin") return "/dashboard-super-admin";
   if (roleType === "admin") return "/dashboard-admin";
-  return "/home";
+  // ponytail: kasir/user mendarat di dashboard karyawan ringan (bukan langsung POS)
+  return "/dashboard-user";
 };
 
 // ponytail: "Beranda" breadcrumb/menu — super_admin ke dashboard global,
-// semua role lain (admin/kasir/user) ke dashboard per-toko.
-export const getDashboardHref = (user) =>
-  isSuperAdminRole(user) ? "/dashboard-super-admin" : "/dashboard-admin";
+// admin ke dashboard per-toko, kasir/user ke dashboard karyawan ringan.
+export const getDashboardHref = (user) => {
+  if (isSuperAdminRole(user)) return "/dashboard-super-admin";
+  if (isAdminRole(user)) return "/dashboard-admin";
+  return "/dashboard-user";
+};
 
 export const getHomePath = (user) => getRoleDashboard(user?.roleType);

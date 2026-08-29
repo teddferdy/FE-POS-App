@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   ArrowRightLeft,
+  Calendar,
   Check,
   ChevronRight,
   Clock,
@@ -27,6 +29,34 @@ import {
 
 const fmtTime = (t) => (t ? String(t).slice(0, 5) : "??:??");
 
+const toISODate = (d) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+const fmtDateShort = (iso) =>
+  iso
+    ? new Date(`${iso}T00:00:00`).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short"
+      })
+    : "-";
+
+const listDates = (fromISO, toISO) => {
+  const start = fromISO ? new Date(`${fromISO}T00:00:00`) : null;
+  const end = toISO ? new Date(`${toISO}T00:00:00`) : null;
+  if (!start && !end) return [];
+  const a = start || end;
+  const b = end || start;
+  const out = [];
+  for (let d = new Date(a); d <= b; d.setDate(d.getDate() + 1)) {
+    out.push(toISODate(d));
+  }
+  return out;
+};
+
 const shiftPart = (start) => {
   const h = parseInt(String(start || "").slice(0, 2), 10);
   if (isNaN(h)) return "pagi";
@@ -34,6 +64,27 @@ const shiftPart = (start) => {
   if (h < 18) return "siang";
   return "malam";
 };
+
+// Apakah sebuah shift mencakup tanggal tsb (memperhitungkan rentang mulai-selesai)
+const shiftCoversDate = (s, date) => {
+  if (!date) return true;
+  const t = new Date(`${date}T00:00:00`).getTime();
+  const from = s.tanggal_mulai ? new Date(`${s.tanggal_mulai}T00:00:00`).getTime() : null;
+  const to = s.tanggal_selesai
+    ? new Date(`${s.tanggal_selesai}T00:00:00`).setHours(23, 59, 59, 999)
+    : null;
+  if (from !== null && t < from) return false;
+  if (to !== null && t > to) return false;
+  return true;
+};
+
+// Shift LAIN milik user yang bentrok pada tanggal tsb (selain shift yang dipilih)
+const busyShiftsOf = ({ shifts, userId, date, excludeShiftId }) =>
+  (shifts || []).filter((s) => {
+    if (String(s.id) === String(excludeShiftId)) return false;
+    if (!(s.karyawan || []).some((k) => String(k) === String(userId))) return false;
+    return shiftCoversDate(s, date);
+  });
 
 const EmpAvatar = ({ emp, size = "w-10 h-10" }) => {
   const name = emp?.fullName || emp?.userName || "?";
@@ -57,6 +108,95 @@ const EmpAvatar = ({ emp, size = "w-10 h-10" }) => {
 const roleOf = (emp) =>
   emp?.positionData?.name || emp?.departmentData?.name || emp?.roleType || null;
 
+const MONTHS_ID = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mei",
+  "Jun",
+  "Jul",
+  "Agu",
+  "Sep",
+  "Okt",
+  "Nov",
+  "Des"
+];
+const WEEKDAYS_ID = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+
+// Kalender bulanan untuk melihat ketersediaan rekan kerja sebelum swap.
+const AvailabilityCalendar = ({ month, busyDates, selectedDate, onSelectDate, disabledDates }) => {
+  const year = month.getFullYear();
+  const mIdx = month.getMonth();
+  const first = new Date(year, mIdx, 1);
+  const startOffset = first.getDay();
+  const daysInMonth = new Date(year, mIdx + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < startOffset; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm font-semibold text-foreground">
+          {MONTHS_ID[mIdx]} {year}
+        </p>
+        <span className="text-[10px] text-muted-foreground font-medium">
+          {busyDates.size > 0 ? `${busyDates.size} hari sibuk` : "Semua kosong"}
+        </span>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center mb-1">
+        {WEEKDAYS_ID.map((w) => (
+          <span key={w} className="text-[10px] font-semibold text-muted-foreground">
+            {w}
+          </span>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((d, i) => {
+          if (d === null) return <span key={`e${i}`} />;
+          const iso = toISODate(new Date(year, mIdx, d));
+          const busy = busyDates.has(iso);
+          const disabled = disabledDates?.length > 0 && !disabledDates.includes(iso);
+          const selected = selectedDate === iso;
+          return (
+            <button
+              key={iso}
+              type="button"
+              disabled={disabled}
+              onClick={() => onSelectDate?.(iso)}
+              className={`aspect-square w-full rounded-lg text-xs font-semibold flex items-center justify-center transition-colors ${
+                selected
+                  ? "bg-primary text-primary-foreground ring-2 ring-primary/30"
+                  : busy
+                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                    : disabled
+                      ? "bg-muted/40 text-muted-foreground/30 cursor-not-allowed"
+                      : "bg-muted/60 text-foreground hover:bg-accent"
+              }`}>
+              {d}
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-4 mt-2 pt-2 border-t border-border/60">
+        <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <span className="w-2.5 h-2.5 rounded bg-amber-100 dark:bg-amber-900/40 inline-block" />
+          Ada shift lain
+        </span>
+        <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <span className="w-2.5 h-2.5 rounded bg-muted inline-block" />
+          Bisa swap
+        </span>
+        <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <span className="w-2.5 h-2.5 rounded bg-primary inline-block" />
+          Dipilih
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const SwapShiftModal = ({
   open,
   onOpenChange,
@@ -64,7 +204,8 @@ const SwapShiftModal = ({
   currentUserId,
   swappableShifts,
   allShifts,
-  initialShift
+  initialShift,
+  onSuccess
 }) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -74,27 +215,54 @@ const SwapShiftModal = ({
   const [targetShiftId, setTargetShiftId] = useState(null);
   const [coworkerId, setCoworkerId] = useState(null);
   const [note, setNote] = useState("");
+  const [swapDate, setSwapDate] = useState(null);
+  const [calOpen, setCalOpen] = useState(false);
 
   const candidateOwn = swappableShifts.filter((s) => s.id != null);
 
   useEffect(() => {
     if (!open) return;
-    setOwnShiftId(initialShift?.id ?? candidateOwn[0]?.id ?? null);
+    const firstId = initialShift?.id ?? candidateOwn[0]?.id ?? null;
+    setOwnShiftId(firstId);
     setTargetShiftId(null);
     setCoworkerId(null);
     setNote("");
     setStep("target");
+    const s = allShifts.find((x) => String(x.id) === String(firstId));
+    const dates = s ? listDates(s.tanggal_mulai, s.tanggal_selesai) : [];
+    const today = toISODate(new Date());
+    setSwapDate(dates.includes(today) ? today : dates[0] || null);
   }, [open, initialShift?.id]);
 
   const ownShift = allShifts.find((s) => String(s.id) === String(ownShiftId));
   const ownPart = ownShift ? shiftPart(ownShift.jam_mulai) : "";
+  const ownDates = useMemo(
+    () => (ownShift ? listDates(ownShift.tanggal_mulai, ownShift.tanggal_selesai) : []),
+    [ownShift]
+  );
+  const dateValid = ownDates.length === 0 || ownDates.includes(swapDate);
+
+  const applyOwnId = (id) => {
+    setOwnShiftId(id);
+    setTargetShiftId(null);
+    const s = allShifts.find((x) => String(x.id) === String(id));
+    const dates = s ? listDates(s.tanggal_mulai, s.tanggal_selesai) : [];
+    const today = toISODate(new Date());
+    setSwapDate(dates.includes(today) ? today : dates[0] || null);
+  };
 
   const targetOptions = useMemo(() => {
     if (!ownShiftId) return [];
-    return allShifts.filter(
-      (s) => String(s.id) !== String(ownShiftId) && shiftPart(s.jam_mulai) !== ownPart
-    );
-  }, [allShifts, ownShiftId, ownPart]);
+    return allShifts.filter((s) => {
+      if (String(s.id) !== String(ownShiftId) && shiftPart(s.jam_mulai) !== ownPart) {
+        if (!s.tanggal_mulai && !s.tanggal_selesai) return true;
+        const from = s.tanggal_mulai || swapDate || "";
+        const to = s.tanggal_selesai || from;
+        return swapDate ? swapDate >= from && swapDate <= to : true;
+      }
+      return false;
+    });
+  }, [allShifts, ownShiftId, ownPart, swapDate]);
 
   const targetShift = allShifts.find((s) => String(s.id) === String(targetShiftId));
 
@@ -105,7 +273,7 @@ const SwapShiftModal = ({
   );
   const employees = empData?.data || empData?.employees || [];
 
-  const coworkerRows = useMemo(() => {
+  const coworkers = useMemo(() => {
     if (!targetShift) return [];
     return resolveKaryawan(targetShift.karyawan, employees).filter((row) => {
       const emp = row.emp;
@@ -114,6 +282,34 @@ const SwapShiftModal = ({
       return storeId ? String(emp.store) === String(storeId) : true;
     });
   }, [targetShift, employees, currentUserId, storeId]);
+
+  const targetBusyShifts = useMemo(() => {
+    if (!coworkerId || !swapDate || !targetShift) return [];
+    return busyShiftsOf({
+      shifts: allShifts,
+      userId: coworkerId,
+      date: swapDate,
+      excludeShiftId: targetShift.id
+    });
+  }, [coworkerId, swapDate, targetShift, allShifts]);
+
+  // Kumpulan tanggal "sibuk" dari kalender utk rekan yang sedang dipilih
+  const coworkerBusyDates = useMemo(() => {
+    const set = new Set();
+    if (!coworkerId || !targetShift) return set;
+    busyShiftsOf({
+      shifts: allShifts,
+      userId: coworkerId,
+      date: null,
+      excludeShiftId: targetShift.id
+    }).forEach((s) => listDates(s.tanggal_mulai, s.tanggal_selesai).forEach((d) => set.add(d)));
+    return set;
+  }, [coworkerId, targetShift, allShifts]);
+
+  const calMonth = useMemo(() => {
+    const base = swapDate ? new Date(`${swapDate}T00:00:00`) : new Date();
+    return new Date(base.getFullYear(), base.getMonth(), 1);
+  }, [swapDate, calOpen]);
 
   const partLabel = (part) =>
     part === "siang"
@@ -131,6 +327,7 @@ const SwapShiftModal = ({
       });
       queryClient.invalidateQueries(["my-shift", storeId]);
       queryClient.invalidateQueries(["shift-swaps-stats"]);
+      onSuccess?.();
       onOpenChange(false);
     },
     onError: (err) => {
@@ -140,7 +337,13 @@ const SwapShiftModal = ({
     }
   });
 
-  const canSubmit = !!ownShiftId && !!targetShiftId && !!coworkerId && !swapMutation.isLoading;
+  const canSubmit =
+    !!ownShiftId &&
+    !!targetShiftId &&
+    !!coworkerId &&
+    !!swapDate &&
+    dateValid &&
+    !swapMutation.isLoading;
 
   const applyTarget = (sid) => {
     setTargetShiftId(sid);
@@ -153,7 +356,7 @@ const SwapShiftModal = ({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onOpenChange(false)}>
-      <DialogContent className="sm:max-w-[640px] max-h-[92vh] overflow-y-auto">
+      <DialogContent className="w-[90vw] max-w-[90vw] h-[90vh] max-h-[90vh] sm:max-w-none overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold flex items-center gap-2">
             <ArrowRightLeft size={20} className="text-primary" />
@@ -194,8 +397,7 @@ const SwapShiftModal = ({
                 <select
                   value={ownShiftId ?? ""}
                   onChange={(e) => {
-                    setOwnShiftId(e.target.value || null);
-                    setTargetShiftId(null);
+                    applyOwnId(e.target.value || null);
                   }}
                   className="w-full h-11 rounded-xl border border-border bg-background px-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer">
                   {candidateOwn.map((s) => (
@@ -225,6 +427,46 @@ const SwapShiftModal = ({
               ) : (
                 <p className="text-sm text-muted-foreground">{t("page.shift.swap.noEligible")}</p>
               )}
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                  <Calendar size={14} className="text-primary" />
+                  {t("page.shift.swap.chooseDate")}
+                </h3>
+                {ownDates.length > 0 && !dateValid && (
+                  <span className="rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[11px] font-semibold px-2 py-0.5">
+                    {t("page.shift.swap.dateOutOfRange")}
+                  </span>
+                )}
+              </div>
+              <DialogDescription className="text-xs text-muted-foreground mb-2.5">
+                {t("page.shift.swap.chooseDateHint")}
+              </DialogDescription>
+              <div className="flex flex-wrap items-center gap-2">
+                {(ownDates.length ? ownDates : [toISODate(new Date())]).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setSwapDate(d)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      swapDate === d
+                        ? "border-primary bg-primary/5 text-primary ring-1 ring-primary"
+                        : "border-border bg-card text-foreground hover:border-primary/50 hover:bg-accent/40"
+                    }`}>
+                    {fmtDateShort(d)}
+                  </button>
+                ))}
+                <input
+                  type="date"
+                  value={swapDate ?? ""}
+                  min={ownDates[0] || undefined}
+                  max={ownDates[ownDates.length - 1] || undefined}
+                  onChange={(e) => setSwapDate(e.target.value || null)}
+                  className="h-9 rounded-full border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
             </div>
 
             <div className="mb-1 flex items-center gap-2">
@@ -298,6 +540,11 @@ const SwapShiftModal = ({
                 </div>
               </div>
               <ArrowRightLeft size={16} className="text-muted-foreground shrink-0" />
+              <div className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1.5 text-xs font-semibold text-foreground">
+                <Calendar size={12} className="text-primary" />
+                {swapDate ? fmtDateShort(swapDate) : "-"}
+              </div>
+              <ArrowRightLeft size={16} className="text-muted-foreground shrink-0" />
               <div className="flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2">
                 <Clock size={14} className="text-primary shrink-0" />
                 <div className="leading-tight">
@@ -321,20 +568,46 @@ const SwapShiftModal = ({
               {t("page.shift.swap.chooseCoworkerHint")}
             </DialogDescription>
 
+            <button
+              type="button"
+              onClick={() => setCalOpen((v) => !v)}
+              className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors">
+              <Calendar size={13} className="text-primary" />
+              {calOpen
+                ? t("page.shift.swap.calendarHide")
+                : t("page.shift.swap.calendarShow", {
+                    name: coworkerId
+                      ? employees.find((e) => String(e.id) === String(coworkerId))?.fullName || ""
+                      : ""
+                  })}
+            </button>
+
+            {calOpen && (
+              <div className="mb-4">
+                <AvailabilityCalendar
+                  month={calMonth}
+                  busyDates={coworkerBusyDates}
+                  selectedDate={swapDate}
+                  onSelectDate={(iso) => setSwapDate(iso)}
+                  disabledDates={ownDates.length > 0 ? ownDates : []}
+                />
+              </div>
+            )}
+
             {empLoading ? (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
                   <Skeleton key={i} className="h-16 w-full rounded-xl" />
                 ))}
               </div>
-            ) : coworkerRows.length === 0 ? (
+            ) : coworkers.length === 0 ? (
               <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-muted/20 px-6 py-10 text-center">
                 <Users size={26} className="text-muted-foreground/60" />
                 <p className="text-sm text-muted-foreground">{t("page.shift.swap.noCoworkers")}</p>
               </div>
             ) : (
               <div className="space-y-2">
-                {coworkerRows.map(({ key, emp }) => {
+                {coworkers.map(({ key, emp }) => {
                   const role = roleOf(emp);
                   const active = String(coworkerId) === key;
                   return (
@@ -370,6 +643,38 @@ const SwapShiftModal = ({
                     </button>
                   );
                 })}
+              </div>
+            )}
+
+            {coworkerId && targetBusyShifts.length > 0 && (
+              <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800 p-3.5">
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle
+                    size={16}
+                    className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+                      {t("page.shift.swap.conflictTitle")}
+                    </p>
+                    <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-1">
+                      {t("page.shift.swap.conflictDesc", { count: targetBusyShifts.length })}
+                    </p>
+                    <ul className="mt-2 space-y-1">
+                      {targetBusyShifts.map((bs) => (
+                        <li
+                          key={bs.id}
+                          className="flex items-center gap-2 text-xs font-medium text-amber-700/90 dark:text-amber-400/90">
+                          <Clock size={11} className="shrink-0" />
+                          <span className="truncate">{bs.nama_shift || "-"}</span>
+                          <span className="font-mono text-[11px] text-amber-600/80 dark:text-amber-400/70 shrink-0">
+                            {fmtTime(bs.jam_mulai)} - {fmtTime(bs.jam_selesai)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -409,7 +714,10 @@ const SwapShiftModal = ({
             )}
           </div>
           {step === "target" ? (
-            <Button size="sm" disabled={!targetShiftId} onClick={() => setStep("coworker")}>
+            <Button
+              size="sm"
+              disabled={!targetShiftId || !dateValid}
+              onClick={() => setStep("coworker")}>
               {t("page.shift.swap.next")}
               <ChevronRight size={14} />
             </Button>
@@ -422,6 +730,8 @@ const SwapShiftModal = ({
                   requesterShiftId: ownShiftId,
                   targetShiftId,
                   targetId: coworkerId,
+                  tanggal_mulai: swapDate,
+                  tanggal_selesai: swapDate,
                   note: note.trim() || undefined
                 })
               }>

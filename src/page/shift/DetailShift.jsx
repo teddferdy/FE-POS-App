@@ -9,12 +9,13 @@ import {
   Clock,
   Users,
   Store,
-  Briefcase,
-  Building2,
   BadgeCheck,
   Hash,
-  User,
-  RefreshCcw
+  RefreshCcw,
+  CheckCircle2,
+  XCircle,
+  LogIn,
+  LogOut
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getShiftById } from "@/services/shift";
 import { getAllEmployee } from "@/services/employee";
 import { getAllLocation } from "@/services/location";
-import { resolveKaryawan, groupKaryawanByStore, splitKaryawanByStore } from "./shiftMembers";
+import { getAttendanceByShift } from "@/services/attendance";
+import { resolveKaryawan, splitKaryawanByStore } from "./shiftMembers";
 import { cn } from "@/lib/utils";
+import { DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS, SHIFT_TYPES } from "@/constants/shiftTypes";
 
 const statusBadge = (status, t) => {
   if (status === "active" || status === true || status === 1)
@@ -49,18 +52,21 @@ const statusBadge = (status, t) => {
   );
 };
 
-const typeBadge = (type) => (
-  <span
-    className={cn(
-      "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold capitalize",
-      type === "mingguan"
-        ? "bg-violet-100 text-violet-700 border border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800"
-        : "bg-sky-100 text-sky-700 border border-sky-200 dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-800"
-    )}>
-    <RefreshCcw size={11} />
-    {type || "harian"}
-  </span>
-);
+const typeBadge = (type) => {
+  const safeType = SHIFT_TYPES.includes(type) ? type : DEFAULT_SHIFT_TYPE;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold capitalize",
+        safeType === "mingguan"
+          ? "bg-violet-100 text-violet-700 border border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800"
+          : "bg-sky-100 text-sky-700 border border-sky-200 dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-800"
+      )}>
+      <RefreshCcw size={11} />
+      {SHIFT_TYPE_LABELS[safeType] || safeType}
+    </span>
+  );
+};
 
 const fmtDate = (d, withTime = false) =>
   d
@@ -85,6 +91,24 @@ const InfoRow = ({ icon: Icon, label, children, iconClass }) => (
     </div>
   </div>
 );
+
+const fmtClock = (absenAt) =>
+  absenAt
+    ? new Date(absenAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+    : "-";
+
+const presenceBadge = ({ done, notDoneLabel }) =>
+  done ? (
+    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 text-[11px] font-semibold">
+      <CheckCircle2 size={11} />
+      Sudah
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 text-[11px] font-semibold">
+      <XCircle size={11} />
+      {notDoneLabel || "Belum"}
+    </span>
+  );
 
 const DetailShift = () => {
   const { t } = useTranslation();
@@ -116,8 +140,14 @@ const DetailShift = () => {
     () => splitKaryawanByStore(memberRows, shift?.store),
     [memberRows, shift?.store]
   );
-  const storeGroups = useMemo(() => groupKaryawanByStore(matching), [matching]);
-  const mismatchGroups = useMemo(() => groupKaryawanByStore(mismatch), [mismatch]);
+  const mismatchGroups = useMemo(() => {
+    const byTarget = {};
+    mismatch.forEach((row) => {
+      const label = row.emp?.storeData?.name || `Toko #${row.emp?.store ?? "-"}`;
+      byTarget[label] = (byTarget[label] || 0) + 1;
+    });
+    return Object.entries(byTarget).map(([label, count]) => ({ label, count }));
+  }, [mismatch]);
   const resolvedCount = matching.filter((r) => r.emp).length;
 
   const { data: locQuery } = useQuery(["locations-shift-detail"], () => getAllLocation("active"));
@@ -125,6 +155,48 @@ const DetailShift = () => {
     () => locQuery?.data?.find((l) => String(l.id) === String(shift?.store))?.name || null,
     [locQuery?.data, shift?.store]
   );
+
+  const { data: attQuery } = useQuery(["shift-attendance", id], () => getAttendanceByShift(id), {
+    enabled: !!shift?.id,
+    retry: 0
+  });
+  const attendanceRows = Array.isArray(attQuery?.data) ? attQuery.data : [];
+
+  const attendanceMap = useMemo(() => {
+    const map = {};
+    const todayStr = new Date().toLocaleDateString("en-CA");
+    attendanceRows.forEach((r) => {
+      const d = new Date(r.absenAt);
+      if (isNaN(d.getTime())) return;
+      if (d.toLocaleDateString("en-CA") !== todayStr) return;
+      if (r.status === "cancelled") return;
+      const uid = String(r.userId);
+      if (!map[uid]) map[uid] = { checkIn: null, checkOut: null };
+      const ts = d.getTime();
+      if (r.type === "check-in") {
+        if (!map[uid].checkIn || ts < new Date(map[uid].checkIn.absenAt).getTime()) {
+          map[uid].checkIn = r;
+        }
+      } else if (r.type === "check-out") {
+        if (!map[uid].checkOut || ts > new Date(map[uid].checkOut.absenAt).getTime()) {
+          map[uid].checkOut = r;
+        }
+      }
+    });
+    return map;
+  }, [attendanceRows]);
+
+  const counts = useMemo(() => {
+    const masuk = memberRows.filter((row) => attendanceMap[String(row.id)]?.checkIn).length;
+    const keluar = memberRows.filter((row) => attendanceMap[String(row.id)]?.checkOut).length;
+    return {
+      total: memberRows.length,
+      masuk,
+      keluar,
+      belumMasuk: memberRows.length - masuk,
+      belumKeluar: memberRows.length - keluar
+    };
+  }, [memberRows, attendanceMap]);
 
   if (!id)
     return (
@@ -254,7 +326,11 @@ const DetailShift = () => {
               {shift.nama_shift || "-"}
             </InfoRow>
             <InfoRow icon={RefreshCcw} label="Tipe Shift">
-              <span className="capitalize">{shift.tipe_shift || "harian"}</span>
+              <span className="capitalize">
+                {SHIFT_TYPES.includes(shift.tipe_shift)
+                  ? SHIFT_TYPE_LABELS[shift.tipe_shift]
+                  : SHIFT_TYPE_LABELS[DEFAULT_SHIFT_TYPE]}
+              </span>
             </InfoRow>
             <InfoRow icon={BadgeCheck} label={t("page.shift.table.status")}>
               {statusBadge(shift.status, t)}
@@ -297,7 +373,7 @@ const DetailShift = () => {
             </div>
           </Card>
 
-          {/* Karyawan */}
+          {/* Karyawan & Absensi */}
           <Card className="p-5">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3.5">
               <Users size={14} />
@@ -306,102 +382,9 @@ const DetailShift = () => {
                 {matching.length}
               </span>
             </div>
-            {storeGroups.length > 0 ? (
-              <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
-                {storeGroups.map((g) => (
-                  <div key={g.key}>
-                    <div className="flex items-center gap-1.5 mb-2">
-                      {g.iconType === "missing" ? (
-                        <User size={12} className="shrink-0 text-muted-foreground" />
-                      ) : (
-                        <Store size={12} className="shrink-0 text-primary" />
-                      )}
-                      <p className="flex-1 min-w-0 truncate text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        {g.label}
-                      </p>
-                      <span className="shrink-0 inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-md bg-muted text-[10px] font-bold text-muted-foreground">
-                        {g.members.length}
-                      </span>
-                    </div>
-                    <div className="space-y-1.5">
-                      {g.members.map(({ key, emp }) =>
-                        emp ? (
-                          <div
-                            key={key}
-                            className="flex items-center gap-2.5 rounded-lg border border-border/60 p-2">
-                            {emp.image ? (
-                              <img
-                                src={emp.image}
-                                alt={emp.fullName || emp.name}
-                                className="w-8 h-8 rounded-full object-cover shrink-0"
-                              />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                <span className="text-xs font-bold text-primary">
-                                  {(emp.fullName || emp.name || "?")[0]}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">
-                                {emp.fullName || emp.name || "-"}
-                              </p>
-                              <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
-                                {emp.positionData?.name && (
-                                  <span className="inline-flex items-center gap-1 min-w-0">
-                                    <Briefcase size={10} className="shrink-0" />
-                                    <span className="truncate">{emp.positionData.name}</span>
-                                  </span>
-                                )}
-                                {emp.departmentData?.name && (
-                                  <span className="inline-flex items-center gap-1 min-w-0">
-                                    <Building2 size={10} className="shrink-0" />
-                                    <span className="truncate">{emp.departmentData.name}</span>
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div
-                            key={key}
-                            className="flex items-center gap-2.5 rounded-lg border border-dashed border-border/70 p-2 text-muted-foreground">
-                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                              <User size={13} className="opacity-50" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground/70">
-                                Karyawan #{key}
-                              </p>
-                              <p className="text-[11px]">Tidak ditemukan di daftar karyawan</p>
-                            </div>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">Tidak ada karyawan</p>
-            )}
-            {mismatch.length > 0 && (
-              <div className="mt-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10 px-3 py-2.5">
-                <p className="text-[11px] font-medium text-amber-800 dark:text-amber-300 flex items-start gap-1.5">
-                  <Store size={11} className="shrink-0 mt-0.5" />
-                  <span>
-                    {mismatch.length} karyawan tidak sesuai dengan toko shift ini (
-                    {mismatchGroups.map((g) => g.label || "Tidak ditemukan").join(", ")}
-                    ). Sesuaikan anggota shift melalui halaman edit.
-                  </span>
-                </p>
-              </div>
-            )}
-            {resolvedCount > 0 && resolvedCount < matching.length && (
-              <p className="mt-3 pt-3 border-t border-border/60 text-[11px] text-muted-foreground">
-                {resolvedCount} dari {matching.length} karyawan ditemukan.
-              </p>
-            )}
+            <p className="text-sm text-muted-foreground">
+              Buka tabel lengkap di bawah untuk melihat status absensi karyawan.
+            </p>
           </Card>
 
           {/* Metadata */}
@@ -445,6 +428,224 @@ const DetailShift = () => {
           </Card>
         </div>
       </div>
+
+      {/* Karyawan & Absensi */}
+      <Card className="p-5 overflow-hidden">
+        <div className="flex flex-wrap items-center gap-2 mb-5">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <Users size={18} />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-sm font-bold text-foreground">Karyawan & Absensi</h2>
+            <p className="text-xs text-muted-foreground">
+              Status absen masuk & pulang karyawan hari ini ({fmtDate(new Date().toISOString())})
+            </p>
+          </div>
+          <span className="ml-auto inline-flex items-center justify-center h-7 min-w-7 px-2 rounded-full bg-primary/10 text-primary text-sm font-bold">
+            {counts.total}
+          </span>
+        </div>
+
+        {/* Ringkasan */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+          <div className="rounded-xl border border-border/60 bg-muted/30 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Total Karyawan
+            </p>
+            <p className="text-xl font-bold text-foreground mt-0.5">{counts.total}</p>
+          </div>
+          <div className="rounded-xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-green-700 dark:text-green-400">
+              Absen Masuk
+            </p>
+            <p className="text-xl font-bold text-green-700 dark:text-green-400 mt-0.5">
+              {counts.masuk}
+            </p>
+          </div>
+          <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-red-700 dark:text-red-400">
+              Belum Absen Masuk
+            </p>
+            <p className="text-xl font-bold text-red-700 dark:text-red-400 mt-0.5">
+              {counts.belumMasuk}
+            </p>
+          </div>
+          <div className="rounded-xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-green-700 dark:text-green-400">
+              Absen Keluar
+            </p>
+            <p className="text-xl font-bold text-green-700 dark:text-green-400 mt-0.5">
+              {counts.keluar}
+            </p>
+          </div>
+          <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">
+              Belum Absen Keluar
+            </p>
+            <p className="text-xl font-bold text-amber-700 dark:text-amber-400 mt-0.5">
+              {counts.belumKeluar}
+            </p>
+          </div>
+        </div>
+
+        {mismatch.length > 0 && (
+          <div className="mb-4 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10 px-3 py-2.5">
+            <p className="text-[11px] font-medium text-amber-800 dark:text-amber-300 flex items-start gap-1.5">
+              <Store size={11} className="shrink-0 mt-0.5" />
+              <span>
+                {mismatch.length} karyawan tidak sesuai dengan toko shift ini (
+                {mismatchGroups.map((g) => `${g.label} (${g.count})`).join(", ")}). Sesuaikan
+                anggota shift melalui halaman edit.
+              </span>
+            </p>
+          </div>
+        )}
+        {resolvedCount > 0 && resolvedCount < matching.length && (
+          <p className="mb-4 text-[11px] text-muted-foreground">
+            {resolvedCount} dari {matching.length} karyawan ditemukan di daftar karyawan.
+          </p>
+        )}
+
+        {memberRows.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/20 px-4 py-10 text-center">
+            <Users size={22} className="text-muted-foreground/50" />
+            <p className="text-sm font-semibold text-foreground">
+              Tidak ada karyawan pada shift ini
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1200px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/40 text-left">
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground w-10">
+                    No
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Karyawan
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Username
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Role
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Jabatan
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Departemen
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Toko
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Absen Masuk
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Jam Masuk
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Absen Keluar
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Jam Keluar
+                  </th>
+                  <th className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Kehadiran
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {memberRows.map((row, idx) => {
+                  const emp = row.emp;
+                  const att = attendanceMap[String(row.id)] || {};
+                  const checkIn = att.checkIn || null;
+                  const checkOut = att.checkOut || null;
+                  return (
+                    <tr key={row.key} className="border-b border-border/60 hover:bg-muted/30">
+                      <td className="px-3 py-2.5 text-xs text-muted-foreground">{idx + 1}</td>
+                      <td className="px-3 py-2.5">
+                        {emp ? (
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {emp.image ? (
+                              <img
+                                src={emp.image}
+                                alt={emp.fullName || emp.name}
+                                className="w-8 h-8 rounded-full object-cover shrink-0"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                <span className="text-xs font-bold">
+                                  {(emp.fullName || emp.name || "?")[0]}
+                                </span>
+                              </div>
+                            )}
+                            <span className="truncate font-medium text-foreground">
+                              {emp.fullName || emp.name || "-"}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Karyawan #{row.key}</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5 text-muted-foreground">{emp?.userName || "-"}</td>
+                      <td className="px-3 py-2.5 capitalize text-muted-foreground">
+                        {emp?.roleType || "-"}
+                      </td>
+                      <td className="px-3 py-2.5 text-muted-foreground">
+                        {emp?.positionData?.name || "-"}
+                      </td>
+                      <td className="px-3 py-2.5 text-muted-foreground">
+                        {emp?.departmentData?.name || "-"}
+                      </td>
+                      <td className="px-3 py-2.5 text-muted-foreground">
+                        {emp ? emp.storeData?.name || `Toko #${emp.store ?? "-"}` : "-"}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {checkIn ? presenceBadge({ done: true }) : presenceBadge({ done: false })}
+                      </td>
+                      <td className="px-3 py-2.5 font-mono text-muted-foreground">
+                        {fmtClock(checkIn?.absenAt)}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {checkOut ? (
+                          presenceBadge({ done: true })
+                        ) : checkIn ? (
+                          presenceBadge({ done: false })
+                        ) : (
+                          <span className="text-muted-foreground/60 text-xs">-</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5 font-mono text-muted-foreground">
+                        {fmtClock(checkOut?.absenAt)}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {checkIn && checkOut ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 text-[11px] font-semibold">
+                            <CheckCircle2 size={11} />
+                            Hadir penuh
+                          </span>
+                        ) : checkIn ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 text-[11px] font-semibold">
+                            <LogIn size={11} />
+                            Belum pulang
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 text-[11px] font-semibold">
+                            <LogOut size={11} />
+                            Belum masuk
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
     </div>
   );
 };

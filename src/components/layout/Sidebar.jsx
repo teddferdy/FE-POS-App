@@ -1,4 +1,3 @@
-/* eslint-disable no-empty */
 /* eslint-disable no-unused-vars */
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -27,11 +26,78 @@ import { filterMenuByPermission, filterNavCategoriesByPermission } from "@/utils
 import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
 import { logOut } from "@/services/auth";
+import { setLogoutInProgress } from "@/services";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import NavigationModal from "./NavigationModal";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import logoImg from "@/assets/logo-sidebar.png";
+
+// ponytail: untuk user yang menu-nya dikontrol accessMenu, item flat
+// dikelompokkan ulang per bagian (label memakai key sidebar.section.* yang
+// sudah ada). Item yang href-nya tidak terpetakan masuk grup fallback.
+const MENU_CONTROLLED_GROUPS = [
+  {
+    i18nKey: "sidebar.section.produkPromo",
+    title: "Produk & Promo",
+    hrefs: ["/category-list", "/product-list"]
+  },
+  {
+    i18nKey: "sidebar.section.bahanBaku",
+    title: "Bahan Baku",
+    hrefs: ["/supplier-category", "/supplier", "/ingredient-category", "/ingredient"]
+  },
+  {
+    i18nKey: "sidebar.section.pembelian",
+    title: "Pembelian",
+    hrefs: [
+      "/purchase-order",
+      "/goods-request",
+      "/goods-receipt",
+      "/purchase-return",
+      "/ap-dashboard",
+      "/purchase-payment"
+    ]
+  },
+  {
+    i18nKey: "sidebar.section.gudangOperasional",
+    title: "Gudang, Produksi & Delivery",
+    hrefs: [
+      "/stock-opname",
+      "/stock-adjustment",
+      "/stock-transfer",
+      "/stock-history",
+      "/low-stock",
+      "/production-order",
+      "/bom",
+      "/delivery-orders",
+      "/driver-list"
+    ]
+  },
+  {
+    i18nKey: "sidebar.section.keuanganLaporan",
+    title: "Keuangan & Laporan",
+    hrefs: [
+      "/expense-category",
+      "/expense",
+      "/accounting",
+      "/report/sales",
+      "/best-selling",
+      "/report/daily",
+      "/report/cash-flow"
+    ]
+  },
+  {
+    i18nKey: "sidebar.shift",
+    title: "Shift",
+    hrefs: ["/my-shift", "/shift-list", "/shift-template-list"]
+  }
+];
+
+const MENU_CONTROLLED_FALLBACK_GROUP = {
+  i18nKey: "sidebar.lainnya",
+  title: "Lainnya"
+};
 
 const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHoverChange }) => {
   const { t } = useTranslation();
@@ -41,6 +107,7 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
   const [isHovered, setIsHovered] = useState(false);
 
   const [logoutModal, setLogoutModal] = useState(false);
+  const [logoutSuccessModal, setLogoutSuccessModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [navModalOpen, setNavModalOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
@@ -92,6 +159,42 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
     walk(menuItems);
     return leaves;
   }, [isMenuControlled, menuItems]);
+
+  const controlledGroups = useMemo(() => {
+    if (!isMenuControlled) return [];
+
+    // ponytail: dashboard diseragamkan per role sebelum dikelompokkan
+    const mapped = grantedLeaves.map((item) => ({
+      ...item,
+      href: item.href?.startsWith("/dashboard")
+        ? isSuperAdminRole(user)
+          ? "/dashboard-super-admin"
+          : isAdminRole(user)
+            ? "/dashboard-admin"
+            : "/dashboard-user"
+        : item.href
+    }));
+
+    const dashboard = mapped.filter((item) => item.href?.startsWith("/dashboard"));
+    const others = mapped.filter((item) => !item.href?.startsWith("/dashboard"));
+
+    const groups = [];
+    MENU_CONTROLLED_GROUPS.forEach((group) => {
+      const items = others.filter((item) => group.hrefs.includes(item.href));
+      if (items.length > 0) groups.push({ ...group, items });
+    });
+
+    const leftover = others.filter(
+      (item) => !MENU_CONTROLLED_GROUPS.some((group) => group.hrefs.includes(item.href))
+    );
+    if (leftover.length > 0) groups.push({ ...MENU_CONTROLLED_FALLBACK_GROUP, items: leftover });
+
+    if (dashboard.length > 0) {
+      groups.unshift({ title: "Dashboard", hrefs: [], items: dashboard });
+    }
+
+    return groups;
+  }, [isMenuControlled, grantedLeaves, user]);
 
   const directItems = useMemo(() => {
     const items = [];
@@ -146,17 +249,28 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const confirmLogout = async () => {
     setIsLoggingOut(true);
+    setLogoutInProgress(true);
+    let ok = true;
     try {
       await logOut();
-    } catch (e) {}
+    } catch (_e) {
+      ok = false;
+    }
     try {
       sessionStorage.removeItem("user");
-    } catch (e) {}
+    } catch (_e) {
+      /* ignore */
+    }
     removeCookie("token");
     removeCookie("user");
     removeCookie("activeStore");
     removeCookie("activeStoreName");
-    navigate("/");
+    setIsLoggingOut(false);
+    if (ok) {
+      setLogoutSuccessModal(true);
+    } else {
+      navigate("/");
+    }
   };
 
   const handleLogout = () => setLogoutModal(true);
@@ -338,22 +452,22 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
         {/* Navigation */}
         <nav className="flex-1 flex flex-col gap-0.5 w-full overflow-y-auto overflow-x-hidden">
-          {/* Menu-controlled: render persis sesuai accessMenu */}
+          {/* Menu-controlled: render persis sesuai accessMenu, dikelompokkan */}
           {isMenuControlled &&
-            grantedLeaves.map((item) =>
-              renderNavButton(
-                {
-                  ...item,
-                  i18nKey: item.i18nKey,
-                  href: item.href?.startsWith("/dashboard")
-                    ? isSuperAdminRole(user)
-                      ? "/dashboard-super-admin"
-                      : "/dashboard-admin"
-                    : item.href
-                },
-                item.icon || MoreHorizontal
-              )
-            )}
+            (isExpanded
+              ? controlledGroups.map(({ i18nKey, title, items }) => (
+                  <div key={i18nKey || title} className="flex flex-col">
+                    <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 truncate">
+                      {t(i18nKey) || title}
+                    </p>
+                    <div className="flex flex-col gap-0.5">
+                      {items.map((item) => renderNavButton(item, item.icon || MoreHorizontal))}
+                    </div>
+                  </div>
+                ))
+              : controlledGroups
+                  .flatMap((group) => group.items)
+                  .map((item) => renderNavButton(item, item.icon || MoreHorizontal)))}
 
           {!isMenuControlled && (
             <>
@@ -368,15 +482,13 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
                   .filter((item) => item.href === "/home")
                   .map((item) => renderNavButton(item, Calculator))}
 
-              {/* Cashier role: render ALL directItems */}
+              {/* Cashier role: render ALL directItems (termasuk Dashboard karyawan) */}
               {isCashierRole(user) &&
-                directItems
-                  .filter((item) => !item.href?.startsWith("/dashboard"))
-                  .map((item) => {
-                    const iconMap = { "/home": Calculator, "/kitchen-display": ChefHat };
-                    const Icon = iconMap[item.href] || item.icon || MoreHorizontal;
-                    return renderNavButton(item, Icon);
-                  })}
+                directItems.map((item) => {
+                  const iconMap = { "/home": Calculator, "/kitchen-display": ChefHat };
+                  const Icon = iconMap[item.href] || item.icon || MoreHorizontal;
+                  return renderNavButton(item, Icon);
+                })}
 
               {/* Divider before POS */}
               {!isCashierRole(user) && (
@@ -465,6 +577,22 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
           description={t("header.logoutConfirmDesc")}
           confirmText={t("header.logoutYes")}
           onConfirm={confirmLogout}
+        />
+
+        <Modal
+          open={logoutSuccessModal}
+          onOpenChange={setLogoutSuccessModal}
+          type="success"
+          title={t("header.logoutSuccessTitle") || "Berhasil Keluar"}
+          description={
+            t("header.logoutSuccessDesc") ||
+            "Kamu berhasil keluar dari akun. Mengalihkan ke halaman login..."
+          }
+          confirmText={t("header.logoutSuccessOk") || "OK"}
+          onConfirm={() => {
+            setLogoutSuccessModal(false);
+            navigate("/");
+          }}
         />
 
         {activeCategory && (

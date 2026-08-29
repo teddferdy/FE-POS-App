@@ -6,6 +6,7 @@ import { RequireRole } from "@/components/ui/RequireRole";
 // Dashboard
 const Dashboard = React.lazy(() => import("@/page/dashboard"));
 const DashboardSuperAdmin = React.lazy(() => import("@/page/dashboard-super-admin"));
+const DashboardUser = React.lazy(() => import("@/page/dashboard-user/DashboardUser"));
 
 // Kitchen Display & QR Order Management
 const KitchenDisplay = React.lazy(() => import("@/page/kitchen-display"));
@@ -35,6 +36,14 @@ export const miscRoutes = (
       }
     />
     <Route path="/dashboard-admin" element={<Dashboard />} />
+    <Route
+      path="/dashboard-user"
+      element={
+        <RequireRole roles={["kasir", "cashier", "user"]} excludeSuperAdmin>
+          <DashboardUser />
+        </RequireRole>
+      }
+    />
     <Route path="/kitchen-display" element={<KitchenDisplay />} />
     <Route path="/qr-order-management" element={<CustomerOrderManagement />} />
     <Route path="/invoice-page" element={<InvoicePage />} />

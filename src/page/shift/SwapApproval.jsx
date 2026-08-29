@@ -8,6 +8,7 @@ import {
   Check,
   Clock,
   Inbox,
+  Loader2,
   MessageSquareText,
   Store,
   X,
@@ -72,12 +73,15 @@ const statusBadge = (status) => {
       "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800",
     rejected:
       "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800",
+    expired:
+      "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700",
     cancelled: "bg-muted text-muted-foreground border-border"
   };
   const labels = {
     pending: "Menunggu",
     approved: "Disetujui",
     rejected: "Ditolak",
+    expired: "Kedaluwarsa",
     cancelled: "Dibatalkan"
   };
   return (
@@ -91,6 +95,143 @@ const statusBadge = (status) => {
 const shiftLabel = (s) => {
   if (!s) return "-";
   return `${s.name || "-"} (${fmtTime(s.startTime)} - ${fmtTime(s.endTime)})`;
+};
+
+const DAY_MS = 86400000;
+
+const toISODate = (d) => {
+  const dd = new Date(d);
+  return `${dd.getFullYear()}-${String(dd.getMonth() + 1).padStart(2, "0")}-${String(
+    dd.getDate()
+  ).padStart(2, "0")}`;
+};
+
+// Panel audit: "siapa menukar dengan siapa" dalam 30 hari terakhir (approved)
+const AuditTrailPanel = ({ store, locations }) => {
+  const [open, setOpen] = useState(false);
+  const [fromDate, setFromDate] = useState(() => toISODate(new Date(Date.now() - 30 * DAY_MS)));
+  const [toDate, setToDate] = useState(() => toISODate(new Date()));
+
+  const { data, isLoading, isFetching } = useQuery(
+    ["shift-swap-audit", store, fromDate, toDate],
+    () =>
+      getShiftSwaps({
+        store,
+        page: 1,
+        pageSize: 100,
+        status: "approved",
+        from: fromDate,
+        to: toDate
+      }),
+    { enabled: open, keepPreviousData: true }
+  );
+
+  const trail = data?.data || [];
+  const days = trail.reduce((acc, sw) => {
+    const d = fmt(sw.decidedAt || sw.createdAt);
+    (acc[d] = acc[d] || []).push(sw);
+    return acc;
+  }, {});
+
+  const locationName = (sid) => locations.find((l) => String(l.id) === String(sid))?.name || null;
+
+  return (
+    <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between gap-3 text-left">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <ArrowRightLeft size={18} />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">
+              Audit Pertukaran Shift (30 hari terakhir)
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Rekap siapa menukar dengan siapa yang telah disetujui
+            </p>
+          </div>
+        </div>
+        <span className="text-xs font-semibold text-primary">
+          {open ? "Sembunyikan" : "Detail"}
+        </span>
+      </button>
+
+      {open && (
+        <div className="mt-4">
+          <div className="flex flex-wrap items-center gap-3 mb-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Dari</span>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value || fromDate)}
+                className="h-9 rounded-lg border border-border bg-background px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <span>sampai</span>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value || toDate)}
+                className="h-9 rounded-lg border border-border bg-background px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            {isFetching && <Loader2 size={14} className="text-primary animate-spin" />}
+            <span className="text-xs text-muted-foreground">
+              {trail.length} pertukaran disetujui
+            </span>
+          </div>
+
+          {isLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-14 w-full rounded-xl" />
+              ))}
+            </div>
+          ) : trail.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+              Belum ada pertukaran yang disetujui pada rentang tanggal tersebut.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {Object.entries(days)
+                .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+                .map(([day, items]) => (
+                  <div key={day}>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground mb-2">
+                      {day}
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {items.map((sw) => (
+                        <div
+                          key={sw.id || sw._id}
+                          className="flex items-center gap-2.5 rounded-xl border border-border bg-muted/20 px-3 py-2.5 text-xs">
+                          <EmpAvatar emp={sw.requesterUser} size="w-8 h-8" />
+                          <span className="font-medium text-foreground truncate">
+                            {sw.requesterUser?.fullName || "?"}
+                          </span>
+                          <ArrowRightLeft size={12} className="text-primary shrink-0" />
+                          <span className="font-medium text-foreground truncate">
+                            {sw.targetUser?.fullName || "?"}
+                          </span>
+                          <EmpAvatar emp={sw.targetUser} size="w-8 h-8" />
+                          <span className="ml-auto shrink-0 text-muted-foreground">
+                            {locationName(sw.store) || `Toko #${sw.store || "-"}`} ·{" "}
+                            {fmt(sw.tanggal_mulai)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const SwapApproval = ({ user, store, locations }) => {
@@ -117,6 +258,22 @@ const SwapApproval = ({ user, store, locations }) => {
   const decideMutation = useMutation(
     ({ id, decision }) => updateShiftSwapStatus({ id, status: decision }),
     {
+      onMutate: async ({ id, decision }) => {
+        await queryClient.cancelQueries({ queryKey: ["shift-swaps"] });
+        const snapshot = queryClient.getQueriesData({ queryKey: ["shift-swaps"] });
+
+        // Optimistic: update semua halaman query shift-swaps sekaligus.
+        queryClient.setQueriesData({ queryKey: ["shift-swaps"] }, (old) => {
+          if (!old || !Array.isArray(old.data)) return old;
+          return {
+            ...old,
+            data: old.data.map((sw) =>
+              String(sw.id || sw._id) === String(id) ? { ...sw, status: decision } : sw
+            )
+          };
+        });
+        return { snapshot };
+      },
       onSuccess: (_res, vars) => {
         toast.success("Berhasil", {
           description:
@@ -124,11 +281,18 @@ const SwapApproval = ({ user, store, locations }) => {
               ? "Permintaan ubah jadwal disetujui."
               : "Permintaan ubah jadwal ditolak."
         });
-        queryClient.invalidateQueries(["shift-swaps"]);
         setDecisionTarget(null);
       },
-      onError: (err) => {
+      onError: (err, _vars, ctx) => {
+        // Rollback ke state sebelum decision
+        (ctx?.snapshot || []).forEach(([key, value]) => {
+          queryClient.setQueryData(key, value);
+        });
         toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      },
+      onSettled: () => {
+        setDecisionTarget(null);
+        queryClient.invalidateQueries(["shift-swaps"]);
       }
     }
   );
@@ -157,10 +321,11 @@ const SwapApproval = ({ user, store, locations }) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
         {statItem("Menunggu", stats.pending || 0, "text-amber-600 dark:text-amber-400")}
         {statItem("Disetujui", stats.approved || 0, "text-green-600 dark:text-green-400")}
         {statItem("Ditolak", stats.rejected || 0, "text-red-600 dark:text-red-400")}
+        {statItem("Kedaluwarsa", stats.expired || 0, "text-slate-600 dark:text-slate-400")}
         {statItem("Total", stats.total || 0, "text-foreground")}
       </div>
 
@@ -175,6 +340,7 @@ const SwapApproval = ({ user, store, locations }) => {
                 { value: "pending", label: "Menunggu" },
                 { value: "approved", label: "Disetujui" },
                 { value: "rejected", label: "Ditolak" },
+                { value: "expired", label: "Kedaluwarsa" },
                 { value: "", label: "Semua" }
               ]}
               value={status}
@@ -366,6 +532,8 @@ const SwapApproval = ({ user, store, locations }) => {
           </div>
         </div>
       )}
+
+      {isAuthorized && <AuditTrailPanel store={store} locations={locations} />}
 
       <Modal
         type="confirm"

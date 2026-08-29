@@ -44,6 +44,10 @@ const AddShiftTemplate = React.lazy(() => import("@/page/shift-template/AddShift
 const EditShiftTemplate = React.lazy(() => import("@/page/shift-template/EditShiftTemplate"));
 const DetailShiftTemplate = React.lazy(() => import("@/page/shift-template/DetailShiftTemplate"));
 
+// Overtime
+const MyOvertime = React.lazy(() => import("@/page/overtime/MyOvertime"));
+const OvertimeApproval = React.lazy(() => import("@/page/overtime/OvertimeApproval"));
+
 export const hrRoutes = (
   <>
     <Route path="/user-list" element={<AdminList />} />
@@ -106,5 +110,15 @@ export const hrRoutes = (
     <Route path="/add-shift-template" element={<AddShiftTemplate />} />
     <Route path="/edit-shift-template" element={<EditShiftTemplate />} />
     <Route path="/detail-shift-template" element={<DetailShiftTemplate />} />
+
+    <Route path="/my-overtime" element={<MyOvertime />} />
+    <Route
+      path="/overtime-approval"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <OvertimeApproval />
+        </RequireRole>
+      }
+    />
   </>
 );
