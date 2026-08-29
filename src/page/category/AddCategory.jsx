@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
-import { Check } from "lucide-react";
+import { Check, Eye } from "lucide-react";
 import { addCategory, getAllCategory } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import { normalizePayload } from "@/lib/payload-normalizer";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import CategoryPreviewModal from "./CategoryPreviewModal";
 
 const iconSections = [
   {
@@ -377,6 +378,7 @@ const AddCategory = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const fileInputRef = useRef(null);
   const role = user?.roleType || "";
@@ -846,6 +848,14 @@ const AddCategory = () => {
                   <Button
                     type="button"
                     variant="outline"
+                    className="w-full sm:w-auto justify-center gap-2"
+                    onClick={() => setPreviewOpen(true)}>
+                    <Eye size={16} />
+                    {t("page.category.label.preview")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
                     className="w-full sm:w-auto justify-center"
                     onClick={() => setDraftModal(true)}
                     disabled={isSubmitting}>
@@ -1061,6 +1071,22 @@ const AddCategory = () => {
           open={missingFieldsModal}
           onOpenChange={setMissingFieldsModal}
           fields={missingFieldsList}
+        />
+
+        <CategoryPreviewModal
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          category={{
+            name: form.watch("name"),
+            description: form.watch("description"),
+            color: form.watch("color") || "#0f172a",
+            isActive: form.watch("isActive") !== false,
+            icon: selectedIcon,
+            image: imagePreview,
+            storeName: locations.find(
+              (l) => selectedStore.length > 0 && !allStores && selectedStore.includes(String(l.id))
+            )?.name
+          }}
         />
       </div>
     </div>

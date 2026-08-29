@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -9,7 +9,6 @@ import {
   Save,
   X,
   Plus,
-  CloudUpload,
   Tag,
   Layers,
   DollarSign,
@@ -17,10 +16,14 @@ import {
   Trash2,
   GripVertical,
   Package,
+  PackagePlus,
   TrendingUp,
+  Store,
   ChevronLeft,
   ChevronRight,
-  Check
+  ChevronDown,
+  Check,
+  Eye
 } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
@@ -42,8 +45,8 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { addProduct } from "@/services/product";
-import { checkStockOpnameExists, getStockOpnameCompositionItems } from "@/services/stock";
+import { addProduct, getIngredients } from "@/services/product";
+import { checkStockOpnameExists } from "@/services/stock";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { getAllTaxConfig } from "@/services/tax-config";
@@ -56,6 +59,9 @@ import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { normalizePayload } from "@/lib/payload-normalizer";
+import ProductPreview from "./ProductPreview";
+import ProductImageGallery from "@/components/organism/ProductImageGallery";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -104,14 +110,12 @@ const AddProduct = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const fileInputRef = useRef(null);
+  const [productImages, setProductImages] = useState([]);
+  const [optionalOpen, setOptionalOpen] = useState(false);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [variantGroups, setVariantGroups] = useState([]);
   const [modifierItems, setModifierItems] = useState([]);
-  const [modifierPickerValue, setModifierPickerValue] = React.useState("");
   const [priceTiers, setPriceTiers] = useState([]);
   const [hasBatch, setHasBatch] = useState(false);
   const [batches, setBatches] = useState([]);
@@ -121,6 +125,8 @@ const AddProduct = () => {
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const isSuperAdmin = role === "super_admin";
 
@@ -223,8 +229,18 @@ const AddProduct = () => {
   useEffect(() => {
     const store = selectedStores.length > 0 ? selectedStores[0] : null;
     if (store) {
-      getStockOpnameCompositionItems(store)
-        .then((res) => setCompositionOptions(res?.data || []))
+      getIngredients({ store })
+        .then((res) => {
+          const items = res?.data || [];
+          const ingredients = items
+            .filter((i) => i.status === "active")
+            .map((i) => ({
+              id: i.id,
+              name: i.name,
+              unit: i.unit || "pcs"
+            }));
+          setCompositionOptions(ingredients);
+        })
         .catch(() => setCompositionOptions([]));
     } else {
       setCompositionOptions([]);
@@ -249,20 +265,8 @@ const AddProduct = () => {
     }
   });
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (event) => setPreviewImage(event.target.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const clearImage = () => {
-    setPreviewImage(null);
-    setImageFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const handleProductImagesChange = (updater) => {
+    setProductImages(updater);
   };
 
   const addVariantGroup = () => {
@@ -390,13 +394,62 @@ const AddProduct = () => {
   };
 
   const handleToggleOption = (checked) => {
+    if (!checked && variantGroups.length > 0) {
+      setConfirmAction({
+        title: t("page.product.form.confirmDisableVariantTitle"),
+        description: t("page.product.form.confirmDisableVariantDesc"),
+        onConfirm: () => {
+          form.setValue("isOption", false);
+          setVariantGroups([]);
+        }
+      });
+      return;
+    }
     form.setValue("isOption", checked);
     if (!checked) setVariantGroups([]);
   };
 
   const handleToggleModifier = (checked) => {
+    if (!checked && modifierItems.length > 0) {
+      setConfirmAction({
+        title: t("page.product.form.confirmDisableModifierTitle"),
+        description: t("page.product.form.confirmDisableModifierDesc"),
+        onConfirm: () => {
+          form.setValue("hasModifiers", false);
+          setModifierItems([]);
+        }
+      });
+      return;
+    }
     form.setValue("hasModifiers", checked);
     if (!checked) setModifierItems([]);
+  };
+
+  const handleToggleBatch = (checked) => {
+    if (!checked && batches.length > 0) {
+      setConfirmAction({
+        title: t("page.product.form.confirmDisableBatchTitle"),
+        description: t("page.product.form.confirmDisableBatchDesc"),
+        onConfirm: () => {
+          setHasBatch(false);
+          setBatches([]);
+        }
+      });
+      return;
+    }
+    setHasBatch(checked);
+  };
+
+  const confirmRemove = (onConfirm, count) => {
+    if (count > 1) {
+      setConfirmAction({
+        title: t("page.product.form.confirmDeleteTitle"),
+        description: t("page.product.form.confirmDeleteDesc"),
+        onConfirm
+      });
+      return;
+    }
+    onConfirm();
   };
 
   const handleSave = async (values, saveAsDraft = false) => {
@@ -432,24 +485,54 @@ const AddProduct = () => {
       isAvailable: values.isAvailable,
       isOption: !!isOption,
       hasModifiers: !!hasModifiers,
-      options: isOption && variantGroups.length > 0 ? variantGroups : null,
-      modifiers: hasModifiers && modifierItems.length > 0 ? modifierItems : null,
+      options:
+        isOption && variantGroups.length > 0
+          ? variantGroups
+              .map((g) => ({
+                ...g,
+                options: (g.options || [])
+                  .filter((o) => o.name && o.name.trim())
+                  .map((o) => ({ ...o, name: o.name.trim() }))
+              }))
+              .filter((g) => g.name && g.name.trim() && g.options.length > 0)
+          : [],
+      modifiers:
+        hasModifiers && modifierItems.length > 0
+          ? modifierItems
+              .filter((m) => m.name && m.name.trim())
+              .map((m) => ({ ...m, name: m.name.trim(), price: Number(m.price) || 0 }))
+          : [],
       batches:
         hasBatch && batches.length > 0
           ? batches.map((b) => ({
               ...b,
               expiryDate: b.expiryDate ? format(b.expiryDate, "yyyy-MM-dd") : null
             }))
-          : null,
-      composition: composition.length > 0 ? composition : null,
+          : [],
+      composition: composition.length > 0 ? composition : [],
+      priceTiers: priceTiers.length > 0 ? priceTiers : [],
       createdBy: user?.id
     };
 
-    if (imageFile) data.image = imageFile;
+    if (productImages.length > 0) {
+      const manifest = [];
+      let newIdx = 0;
+      productImages.forEach((img) => {
+        if (img.isNew) {
+          manifest.push(`file:${newIdx}`);
+          newIdx += 1;
+        } else {
+          manifest.push(img.url);
+        }
+      });
+      data.imageOrder = JSON.stringify(manifest);
+      const newFiles = productImages.filter((img) => img.isNew).map((img) => img.file);
+      if (newFiles.length > 0) data.images = newFiles;
+    }
 
     const payload = normalizePayload(data, {
       isFormData: true,
-      jsonFields: ["stores", "options", "modifiers", "batches", "composition"]
+      jsonFields: ["stores", "options", "modifiers", "batches", "composition", "priceTiers"]
     });
 
     createMutation.mutate(payload);
@@ -460,6 +543,33 @@ const AddProduct = () => {
     { num: 2, title: t("page.product.step.price"), desc: t("page.product.step.priceDesc") },
     { num: 3, title: t("page.product.step.media"), desc: t("page.product.step.mediaDesc") }
   ];
+
+  const previewValues = form.getValues();
+  const selectedCategory = categories.find((c) => String(c.id) === String(previewValues.category));
+  const storeName =
+    locations.find((l) => String(l.id) === String(firstStore))?.name || firstStore || "Nama Toko";
+  const previewData = {
+    name: previewValues.nameProduct || "",
+    description: previewValues.description || "",
+    price: previewValues.price || 0,
+    image: productImages[0]?.url || null,
+    category:
+      selectedCategory?.nameCategory || selectedCategory?.name || previewValues.category || "",
+    categoryIcon: selectedCategory?.image || selectedCategory?.icon || "fastfood",
+    storeName,
+    stock: previewValues.stock ?? 0,
+    minStock: previewValues.minStock ?? 0,
+    estimatedTime: previewValues.estimationTime || 15,
+    isOption: !!isOption,
+    hasModifiers: !!hasModifiers,
+    isAvailable: previewValues.isAvailable !== false,
+    isPromo: false,
+    ingredients: composition
+      .map((c) => (typeof c.name === "string" && c.name.trim() ? c.name.trim() : ""))
+      .filter(Boolean),
+    variantGroups,
+    modifierItems
+  };
 
   return (
     <div className="space-y-6">
@@ -536,7 +646,7 @@ const AddProduct = () => {
                 e.preventDefault();
               }}>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
+                <div className="lg:col-span-2 space-y-6">
                   <FormField
                     control={form.control}
                     name="store"
@@ -672,24 +782,6 @@ const AddProduct = () => {
 
                           <FormField
                             control={form.control}
-                            name="brand"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.brand")}</FormLabel>
-                                <Input
-                                  placeholder={t("page.product.form.brandPlaceholder")}
-                                  {...field}
-                                />
-                                <p className="text-[11px] text-muted-foreground mt-1">
-                                  {t("page.product.form.brandOptional")}
-                                </p>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
                             name="estimationTime"
                             render={({ field }) => (
                               <FormItem>
@@ -723,178 +815,6 @@ const AddProduct = () => {
 
                           <FormField
                             control={form.control}
-                            name="barcode"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.barcode")}</FormLabel>
-                                <Input
-                                  placeholder={t("page.product.form.barcodePlaceholder")}
-                                  {...field}
-                                />
-                                <p className="text-[11px] text-muted-foreground mt-1">
-                                  {t("page.product.form.barcodeOptional")}
-                                </p>
-                                <FormMessage />
-                                <FormDescription>{t("common.optionalField")}</FormDescription>
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="sku"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.sku")}</FormLabel>
-                                <Input
-                                  placeholder={t("page.product.form.skuPlaceholder2")}
-                                  {...field}
-                                />
-                                <p className="text-[11px] text-muted-foreground mt-1">
-                                  {t("page.product.form.skuOptional")}
-                                </p>
-                                <FormMessage />
-                                <FormDescription>{t("common.optionalField")}</FormDescription>
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="unit"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.unit")}</FormLabel>
-                                <Combobox
-                                  options={unitOptions}
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  placeholder={t("page.product.form.unitPlaceholder")}
-                                  searchPlaceholder={t("page.product.form.unitPlaceholder") + "..."}
-                                />
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="baseUnit"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.baseUnit")}</FormLabel>
-                                <Combobox
-                                  options={[
-                                    { value: "pcs", label: t("page.product.form.baseUnitPcs") },
-                                    { value: "gram", label: t("page.product.form.baseUnitGram") },
-                                    { value: "ml", label: t("page.product.form.baseUnitMl") },
-                                    { value: "cm", label: t("page.product.form.baseUnitCm") },
-                                    { value: "buah", label: t("page.product.form.baseUnitBuah") },
-                                    {
-                                      value: "lembar",
-                                      label: t("page.product.form.baseUnitLembar")
-                                    }
-                                  ]}
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  placeholder={t("page.product.form.baseUnitPlaceholder")}
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {t("page.product.form.baseUnitHelper")}
-                                </p>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="conversionFactor"
-                            render={({ field }) => {
-                              const unit = form.watch("unit");
-                              const baseUnit = form.watch("baseUnit");
-                              const factor = field.value || 1;
-                              const isSameUnit = unit === baseUnit;
-
-                              // Automatically set to 1 if same unit
-                              useEffect(() => {
-                                if (isSameUnit && field.value !== 1) {
-                                  field.onChange(1);
-                                }
-                              }, [isSameUnit, field.value]);
-
-                              return (
-                                <FormItem>
-                                  <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
-                                  <Input
-                                    type="number"
-                                    min="1"
-                                    {...field}
-                                    disabled={isSameUnit}
-                                    placeholder="1"
-                                  />
-                                  <p className="text-xs font-medium text-primary mt-1.5 flex items-center gap-1.5 bg-primary/5 p-2 rounded-md border border-primary/10">
-                                    <Info size={14} />
-                                    {isSameUnit
-                                      ? t("page.product.form.sameUnitHelper")
-                                      : `1 ${unit || "Satuan"} = ${factor} ${baseUnit || "Satuan Dasar"}`}
-                                  </p>
-                                  <FormMessage />
-                                </FormItem>
-                              );
-                            }}
-                          />
-
-                          {isSuperAdmin && (
-                            <FormField
-                              control={form.control}
-                              name="tax"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{t("page.product.form.tax")}</FormLabel>
-                                  {taxOptions.length === 0 ? (
-                                    <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                                      <div className="text-center flex flex-col items-center gap-2">
-                                        <Package size={28} className="text-muted-foreground/60" />
-                                        <p className="text-sm font-medium text-foreground">
-                                          {t("page.product.form.noTax")}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {t("page.product.form.noTaxDesc")}
-                                        </p>
-                                      </div>
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => navigate("/tax-list")}
-                                        className="gap-2">
-                                        <span className="material-symbols-outlined text-base">
-                                          add
-                                        </span>
-                                        {t("page.product.form.addTax")}
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <Combobox
-                                      options={taxOptions.map((tOpt) => ({
-                                        value: String(tOpt.id),
-                                        label: `${tOpt.name} (${tOpt.rate}%)`
-                                      }))}
-                                      value={field.value}
-                                      onChange={field.onChange}
-                                      placeholder={t("page.product.form.taxPlaceholder")}
-                                      searchPlaceholder={t("page.product.form.taxSearch")}
-                                    />
-                                  )}
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )}
-
-                          <FormField
-                            control={form.control}
                             name="description"
                             render={({ field }) => (
                               <FormItem className="md:col-span-2">
@@ -909,9 +829,246 @@ const AddProduct = () => {
                             )}
                           />
                         </div>
+
+                        <Collapsible
+                          open={optionalOpen}
+                          onOpenChange={setOptionalOpen}
+                          className="mt-5 border-t pt-5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Info size={18} className="text-primary" />
+                              <div>
+                                <h3 className="text-sm font-semibold text-foreground">
+                                  {t("page.product.form.optionalInfo")}
+                                </h3>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {t("page.product.form.optionalInfoDesc")}
+                                </p>
+                              </div>
+                            </div>
+                            <CollapsibleTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 shrink-0">
+                                <ChevronDown
+                                  size={18}
+                                  className={`transition-transform duration-200 ${optionalOpen ? "rotate-180" : ""}`}
+                                />
+                              </Button>
+                            </CollapsibleTrigger>
+                          </div>
+                          <CollapsibleContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+                              <FormField
+                                control={form.control}
+                                name="brand"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{t("page.product.form.brand")}</FormLabel>
+                                    <Input
+                                      placeholder={t("page.product.form.brandPlaceholder")}
+                                      {...field}
+                                    />
+                                    <p className="text-[11px] text-muted-foreground mt-1">
+                                      {t("page.product.form.brandOptional")}
+                                    </p>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={form.control}
+                                name="sku"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{t("page.product.form.sku")}</FormLabel>
+                                    <Input
+                                      placeholder={t("page.product.form.skuPlaceholder2")}
+                                      {...field}
+                                    />
+                                    <p className="text-[11px] text-muted-foreground mt-1">
+                                      {t("page.product.form.skuOptional")}
+                                    </p>
+                                    <FormMessage />
+                                    <FormDescription>{t("common.optionalField")}</FormDescription>
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={form.control}
+                                name="barcode"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{t("page.product.form.barcode")}</FormLabel>
+                                    <Input
+                                      placeholder={t("page.product.form.barcodePlaceholder")}
+                                      {...field}
+                                    />
+                                    <p className="text-[11px] text-muted-foreground mt-1">
+                                      {t("page.product.form.barcodeOptional")}
+                                    </p>
+                                    <FormMessage />
+                                    <FormDescription>{t("common.optionalField")}</FormDescription>
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={form.control}
+                                name="unit"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{t("page.product.form.unit")}</FormLabel>
+                                    <Combobox
+                                      options={unitOptions}
+                                      value={field.value}
+                                      onChange={field.onChange}
+                                      placeholder={t("page.product.form.unitPlaceholder")}
+                                      searchPlaceholder={
+                                        t("page.product.form.unitPlaceholder") + "..."
+                                      }
+                                    />
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={form.control}
+                                name="baseUnit"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{t("page.product.form.baseUnit")}</FormLabel>
+                                    <Combobox
+                                      options={[
+                                        { value: "pcs", label: t("page.product.form.baseUnitPcs") },
+                                        {
+                                          value: "gram",
+                                          label: t("page.product.form.baseUnitGram")
+                                        },
+                                        { value: "ml", label: t("page.product.form.baseUnitMl") },
+                                        { value: "cm", label: t("page.product.form.baseUnitCm") },
+                                        {
+                                          value: "buah",
+                                          label: t("page.product.form.baseUnitBuah")
+                                        },
+                                        {
+                                          value: "lembar",
+                                          label: t("page.product.form.baseUnitLembar")
+                                        }
+                                      ]}
+                                      value={field.value}
+                                      onChange={field.onChange}
+                                      placeholder={t("page.product.form.baseUnitPlaceholder")}
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {t("page.product.form.baseUnitHelper")}
+                                    </p>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={form.control}
+                                name="conversionFactor"
+                                render={({ field }) => {
+                                  const unit = form.watch("unit");
+                                  const baseUnit = form.watch("baseUnit");
+                                  const factor = field.value || 1;
+                                  const isSameUnit = unit === baseUnit;
+
+                                  // Automatically set to 1 if same unit
+                                  useEffect(() => {
+                                    if (isSameUnit && field.value !== 1) {
+                                      field.onChange(1);
+                                    }
+                                  }, [isSameUnit, field.value]);
+
+                                  return (
+                                    <FormItem>
+                                      <FormLabel>
+                                        {t("page.product.form.conversionFactor")}
+                                      </FormLabel>
+                                      <Input
+                                        type="number"
+                                        min="1"
+                                        {...field}
+                                        disabled={isSameUnit}
+                                        placeholder="1"
+                                      />
+                                      <p className="text-xs font-medium text-primary mt-1.5 flex items-center gap-1.5 bg-primary/5 p-2 rounded-md border border-primary/10">
+                                        <Info size={14} />
+                                        {isSameUnit
+                                          ? t("page.product.form.sameUnitHelper")
+                                          : `1 ${unit || "Satuan"} = ${factor} ${baseUnit || "Satuan Dasar"}`}
+                                      </p>
+                                      <FormMessage />
+                                    </FormItem>
+                                  );
+                                }}
+                              />
+
+                              {isSuperAdmin && (
+                                <FormField
+                                  control={form.control}
+                                  name="tax"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>{t("page.product.form.tax")}</FormLabel>
+                                      {taxOptions.length === 0 ? (
+                                        <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                                          <div className="text-center flex flex-col items-center gap-2">
+                                            <Package
+                                              size={28}
+                                              className="text-muted-foreground/60"
+                                            />
+                                            <p className="text-sm font-medium text-foreground">
+                                              {t("page.product.form.noTax")}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                              {t("page.product.form.noTaxDesc")}
+                                            </p>
+                                          </div>
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => navigate("/tax-list")}
+                                            className="gap-2">
+                                            <span className="material-symbols-outlined text-base">
+                                              add
+                                            </span>
+                                            {t("page.product.form.addTax")}
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <Combobox
+                                          options={taxOptions.map((tOpt) => ({
+                                            value: String(tOpt.id),
+                                            label: `${tOpt.name} (${tOpt.rate}%)`
+                                          }))}
+                                          value={field.value}
+                                          onChange={field.onChange}
+                                          placeholder={t("page.product.form.taxPlaceholder")}
+                                          searchPlaceholder={t("page.product.form.taxSearch")}
+                                        />
+                                      )}
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              )}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
                       </div>
 
-                      {form.watch("tipeProduk") === "bahan_baku" && (
+                      {tipeProduk === "menu" && (
                         <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                           <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                             <Package size={18} className="text-primary" />
@@ -919,93 +1076,135 @@ const AddProduct = () => {
                               {t("page.product.form.composition")}
                             </h3>
                           </div>
+                          <p className="text-xs text-muted-foreground -mt-2 mb-4">
+                            {t("page.product.form.compositionInfo")}
+                          </p>
                           <div className="space-y-3">
-                            {composition.length > 0 ? (
-                              composition.map((c) => (
-                                <div key={c.id} className="bg-muted/30 rounded-lg p-4">
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex-1">
-                                      <Combobox
-                                        options={[
-                                          {
-                                            value: "",
-                                            label: t("page.product.form.selectIngredient")
-                                          },
-                                          ...compositionOptions.map((opt) => ({
-                                            value: opt.name,
-                                            label: `${opt.name} ${opt.unit ? `(${opt.unit})` : ""}`
-                                          }))
-                                        ]}
-                                        value={c.name}
-                                        onChange={(v) => handleCompositionSelect(c.id, v)}
-                                        placeholder={t("page.product.form.selectIngredient")}
-                                        searchPlaceholder="Cari bahan..."
-                                      />
-                                    </div>
-                                    <div className="w-24 shrink-0">
-                                      <Input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        placeholder={t("page.product.form.qty")}
-                                        value={c.qty}
-                                        onChange={(e) =>
-                                          updateComposition(c.id, "qty", e.target.value)
-                                        }
-                                        className="h-9 text-sm"
-                                      />
-                                    </div>
-                                    <div className="w-20 shrink-0">
-                                      <Input
-                                        placeholder={t("page.product.form.unitLabel")}
-                                        value={c.unit}
-                                        onChange={(e) =>
-                                          updateComposition(c.id, "unit", e.target.value)
-                                        }
-                                        className="h-9 text-sm"
-                                      />
-                                    </div>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-destructive shrink-0"
-                                      onClick={() => removeComposition(c.id)}>
-                                      <Trash2 size={18} />
-                                    </Button>
-                                  </div>
+                            {selectedStores.length === 0 ? (
+                              <div className="flex items-start gap-2.5 rounded-xl border border-dashed border-border bg-muted/20 p-4">
+                                <Store
+                                  size={16}
+                                  className="text-muted-foreground shrink-0 mt-0.5"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                  {t("page.product.form.compositionSelectStore")}
+                                </p>
+                              </div>
+                            ) : compositionOptions.length === 0 ? (
+                              <button
+                                type="button"
+                                onClick={() => navigate("/add-product")}
+                                className="w-full rounded-xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/40 hover:border-primary/50 p-8 flex flex-col items-center justify-center text-center gap-2 transition-colors cursor-pointer group">
+                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                  <PackagePlus size={22} className="text-primary" />
                                 </div>
-                              ))
+                                <p className="text-sm font-medium text-foreground">
+                                  {t("page.product.form.noIngredientOptions")}
+                                </p>
+                                <p className="text-xs text-muted-foreground max-w-md">
+                                  {t("page.product.form.noIngredientOptionsHint")}
+                                </p>
+                                <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
+                                  <Plus size={14} /> {t("page.product.form.addIngredientProduct")}
+                                </span>
+                              </button>
+                            ) : composition.length > 0 ? (
+                              <>
+                                <div className="grid grid-cols-[1fr_5.5rem_8rem_2rem] gap-2 px-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                                  <span>{t("page.product.form.ingredientName")}</span>
+                                  <span>{t("page.product.form.qty")}</span>
+                                  <span>{t("page.product.form.unitLabel")}</span>
+                                  <span />
+                                </div>
+                                {composition.map((c) => (
+                                  <div key={c.id} className="bg-muted/30 rounded-lg p-4">
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex-1">
+                                        <Combobox
+                                          options={[
+                                            {
+                                              value: "",
+                                              label: t("page.product.form.selectIngredient")
+                                            },
+                                            ...compositionOptions.map((opt) => ({
+                                              value: opt.name,
+                                              label: `${opt.name} ${opt.unit ? `(${opt.unit})` : ""}`
+                                            }))
+                                          ]}
+                                          value={c.name}
+                                          onChange={(v) => handleCompositionSelect(c.id, v)}
+                                          placeholder={t("page.product.form.selectIngredient")}
+                                          searchPlaceholder="Cari bahan..."
+                                        />
+                                      </div>
+                                      <div className="w-24 shrink-0">
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          step="0.01"
+                                          placeholder={t("page.product.form.qty")}
+                                          value={c.qty}
+                                          onChange={(e) =>
+                                            updateComposition(c.id, "qty", e.target.value)
+                                          }
+                                          className="h-9 text-sm"
+                                        />
+                                      </div>
+                                      <div className="w-32 shrink-0">
+                                        <Combobox
+                                          options={unitOptions}
+                                          value={c.unit}
+                                          onChange={(v) => updateComposition(c.id, "unit", v)}
+                                          placeholder={t("page.product.form.unitPlaceholder")}
+                                          searchPlaceholder={
+                                            t("page.product.form.unitPlaceholder") + "..."
+                                          }
+                                        />
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-destructive shrink-0"
+                                        onClick={() =>
+                                          confirmRemove(
+                                            () => removeComposition(c.id),
+                                            composition.length
+                                          )
+                                        }>
+                                        <Trash2 size={18} />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1"
+                                  onClick={addComposition}>
+                                  <Plus size={18} /> {t("page.product.form.addIngredient")}
+                                </Button>
+                              </>
                             ) : (
-                              <p className="text-xs text-muted-foreground">
-                                {t("page.product.form.compositionEmpty")}
-                              </p>
-                            )}
-                            {compositionOptions.length === 0 ? (
-                              <Button
+                              <button
                                 type="button"
-                                variant="outline"
-                                size="sm"
-                                className="gap-1"
-                                onClick={() => navigate("/add-stock-opname")}>
-                                <Plus size={18} /> {t("page.product.form.addStockOpnameFirst")}
-                              </Button>
-                            ) : (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="gap-1"
-                                onClick={addComposition}>
-                                <Plus size={18} /> {t("page.product.form.addIngredient")}
-                              </Button>
+                                onClick={addComposition}
+                                className="w-full rounded-xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/40 hover:border-primary/50 p-6 flex flex-col items-center justify-center gap-1.5 text-center transition-colors cursor-pointer group">
+                                <Plus
+                                  size={20}
+                                  className="text-muted-foreground group-hover:text-primary transition-colors"
+                                />
+                                <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
+                                  {t("page.product.form.addIngredient")}
+                                </span>
+                              </button>
                             )}
                           </div>
                         </div>
                       )}
                     </div>
                   )}
-
                   {currentStep === 2 && (
                     <>
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -1211,75 +1410,6 @@ const AddProduct = () => {
 
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                          <TrendingUp size={18} className="text-primary" />
-                          <h3 className="text-base font-semibold text-foreground">
-                            {t("page.product.form.tierSection")}
-                          </h3>
-                        </div>
-                        {isSuperAdmin && <div className="space-y-3"></div>}
-                        <div className="space-y-3">
-                          {priceTiers.map((tier, tierIdx) => (
-                            <div key={tier.id} className="bg-muted/30 rounded-lg p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xs font-semibold text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">
-                                  {tierIdx + 1}
-                                </span>
-                                <span className="text-xs font-medium text-muted-foreground">
-                                  {t("page.product.form.tierSection")} {tierIdx + 1}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  placeholder={t("page.product.form.tierNamePlaceholder")}
-                                  value={tier.name}
-                                  onChange={(e) => updatePriceTier(tier.id, "name", e.target.value)}
-                                  className="h-9 text-sm flex-1"
-                                />
-                                <div className="relative w-40 shrink-0">
-                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                                    Rp
-                                  </span>
-                                  <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="0"
-                                    value={Number(tier.price).toLocaleString("id-ID")}
-                                    onChange={(e) => {
-                                      const raw = e.target.value.replace(/[^0-9]/g, "");
-                                      updatePriceTier(tier.id, "price", raw ? Number(raw) : 0);
-                                    }}
-                                    className="h-9 text-sm pl-8"
-                                  />
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive shrink-0"
-                                  onClick={() => removePriceTier(tier.id)}>
-                                  <Trash2 size={18} />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="gap-1"
-                            onClick={addPriceTier}>
-                            <Plus size={18} /> {t("page.product.form.addTier")}
-                          </Button>
-                          {priceTiers.length === 0 && (
-                            <p className="text-xs text-muted-foreground">
-                              {t("page.product.form.tierEmpty")}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                           <Package size={18} className="text-primary" />
                           <h3 className="text-base font-semibold text-foreground">
                             {t("page.product.form.batchSection")}
@@ -1295,7 +1425,7 @@ const AddProduct = () => {
                                 {t("page.product.form.hasBatchDesc")}
                               </p>
                             </div>
-                            <Switch checked={hasBatch} onCheckedChange={setHasBatch} />
+                            <Switch checked={hasBatch} onCheckedChange={handleToggleBatch} />
                           </div>
                           {hasBatch && (
                             <div className="space-y-3">
@@ -1361,7 +1491,11 @@ const AddProduct = () => {
                                       size="icon"
                                       className="h-8 w-8 text-destructive shrink-0"
                                       onClick={() =>
-                                        setBatches((prev) => prev.filter((_, i) => i !== idx))
+                                        confirmRemove(
+                                          () =>
+                                            setBatches((prev) => prev.filter((_, i) => i !== idx)),
+                                          batches.length
+                                        )
                                       }>
                                       <Trash2 size={18} />
                                     </Button>
@@ -1453,7 +1587,12 @@ const AddProduct = () => {
                                       variant="ghost"
                                       size="icon"
                                       className="h-8 w-8 text-destructive shrink-0"
-                                      onClick={() => removeVariantGroup(group.id)}>
+                                      onClick={() =>
+                                        confirmRemove(
+                                          () => removeVariantGroup(group.id),
+                                          variantGroups.length
+                                        )
+                                      }>
                                       <Trash2 size={18} />
                                     </Button>
                                   </div>
@@ -1521,7 +1660,12 @@ const AddProduct = () => {
                                             variant="ghost"
                                             size="icon"
                                             className="h-8 w-8 text-muted-foreground shrink-0"
-                                            onClick={() => removeVariantOption(group.id, idx)}>
+                                            onClick={() =>
+                                              confirmRemove(
+                                                () => removeVariantOption(group.id, idx),
+                                                group.options.length
+                                              )
+                                            }>
                                             <X size={18} />
                                           </Button>
                                         )}
@@ -1567,32 +1711,9 @@ const AddProduct = () => {
 
                             {hasModifiers && (
                               <div className="space-y-3 pl-4 border-l-2 border-primary/20 mt-4">
-                                {compositionOptions.length > 0 && (
-                                  <div className="bg-muted/30 rounded-lg p-4">
-                                    <Combobox
-                                      options={compositionOptions.map((opt) => ({
-                                        value: opt.name,
-                                        label: `${opt.name} ${opt.unit ? `(${opt.unit})` : ""}`
-                                      }))}
-                                      value={modifierPickerValue}
-                                      onChange={(v) => {
-                                        if (v) {
-                                          const opt = compositionOptions.find((o) => o.name === v);
-                                          if (opt) {
-                                            setModifierItems((prev) => [
-                                              ...prev,
-                                              { id: Date.now(), name: opt.name, price: 0 }
-                                            ]);
-                                            form.setValue("hasModifiers", true);
-                                          }
-                                          setModifierPickerValue("");
-                                        }
-                                      }}
-                                      placeholder={t("page.product.form.fromStockOpname")}
-                                      searchPlaceholder="Cari bahan..."
-                                    />
-                                  </div>
-                                )}
+                                <p className="text-xs text-muted-foreground">
+                                  {t("page.product.form.modifierInfo")}
+                                </p>
                                 {modifierItems.map((mod, modIdx) => (
                                   <div key={mod.id} className="bg-muted/30 rounded-lg p-4">
                                     <div className="flex items-center gap-2 mb-2">
@@ -1637,7 +1758,12 @@ const AddProduct = () => {
                                         variant="ghost"
                                         size="icon"
                                         className="h-8 w-8 text-destructive shrink-0"
-                                        onClick={() => removeModifierItem(mod.id)}>
+                                        onClick={() =>
+                                          confirmRemove(
+                                            () => removeModifierItem(mod.id),
+                                            modifierItems.length
+                                          )
+                                        }>
                                         <Trash2 size={18} />
                                       </Button>
                                     </div>
@@ -1656,162 +1782,190 @@ const AddProduct = () => {
                           </div>
                         </div>
                       </div>
-                    </>
-                  )}
-                </div>
 
-                <div className="space-y-6">
-                  {currentStep === 3 && (
-                    <>
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
-                          <CloudUpload size={18} className="text-primary" />
+                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                          <TrendingUp size={18} className="text-primary" />
                           <h3 className="text-base font-semibold text-foreground">
-                            {t("page.product.form.imageSection")}
+                            {t("page.product.form.tierSection")}
                           </h3>
                         </div>
-
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                        />
-
-                        {previewImage ? (
-                          <div className="relative rounded-lg overflow-hidden border border-border">
-                            <img
-                              src={previewImage}
-                              alt={t("page.product.form.previewAlt")}
-                              className="w-full aspect-square object-cover"
-                            />
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                clearImage();
-                              }}
-                              className="absolute top-2 right-2 w-8 h-8 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors">
-                              <X size={16} />
-                            </button>
-                          </div>
-                        ) : (
-                          <div
-                            onClick={() => fileInputRef.current?.click()}
-                            className="border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 rounded-lg p-8 text-center cursor-pointer transition-all group">
-                            <CloudUpload
-                              size={48}
-                              className="mx-auto mb-3 text-muted-foreground group-hover:text-primary transition-colors"
-                            />
-                            <p className="text-sm font-medium text-foreground">
-                              {t("page.product.form.uploadImage")}
+                        <p className="text-xs text-muted-foreground -mt-2 mb-4">
+                          {t("page.product.form.tierInfo")}
+                        </p>
+                        <div className="space-y-3">
+                          {priceTiers.map((tier, tierIdx) => (
+                            <div key={tier.id} className="bg-muted/30 rounded-lg p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-semibold text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">
+                                  {tierIdx + 1}
+                                </span>
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  {t("page.product.form.tierSection")} {tierIdx + 1}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  placeholder={t("page.product.form.tierNamePlaceholder")}
+                                  value={tier.name}
+                                  onChange={(e) => updatePriceTier(tier.id, "name", e.target.value)}
+                                  className="h-9 text-sm flex-1"
+                                />
+                                <div className="relative w-40 shrink-0">
+                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                                    Rp
+                                  </span>
+                                  <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    value={Number(tier.price).toLocaleString("id-ID")}
+                                    onChange={(e) => {
+                                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                                      updatePriceTier(tier.id, "price", raw ? Number(raw) : 0);
+                                    }}
+                                    className="h-9 text-sm pl-8"
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive shrink-0"
+                                  onClick={() =>
+                                    confirmRemove(() => removePriceTier(tier.id), priceTiers.length)
+                                  }>
+                                  <Trash2 size={18} />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={addPriceTier}>
+                            <Plus size={18} /> {t("page.product.form.addTier")}
+                          </Button>
+                          {priceTiers.length === 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              {t("page.product.form.tierEmpty")}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {t("page.product.form.clickToSelect")}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {t("page.product.form.imageFormat")}
-                            </p>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
 
-                      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
-                          <Tag size={18} className="text-primary" />
-                          <h3 className="text-base font-semibold text-foreground">
-                            {t("page.product.form.statusSection")}
-                          </h3>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                          <ProductImageGallery
+                            images={productImages}
+                            onChange={handleProductImagesChange}
+                          />
                         </div>
 
-                        <div className="space-y-4">
-                          <FormField
-                            control={form.control}
-                            name="status"
-                            render={({ field }) => (
-                              <FormItem>
-                                <div
-                                  className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                                    field.value
-                                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                                  }`}>
-                                  <div className="flex items-center gap-3">
-                                    <div
-                                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                        field.value
-                                          ? "bg-green-600 text-secondary"
-                                          : "bg-destructive/10 text-destructive"
-                                      }`}>
-                                      {field.value ? (
-                                        <Check size={20} />
-                                      ) : (
-                                        <span className="text-lg font-bold">⏻</span>
-                                      )}
-                                    </div>
-                                    <div>
-                                      <p className="text-sm font-semibold text-foreground">
-                                        {t("page.product.form.statusLabel")}{" "}
-                                        {field.value
-                                          ? t("page.product.form.active")
-                                          : t("page.product.form.inactive")}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {field.value
-                                          ? t("page.product.form.activeDesc")
-                                          : t("page.product.form.inactiveDesc")}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                </div>
-                              </FormItem>
-                            )}
-                          />
+                        <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                          <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
+                            <Tag size={18} className="text-primary" />
+                            <h3 className="text-base font-semibold text-foreground">
+                              {t("page.product.form.statusSection")}
+                            </h3>
+                          </div>
 
-                          <FormField
-                            control={form.control}
-                            name="isAvailable"
-                            render={({ field }) => (
-                              <FormItem>
-                                <div
-                                  className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
-                                    field.value
-                                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                                  }`}>
-                                  <div className="flex items-center gap-3">
-                                    <div
-                                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                        field.value
-                                          ? "bg-green-600 text-secondary"
-                                          : "bg-destructive/10 text-destructive"
-                                      }`}>
-                                      {field.value ? (
-                                        <Check size={20} />
-                                      ) : (
-                                        <span className="text-lg font-bold">⏻</span>
-                                      )}
+                          <div className="space-y-4">
+                            <FormField
+                              control={form.control}
+                              name="status"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div
+                                    className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                      field.value
+                                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                                    }`}>
+                                    <div className="flex items-center gap-3">
+                                      <div
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                          field.value
+                                            ? "bg-green-600 text-secondary"
+                                            : "bg-destructive/10 text-destructive"
+                                        }`}>
+                                        {field.value ? (
+                                          <Check size={20} />
+                                        ) : (
+                                          <span className="text-lg font-bold">⏻</span>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-semibold text-foreground">
+                                          {t("page.product.form.statusLabel")}{" "}
+                                          {field.value
+                                            ? t("page.product.form.active")
+                                            : t("page.product.form.inactive")}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {field.value
+                                            ? t("page.product.form.activeDesc")
+                                            : t("page.product.form.inactiveDesc")}
+                                        </p>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <p className="text-sm font-semibold text-foreground">
-                                        {field.value
-                                          ? t("page.product.form.yes")
-                                          : t("page.product.form.no")}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {field.value
-                                          ? t("page.product.form.availableDesc")
-                                          : t("page.product.form.unavailableDesc")}
-                                      </p>
-                                    </div>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
                                   </div>
-                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                </div>
-                              </FormItem>
-                            )}
-                          />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="isAvailable"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div
+                                    className={`pt-2 flex items-center justify-between p-4 rounded-lg ${
+                                      field.value
+                                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                                    }`}>
+                                    <div className="flex items-center gap-3">
+                                      <div
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                          field.value
+                                            ? "bg-green-600 text-secondary"
+                                            : "bg-destructive/10 text-destructive"
+                                        }`}>
+                                        {field.value ? (
+                                          <Check size={20} />
+                                        ) : (
+                                          <span className="text-lg font-bold">⏻</span>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-semibold text-foreground">
+                                          {field.value
+                                            ? t("page.product.form.yes")
+                                            : t("page.product.form.no")}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {field.value
+                                            ? t("page.product.form.availableDesc")
+                                            : t("page.product.form.unavailableDesc")}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                         </div>
                       </div>
                     </>
@@ -1835,6 +1989,14 @@ const AddProduct = () => {
                       {t("page.product.form.prev")}
                     </Button>
                   )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowPreview(true)}
+                    className="gap-2">
+                    <Eye size={18} />
+                    {t("page.product.form.preview")}
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
@@ -1943,6 +2105,21 @@ const AddProduct = () => {
           handleSave(values, true);
         }}
       />
+
+      <Modal
+        type="confirm"
+        open={!!confirmAction}
+        onOpenChange={(o) => !o && setConfirmAction(null)}
+        title={confirmAction?.title}
+        description={confirmAction?.description}
+        confirmText={t("page.product.form.confirmDelete")}
+        onConfirm={() => {
+          confirmAction?.onConfirm?.();
+          setConfirmAction(null);
+        }}
+      />
+
+      <ProductPreview open={showPreview} onOpenChange={setShowPreview} product={previewData} />
     </div>
   );
 };

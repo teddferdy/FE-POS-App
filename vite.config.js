@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { execSync } from "child_process";
 
 // ponytail: git SHA di-build-time → tag release Sentry, biar error bisa
@@ -10,6 +12,25 @@ try {
   gitSha = execSync("git rev-parse --short HEAD").toString().trim();
 } catch {
   /* fallback tetap "unknown" */
+}
+
+// ponytail: revisi translasi = MD5 mtime keempat file locale. Cache-buster
+// /locales berubah kalau file bahasa berubah walaupun BELUM di-commit
+// (git SHA saja tidak cukup: key baru muncul mentah karena URL lama tetap
+// sama dan browser/Vercel memakai respons JSON basi).
+let translationRev = "0";
+try {
+  const revSeed = [
+    "src/i18n/id.json",
+    "src/i18n/en.json",
+    "public/locales/id/translation.json",
+    "public/locales/en/translation.json"
+  ]
+    .map((f) => fs.statSync(path.resolve(__dirname, f)).mtimeMs.toString())
+    .join("|");
+  translationRev = crypto.createHash("md5").update(revSeed).digest("hex").slice(0, 8);
+} catch {
+  /* fallback tetap "0" */
 }
 
 // ponytail: HANYA isolasi lib super-heavy ke chunk sendiri beserta seluruh
@@ -32,7 +53,8 @@ const chartDeps = [
 export default defineConfig({
   plugins: [react()],
   define: {
-    __GIT_SHA__: JSON.stringify(gitSha)
+    __GIT_SHA__: JSON.stringify(gitSha),
+    __TRANSLATION_REV__: JSON.stringify(translationRev)
   },
   resolve: {
     alias: {

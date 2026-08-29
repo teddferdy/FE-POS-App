@@ -484,6 +484,13 @@ export const sidebarMenuSuperAdmin = [
         href: "/shift-template-list",
         icon: Clock,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Shift Saya",
+        i18nKey: "sidebar.myShift",
+        href: "/my-shift",
+        icon: CalendarDays,
+        actions: ["view"]
       }
     ]
   },
@@ -939,6 +946,13 @@ export const sidebarMenuAdmin = [
         href: "/shift-list",
         icon: CalendarDays,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Shift Saya",
+        i18nKey: "sidebar.myShift",
+        href: "/my-shift",
+        icon: CalendarDays,
+        actions: ["view"]
       }
     ]
   },
@@ -1105,6 +1119,13 @@ export const sidebarMenuUser = [
     actions: ["view"]
   },
   {
+    title: "Shift Saya",
+    i18nKey: "sidebar.myShift",
+    href: "/my-shift",
+    icon: CalendarDays,
+    actions: ["view"]
+  },
+  {
     title: "Laporan",
     i18nKey: "sidebar.laporan",
     href: "",
@@ -1225,6 +1246,12 @@ export const navCategories = {
               title: "Shift",
               i18nKey: "sidebar.shift",
               href: "/shift-list",
+              icon: CalendarDays
+            },
+            {
+              title: "Shift Saya",
+              i18nKey: "sidebar.myShift",
+              href: "/my-shift",
               icon: CalendarDays
             }
           ]
@@ -1793,6 +1820,12 @@ export const navCategories = {
               title: "Shift",
               i18nKey: "sidebar.shift",
               href: "/shift-list",
+              icon: CalendarDays
+            },
+            {
+              title: "Shift Saya",
+              i18nKey: "sidebar.myShift",
+              href: "/my-shift",
               icon: CalendarDays
             }
           ]

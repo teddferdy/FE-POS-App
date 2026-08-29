@@ -309,6 +309,22 @@ const ProductList = () => {
       }
     },
     {
+      header: t("page.product.table.productAvailable"),
+      render: (product) => {
+        const available = product.isAvailable !== false;
+        return (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${
+              available
+                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+            }`}>
+            {available ? t("page.product.form.yes") : t("page.product.form.no")}
+          </span>
+        );
+      }
+    },
+    {
       header: t("page.product.table.estimationTime"),
       render: (product) => {
         const minutes = product.estimationTime || 0;
@@ -377,11 +393,14 @@ const ProductList = () => {
     },
     {
       header: t("common.modifiedBy"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
-        </span>
-      )
+      render: (item) => {
+        console.log("ITEM =>", item);
+        return (
+          <span className="text-sm text-muted-foreground">
+            {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
+          </span>
+        );
+      }
     },
     {
       header: t("page.product.table.updatedAt"),

@@ -26,6 +26,12 @@ export const normalizePayload = (data, options = {}) => {
         return;
       }
 
+      // Handle file arrays: append every File under the same key (multiple upload)
+      if (Array.isArray(value) && value.every((v) => v instanceof File)) {
+        value.forEach((v) => formData.append(key, v));
+        return;
+      }
+
       // Handle standard fields
       if (value !== undefined && value !== null && value !== "") {
         formData.append(key, value);

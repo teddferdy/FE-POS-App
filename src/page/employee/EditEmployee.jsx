@@ -94,7 +94,8 @@ const EditEmployee = () => {
     address: "Alamat",
     gender: "Jenis Kelamin",
     dateOfBirth: "Tanggal Lahir",
-    employeeId: "ID Employee"
+    employeeId: "ID Employee",
+    monthlySalary: "Gaji Pokok"
   };
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -130,11 +131,7 @@ const EditEmployee = () => {
       isActive: z.boolean().default(true),
       roleId: z.string().optional().or(z.literal("")),
       accessMenu: z.string().optional().or(z.literal("")),
-      monthlySalary: z.coerce
-        .number()
-        .min(0, t("page.employee.edit.validation.salaryNegative"))
-        .optional()
-        .or(z.literal(""))
+      monthlySalary: z.coerce.number().min(1, t("page.employee.edit.validation.salaryRequired"))
     });
   }, []);
 
@@ -307,6 +304,28 @@ const EditEmployee = () => {
   const { data: departmentsData } = useQuery(["departments-all"], () => getAllDepartment(), {});
   const departments = departmentsData?.data || departmentsData?.departments || [];
 
+  const departmentId = form.watch("departmentId");
+
+  const positionsByDepartment = useMemo(() => {
+    const deptId = departmentId ? String(departmentId) : "";
+    return (positions || []).filter(
+      (p) => !deptId || String(p.departmentId ?? p.department ?? "") === deptId
+    );
+  }, [positions, departmentId]);
+
+  useEffect(() => {
+    const deptId = departmentId ? String(departmentId) : "";
+    const position = form.watch("position");
+    if (position && deptId && positions.length > 0) {
+      const belongs = (positions || []).some(
+        (p) =>
+          String(p.id) === String(position) &&
+          String(p.departmentId ?? p.department ?? "") === deptId
+      );
+      if (!belongs) form.setValue("position", "");
+    }
+  }, [departmentId, positions, form]);
+
   const { data: rolesData } = useQuery(["roles"], getAllRole, {});
   const roles = rolesData?.data || rolesData?.roles || [];
 
@@ -333,6 +352,23 @@ const EditEmployee = () => {
     }
   );
   const shifts = shiftsData?.data || shiftsData?.shifts || [];
+
+  const currentShift = form.watch("shift");
+
+  useEffect(() => {
+    if (!employee.id || !employeeId || shifts.length === 0) return;
+    if (currentShift) return;
+
+    const matched = (shifts || []).find((s) =>
+      (s.karyawan || []).some((k) => String(k) === String(employee.id))
+    );
+    if (matched) {
+      form.setValue("shift", String(matched.id), {
+        shouldValidate: false,
+        shouldDirty: false
+      });
+    }
+  }, [employee, employeeId, shifts, currentShift, form]);
 
   const updateMutation = useMutation(editEmployee, {
     onSuccess: () => {
@@ -495,12 +531,9 @@ const EditEmployee = () => {
           <div>
             <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
               <div className="grid grid-cols-12 gap-6">
-                <div className="col-span-12 lg:col-span-8 space-y-6">
+                <div className="col-span-12 space-y-6">
                   <Skeleton className="h-64 w-full rounded-xl" />
                   <Skeleton className="h-48 w-full rounded-xl" />
-                  <Skeleton className="h-40 w-full rounded-xl" />
-                </div>
-                <div className="col-span-12 lg:col-span-4">
                   <Skeleton className="h-64 w-full rounded-xl" />
                 </div>
               </div>
@@ -557,44 +590,28 @@ const EditEmployee = () => {
                 e.preventDefault();
               }}>
               <div className="grid grid-cols-12 gap-6">
-                <div className="col-span-12 lg:col-span-8 space-y-6">
+                <div className="col-span-12 space-y-6">
                   <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="w-full justify-start h-auto p-1 bg-muted/50 rounded-xl">
-                      <TabsTrigger
-                        value="profile"
-                        className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
+                    <TabsList className="w-full justify-start h-12 bg-muted/50 p-1">
+                      <TabsTrigger value="profile" className="gap-2">
                         <User size={16} />
-                        <span className="hidden sm:inline">
-                          {t("page.employee.edit.personalInfo")}
-                        </span>
+                        {t("page.employee.edit.personalInfo")}
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="employment"
-                        className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
+                      <TabsTrigger value="employment" className="gap-2">
                         <Briefcase size={16} />
-                        <span className="hidden sm:inline">{t("page.employee.edit.jobInfo")}</span>
+                        {t("page.employee.edit.jobInfo")}
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="salary"
-                        className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
+                      <TabsTrigger value="salary" className="gap-2">
                         <DollarSign size={16} />
-                        <span className="hidden sm:inline">{t("page.employee.edit.payroll")}</span>
+                        {t("page.employee.edit.payroll")}
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="account"
-                        className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
+                      <TabsTrigger value="account" className="gap-2">
                         <Lock size={16} />
-                        <span className="hidden sm:inline">
-                          {t("page.employee.edit.accountAccess")}
-                        </span>
+                        {t("page.employee.edit.accountAccess")}
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="documents"
-                        className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
+                      <TabsTrigger value="documents" className="gap-2">
                         <FileText size={16} />
-                        <span className="hidden sm:inline">
-                          {t("page.employee.edit.documents")}
-                        </span>
+                        {t("page.employee.edit.documents")}
                       </TabsTrigger>
                     </TabsList>
 
@@ -939,13 +956,18 @@ const EditEmployee = () => {
                                   <div className="flex gap-2">
                                     <div className="flex-1">
                                       <Combobox
-                                        options={(positions || []).map((p) => ({
+                                        options={(positionsByDepartment || []).map((p) => ({
                                           value: String(p.id),
                                           label: p.name
                                         }))}
                                         value={field.value || ""}
                                         onChange={field.onChange}
-                                        placeholder={t("page.employee.form.positionPlaceholder")}
+                                        disabled={!departmentId}
+                                        placeholder={
+                                          departmentId
+                                            ? t("page.employee.form.positionPlaceholder")
+                                            : t("page.employee.form.positionSelectDepartmentFirst")
+                                        }
                                       />
                                     </div>
                                     <Button
@@ -1220,7 +1242,8 @@ const EditEmployee = () => {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                  {t("page.employee.form.monthlySalary")}
+                                  {t("page.employee.form.monthlySalary")}{" "}
+                                  <span className="text-destructive">*</span>
                                 </FormLabel>
                                 <div className="relative">
                                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
@@ -1527,48 +1550,6 @@ const EditEmployee = () => {
                       </div>
                     </TabsContent>
                   </Tabs>
-                </div>
-
-                {/* Sidebar */}
-                <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
-                  <div className="bg-primary/10 text-primary-foreground p-6 rounded-xl shadow-sm border border-primary/20 overflow-hidden relative">
-                    <div className="relative z-10">
-                      <span className="material-symbols-outlined text-3xl text-primary mb-3">
-                        badge
-                      </span>
-                      <h3 className="text-base font-semibold text-primary mb-2">
-                        {t("page.employee.edit.guidance")}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        {t("page.employee.edit.guidanceDescription")}
-                      </p>
-                      <ul className="space-y-3">
-                        <li className="flex items-center gap-3 text-sm text-foreground">
-                          <span className="material-symbols-outlined text-primary text-base">
-                            check_circle
-                          </span>
-                          <span>{t("page.employee.edit.guidanceRequired")}</span>
-                        </li>
-                        <li className="flex items-center gap-3 text-sm text-foreground">
-                          <span className="material-symbols-outlined text-primary text-base">
-                            check_circle
-                          </span>
-                          <span>{t("page.employee.edit.guidancePassword")}</span>
-                        </li>
-                        <li className="flex items-center gap-3 text-sm text-foreground">
-                          <span className="material-symbols-outlined text-primary text-base">
-                            check_circle
-                          </span>
-                          <span>{t("page.employee.edit.guidanceRole")}</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="absolute -right-10 -bottom-10 opacity-10">
-                      <span className="material-symbols-outlined text-[200px] text-primary">
-                        admin_panel_settings
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="col-span-12">

@@ -516,6 +516,7 @@ const CashierPage = () => {
                 categoryId={categoryId}
                 onCategoryChange={setCategoryId}
                 store={store}
+                storeName={storeName}
               />
             </div>
           )}

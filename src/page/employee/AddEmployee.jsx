@@ -86,7 +86,8 @@ const AddEmployee = () => {
     address: "Alamat",
     gender: "Jenis Kelamin",
     dateOfBirth: "Tanggal Lahir",
-    employeeId: "ID Employee"
+    employeeId: "ID Employee",
+    monthlySalary: "Gaji Pokok"
   };
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -122,11 +123,7 @@ const AddEmployee = () => {
       isActive: z.boolean().default(true),
       roleId: z.string().optional().or(z.literal("")),
       accessMenu: z.string().optional().or(z.literal("")),
-      monthlySalary: z.coerce
-        .number()
-        .min(0, t("page.employee.form.salaryNegative"))
-        .optional()
-        .or(z.literal(""))
+      monthlySalary: z.coerce.number().min(1, t("page.employee.form.salaryRequired"))
     });
   }, [t]);
 
@@ -234,6 +231,28 @@ const AddEmployee = () => {
     isFetching: deptFetching
   } = useQuery(["departments-all"], () => getAllDepartment(), { retry: 0 });
   const departments = departmentsData?.data || departmentsData?.departments || [];
+
+  const departmentId = form.watch("departmentId");
+
+  const positionsByDepartment = useMemo(() => {
+    const deptId = departmentId ? String(departmentId) : "";
+    return (positions || []).filter(
+      (p) => !deptId || String(p.departmentId ?? p.department ?? "") === deptId
+    );
+  }, [positions, departmentId]);
+
+  useEffect(() => {
+    const deptId = departmentId ? String(departmentId) : "";
+    const position = form.watch("position");
+    if (position && deptId && positions.length > 0) {
+      const belongs = (positions || []).some(
+        (p) =>
+          String(p.id) === String(position) &&
+          String(p.departmentId ?? p.department ?? "") === deptId
+      );
+      if (!belongs) form.setValue("position", "");
+    }
+  }, [departmentId, positions, form]);
 
   const {
     data: rolesData,
@@ -800,13 +819,20 @@ const AddEmployee = () => {
                                       <div className="flex gap-2">
                                         <div className="flex-1">
                                           <Combobox
-                                            options={(positions || []).map((p) => ({
+                                            options={(positionsByDepartment || []).map((p) => ({
                                               value: String(p.id),
                                               label: p.name
                                             }))}
                                             value={field.value || ""}
                                             onChange={field.onChange}
-                                            placeholder={t("page.employee.add.positionPlaceholder")}
+                                            disabled={!departmentId}
+                                            placeholder={
+                                              departmentId
+                                                ? t("page.employee.add.positionPlaceholder")
+                                                : t(
+                                                    "page.employee.form.positionSelectDepartmentFirst"
+                                                  )
+                                            }
                                           />
                                         </div>
                                         <Button
@@ -1090,7 +1116,8 @@ const AddEmployee = () => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                      {t("page.employee.form.monthlySalary")}
+                                      {t("page.employee.form.monthlySalary")}{" "}
+                                      <span className="text-destructive">*</span>
                                     </FormLabel>
                                     <div className="relative">
                                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">

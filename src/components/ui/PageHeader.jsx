@@ -3,18 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useUserSession } from "@/hooks/useUserSession";
+import { getDashboardHref } from "@/utils/role";
 
 const PageHeader = ({ breadcrumbs = [], title, description, children, backLink, onBack }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const user = useUserSession();
 
   const handleBack = () => {
     if (onBack) {
       onBack();
     } else if (backLink) {
-      navigate(backLink);
+      navigate(resolveHref(backLink));
     }
   };
+
+  const resolveHref = (href) => (href === "/dashboard-super-admin" ? getDashboardHref(user) : href);
 
   return (
     <header className="space-y-4">
@@ -25,7 +30,7 @@ const PageHeader = ({ breadcrumbs = [], title, description, children, backLink, 
               {i > 0 && <span className="text-xs">/</span>}
               {crumb.href ? (
                 <button
-                  onClick={() => navigate(crumb.href)}
+                  onClick={() => navigate(resolveHref(crumb.href))}
                   className="hover:text-foreground transition-colors whitespace-nowrap">
                   {crumb.i18nKey ? t(crumb.i18nKey) : crumb.label}
                 </button>

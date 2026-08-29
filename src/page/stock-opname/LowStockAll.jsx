@@ -290,7 +290,7 @@ const LowStockAll = () => {
       <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
-            onClick={() => navigate("/dashboard-super-admin")}
+            onClick={() => navigate(isSuperAdmin ? "/dashboard-super-admin" : "/dashboard-admin")}
             className="hover:text-foreground transition-colors">
             {t("breadcrumb.home")}
           </button>

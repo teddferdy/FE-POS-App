@@ -15,7 +15,17 @@ import {
   ShoppingCart,
   DollarSign,
   Target,
-  Wallet
+  Wallet,
+  Store,
+  RefreshCw,
+  Banknote,
+  QrCode,
+  CreditCard,
+  ArrowLeftRight,
+  BarChart3,
+  PackageSearch,
+  ChevronRight,
+  ArrowRight
 } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import PosWelcomeModal from "@/components/organism/PosWelcomeModal";
@@ -24,6 +34,10 @@ import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { getAPDashboard } from "@/services/purchase-payment";
 import { getDashboardSummary } from "@/services/dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserSession } from "@/hooks/useUserSession";
+import { hasMenuAccess } from "@/utils/permission";
+import DashboardStats from "@/components/dashboard/DashboardStats";
+import DashboardAlerts from "@/components/dashboard/DashboardAlerts";
 
 const FILTERS = [
   { key: "daily", label: "Harian" },
@@ -55,17 +69,39 @@ const statusBadge = (status) => {
   );
 };
 
-import DashboardStats from "@/components/dashboard/DashboardStats";
-import DashboardAlerts from "@/components/dashboard/DashboardAlerts";
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const store = cookie?.store;
   const { t } = useTranslation();
+  const user = useUserSession() || cookie?.user || {};
   const [chartFilter, setChartFilter] = useState("weekly");
   const [orderPage, setOrderPage] = useState(1);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const ORDER_PAGE_SIZE = 5;
+
+  // ponytail: jangan tampilkan widget/aksi yang tidak bisa diakses role ini —
+  // mis. role HR "user" melihat kartu & tombol low-stock → terlempar ke
+  // /low-stock-all lalu 403 dari BE.
+  const canLowStock = hasMenuAccess(user, "/low-stock-all", ["view"]);
+  const canMembers = hasMenuAccess(user, "/member-list", ["view"]);
+  const canPos = hasMenuAccess(user, "/home", ["view"]);
+  const canSalesReport = hasMenuAccess(user, "/report/sales", ["view"]);
+
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 11) return t("page.dashboard.greeting.morning");
+    if (h < 15) return t("page.dashboard.greeting.afternoon");
+    if (h < 19) return t("page.dashboard.greeting.evening");
+    return t("page.dashboard.greeting.night");
+  })();
+  const todayLong = new Date().toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
 
   // ponytail: double-fetch previous period for comparison, single endpoint reuse
   const getPrevDateRange = (filter) => {
@@ -128,6 +164,17 @@ const Dashboard = () => {
     {}
   );
 
+  useEffect(() => {
+    if (dashData) setLastUpdated(new Date());
+  }, [dashData]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+    setLastUpdated(new Date());
+  };
+
   const d = dashData?.data || dashData || {};
   const prev = prevDashData?.data || prevDashData || {};
   const growth = (curr, prev) =>
@@ -140,6 +187,10 @@ const Dashboard = () => {
   const totalOrders = d.totalOrders || 0;
   const totalProducts = d.totalProducts || 0;
   const totalMembers = d.totalMembers || 0;
+  const averageOrderValue = d.averageOrderValue || 0;
+  const netSales = d.netSales || 0;
+  const storeInfo = d.storeInfo || null;
+  const lowStockItems = d.lowStock || 0;
 
   // ponytail: pengguna baru = data kosong semua → sambut sekali per browser.
   const [welcomeOpen, setWelcomeOpen] = useState(false);
@@ -164,27 +215,42 @@ const Dashboard = () => {
       welcomeSeen.current = true;
     }
   }, []);
+
   const summaryCards = [
     {
+      id: "revenue",
       label: t("page.dashboard.revenue"),
       value: formatCurrencyRupiah(totalSales),
       growth: growth(totalSales, prev.totalSales || 0),
       icon: DollarSign,
       color: "text-primary"
     },
+    {
+      id: "aov",
+      label: t("page.dashboard.averageOrderValue"),
+      value: formatCurrencyRupiah(averageOrderValue),
+      growth: growth(averageOrderValue, prev.averageOrderValue || 0),
+      icon: Wallet,
+      color: "text-primary"
+    },
     ...(dailyTarget > 0
       ? [
           {
+            id: "target",
             label: t("page.dashboard.target") || "Target Harian",
             value: `${targetPercent}%`,
-            trend: `${formatCurrencyRupiah(totalSales)} / ${formatCurrencyRupiah(dailyTarget)}`,
-            trendUp: totalSales >= dailyTarget,
+            growth: growth(totalSales, prev.totalSales || 0),
             icon: Target,
-            color: "text-emerald-600"
+            color: "text-emerald-600",
+            iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
+            progress: targetPercent,
+            progressColor: "bg-emerald-500",
+            progressLabel: `${formatCurrencyRupiah(totalSales)} / ${formatCurrencyRupiah(dailyTarget)}`
           }
         ]
       : []),
     {
+      id: "orders",
       label: t("page.dashboard.orderCount"),
       value: String(totalOrders),
       growth: growth(totalOrders, prev.totalOrders || 0),
@@ -192,29 +258,111 @@ const Dashboard = () => {
       color: "text-primary"
     },
     {
+      id: "netprofit",
+      label: t("page.dashboard.netProfit"),
+      value: formatCurrencyRupiah(netSales),
+      growth: growth(netSales, prev.netSales || 0),
+      trendNote: `${t("page.dashboard.expenses")}: ${formatCurrencyRupiah(d.totalExpense || 0)}`,
+      icon: Wallet,
+      color: "text-emerald-600",
+      iconBg: "bg-emerald-100 dark:bg-emerald-900/30"
+    },
+    {
+      id: "products",
       label: t("page.dashboard.activeProducts"),
       value: String(totalProducts),
       growth: growth(totalProducts, prev.totalProducts || 0),
       icon: Package,
       color: "text-primary"
     },
-    {
-      label: t("page.dashboard.memberCount"),
-      value: String(totalMembers),
-      growth: growth(totalMembers, prev.totalMembers || 0),
-      icon: Users,
-      color: "text-primary"
-    },
-    {
-      label: t("page.dashboard.lowStock"),
-      value: String(d.lowStock || 0),
-      trend: d.lowStock ? t("page.dashboard.restockNow") : t("page.dashboard.safe"),
-      trendUp: !d.lowStock,
-      icon: AlertTriangle,
-      color: "text-destructive",
-      bg: "bg-destructive/10 border-destructive/20"
-    }
+    ...(canMembers
+      ? [
+          {
+            id: "members",
+            label: t("page.dashboard.memberCount"),
+            value: String(totalMembers),
+            growth: growth(totalMembers, prev.totalMembers || 0),
+            icon: Users,
+            color: "text-primary"
+          }
+        ]
+      : []),
+    ...(canLowStock
+      ? [
+          {
+            id: "lowstock",
+            label: t("page.dashboard.lowStock"),
+            value: String(lowStockItems),
+            trend: lowStockItems ? t("page.dashboard.restockNow") : t("page.dashboard.safe"),
+            trendUp: !lowStockItems,
+            icon: AlertTriangle,
+            color: "text-destructive",
+            bg: "bg-destructive/5 border-destructive/20"
+          }
+        ]
+      : [])
   ];
+
+  const quickActions = [
+    ...(canPos
+      ? [
+          {
+            label: t("page.dashboard.quickKasir"),
+            href: "/home",
+            icon: ShoppingCart,
+            iconBg: "bg-primary/10 text-primary"
+          }
+        ]
+      : []),
+    ...(canSalesReport
+      ? [
+          {
+            label: t("page.dashboard.quickReport"),
+            href: "/report/sales",
+            icon: BarChart3,
+            iconBg: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600"
+          }
+        ]
+      : []),
+    ...(canLowStock
+      ? [
+          {
+            label: t("page.dashboard.quickLowStock"),
+            href: "/low-stock-all",
+            icon: PackageSearch,
+            iconBg: "bg-amber-100 dark:bg-amber-900/30 text-amber-600"
+          }
+        ]
+      : []),
+    ...(canMembers
+      ? [
+          {
+            label: t("page.dashboard.quickMembers"),
+            href: "/member-list",
+            icon: Users,
+            iconBg: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
+          }
+        ]
+      : [])
+  ];
+
+  const paymentMeta = {
+    cash: { label: t("page.dashboard.payCash"), icon: Banknote },
+    transfer: { label: t("page.dashboard.payTransfer"), icon: ArrowLeftRight },
+    qris: { label: "QRIS", icon: QrCode },
+    qrcode: { label: "QRIS", icon: QrCode },
+    card: { label: t("page.dashboard.payCard"), icon: CreditCard },
+    kredit: { label: t("page.dashboard.payCard"), icon: CreditCard },
+    debit: { label: t("page.dashboard.payCard"), icon: CreditCard }
+  };
+  const paidMethods = (d.paymentMethods || []).map((m) => {
+    const meta = paymentMeta[(m.method || "cash").toLowerCase()] || {
+      label: m.method,
+      icon: Banknote
+    };
+    return { ...m, label: meta.label, icon: meta.icon, sales: Number(m.sales) || 0 };
+  });
+  const maxMethodSales = Math.max(1, ...paidMethods.map((m) => m.sales));
 
   const rawChart = d.salesChart || [];
   const buildChartData = () => {
@@ -260,6 +408,7 @@ const Dashboard = () => {
     return result;
   };
   const chartData = buildChartData();
+  const chartHasData = chartData.some((item) => item.value > 0);
   const bestSelling = (d.bestSellers || []).slice(0, 5);
   const recentOrdersData = d.recentOrders || {};
   const recentOrders = recentOrdersData.rows || [];
@@ -278,16 +427,62 @@ const Dashboard = () => {
         })
       : "-";
 
+  const storeLabel = storeInfo?.name
+    ? `${t("page.dashboard.header.store")} ${storeInfo.name}${storeInfo.city ? ` • ${storeInfo.city}` : ""}`
+    : store
+      ? `Toko #${store}`
+      : t("page.dashboard.allStores");
+
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Store size={22} />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">
+              {greeting},{" "}
+              <span className="font-semibold text-foreground">
+                {user.fullName || user.userName || ""}
+              </span>
+            </p>
+            <h1 className="text-2xl font-bold text-foreground mt-0.5">
+              {t("page.dashboard.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-0.5">{todayLong}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{storeLabel}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {lastUpdated && (
+            <span className="text-xs text-muted-foreground">
+              {t("page.dashboard.lastUpdated", {
+                time: lastUpdated.toLocaleTimeString("id-ID", {
+                  hour: "2-digit",
+                  minute: "2-digit"
+                })
+              })}
+            </span>
+          )}
+          <button
+            onClick={handleRefresh}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
+            <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
+            {t("page.dashboard.refresh")}
+          </button>
+        </div>
+      </div>
+
       {isLoading ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {[...Array(5)].map((_, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
               <div key={i} className="bg-card rounded-xl border border-border p-4">
                 <div className="flex items-start justify-between mb-3">
                   <Skeleton className="h-3 w-24" />
-                  <Skeleton className="h-4 w-4 rounded" />
+                  <Skeleton className="h-9 w-9 rounded-lg" />
                 </div>
                 <Skeleton className="h-8 w-28 mb-2" />
                 <Skeleton className="h-3 w-20" />
@@ -366,7 +561,39 @@ const Dashboard = () => {
       ) : (
         <>
           <DashboardAlerts apData={apData} isLoading={apLoading} />
+
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+            <h2 className="text-base font-semibold text-foreground">{t("page.dashboard.title")}</h2>
+            <span className="text-xs text-muted-foreground">
+              {t("page.dashboard.header.subtitle")}
+            </span>
+          </div>
+
           <DashboardStats summaryCards={summaryCards} />
+
+          {/* Quick actions */}
+          {quickActions.length > 0 && (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {quickActions.map((qa) => (
+                <button
+                  key={qa.href}
+                  onClick={() => navigate(qa.href)}
+                  className="group bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md hover:ring-2 hover:ring-primary/30 transition-all text-left">
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center ${qa.iconBg || "bg-primary/10 text-primary"}`}>
+                      <qa.icon size={19} />
+                    </span>
+                    <ChevronRight
+                      size={16}
+                      className="text-muted-foreground group-hover:translate-x-0.5 group-hover:text-primary transition-transform"
+                    />
+                  </div>
+                  <p className="text-sm font-semibold text-foreground mt-2.5">{qa.label}</p>
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div
@@ -399,56 +626,72 @@ const Dashboard = () => {
                     ))}
                   </div>
                 </div>
-                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
-                  <Download size={14} />
-                  {t("page.dashboard.downloadReport")}
-                </button>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded shrink-0">
+                    {totalOrders} {t("page.dashboard.chartTotal", { count: totalOrders })}
+                  </span>
+                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
+                    <Download size={14} />
+                    {t("page.dashboard.downloadReport")}
+                  </button>
+                </div>
               </div>
-              <div className="p-5 h-[81%]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} barCategoryGap="20%">
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      dataKey="day"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
-                      tickFormatter={(val) => {
-                        if (val >= 1000000) return `Rp${(val / 1000000).toFixed(1)}Jt`;
-                        if (val >= 1000) return `Rp${(val / 1000).toFixed(0)}K`;
-                        return `Rp${val}`;
-                      }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "12px"
-                      }}
-                      formatter={(value) => [
-                        formatCurrencyRupiah(value),
-                        t("page.dashboard.revenue")
-                      ]}
-                    />
-                    <Bar
-                      dataKey="value"
-                      fill="hsl(var(--primary))"
-                      radius={[4, 4, 0, 0]}
-                      opacity={0.8}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {!chartHasData ? (
+                <div className="p-10 h-[81%] flex items-center justify-center">
+                  <div className="text-center">
+                    <BarChart3 size={28} className="mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.dashboard.emptyChart")}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-5 h-[81%]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} barCategoryGap="20%">
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="hsl(var(--border))"
+                      />
+                      <XAxis
+                        dataKey="day"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                        tickFormatter={(val) => {
+                          if (val >= 1000000) return `Rp${(val / 1000000).toFixed(1)}Jt`;
+                          if (val >= 1000) return `Rp${(val / 1000).toFixed(0)}K`;
+                          return `Rp${val}`;
+                        }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                          fontSize: "12px"
+                        }}
+                        formatter={(value) => [
+                          formatCurrencyRupiah(value),
+                          t("page.dashboard.revenue")
+                        ]}
+                      />
+                      <Bar
+                        dataKey="value"
+                        fill="hsl(var(--primary))"
+                        radius={[4, 4, 0, 0]}
+                        opacity={0.8}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </div>
 
             <div className="lg:col-span-4 bg-card rounded-xl border border-border overflow-hidden shadow-sm">
@@ -483,146 +726,225 @@ const Dashboard = () => {
                             <p className="text-xs text-muted-foreground">{item.category || ""}</p>
                           </div>
                         </div>
-                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded">
-                          {item.count || item.quantity || 0}x
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground text-[11px] font-bold flex items-center justify-center">
+                            {i + 1}
+                          </span>
+                          <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded">
+                            {item.count || item.quantity || 0}x
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              <div className="p-3 border-t border-border">
+                <button
+                  onClick={() => navigate("/product-list")}
+                  className="w-full text-sm font-semibold text-primary hover:underline inline-flex items-center justify-center gap-1">
+                  {t("page.dashboard.seeAllProducts")}
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div
+              data-tour="dashboard-orders"
+              className="lg:col-span-8 bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+              <div className="p-5 border-b border-border flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.dashboard.recentOrders")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t("page.dashboard.recentOrdersSubtitle")}
+                  </p>
+                </div>
+                <button
+                  className="text-sm font-semibold text-primary hover:underline"
+                  onClick={() => navigate("/report/sales")}>
+                  {t("page.dashboard.viewAll")}
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-muted/50 text-muted-foreground">
+                      <th className="text-left px-5 py-3 font-medium">
+                        {t("page.dashboard.table.orderId")}
+                      </th>
+                      <th className="text-left px-5 py-3 font-medium">
+                        {t("page.dashboard.table.table")}
+                      </th>
+                      <th className="text-left px-5 py-3 font-medium">
+                        {t("page.dashboard.table.customer")}
+                      </th>
+                      <th className="text-left px-5 py-3 font-medium">
+                        {t("page.dashboard.items")}
+                      </th>
+                      <th className="text-left px-5 py-3 font-medium">
+                        {t("page.dashboard.table.total")}
+                      </th>
+                      <th className="text-left px-5 py-3 font-medium">
+                        {t("page.dashboard.table.status")}
+                      </th>
+                      <th className="text-left px-5 py-3 font-medium">
+                        {t("page.dashboard.table.time")}
+                      </th>
+                      <th className="text-left px-5 py-3 font-medium">
+                        {t("page.dashboard.table.action")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {recentOrders.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={8}
+                          className="px-5 py-8 text-center text-sm text-muted-foreground">
+                          {t("page.dashboard.noOrders")}
+                        </td>
+                      </tr>
+                    ) : (
+                      recentOrders.map((order, i) => (
+                        <tr key={order.id || i} className="hover:bg-accent/30 transition-colors">
+                          <td className="px-5 py-3.5 font-mono text-xs font-semibold text-primary">
+                            {order.id || order.invoice || "-"}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            {order.table || order.tableName ? (
+                              <span className="inline-flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                {order.tableName}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">Take Away</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3.5 font-medium text-foreground">
+                            {order.customer || order.memberName || order.customerName || "-"}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            {order.items?.length ? (
+                              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                <Package size={13} />
+                                {t("page.dashboard.itemsCount", { count: order.items.length })}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3.5 font-mono text-xs font-semibold">
+                            {formatCurrencyRupiah(order.total || order.totalPrice || 0)}
+                          </td>
+                          <td className="px-5 py-3.5">{statusBadge(order.status)}</td>
+                          <td className="px-5 py-3.5 text-muted-foreground text-xs">
+                            {formatDate(order.createdAt)}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-2">
+                              <button
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                                onClick={() => navigate("/report/sales")}>
+                                <Eye size={16} />
+                              </button>
+                              <button className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                                <Printer size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {recentOrdersTotal > ORDER_PAGE_SIZE && (
+                <div className="flex items-center justify-between px-5 py-3 border-t border-border">
+                  <span className="text-xs text-muted-foreground">{recentOrdersTotal} orders</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      disabled={orderPage <= 1}
+                      onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
+                      className="px-2.5 py-1 text-xs rounded border border-border hover:bg-accent disabled:opacity-30 disabled:pointer-events-none">
+                      Prev
+                    </button>
+                    {Array.from({ length: recentOrdersPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setOrderPage(p)}
+                        className={`px-2.5 py-1 text-xs rounded border ${
+                          p === orderPage
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "border-border hover:bg-accent"
+                        }`}>
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      disabled={orderPage >= recentOrdersPages}
+                      onClick={() => setOrderPage((p) => Math.min(recentOrdersPages, p + 1))}
+                      className="px-2.5 py-1 text-xs rounded border border-border hover:bg-accent disabled:opacity-30 disabled:pointer-events-none">
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div
+              data-tour="dashboard-payment"
+              className="lg:col-span-4 bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+              <div className="p-5 border-b border-border flex items-center gap-2">
+                <div>
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <Wallet size={16} className="text-muted-foreground" />
+                    {t("page.dashboard.paymentMethods")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t("page.dashboard.paymentMethodsSubtitle")}
+                  </p>
+                </div>
+              </div>
+              <div className="divide-y divide-border">
+                {paidMethods.length === 0 ? (
+                  <div className="p-5 text-sm text-muted-foreground text-center">
+                    {t("page.dashboard.noData")}
+                  </div>
+                ) : (
+                  paidMethods.map((m) => {
+                    const pct = Math.round((m.sales / maxMethodSales) * 100);
+                    return (
+                      <div key={m.method || m.label} className="p-4">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                            <m.icon size={15} className="text-muted-foreground" />
+                            {m.label}
+                          </span>
+                          <span className="text-xs font-mono font-semibold text-foreground">
+                            {formatCurrencyRupiah(m.sales)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-primary"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-[11px] text-muted-foreground w-8 text-right">
+                            {m.orders}x
+                          </span>
+                        </div>
                       </div>
                     );
                   })
                 )}
               </div>
             </div>
-          </div>
-
-          <div
-            data-tour="dashboard-orders"
-            className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
-            <div className="p-5 border-b border-border flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 className="text-base font-semibold text-foreground">
-                  {t("page.dashboard.recentOrders")}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.dashboard.recentOrdersSubtitle")}
-                </p>
-              </div>
-              <button
-                className="text-sm font-semibold text-primary hover:underline"
-                onClick={() => navigate("/report/sales")}>
-                {t("page.dashboard.viewAll")}
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/50 text-muted-foreground">
-                    <th className="text-left px-5 py-3 font-medium">
-                      {t("page.dashboard.table.orderId")}
-                    </th>
-                    <th className="text-left px-5 py-3 font-medium">
-                      {t("page.dashboard.table.table")}
-                    </th>
-                    <th className="text-left px-5 py-3 font-medium">
-                      {t("page.dashboard.table.customer")}
-                    </th>
-                    <th className="text-left px-5 py-3 font-medium">
-                      {t("page.dashboard.table.total")}
-                    </th>
-                    <th className="text-left px-5 py-3 font-medium">
-                      {t("page.dashboard.table.status")}
-                    </th>
-                    <th className="text-left px-5 py-3 font-medium">
-                      {t("page.dashboard.table.time")}
-                    </th>
-                    <th className="text-left px-5 py-3 font-medium">
-                      {t("page.dashboard.table.action")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {recentOrders.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        className="px-5 py-8 text-center text-sm text-muted-foreground">
-                        {t("page.dashboard.noOrders")}
-                      </td>
-                    </tr>
-                  ) : (
-                    recentOrders.map((order, i) => (
-                      <tr key={order.id || i} className="hover:bg-accent/30 transition-colors">
-                        <td className="px-5 py-3.5 font-mono text-xs font-semibold text-primary">
-                          {order.id || order.invoice || "-"}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          {order.table || order.tableName ? (
-                            <span className="inline-flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                              {order.tableName}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">Take Away</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-3.5 font-medium text-foreground">
-                          {order.customer || order.memberName || order.customerName || "-"}
-                        </td>
-                        <td className="px-5 py-3.5 font-mono text-xs font-semibold">
-                          {formatCurrencyRupiah(order.total || order.totalPrice || 0)}
-                        </td>
-                        <td className="px-5 py-3.5">{statusBadge(order.status)}</td>
-                        <td className="px-5 py-3.5 text-muted-foreground text-xs">
-                          {formatDate(order.createdAt)}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-2">
-                            <button
-                              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                              onClick={() => navigate("/report/sales")}>
-                              <Eye size={16} />
-                            </button>
-                            <button className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                              <Printer size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-            {recentOrdersTotal > ORDER_PAGE_SIZE && (
-              <div className="flex items-center justify-between px-5 py-3 border-t border-border">
-                <span className="text-xs text-muted-foreground">{recentOrdersTotal} orders</span>
-                <div className="flex items-center gap-1">
-                  <button
-                    disabled={orderPage <= 1}
-                    onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
-                    className="px-2.5 py-1 text-xs rounded border border-border hover:bg-accent disabled:opacity-30 disabled:pointer-events-none">
-                    Prev
-                  </button>
-                  {Array.from({ length: recentOrdersPages }, (_, i) => i + 1).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setOrderPage(p)}
-                      className={`px-2.5 py-1 text-xs rounded border ${
-                        p === orderPage
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "border-border hover:bg-accent"
-                      }`}>
-                      {p}
-                    </button>
-                  ))}
-                  <button
-                    disabled={orderPage >= recentOrdersPages}
-                    onClick={() => setOrderPage((p) => Math.min(recentOrdersPages, p + 1))}
-                    className="px-2.5 py-1 text-xs rounded border border-border hover:bg-accent disabled:opacity-30 disabled:pointer-events-none">
-                    Next
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           <div
@@ -638,13 +960,20 @@ const Dashboard = () => {
                   {t("page.dashboard.recentExpensesSubtitle")}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.dashboard.expenseTotal")}
-                </p>
-                <p className="text-lg font-bold text-destructive">
-                  {formatCurrencyRupiah(totalExpense)}
-                </p>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.dashboard.expenseTotal")}
+                  </p>
+                  <p className="text-lg font-bold text-destructive">
+                    {formatCurrencyRupiah(totalExpense)}
+                  </p>
+                </div>
+                <button
+                  className="text-sm font-semibold text-primary hover:underline"
+                  onClick={() => navigate("/expense")}>
+                  {t("page.dashboard.viewAll")}
+                </button>
               </div>
             </div>
             <div className="overflow-x-auto">

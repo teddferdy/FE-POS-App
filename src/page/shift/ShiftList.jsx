@@ -370,7 +370,7 @@ const ShiftList = () => {
       <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
-            onClick={() => navigate("/dashboard-super-admin")}
+            onClick={() => navigate(isSuperAdmin ? "/dashboard-super-admin" : "/dashboard-admin")}
             className="hover:text-foreground transition-colors">
             {t("breadcrumb.home")}
           </button>
@@ -398,12 +398,12 @@ const ShiftList = () => {
         <TabsList className="flex flex-wrap h-auto w-fit">
           <TabsTrigger value="shifts" className="gap-2">
             <Clock3 size={15} />
-            Daftar Shift
+            {t("page.shift.list.tabShift")}
           </TabsTrigger>
           {canDecideSwap && (
             <TabsTrigger value="approval" className="gap-2">
               <Shuffle size={14} />
-              Konfirmasi Ubah Jadwal
+              {t("page.shift.list.tabSwap")}
               {pendingSwaps > 0 && (
                 <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
                   {pendingSwaps}
@@ -438,7 +438,7 @@ const ShiftList = () => {
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                       <StatCard
-                        label={t("page.shift.table.name")}
+                        label={t("page.shift.list.total")}
                         value={statsTotal}
                         icon={Clock3}
                         variant="default"
@@ -473,10 +473,10 @@ const ShiftList = () => {
                           className="shrink-0 text-amber-600 dark:text-amber-400"
                         />
                         <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                          {expiringShifts.length} shift segera berakhir
+                          {expiringShifts.length} {t("page.shift.list.expiring")}
                         </p>
                         <span className="ml-auto text-[11px] text-amber-700/80 dark:text-amber-400/80">
-                          Perpanjang sebelum tanggal selesai
+                          {t("page.shift.list.expiringHint")}
                         </span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 p-3">
@@ -507,7 +507,13 @@ const ShiftList = () => {
                                     </p>
                                     <span
                                       className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${badgeClass}`}>
-                                      {isPast ? "Berakhir" : `${diff}h`}
+                                      {isPast
+                                        ? "Sudah berakhir"
+                                        : diff === 0
+                                          ? "Hari ini"
+                                          : diff === 1
+                                            ? "Besok"
+                                            : `${diff} hari lagi`}
                                     </span>
                                   </div>
                                   <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
@@ -542,7 +548,7 @@ const ShiftList = () => {
                                 className="mt-2.5 w-full h-7 gap-1.5 text-[11px] text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                 onClick={() => setExtendTarget(s)}>
                                 <RefreshCcw size={11} />
-                                Perpanjang Shift
+                                {t("page.shift.list.extend")}
                               </Button>
                             </div>
                           );
