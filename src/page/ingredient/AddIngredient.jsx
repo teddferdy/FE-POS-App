@@ -466,7 +466,7 @@ const AddIngredient = () => {
                                       (p) => p.name?.toLowerCase().trim() === v.toLowerCase().trim()
                                     );
                                     if (product) {
-                                      form.setValue("costPrice", product.price || 0);
+                                      form.setValue("costPrice", Number(product.price) || 0);
                                       form.setValue("unit", product.unit || "pcs");
                                     }
                                   }
