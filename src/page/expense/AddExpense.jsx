@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCookies } from "react-cookie";
-import { X, Save, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { X, Save, ArrowLeft, Plus, Trash2, Store } from "lucide-react";
 import { parseSalary } from "@/lib/utils";
 import { addExpense, bulkAddExpenses, getExpenseCategories } from "@/services/expense";
 import { getAllEmployee } from "@/services/employee";
@@ -35,6 +35,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import Modal from "@/components/organism/modal";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
+import StoreSelectModal from "@/components/organism/StoreSelectModal";
 import EmployeeSalaryPanel from "@/components/organism/EmployeeSalaryPanel";
 import { useTranslation } from "react-i18next";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
@@ -78,6 +79,7 @@ const AddExpense = () => {
   const [missingFields, setMissingFields] = useState([]);
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
+  const [storeModalOpen, setStoreModalOpen] = useState(false);
   const [selectedSalaryIds, setSelectedSalaryIds] = useState([]);
   const [salaryBasis, setSalaryBasis] = useState("monthly");
   const [expenseMode, setExpenseMode] = useState("single");
@@ -425,30 +427,92 @@ const AddExpense = () => {
                   render={() => (
                     <FormItem>
                       <FormControl>
-                        <StoreSelectCard
-                          locations={locations}
-                          selectedStores={selectedStore}
-                          onChange={(stores) => {
-                            setSelectedStore(stores);
-                            form.clearErrors("store");
-                          }}
-                          isSuperAdmin={isSuperAdmin}
-                          user={user}
-                          t={t}
-                          title={t("page.expense.form.storeSection.title")}
-                          description={t("page.expense.form.storeSection.desc")}
-                          noStoreLabel={t("page.expense.form.storeSection.noStore")}
-                          addStoreLabel={t("page.expense.form.storeSection.addStore")}
-                          storeInfoLabel={t("page.expense.form.storeInfo")}
-                          allStores={allStores}
-                          onAllStoresChange={(val) => {
-                            setAllStores(val);
-                            form.clearErrors("store");
-                          }}
-                          navigate={navigate}
-                          mandatory={true}
-                          locationsLoading={locsLoading || locsFetching}
-                        />
+                        {isSuperAdmin ? (
+                          <div className="space-y-3">
+                            <button
+                              type="button"
+                              onClick={() => setStoreModalOpen(true)}
+                              className="w-full flex items-center gap-3 rounded-xl border border-border bg-card shadow-sm p-4 text-left hover:border-primary/50 transition-colors">
+                              <Store size={20} className="text-primary shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground">
+                                  {t("page.expense.form.storeSection.title")}
+                                  <span className="text-destructive ml-0.5">*</span>
+                                </p>
+                                {allStores ? (
+                                  <p className="text-xs text-muted-foreground">
+                                    {t("page.category.form.storeSection.allStores")}
+                                  </p>
+                                ) : selectedStore.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1.5 mt-1">
+                                    {selectedStore.map((id) => {
+                                      const locName =
+                                        locations.find((l) => l.id === id)?.name || `#${id}`;
+                                      return (
+                                        <span
+                                          key={id}
+                                          className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                          {locName}
+                                        </span>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-muted-foreground">
+                                    {t("page.expense.form.storeSection.placeholder")}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                {!allStores &&
+                                  t("page.product.add.storeSection.selected", {
+                                    count: selectedStore.length
+                                  })}
+                              </span>
+                            </button>
+                            <StoreSelectModal
+                              open={storeModalOpen}
+                              onOpenChange={setStoreModalOpen}
+                              locations={locations}
+                              locationsLoading={locsLoading || locsFetching}
+                              selectedStores={selectedStore}
+                              allStores={allStores}
+                              mandatory
+                              onConfirm={(stores, all) => {
+                                setSelectedStore(stores);
+                                setAllStores(all);
+                                form.clearErrors("store");
+                              }}
+                              noStoreLabel={t("page.expense.form.storeSection.noStore")}
+                              addStoreLabel={t("page.expense.form.storeSection.addStore")}
+                            />
+                          </div>
+                        ) : (
+                          <StoreSelectCard
+                            locations={locations}
+                            selectedStores={selectedStore}
+                            onChange={(stores) => {
+                              setSelectedStore(stores);
+                              form.clearErrors("store");
+                            }}
+                            isSuperAdmin={isSuperAdmin}
+                            user={user}
+                            t={t}
+                            title={t("page.expense.form.storeSection.title")}
+                            description={t("page.expense.form.storeSection.desc")}
+                            noStoreLabel={t("page.expense.form.storeSection.noStore")}
+                            addStoreLabel={t("page.expense.form.storeSection.addStore")}
+                            storeInfoLabel={t("page.expense.form.storeInfo")}
+                            allStores={allStores}
+                            onAllStoresChange={(val) => {
+                              setAllStores(val);
+                              form.clearErrors("store");
+                            }}
+                            navigate={navigate}
+                            mandatory={true}
+                            locationsLoading={locsLoading || locsFetching}
+                          />
+                        )}
                       </FormControl>
                       <FormMessage />
                     </FormItem>
