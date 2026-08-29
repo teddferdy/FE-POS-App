@@ -84,13 +84,13 @@ const ProductImageGallery = ({ images = [], onChange, maxImages = 6, compact = f
   const move = (idx, dir) => {
     const target = idx + dir;
     if (target < 0 || target >= images.length) return;
-    onChange((prev) => {
-      const next = [...prev];
-      const moving = safeGet(next, idx);
-      next[idx] = safeGet(next, target);
-      next[target] = moving;
-      return next;
-    });
+    onChange((prev) =>
+      prev.map((item, i) => {
+        if (i === idx) return safeGet(prev, target);
+        if (i === target) return safeGet(prev, idx);
+        return item;
+      })
+    );
   };
 
   const setPrimary = (idx) => {

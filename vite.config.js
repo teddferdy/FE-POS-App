@@ -1,9 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
+import path from "path";
 import { execSync } from "child_process";
+import idLocale from "./src/i18n/id.json";
+import enLocale from "./src/i18n/en.json";
+import idPublicLocale from "./public/locales/id/translation.json";
+import enPublicLocale from "./public/locales/en/translation.json";
 
 // ponytail: git SHA di-build-time → tag release Sentry, biar error bisa
 // dikaitkan dengan deploy tertentu
@@ -14,20 +17,14 @@ try {
   /* fallback tetap "unknown" */
 }
 
-// ponytail: revisi translasi = MD5 mtime keempat file locale. Cache-buster
-// /locales berubah kalau file bahasa berubah walaupun BELUM di-commit
-// (git SHA saja tidak cukup: key baru muncul mentah karena URL lama tetap
-// sama dan browser/Vercel memakai respons JSON basi).
-// Safety: setiap path ditulis literal (tanpa iterasi array) supaya static
-// analyzer tidak menganggap argumen fs/path berasal dari input eksternal.
+// ponytail: revisi translasi = MD5 JSON keempat file locale (diimpor langsung,
+// bukan via fs/path, supaya tidak ada file-access sink bagi static analyzer).
+// Cache-buster /locales berubah kalau file bahasa berubah walaupun BELUM
+// di-commit (git SHA saja tidak cukup: key baru muncul mentah karena URL lama
+// tetap sama dan browser/Vercel memakai respons JSON basi).
 let translationRev = "0";
 try {
-  const revSeed = [
-    fs.statSync(path.resolve(__dirname, "src/i18n/id.json")).mtimeMs.toString(),
-    fs.statSync(path.resolve(__dirname, "src/i18n/en.json")).mtimeMs.toString(),
-    fs.statSync(path.resolve(__dirname, "public/locales/id/translation.json")).mtimeMs.toString(),
-    fs.statSync(path.resolve(__dirname, "public/locales/en/translation.json")).mtimeMs.toString()
-  ].join("|");
+  const revSeed = JSON.stringify({ idLocale, enLocale, idPublicLocale, enPublicLocale });
   translationRev = crypto.createHash("md5").update(revSeed).digest("hex").slice(0, 8);
 } catch {
   /* fallback tetap "0" */

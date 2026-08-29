@@ -1178,7 +1178,7 @@ const DetailProduct = () => {
           <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
             <DialogContent withX className="sm:max-w-4xl p-3">
               <img
-                src={allImages[safeIndex]}
+                src={safeGet(allImages, safeIndex)}
                 alt={product.nameProduct || product.name || ""}
                 className="w-full h-full max-h-[85vh] object-contain rounded-lg"
               />
