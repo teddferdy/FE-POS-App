@@ -75,6 +75,11 @@ axiosInstance.interceptors.request.use(
 );
 
 let sessionExpiredFired = false;
+let logoutInProgress = false;
+
+export const setLogoutInProgress = (v) => {
+  logoutInProgress = !!v;
+};
 
 axiosInstance.interceptors.response.use(
   (res) => res,
@@ -84,7 +89,12 @@ axiosInstance.interceptors.response.use(
         err.config?.url === "/auth/login" ||
         err.config?.url === "/auth/register" ||
         err.config?.url === "/auth/reset-password";
-      if (err.response?.status === 401 && !sessionExpiredFired && !isPublicAuth) {
+      if (
+        err.response?.status === 401 &&
+        !sessionExpiredFired &&
+        !isPublicAuth &&
+        !logoutInProgress
+      ) {
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
         sessionExpiredFired = true;
         window.dispatchEvent(new CustomEvent("auth:session-expired"));

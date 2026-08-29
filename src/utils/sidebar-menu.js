@@ -36,6 +36,7 @@ import {
   Megaphone,
   Clock,
   HandPlatter,
+  AlarmClock,
   // MonitorPlay,
   Landmark
 } from "lucide-react";
@@ -491,6 +492,14 @@ export const sidebarMenuSuperAdmin = [
         href: "/my-shift",
         icon: CalendarDays,
         actions: ["view"]
+      },
+      {
+        title: "Lembur Saya",
+        i18nKey: "sidebar.myOvertime",
+        href: "/my-overtime",
+        icon: AlarmClock,
+        actions: ["view"],
+        activePaths: ["/overtime-approval"]
       }
     ]
   },
@@ -953,6 +962,14 @@ export const sidebarMenuAdmin = [
         href: "/my-shift",
         icon: CalendarDays,
         actions: ["view"]
+      },
+      {
+        title: "Lembur Saya",
+        i18nKey: "sidebar.myOvertime",
+        href: "/my-overtime",
+        icon: AlarmClock,
+        actions: ["view"],
+        activePaths: ["/overtime-approval"]
       }
     ]
   },
@@ -1056,7 +1073,9 @@ const accessMenuSubGroups = {
     "/employee-list": "SDM",
     "/user-list": "SDM",
     "/shift-list": "Shift",
-    "/shift-template-list": "Shift"
+    "/shift-template-list": "Shift",
+    "/my-overtime": "Shift",
+    "/overtime-approval": "Shift"
   },
   "sidebar.section.pengaturan": {
     "/invoice-page": "Struk & Pembayaran",
@@ -1078,6 +1097,13 @@ const accessMenuSubGroups = {
 });
 
 export const sidebarMenuCashier = [
+  {
+    title: "Dashboard",
+    i18nKey: "sidebar.dashboardCashier",
+    href: "/dashboard-user",
+    icon: Crown,
+    actions: ["view"]
+  },
   {
     title: "Cashier",
     i18nKey: "sidebar.cashier",
@@ -1106,7 +1132,7 @@ export const sidebarMenuUser = [
   {
     title: "Dashboard",
     i18nKey: "sidebar.dashboardAdmin",
-    href: "/dashboard-admin",
+    href: "/dashboard-user",
     icon: Crown,
     children: [],
     actions: ["view"]
@@ -1124,6 +1150,14 @@ export const sidebarMenuUser = [
     href: "/my-shift",
     icon: CalendarDays,
     actions: ["view"]
+  },
+  {
+    title: "Lembur Saya",
+    i18nKey: "sidebar.myOvertime",
+    href: "/my-overtime",
+    icon: AlarmClock,
+    actions: ["view"],
+    activePaths: ["/overtime-approval"]
   },
   {
     title: "Laporan",
@@ -1827,6 +1861,12 @@ export const navCategories = {
               i18nKey: "sidebar.myShift",
               href: "/my-shift",
               icon: CalendarDays
+            },
+            {
+              title: "Lembur Saya",
+              i18nKey: "sidebar.myOvertime",
+              href: "/my-overtime",
+              icon: AlarmClock
             }
           ]
         }

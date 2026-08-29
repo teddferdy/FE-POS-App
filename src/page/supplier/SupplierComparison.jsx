@@ -13,10 +13,12 @@ import {
   TrendingUp,
   Scale,
   Filter,
-  Info,
+  Calculator,
   Eye,
   ChevronRight,
   ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
   Store
 } from "lucide-react";
 import { getAllSupplier } from "@/services/supplier";
@@ -25,6 +27,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Combobox } from "@/components/ui/combobox";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableHeader,
@@ -41,7 +45,8 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
-const PER_PAGE = 5;
+const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100];
+const DEFAULT_PAGE_SIZE = 10;
 
 const SupplierComparison = () => {
   const { t } = useTranslation();
@@ -53,6 +58,7 @@ const SupplierComparison = () => {
   const [selectedProduct, setSelectedProduct] = useState("all");
   const [expanded, setExpanded] = useState(new Set());
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
 
   const { data, isLoading } = useQuery(
     ["suppliers-comparison"],
@@ -149,8 +155,9 @@ const SupplierComparison = () => {
     return sorted;
   }, [filteredProducts, sortBy]);
 
-  const totalPages = Math.max(1, Math.ceil(supplierGroups.length / PER_PAGE));
-  const paginatedGroups = supplierGroups.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(supplierGroups.length / limit));
+  const safePage = Math.min(page, totalPages);
+  const paginatedGroups = supplierGroups.slice((safePage - 1) * limit, safePage * limit);
 
   const summary = useMemo(() => {
     if (supplierGroups.length === 0) return null;
@@ -210,54 +217,104 @@ const SupplierComparison = () => {
   };
 
   const renderPagination = () => {
-    if (totalPages <= 1) return null;
-    const pages = [];
-    const start = Math.max(1, page - 2);
-    const end = Math.min(totalPages, page + 2);
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
+    const tp = totalPages;
+    const maxVisible = 5;
+    let start = Math.max(1, safePage - Math.floor(maxVisible / 2));
+    let end = Math.min(tp, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
     }
+    const pageNumbers = [];
+    for (let i = start; i <= end; i++) pageNumbers.push(i);
+    const showStartEllipsis = start > 1;
+    const showEndEllipsis = end < tp;
+    const firstIdx = (safePage - 1) * limit + 1;
+    const lastIdx = Math.min(safePage * limit, supplierGroups.length);
+
     return (
-      <div className="flex items-center justify-center gap-1 py-4">
-        <Button
-          variant="outline"
-          size="icon"
-          disabled={page <= 1}
-          onClick={() => setPage((p) => Math.max(1, p - 1))}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        {start > 1 && (
-          <>
-            <Button variant="outline" size="sm" onClick={() => setPage(1)}>
-              1
-            </Button>
-            {start > 2 && <span className="text-muted-foreground px-1">...</span>}
-          </>
-        )}
-        {pages.map((p) => (
-          <Button
-            key={p}
-            variant={p === page ? "default" : "outline"}
-            size="sm"
-            onClick={() => setPage(p)}>
-            {p}
-          </Button>
-        ))}
-        {end < totalPages && (
-          <>
-            {end < totalPages - 1 && <span className="text-muted-foreground px-1">...</span>}
-            <Button variant="outline" size="sm" onClick={() => setPage(totalPages)}>
-              {totalPages}
-            </Button>
-          </>
-        )}
-        <Button
-          variant="outline"
-          size="icon"
-          disabled={page >= totalPages}
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+      <div className="px-4 py-3 border-t border-border bg-muted/30 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Show</span>
+            <Combobox
+              options={PAGE_SIZES.map((opt) => ({ value: String(opt), label: String(opt) }))}
+              value={String(limit)}
+              onChange={(v) => {
+                setLimit(Number(v));
+                setPage(1);
+              }}
+              placeholder="10"
+              searchPlaceholder="Cari..."
+            />
+            <span>entries</span>
+          </div>
+          <span className="text-sm text-muted-foreground">
+            Menampilkan {firstIdx}-{lastIdx} dari {supplierGroups.length}
+          </span>
+        </div>
+        <div className="flex gap-1">
+          <button
+            onClick={() => setPage(1)}
+            disabled={safePage <= 1}
+            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
+            <ChevronsLeft size={14} />
+          </button>
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={safePage <= 1}
+            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
+            <ChevronLeft size={14} />
+          </button>
+          {showStartEllipsis && (
+            <>
+              <button
+                onClick={() => setPage(1)}
+                className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent transition-colors">
+                1
+              </button>
+              <span className="w-9 h-9 flex items-center justify-center text-muted-foreground text-xs select-none">
+                ...
+              </span>
+            </>
+          )}
+          {pageNumbers.map((pageNum) => (
+            <button
+              key={pageNum}
+              onClick={() => setPage(pageNum)}
+              className={cn(
+                "w-9 h-9 flex items-center justify-center border rounded-lg text-sm font-medium transition-colors",
+                pageNum === safePage
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-muted-foreground hover:bg-accent"
+              )}>
+              {pageNum}
+            </button>
+          ))}
+          {showEndEllipsis && (
+            <>
+              <span className="w-9 h-9 flex items-center justify-center text-muted-foreground text-xs select-none">
+                ...
+              </span>
+              <button
+                onClick={() => setPage(tp)}
+                className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent transition-colors">
+                {tp}
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => setPage((p) => Math.min(tp, p + 1))}
+            disabled={safePage >= tp}
+            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
+            <ChevronRight size={14} />
+          </button>
+          <button
+            onClick={() => setPage(tp)}
+            disabled={safePage >= tp}
+            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
+            <ChevronsRight size={14} />
+          </button>
+        </div>
       </div>
     );
   };
@@ -379,57 +436,76 @@ const SupplierComparison = () => {
       </Card>
 
       {summary && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
-          <Card className="p-3 md:p-4 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
-              <Scale size={14} />
-              <span className="text-xs font-medium">
-                {t("page.supplier.comparison.stats.supplierCount")}
-              </span>
+        <>
+          <Card className="p-4 md:p-5 bg-primary/5 border-primary/20">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <Calculator size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {t("page.supplier.comparison.stats.avgPrice")}
+                </span>
+                <p className="text-2xl md:text-3xl font-bold text-foreground truncate">
+                  {formatIDR(summary.avgPrice)}
+                </p>
+              </div>
+              <div className="flex items-center gap-4 sm:flex-col sm:gap-1.5 sm:items-end text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1 text-green-600">
+                  <TrendingDown size={12} />
+                  {formatIDR(summary.lowestPrice)}
+                </span>
+                <span className="inline-flex items-center gap-1 text-red-600">
+                  <TrendingUp size={12} />
+                  {formatIDR(summary.highestPrice)}
+                </span>
+              </div>
             </div>
-            <p className="text-xl md:text-2xl font-bold">{summary.supplierCount}</p>
           </Card>
-          <Card className="p-3 md:p-4 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
-              <Package size={14} />
-              <span className="text-xs font-medium">
-                {t("page.supplier.comparison.stats.totalProducts")}
-              </span>
-            </div>
-            <p className="text-xl md:text-2xl font-bold">{summary.totalProducts}</p>
-          </Card>
-          <Card className="p-3 md:p-4 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-green-600 mb-1">
-              <TrendingDown size={14} />
-              <span className="text-xs font-medium">
-                {t("page.supplier.comparison.stats.lowestPrice")}
-              </span>
-            </div>
-            <p className="text-xl md:text-2xl font-bold text-green-600">
-              {formatIDR(summary.lowestPrice)}
-            </p>
-          </Card>
-          <Card className="p-3 md:p-4 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-red-600 mb-1">
-              <TrendingUp size={14} />
-              <span className="text-xs font-medium">
-                {t("page.supplier.comparison.stats.highestPrice")}
-              </span>
-            </div>
-            <p className="text-xl md:text-2xl font-bold text-red-600">
-              {formatIDR(summary.highestPrice)}
-            </p>
-          </Card>
-          <Card className="p-3 md:p-4 text-center col-span-2 sm:col-span-1">
-            <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
-              <Info size={14} />
-              <span className="text-xs font-medium">
-                {t("page.supplier.comparison.stats.avgPrice")}
-              </span>
-            </div>
-            <p className="text-xl md:text-2xl font-bold">{formatIDR(summary.avgPrice)}</p>
-          </Card>
-        </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+            <Card className="p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
+                <Scale size={14} />
+                <span className="text-xs font-medium">
+                  {t("page.supplier.comparison.stats.supplierCount")}
+                </span>
+              </div>
+              <p className="text-xl md:text-2xl font-bold">{summary.supplierCount}</p>
+            </Card>
+            <Card className="p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
+                <Package size={14} />
+                <span className="text-xs font-medium">
+                  {t("page.supplier.comparison.stats.totalProducts")}
+                </span>
+              </div>
+              <p className="text-xl md:text-2xl font-bold">{summary.totalProducts}</p>
+            </Card>
+            <Card className="p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-green-600 mb-1">
+                <TrendingDown size={14} />
+                <span className="text-xs font-medium">
+                  {t("page.supplier.comparison.stats.lowestPrice")}
+                </span>
+              </div>
+              <p className="text-xl md:text-2xl font-bold text-green-600">
+                {formatIDR(summary.lowestPrice)}
+              </p>
+            </Card>
+            <Card className="p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-red-600 mb-1">
+                <TrendingUp size={14} />
+                <span className="text-xs font-medium">
+                  {t("page.supplier.comparison.stats.highestPrice")}
+                </span>
+              </div>
+              <p className="text-xl md:text-2xl font-bold text-red-600">
+                {formatIDR(summary.highestPrice)}
+              </p>
+            </Card>
+          </div>
+        </>
       )}
 
       <Card className="overflow-hidden">

@@ -153,17 +153,19 @@ const EditIngredient = () => {
 
   const activeStore = isSuperAdmin ? watchStore : store;
 
+  const allowDropdowns = !!activeStore || !isSuperAdmin || !!ingredientData?.data;
+
   const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
     ["suppliers-dropdown", activeStore],
     () => getAllSupplier({ limit: 999, store: activeStore || undefined, includeProducts: true }),
-    { enabled: !!activeStore || !isSuperAdmin }
+    { enabled: allowDropdowns }
   );
   const suppliers = suppliersData?.data || [];
 
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
     ["ingredient-categories-dropdown", activeStore, watchSupplier],
     () => getAllIngredientCategory(),
-    { enabled: (!!activeStore || !isSuperAdmin) && !!watchSupplier }
+    { enabled: allowDropdowns && !!watchSupplier }
   );
   const categories = categoriesData?.data || [];
 
@@ -182,7 +184,7 @@ const EditIngredient = () => {
         category: watchCategory || undefined,
         supplier: watchSupplier || undefined
       }),
-    { enabled: !!activeStore && !!watchSupplier && !!watchCategory }
+    { enabled: allowDropdowns && !!watchSupplier && !!watchCategory }
   );
 
   const { data: allSupplierProductsData, isLoading: allSupplierProductsLoading } = useQuery(
@@ -192,7 +194,7 @@ const EditIngredient = () => {
         store: activeStore || undefined,
         supplier: watchSupplier || undefined
       }),
-    { enabled: !!activeStore && !!watchSupplier }
+    { enabled: allowDropdowns && !!watchSupplier }
   );
 
   const supplierProductOptions = React.useMemo(() => {
@@ -203,13 +205,16 @@ const EditIngredient = () => {
     });
   }, [productNamesData]);
 
-  const isSupplierDisabled = isSuperAdmin && !watchStore;
-  const isCategoryDisabled = isSuperAdmin ? !watchStore || !watchSupplier : !watchSupplier;
+  const isSupplierDisabled = isSuperAdmin && !watchStore && !ingredientData?.data;
+  const isCategoryDisabled = isSuperAdmin
+    ? (!watchStore || !watchSupplier) && !ingredientData?.data
+    : !watchSupplier;
   const isNameDisabled = !watchCategory;
 
   useEffect(() => {
     const d = ingredientData?.data;
     if (!d) return;
+    hydrateGuard.current = true;
     form.reset({
       name: d.name || "",
       supplier: d.supplier ? String(d.supplier) : null,
@@ -225,26 +230,23 @@ const EditIngredient = () => {
     });
   }, [ingredientData]);
 
-  const isInitialLoad = React.useRef(true);
+  const hydrateGuard = React.useRef(true);
 
   useEffect(() => {
-    if (isInitialLoad.current) {
-      isInitialLoad.current = false;
-      return;
-    }
+    if (hydrateGuard.current) return;
     form.setValue("supplier", null);
     form.setValue("category", null);
     form.setValue("name", "");
   }, [watchStore]);
 
   useEffect(() => {
-    if (isInitialLoad.current) return;
+    if (hydrateGuard.current) return;
     form.setValue("category", null);
     form.setValue("name", "");
   }, [watchSupplier]);
 
   useEffect(() => {
-    if (isInitialLoad.current) return;
+    if (hydrateGuard.current) return;
     form.setValue("name", "");
   }, [watchCategory]);
 
@@ -258,6 +260,10 @@ const EditIngredient = () => {
       form.setValue("conversionFactor", "1");
     }
   }, [watchUnit]);
+
+  useEffect(() => {
+    hydrateGuard.current = false;
+  }, [watchStore, watchSupplier, watchCategory, ingredientData]);
 
   const mutation = useMutation((payload) => editIngredient(id, payload), {
     onSuccess: () => {

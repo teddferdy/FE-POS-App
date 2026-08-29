@@ -161,9 +161,57 @@ const tipsKeys = {
   "/supplier-score-list": ["tips.supplierPerformance", "tips.supplierPerformance2"],
   "/detail-supplier-score": ["tips.supplierPerformance", "tips.supplierPerformance2"],
   "/promo-list": ["tips.promo", "tips.promo2"],
-  "/add-promo-campaign": ["tips.promo", "tips.promo2"],
-  "/edit-promo-campaign": ["tips.promo", "tips.promo2"],
-  "/detail-promo-campaign": ["tips.promo", "tips.promo2"]
+  "/add-promo": ["tips.promo", "tips.promo2"],
+  "/edit-promo": ["tips.promo", "tips.promo2"],
+  "/detail-promo": ["tips.promo", "tips.promo2"],
+
+  "/home": ["tips.cashier", "tips.cashier2", "tips.cashier3"],
+  "/customer-display": ["tips.cashier", "tips.cashier2", "tips.cashier3"],
+  "/customer-display-board": ["tips.cashier", "tips.cashier2", "tips.cashier3"],
+
+  "/product": ["tips.product", "tips.product2", "tips.product3"],
+  "/detail-product": ["tips.product", "tips.product2", "tips.product3"],
+
+  "/add-ingredient": ["tips.ingredient", "tips.ingredient2", "tips.ingredient3"],
+  "/edit-ingredient": ["tips.ingredient", "tips.ingredient2", "tips.ingredient3"],
+  "/detail-ingredient": ["tips.ingredient", "tips.ingredient2", "tips.ingredient3"],
+  "/add-ingredient-category": ["tips.ingredient", "tips.ingredient2", "tips.ingredient3"],
+  "/edit-ingredient-category": ["tips.ingredient", "tips.ingredient2", "tips.ingredient3"],
+  "/detail-ingredient-category": ["tips.ingredient", "tips.ingredient2", "tips.ingredient3"],
+
+  "/goods-request": ["tips.goodsRequest", "tips.goodsRequest2"],
+  "/add-goods-request": ["tips.goodsRequest", "tips.goodsRequest2"],
+  "/edit-goods-request": ["tips.goodsRequest", "tips.goodsRequest2"],
+  "/edit-goods-receipt": ["tips.goodsReceipt", "tips.goodsReceipt2"],
+
+  "/detail-supplier": ["tips.supplier", "tips.supplier2"],
+  "/detail-supplier-category": ["tips.supplier", "tips.supplier2"],
+  "/detail-member": ["tips.member", "tips.member2"],
+  "/member-loyalty": ["tips.member", "tips.member2"],
+  "/member-point-history": ["tips.member", "tips.member2"],
+
+  "/detail-expense": ["tips.expense", "tips.expense2"],
+  "/detail-expense-category": ["tips.expense", "tips.expense2"],
+  "/detail-shift": ["tips.shift", "tips.shift2"],
+  "/detail-shift-template": ["tips.shift", "tips.shift2"],
+  "/shift-template-list": ["tips.shift", "tips.shift2"],
+  "/detail-table": ["tips.table"],
+  "/detail-tax": ["tips.tax", "tips.tax2"],
+  "/detail-type-payment": ["tips.payment", "tips.payment2"],
+  "/edit-purchase-order": ["tips.purchaseOrder", "tips.purchaseOrder2"],
+
+  "/advanced-reporting": ["tips.report", "tips.report2"],
+  "/report/profit-per-product": ["tips.report", "tips.report2"],
+  "/accounting": ["tips.report", "tips.report2"],
+  "/ar-payment": ["tips.accountReceivable", "tips.accountReceivable2"],
+
+  "/audit-log": ["tips.auditLog", "tips.auditLog2"],
+  "/backup": ["tips.backup", "tips.backup2"],
+  "/bundle": ["tips.bundle", "tips.bundle2"],
+  "/stock-forecast": ["tips.stockForecast", "tips.stockForecast2"],
+  "/thermal-printer": ["tips.thermalPrinter", "tips.thermalPrinter2"],
+  "/waiter-request": ["tips.waiter", "tips.waiter2"],
+  "/my-shift": ["tips.myShift", "tips.myShift2"]
 };
 
 const DashboardLayout = () => {

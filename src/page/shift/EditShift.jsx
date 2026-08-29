@@ -78,7 +78,10 @@ const EditShift = () => {
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const shifts = shiftsData?.data || [];
-  const shift = shifts.find((item) => item.id === shiftId || item._id === shiftId) || {};
+  const shift =
+    shifts.find(
+      (item) => String(item.id) === String(shiftId) || String(item._id) === String(shiftId)
+    ) || {};
 
   const form = useForm({
     mode: "onChange",
@@ -178,11 +181,21 @@ const EditShift = () => {
         jam_mulai: shift.jam_mulai || "",
         jam_selesai: shift.jam_selesai || "",
         karyawan:
-          shift.karyawan?.map((k) => (typeof k === "string" ? { id: k, name: k } : k)) || [],
+          shift.karyawan?.map((k) =>
+            typeof k === "object" && k !== null ? k : { id: k, name: undefined }
+          ) || [],
         status: shift.status === 1 || shift.status === true || shift.status === "active"
       });
+
+      const matched = templates.find(
+        (tmpl) =>
+          tmpl.name === (shift.nama_shift || "") &&
+          String(tmpl.startTime).slice(0, 5) === String(shift.jam_mulai || "").slice(0, 5) &&
+          String(tmpl.endTime).slice(0, 5) === String(shift.jam_selesai || "").slice(0, 5)
+      );
+      setSelectedTemplate(matched ? String(matched.id) : "");
     }
-  }, [shift, form, isSuperAdmin]);
+  }, [shift, form, isSuperAdmin, templates]);
 
   const updateMutation = useMutation(editShift, {
     onSuccess: () => {
@@ -508,22 +521,29 @@ const EditShift = () => {
                                   .filter((emp) =>
                                     storeEmps.some((e) => (e.id || e._id) === emp.id)
                                   )
-                                  .map((emp) => (
-                                    <span
-                                      key={emp.id}
-                                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                                      <span className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center text-[8px] font-bold">
-                                        {(emp.name || "?")[0]}
+                                  .map((emp) => {
+                                    const empData = storeEmps.find(
+                                      (e) => (e.id || e._id) === emp.id
+                                    );
+                                    const empName =
+                                      empData?.fullName || empData?.name || emp.name || "";
+                                    return (
+                                      <span
+                                        key={emp.id}
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                                        <span className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center text-[8px] font-bold">
+                                          {(empName || "?")[0]}
+                                        </span>
+                                        {empName}
+                                        <button
+                                          type="button"
+                                          onClick={() => toggleEmployee(emp)}
+                                          className="hover:text-destructive">
+                                          <X size={12} />
+                                        </button>
                                       </span>
-                                      {emp.name}
-                                      <button
-                                        type="button"
-                                        onClick={() => toggleEmployee(emp)}
-                                        className="hover:text-destructive">
-                                        <X size={12} />
-                                      </button>
-                                    </span>
-                                  ))}
+                                    );
+                                  })}
                               </div>
                             )}
                             {isOpen && (

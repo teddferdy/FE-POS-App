@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueries } from "react-query";
+import { useCookies } from "react-cookie";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,7 +14,8 @@ import {
   Store,
   Search,
   Briefcase,
-  AlertTriangle
+  AlertTriangle,
+  Lock
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { addShift, getAllShift } from "@/services/shift";
@@ -35,11 +37,16 @@ import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { SHIFT_TYPES, DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS } from "@/constants/shiftTypes";
+import { safeGet } from "@/lib/safe-lookup";
 
 const AddShift = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isSuperAdmin, user } = useStore();
+  const [cookie] = useCookies();
+  const userStoreId = isSuperAdmin ? null : cookie?.user?.store;
+  const userStoreName = isSuperAdmin ? "" : cookie?.user?.storeName;
 
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -57,7 +64,7 @@ const AddShift = () => {
 
   const formSchema = z.object({
     nama_shift: z.string().min(1, t("page.shift.edit.validation.namaShift")),
-    tipe_shift: z.enum(["harian", "mingguan"]),
+    tipe_shift: z.enum(SHIFT_TYPES),
     store: isSuperAdmin
       ? z.array(z.number()).min(1, t("page.shift.add.validation.store"))
       : z.string().min(1, t("page.shift.add.validation.store")),
@@ -86,8 +93,8 @@ const AddShift = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       nama_shift: "",
-      tipe_shift: "harian",
-      store: isSuperAdmin ? [] : "",
+      tipe_shift: DEFAULT_SHIFT_TYPE,
+      store: isSuperAdmin ? [] : cookie?.user?.store ? String(cookie.user.store) : "",
       jam_mulai: "08:00",
       jam_selesai: "17:00",
       tanggal_mulai: new Date(),
@@ -376,73 +383,38 @@ const AddShift = () => {
                 <FormField
                   control={form.control}
                   name="store"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
                       <FormLabel>
                         Penempatan Toko <span className="text-destructive">*</span>
                       </FormLabel>
-                      {locations.length === 0 ? (
-                        <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                          <Store size={28} className="text-muted-foreground/60" />
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-foreground">Belum ada toko</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              Tambah toko terlebih dahulu
+                      {(() => {
+                        const ownLoc = locations.find(
+                          (l) => String(l.id || l._id) === String(userStoreId)
+                        );
+                        return (
+                          <div className="grid grid-cols-1 gap-3">
+                            <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary bg-primary/5">
+                              <div className="w-9 h-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                                <Store size={18} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-primary truncate">
+                                  {ownLoc?.name || userStoreName || `Toko #${userStoreId}`}
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {ownLoc?.city || ownLoc?.address || ""}
+                                </p>
+                              </div>
+                              <Check size={16} className="text-primary shrink-0" />
+                            </div>
+                            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Lock size={12} className="shrink-0" />
+                              Hanya bisa menambahkan shift untuk toko penempatan kamu.
                             </p>
                           </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate("/add-location")}
-                            className="gap-2">
-                            <span className="material-symbols-outlined text-base">add</span>
-                            Tambah Toko
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {locations.map((loc) => {
-                            const isSelected = field.value === String(loc.id || loc._id);
-                            return (
-                              <button
-                                key={loc.id || loc._id}
-                                type="button"
-                                onClick={() => {
-                                  field.onChange(String(loc.id || loc._id));
-                                  form.setValue("karyawan", []);
-                                  setEmployeeOpenMap({});
-                                }}
-                                className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
-                                  isSelected
-                                    ? "border-primary bg-primary/5 shadow-sm"
-                                    : "border-border bg-background hover:border-primary/50 hover:bg-muted/20"
-                                }`}>
-                                <div
-                                  className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                                    isSelected
-                                      ? "bg-primary text-primary-foreground"
-                                      : "bg-muted text-muted-foreground"
-                                  }`}>
-                                  <Store size={18} />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p
-                                    className={`text-sm font-medium truncate ${isSelected ? "text-primary" : "text-foreground"}`}>
-                                    {loc.name || loc.storeName}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {loc.city || loc.address || ""}
-                                  </p>
-                                </div>
-                                {isSelected && (
-                                  <Check size={16} className="text-primary shrink-0" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
+                        );
+                      })()}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -531,7 +503,7 @@ const AddShift = () => {
                         Tipe Shift <span className="text-destructive">*</span>
                       </FormLabel>
                       <div className="flex gap-2">
-                        {["harian", "mingguan"].map((type) => (
+                        {SHIFT_TYPES.map((type) => (
                           <button
                             key={type}
                             type="button"
@@ -541,7 +513,7 @@ const AddShift = () => {
                                 ? "bg-primary text-primary-foreground border-primary shadow-sm"
                                 : "bg-background text-muted-foreground border-border hover:border-primary/50"
                             }`}>
-                            {type === "harian" ? "Harian" : "Mingguan"}
+                            {safeGet(SHIFT_TYPE_LABELS, type, type)}
                           </button>
                         ))}
                       </div>

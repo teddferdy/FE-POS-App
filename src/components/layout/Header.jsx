@@ -25,7 +25,7 @@ import { translationSelect } from "@/state/translation";
 import { getAllLocation } from "@/services/location";
 import { useSocket } from "@/services/socket";
 import { useQueryClient } from "react-query";
-import { axiosInstance } from "@/services";
+import { axiosInstance, setLogoutInProgress } from "@/services";
 import { getUnreadCount } from "@/services/notification";
 import { useTourStore } from "@/state/tour";
 import { useThemeStore } from "@/state/theme";
@@ -165,6 +165,7 @@ export const UserDropdown = () => {
   const ref = useRef(null);
   const [cookie, , removeCookie] = useCookies();
   const [logoutModal, setLogoutModal] = useState(false);
+  const [logoutSuccessModal, setLogoutSuccessModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const user = cookie?.user;
@@ -191,10 +192,12 @@ export const UserDropdown = () => {
 
   const confirmLogout = async () => {
     setIsLoggingOut(true);
+    setLogoutInProgress(true);
+    let ok = true;
     try {
       await logOut();
     } catch (_e) {
-      /* ignore */
+      ok = false;
     }
     try {
       sessionStorage.removeItem("user");
@@ -205,7 +208,12 @@ export const UserDropdown = () => {
     removeCookie("user");
     removeCookie("activeStore");
     removeCookie("activeStoreName");
-    navigate("/");
+    setIsLoggingOut(false);
+    if (ok) {
+      setLogoutSuccessModal(true);
+    } else {
+      navigate("/");
+    }
   };
 
   const handleLogout = () => setLogoutModal(true);
@@ -370,6 +378,21 @@ export const UserDropdown = () => {
         description={t("header.logoutConfirmDesc")}
         confirmText={t("header.logoutYes")}
         onConfirm={confirmLogout}
+      />
+      <Modal
+        open={logoutSuccessModal}
+        onOpenChange={setLogoutSuccessModal}
+        type="success"
+        title={t("header.logoutSuccessTitle") || "Berhasil Keluar"}
+        description={
+          t("header.logoutSuccessDesc") ||
+          "Kamu berhasil keluar dari akun. Mengalihkan ke halaman login..."
+        }
+        confirmText={t("header.logoutSuccessOk") || "OK"}
+        onConfirm={() => {
+          setLogoutSuccessModal(false);
+          navigate("/");
+        }}
       />
     </>
   );
