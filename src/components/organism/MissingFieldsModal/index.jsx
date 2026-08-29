@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle } from "lucide-react";
 import {
   Dialog,
@@ -10,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 export default function MissingFieldsModal({ open, onOpenChange, fields = [] }) {
+  const { t } = useTranslation();
   const handleClose = () => {
     onOpenChange(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -26,26 +28,36 @@ export default function MissingFieldsModal({ open, onOpenChange, fields = [] }) 
           <div className="mb-4 text-amber-500">
             <AlertTriangle className="w-16 h-16" strokeWidth={1.5} />
           </div>
-          <DialogTitle className="text-xl font-semibold">Field Wajib Kosong</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">{t("missingFields.title")}</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground mt-1">
-            Silakan lengkapi field berikut sebelum menyimpan:
+            {t("missingFields.desc")}
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 max-h-[300px] overflow-y-auto space-y-2">
-          {fields.map((field, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-destructive/5 border border-destructive/10">
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-destructive/10 text-destructive text-xs font-bold shrink-0">
-                {index + 1}
-              </span>
-              <span className="text-sm font-medium text-foreground">{field}</span>
-            </div>
-          ))}
+          {fields.map((field, index) => {
+            const isObject = field && typeof field === "object";
+            const tab = isObject ? field.tab : null;
+            const label = isObject ? field.field : field;
+            return (
+              <div
+                key={index}
+                className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-destructive/10 text-destructive text-xs font-bold shrink-0">
+                  {index + 1}
+                </span>
+                {tab && (
+                  <span className="inline-flex shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                    {tab}
+                  </span>
+                )}
+                <span className="text-sm font-medium text-foreground">{label}</span>
+              </div>
+            );
+          })}
         </div>
         <div className="flex justify-center mt-4">
           <Button onClick={handleClose} className="px-8">
-            OK
+            {t("common.ok")}
           </Button>
         </div>
       </DialogContent>

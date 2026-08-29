@@ -19,6 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { Loading } from "@/components/ui/loading";
 
 const emptyItem = {
@@ -322,6 +324,8 @@ const AddGoodsRequest = () => {
   const [changeStoreModal, setChangeStoreModal] = useState(false);
   const [pendingStoreId, setPendingStoreId] = useState("");
   const [successModal, setSuccessModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
   const goodsRequestSchema = z
     .object({
@@ -366,6 +370,13 @@ const AddGoodsRequest = () => {
         });
       }
     });
+
+  const goodsRequestFieldLabels = {
+    storeId: t("page.goodsRequest.add.form.store"),
+    requestDate: t("page.goodsRequest.add.form.requestDate"),
+    neededDate: t("page.goodsRequest.add.form.neededDate"),
+    groups: t("page.goodsRequest.add.form.items")
+  };
 
   const form = useForm({
     resolver: zodResolver(goodsRequestSchema),
@@ -685,6 +696,16 @@ const AddGoodsRequest = () => {
               className="w-full sm:w-auto justify-center"
               disabled={isSubmitting || allItems.length === 0}
               onClick={async () => {
+                const missing = getMissingFields(
+                  getValues(),
+                  goodsRequestSchema,
+                  goodsRequestFieldLabels
+                );
+                if (missing.length > 0) {
+                  setMissingFieldsList(missing);
+                  setMissingFieldsModal(true);
+                  return;
+                }
                 const ok = await trigger();
                 if (!ok) return;
                 setConfirmModal(true);
@@ -724,6 +745,11 @@ const AddGoodsRequest = () => {
             setConfirmModal(false);
             doSubmit(getValues());
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
         <Modal
           type="confirm"

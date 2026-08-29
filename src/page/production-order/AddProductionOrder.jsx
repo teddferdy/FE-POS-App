@@ -20,6 +20,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { Loading } from "@/components/ui/loading";
 
 const AddProductionOrder = () => {
@@ -34,6 +36,8 @@ const AddProductionOrder = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
   const poSchema = z.object({
     productId: z.string().min(1, t("page.productionOrder.add.validation.productRequired")),
@@ -47,6 +51,11 @@ const AddProductionOrder = () => {
     scheduledDate: z.date().nullable().optional(),
     notes: z.string().optional()
   });
+
+  const poFieldLabels = {
+    productId: t("page.productionOrder.add.labelProduk"),
+    plannedQty: t("page.productionOrder.add.labelJumlahProduksi")
+  };
 
   const form = useForm({
     resolver: zodResolver(poSchema),
@@ -266,7 +275,18 @@ const AddProductionOrder = () => {
                 disabled={isSubmitting}>
                 Save as Draft
               </Button>
-              <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                className="w-full sm:w-auto"
+                disabled={isSubmitting}
+                onClick={(e) => {
+                  const missing = getMissingFields(form.getValues(), poSchema, poFieldLabels);
+                  if (missing.length > 0) {
+                    e.preventDefault();
+                    setMissingFieldsList(missing);
+                    setMissingFieldsModal(true);
+                  }
+                }}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting
                   ? t("page.productionOrder.add.savingButton")
@@ -305,6 +325,11 @@ const AddProductionOrder = () => {
           setDraftModal(false);
           doSubmit(form.getValues(), true);
         }}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
       />
       <Modal
         type="error"

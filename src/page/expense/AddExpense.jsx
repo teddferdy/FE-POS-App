@@ -267,12 +267,15 @@ const AddExpense = () => {
 
   const validateBeforeSave = () => {
     const data = form.getValues();
+    const tabLabel = isMultiMode
+      ? t("page.expense.add.mode.multi")
+      : t("page.expense.add.mode.single");
     if (isMultiMode) {
       const validItems = (data.items || []).filter(
         (it) => it.categoryId || it.description || it.amount
       );
       if (validItems.length === 0) {
-        setMissingFields([t("page.expense.add.multi.empty")]);
+        setMissingFields([{ tab: tabLabel, field: t("page.expense.add.multi.empty") }]);
         setMissingFieldsModal(true);
         return false;
       }
@@ -281,8 +284,8 @@ const AddExpense = () => {
       );
       if (invalidRows.length > 0) {
         setMissingFields([
-          t("page.expense.add.validation.categoryRequired"),
-          t("page.expense.add.validation.amountRequired")
+          { tab: tabLabel, field: t("page.expense.add.validation.categoryRequired") },
+          { tab: tabLabel, field: t("page.expense.add.validation.amountRequired") }
         ]);
         setMissingFieldsModal(true);
         return false;
@@ -291,7 +294,7 @@ const AddExpense = () => {
         form.setError("employeeId", {
           message: t("page.expense.form.salary.employeeRequired")
         });
-        setMissingFields([expenseFieldLabels.employeeId]);
+        setMissingFields([{ tab: tabLabel, field: expenseFieldLabels.employeeId }]);
         setMissingFieldsModal(true);
         return false;
       }
@@ -307,7 +310,7 @@ const AddExpense = () => {
       missing.push(expenseFieldLabels.amount);
     }
     if (missing.length > 0) {
-      setMissingFields([...new Set(missing)]);
+      setMissingFields([...new Set(missing)].map((label) => ({ tab: tabLabel, field: label })));
       setMissingFieldsModal(true);
       return false;
     }

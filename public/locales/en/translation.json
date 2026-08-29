@@ -3467,6 +3467,8 @@
   "common.next": "Next",
   "common.noData": "No Data",
   "common.ok": "Ok",
+  "missingFields.title": "Required Fields Missing",
+  "missingFields.desc": "Please complete the following fields before saving:",
   "common.prev": "Prev",
   "common.default": "Default",
   "common.saveAsDraft": "Save as Draft",

@@ -46,6 +46,8 @@ import {
 } from "@/components/ui/command";
 import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { Loading } from "@/components/ui/loading";
 import { DatePicker } from "@/components/ui/date-picker";
 import PageHeader from "@/components/ui/PageHeader";
@@ -198,6 +200,8 @@ const AddStockOpname = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [noLocationModal, setNoLocationModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
   const stockOpnameSchema = z.object({
     tanggalAudit: z.date({ required_error: t("page.stockOpname.validation.auditDateRequired") }),
@@ -226,6 +230,12 @@ const AddStockOpname = () => {
       )
       .min(1, t("page.stockOpname.validation.minOneProduct"))
   });
+
+  const stockOpnameFieldLabels = {
+    tanggalAudit: t("page.stockOpname.form.auditDate"),
+    auditor: t("page.stockOpname.form.auditor"),
+    items: "Item / Barang"
+  };
 
   const form = useForm({
     resolver: zodResolver(stockOpnameSchema),
@@ -464,6 +474,12 @@ const AddStockOpname = () => {
 
   const handleSaveComplete = async (e) => {
     e.preventDefault();
+    const missing = getMissingFields(getValues(), stockOpnameSchema, stockOpnameFieldLabels);
+    if (missing.length > 0) {
+      setMissingFieldsList(missing);
+      setMissingFieldsModal(true);
+      return;
+    }
     const valid = await trigger();
     if (!valid) return;
     setIsSubmitting(true);
@@ -962,6 +978,12 @@ const AddStockOpname = () => {
         title={t("common.error")}
         description={modalMessage}
         onConfirm={() => setErrorModal(false)}
+      />
+
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
       />
 
       <Modal

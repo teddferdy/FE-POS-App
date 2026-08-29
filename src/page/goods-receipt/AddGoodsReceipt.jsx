@@ -36,6 +36,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { Loading } from "@/components/ui/loading";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import PageHeader from "@/components/ui/PageHeader";
@@ -57,6 +59,8 @@ const AddGoodsReceipt = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [poSearch, setPoSearch] = useState("");
   const [poOpen, setPoOpen] = useState(false);
   const poRef = useRef(null);
@@ -156,6 +160,11 @@ const AddGoodsReceipt = () => {
       )
       .min(1, t("page.goodsReceipt.add.toast.itemRequired"))
   });
+
+  const grFieldLabels = {
+    poId: t("page.goodsReceipt.add.form.purchaseOrder"),
+    items: t("page.goodsReceipt.add.form.items")
+  };
 
   const form = useForm({
     resolver: zodResolver(grSchema),
@@ -1557,6 +1566,12 @@ const AddGoodsReceipt = () => {
                 className="w-full sm:w-auto justify-center"
                 disabled={isSubmitting || items.length === 0}
                 onClick={async () => {
+                  const missing = getMissingFields(getValues(), grSchema, grFieldLabels);
+                  if (missing.length > 0) {
+                    setMissingFieldsList(missing);
+                    setMissingFieldsModal(true);
+                    return;
+                  }
                   const ok = await trigger();
                   if (!ok) return;
                   setConfirmModal(true);
@@ -1609,6 +1624,11 @@ const AddGoodsReceipt = () => {
             setConfirmModal(false);
             doSubmit(getValues(), false);
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
         <Modal
           type="error"

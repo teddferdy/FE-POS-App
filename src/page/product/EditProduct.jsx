@@ -45,6 +45,8 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { getProductById, editProduct, getIngredients } from "@/services/product";
 import { normalizePayload } from "@/lib/payload-normalizer";
 import { getAllCategoryActive } from "@/services/category";
@@ -85,13 +87,13 @@ const EditProduct = () => {
     { value: "porsi", label: t("page.product.form.unit.porsi") }
   ];
 
-  // const productFieldLabels = {
-  //   nameProduct: "Nama Produk",
-  //   category: "Kategori",
-  //   price: "Harga",
-  //   store: "Toko",
-  //   estimationTime: "Estimasi Waktu"
-  // };
+  const productFieldLabels = {
+    nameProduct: t("page.product.form.nameProduct"),
+    category: t("page.product.form.category"),
+    price: t("page.product.form.price"),
+    store: t("page.product.add.storeSection.title"),
+    estimationTime: t("page.product.form.estimationTime")
+  };
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -107,6 +109,8 @@ const EditProduct = () => {
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
   const [variantGroups, setVariantGroups] = useState([]);
   const [modifierItems, setModifierItems] = useState([]);
@@ -2174,10 +2178,17 @@ const EditProduct = () => {
                       <Button
                         type="button"
                         onClick={() => {
-                          if (!allStores && selectedStores.length === 0) {
-                            form.setError("store", {
-                              message: t("page.product.form.selectStoreError")
-                            });
+                          const extraErrors =
+                            !allStores && selectedStores.length === 0 ? [{ name: "store" }] : [];
+                          const missing = getMissingFields(
+                            form.getValues(),
+                            formSchema,
+                            productFieldLabels,
+                            extraErrors
+                          );
+                          if (missing.length > 0) {
+                            setMissingFieldsList(missing);
+                            setMissingFieldsModal(true);
                             return;
                           }
                           form.clearErrors("store");
@@ -2201,6 +2212,12 @@ const EditProduct = () => {
       {savingStoreId && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal type="confirm" {...confirmModal()} />
+
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
+      />
 
       <Modal
         type="error"

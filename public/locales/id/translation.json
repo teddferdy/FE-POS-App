@@ -3407,6 +3407,8 @@
   "common.next": "Next",
   "common.noData": "No Data",
   "common.ok": "Ok",
+  "missingFields.title": "Field Wajib Kosong",
+  "missingFields.desc": "Silakan lengkapi field berikut sebelum menyimpan:",
   "common.prev": "Prev",
   "common.default": "Default",
   "common.saveAsDraft": "Simpan sebagai Draft",

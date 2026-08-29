@@ -1,5 +1,6 @@
 import { safeGet } from "@/lib/safe-lookup";
 import React, { useState, useEffect, useMemo } from "react";
+import { z } from "zod";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -17,6 +18,8 @@ import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { Loading } from "@/components/ui/loading";
 
 const unitOptions = [
@@ -67,6 +70,19 @@ const EditGoodsRequest = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
+
+  const goodsRequestFieldLabels = {
+    neededDate: t("page.goodsRequest.edit.form.neededDate"),
+    items: t("page.goodsRequest.edit.form.items"),
+    supplier: t("page.goodsRequest.edit.table.supplier")
+  };
+
+  const missingFieldsSchema = z.object({
+    neededDate: z.date(),
+    items: z.array(z.any()).min(1)
+  });
 
   const { data, isLoading } = useQuery(["goods-request-edit", id], () => getGoodsRequestById(id), {
     enabled: !!id
@@ -613,7 +629,31 @@ const EditGoodsRequest = () => {
               type="button"
               className="w-full sm:w-auto justify-center"
               disabled={isSubmitting || updateMutation.isLoading || allItems.length === 0}
-              onClick={() => setConfirmModal(true)}>
+              onClick={() => {
+                const validItems = [];
+                for (const g of groups) {
+                  for (const it of g.items) {
+                    if (it.name.trim() && it.qty > 0)
+                      validItems.push({ ...it, supplier: g.supplier });
+                  }
+                }
+                const extraErrors =
+                  validItems.length > 0 && validItems.some((it) => !it.supplier)
+                    ? [{ name: "supplier" }]
+                    : [];
+                const missing = getMissingFields(
+                  { neededDate: neededDate || undefined, items: validItems },
+                  missingFieldsSchema,
+                  goodsRequestFieldLabels,
+                  extraErrors
+                );
+                if (missing.length > 0) {
+                  setMissingFieldsList(missing);
+                  setMissingFieldsModal(true);
+                  return;
+                }
+                setConfirmModal(true);
+              }}>
               <Save size={16} className="mr-1" />{" "}
               {updateMutation.isLoading
                 ? t("page.goodsRequest.edit.form.saving")
@@ -649,6 +689,11 @@ const EditGoodsRequest = () => {
             setConfirmModal(false);
             doSubmit();
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
         <Modal
           type="error"

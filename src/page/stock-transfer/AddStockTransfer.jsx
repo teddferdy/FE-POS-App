@@ -26,6 +26,8 @@ import {
   CommandList
 } from "@/components/ui/command";
 import Modal from "@/components/organism/modal";
+import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import { getMissingFields } from "@/lib/validation";
 import { Loading } from "@/components/ui/loading";
 
 const AddStockTransfer = () => {
@@ -40,6 +42,8 @@ const AddStockTransfer = () => {
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
+  const [missingFieldsModal, setMissingFieldsModal] = useState(false);
+  const [missingFieldsList, setMissingFieldsList] = useState([]);
 
   const transferSchema = z
     .object({
@@ -72,6 +76,12 @@ const AddStockTransfer = () => {
         });
       }
     });
+
+  const transferFieldLabels = {
+    fromStore: t("page.stockTransfer.add.form.fromStore"),
+    toStore: t("page.stockTransfer.add.form.toStore"),
+    items: t("page.stockTransfer.add.form.items")
+  };
 
   const form = useForm({
     resolver: zodResolver(transferSchema),
@@ -457,7 +467,19 @@ const AddStockTransfer = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto justify-center">
+              className="w-full sm:w-auto justify-center"
+              onClick={(e) => {
+                const missing = getMissingFields(
+                  form.getValues(),
+                  transferSchema,
+                  transferFieldLabels
+                );
+                if (missing.length > 0) {
+                  e.preventDefault();
+                  setMissingFieldsList(missing);
+                  setMissingFieldsModal(true);
+                }
+              }}>
               <Save size={16} className="mr-1" />{" "}
               {isSubmitting ? t("page.stockTransfer.add.saving") : t("page.stockTransfer.add.save")}
             </Button>
@@ -477,6 +499,11 @@ const AddStockTransfer = () => {
             setCancelModal(false);
             setTimeout(() => navigate("/stock-transfer"), 150);
           }}
+        />
+        <MissingFieldsModal
+          open={missingFieldsModal}
+          onOpenChange={setMissingFieldsModal}
+          fields={missingFieldsList}
         />
         <Modal
           type="error"
