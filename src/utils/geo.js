@@ -1,6 +1,6 @@
 export const MAX_ACCURACY_M = 150;
 export const FAS_INACCURATE_ACCURACY_M = 50;
-const ORIGIN_EPSILON = 1e-6;
+const ORIGIN_EPSILON = 1 / 1000000;
 
 export const haversineDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371000;

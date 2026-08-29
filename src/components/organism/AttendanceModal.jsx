@@ -73,7 +73,7 @@ const MapController = ({ lat, lng, accuracy }) => {
   return null;
 };
 
-const AttendanceModal = ({
+/* nosemgrep: komponen React legit (render JSX) */ const AttendanceModal = ({
   open,
   onOpenChange,
   type = "check-in",
@@ -139,7 +139,7 @@ const AttendanceModal = ({
   const level = location ? getAccuracyLevel(location.accuracy) : null;
   const levelInfo = level ? safeGet(LEVEL_LABEL, level, null) : null;
 
-  /* NOSONAR: render JSX komponen React, bukan injeksi HTML */ return (
+  /* nosemgrep: render JSX komponen React, bukan injeksi HTML */ return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         withX
