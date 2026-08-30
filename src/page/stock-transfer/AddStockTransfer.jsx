@@ -432,7 +432,7 @@ const AddStockTransfer = () => {
             {errors.items?.message && (
               <p className="text-xs text-destructive">{errors.items.message}</p>
             )}
-            <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1.5">
+            <Button type="button" variant="success" size="sm" onClick={addItem} className="gap-1.5">
               <Plus size={14} /> {t("page.stockTransfer.add.table.addItem")}
             </Button>
           </div>
@@ -449,12 +449,13 @@ const AddStockTransfer = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
             <Button
               type="button"
-              variant="outline"
+              variant="danger"
               onClick={() => setCancelModal(true)}
               className="w-full sm:w-auto justify-center">
               <X size={16} className="mr-1" /> {t("page.stockTransfer.add.cancel")}
             </Button>
             <Button
+              variant="success"
               type="submit"
               disabled={isSubmitting}
               className="w-full sm:w-auto justify-center">

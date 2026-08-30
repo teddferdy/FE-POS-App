@@ -34,7 +34,7 @@ const statusBadge = (status) => {
     cancelled:
       "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
   };
-  return safeGet(map, status, "bg-gray-100 text-gray-800");
+  return safeGet(map, status, "bg-muted text-muted-foreground");
 };
 
 const DeliveryOrderDetail = () => {
@@ -138,7 +138,7 @@ const DeliveryOrderDetail = () => {
     return (
       <div className="text-center py-20">
         <p className="text-muted-foreground">{t("page.delivery.detail.notFound")}</p>
-        <Button variant="outline" className="mt-4" onClick={() => navigate("/delivery-orders")}>
+        <Button variant="danger" className="mt-4" onClick={() => navigate("/delivery-orders")}>
           {t("page.delivery.detail.backToList")}
         </Button>
       </div>
@@ -166,7 +166,7 @@ const DeliveryOrderDetail = () => {
         ]}
         title={`${t("page.delivery.detail.title")} - ${order.orderNumber}`}
         description={order.customerName}>
-        <Button variant="outline" onClick={() => navigate("/delivery-orders")}>
+        <Button variant="danger" onClick={() => navigate("/delivery-orders")}>
           <ArrowLeft size={16} className="mr-1" />
           {t("page.delivery.detail.backToList")}
         </Button>
@@ -369,7 +369,7 @@ const DeliveryOrderDetail = () => {
               )}
               {canUpdateStatus && canAccess(user, MENU_KEY, "edit") && (
                 <Button
-                  variant="outline"
+                  variant="success"
                   className="w-full"
                   onClick={() => setStatusModalOpen(true)}>
                   <CheckCircle size={16} className="mr-1" />

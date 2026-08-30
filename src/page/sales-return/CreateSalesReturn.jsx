@@ -228,7 +228,7 @@ const CreateSalesReturn = () => {
         icon={SearchX}
         title={t("page.salesReturn.create.orderNotFound.title")}
         description={t("page.salesReturn.create.orderNotFound.desc")}>
-        <Button onClick={() => navigate("/sales-return")}>
+        <Button variant="danger" onClick={() => navigate("/sales-return")}>
           <ArrowLeft size={16} className="mr-2" /> {t("page.salesReturn.create.back")}
         </Button>
       </EmptyState>
@@ -250,7 +250,7 @@ const CreateSalesReturn = () => {
         icon={Ban}
         title={t("page.salesReturn.create.orderNotPaid.title")}
         description={t("page.salesReturn.create.orderNotPaid.desc")}>
-        <Button onClick={() => navigate("/sales-return")}>
+        <Button variant="danger" onClick={() => navigate("/sales-return")}>
           <ArrowLeft size={16} className="mr-2" /> {t("page.salesReturn.create.back")}
         </Button>
       </EmptyState>
@@ -306,7 +306,7 @@ const CreateSalesReturn = () => {
                         {item.unit || "pcs"}
                       </p>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => addItem(item)}>
+                    <Button size="sm" variant="success" onClick={() => addItem(item)}>
                       <Plus size={16} className="mr-1" /> {t("page.salesReturn.create.add")}
                     </Button>
                   </div>
@@ -372,7 +372,7 @@ const CreateSalesReturn = () => {
                         </Button>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="destructive"
                           className="text-red-500"
                           onClick={() => removeItem(item.orderItemId)}>
                           <Trash2 size={14} />
@@ -471,6 +471,7 @@ const CreateSalesReturn = () => {
 
           {/* Submit */}
           <Button
+            variant="success"
             onClick={() => setConfirmModal(true)}
             disabled={!canSubmit}
             className="w-full"
@@ -578,7 +579,7 @@ const OrderPicker = ({ isLoading, orders, onSelect }) => {
                   {formatRupiah(o.totalPrice)}
                 </p>
               </div>
-              <Button size="sm" onClick={() => onSelect(o)}>
+              <Button variant="success" size="sm" onClick={() => onSelect(o)}>
                 {t("page.salesReturn.create.selectOrder.select")}
               </Button>
             </div>

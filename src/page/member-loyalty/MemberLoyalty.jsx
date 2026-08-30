@@ -166,6 +166,7 @@ const MemberLoyalty = () => {
             </Select>
           )}
           <Button
+            variant="success"
             onClick={() => updateTiersMutation.mutate()}
             disabled={updateTiersMutation.isLoading}>
             <RefreshCw
@@ -194,7 +195,7 @@ const MemberLoyalty = () => {
                 <CardTitle>Member Tiers</CardTitle>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button variant="success">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Tier
                     </Button>
@@ -459,7 +460,7 @@ const AddTierForm = ({ onSuccess }) => {
           </SelectContent>
         </Select>
       </div>
-      <Button type="submit" disabled={addTier.isLoading}>
+      <Button variant="success" type="submit" disabled={addTier.isLoading}>
         {addTier.isLoading ? "Saving..." : "Add Tier"}
       </Button>
     </form>
@@ -536,7 +537,7 @@ const EditTierForm = ({ tier, onSuccess }) => {
           </SelectContent>
         </Select>
       </div>
-      <Button type="submit" disabled={editTier.isLoading}>
+      <Button variant="success" type="submit" disabled={editTier.isLoading}>
         {editTier.isLoading ? "Saving..." : "Update Tier"}
       </Button>
     </form>

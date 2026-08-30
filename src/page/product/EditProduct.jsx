@@ -726,7 +726,7 @@ const EditProduct = () => {
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <Info size={48} className="opacity-30" />
         <p>{t("page.product.detail.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/product-list")}>
+        <Button variant="danger" onClick={() => navigate("/product-list")}>
           {t("page.product.form.back")}
         </Button>
       </div>
@@ -1240,7 +1240,7 @@ const EditProduct = () => {
                                           </div>
                                           <Button
                                             type="button"
-                                            variant="outline"
+                                            variant="success"
                                             size="sm"
                                             onClick={() => navigate("/tax-list")}
                                             className="gap-2">
@@ -1367,7 +1367,7 @@ const EditProduct = () => {
                                       </div>
                                       <Button
                                         type="button"
-                                        variant="ghost"
+                                        variant="destructive"
                                         size="icon"
                                         className="h-8 w-8 text-destructive shrink-0"
                                         onClick={() =>
@@ -1383,7 +1383,7 @@ const EditProduct = () => {
                                 ))}
                                 <Button
                                   type="button"
-                                  variant="outline"
+                                  variant="success"
                                   size="sm"
                                   className="gap-1"
                                   onClick={addComposition}>
@@ -1661,7 +1661,7 @@ const EditProduct = () => {
                                     <Button
                                       type="button"
                                       size="sm"
-                                      variant="outline"
+                                      variant="success"
                                       disabled={savingStoreId === sp.storeId}
                                       onClick={() => handleSaveStorePrice(sp.storeId, sp.price)}
                                       className="h-9 shrink-0">
@@ -1733,7 +1733,7 @@ const EditProduct = () => {
                                     </div>
                                     <Button
                                       type="button"
-                                      variant="ghost"
+                                      variant="destructive"
                                       size="icon"
                                       className="h-8 w-8 text-destructive shrink-0"
                                       onClick={() =>
@@ -1806,7 +1806,7 @@ const EditProduct = () => {
                                         {group.options.length > 1 && (
                                           <Button
                                             type="button"
-                                            variant="ghost"
+                                            variant="destructive"
                                             size="icon"
                                             className="h-8 w-8 text-destructive shrink-0"
                                             onClick={() =>
@@ -1823,7 +1823,7 @@ const EditProduct = () => {
                                   </div>
                                   <Button
                                     type="button"
-                                    variant="outline"
+                                    variant="success"
                                     size="sm"
                                     onClick={() => addVariantOption(group.id)}
                                     className="gap-1 h-8 text-xs">
@@ -1833,7 +1833,7 @@ const EditProduct = () => {
                               ))}
                               <Button
                                 type="button"
-                                variant="outline"
+                                variant="success"
                                 onClick={addVariantGroup}
                                 className="gap-2">
                                 <Plus size={16} /> {t("page.product.form.addVariantGroup")}
@@ -1914,7 +1914,7 @@ const EditProduct = () => {
                                       </div>
                                       <Button
                                         type="button"
-                                        variant="ghost"
+                                        variant="destructive"
                                         size="icon"
                                         className="h-8 w-8 text-destructive shrink-0"
                                         onClick={() =>
@@ -1931,7 +1931,7 @@ const EditProduct = () => {
                               ))}
                               <Button
                                 type="button"
-                                variant="outline"
+                                variant="success"
                                 onClick={addModifierItem}
                                 className="gap-2">
                                 <Plus size={16} /> {t("page.product.form.addModifier")}
@@ -1987,7 +1987,7 @@ const EditProduct = () => {
                                 </div>
                                 <Button
                                   type="button"
-                                  variant="ghost"
+                                  variant="destructive"
                                   size="icon"
                                   className="h-8 w-8 text-destructive shrink-0"
                                   onClick={() =>
@@ -2000,7 +2000,7 @@ const EditProduct = () => {
                           ))}
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="success"
                             size="sm"
                             className="gap-1"
                             onClick={addPriceTier}>
@@ -2138,7 +2138,7 @@ const EditProduct = () => {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="danger"
                   onClick={() => setCancelModal(true)}
                   className="gap-2 w-full sm:w-auto">
                   <X size={18} /> {t("page.product.form.cancel")}
@@ -2164,7 +2164,7 @@ const EditProduct = () => {
                     <>
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="draft"
                         onClick={() => setDraftModal(true)}
                         disabled={isSubmitting}
                         className="gap-2 shadow-md">
@@ -2172,6 +2172,7 @@ const EditProduct = () => {
                         {t("page.product.form.saveDraft")}
                       </Button>
                       <Button
+                        variant="success"
                         type="button"
                         onClick={() => {
                           if (!allStores && selectedStores.length === 0) {

@@ -46,6 +46,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserDropdown, NotificationBell } from "@/components/layout/Header";
 import { useThemeStore } from "@/state/theme";
+import { useThemeEffect } from "@/hooks/useThemeEffect";
 
 const CashierPage = () => {
   const { t } = useTranslation();
@@ -108,15 +109,8 @@ const CashierPage = () => {
     ? locationList.find((l) => storeIdsEqual(l.id, store))?.name || t("page.cashier.storeName")
     : t("page.cashier.storeName");
   const userName = user?.userName || user?.name || cookie?.name || t("page.cashier.cashierName");
-  const { theme, toggleTheme: toggleThemeStore } = useThemeStore();
-
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [theme]);
+  const { toggleTheme: toggleThemeStore } = useThemeStore();
+  useThemeEffect();
 
   const toggleTheme = () => toggleThemeStore();
 
@@ -606,7 +600,7 @@ const CashierPage = () => {
               <DialogDescription>{t("page.cashier.clearCartDesc")}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setClearCartOpen(false)}>
+              <Button variant="danger" onClick={() => setClearCartOpen(false)}>
                 {t("page.cashier.cancel")}
               </Button>
               <Button

@@ -253,20 +253,24 @@ const AddProductionOrder = () => {
           <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t">
             <Button
               type="button"
-              variant="outline"
+              variant="success"
               className="w-full sm:w-auto"
               onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.productionOrder.add.cancelButton")}
             </Button>
             <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
               <Button
-                variant="outline"
+                variant="draft"
                 className="w-full sm:w-auto"
                 onClick={() => setDraftModal(true)}
                 disabled={isSubmitting}>
                 Save as Draft
               </Button>
-              <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
+              <Button
+                variant="success"
+                type="submit"
+                className="w-full sm:w-auto"
+                disabled={isSubmitting}>
                 <Save size={16} className="mr-1" />{" "}
                 {isSubmitting
                   ? t("page.productionOrder.add.savingButton")

@@ -106,7 +106,7 @@ const DetailIngredientCategory = () => {
         <Button variant="outline" onClick={() => refetch()}>
           {t("common.retry")}
         </Button>
-        <Button variant="ghost" onClick={() => navigate("/ingredient-category")}>
+        <Button variant="danger" onClick={() => navigate("/ingredient-category")}>
           {t("common.back")}
         </Button>
       </div>
@@ -313,7 +313,7 @@ const DetailIngredientCategory = () => {
                     </div>
                     <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
                       <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${st?.bg || "bg-gray-500 text-white"}`}>
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${st?.bg || "bg-primary text-primary-foreground"}`}>
                         {StatusIcon && <StatusIcon size={16} />}
                       </div>
                       <div className="min-w-0">
@@ -440,7 +440,7 @@ const DetailIngredientCategory = () => {
                     Bahan baku yang menggunakan kategori ini akan tampil di sini
                   </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => navigate("/add-ingredient")}>
+                <Button variant="success" size="sm" onClick={() => navigate("/add-ingredient")}>
                   Tambah Bahan Baku
                 </Button>
               </div>

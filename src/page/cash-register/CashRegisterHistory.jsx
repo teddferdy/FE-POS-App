@@ -107,7 +107,7 @@ const CashRegisterHistory = () => {
     },
     closed: {
       label: t("page.cashRegister.history.statusClosed"),
-      class: "bg-gray-100 text-gray-800"
+      class: "bg-muted text-muted-foreground"
     }
   };
 
@@ -213,7 +213,7 @@ const CashRegisterHistory = () => {
           </Button>
           {item.status === "open" && (
             <Button
-              variant="ghost"
+              variant="danger"
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={(e) => {
@@ -332,7 +332,7 @@ const CashRegisterHistory = () => {
                   </>
                 )}
                 <Button
-                  variant="default"
+                  variant="danger"
                   onClick={() => navigate("/cash-register/open-close")}
                   className="shrink-0 gap-2">
                   <Plus size={16} /> {t("page.cashRegister.history.openRegister")}

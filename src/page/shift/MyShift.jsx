@@ -214,12 +214,12 @@ const MyShift = () => {
   const badgeCls = {
     ongoing: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
     upcoming: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    past: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+    past: "bg-muted text-muted-foreground dark:bg-muted/60 dark:text-muted-foreground"
   };
   const dotCls = {
     ongoing: "bg-green-500 animate-pulse",
     upcoming: "bg-blue-500",
-    past: "bg-gray-400"
+    past: "bg-muted-foreground/50"
   };
 
   const statusLabel = (s, cat) => {
@@ -266,7 +266,7 @@ const MyShift = () => {
                     ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                     : hasCheckedIn
                       ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                      : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                      : "bg-muted text-muted-foreground dark:bg-muted/60 dark:text-muted-foreground"
                 }`}>
                 {hasCheckedIn && hasCheckedOut ? (
                   <>
@@ -510,7 +510,7 @@ const MyShift = () => {
                         }
                       : {
                           label: "Dibatalkan",
-                          cls: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+                          cls: "bg-muted text-muted-foreground dark:bg-muted/60 dark:text-muted-foreground",
                           icon: CircleDashed
                         };
               const StatusIcon = statusCfg.icon;
@@ -572,7 +572,7 @@ const MyShift = () => {
                   {s.status === "pending" && (
                     <div className="mt-3 pt-2 border-t border-border/60 flex justify-end">
                       <Button
-                        variant="outline"
+                        variant="danger"
                         size="sm"
                         className="h-8 gap-1.5 text-xs text-red-600 dark:text-red-400 hover:text-red-600 dark:hover:text-red-400"
                         onClick={() => setCancelSwap(s)}>

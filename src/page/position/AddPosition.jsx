@@ -185,7 +185,7 @@ const AddPosition = () => {
                           {departments.length === 0 ? (
                             <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
                               <div className="text-center flex flex-col items-center gap-3">
-                                <div className="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center">
+                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                                   <span
                                     className="material-symbols-outlined text-primary text-[28px]"
                                     style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -201,7 +201,7 @@ const AddPosition = () => {
                               </div>
                               <Button
                                 type="button"
-                                variant="outline"
+                                variant="success"
                                 size="sm"
                                 onClick={() => navigate("/add-department")}
                                 className="gap-2">
@@ -232,7 +232,7 @@ const AddPosition = () => {
                               </div>
                               <Button
                                 type="button"
-                                variant="outline"
+                                variant="success"
                                 size="icon"
                                 className="shrink-0 mt-0.5"
                                 onClick={() => navigate("/add-department")}
@@ -311,10 +311,10 @@ const AddPosition = () => {
                   )}
                 />
 
-                <div className="mt-6 p-4 bg-surface-container-low rounded-xl flex items-start gap-3 border-l-4 border-tertiary">
-                  <span className="material-symbols-outlined text-tertiary shrink-0">info</span>
+                <div className="mt-6 p-4 bg-muted rounded-xl flex items-start gap-3 border-l-4 border-amber-300">
+                  <span className="material-symbols-outlined text-amber-700 shrink-0">info</span>
                   <div>
-                    <h4 className="text-xs font-bold text-tertiary uppercase tracking-wider">
+                    <h4 className="text-xs font-bold text-amber-700 uppercase tracking-wider">
                       {t("page.position.add.securityNote")}
                     </h4>
                     <p className="text-sm text-muted-foreground mt-0.5">
@@ -326,7 +326,7 @@ const AddPosition = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="danger"
                     onClick={() => setCancelModal(true)}
                     className="gap-2 w-full sm:w-auto justify-center">
                     <span className="material-symbols-outlined text-lg">close</span>
@@ -335,13 +335,14 @@ const AddPosition = () => {
                   <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="draft"
                       onClick={() => setDraftModal(true)}
                       disabled={createMutation.isLoading}
                       className="w-full sm:w-auto justify-center">
                       {t("page.position.button.saveDraft")}
                     </Button>
                     <Button
+                      variant="success"
                       type="button"
                       onClick={(e) => {
                         e.preventDefault();

@@ -192,7 +192,7 @@ const AddDepartment = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
               <Button
                 type="button"
-                variant="outline"
+                variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2 w-full sm:w-auto justify-center">
                 <span className="material-symbols-outlined text-lg">close</span>
@@ -201,13 +201,14 @@ const AddDepartment = () => {
               <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="draft"
                   className="w-full sm:w-auto justify-center"
                   onClick={() => setDraftModal(true)}
                   disabled={createMutation.isLoading}>
                   {t("common.saveAsDraft")}
                 </Button>
                 <Button
+                  variant="success"
                   type="button"
                   disabled={createMutation.isLoading}
                   onClick={() => {

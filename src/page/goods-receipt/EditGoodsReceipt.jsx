@@ -796,7 +796,7 @@ const EditGoodsReceipt = () => {
                 {poId && items.length > 0 && (
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="success"
                     size="sm"
                     className="gap-1.5 h-8"
                     onClick={handleReceiveAll}>
@@ -1223,7 +1223,7 @@ const EditGoodsReceipt = () => {
               {grSummary.shortageValue > 0 && poId && (
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="success"
                   size="sm"
                   className="w-full mt-2 gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20"
                   onClick={() => navigate(`/purchase-order/detail?id=${poId}`)}>
@@ -1237,7 +1237,7 @@ const EditGoodsReceipt = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
             <Button
               type="button"
-              variant="outline"
+              variant="danger"
               className="w-full sm:w-auto justify-center"
               onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.goodsReceipt.edit.form.cancel")}
@@ -1245,13 +1245,14 @@ const EditGoodsReceipt = () => {
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
               <Button
                 type="button"
-                variant="outline"
+                variant="draft"
                 className="w-full sm:w-auto justify-center"
                 onClick={() => setDraftModal(true)}
                 disabled={isSubmitting}>
                 {t("common.saveAsDraft")}
               </Button>
               <Button
+                variant="success"
                 type="button"
                 className="w-full sm:w-auto justify-center"
                 disabled={isSubmitting || items.length === 0}

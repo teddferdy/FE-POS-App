@@ -1036,7 +1036,7 @@ const AddProduct = () => {
                                           </div>
                                           <Button
                                             type="button"
-                                            variant="outline"
+                                            variant="success"
                                             size="sm"
                                             onClick={() => navigate("/tax-list")}
                                             className="gap-2">
@@ -1163,7 +1163,7 @@ const AddProduct = () => {
                                       </div>
                                       <Button
                                         type="button"
-                                        variant="ghost"
+                                        variant="destructive"
                                         size="icon"
                                         className="h-8 w-8 text-destructive shrink-0"
                                         onClick={() =>
@@ -1179,7 +1179,7 @@ const AddProduct = () => {
                                 ))}
                                 <Button
                                   type="button"
-                                  variant="outline"
+                                  variant="success"
                                   size="sm"
                                   className="gap-1"
                                   onClick={addComposition}>
@@ -1487,7 +1487,7 @@ const AddProduct = () => {
                                     </div>
                                     <Button
                                       type="button"
-                                      variant="ghost"
+                                      variant="destructive"
                                       size="icon"
                                       className="h-8 w-8 text-destructive shrink-0"
                                       onClick={() =>
@@ -1504,7 +1504,7 @@ const AddProduct = () => {
                               ))}
                               <Button
                                 type="button"
-                                variant="outline"
+                                variant="success"
                                 size="sm"
                                 className="gap-1"
                                 onClick={() =>
@@ -1584,7 +1584,7 @@ const AddProduct = () => {
                                     </div>
                                     <Button
                                       type="button"
-                                      variant="ghost"
+                                      variant="destructive"
                                       size="icon"
                                       className="h-8 w-8 text-destructive shrink-0"
                                       onClick={() =>
@@ -1657,7 +1657,7 @@ const AddProduct = () => {
                                         {group.options.length > 1 && (
                                           <Button
                                             type="button"
-                                            variant="ghost"
+                                            variant="destructive"
                                             size="icon"
                                             className="h-8 w-8 text-muted-foreground shrink-0"
                                             onClick={() =>
@@ -1674,7 +1674,7 @@ const AddProduct = () => {
                                   </div>
                                   <Button
                                     type="button"
-                                    variant="outline"
+                                    variant="success"
                                     size="sm"
                                     className="gap-1 h-8 text-xs"
                                     onClick={() => addVariantOption(group.id)}>
@@ -1684,7 +1684,7 @@ const AddProduct = () => {
                               ))}
                               <Button
                                 type="button"
-                                variant="outline"
+                                variant="success"
                                 size="sm"
                                 className="gap-1"
                                 onClick={addVariantGroup}>
@@ -1755,7 +1755,7 @@ const AddProduct = () => {
                                       </div>
                                       <Button
                                         type="button"
-                                        variant="ghost"
+                                        variant="destructive"
                                         size="icon"
                                         className="h-8 w-8 text-destructive shrink-0"
                                         onClick={() =>
@@ -1771,7 +1771,7 @@ const AddProduct = () => {
                                 ))}
                                 <Button
                                   type="button"
-                                  variant="outline"
+                                  variant="success"
                                   size="sm"
                                   className="gap-1"
                                   onClick={addModifierItem}>
@@ -1829,7 +1829,7 @@ const AddProduct = () => {
                                 </div>
                                 <Button
                                   type="button"
-                                  variant="ghost"
+                                  variant="destructive"
                                   size="icon"
                                   className="h-8 w-8 text-destructive shrink-0"
                                   onClick={() =>
@@ -1842,7 +1842,7 @@ const AddProduct = () => {
                           ))}
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="success"
                             size="sm"
                             className="gap-1"
                             onClick={addPriceTier}>
@@ -1976,7 +1976,7 @@ const AddProduct = () => {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="danger"
                   onClick={() => setCancelModal(true)}
                   className="gap-2 w-full sm:w-auto">
                   <X size={18} />
@@ -1999,7 +1999,7 @@ const AddProduct = () => {
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="draft"
                     onClick={() => setDraftModal(true)}
                     disabled={isSubmitting}
                     className="gap-2">
@@ -2013,6 +2013,7 @@ const AddProduct = () => {
                     </Button>
                   ) : (
                     <Button
+                      variant="success"
                       type="button"
                       onClick={() => {
                         const values = form.getValues();

@@ -124,7 +124,7 @@ const EditPosition = () => {
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">badge</span>
         <p>{t("page.position.edit.idNotFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/position-list")}>
+        <Button variant="danger" onClick={() => navigate("/position-list")}>
           {t("common.cancel")}
         </Button>
       </div>
@@ -174,7 +174,7 @@ const EditPosition = () => {
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">badge</span>
         <p>{t("page.position.edit.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/position-list")}>
+        <Button variant="danger" onClick={() => navigate("/position-list")}>
           {t("common.cancel")}
         </Button>
       </div>
@@ -240,7 +240,7 @@ const EditPosition = () => {
                       {departments.length === 0 ? (
                         <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
                           <div className="text-center flex flex-col items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                               <span
                                 className="material-symbols-outlined text-primary text-[28px]"
                                 style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -256,7 +256,7 @@ const EditPosition = () => {
                           </div>
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="success"
                             size="sm"
                             onClick={() => navigate("/add-department")}
                             className="gap-2">
@@ -287,7 +287,7 @@ const EditPosition = () => {
                           </div>
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="success"
                             size="icon"
                             className="shrink-0 mt-0.5"
                             onClick={() => navigate("/add-department")}
@@ -369,7 +369,7 @@ const EditPosition = () => {
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2">
                 <span className="material-symbols-outlined text-lg">close</span>
@@ -378,12 +378,13 @@ const EditPosition = () => {
               <div className="flex gap-3">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="draft"
                   onClick={() => setDraftModal(true)}
                   disabled={editMutation.isLoading}>
                   {t("page.position.button.saveDraft")}
                 </Button>
                 <Button
+                  variant="success"
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
@@ -407,10 +408,10 @@ const EditPosition = () => {
         </Form>
       </div>
 
-      <div className="mt-6 p-4 bg-surface-container-low rounded-xl flex items-start gap-3 border-l-4 border-tertiary">
-        <span className="material-symbols-outlined text-tertiary shrink-0">info</span>
+      <div className="mt-6 p-4 bg-muted rounded-xl flex items-start gap-3 border-l-4 border-amber-300">
+        <span className="material-symbols-outlined text-amber-700 shrink-0">info</span>
         <div>
-          <h4 className="text-xs font-bold text-tertiary uppercase tracking-wider">
+          <h4 className="text-xs font-bold text-amber-700 uppercase tracking-wider">
             {t("page.position.edit.securityNote")}
           </h4>
           <p className="text-sm text-muted-foreground mt-0.5">

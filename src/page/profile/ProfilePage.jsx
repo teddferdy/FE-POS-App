@@ -32,7 +32,7 @@ const ProfilePage = () => {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <p className="text-muted-foreground">{t("common.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/home")}>
+        <Button variant="danger" onClick={() => navigate("/home")}>
           {t("common.back")}
         </Button>
       </div>

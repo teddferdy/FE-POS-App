@@ -280,7 +280,11 @@ const AuthGuideModal = ({ open, onOpenChange, context = "login" }) => {
                 </Button>
 
                 {isLast ? (
-                  <Button size="sm" onClick={handleClose} className="gap-1 text-xs">
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={handleClose}
+                    className="gap-1 text-xs">
                     {t("translation:guide.auth.close")}
                   </Button>
                 ) : (

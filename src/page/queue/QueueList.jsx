@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
 import TableToolbar from "@/components/ui/TableToolbar";
@@ -47,9 +48,9 @@ const statusBadge = (status) => {
     no_show:
       "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
     expired:
-      "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
+      "bg-muted text-muted-foreground dark:bg-gray-900/30 dark:text-muted-foreground border border-gray-200 dark:border-gray-800"
   };
-  return safeGet(map, status, "bg-gray-100 text-gray-800");
+  return safeGet(map, status, "bg-muted text-muted-foreground");
 };
 
 const priorityBadge = (priority) => {
@@ -60,7 +61,7 @@ const priorityBadge = (priority) => {
     pregnant: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400",
     disabled: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400"
   };
-  return safeGet(map, priority, "bg-gray-100 text-gray-800");
+  return safeGet(map, priority, "bg-muted text-muted-foreground");
 };
 
 const QueueList = () => {
@@ -224,33 +225,32 @@ const QueueList = () => {
       cell: ({ row }) => {
         const item = row.original;
         return (
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => navigate(`/detail-queue?id=${item.id}`)}>
-              <Eye size={14} />
-            </Button>
-            {item.status === "waiting" && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-green-600"
-                  onClick={() => setSeatedTarget(item)}>
-                  <UserCheck size={14} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-red-600"
-                  onClick={() => setCancelTarget(item)}>
-                  <XCircle size={14} />
-                </Button>
-              </>
-            )}
-          </div>
+          <TableActions
+            align="center"
+            visible={2}
+            items={[
+              {
+                label: t("common.view"),
+                icon: Eye,
+                onClick: () => navigate(`/detail-queue?id=${item.id}`)
+              },
+              ...(item.status === "waiting"
+                ? [
+                    {
+                      label: t("common.seat"),
+                      icon: UserCheck,
+                      onClick: () => setSeatedTarget(item)
+                    },
+                    {
+                      label: t("common.cancel"),
+                      icon: XCircle,
+                      danger: true,
+                      onClick: () => setCancelTarget(item)
+                    }
+                  ]
+                : [])
+            ]}
+          />
         );
       }
     }
@@ -274,7 +274,7 @@ const QueueList = () => {
         title={t("page.queue.list.title")}
         description={t("page.queue.list.description")}>
         {canAccess(user, MENU_KEY, "create") && (
-          <Button onClick={() => navigate("/add-queue")}>
+          <Button variant="success" onClick={() => navigate("/add-queue")}>
             <Plus size={16} className="mr-2" />
             {t("page.queue.list.addButton")}
           </Button>

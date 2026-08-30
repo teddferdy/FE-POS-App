@@ -716,7 +716,7 @@ const AddDiscount = () => {
                             <Button
                               type="button"
                               size="sm"
-                              variant="outline"
+                              variant="success"
                               className="gap-1 shrink-0"
                               onClick={() => navigate("/add-product")}>
                               <Plus size={14} />
@@ -1017,7 +1017,7 @@ const AddDiscount = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="danger"
                   onClick={() => setCancelModal(true)}
                   className="gap-2 w-full sm:w-auto justify-center">
                   <X size={18} />
@@ -1026,13 +1026,14 @@ const AddDiscount = () => {
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="draft"
                     className="w-full sm:w-auto justify-center"
                     onClick={() => setDraftModal(true)}
                     disabled={createMutation.isLoading}>
                     {t("page.discount.add.saveAsDraft")}
                   </Button>
                   <Button
+                    variant="success"
                     type="button"
                     onClick={handleTypeClick}
                     disabled={createMutation.isLoading}

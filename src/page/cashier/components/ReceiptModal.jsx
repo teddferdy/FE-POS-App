@@ -519,10 +519,11 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
             </div>
 
             <div className="border-t border-border/50 p-4 shrink-0 flex items-center gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowSplit(false)}>
+              <Button variant="danger" className="flex-1" onClick={() => setShowSplit(false)}>
                 {t("common.cancel")}
               </Button>
               <Button
+                variant="success"
                 className="flex-1"
                 onClick={handleSplitSubmit}
                 loading={splitMutation.isLoading}

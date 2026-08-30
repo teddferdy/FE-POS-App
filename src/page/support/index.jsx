@@ -166,7 +166,7 @@ const Support = () => {
             <div
               data-tour="support-contact-chat"
               className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
                 <MessageCircle size={22} />
               </div>
               <h3 className="font-semibold text-foreground mb-1">{t("page.support.chatTitle")}</h3>

@@ -14,6 +14,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import NoStore from "@/components/ui/NoStore";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import { getAllLocation } from "@/services/location";
 import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
@@ -223,39 +224,38 @@ const SalesReturnList = () => {
         { icon: XCircle, label: t("common.reject") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/sales-return/detail?id=${item.id}`)}>
-            <Eye size={18} />
-          </Button>
-          {item.status === "pending" && canAccess(user, MENU_KEY, "edit") && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-500"
-                onClick={() => {
-                  setActionTarget(item.id);
-                  setActionType("approve");
-                }}>
-                <CheckCircle size={18} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-red-500"
-                onClick={() => {
-                  setActionTarget(item.id);
-                  setActionType("reject");
-                }}>
-                <XCircle size={18} />
-              </Button>
-            </>
-          )}
-        </div>
+        <TableActions
+          align="right"
+          visible={2}
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/sales-return/detail?id=${item.id}`)
+            },
+            ...(item.status === "pending" && canAccess(user, MENU_KEY, "edit")
+              ? [
+                  {
+                    label: t("common.approve"),
+                    icon: CheckCircle,
+                    onClick: () => {
+                      setActionTarget(item.id);
+                      setActionType("approve");
+                    }
+                  },
+                  {
+                    label: t("common.reject"),
+                    icon: XCircle,
+                    danger: true,
+                    onClick: () => {
+                      setActionTarget(item.id);
+                      setActionType("reject");
+                    }
+                  }
+                ]
+              : [])
+          ]}
+        />
       )
     }
   ];
@@ -283,7 +283,10 @@ const SalesReturnList = () => {
               {t("page.salesReturn.list.subtitle")}
             </p>
           </div>
-          <Button onClick={() => navigate("/sales-return/create")} className="w-full md:w-auto">
+          <Button
+            variant="success"
+            onClick={() => navigate("/sales-return/create")}
+            className="w-full md:w-auto">
             {t("page.salesReturn.list.button.create")}
           </Button>
         </div>

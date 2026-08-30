@@ -520,20 +520,21 @@ const EditRole = () => {
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
           <Button
-            variant="outline"
+            variant="danger"
             onClick={() => setCancelModal(true)}
             className="w-full sm:w-auto justify-center">
             {t("common.cancel")}
           </Button>
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
             <Button
-              variant="outline"
+              variant="draft"
               onClick={() => setDraftModal(true)}
               disabled={isSubmitting}
               className="w-full sm:w-auto justify-center">
               {t("common.saveAsDraft")}
             </Button>
             <Button
+              variant="success"
               data-tour="role-save"
               onClick={() => {
                 const missing = getMissingFields(

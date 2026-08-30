@@ -106,7 +106,7 @@ const DetailBom = () => {
       ) : !bom ? (
         <div className="p-6">
           <p className="text-muted-foreground">{t("page.bom.detail.notFound")}</p>
-          <Button variant="outline" onClick={() => navigate("/bom")} className="mt-4">
+          <Button variant="danger" onClick={() => navigate("/bom")} className="mt-4">
             <ArrowLeft size={16} className="mr-1" /> {t("page.bom.detail.back")}
           </Button>
         </div>

@@ -59,7 +59,7 @@ const DetailShiftTemplate = () => {
         <Button variant="outline" onClick={() => refetch()}>
           {t("common.retry")}
         </Button>
-        <Button variant="ghost" onClick={() => navigate("/shift-template-list")}>
+        <Button variant="danger" onClick={() => navigate("/shift-template-list")}>
           {t("common.back")}
         </Button>
       </div>
@@ -89,7 +89,7 @@ const DetailShiftTemplate = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/shift-template-list")}>
+          <Button variant="general" size="icon" onClick={() => navigate("/shift-template-list")}>
             <ArrowLeft size={16} />
           </Button>
           <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -102,7 +102,7 @@ const DetailShiftTemplate = () => {
             </p>
           </div>
         </div>
-        <Button variant="outline" onClick={() => navigate(`/edit-shift-template?id=${id}`)}>
+        <Button variant="general" onClick={() => navigate(`/edit-shift-template?id=${id}`)}>
           <Edit3 size={14} className="mr-1.5" />
           {t("common.edit")}
         </Button>

@@ -131,7 +131,7 @@ const CashRegisterCurrent = () => {
             <Wallet size={16} className="mr-1" /> {t("page.cashRegister.current.historyBtn")}
           </Button>
           {!reg && (
-            <Button onClick={() => navigate("/cash-register/open-close")}>
+            <Button variant="danger" onClick={() => navigate("/cash-register/open-close")}>
               <DollarSign size={16} className="mr-1" /> {t("page.cashRegister.current.openBtn")}
             </Button>
           )}
@@ -142,7 +142,10 @@ const CashRegisterCurrent = () => {
         <div className="bg-card p-6 rounded-xl border border-border text-center">
           <Wallet size={48} className="mx-auto text-muted-foreground/40 mb-3" />
           <p className="text-muted-foreground">{t("page.cashRegister.current.noActiveRegister")}</p>
-          <Button onClick={() => navigate("/cash-register/open-close")} className="mt-4">
+          <Button
+            variant="danger"
+            onClick={() => navigate("/cash-register/open-close")}
+            className="mt-4">
             <DollarSign size={16} className="mr-1" /> {t("page.cashRegister.current.openBtn")}
           </Button>
         </div>

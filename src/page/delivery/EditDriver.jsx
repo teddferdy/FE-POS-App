@@ -134,7 +134,7 @@ const EditDriver = () => {
         description={t("page.delivery.driver.edit.description")}
         backLink="/driver-list"
         onBack={() => setCancelModalOpen(true)}>
-        <Button variant="outline" onClick={() => setCancelModalOpen(true)}>
+        <Button variant="danger" onClick={() => setCancelModalOpen(true)}>
           {t("common.cancel")}
         </Button>
       </PageHeader>
@@ -277,7 +277,7 @@ const EditDriver = () => {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
         <Button
-          variant="outline"
+          variant="danger"
           onClick={() => setCancelModalOpen(true)}
           className="gap-2 w-full sm:w-auto justify-center">
           <X size={18} />
@@ -285,7 +285,7 @@ const EditDriver = () => {
         </Button>
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
           <Button
-            variant="outline"
+            variant="draft"
             onClick={() => {
               form.setValue("status", "draft");
               form.handleSubmit(onSubmit)();
@@ -296,6 +296,7 @@ const EditDriver = () => {
             {t("common.saveDraft")}
           </Button>
           <Button
+            variant="success"
             onClick={() => form.handleSubmit(onSubmit)()}
             disabled={updateMutation?.isLoading}
             className="gap-2 w-full sm:w-auto justify-center">

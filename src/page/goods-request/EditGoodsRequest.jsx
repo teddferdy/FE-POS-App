@@ -366,7 +366,7 @@ const EditGoodsRequest = () => {
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
         <div className="flex items-center gap-3">
           <Button
-            variant="outline"
+            variant="danger"
             size="icon"
             className="h-10 w-10 shrink-0"
             onClick={() => setCancelModal(true)}>
@@ -470,7 +470,7 @@ const EditGoodsRequest = () => {
                   </div>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="destructive"
                     size="icon"
                     className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
                     onClick={() => removeGroup(gIdx)}
@@ -570,7 +570,7 @@ const EditGoodsRequest = () => {
                 <div className="p-3 border-t">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="success"
                     size="sm"
                     onClick={() => addItem(gIdx)}
                     className="gap-1">
@@ -582,7 +582,7 @@ const EditGoodsRequest = () => {
 
             <Button
               type="button"
-              variant="outline"
+              variant="success"
               size="sm"
               onClick={addGroup}
               disabled={suppliersLoading}
@@ -604,12 +604,13 @@ const EditGoodsRequest = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
             <Button
               type="button"
-              variant="outline"
+              variant="danger"
               className="w-full sm:w-auto justify-center"
               onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.goodsRequest.edit.form.cancel")}
             </Button>
             <Button
+              variant="success"
               type="button"
               className="w-full sm:w-auto justify-center"
               disabled={isSubmitting || updateMutation.isLoading || allItems.length === 0}

@@ -29,6 +29,7 @@ import { axiosInstance, setLogoutInProgress } from "@/services";
 import { getUnreadCount } from "@/services/notification";
 import { useTourStore } from "@/state/tour";
 import { useThemeStore } from "@/state/theme";
+import { useThemeEffect } from "@/hooks/useThemeEffect";
 import { logOut } from "@/services/auth";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -399,6 +400,7 @@ export const UserDropdown = () => {
 };
 
 export const NotificationBell = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { newNotification } = useSocket() || {};
   const queryClient = useQueryClient();
@@ -426,6 +428,7 @@ export const NotificationBell = () => {
   return (
     <button
       data-tour="header-notification"
+      aria-label={t("header.notifications")}
       onClick={handleClick}
       className="relative p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
       <Bell size={16} className="sm:size-[18px]" />
@@ -510,16 +513,10 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
   const navigate = useNavigate();
 
   const { startTour } = useTourStore();
-  const { theme, toggleTheme: toggleThemeStore } = useThemeStore();
+  const { toggleTheme: toggleThemeStore } = useThemeStore();
+  useThemeEffect();
   const location = useLocation();
   const isGlobalPage = globalPages.some((p) => location.pathname.startsWith(p));
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [theme]);
 
   const toggleTheme = () => toggleThemeStore();
 
@@ -534,6 +531,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
         {/* Left */}
         <div className="flex items-center gap-3 flex-1">
           <button
+            aria-label={t("header.openMenu")}
             onClick={onMenuToggle}
             className="xl:hidden p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Menu size={20} />
@@ -554,6 +552,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
         <div className="flex items-center gap-1 sm:gap-2">
           {/* Mobile Search */}
           <button
+            aria-label={t("header.search")}
             onClick={onOpenPalette}
             className="md:hidden p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Search size={16} className="sm:size-[18px]" />
@@ -580,6 +579,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
           {/* Theme Toggle — desktop saja; di mobile pindah ke modal profil */}
           <button
             data-tour="header-theme"
+            aria-label={t("header.toggleTheme")}
             onClick={toggleTheme}
             className="hidden md:block p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Sun size={16} className="hidden dark:block sm:size-[18px]" />
@@ -589,6 +589,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
           {/* Tour Guide — desktop saja; di mobile pindah ke modal profil */}
           <button
             data-tour="header-tour"
+            aria-label={t("guide.dashboard.startTour")}
             onClick={() => startTour()}
             className="hidden md:block p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             title={t("guide.dashboard.startTour")}>

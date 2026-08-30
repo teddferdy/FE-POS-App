@@ -73,7 +73,6 @@ const MapController = ({ lat, lng, accuracy }) => {
   return null;
 };
 
-// eslint-disable-next-line -- komponen React: render JSX, bukan injeksi HTML
 const AttendanceModal = ({
   open,
   onOpenChange,
@@ -140,7 +139,6 @@ const AttendanceModal = ({
   const level = location ? getAccuracyLevel(location.accuracy) : null;
   const levelInfo = level ? safeGet(LEVEL_LABEL, level, null) : null;
 
-  // eslint-disable-next-line -- komponen React: render JSX, bukan injeksi HTML
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -220,7 +218,7 @@ const AttendanceModal = ({
                       Waktu absen tidak dicatat saat verifikasi gagal.
                     </p>
                     <div className="flex gap-3 pt-1">
-                      <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                      <Button type="button" variant="danger" onClick={() => onOpenChange(false)}>
                         Batal
                       </Button>
                       <Button type="button" onClick={() => setRunKey((k) => k + 1)}>
@@ -290,7 +288,7 @@ const AttendanceModal = ({
                 </p>
 
                 <div className="mt-auto flex flex-col-reverse sm:flex-row lg:flex-col gap-3 pt-2">
-                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                  <Button type="button" variant="danger" onClick={() => onOpenChange(false)}>
                     Batal
                   </Button>
                   <Button

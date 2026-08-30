@@ -167,8 +167,8 @@ const PromoCampaignDetail = () => {
         label: "Dijeda"
       },
       draft: {
-        bg: "bg-gray-100 text-gray-700 border-gray-200",
-        dot: "bg-gray-500",
+        bg: "bg-muted text-muted-foreground border-border",
+        dot: "bg-muted-foreground/50",
         label: "Draft"
       },
       expired: {
@@ -234,7 +234,7 @@ const PromoCampaignDetail = () => {
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <Megaphone size={48} className="text-muted-foreground/40" />
         <p>{t("page.promo.detail.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/promo-list")}>
+        <Button variant="danger" onClick={() => navigate("/promo-list")}>
           <ArrowLeft size={16} className="mr-1" />
           Kembali
         </Button>

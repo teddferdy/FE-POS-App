@@ -293,7 +293,7 @@ const CustomerOrderManagement = () => {
                               </span>
                               <Badge
                                 variant="secondary"
-                                className="text-[10px] bg-gray-100 dark:bg-gray-800">
+                                className="text-[10px] bg-muted dark:bg-muted">
                                 <Clock size={10} className="mr-1" />
                                 {new Date(order.createdAt).toLocaleString("id-ID", {
                                   hour: "2-digit",
@@ -305,7 +305,7 @@ const CustomerOrderManagement = () => {
                             </div>
                             <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground flex-wrap">
                               {order.customerName && (
-                                <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
+                                <span className="flex items-center gap-1 bg-muted dark:bg-muted px-2 py-1 rounded-lg">
                                   <User size={12} className="text-primary" />
                                   <span className="font-medium text-foreground">
                                     {order.customerName}
@@ -313,7 +313,7 @@ const CustomerOrderManagement = () => {
                                 </span>
                               )}
                               {order.cashierName && (
-                                <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
+                                <span className="flex items-center gap-1 bg-muted dark:bg-muted px-2 py-1 rounded-lg">
                                   <Receipt size={12} className="text-primary" />
                                   <span>
                                     {t("page.customerOrder.cashier")}: {order.cashierName}
@@ -321,13 +321,13 @@ const CustomerOrderManagement = () => {
                                 </span>
                               )}
                               {order.customerPhone && (
-                                <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
+                                <span className="flex items-center gap-1 bg-muted dark:bg-muted px-2 py-1 rounded-lg">
                                   <span className="text-xs">📱</span>
                                   <span>{order.customerPhone}</span>
                                 </span>
                               )}
                               {(order.table || order.tableId) && (
-                                <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
+                                <span className="flex items-center gap-1 bg-muted dark:bg-muted px-2 py-1 rounded-lg">
                                   <Store size={12} className="text-primary" />
                                   {t("page.customerOrder.table")}{" "}
                                   {order.table?.name || order.table?.tableNumber || order.tableId}
@@ -361,7 +361,7 @@ const CustomerOrderManagement = () => {
                             {order.items?.map((item) => (
                               <div
                                 key={item.id}
-                                className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                                className="bg-muted dark:bg-muted p-3 rounded-xl border border-border dark:border-border">
                                 <div className="flex items-start justify-between gap-3">
                                   <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
                                     <span className="font-bold text-primary shrink-0">
@@ -403,14 +403,14 @@ const CustomerOrderManagement = () => {
                       <div className="flex flex-col gap-3 w-full lg:w-48 lg:items-end shrink-0">
                         <div className="flex flex-col gap-1 w-full lg:w-auto">
                           <div className="flex items-center gap-2 text-xs text-muted-foreground justify-between lg:justify-end">
-                            <span className="text-gray-400">
+                            <span className="text-muted-foreground">
                               {t("page.customerOrder.subtotal")}:
                             </span>
                             <span>Rp{Number(order.subTotal).toLocaleString("id-ID")}</span>
                           </div>
                           {order.discountAmount > 0 && (
                             <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 justify-between lg:justify-end">
-                              <span className="text-gray-400">
+                              <span className="text-muted-foreground">
                                 {t("page.customerOrder.discount")}:
                               </span>
                               <span>-Rp{Number(order.discountAmount).toLocaleString("id-ID")}</span>
@@ -418,7 +418,7 @@ const CustomerOrderManagement = () => {
                           )}
                           {order.taxAmount > 0 && (
                             <div className="flex items-center gap-2 text-xs text-muted-foreground justify-between lg:justify-end">
-                              <span className="text-gray-400">
+                              <span className="text-muted-foreground">
                                 {t("page.customerOrder.taxRate", { rate: order.taxRate || 0 })}:
                               </span>
                               <span>Rp{Number(order.taxAmount).toLocaleString("id-ID")}</span>
@@ -426,7 +426,7 @@ const CustomerOrderManagement = () => {
                           )}
                           {order.serviceChargeAmount > 0 && (
                             <div className="flex items-center gap-2 text-xs text-muted-foreground justify-between lg:justify-end">
-                              <span className="text-gray-400">
+                              <span className="text-muted-foreground">
                                 {t("page.customerOrder.service")}:
                               </span>
                               <span>
@@ -499,7 +499,7 @@ const CustomerOrderManagement = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-foreground">{modalOrder.orderNumber}</span>
-                <Badge variant="secondary" className="text-[10px] bg-gray-100 dark:bg-gray-800">
+                <Badge variant="secondary" className="text-[10px] bg-muted dark:bg-muted">
                   <Clock size={10} className="mr-1" />
                   {new Date(modalOrder.createdAt).toLocaleString("id-ID", {
                     hour: "2-digit",
@@ -512,13 +512,13 @@ const CustomerOrderManagement = () => {
 
               <div className="flex items-center gap-2 flex-wrap text-xs">
                 {modalOrder.customerName && (
-                  <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
+                  <span className="flex items-center gap-1 bg-muted dark:bg-muted px-2 py-1 rounded-lg">
                     <User size={12} className="text-primary" />
                     <span className="font-medium text-foreground">{modalOrder.customerName}</span>
                   </span>
                 )}
                 {modalOrder.cashierName && (
-                  <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
+                  <span className="flex items-center gap-1 bg-muted dark:bg-muted px-2 py-1 rounded-lg">
                     <Receipt size={12} className="text-primary" />
                     <span>
                       {t("page.customerOrder.cashier")}: {modalOrder.cashierName}
@@ -526,13 +526,13 @@ const CustomerOrderManagement = () => {
                   </span>
                 )}
                 {modalOrder.customerPhone && (
-                  <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
+                  <span className="flex items-center gap-1 bg-muted dark:bg-muted px-2 py-1 rounded-lg">
                     <span className="text-xs">📱</span>
                     <span>{modalOrder.customerPhone}</span>
                   </span>
                 )}
                 {(modalOrder.table || modalOrder.tableId) && (
-                  <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
+                  <span className="flex items-center gap-1 bg-muted dark:bg-muted px-2 py-1 rounded-lg">
                     <Store size={12} className="text-primary" />
                     {t("page.customerOrder.table")}{" "}
                     {modalOrder.table?.name || modalOrder.table?.tableNumber || modalOrder.tableId}
@@ -556,7 +556,7 @@ const CustomerOrderManagement = () => {
                   {modalOrder.items?.map((item) => (
                     <div
                       key={item.id}
-                      className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                      className="bg-muted dark:bg-muted p-3 rounded-xl border border-border dark:border-border">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
                           <span className="font-bold text-primary shrink-0">{item.quantity}x</span>
@@ -597,18 +597,20 @@ const CustomerOrderManagement = () => {
 
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="text-gray-400">{t("page.customerOrder.subtotal")}:</span>
+                  <span className="text-muted-foreground">{t("page.customerOrder.subtotal")}:</span>
                   <span>Rp{Number(modalOrder.subTotal).toLocaleString("id-ID")}</span>
                 </div>
                 {modalOrder.discountAmount > 0 && (
                   <div className="flex items-center justify-between text-xs text-green-600 dark:text-green-400">
-                    <span className="text-gray-400">{t("page.customerOrder.discount")}:</span>
+                    <span className="text-muted-foreground">
+                      {t("page.customerOrder.discount")}:
+                    </span>
                     <span>-Rp{Number(modalOrder.discountAmount).toLocaleString("id-ID")}</span>
                   </div>
                 )}
                 {modalOrder.taxAmount > 0 && (
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="text-gray-400">
+                    <span className="text-muted-foreground">
                       {t("page.customerOrder.taxRate", { rate: modalOrder.taxRate || 0 })}:
                     </span>
                     <span>Rp{Number(modalOrder.taxAmount).toLocaleString("id-ID")}</span>
@@ -616,7 +618,9 @@ const CustomerOrderManagement = () => {
                 )}
                 {modalOrder.serviceChargeAmount > 0 && (
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="text-gray-400">{t("page.customerOrder.service")}:</span>
+                    <span className="text-muted-foreground">
+                      {t("page.customerOrder.service")}:
+                    </span>
                     <span>Rp{Number(modalOrder.serviceChargeAmount).toLocaleString("id-ID")}</span>
                   </div>
                 )}
@@ -633,7 +637,7 @@ const CustomerOrderManagement = () => {
 
           <DialogFooter className="gap-2">
             <Button
-              variant="outline"
+              variant="danger"
               onClick={() => setModalOrder(null)}
               className="flex-1 sm:flex-none">
               {t("common.cancel")}

@@ -31,6 +31,7 @@ import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
+import TableActions from "@/components/ui/TableActions";
 
 const LocationList = () => {
   const { t } = useTranslation();
@@ -295,47 +296,38 @@ const LocationList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (loc) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/detail-location?id=${loc.id || loc._id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {loc.status === "active" && canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              title={t("page.location.setTarget") || "Set Target"}
-              onClick={() =>
-                setTargetModal({ open: true, location: loc, value: loc.dailyTarget || 0 })
-              }>
-              <Target size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/edit-location?id=${loc.id || loc._id}`)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => handleDelete(loc.id || loc._id)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          visible={2}
+          align="center"
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/detail-location?id=${loc.id || loc._id}`),
+              hidden: !canAccess(user, MENU_KEY, "view")
+            },
+            {
+              label: t("page.location.setTarget") || "Set Target",
+              icon: Target,
+              onClick: () =>
+                setTargetModal({ open: true, location: loc, value: loc.dailyTarget || 0 }),
+              hidden: !canAccess(user, MENU_KEY, "edit") || loc.status !== "active"
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => navigate(`/edit-location?id=${loc.id || loc._id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => handleDelete(loc.id || loc._id),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -357,6 +349,7 @@ const LocationList = () => {
             description={t("page.location.list.description")}>
             {canAccess(user, MENU_KEY, "add") && (
               <Button
+                variant="success"
                 data-tour="location-add"
                 onClick={() => navigate("/add-location")}
                 className="shrink-0">

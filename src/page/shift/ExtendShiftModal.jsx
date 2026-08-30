@@ -415,10 +415,15 @@ const ExtendShiftModal = ({ open, onOpenChange, shift, locationName, onSave, isS
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="danger" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
-          <Button type="button" onClick={handleSave} disabled={isSaving} className="gap-2">
+          <Button
+            variant="success"
+            type="button"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="gap-2">
             {isSaving ? (
               <>
                 <RefreshCcw size={14} className="animate-spin" />

@@ -183,7 +183,7 @@ const DetailRole = () => {
       <div className="text-center py-16">
         <Shield size={48} className="mx-auto mb-4 text-muted-foreground/40" />
         <p className="text-muted-foreground">{t("page.role.detail.notFound")}</p>
-        <Button onClick={() => navigate("/role-management")} className="mt-4">
+        <Button variant="danger" onClick={() => navigate("/role-management")} className="mt-4">
           {t("common.back")}
         </Button>
       </div>
@@ -257,7 +257,7 @@ const DetailRole = () => {
                             ? "bg-blue-100 text-blue-700"
                             : role.roleType === "kasir"
                               ? "bg-purple-100 text-purple-700"
-                              : "bg-gray-100 text-gray-700"
+                              : "bg-muted text-muted-foreground"
                       }`}>
                       {role.roleType}
                     </span>

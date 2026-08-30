@@ -24,6 +24,7 @@ import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
+import TableActions from "@/components/ui/TableActions";
 
 const defaultLevel = {
   bg: "bg-muted/30 text-muted-foreground border border-border",
@@ -322,50 +323,36 @@ const MemberList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (member) => (
-        <div className="flex items-center justify-end gap-1">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/detail-member?id=${member.id || member._id}`);
-            }}
-            className="p-1.5 text-muted-foreground hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all"
-            title={t("page.member.list.detailTitle")}>
-            <span className="material-symbols-outlined text-lg">visibility</span>
-          </button>
-          {canAccess(user, MENU_KEY, "edit") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/edit-member?id=${member.id || member._id}`);
-              }}
-              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-              title={t("page.member.list.editTitle")}>
-              <span className="material-symbols-outlined text-lg">edit</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/member-point-history?id=${member.id || member._id}`);
-              }}
-              className="p-1.5 text-muted-foreground hover:text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
-              title={t("page.member.list.managePoints")}>
-              <span className="material-symbols-outlined text-lg">account_balance_wallet</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(member);
-              }}
-              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-              title={t("page.member.list.deleteTitle")}>
-              <span className="material-symbols-outlined text-lg">delete</span>
-            </button>
-          )}
-        </div>
+        <TableActions
+          visible={2}
+          align="center"
+          items={[
+            {
+              label: t("page.member.list.detailTitle"),
+              iconName: "visibility",
+              onClick: () => navigate(`/detail-member?id=${member.id || member._id}`)
+            },
+            {
+              label: t("page.member.list.editTitle"),
+              iconName: "edit",
+              onClick: () => navigate(`/edit-member?id=${member.id || member._id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("page.member.list.managePoints"),
+              iconName: "account_balance_wallet",
+              onClick: () => navigate(`/member-point-history?id=${member.id || member._id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("page.member.list.deleteTitle"),
+              iconName: "delete",
+              danger: true,
+              onClick: () => handleDelete(member),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -394,6 +381,7 @@ const MemberList = () => {
           </div>
           {canAccess(user, MENU_KEY, "add") && (
             <Button
+              variant="success"
               data-tour="member-add"
               onClick={() => navigate("/add-member")}
               className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">

@@ -271,7 +271,7 @@ const AddIngredient = () => {
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <Button
-              variant="outline"
+              variant="danger"
               size="icon"
               className="h-10 w-10 shrink-0 mt-0.5"
               onClick={() => setCancelModal(true)}>
@@ -870,7 +870,7 @@ const AddIngredient = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-6 mt-6 border-t">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="danger"
                     onClick={() => setCancelModal(true)}
                     className="w-full sm:w-auto justify-center">
                     <X size={16} className="mr-1" /> {t("page.ingredient.form.cancelButton")}
@@ -878,13 +878,14 @@ const AddIngredient = () => {
                   <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="draft"
                       onClick={() => setDraftModal(true)}
                       disabled={mutation.isLoading}
                       className="w-full sm:w-auto justify-center">
                       {t("common.saveAsDraft")}
                     </Button>
                     <Button
+                      variant="success"
                       type="button"
                       onClick={(e) => {
                         e.preventDefault();

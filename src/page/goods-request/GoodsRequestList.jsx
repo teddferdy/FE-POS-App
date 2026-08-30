@@ -39,6 +39,7 @@ import Modal from "@/components/organism/modal";
 import { Combobox } from "@/components/ui/combobox";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
+import TableActions from "@/components/ui/TableActions";
 import { cn } from "@/lib/utils";
 
 const statusMap = {
@@ -249,107 +250,84 @@ const GoodsRequestList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/goods-request/detail?id=${item.id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {item.status === "pending" && (
-            <>
-              {canAccess(user, MENU_KEY, "update") && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-green-600"
-                  onClick={() => setApproveTarget(item.id)}
-                  title={t("page.goodsRequest.list.approve")}>
-                  <Check size={18} />
-                </Button>
-              )}
-              {canAccess(user, MENU_KEY, "delete") && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-red-600"
-                  onClick={() => setRejectTarget(item.id)}
-                  title={t("page.goodsRequest.list.reject")}>
-                  <Ban size={18} />
-                </Button>
-              )}
-              {canAccess(user, MENU_KEY, "update") && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-blue-600"
-                  onClick={() => navigate(`/edit-goods-request?id=${item.id}`)}
-                  title={t("page.goodsRequest.list.editTitle")}>
-                  <Edit size={18} />
-                </Button>
-              )}
-              {canAccess(user, MENU_KEY, "delete") && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive"
-                  onClick={() => setDeleteTarget(item.id)}>
-                  <Trash2 size={18} />
-                </Button>
-              )}
-            </>
-          )}
-          {item.status === "approved" && (
-            <>
-              {canAccess(user, MENU_KEY, "update") && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive"
-                  onClick={() => setCancelTarget(item.id)}
-                  title={t("page.goodsRequest.list.cancel")}>
-                  <CircleOff size={18} />
-                </Button>
-              )}
-              {item.purchaseOrderData && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-blue-600"
-                  onClick={() => navigate(`/purchase-order/detail?id=${item.purchaseOrderData.id}`)}
-                  title={t("page.goodsRequest.list.viewPO")}>
-                  <ShoppingCart size={18} />
-                </Button>
-              )}
-            </>
-          )}
-          {item.status === "cancelled" && (
-            <>
-              {canAccess(user, MENU_KEY, "update") && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-blue-600"
-                  onClick={() => navigate(`/edit-goods-request?id=${item.id}`)}
-                  title={t("page.goodsRequest.list.editTitle")}>
-                  <Edit size={18} />
-                </Button>
-              )}
-              {canAccess(user, MENU_KEY, "delete") && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive"
-                  onClick={() => setDeleteTarget(item.id)}>
-                  <Trash2 size={18} />
-                </Button>
-              )}
-            </>
-          )}
-        </div>
+        <TableActions
+          visible={2}
+          align="right"
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/goods-request/detail?id=${item.id}`),
+              hidden: !canAccess(user, MENU_KEY, "view")
+            },
+            ...(item.status === "pending"
+              ? [
+                  {
+                    label: t("page.goodsRequest.list.approve"),
+                    icon: Check,
+                    onClick: () => setApproveTarget(item.id),
+                    hidden: !canAccess(user, MENU_KEY, "update")
+                  },
+                  {
+                    label: t("page.goodsRequest.list.reject"),
+                    icon: Ban,
+                    onClick: () => setRejectTarget(item.id),
+                    hidden: !canAccess(user, MENU_KEY, "delete")
+                  },
+                  {
+                    label: t("page.goodsRequest.list.editTitle"),
+                    icon: Edit,
+                    onClick: () => navigate(`/edit-goods-request?id=${item.id}`),
+                    hidden: !canAccess(user, MENU_KEY, "update")
+                  },
+                  {
+                    label: t("common.delete"),
+                    icon: Trash2,
+                    danger: true,
+                    onClick: () => setDeleteTarget(item.id),
+                    hidden: !canAccess(user, MENU_KEY, "delete")
+                  }
+                ]
+              : []),
+            ...(item.status === "approved"
+              ? [
+                  {
+                    label: t("page.goodsRequest.list.cancel"),
+                    icon: CircleOff,
+                    onClick: () => setCancelTarget(item.id),
+                    hidden: !canAccess(user, MENU_KEY, "update")
+                  },
+                  ...(item.purchaseOrderData
+                    ? [
+                        {
+                          label: t("page.goodsRequest.list.viewPO"),
+                          icon: ShoppingCart,
+                          onClick: () =>
+                            navigate(`/purchase-order/detail?id=${item.purchaseOrderData.id}`)
+                        }
+                      ]
+                    : [])
+                ]
+              : []),
+            ...(item.status === "cancelled"
+              ? [
+                  {
+                    label: t("page.goodsRequest.list.editTitle"),
+                    icon: Edit,
+                    onClick: () => navigate(`/edit-goods-request?id=${item.id}`),
+                    hidden: !canAccess(user, MENU_KEY, "update")
+                  },
+                  {
+                    label: t("common.delete"),
+                    icon: Trash2,
+                    danger: true,
+                    onClick: () => setDeleteTarget(item.id),
+                    hidden: !canAccess(user, MENU_KEY, "delete")
+                  }
+                ]
+              : [])
+          ]}
+        />
       )
     }
   ];
@@ -511,7 +489,10 @@ const GoodsRequestList = () => {
             </Button>
           )}
           {canAccess(user, MENU_KEY, "add") && (
-            <Button onClick={() => navigate("/add-goods-request")} className="shrink-0 gap-2">
+            <Button
+              variant="success"
+              onClick={() => navigate("/add-goods-request")}
+              className="shrink-0 gap-2">
               <Plus size={16} /> {t("page.goodsRequest.list.addButton")}
             </Button>
           )}

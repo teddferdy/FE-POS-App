@@ -5,11 +5,22 @@
     <link rel="icon" href="/mini-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="Bisa Nota - Demo" content="Bisa Nota - Demo" />
     <link rel="apple-touch-icon" href="/mini-logo.png" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script>
+      // Terapkan tema tersimpan SEBELUM React mount agar tidak ada flash (FOUC).
+      // Baca dari localStorage yang sama dengan zustand persist "app-theme".
+      try {
+        var _t = JSON.parse(localStorage.getItem("app-theme") || "{}");
+        if (_t.state && _t.state.theme === "dark") {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) {}
+    </script>
     <!-- ponytail: Inter kini self-host via @fontsource; ikon material tak dipakai halaman
          login — CSS-nya async agar tidak memblok LCP -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" media="print" onload="this.media='all'">

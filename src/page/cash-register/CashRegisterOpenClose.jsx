@@ -262,12 +262,13 @@ const CashRegisterOpenClose = () => {
                 </div>
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
                   <Button
-                    variant="outline"
+                    variant="danger"
                     onClick={() => navigate("/dashboard-super-admin")}
                     className="w-full sm:w-auto gap-1.5">
                     <X size={16} /> {t("page.cashRegister.openClose.cancel")}
                   </Button>
                   <Button
+                    variant="danger"
                     onClick={() => {
                       if (selectedStoreIsOpen) {
                         toast.error(t("page.cashRegister.openClose.fail"), {

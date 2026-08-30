@@ -295,7 +295,7 @@ const GoodsRequestGroup = ({
       <div className="p-3 border-t">
         <Button
           type="button"
-          variant="outline"
+          variant="success"
           size="sm"
           onClick={() => append({ ...emptyItem })}
           className="gap-1">
@@ -507,7 +507,7 @@ const AddGoodsRequest = () => {
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
         <div className="flex items-center gap-3">
           <Button
-            variant="outline"
+            variant="danger"
             size="icon"
             className="h-10 w-10 shrink-0"
             onClick={() => setCancelModal(true)}>
@@ -654,7 +654,7 @@ const AddGoodsRequest = () => {
 
             <Button
               type="button"
-              variant="outline"
+              variant="success"
               size="sm"
               onClick={() => appendGroup(emptyGroup())}
               disabled={!storeId || suppliersLoading}
@@ -675,12 +675,13 @@ const AddGoodsRequest = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
             <Button
               type="button"
-              variant="outline"
+              variant="danger"
               className="w-full sm:w-auto justify-center"
               onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.goodsRequest.add.form.cancel")}
             </Button>
             <Button
+              variant="success"
               type="button"
               className="w-full sm:w-auto justify-center"
               disabled={isSubmitting || allItems.length === 0}

@@ -683,7 +683,7 @@ const EditPurchaseOrder = () => {
                         </div>
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="success"
                           size="sm"
                           onClick={() => navigate("/add-employee")}
                           className="gap-2">
@@ -1014,7 +1014,7 @@ const EditPurchaseOrder = () => {
                         </div>
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="destructive"
                           size="icon"
                           className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
                           onClick={() => handleRemoveGroupClick(gIdx)}
@@ -1190,7 +1190,7 @@ const EditPurchaseOrder = () => {
                           <div className="p-3 border-t">
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="success"
                               size="sm"
                               onClick={() => addItem(gIdx)}
                               disabled={!!goodsRequestData}
@@ -1205,7 +1205,7 @@ const EditPurchaseOrder = () => {
 
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="success"
                     size="sm"
                     onClick={addGroup}
                     disabled={!selectedStore || suppliersLoading || !!goodsRequestData}
@@ -1313,7 +1313,7 @@ const EditPurchaseOrder = () => {
             <div className="sticky bottom-4 flex flex-wrap justify-between items-center gap-3 bg-card border border-border/60 shadow-lg rounded-xl p-4 backdrop-blur-sm">
               <Button
                 type="button"
-                variant="outline"
+                variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2 flex-1 sm:flex-none">
                 <X size={18} />
@@ -1335,13 +1335,14 @@ const EditPurchaseOrder = () => {
                 <div className="flex gap-3">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="draft"
                     onClick={() => setDraftModal(true)}
                     disabled={updateMutation.isLoading}
                     className="flex-1 sm:flex-none">
                     {t("page.purchaseOrder.add.saveDraft")}
                   </Button>
                   <Button
+                    variant="success"
                     type="button"
                     disabled={updateMutation.isLoading}
                     className="gap-2 flex-1 sm:flex-none min-w-0 sm:min-w-[140px] shadow-md"

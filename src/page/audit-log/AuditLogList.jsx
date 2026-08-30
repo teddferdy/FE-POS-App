@@ -251,7 +251,7 @@ const AuditLogList = () => {
                                             ? "bg-rose-100 text-rose-700"
                                             : log.action === "STATUS_CHANGE"
                                               ? "bg-violet-100 text-violet-700"
-                                              : "bg-gray-100 text-gray-700"
+                                              : "bg-muted text-muted-foreground"
                             }`}>
                             {log.action}
                           </span>

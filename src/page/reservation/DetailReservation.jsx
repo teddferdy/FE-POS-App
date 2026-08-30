@@ -28,7 +28,7 @@ const STATUS_MAP = {
   },
   no_show: {
     labelKey: "page.reservation.status.noShow",
-    color: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+    color: "bg-muted text-muted-foreground dark:bg-muted/60 dark:text-muted-foreground"
   }
 };
 

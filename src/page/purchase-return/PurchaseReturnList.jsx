@@ -13,7 +13,6 @@ import {
   approvePurchaseReturn,
   rejectPurchaseReturn
 } from "@/services/purchase-return";
-import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import NoStore from "@/components/ui/NoStore";
 import StatCard from "@/components/ui/StatCard";
@@ -21,6 +20,7 @@ import { getAllLocation } from "@/services/location";
 import StoreFilter from "@/components/ui/StoreFilter";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -234,40 +234,39 @@ const PurchaseReturnList = () => {
         { icon: XCircle, label: t("common.reject") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/purchase-return/detail?id=${item.id}`)}>
-            <Eye size={18} />
-          </Button>
-          {item.status === "pending" && canAccess(user, MENU_KEY, "edit") && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-500"
-                onClick={() => {
-                  setResolution("credit");
-                  setActionTarget(item.id);
-                  setActionType("approve");
-                }}>
-                <CheckCircle size={18} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-red-500"
-                onClick={() => {
-                  setActionTarget(item.id);
-                  setActionType("reject");
-                }}>
-                <XCircle size={18} />
-              </Button>
-            </>
-          )}
-        </div>
+        <TableActions
+          align="right"
+          visible={2}
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/purchase-return/detail?id=${item.id}`)
+            },
+            ...(item.status === "pending" && canAccess(user, MENU_KEY, "edit")
+              ? [
+                  {
+                    label: t("common.approve"),
+                    icon: CheckCircle,
+                    onClick: () => {
+                      setResolution("credit");
+                      setActionTarget(item.id);
+                      setActionType("approve");
+                    }
+                  },
+                  {
+                    label: t("common.reject"),
+                    icon: XCircle,
+                    danger: true,
+                    onClick: () => {
+                      setActionTarget(item.id);
+                      setActionType("reject");
+                    }
+                  }
+                ]
+              : [])
+          ]}
+        />
       )
     }
   ];

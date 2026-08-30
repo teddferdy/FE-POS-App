@@ -15,6 +15,7 @@ import { TimePicker } from "@/components/ui/time-picker";
 import { SearchInput } from "@/components/ui/SearchInput";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
@@ -392,47 +393,44 @@ const BundleList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (row) => (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-foreground"
-            onClick={() => navigate(`/bundle/${row.id}`)}>
-            <Eye size={18} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/bundle/edit/${row.id}`)}>
-            <Edit size={18} />
-          </Button>
-          {row.status === "active" ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-red-600 hover:text-red-700"
-              onClick={() => openStatusModal(row)}>
-              <XCircle size={18} />
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-green-600 hover:text-green-700"
-              disabled={row.validUntil && new Date(row.validUntil) < new Date()}
-              onClick={() => openStatusModal(row)}>
-              <RotateCcw size={18} />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:text-destructive"
-            onClick={() => setDeleteTarget(row)}>
-            <Trash2 size={18} />
-          </Button>
-        </div>
+        <TableActions
+          align="center"
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/bundle/${row.id}`)
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => navigate(`/bundle/edit/${row.id}`)
+            },
+            ...(row.status === "active"
+              ? [
+                  {
+                    label: t("common.deactivate"),
+                    icon: XCircle,
+                    danger: true,
+                    onClick: () => openStatusModal(row)
+                  }
+                ]
+              : [
+                  {
+                    label: t("common.activate"),
+                    icon: RotateCcw,
+                    onClick: () => openStatusModal(row),
+                    disabled: row.validUntil && new Date(row.validUntil) < new Date()
+                  }
+                ]),
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => setDeleteTarget(row)
+            }
+          ]}
+        />
       )
     }
   ];
@@ -514,7 +512,7 @@ const BundleList = () => {
           <h1 className="text-2xl font-bold text-foreground">{t("page.bundle.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.bundle.description")}</p>
         </div>
-        <Button onClick={() => navigate("/bundle/add")} className="gap-2">
+        <Button variant="success" onClick={() => navigate("/bundle/add")} className="gap-2">
           <Plus size={16} />
           {t("page.bundle.addButton")}
         </Button>

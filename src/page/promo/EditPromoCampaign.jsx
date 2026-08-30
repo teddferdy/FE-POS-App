@@ -413,7 +413,7 @@ const EditPromoCampaign = () => {
         description={t("page.promo.edit.description")}
         backLink="/promo-list"
         onBack={() => setCancelModalOpen(true)}>
-        <Button variant="outline" onClick={() => setCancelModalOpen(true)}>
+        <Button variant="danger" onClick={() => setCancelModalOpen(true)}>
           {t("common.cancel")}
         </Button>
       </PageHeader>
@@ -709,7 +709,7 @@ const EditPromoCampaign = () => {
                       </p>
                     )}
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={addRule}>
+                  <Button type="button" variant="success" size="sm" onClick={addRule}>
                     <Plus size={14} className="mr-1" />
                     {t("page.promo.form.addRule")}
                   </Button>
@@ -738,7 +738,7 @@ const EditPromoCampaign = () => {
                         />
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="destructive"
                           size="icon"
                           className="h-8 w-8 text-red-600"
                           onClick={() => setDeleteConfirm({ type: "rule", index })}>
@@ -767,7 +767,7 @@ const EditPromoCampaign = () => {
                       </p>
                     )}
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={addReward}>
+                  <Button type="button" variant="success" size="sm" onClick={addReward}>
                     <Plus size={14} className="mr-1" />
                     {t("page.promo.form.addReward")}
                   </Button>
@@ -805,7 +805,7 @@ const EditPromoCampaign = () => {
                         />
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="destructive"
                           size="icon"
                           className="h-8 w-8 text-red-600"
                           onClick={() => setDeleteConfirm({ type: "reward", index })}>
@@ -1002,7 +1002,7 @@ const EditPromoCampaign = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
             <Button
               type="button"
-              variant="outline"
+              variant="danger"
               onClick={() => setCancelModalOpen(true)}
               className="gap-2 w-full sm:w-auto justify-center">
               <X size={18} />
@@ -1011,13 +1011,14 @@ const EditPromoCampaign = () => {
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
               <Button
                 type="button"
-                variant="outline"
+                variant="draft"
                 className="w-full sm:w-auto justify-center"
                 onClick={() => handleFormSubmit(true)}
                 disabled={updateMutation?.isLoading}>
                 {t("page.discount.add.saveAsDraft")}
               </Button>
               <Button
+                variant="success"
                 type="button"
                 onClick={() => handleFormSubmit(false)}
                 disabled={updateMutation?.isLoading}

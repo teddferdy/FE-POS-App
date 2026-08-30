@@ -682,7 +682,7 @@ export default function DetailPurchaseOrder() {
           )}
           {(statusMap[po.status] || statusMap.pending).label}
         </span>
-        <Button variant="outline" size="sm" onClick={handleExportExcel} className="gap-1.5">
+        <Button variant="general" size="sm" onClick={handleExportExcel} className="gap-1.5">
           <FileSpreadsheet size={14} />
           <span className="hidden sm:inline">Excel</span>
         </Button>
@@ -1119,7 +1119,7 @@ export default function DetailPurchaseOrder() {
                         <td className="py-3 px-4 text-right">
                           <Button
                             size="sm"
-                            variant="ghost"
+                            variant="destructive"
                             className="text-red-500 hover:text-red-600 hover:bg-red-50"
                             onClick={() => {
                               setPaymentToDelete(payment);
@@ -1144,7 +1144,7 @@ export default function DetailPurchaseOrder() {
                 {t("page.purchaseOrder.detail.returns")}
               </h2>
               {(po.status === "received" || po.status === "ordered") && (
-                <Button size="sm" variant="outline" onClick={openReturnModal}>
+                <Button size="sm" variant="success" onClick={openReturnModal}>
                   <Plus size={14} className="mr-1" />
                   {t("page.purchaseOrder.detail.addReturn")}
                 </Button>
@@ -1376,10 +1376,10 @@ export default function DetailPurchaseOrder() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setPaymentModalOpen(false)}>
+              <Button variant="danger" onClick={() => setPaymentModalOpen(false)}>
                 {t("common.cancel")}
               </Button>
-              <Button onClick={handleRecordPayment} disabled={paySubmitting}>
+              <Button variant="success" onClick={handleRecordPayment} disabled={paySubmitting}>
                 {paySubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 {paySubmitting ? t("common.processing") : t("page.purchaseOrder.detail.pay")}
               </Button>
@@ -1400,7 +1400,7 @@ export default function DetailPurchaseOrder() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
+            <Button variant="danger" onClick={() => setDeleteModalOpen(false)}>
               {t("common.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleDeletePayment}>
@@ -1537,10 +1537,10 @@ export default function DetailPurchaseOrder() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReturnModalOpen(false)}>
+            <Button variant="danger" onClick={() => setReturnModalOpen(false)}>
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleCreateReturn} disabled={returnSubmitting}>
+            <Button variant="success" onClick={handleCreateReturn} disabled={returnSubmitting}>
               {returnSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {returnSubmitting ? t("common.processing") : t("page.purchaseOrder.detail.addReturn")}
             </Button>

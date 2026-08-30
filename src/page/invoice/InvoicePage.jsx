@@ -819,7 +819,7 @@ const InvoicePage = () => {
                     {logoPreview && (
                       <Button
                         type="button"
-                        variant="ghost"
+                        variant="destructive"
                         size="sm"
                         onClick={handleRemoveLogo}
                         className="gap-2 text-destructive">
@@ -1096,6 +1096,7 @@ const InvoicePage = () => {
                   {t("page.invoice.resetDefault")}
                 </Button>
                 <Button
+                  variant="success"
                   data-tour="invoice-save"
                   onClick={() => setSaveConfirmOpen(true)}
                   disabled={isSaving}
@@ -1221,10 +1222,12 @@ const InvoicePage = () => {
                 <DialogDescription>{t("page.invoice.saveConfirmDesc")}</DialogDescription>
               </DialogHeader>
               <DialogFooter className="gap-2">
-                <Button variant="outline" onClick={() => setSaveConfirmOpen(false)}>
+                <Button variant="danger" onClick={() => setSaveConfirmOpen(false)}>
                   {t("common.cancel")}
                 </Button>
-                <Button onClick={handleConfirmSave}>{t("common.confirm")}</Button>
+                <Button variant="success" onClick={handleConfirmSave}>
+                  {t("common.confirm")}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

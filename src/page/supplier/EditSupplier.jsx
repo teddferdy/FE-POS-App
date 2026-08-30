@@ -916,7 +916,7 @@ const EditSupplier = () => {
                         </div>
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="success"
                           size="sm"
                           className="gap-1.5"
                           onClick={() => {
@@ -980,7 +980,7 @@ const EditSupplier = () => {
                             <Button
                               type="button"
                               size="sm"
-                              variant="outline"
+                              variant="danger"
                               onClick={() => {
                                 setShowContactForm(false);
                                 setEditingContactId(null);
@@ -989,6 +989,7 @@ const EditSupplier = () => {
                               {t("common.cancel")}
                             </Button>
                             <Button
+                              variant="success"
                               type="button"
                               size="sm"
                               disabled={!contactName.trim()}
@@ -1060,7 +1061,7 @@ const EditSupplier = () => {
                                     </Button>
                                     <Button
                                       type="button"
-                                      variant="ghost"
+                                      variant="destructive"
                                       size="icon"
                                       className="h-7 w-7 text-destructive hover:text-destructive"
                                       onClick={() => handleRemoveContact(c.id)}>
@@ -1195,7 +1196,7 @@ const EditSupplier = () => {
                           </div>
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="success"
                             size="sm"
                             className="gap-1.5"
                             onClick={() => {
@@ -1258,7 +1259,7 @@ const EditSupplier = () => {
                                 <Button
                                   type="button"
                                   size="sm"
-                                  variant="outline"
+                                  variant="danger"
                                   onClick={() => {
                                     setShowBankForm(false);
                                     setEditingBankId(null);
@@ -1267,6 +1268,7 @@ const EditSupplier = () => {
                                   {t("common.cancel")}
                                 </Button>
                                 <Button
+                                  variant="success"
                                   type="button"
                                   size="sm"
                                   disabled={
@@ -1346,7 +1348,7 @@ const EditSupplier = () => {
                                       </Button>
                                       <Button
                                         type="button"
-                                        variant="ghost"
+                                        variant="destructive"
                                         size="icon"
                                         className="h-7 w-7 text-destructive hover:text-destructive"
                                         onClick={() => handleRemoveBank(b.id)}>
@@ -1538,7 +1540,7 @@ const EditSupplier = () => {
                   </div>
                   <div className="flex gap-2">
                     <Button
-                      variant="outline"
+                      variant="success"
                       size="sm"
                       className="gap-1"
                       onClick={() => {
@@ -1549,7 +1551,7 @@ const EditSupplier = () => {
                       {t("page.supplier.products.addProduct")}
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="import"
                       size="sm"
                       className="gap-1"
                       onClick={() => {
@@ -1689,7 +1691,7 @@ const EditSupplier = () => {
                     </div>
                     <div className="flex gap-2">
                       <Button
-                        variant="outline"
+                        variant="danger"
                         size="sm"
                         onClick={() => {
                           setEditingProductId(null);
@@ -1707,6 +1709,7 @@ const EditSupplier = () => {
                         {t("common.cancel")}
                       </Button>
                       <Button
+                        variant="success"
                         size="sm"
                         disabled={!newProductName.trim() || !productPrice}
                         onClick={handleAddProduct}
@@ -1734,7 +1737,7 @@ const EditSupplier = () => {
                     />
                     <div className="flex gap-2 justify-end">
                       <Button
-                        variant="outline"
+                        variant="danger"
                         size="sm"
                         onClick={() => {
                           setShowImportExcel(false);
@@ -1743,6 +1746,7 @@ const EditSupplier = () => {
                         {t("common.cancel")}
                       </Button>
                       <Button
+                        variant="import"
                         size="sm"
                         onClick={handleImportExcel}
                         disabled={importMutation.isLoading}>
@@ -1833,7 +1837,7 @@ const EditSupplier = () => {
                                 <Pencil size={14} />
                               </Button>
                               <Button
-                                variant="ghost"
+                                variant="destructive"
                                 size="sm"
                                 className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                                 onClick={() => setDeleteProductId(product.id)}>
@@ -1853,7 +1857,7 @@ const EditSupplier = () => {
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
           <Button
-            variant="outline"
+            variant="danger"
             onClick={() => setCancelModal(true)}
             className="gap-2 w-full sm:w-auto justify-center">
             <X size={18} />
@@ -1861,7 +1865,7 @@ const EditSupplier = () => {
           </Button>
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
             <Button
-              variant="outline"
+              variant="draft"
               onClick={() => setDraftModal(true)}
               disabled={updateMutation.isLoading}
               className="gap-2 w-full sm:w-auto justify-center">
@@ -1869,6 +1873,7 @@ const EditSupplier = () => {
               {t("page.supplier.form.saveAsDraft")}
             </Button>
             <Button
+              variant="success"
               type="button"
               onClick={() => {
                 const values = form.getValues();

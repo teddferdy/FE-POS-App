@@ -33,6 +33,7 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadTypePaymentExcel } from "@/services/type-payment";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
@@ -252,38 +253,40 @@ const TypePaymentList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (row) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "detail") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              title={t("common.view")}
-              onClick={() => navigate(`/detail-type-payment?id=${row.id || row._id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && !row.isSystem && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              title={t("common.edit")}
-              onClick={() => navigate(`/edit-type-payment?id=${row.id || row._id}`)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && !row.isSystem && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              title={t("common.delete")}
-              onClick={() => handleDelete(row)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          align="right"
+          visible={2}
+          items={[
+            ...(canAccess(user, MENU_KEY, "detail")
+              ? [
+                  {
+                    label: t("common.view"),
+                    icon: Eye,
+                    onClick: () => navigate(`/detail-type-payment?id=${row.id || row._id}`)
+                  }
+                ]
+              : []),
+            ...(canAccess(user, MENU_KEY, "edit") && !row.isSystem
+              ? [
+                  {
+                    label: t("common.edit"),
+                    icon: Edit,
+                    onClick: () => navigate(`/edit-type-payment?id=${row.id || row._id}`)
+                  }
+                ]
+              : []),
+            ...(canAccess(user, MENU_KEY, "delete") && !row.isSystem
+              ? [
+                  {
+                    label: t("common.delete"),
+                    icon: Trash2,
+                    danger: true,
+                    onClick: () => handleDelete(row)
+                  }
+                ]
+              : [])
+          ]}
+        />
       )
     }
   ];
@@ -345,7 +348,7 @@ const TypePaymentList = () => {
             )}
             {canAccess(user, MENU_KEY, "export") && (
               <Button
-                variant="outline"
+                variant="general"
                 disabled={isDownloadingData}
                 onClick={async () => {
                   setIsDownloadingData(true);
@@ -374,13 +377,16 @@ const TypePaymentList = () => {
               </Button>
             )}
             {canAccess(user, MENU_KEY, "import") && (
-              <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+              <Button variant="import" onClick={() => setUploadModalOpen(true)}>
                 <span className="material-symbols-outlined text-lg mr-1">upload</span>
                 {t("page.typePayment.button.upload")}
               </Button>
             )}
             {canAccess(user, MENU_KEY, "add") && (
-              <Button onClick={() => navigate("/add-type-payment")} className="gap-2 shadow-md">
+              <Button
+                variant="success"
+                onClick={() => navigate("/add-type-payment")}
+                className="gap-2 shadow-md">
                 <Plus size={18} />
                 {t("page.typePayment.button.add")}
               </Button>

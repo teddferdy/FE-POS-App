@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import { getAllLocation } from "@/services/location";
@@ -186,47 +187,42 @@ const StockTransferList = () => {
         { icon: XCircle, label: t("page.stockTransfer.list.cancel") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          {item.status === "sent" && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-600"
-                title={t("page.stockTransfer.list.receive")}
-                onClick={() =>
-                  setConfirmAction({
-                    type: "receive",
-                    id: item.id,
-                    transferNumber: item.transferNumber
-                  })
-                }>
-                <CheckCircle size={18} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-red-600"
-                title={t("page.stockTransfer.list.cancel")}
-                onClick={() =>
-                  setConfirmAction({
-                    type: "cancel",
-                    id: item.id,
-                    transferNumber: item.transferNumber
-                  })
-                }>
-                <XCircle size={18} />
-              </Button>
-            </>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/stock-transfer/detail?id=${item.id}`)}>
-            <Eye size={18} />
-          </Button>
-        </div>
+        <TableActions
+          align="right"
+          visible={2}
+          items={[
+            ...(item.status === "sent"
+              ? [
+                  {
+                    label: t("page.stockTransfer.list.receive"),
+                    icon: CheckCircle,
+                    onClick: () =>
+                      setConfirmAction({
+                        type: "receive",
+                        id: item.id,
+                        transferNumber: item.transferNumber
+                      })
+                  },
+                  {
+                    label: t("page.stockTransfer.list.cancel"),
+                    icon: XCircle,
+                    danger: true,
+                    onClick: () =>
+                      setConfirmAction({
+                        type: "cancel",
+                        id: item.id,
+                        transferNumber: item.transferNumber
+                      })
+                  }
+                ]
+              : []),
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/stock-transfer/detail?id=${item.id}`)
+            }
+          ]}
+        />
       )
     }
   ];
@@ -252,7 +248,10 @@ const StockTransferList = () => {
               </p>
             </div>
             {canAccess(user, MENU_KEY, "add") && (
-              <Button onClick={() => navigate("/add-stock-transfer")} className="shrink-0 gap-2">
+              <Button
+                variant="success"
+                onClick={() => navigate("/add-stock-transfer")}
+                className="shrink-0 gap-2">
                 <Plus size={16} /> {t("page.stockTransfer.list.addButton")}
               </Button>
             )}
@@ -282,7 +281,10 @@ const StockTransferList = () => {
               </p>
             </div>
             {canAccess(user, MENU_KEY, "add") && (
-              <Button onClick={() => navigate("/add-stock-transfer")} className="shrink-0 gap-2">
+              <Button
+                variant="success"
+                onClick={() => navigate("/add-stock-transfer")}
+                className="shrink-0 gap-2">
                 <Plus size={16} /> {t("page.stockTransfer.list.addButton")}
               </Button>
             )}

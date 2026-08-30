@@ -43,6 +43,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
@@ -305,7 +306,7 @@ const ExpenseList = () => {
   const getStatusBadge = (status) => {
     if (status === "draft") {
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
           {t("page.expense.list.statusDraft")}
         </span>
       );
@@ -396,7 +397,7 @@ const ExpenseList = () => {
             </span>
           )}
           {item.isActive === false && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-200 text-gray-700">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-muted text-muted-foreground">
               {t("page.expense.list.statusArchived")}
             </span>
           )}
@@ -466,74 +467,64 @@ const ExpenseList = () => {
         { icon: Edit, label: t("common.edit") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          {item.status === "pending" && canAccess(user, MENU_KEY, "edit") && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-600"
-                disabled={approveMutation.isLoading}
-                onClick={() => setConfirmAction({ type: "approve", item })}>
-                <CheckCircle size={18} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-red-600"
-                disabled={rejectMutation.isLoading}
-                onClick={() => setConfirmAction({ type: "reject", item })}>
-                <XCircle size={18} />
-              </Button>
-            </>
-          )}
-          {item.status === "approved" && canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`h-8 w-8 ${item.isPaid ? "text-gray-400" : "text-teal-600"}`}
-              disabled={paidMutation.isLoading || unpaidMutation.isLoading}
-              title={
-                item.isPaid ? t("page.expense.list.markUnpaid") : t("page.expense.list.markPaid")
-              }
-              onClick={() => setConfirmAction({ type: item.isPaid ? "unpaid" : "paid", item })}>
-              <BadgeCheck size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`h-8 w-8 ${item.isActive ? "text-gray-400" : "text-teal-600"}`}
-              disabled={activeMutation.isLoading}
-              title={
-                item.isActive ? t("page.expense.list.archive") : t("page.expense.list.restore")
-              }
-              onClick={() =>
-                setConfirmAction({ type: item.isActive ? "archive" : "restore", item })
-              }>
-              {item.isActive ? <Archive size={18} /> : <ArchiveRestore size={18} />}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-primary"
-                onClick={() => navigate(`/detail-expense?id=${item.id || item._id}`)}>
-                <Eye size={18} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-primary"
-                onClick={() => navigate(`/edit-expense?id=${item.id || item._id}`)}>
-                <Edit size={18} />
-              </Button>
-            </>
-          )}
-        </div>
+        <TableActions
+          align="right"
+          visible={2}
+          items={[
+            ...(item.status === "pending" && canAccess(user, MENU_KEY, "edit")
+              ? [
+                  {
+                    label: t("common.approve"),
+                    icon: CheckCircle,
+                    disabled: approveMutation.isLoading,
+                    onClick: () => setConfirmAction({ type: "approve", item })
+                  },
+                  {
+                    label: t("common.reject"),
+                    icon: XCircle,
+                    danger: true,
+                    disabled: rejectMutation.isLoading,
+                    onClick: () => setConfirmAction({ type: "reject", item })
+                  }
+                ]
+              : []),
+            ...(item.status === "approved" && canAccess(user, MENU_KEY, "edit")
+              ? [
+                  {
+                    label: item.isPaid
+                      ? t("page.expense.list.markUnpaid")
+                      : t("page.expense.list.markPaid"),
+                    icon: BadgeCheck,
+                    disabled: paidMutation.isLoading || unpaidMutation.isLoading,
+                    onClick: () => setConfirmAction({ type: item.isPaid ? "unpaid" : "paid", item })
+                  }
+                ]
+              : []),
+            ...(canAccess(user, MENU_KEY, "edit")
+              ? [
+                  {
+                    label: item.isActive
+                      ? t("page.expense.list.archive")
+                      : t("page.expense.list.restore"),
+                    icon: item.isActive ? Archive : ArchiveRestore,
+                    disabled: activeMutation.isLoading,
+                    onClick: () =>
+                      setConfirmAction({ type: item.isActive ? "archive" : "restore", item })
+                  },
+                  {
+                    label: t("common.view"),
+                    icon: Eye,
+                    onClick: () => navigate(`/detail-expense?id=${item.id || item._id}`)
+                  },
+                  {
+                    label: t("common.edit"),
+                    icon: Edit,
+                    onClick: () => navigate(`/edit-expense?id=${item.id || item._id}`)
+                  }
+                ]
+              : [])
+          ]}
+        />
       )
     }
   ];
@@ -610,7 +601,7 @@ const ExpenseList = () => {
             </Button>
           )}
           {canAccess(user, MENU_KEY, "add") && (
-            <Button onClick={() => navigate("/add-expense")} className="gap-2">
+            <Button variant="success" onClick={() => navigate("/add-expense")} className="gap-2">
               <Plus size={18} />
               {t("page.expense.button.add")}
             </Button>

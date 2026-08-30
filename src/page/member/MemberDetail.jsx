@@ -194,7 +194,7 @@ const MemberDetail = () => {
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-5xl">groups</span>
         <p>Member tidak ditemukan</p>
-        <Button variant="outline" onClick={() => navigate("/member-list")}>
+        <Button variant="danger" onClick={() => navigate("/member-list")}>
           Kembali
         </Button>
       </div>
@@ -246,8 +246,8 @@ const MemberDetail = () => {
       label: t("page.member.detail.visitFrequency"),
       value: `${visitFrequency} kali`,
       icon: "calendar_month",
-      iconBg: "bg-tertiary/10",
-      iconColor: "text-tertiary",
+      iconBg: "bg-amber-500/10",
+      iconColor: "text-amber-700",
       trend: "",
       trendIcon: "trending_up",
       trendColor: "text-foreground"
@@ -326,7 +326,7 @@ const MemberDetail = () => {
               </div>
               <h3 className="text-lg font-semibold text-foreground text-center">{name}</h3>
               <p className="text-sm font-mono text-muted-foreground mb-3">{memberId}</p>
-              <span className="px-3 py-1 bg-primary-fixed text-primary-fixed-foreground rounded-full text-xs font-bold mb-4">
+              <span className="px-3 py-1 bg-primary text-primary-foreground rounded-full text-xs font-bold mb-4">
                 {t("page.member.detail.memberActive")}
               </span>
               <div className="w-full space-y-4 border-t border-border pt-4">
@@ -380,7 +380,7 @@ const MemberDetail = () => {
             <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
               <div className="bg-foreground text-background p-4 flex flex-wrap gap-2 items-center">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-tertiary-fixed-dim">
+                  <span className="material-symbols-outlined text-background">
                     workspace_premium
                   </span>
                   <span className="text-sm font-semibold">
@@ -428,15 +428,15 @@ const MemberDetail = () => {
                     })}
                   </p>
                 </div>
-                <div className="bg-error/10 border border-error/20 p-3 rounded-lg flex items-center gap-3">
-                  <span className="material-symbols-outlined text-error text-base">
+                <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg flex items-center gap-3">
+                  <span className="material-symbols-outlined text-destructive text-base">
                     notification_important
                   </span>
                   <div>
-                    <p className="text-xs font-bold text-on-error-container">
+                    <p className="text-xs font-bold text-destructive">
                       {t("page.member.detail.pointsExpiringSoon")}
                     </p>
-                    <p className="text-xs text-error">
+                    <p className="text-xs text-destructive">
                       {t("page.member.detail.pointsExpireOn", {
                         count: expiringPoints.toLocaleString(),
                         date: expiringDate

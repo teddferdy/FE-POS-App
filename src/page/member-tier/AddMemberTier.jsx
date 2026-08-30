@@ -486,7 +486,7 @@ const AddMemberTier = () => {
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-8 bg-card border border-border rounded-xl p-4">
               <Button
-                variant="outline"
+                variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2 w-full sm:w-auto justify-center">
                 <X size={18} />
@@ -494,13 +494,14 @@ const AddMemberTier = () => {
               </Button>
               <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                 <Button
-                  variant="outline"
+                  variant="draft"
                   onClick={() => setDraftModal(true)}
                   disabled={createMutation.isLoading}
                   className="w-full sm:w-auto justify-center">
                   {t("page.memberTier.add.saveDraft")}
                 </Button>
                 <Button
+                  variant="success"
                   onClick={() => handleSave(false)}
                   disabled={createMutation.isLoading}
                   className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">

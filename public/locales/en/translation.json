@@ -10,6 +10,8 @@
   "header.logoutSuccessOk": "OK",
   "header.loggingOut": "Logging out...",
   "header.settings": "Settings",
+  "header.toggleTheme": "Toggle theme",
+  "header.openMenu": "Open menu",
   "header.notifications": "Notifications",
   "header.addStore": "Add Store",
   "header.noStore": "No Store Available",

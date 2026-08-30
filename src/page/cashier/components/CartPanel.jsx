@@ -361,7 +361,7 @@ const CartPanel = ({
             <DialogDescription>{t("page.cashier.deleteDesc")}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
+            <Button variant="destructive" onClick={() => setDeleteConfirm(null)}>
               {t("page.cashier.deleteNo")}
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm}>

@@ -35,12 +35,12 @@ const variantStyles = {
     value: "text-white"
   },
   gray: {
-    card: "bg-gray-100 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800",
-    iconBg: "bg-gray-200 dark:bg-gray-800",
-    iconColor: "text-gray-600 dark:text-gray-400",
-    subtitle: "text-gray-600 dark:text-gray-400",
-    label: "text-gray-600 dark:text-gray-400",
-    value: "text-gray-900 dark:text-gray-100"
+    card: "bg-muted dark:bg-muted/20 border border-border dark:border-border",
+    iconBg: "bg-muted dark:bg-muted",
+    iconColor: "text-muted-foreground dark:text-muted-foreground",
+    subtitle: "text-muted-foreground dark:text-muted-foreground",
+    label: "text-muted-foreground dark:text-muted-foreground",
+    value: "text-foreground dark:text-foreground"
   },
   blue: {
     card: "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50",

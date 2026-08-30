@@ -1209,7 +1209,7 @@ const AddLocation = () => {
                         ))}
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="success"
                           size="sm"
                           onClick={addSocialRow}
                           className="gap-1">
@@ -1319,7 +1319,7 @@ const AddLocation = () => {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="danger"
                     className="w-full sm:w-auto"
                     onClick={() => setCancelModal(true)}>
                     {t("common.cancel")}
@@ -1327,12 +1327,13 @@ const AddLocation = () => {
                   <div className="flex gap-3">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="draft"
                       onClick={() => setDraftModal(true)}
                       disabled={isSubmitting}>
                       {t("page.location.form.saveDraft")}
                     </Button>
                     <Button
+                      variant="success"
                       type="submit"
                       disabled={isSubmitting}
                       className="w-full sm:w-auto gap-2">
@@ -1507,7 +1508,7 @@ const AddLocation = () => {
             </div>
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
+                variant="success"
                 size="sm"
                 onClick={() => {
                   setManagerModalOpen(false);
@@ -1518,7 +1519,7 @@ const AddLocation = () => {
                 {t("page.location.form.addEmployee")}
               </Button>
               <Button
-                variant="ghost"
+                variant="danger"
                 size="sm"
                 onClick={() => setManagerModalOpen(false)}
                 className="h-8">

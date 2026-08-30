@@ -135,8 +135,8 @@ const typeIcons = {
   },
   shift_created: {
     icon: FileText,
-    bg: "bg-gray-100 dark:bg-gray-900/40",
-    color: "text-gray-600 dark:text-gray-400"
+    bg: "bg-muted dark:bg-gray-900/40",
+    color: "text-muted-foreground"
   },
   discount_created: {
     icon: Tag,
@@ -147,8 +147,8 @@ const typeIcons = {
 
 const defaultIcon = {
   icon: Bell,
-  bg: "bg-gray-100 dark:bg-gray-900/40",
-  color: "text-gray-600 dark:text-gray-400"
+  bg: "bg-muted dark:bg-gray-900/40",
+  color: "text-muted-foreground"
 };
 
 const NotificationPage = () => {
@@ -421,7 +421,7 @@ const NotificationPage = () => {
             )}
 
             <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setSelectedNotif(null)}>
+              <Button variant="danger" onClick={() => setSelectedNotif(null)}>
                 {t("common.close")}
               </Button>
             </div>

@@ -181,6 +181,7 @@ const BackupPage = () => {
 
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <Button
+            variant="success"
             onClick={() => createMut.mutate()}
             disabled={createMut.isLoading}
             className="gap-2"
@@ -265,7 +266,7 @@ const BackupPage = () => {
                       <td className="py-2">
                         <div className="flex items-center justify-end gap-1">
                           <Button
-                            variant="ghost"
+                            variant="general"
                             size="sm"
                             className="h-8 gap-1 text-primary"
                             onClick={() => downloadDatabaseBackup(b.id, b.filename)}>
@@ -273,7 +274,6 @@ const BackupPage = () => {
                             {t("page.backup.download")}
                           </Button>
                           <Button
-                            variant="ghost"
                             size="sm"
                             className="h-8 gap-1 text-amber-600"
                             onClick={() => setRestoreTarget(b)}>
@@ -281,7 +281,7 @@ const BackupPage = () => {
                             {t("page.backup.restore")}
                           </Button>
                           <Button
-                            variant="ghost"
+                            variant="destructive"
                             size="sm"
                             className="h-8 gap-1 text-destructive"
                             onClick={() => setDeleteTarget(b)}>
@@ -356,7 +356,11 @@ const BackupPage = () => {
                 {t("page.backup.scheduleRetentionDesc")}
               </p>
             </div>
-            <Button onClick={handleScheduleSave} disabled={scheduleMut.isLoading} className="gap-2">
+            <Button
+              variant="success"
+              onClick={handleScheduleSave}
+              disabled={scheduleMut.isLoading}
+              className="gap-2">
               {scheduleMut.isLoading ? (
                 <RefreshCw size={16} className="animate-spin" />
               ) : (
@@ -391,7 +395,12 @@ const BackupPage = () => {
             </div>
           </div>
 
-          <Button onClick={handleExport} disabled={isExporting} className="w-full gap-2" size="lg">
+          <Button
+            variant="general"
+            onClick={handleExport}
+            disabled={isExporting}
+            className="w-full gap-2"
+            size="lg">
             {isExporting ? (
               <>
                 <RefreshCw size={16} className="animate-spin" />

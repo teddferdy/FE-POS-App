@@ -19,21 +19,22 @@ import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import StatCard from "@/components/ui/StatCard";
 import { canAccess } from "@/utils/permission";
 
 const positionColors = {
-  manager: "bg-primary-fixed text-on-primary-fixed",
-  kasir: "bg-surface-variant text-on-surface-variant",
-  admin: "bg-surface-variant text-on-surface-variant",
-  staff: "bg-surface-variant text-on-surface-variant",
-  supervisor: "bg-surface-container-high text-on-surface"
+  manager: "bg-primary text-primary-foreground",
+  kasir: "bg-muted text-muted-foreground",
+  admin: "bg-muted text-muted-foreground",
+  staff: "bg-muted text-muted-foreground",
+  supervisor: "bg-muted text-foreground"
 };
 
 const getPositionClass = (position) => {
   const pos = typeof position === "string" ? position.toLowerCase() : "";
-  return safeGet(positionColors, pos, "bg-surface-variant text-on-surface-variant");
+  return safeGet(positionColors, pos, "bg-muted text-muted-foreground");
 };
 
 const EmployeeList = () => {
@@ -274,32 +275,30 @@ const EmployeeList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (row) => (
-        <div className="flex items-center justify-center gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <button
-              onClick={() => navigate(`/detail-employee?employeeID=${row.employeeID}`)}
-              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
-              title={t("page.employee.list.viewDetail")}>
-              <span className="material-symbols-outlined text-lg">visibility</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <button
-              onClick={() => navigate(`/edit-employee?id=${row.id}`)}
-              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
-              title={t("page.employee.list.editEmployee")}>
-              <span className="material-symbols-outlined text-lg">edit</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <button
-              onClick={() => handleDelete(row)}
-              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
-              title={t("page.employee.list.deleteEmployee")}>
-              <span className="material-symbols-outlined text-lg">delete</span>
-            </button>
-          )}
-        </div>
+        <TableActions
+          align="center"
+          items={[
+            {
+              label: t("page.employee.list.viewDetail"),
+              iconName: "visibility",
+              onClick: () => navigate(`/detail-employee?employeeID=${row.employeeID}`),
+              hidden: !canAccess(user, MENU_KEY, "view")
+            },
+            {
+              label: t("page.employee.list.editEmployee"),
+              iconName: "edit",
+              onClick: () => navigate(`/edit-employee?id=${row.id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("page.employee.list.deleteEmployee"),
+              iconName: "delete",
+              danger: true,
+              onClick: () => handleDelete(row),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -317,6 +316,7 @@ const EmployeeList = () => {
             description={t("page.employee.list.description")}>
             {canAccess(user, MENU_KEY, "add") && (
               <Button
+                variant="success"
                 data-tour="employee-add"
                 onClick={() => navigate("/add-employee")}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">

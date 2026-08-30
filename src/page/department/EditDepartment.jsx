@@ -108,7 +108,7 @@ const EditDepartment = () => {
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">domain</span>
         <p>{t("page.department.detail.idNotFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/department-list")}>
+        <Button variant="danger" onClick={() => navigate("/department-list")}>
           {t("page.department.button.back")}
         </Button>
       </div>
@@ -123,7 +123,7 @@ const EditDepartment = () => {
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">domain</span>
         <p>{t("page.department.detail.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/department-list")}>
+        <Button variant="danger" onClick={() => navigate("/department-list")}>
           {t("page.department.button.back")}
         </Button>
       </div>
@@ -241,7 +241,7 @@ const EditDepartment = () => {
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2">
                 <span className="material-symbols-outlined text-lg">close</span>
@@ -250,12 +250,13 @@ const EditDepartment = () => {
               <div className="flex gap-3">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="draft"
                   onClick={() => setDraftModal(true)}
                   disabled={editMutation.isLoading}>
                   {t("common.saveAsDraft")}
                 </Button>
                 <Button
+                  variant="success"
                   type="button"
                   disabled={editMutation.isLoading}
                   onClick={() => {

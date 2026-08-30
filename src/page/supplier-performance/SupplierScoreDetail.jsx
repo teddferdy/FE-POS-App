@@ -19,7 +19,7 @@ const gradeBadge = (grade) => {
     D: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
     F: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
   };
-  return safeGet(map, grade, "bg-gray-100 text-gray-800");
+  return safeGet(map, grade, "bg-muted text-muted-foreground");
 };
 
 const SupplierScoreDetail = () => {
@@ -106,7 +106,7 @@ const SupplierScoreDetail = () => {
         ]}
         title={t("page.supplierPerformance.detail.title")}
         description={score.supplier?.name || ""}>
-        <Button variant="outline" onClick={() => navigate("/supplier-score-list")}>
+        <Button variant="danger" onClick={() => navigate("/supplier-score-list")}>
           <ArrowLeft size={16} className="mr-2" />
           {t("common.back")}
         </Button>
@@ -215,6 +215,7 @@ const SupplierScoreDetail = () => {
               placeholder={t("page.supplierPerformance.detail.notesPlaceholder")}
             />
             <Button
+              variant="success"
               className="mt-3"
               size="sm"
               onClick={() => updateNotesMutation.mutate({ notes })}

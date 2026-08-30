@@ -343,7 +343,7 @@ const DetailSupplier = () => {
         <div className="flex gap-2">
           {supplier.status !== "inactive" && supplier.status !== "draft" && (
             <Button
-              variant="outline"
+              variant="success"
               onClick={() => navigate(`/add-purchase-order?supplier=${id}`)}>
               <ShoppingCart size={14} className="mr-1.5" />
               {t("page.supplier.detail.createPo", "Buat PO")}
@@ -964,7 +964,7 @@ const DetailSupplier = () => {
                 </div>
                 <p className="text-sm text-muted-foreground">Belum ada rekening bank terdaftar</p>
                 <Button
-                  variant="outline"
+                  variant="success"
                   size="sm"
                   onClick={() => navigate(`/edit-supplier?id=${id}`)}>
                   <Plus size={13} className="mr-1" />
@@ -1052,6 +1052,7 @@ const DetailSupplier = () => {
                       </p>
                     </div>
                     <Button
+                      variant="success"
                       size="sm"
                       className="mt-1"
                       onClick={() => navigate(`/add-purchase-order?supplier=${id}`)}>

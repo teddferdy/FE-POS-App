@@ -91,7 +91,7 @@ const DetailStockOpname = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-muted-foreground">{t("common.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/stock-opname")}>
+        <Button variant="danger" onClick={() => navigate("/stock-opname")}>
           {t("common.back")}
         </Button>
       </div>
@@ -115,7 +115,7 @@ const DetailStockOpname = () => {
             </div>
           </div>
           {canEdit && (
-            <Button variant="outline" onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>
+            <Button variant="success" onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>
               <Edit3 size={14} className="mr-1.5" />
               {t("common.edit")}
             </Button>
@@ -294,12 +294,14 @@ const DetailStockOpname = () => {
         </Card>
 
         <div className="flex items-center justify-between pt-2">
-          <Button variant="outline" onClick={() => navigate("/stock-opname")}>
+          <Button variant="danger" onClick={() => navigate("/stock-opname")}>
             {t("common.back")}
           </Button>
           {canEdit && (
             <div className="flex items-center gap-2">
-              <Button onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>
+              <Button
+                variant="success"
+                onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>
                 {t("common.edit")}
               </Button>
             </div>

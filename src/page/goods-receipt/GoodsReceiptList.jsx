@@ -35,6 +35,7 @@ import Modal from "@/components/organism/modal";
 import { Combobox } from "@/components/ui/combobox";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
+import TableActions from "@/components/ui/TableActions";
 
 const statusMap = {
   draft: {
@@ -247,36 +248,34 @@ const GoodsReceiptList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/goods-receipt/detail?id=${item.id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {item.status === "draft" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-blue-600"
-              onClick={() => navigate(`/edit-goods-receipt?id=${item.id}`)}
-              title={t("page.goodsReceipt.list.editTitle")}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {item.status === "draft" && canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => setDeleteTarget(item.id)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          visible={2}
+          align="right"
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/goods-receipt/detail?id=${item.id}`),
+              hidden: !canAccess(user, MENU_KEY, "view")
+            },
+            ...(item.status === "draft"
+              ? [
+                  {
+                    label: t("page.goodsReceipt.list.editTitle"),
+                    icon: Edit,
+                    onClick: () => navigate(`/edit-goods-receipt?id=${item.id}`)
+                  },
+                  {
+                    label: t("common.delete"),
+                    icon: Trash2,
+                    danger: true,
+                    onClick: () => setDeleteTarget(item.id),
+                    hidden: !canAccess(user, MENU_KEY, "delete")
+                  }
+                ]
+              : [])
+          ]}
+        />
       )
     }
   ];
@@ -317,7 +316,10 @@ const GoodsReceiptList = () => {
             </Button>
           )}
           {canAccess(user, MENU_KEY, "add") && (
-            <Button onClick={() => navigate("/add-goods-receipt")} className="shrink-0 gap-2">
+            <Button
+              variant="success"
+              onClick={() => navigate("/add-goods-receipt")}
+              className="shrink-0 gap-2">
               <Plus size={16} /> {t("page.goodsReceipt.list.addButton")}
             </Button>
           )}

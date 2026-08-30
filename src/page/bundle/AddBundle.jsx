@@ -445,7 +445,7 @@ const AddBundle = () => {
                       </p>
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="success"
                         onClick={addBundleItem}
                         className="gap-1.5">
                         <Plus size={14} />
@@ -499,7 +499,7 @@ const AddBundle = () => {
                             />
                           </div>
                           <Button
-                            variant="ghost"
+                            variant="destructive"
                             size="icon"
                             className="h-9 w-9 text-destructive hover:text-destructive"
                             onClick={() => setItemRemove(index)}
@@ -608,7 +608,7 @@ const AddBundle = () => {
         {/* ponytail: mobile = tombol memenuhi lebar; desktop satu baris justify-between */}
         <div className="sticky bottom-4 z-10 flex flex-wrap justify-between items-center gap-3 bg-card border border-border/60 shadow-lg rounded-xl p-4 backdrop-blur-sm">
           <Button
-            variant="outline"
+            variant="danger"
             onClick={() => setCancelModal(true)}
             disabled={createMutation.isLoading}
             className="gap-2 flex-1 sm:flex-none">
@@ -617,13 +617,14 @@ const AddBundle = () => {
           </Button>
           <div className="flex gap-3 w-full sm:w-auto">
             <Button
-              variant="outline"
+              variant="draft"
               onClick={() => setDraftModal(true)}
               disabled={createMutation.isLoading || !formData.name}
               className="flex-1 sm:flex-none">
               {createMutation.isLoading ? t("common.saving") : t("common.saveDraft")}
             </Button>
             <Button
+              variant="success"
               onClick={() => handleSubmit(false)}
               disabled={createMutation.isLoading || !formData.name}
               className="gap-2 flex-1 sm:flex-none min-w-0 sm:min-w-[140px] shadow-md">

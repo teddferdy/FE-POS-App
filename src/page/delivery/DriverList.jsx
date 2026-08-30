@@ -13,6 +13,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
@@ -56,13 +57,13 @@ const statusBadge = (status) => {
       "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
     busy: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
     offline:
-      "bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800",
+      "bg-muted text-gray-600 dark:bg-gray-900/30 dark:text-muted-foreground border border-gray-200 dark:border-gray-800",
     inactive:
       "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
     draft:
       "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400 border border-slate-200 dark:border-slate-800"
   };
-  return safeGet(map, status, "bg-gray-100 text-gray-800");
+  return safeGet(map, status, "bg-muted text-muted-foreground");
 };
 
 const vehicleIcon = (type) => {
@@ -211,35 +212,30 @@ const DriverList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (driver) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/detail-driver?id=${driver.id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/edit-driver?id=${driver.id}`)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => setDeleteTarget(driver)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          align="right"
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/detail-driver?id=${driver.id}`),
+              hidden: !canAccess(user, MENU_KEY, "view")
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => navigate(`/edit-driver?id=${driver.id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => setDeleteTarget(driver),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -262,7 +258,7 @@ const DriverList = () => {
         title={t("page.delivery.driver.list.title")}
         description={t("page.delivery.driver.list.description")}>
         {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-driver")}>
+          <Button variant="success" onClick={() => navigate("/add-driver")}>
             <Plus size={16} className="mr-1" />
             {t("page.delivery.driver.add.title")}
           </Button>

@@ -272,7 +272,11 @@ const ThermalPrinterSettings = () => {
           </div>
 
           <div className="pt-4 border-t">
-            <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
+            <Button
+              variant="success"
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full sm:w-auto">
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (

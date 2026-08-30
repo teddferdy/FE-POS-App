@@ -740,7 +740,7 @@ const AddEmployee = () => {
                                         </div>
                                         <Button
                                           type="button"
-                                          variant="outline"
+                                          variant="success"
                                           size="sm"
                                           onClick={() => navigate("/add-department")}
                                           className="gap-2">
@@ -767,7 +767,7 @@ const AddEmployee = () => {
                                         </div>
                                         <Button
                                           type="button"
-                                          variant="outline"
+                                          variant="success"
                                           size="icon"
                                           className="shrink-0"
                                           onClick={() => navigate("/add-department")}
@@ -805,7 +805,7 @@ const AddEmployee = () => {
                                         </div>
                                         <Button
                                           type="button"
-                                          variant="outline"
+                                          variant="success"
                                           size="sm"
                                           onClick={() => navigate("/add-position")}
                                           className="gap-2">
@@ -837,7 +837,7 @@ const AddEmployee = () => {
                                         </div>
                                         <Button
                                           type="button"
-                                          variant="outline"
+                                          variant="success"
                                           size="icon"
                                           className="shrink-0"
                                           onClick={() => navigate("/add-position")}
@@ -875,7 +875,7 @@ const AddEmployee = () => {
                                         </div>
                                         <Button
                                           type="button"
-                                          variant="outline"
+                                          variant="success"
                                           size="sm"
                                           onClick={() => navigate("/add-location")}
                                           className="gap-2">
@@ -903,7 +903,7 @@ const AddEmployee = () => {
                                         </div>
                                         <Button
                                           type="button"
-                                          variant="outline"
+                                          variant="success"
                                           size="icon"
                                           className="shrink-0"
                                           onClick={() => navigate("/add-location")}
@@ -1274,7 +1274,7 @@ const AddEmployee = () => {
                                       </FormLabel>
                                       <Button
                                         type="button"
-                                        variant="outline"
+                                        variant="success"
                                         className="w-full justify-start text-left font-normal"
                                         disabled={disableAccess}
                                         onClick={() => setAccessMenuModalOpen(true)}>
@@ -1379,7 +1379,7 @@ const AddEmployee = () => {
                       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="success"
                           className="w-full sm:w-auto"
                           onClick={() => setCancelModal(true)}>
                           <span className="material-symbols-outlined text-lg">arrow_back</span>
@@ -1388,12 +1388,13 @@ const AddEmployee = () => {
                         <div className="flex gap-3">
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="draft"
                             onClick={() => setDraftModal(true)}
                             disabled={isSubmitting}>
                             {t("page.employee.add.saveDraftButton")}
                           </Button>
                           <Button
+                            variant="success"
                             type="button"
                             disabled={isSubmitting}
                             className="w-full sm:w-auto gap-2"
