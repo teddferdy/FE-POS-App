@@ -1,9 +1,9 @@
 import { AlertTriangle, CheckCircle, Info, Loader, XCircle } from "lucide-react";
-import { useTheme } from "next-themes";
 import { Toaster as Sonner } from "sonner";
+import { useThemeStore } from "@/state/theme";
 
 const Toaster = ({ ...props }) => {
-  const { theme = "system" } = useTheme();
+  const theme = useThemeStore((s) => s.theme);
 
   return (
     <Sonner
@@ -23,7 +23,7 @@ const Toaster = ({ ...props }) => {
         info: <Info className="h-4 w-4 text-blue-500" />,
         warning: <AlertTriangle className="h-4 w-4 text-amber-500" />,
         error: <XCircle className="h-4 w-4 text-red-500" />,
-        loading: <Loader className="h-4 w-4 text-gray-500 animate-spin" />
+        loading: <Loader className="h-4 w-4 text-muted-foreground animate-spin" />
       }}
       {...props}
     />

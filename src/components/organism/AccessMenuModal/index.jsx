@@ -359,10 +359,10 @@ export default function AccessMenuModal({
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="danger" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
-          <Button type="button" onClick={handleSave} disabled={saving}>
+          <Button variant="success" type="button" onClick={handleSave} disabled={saving}>
             {saving && <Loader className="mr-2 h-4 w-4 animate-spin" />}
             Simpan Izin
           </Button>

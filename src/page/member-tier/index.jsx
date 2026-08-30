@@ -15,6 +15,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
@@ -238,39 +239,29 @@ const MemberTier = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (tier) => (
-        <div className="flex justify-end gap-1">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/detail-member-tier?id=${tier.id}`);
-            }}
-            className="p-1.5 text-muted-foreground hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all"
-            title={t("page.memberTier.list.detailTitle")}>
-            <span className="material-symbols-outlined text-lg">visibility</span>
-          </button>
-          {canAccess(user, MENU_KEY, "edit") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/edit-member-tier/${tier.id}`);
-              }}
-              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-              title={t("page.memberTier.list.editTitle")}>
-              <span className="material-symbols-outlined text-lg">edit</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeleteTarget(tier);
-              }}
-              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-              title={t("page.memberTier.list.deleteTitle")}>
-              <span className="material-symbols-outlined text-lg">delete</span>
-            </button>
-          )}
-        </div>
+        <TableActions
+          align="center"
+          items={[
+            {
+              label: t("page.memberTier.list.detailTitle"),
+              iconName: "visibility",
+              onClick: () => navigate(`/detail-member-tier?id=${tier.id}`)
+            },
+            {
+              label: t("page.memberTier.list.editTitle"),
+              iconName: "edit",
+              onClick: () => navigate(`/edit-member-tier/${tier.id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("page.memberTier.list.deleteTitle"),
+              iconName: "delete",
+              danger: true,
+              onClick: () => setDeleteTarget(tier),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -300,7 +291,10 @@ const MemberTier = () => {
             </p>
           </div>
           {canAccess(user, MENU_KEY, "add") && (
-            <Button onClick={() => navigate("/add-member-tier")} className="gap-2">
+            <Button
+              variant="success"
+              onClick={() => navigate("/add-member-tier")}
+              className="gap-2">
               <Plus size={18} />
               {t("page.memberTier.list.addTier")}
             </Button>

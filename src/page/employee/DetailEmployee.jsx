@@ -40,7 +40,7 @@ const DetailEmployee = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground">{t("page.employee.notFound")}</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/employee-list")}>
+          <Button variant="danger" className="mt-4" onClick={() => navigate("/employee-list")}>
             {t("common.back")}
           </Button>
         </div>

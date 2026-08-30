@@ -31,6 +31,7 @@ import { uploadPositionExcel } from "@/services/position";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Combobox } from "@/components/ui/combobox";
 import NoStore from "@/components/ui/NoStore";
@@ -245,41 +246,31 @@ const PositionList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (position) => (
-        <div className="flex items-center justify-center gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/detail-position?positionID=${position.id}`);
-              }}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-              title={t("common.view")}>
-              <span className="material-symbols-outlined text-lg">visibility</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/edit-position?id=${position.id}`);
-              }}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-              title={t("common.edit")}>
-              <span className="material-symbols-outlined text-lg">edit</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(position);
-              }}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
-              title={t("common.delete")}>
-              <span className="material-symbols-outlined text-lg">delete</span>
-            </button>
-          )}
-        </div>
+        <TableActions
+          align="center"
+          visible={2}
+          items={[
+            {
+              label: t("common.view"),
+              iconName: "visibility",
+              hidden: !canAccess(user, MENU_KEY, "view"),
+              onClick: () => navigate(`/detail-position?positionID=${position.id}`)
+            },
+            {
+              label: t("common.edit"),
+              iconName: "edit",
+              hidden: !canAccess(user, MENU_KEY, "edit"),
+              onClick: () => navigate(`/edit-position?id=${position.id}`)
+            },
+            {
+              label: t("common.delete"),
+              iconName: "delete",
+              hidden: !canAccess(user, MENU_KEY, "delete"),
+              onClick: () => handleDelete(position),
+              danger: true
+            }
+          ]}
+        />
       )
     }
   ];
@@ -350,7 +341,7 @@ const PositionList = () => {
               {canAccess(user, MENU_KEY, "export") && (
                 <Button
                   data-tour="position-download-data"
-                  variant="outline"
+                  variant="general"
                   disabled={isDownloadingData}
                   onClick={async () => {
                     setIsDownloadingData(true);
@@ -383,7 +374,7 @@ const PositionList = () => {
               {canAccess(user, MENU_KEY, "import") && (
                 <Button
                   data-tour="position-upload"
-                  variant="default"
+                  variant="import"
                   onClick={() => setUploadModalOpen(true)}>
                   <span className="material-symbols-outlined text-lg">upload</span>
                   {t("page.position.button.uploadExcel")}
@@ -392,7 +383,7 @@ const PositionList = () => {
               {canAccess(user, MENU_KEY, "add") && (
                 <Button
                   data-tour="position-add"
-                  variant="default"
+                  variant="success"
                   onClick={() => navigate("/add-position")}
                   className="shadow-md">
                   <span className="material-symbols-outlined text-lg">add</span>

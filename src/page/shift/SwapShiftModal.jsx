@@ -704,7 +704,7 @@ const SwapShiftModal = ({
           <div>
             {step === "coworker" && (
               <Button
-                variant="outline"
+                variant="danger"
                 size="sm"
                 onClick={() => {
                   setStep("target");
@@ -724,6 +724,7 @@ const SwapShiftModal = ({
             </Button>
           ) : (
             <Button
+              variant="success"
               size="sm"
               disabled={!canSubmit}
               onClick={() =>

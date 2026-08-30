@@ -26,6 +26,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
@@ -319,39 +320,34 @@ const StockOpnameList = () => {
       render: (item) => {
         const isDraft = item.status === "draft";
         return (
-          <div className="flex items-center justify-end gap-1">
-            {canAccess(user, MENU_KEY, "view") && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-primary"
-                onClick={() => navigate(`/stock-opname/detail?id=${item.id || item._id}`)}>
-                <Eye size={18} />
-              </Button>
-            )}
-            {isDraft && (
-              <>
-                {canAccess(user, MENU_KEY, "edit") && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-primary"
-                    onClick={() => navigate(`/add-stock-opname?id=${item.id || item._id}`)}>
-                    <Edit size={18} />
-                  </Button>
-                )}
-                {canAccess(user, MENU_KEY, "delete") && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive"
-                    onClick={() => setDeleteTarget(item.id || item._id)}>
-                    <Trash2 size={18} />
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
+          <TableActions
+            align="right"
+            items={[
+              {
+                label: t("common.view"),
+                icon: Eye,
+                onClick: () => navigate(`/stock-opname/detail?id=${item.id || item._id}`),
+                hidden: !canAccess(user, MENU_KEY, "view")
+              },
+              ...(isDraft
+                ? [
+                    {
+                      label: t("common.edit"),
+                      icon: Edit,
+                      onClick: () => navigate(`/add-stock-opname?id=${item.id || item._id}`),
+                      hidden: !canAccess(user, MENU_KEY, "edit")
+                    },
+                    {
+                      label: t("common.delete"),
+                      icon: Trash2,
+                      danger: true,
+                      onClick: () => setDeleteTarget(item.id || item._id),
+                      hidden: !canAccess(user, MENU_KEY, "delete")
+                    }
+                  ]
+                : [])
+            ]}
+          />
         );
       }
     }
@@ -382,7 +378,10 @@ const StockOpnameList = () => {
             </p>
           </div>
           {canAccess(user, MENU_KEY, "add") && (
-            <Button onClick={() => navigate("/add-stock-opname")} className="shrink-0 gap-2">
+            <Button
+              variant="success"
+              onClick={() => navigate("/add-stock-opname")}
+              className="shrink-0 gap-2">
               <Plus size={16} />
               {t("page.stockOpname.list.addButton")}
             </Button>

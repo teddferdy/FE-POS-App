@@ -42,6 +42,7 @@ import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import ExtendShiftModal from "./ExtendShiftModal";
 import SwapApproval from "./SwapApproval";
+import TableActions from "@/components/ui/TableActions";
 
 const fmtShort = (d) => {
   if (!d) return "-";
@@ -328,43 +329,36 @@ const ShiftList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (row) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            onClick={() => navigate(`/detail-shift?id=${row.id || row._id}`)}>
-            <Eye size={18} />
-          </Button>
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-blue-600 dark:text-blue-400"
-              title="Perpanjang shift"
-              onClick={() => setExtendTarget(row)}>
-              <CalendarClock size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/edit-shift?id=${row.id || row._id}`)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => handleDelete(row)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          visible={2}
+          align="center"
+          items={[
+            {
+              label: t("common.detail"),
+              icon: Eye,
+              onClick: () => navigate(`/detail-shift?id=${row.id || row._id}`)
+            },
+            {
+              label: "Perpanjang shift",
+              icon: CalendarClock,
+              onClick: () => setExtendTarget(row),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => navigate(`/edit-shift?id=${row.id || row._id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => handleDelete(row),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -390,7 +384,11 @@ const ShiftList = () => {
             <p className="text-sm text-muted-foreground mt-1">{t("page.shift.list.description")}</p>
           </div>
           {canAccess(user, MENU_KEY, "add") && (
-            <Button onClick={() => navigate("/add-shift")} className="gap-2" data-tour="shift-add">
+            <Button
+              variant="success"
+              onClick={() => navigate("/add-shift")}
+              className="gap-2"
+              data-tour="shift-add">
               <Plus size={18} />
               {t("breadcrumb.add")}
             </Button>

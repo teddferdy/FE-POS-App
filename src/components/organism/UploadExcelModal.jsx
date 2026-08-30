@@ -193,10 +193,11 @@ const UploadExcelModal = ({
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={handleClose} className="gap-2 px-5">
+              <Button variant="danger" onClick={handleClose} className="gap-2 px-5">
                 {t("common.cancel")}
               </Button>
               <Button
+                variant="import"
                 onClick={handleUpload}
                 disabled={!file || mutation.isLoading}
                 className="gap-2 px-6 min-w-[140px]">

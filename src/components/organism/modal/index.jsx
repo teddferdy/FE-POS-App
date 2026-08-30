@@ -65,7 +65,8 @@ export default function Modal({
   const cancelLabel = cancelText || safeGet(defaultText, type)?.cancel || t("common.cancel");
   const desc = description || safeGet(defaultDescription, type, "");
 
-  const confirmBtnVariant = confirmVariant || (type === "error" ? "destructive" : "default");
+  const confirmBtnVariant =
+    confirmVariant || (type === "error" ? "destructive" : type === "form" ? "success" : "default");
 
   const confirmBtnClass = type === "success" ? "bg-green-600 hover:bg-green-700 text-white" : "";
 
@@ -100,7 +101,7 @@ export default function Modal({
             </DialogHeader>
             <div className="flex justify-center gap-3 mt-4">
               {!isNotification && (
-                <Button type="button" variant="outline" onClick={handleCancel}>
+                <Button type="button" variant="danger" onClick={handleCancel}>
                   {cancelLabel}
                 </Button>
               )}
@@ -127,7 +128,7 @@ export default function Modal({
             <div className="py-4">{children}</div>
             {isForm && (
               <div className="flex justify-end gap-3">
-                <Button type="button" variant="outline" onClick={handleCancel}>
+                <Button type="button" variant="danger" onClick={handleCancel}>
                   {cancelLabel}
                 </Button>
                 <Button

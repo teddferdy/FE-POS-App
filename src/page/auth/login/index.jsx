@@ -21,6 +21,8 @@ import { Loading } from "@/components/ui/loading";
 import { login } from "@/services/auth";
 import { resetSessionExpired } from "@/services";
 import { translationSelect } from "@/state/translation";
+import { useThemeStore } from "@/state/theme";
+import { useThemeEffect } from "@/hooks/useThemeEffect";
 import { getRoleDashboard } from "@/utils/role";
 import AuthGuideModal from "@/components/organism/AuthGuideModal";
 
@@ -36,6 +38,8 @@ const LoginPage = () => {
     location.state?.openGuide && location.state?.guideContext === "login"
   );
   const { translation, updateTranslation } = translationSelect();
+  const { toggleTheme } = useThemeStore();
+  useThemeEffect();
 
   useEffect(() => {
     if (location.state?.openGuide) {
@@ -129,13 +133,6 @@ const LoginPage = () => {
 
   return (
     <div>
-      <style>{`
-        @keyframes kenBurns {
-          0% { transform: scale(1) translateX(0); }
-          50% { transform: scale(1.08) translateX(-8px); }
-          100% { transform: scale(1) translateX(0); }
-        }
-      `}</style>
       <main className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
         {/* Top Controls */}
         <header className="absolute top-0 right-0 left-0 z-50 flex items-center justify-end px-4 py-4 md:px-6 md:py-5 lg:px-lg">
@@ -166,7 +163,8 @@ const LoginPage = () => {
             {/* Theme Toggle */}
             <button
               type="button"
-              onClick={() => document.documentElement.classList.toggle("dark")}
+              aria-label={t("header.toggleTheme")}
+              onClick={toggleTheme}
               className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-white/70 dark:bg-foreground/10 backdrop-blur-md text-muted-foreground hover:text-foreground rounded-full border border-border/30 shadow-sm transition-all duration-200 focus:outline-none">
               <Sun className="w-4 h-4 md:w-5 md:h-5 hidden dark:block" />
               <Moon className="w-4 h-4 md:w-5 md:h-5 block dark:hidden" />
@@ -176,35 +174,29 @@ const LoginPage = () => {
 
         {/* Left Side: Brand Visual */}
         <section className="hidden lg:flex lg:w-1/2 h-screen sticky top-0 overflow-hidden bg-foreground">
-          <div className="absolute inset-0">
-            <img
-              alt=""
-              className="w-full h-full object-cover"
-              src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=900&q=80"
-              style={{ animation: "kenBurns 25s ease-in-out infinite alternate" }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background/20" />
+          <div className="absolute inset-0" aria-hidden="true">
+            <div className="absolute inset-0 bg-[radial-gradient(120%_120%_at_20%_0%,#1e293b_0%,#0f172a_55%,#020617_100%)]" />
+            <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(rgba(255,255,255,.35)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.35)_1px,transparent_1px)] bg-[size:44px_44px]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           </div>
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center text-white px-lg">
             <div className="max-w-md text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 mb-6">
-                <span className="text-3xl font-light tracking-tight">KL</span>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 border border-white/15 mb-6">
+                <span className="text-3xl font-bold tracking-tight">BN</span>
               </div>
-              <span className="block text-4xl xl:text-5xl leading-tight font-light mb-4 tracking-tight">
-                Kinetic Ledger
+              <span className="block text-4xl xl:text-5xl leading-tight font-semibold mb-4 tracking-tight">
+                Bisa Nota
               </span>
               <div className="w-12 h-0.5 bg-white/30 mx-auto mb-6" />
               <h2 className="text-lg xl:text-xl leading-relaxed mb-4 font-light text-white/80">
-                Elevate your retail experience with precision technology.
+                Kelola seluruh operasional restoran — kasir, stok, dan laporan.
               </h2>
               <p className="text-sm xl:text-base text-white/50 font-light leading-relaxed max-w-sm mx-auto">
-                Intelligence seamlessly integrated into every transaction, crafted for the modern
-                visionary brand.
+                Ledger operasional yang bisa Anda lihat menembus: angka yang tepat, dalam satu
+                aplikasi.
               </p>
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
         </section>
 
         {/* Right Side: Login Form */}
@@ -213,7 +205,7 @@ const LoginPage = () => {
             {/* Mobile Branding */}
             <div className="lg:hidden mb-8 md:mb-10 text-center">
               <span className="text-2xl md:text-3xl font-semibold text-foreground tracking-tight">
-                Kinetic Ledger
+                Bisa Nota
               </span>
             </div>
 
@@ -243,7 +235,7 @@ const LoginPage = () => {
                         <Input
                           {...field}
                           placeholder={translationMemo.placeholderInputUser}
-                          className="w-full pl-10 md:pl-12 pr-3.5 md:pr-4 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-card focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
+                          className="w-full pl-10 md:pl-12 pr-3.5 md:pr-4 h-10 text-sm md:text-base rounded-md border-border/60 bg-card focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
                         />
                       </div>
                       {form?.formState?.errors?.userName && (
@@ -267,7 +259,7 @@ const LoginPage = () => {
                           type={showPassword ? "text" : "password"}
                           {...field}
                           placeholder={translationMemo.placeholderInputPassword}
-                          className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-card focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
+                          className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-10 text-sm md:text-base rounded-md border-border/60 bg-card focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
                         />
                         <button
                           type="button"
@@ -313,7 +305,7 @@ const LoginPage = () => {
                 <Button
                   type="submit"
                   data-tour="auth-submit"
-                  className="w-full bg-foreground text-background hover:bg-foreground/90 py-3.5 md:py-4 px-lg rounded-xl font-semibold text-sm md:text-base shadow-sm hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3">
+                  className="w-full h-10 bg-foreground text-background hover:bg-foreground/90 rounded-md font-semibold text-sm md:text-base shadow-sm transition-colors flex items-center justify-center gap-2 md:gap-3">
                   <span>{translationMemo.btnLogin}</span>
                   <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                 </Button>

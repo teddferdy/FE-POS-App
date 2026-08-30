@@ -41,7 +41,7 @@ export const AccessDenied = () => {
         {user?.roleType ? ` (Role: ${roleLabels[user.roleType] || user.roleType})` : ""}
       </p>
       <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
-        <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+        <Button variant="danger" size="sm" onClick={() => navigate(-1)}>
           <ArrowLeft size={15} className="mr-1.5" /> Kembali
         </Button>
         <Button

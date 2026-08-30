@@ -84,13 +84,13 @@ const SupplierComparison = () => {
           supplierPhone: supplier.phone,
           supplierStore: supplier.store || [],
           productId: product.productId,
-          price: product.price || 0,
+          price: Number(product.price) || 0,
           unit: product.unit || "pcs",
-          leadTime: product.leadTime || 0,
+          leadTime: Number(product.leadTime) || 0,
           leadTimeUnit: product.leadTimeUnit || "hari",
           qualityRating: Number(product.qualityRating) || 0,
           minOrderQty: product.minOrderQty || 1,
-          lastPrice: product.lastPrice || 0
+          lastPrice: Number(product.lastPrice) || 0
         });
       }
     }
@@ -166,7 +166,7 @@ const SupplierComparison = () => {
     for (const group of supplierGroups) {
       totalProducts += group.products.length;
       for (const p of group.products) {
-        if (p.price > 0) allPrices.push(p.price);
+        if (p.price > 0) allPrices.push(Number(p.price));
       }
     }
     return {

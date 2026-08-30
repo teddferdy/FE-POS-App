@@ -7,7 +7,6 @@ const Support = () => {
   const notShowLocation = ["/", "/register", "/reset-password", "/login", "/forgot-password"];
 
   const location = useLocation();
-  console.log("Support location.pathname:", location.pathname);
 
   return (
     <div className="space-y-6">

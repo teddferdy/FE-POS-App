@@ -6,7 +6,7 @@ import { translationSelect } from "@/state/translation";
 import useKeyboardShortcuts from "@/hooks/useKeyboardShortcuts";
 
 // Offline
-import OfflineIndicator from "./components/organism/OfflineIndicator";
+import { OfflineIndicator } from "@/components/ui/OfflineIndicator";
 import { setupAutoSync } from "@/services/offline";
 
 // Layout

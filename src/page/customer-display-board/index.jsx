@@ -4,6 +4,7 @@ import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
 import { ShoppingBag, Maximize, Minimize, Sun, Moon, Store, UtensilsCrossed } from "lucide-react";
 import { useThemeStore } from "@/state/theme";
+import { useThemeEffect } from "@/hooks/useThemeEffect";
 import { getAllLocation } from "@/services/location";
 import { storeIdsEqual } from "@/utils/storeId";
 import {
@@ -59,7 +60,8 @@ const OrderItemRow = ({ item }) => {
 
 const CustomerDisplayBoard = () => {
   const { t } = useTranslation();
-  const { theme, toggleTheme } = useThemeStore();
+  const { toggleTheme } = useThemeStore();
+  useThemeEffect();
   const [searchParams] = useSearchParams();
   const storeId = searchParams.get("store");
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -74,10 +76,6 @@ const CustomerDisplayBoard = () => {
   );
   const locationList = locsData?.data || locsData || [];
   const storeName = locationList.find((l) => storeIdsEqual(l.id, storeId))?.name || "";
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
 
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
@@ -202,7 +200,7 @@ const CustomerDisplayBoard = () => {
             </div>
             <button
               onClick={toggleTheme}
-              aria-label="Toggle theme"
+              aria-label={t("header.toggleTheme")}
               className="p-2.5 rounded-xl border border-border bg-card hover:bg-muted transition-colors">
               <Sun size={18} className="hidden dark:block" />
               <Moon size={18} className="block dark:hidden" />

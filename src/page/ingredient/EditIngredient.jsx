@@ -918,7 +918,7 @@ const EditIngredient = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-6 mt-6 border-t">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="danger"
                   onClick={() => setCancelModal(true)}
                   className="w-full sm:w-auto justify-center">
                   <X size={16} className="mr-1" /> {t("page.ingredient.form.cancelButton")}
@@ -926,13 +926,14 @@ const EditIngredient = () => {
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="draft"
                     onClick={() => setDraftModal(true)}
                     disabled={mutation.isLoading}
                     className="w-full sm:w-auto justify-center">
                     {t("common.saveAsDraft")}
                   </Button>
                   <Button
+                    variant="success"
                     type="button"
                     onClick={(e) => {
                       e.preventDefault();

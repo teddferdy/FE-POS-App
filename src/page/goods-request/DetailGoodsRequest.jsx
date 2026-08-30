@@ -173,7 +173,7 @@ const DetailGoodsRequest = () => {
             )}
             {canAccess(user, MENU_KEY, "delete") && (
               <Button
-                variant="outline"
+                variant="destructive"
                 className="border-destructive text-destructive hover:bg-destructive/10"
                 onClick={() => setDeleteModal(true)}>
                 <Trash2 size={16} className="mr-1" /> {t("common.delete")}
@@ -229,7 +229,7 @@ const DetailGoodsRequest = () => {
       ) : !request ? (
         <div className="p-6">
           <p className="text-muted-foreground">{t("page.goodsRequest.detail.notFound")}</p>
-          <Button variant="outline" onClick={() => navigate("/goods-request")} className="mt-4">
+          <Button variant="danger" onClick={() => navigate("/goods-request")} className="mt-4">
             <ArrowLeft size={16} className="mr-1" /> {t("page.goodsRequest.detail.back")}
           </Button>
         </div>

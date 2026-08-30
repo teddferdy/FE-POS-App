@@ -32,6 +32,7 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadSupplierExcel } from "@/services/supplier";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import StatCard from "@/components/ui/StatCard";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
@@ -253,45 +254,37 @@ const SupplierList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground"
-              onClick={() => navigate(`/detail-supplier?id=${item.id || item._id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "view") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-amber-600 hover:text-amber-700"
-              title="Compare"
-              onClick={() => navigate("/supplier-comparison")}>
-              <Scale size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/edit-supplier?id=${item.id || item._id}`)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => handleDelete(item)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          align="center"
+          visible={2}
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              hidden: !canAccess(user, MENU_KEY, "view"),
+              onClick: () => navigate(`/detail-supplier?id=${item.id || item._id}`)
+            },
+            {
+              label: t("common.compare"),
+              icon: Scale,
+              hidden: !canAccess(user, MENU_KEY, "view"),
+              onClick: () => navigate("/supplier-comparison")
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              hidden: !canAccess(user, MENU_KEY, "edit"),
+              onClick: () => navigate(`/edit-supplier?id=${item.id || item._id}`)
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              hidden: !canAccess(user, MENU_KEY, "delete"),
+              onClick: () => handleDelete(item),
+              danger: true
+            }
+          ]}
+        />
       )
     }
   ];
@@ -354,7 +347,7 @@ const SupplierList = () => {
               )}
               {canAccess(user, MENU_KEY, "export") && (
                 <Button
-                  variant="outline"
+                  variant="general"
                   disabled={isDownloadingData}
                   onClick={async () => {
                     setIsDownloadingData(true);
@@ -383,13 +376,14 @@ const SupplierList = () => {
                 </Button>
               )}
               {canAccess(user, MENU_KEY, "import") && (
-                <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+                <Button variant="import" onClick={() => setUploadModalOpen(true)}>
                   <span className="material-symbols-outlined text-lg mr-1">upload</span>
                   {t("page.supplier.button.upload")}
                 </Button>
               )}
               {canAccess(user, MENU_KEY, "add") && (
                 <Button
+                  variant="success"
                   data-tour="supplier-add"
                   onClick={() => navigate("/add-supplier")}
                   className="shadow-md">

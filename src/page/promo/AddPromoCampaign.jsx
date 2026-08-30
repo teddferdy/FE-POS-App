@@ -779,7 +779,7 @@ const AddPromoCampaign = () => {
                             ? "Kampanye birthday aktif otomatis untuk member yang berulang tahun"
                             : "Tambahkan aturan bila diperlukan"}
                   </p>
-                  <Button type="button" variant="outline" size="sm" onClick={addRule}>
+                  <Button type="button" variant="success" size="sm" onClick={addRule}>
                     <Plus size={14} className="mr-1" />
                     {t("page.promo.form.addRule")}
                   </Button>
@@ -811,7 +811,7 @@ const AddPromoCampaign = () => {
                           </div>
                           <Button
                             type="button"
-                            variant="ghost"
+                            variant="destructive"
                             size="icon"
                             className="h-8 w-8 text-destructive hover:text-destructive"
                             onClick={() => setDeleteConfirm({ type: "rule", index })}>
@@ -921,7 +921,7 @@ const AddPromoCampaign = () => {
                         ? "Reward akan diberikan di hari ulang tahun member"
                         : "Tentukan reward yang diberikan saat kampanye terpicu"}
                   </p>
-                  <Button type="button" variant="outline" size="sm" onClick={addReward}>
+                  <Button type="button" variant="success" size="sm" onClick={addReward}>
                     <Plus size={14} className="mr-1" />
                     {t("page.promo.form.addReward")}
                   </Button>
@@ -1032,7 +1032,7 @@ const AddPromoCampaign = () => {
                           <div className="flex justify-end">
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="destructive"
                               size="icon"
                               className="h-8 w-8 text-destructive hover:text-destructive"
                               onClick={() => setDeleteConfirm({ type: "reward", index })}>
@@ -1223,7 +1223,7 @@ const AddPromoCampaign = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
         <Button
           type="button"
-          variant="outline"
+          variant="danger"
           onClick={() => setCancelModalOpen(true)}
           className="gap-2 w-full sm:w-auto justify-center">
           <X size={18} />
@@ -1232,13 +1232,14 @@ const AddPromoCampaign = () => {
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           <Button
             type="button"
-            variant="outline"
+            variant="draft"
             className="w-full sm:w-auto justify-center"
             onClick={() => handleFormSubmit(true)}
             disabled={createMutation?.isLoading}>
             {t("page.discount.add.saveAsDraft")}
           </Button>
           <Button
+            variant="success"
             type="button"
             onClick={() => handleFormSubmit(false)}
             disabled={createMutation?.isLoading}

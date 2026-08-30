@@ -36,6 +36,7 @@ import TableToolbar from "@/components/ui/TableToolbar";
 import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
 import { DatePicker } from "@/components/ui/date-picker";
+import TableActions from "@/components/ui/TableActions";
 import {
   Dialog,
   DialogContent,
@@ -390,53 +391,42 @@ const DiscountList = () => {
         const isExpired = expiryStatus === "expired" || item.status === "inactive";
         const isExpiring = expiryStatus === "expiring";
         return (
-          <div className="flex items-center justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-foreground"
-              onClick={() => navigate(`/detail-discount?id=${item.id || item._id}`)}>
-              <Eye size={18} />
-            </Button>
-            {canAccess(user, MENU_KEY, "edit") && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-primary"
-                onClick={() => navigate(`/edit-discount?id=${item.id || item._id}`)}>
-                <Edit size={18} />
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "edit") && isExpiring && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-blue-600"
-                onClick={() => handleExtend(item)}
-                title={t("page.discount.list.extend.title")}>
-                <CalendarRange size={18} />
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "edit") && isExpired && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-600"
-                onClick={() => handleReactivate(item)}
-                title={t("page.discount.list.reactivate")}>
-                <RotateCcw size={18} />
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "delete") && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive"
-                onClick={() => handleDelete(item)}>
-                <Trash2 size={18} />
-              </Button>
-            )}
-          </div>
+          <TableActions
+            visible={2}
+            align="right"
+            items={[
+              {
+                label: t("common.view"),
+                icon: Eye,
+                onClick: () => navigate(`/detail-discount?id=${item.id || item._id}`)
+              },
+              {
+                label: t("common.edit"),
+                icon: Edit,
+                onClick: () => navigate(`/edit-discount?id=${item.id || item._id}`),
+                hidden: !canAccess(user, MENU_KEY, "edit")
+              },
+              {
+                label: t("page.discount.list.extend.title"),
+                icon: CalendarRange,
+                onClick: () => handleExtend(item),
+                hidden: !canAccess(user, MENU_KEY, "edit") || !isExpiring
+              },
+              {
+                label: t("page.discount.list.reactivate"),
+                icon: RotateCcw,
+                onClick: () => handleReactivate(item),
+                hidden: !canAccess(user, MENU_KEY, "edit") || !isExpired
+              },
+              {
+                label: t("common.delete"),
+                icon: Trash2,
+                danger: true,
+                onClick: () => handleDelete(item),
+                hidden: !canAccess(user, MENU_KEY, "delete")
+              }
+            ]}
+          />
         );
       }
     }
@@ -465,7 +455,7 @@ const DiscountList = () => {
             </p>
           </div>
           {canAccess(user, MENU_KEY, "add") && (
-            <Button onClick={() => navigate("/add-discount")} className="gap-2">
+            <Button variant="success" onClick={() => navigate("/add-discount")} className="gap-2">
               <Plus size={18} />
               {t("page.discount.button.add")}
             </Button>
@@ -719,11 +709,11 @@ const DiscountList = () => {
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t">
-            <Button variant="outline" onClick={() => setExtendTarget(null)} className="gap-1">
+            <Button variant="danger" onClick={() => setExtendTarget(null)} className="gap-1">
               <X size={16} />
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleSaveExtend} className="gap-1">
+            <Button variant="success" onClick={handleSaveExtend} className="gap-1">
               {t("button.save")}
             </Button>
           </DialogFooter>

@@ -33,6 +33,7 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadExcel } from "@/services/category";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
 import StatCard from "@/components/ui/StatCard";
@@ -370,40 +371,31 @@ const CategoryList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (cat) => (
-        <div className="flex items-center justify-end gap-1 transition-opacity">
-          {canAccess(user, MENU_KEY, "view") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/detail-category?id=${cat.id || cat._id}`);
-              }}
-              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-              title={t("common.view")}>
-              <span className="material-symbols-outlined text-lg">visibility</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/edit-category?id=${cat.id || cat._id}`);
-              }}
-              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-              title={t("common.edit")}>
-              <span className="material-symbols-outlined text-lg">edit</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(cat.id || cat._id);
-              }}
-              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
-              <span className="material-symbols-outlined text-lg">delete</span>
-            </button>
-          )}
-        </div>
+        <TableActions
+          align="center"
+          visible={2}
+          items={[
+            {
+              label: t("common.view"),
+              iconName: "visibility",
+              hidden: !canAccess(user, MENU_KEY, "view"),
+              onClick: () => navigate(`/detail-category?id=${cat.id || cat._id}`)
+            },
+            {
+              label: t("common.edit"),
+              iconName: "edit",
+              hidden: !canAccess(user, MENU_KEY, "edit"),
+              onClick: () => navigate(`/edit-category?id=${cat.id || cat._id}`)
+            },
+            {
+              label: t("common.delete"),
+              iconName: "delete",
+              hidden: !canAccess(user, MENU_KEY, "delete"),
+              onClick: () => handleDelete(cat.id || cat._id),
+              danger: true
+            }
+          ]}
+        />
       )
     }
   ];
@@ -455,7 +447,7 @@ const CategoryList = () => {
             {canAccess(user, MENU_KEY, "export") && (
               <Button
                 data-tour="category-download-data"
-                variant="outline"
+                variant="general"
                 disabled={isDownloadingData}
                 onClick={async () => {
                   setIsDownloadingData(true);
@@ -489,7 +481,7 @@ const CategoryList = () => {
             {canAccess(user, MENU_KEY, "import") && (
               <Button
                 data-tour="category-upload"
-                variant="default"
+                variant="import"
                 onClick={() => setUploadModalOpen(true)}>
                 <span className="material-symbols-outlined text-lg">upload</span>
                 {t("page.category.button.upload")}
@@ -497,6 +489,7 @@ const CategoryList = () => {
             )}
             {canAccess(user, MENU_KEY, "add") && (
               <Button
+                variant="success"
                 data-tour="category-add"
                 onClick={() => navigate("/add-category")}
                 className="shadow-md">

@@ -35,9 +35,9 @@ const orderStatusBadge = (status) => {
     confirmed: "bg-blue-100 text-blue-800",
     preparing: "bg-purple-100 text-purple-800",
     ready: "bg-teal-100 text-teal-800",
-    served: "bg-gray-100 text-gray-800"
+    served: "bg-muted text-muted-foreground"
   };
-  return safeGet(map, status, "bg-gray-100 text-gray-800");
+  return safeGet(map, status, "bg-muted text-muted-foreground");
 };
 
 const getDateOnly = (dateStr) => {
@@ -62,7 +62,7 @@ const CashRegisterDetail = () => {
     open: { label: t("page.cashRegister.detail.statusOpen"), class: "bg-green-100 text-green-800" },
     closed: {
       label: t("page.cashRegister.detail.statusClosed"),
-      class: "bg-gray-100 text-gray-800"
+      class: "bg-muted text-muted-foreground"
     }
   };
   const sc = statusCfg[item?.status] || statusCfg.closed;
@@ -111,7 +111,10 @@ const CashRegisterDetail = () => {
         <div className="bg-card p-12 rounded-xl border border-border text-center">
           <Receipt size={48} className="mx-auto text-muted-foreground/40 mb-3" />
           <p className="text-muted-foreground">{t("page.cashRegister.detail.notFound")}</p>
-          <Button onClick={() => navigate("/cash-register/history")} className="mt-4">
+          <Button
+            variant="danger"
+            onClick={() => navigate("/cash-register/history")}
+            className="mt-4">
             <ArrowLeft size={16} className="mr-1" /> {t("page.cashRegister.detail.backToHistory")}
           </Button>
         </div>

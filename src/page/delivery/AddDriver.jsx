@@ -130,7 +130,7 @@ const AddDriver = () => {
         description={t("page.delivery.driver.add.description")}
         backLink="/driver-list"
         onBack={() => setCancelModalOpen(true)}>
-        <Button variant="outline" onClick={() => setCancelModalOpen(true)}>
+        <Button variant="danger" onClick={() => setCancelModalOpen(true)}>
           {t("common.cancel")}
         </Button>
       </PageHeader>
@@ -275,7 +275,7 @@ const AddDriver = () => {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
         <Button
-          variant="outline"
+          variant="danger"
           onClick={() => setCancelModalOpen(true)}
           className="gap-2 w-full sm:w-auto justify-center">
           <X size={18} />
@@ -283,7 +283,7 @@ const AddDriver = () => {
         </Button>
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
           <Button
-            variant="outline"
+            variant="draft"
             onClick={() => {
               form.setValue("status", "draft");
               const draftData = {
@@ -303,6 +303,7 @@ const AddDriver = () => {
             {t("common.saveDraft")}
           </Button>
           <Button
+            variant="success"
             onClick={() => {
               const currentStatus = form.getValues("status");
               if (currentStatus === "active") {

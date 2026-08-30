@@ -32,6 +32,7 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadIngredientCategoryExcel } from "@/services/ingredientCategory";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
@@ -196,32 +197,31 @@ const CategoryList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <button
-              onClick={() => navigate(`/detail-ingredient-category?id=${item.id}`)}
-              className="p-1.5 text-muted-foreground hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all"
-              title={t("page.ingredientCategory.list.viewTitle")}>
-              <span className="material-symbols-outlined text-lg">visibility</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <button
-              onClick={() => navigate(`/edit-ingredient-category?id=${item.id}`)}
-              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-              title={t("page.ingredientCategory.list.editTitle")}>
-              <span className="material-symbols-outlined text-lg">edit</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <button
-              onClick={() => setDeleteTarget(item.id)}
-              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-              title={t("page.ingredientCategory.list.deleteTitle")}>
-              <span className="material-symbols-outlined text-lg">delete</span>
-            </button>
-          )}
-        </div>
+        <TableActions
+          align="right"
+          visible={2}
+          items={[
+            {
+              label: t("page.ingredientCategory.list.viewTitle"),
+              iconName: "visibility",
+              hidden: !canAccess(user, MENU_KEY, "view"),
+              onClick: () => navigate(`/detail-ingredient-category?id=${item.id}`)
+            },
+            {
+              label: t("page.ingredientCategory.list.editTitle"),
+              iconName: "edit",
+              hidden: !canAccess(user, MENU_KEY, "edit"),
+              onClick: () => navigate(`/edit-ingredient-category?id=${item.id}`)
+            },
+            {
+              label: t("page.ingredientCategory.list.deleteTitle"),
+              iconName: "delete",
+              hidden: !canAccess(user, MENU_KEY, "delete"),
+              onClick: () => setDeleteTarget(item.id),
+              danger: true
+            }
+          ]}
+        />
       )
     }
   ];
@@ -288,7 +288,7 @@ const CategoryList = () => {
               )}
               {canAccess(user, MENU_KEY, "export") && (
                 <Button
-                  variant="outline"
+                  variant="general"
                   disabled={isDownloadingData}
                   onClick={async () => {
                     setIsDownloadingData(true);
@@ -317,13 +317,16 @@ const CategoryList = () => {
                 </Button>
               )}
               {canAccess(user, MENU_KEY, "import") && (
-                <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+                <Button variant="import" onClick={() => setUploadModalOpen(true)}>
                   <span className="material-symbols-outlined text-lg mr-1">upload</span>
                   {t("page.ingredientCategory.button.upload")}
                 </Button>
               )}
               {canAccess(user, MENU_KEY, "create") && (
-                <Button onClick={() => navigate("/add-ingredient-category")} className="shadow-md">
+                <Button
+                  variant="success"
+                  onClick={() => navigate("/add-ingredient-category")}
+                  className="shadow-md">
                   <Plus size={16} className="mr-1" />
                   {t("page.ingredientCategory.list.addButton")}
                 </Button>

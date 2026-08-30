@@ -43,6 +43,7 @@ import TableToolbar from "@/components/ui/TableToolbar";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { canAccess } from "@/utils/permission";
 import { Combobox } from "@/components/ui/combobox";
+import TableActions from "@/components/ui/TableActions";
 
 const ProductList = () => {
   const { t } = useTranslation();
@@ -393,14 +394,11 @@ const ProductList = () => {
     },
     {
       header: t("common.modifiedBy"),
-      render: (item) => {
-        console.log("ITEM =>", item);
-        return (
-          <span className="text-sm text-muted-foreground">
-            {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
-          </span>
-        );
-      }
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || "-"}
+        </span>
+      )
     },
     {
       header: t("page.product.table.updatedAt"),
@@ -426,35 +424,31 @@ const ProductList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (product) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/detail-product/${product.id || product._id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/edit-product?id=${product.id || product._id}`)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => handleDelete(product.id || product._id)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          visible={2}
+          align="right"
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/detail-product/${product.id || product._id}`),
+              hidden: !canAccess(user, MENU_KEY, "view")
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => navigate(`/edit-product?id=${product.id || product._id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => handleDelete(product.id || product._id),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -493,7 +487,7 @@ const ProductList = () => {
       )}
       {canAccess(user, MENU_KEY, "export") && (
         <Button
-          variant="outline"
+          variant="general"
           disabled={isDownloadingData}
           onClick={async () => {
             setIsDownloadingData(true);
@@ -523,7 +517,7 @@ const ProductList = () => {
       {canAccess(user, MENU_KEY, "import") && (
         <Button
           data-tour="product-import"
-          variant="default"
+          variant="import"
           onClick={() => setUploadModalOpen(true)}>
           <Upload size={16} className="mr-1" />
           {t("page.product.button.import")}
@@ -531,6 +525,7 @@ const ProductList = () => {
       )}
       {canAccess(user, MENU_KEY, "add") && (
         <Button
+          variant="success"
           data-tour="product-add"
           onClick={() => navigate("/add-product")}
           className="shadow-md">

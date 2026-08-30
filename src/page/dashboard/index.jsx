@@ -5,9 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import {
-  Download,
   Eye,
-  Printer,
   UtensilsCrossed,
   Package,
   Users,
@@ -630,10 +628,6 @@ const Dashboard = () => {
                   <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded shrink-0">
                     {totalOrders} {t("page.dashboard.chartTotal", { count: totalOrders })}
                   </span>
-                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
-                    <Download size={14} />
-                    {t("page.dashboard.downloadReport")}
-                  </button>
                 </div>
               </div>
               {!chartHasData ? (
@@ -850,9 +844,6 @@ const Dashboard = () => {
                                 className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                                 onClick={() => navigate("/report/sales")}>
                                 <Eye size={16} />
-                              </button>
-                              <button className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                                <Printer size={16} />
                               </button>
                             </div>
                           </td>

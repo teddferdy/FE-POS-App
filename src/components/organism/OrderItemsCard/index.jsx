@@ -211,7 +211,7 @@ export default function OrderItemsCard({
           </div>
           <Button
             type="button"
-            variant="secondary"
+            variant="success"
             size="sm"
             className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0 shrink-0"
             onClick={onAddItem}>
@@ -246,7 +246,7 @@ export default function OrderItemsCard({
             </p>
             <Button
               type="button"
-              variant="outline"
+              variant="success"
               size="sm"
               className="mt-3 gap-1.5"
               onClick={onAddItem}>
@@ -427,7 +427,7 @@ export default function OrderItemsCard({
                             {items.length > 1 && (
                               <Button
                                 type="button"
-                                variant="ghost"
+                                variant="destructive"
                                 size="icon"
                                 className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={() => onRemoveItem(idx)}>
@@ -494,7 +494,7 @@ export default function OrderItemsCard({
                       {items.length > 1 && (
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="destructive"
                           size="icon"
                           className="h-7 w-7 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
                           onClick={() => onRemoveItem(idx)}>

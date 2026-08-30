@@ -475,12 +475,13 @@ const EditReservation = () => {
               />
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
                 <Button
-                  variant="outline"
+                  variant="danger"
                   onClick={() => setCancelModal(true)}
                   className="gap-2 w-full sm:w-auto justify-center">
                   <X size={18} /> {t("page.reservation.edit.cancel")}
                 </Button>
                 <Button
+                  variant="success"
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();

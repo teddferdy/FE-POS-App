@@ -12,14 +12,16 @@ const NoStore = () => {
   return (
     <Card className="p-12 w-full">
       <div className="flex flex-col items-center justify-between text-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-          <Store size={32} className="text-muted-foreground" />
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl border bg-muted/60 text-muted-foreground shadow-sm">
+          <Store className="h-10 w-10" strokeWidth={1.5} />
         </div>
         <div>
           <p className="text-lg font-semibold text-foreground">{t("page.noStore.title")}</p>
           <p className="text-sm text-muted-foreground mt-1">{t("page.noStore.description")}</p>
         </div>
-        <Button onClick={() => navigate("/add-location")}>{t("page.noStore.action")}</Button>
+        <Button variant="success" onClick={() => navigate("/add-location")}>
+          {t("page.noStore.action")}
+        </Button>
       </div>
     </Card>
   );

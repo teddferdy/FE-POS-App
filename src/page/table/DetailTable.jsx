@@ -60,7 +60,7 @@ const DetailTable = () => {
         <Button variant="outline" onClick={() => refetch()}>
           {t("common.retry")}
         </Button>
-        <Button variant="ghost" onClick={() => navigate("/table-list")}>
+        <Button variant="danger" onClick={() => navigate("/table-list")}>
           {t("common.back")}
         </Button>
       </div>

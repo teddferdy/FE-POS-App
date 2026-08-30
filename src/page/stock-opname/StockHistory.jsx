@@ -173,7 +173,7 @@ const StockHistory = () => {
     };
     return (
       <span
-        className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${safeGet(map, type, "bg-gray-100 text-gray-700")}`}>
+        className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${safeGet(map, type, "bg-muted text-muted-foreground")}`}>
         {safeGet(labels, type) || type}
       </span>
     );

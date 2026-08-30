@@ -509,7 +509,7 @@ const AddStockOpname = () => {
             backLink="/stock-opname"
             onBack={() => setCancelModal(true)}>
             <Button
-              variant="outline"
+              variant="import"
               size="sm"
               onClick={() => setUploadModalOpen(true)}
               className="transition-all">
@@ -902,7 +902,7 @@ const AddStockOpname = () => {
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
               <Button
-                variant="outline"
+                variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="transition-all w-full sm:w-auto justify-center">
                 <X size={16} className="mr-1" />
@@ -910,7 +910,7 @@ const AddStockOpname = () => {
               </Button>
               <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                 <Button
-                  variant="outline"
+                  variant="draft"
                   onClick={() => setDraftModal(true)}
                   disabled={isSubmitting}
                   className="transition-all min-w-[140px] w-full sm:w-auto justify-center">
@@ -918,6 +918,7 @@ const AddStockOpname = () => {
                   {isSubmitting ? t("common.saving") : t("page.stockOpname.button.saveDraft")}
                 </Button>
                 <Button
+                  variant="success"
                   onClick={handleSaveComplete}
                   disabled={isSubmitting}
                   className="transition-all min-w-[140px] w-full sm:w-auto justify-center">

@@ -286,6 +286,7 @@ const VariantModal = ({ product, onSelect, onClose }) => {
             <span className="text-lg font-bold text-primary">Rp {formatPrice(totalPrice)}</span>
           </div>
           <Button
+            variant="success"
             onClick={() => {
               const choice = {
                 label: selectedOption?.label || selectedModifier?.label || null,

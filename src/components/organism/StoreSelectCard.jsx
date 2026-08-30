@@ -88,7 +88,11 @@ const StoreSelectCard = ({
       ) : locations.length === 0 ? (
         <div className="flex items-center gap-3 pl-9">
           <p className="text-sm text-muted-foreground">{noStoreLabel}</p>
-          <Button size="sm" onClick={() => navigate("/add-location")} className="gap-1.5 shrink-0">
+          <Button
+            variant="success"
+            size="sm"
+            onClick={() => navigate("/add-location")}
+            className="gap-1.5 shrink-0">
             <Plus size={16} />
             {addStoreLabel}
           </Button>

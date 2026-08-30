@@ -553,7 +553,7 @@ const EditEmployee = () => {
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <span className="material-symbols-outlined text-6xl text-muted-foreground">badge</span>
         <p className="text-muted-foreground">{t("page.employee.edit.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/employee-list")}>
+        <Button variant="danger" onClick={() => navigate("/employee-list")}>
           {t("common.cancel")}
         </Button>
       </div>
@@ -879,7 +879,7 @@ const EditEmployee = () => {
                                     </div>
                                     <Button
                                       type="button"
-                                      variant="outline"
+                                      variant="success"
                                       size="sm"
                                       onClick={() => navigate("/add-department")}
                                       className="gap-2">
@@ -904,7 +904,7 @@ const EditEmployee = () => {
                                     </div>
                                     <Button
                                       type="button"
-                                      variant="outline"
+                                      variant="success"
                                       size="icon"
                                       className="shrink-0"
                                       onClick={() => navigate("/add-department")}
@@ -942,7 +942,7 @@ const EditEmployee = () => {
                                     </div>
                                     <Button
                                       type="button"
-                                      variant="outline"
+                                      variant="success"
                                       size="sm"
                                       onClick={() => navigate("/add-position")}
                                       className="gap-2">
@@ -972,7 +972,7 @@ const EditEmployee = () => {
                                     </div>
                                     <Button
                                       type="button"
-                                      variant="outline"
+                                      variant="success"
                                       size="icon"
                                       className="shrink-0"
                                       onClick={() => navigate("/add-position")}
@@ -1010,7 +1010,7 @@ const EditEmployee = () => {
                                     </div>
                                     <Button
                                       type="button"
-                                      variant="outline"
+                                      variant="success"
                                       size="sm"
                                       onClick={() => navigate("/add-location")}
                                       className="gap-2">
@@ -1038,7 +1038,7 @@ const EditEmployee = () => {
                                     </div>
                                     <Button
                                       type="button"
-                                      variant="outline"
+                                      variant="success"
                                       size="icon"
                                       className="shrink-0"
                                       onClick={() => navigate("/add-location")}
@@ -1556,7 +1556,7 @@ const EditEmployee = () => {
                   <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-5 border-t border-border mt-6">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="danger"
                       className="w-full sm:w-auto"
                       onClick={() => setCancelModal(true)}>
                       <span className="material-symbols-outlined text-lg">arrow_back</span>
@@ -1565,12 +1565,13 @@ const EditEmployee = () => {
                     <div className="flex gap-3">
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="draft"
                         onClick={() => setDraftModal(true)}
                         disabled={isSubmitting}>
                         {t("page.employee.edit.saveAsDraft")}
                       </Button>
                       <Button
+                        variant="success"
                         type="button"
                         disabled={isSubmitting}
                         className="w-full sm:w-auto gap-2"

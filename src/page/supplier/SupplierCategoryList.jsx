@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { SearchInput } from "@/components/ui/SearchInput";
 import StatCard from "@/components/ui/StatCard";
@@ -280,29 +281,28 @@ const SupplierCategoryList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (cat) => (
-        <div className="flex items-center justify-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-primary"
-            onClick={() => navigate(`/detail-supplier-category?id=${cat.id}`)}>
-            <Eye size={18} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            onClick={() => handleEdit(cat)}>
-            <Edit size={18} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => setDeleteTarget(cat)}>
-            <Trash2 size={18} />
-          </Button>
-        </div>
+        <TableActions
+          align="center"
+          visible={2}
+          items={[
+            {
+              label: t("common.detail", "Detail"),
+              icon: Eye,
+              onClick: () => navigate(`/detail-supplier-category?id=${cat.id}`)
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => handleEdit(cat)
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              onClick: () => setDeleteTarget(cat),
+              danger: true
+            }
+          ]}
+        />
       )
     }
   ];
@@ -328,7 +328,7 @@ const SupplierCategoryList = () => {
         title={t("page.supplierCategory.title")}
         description={t("page.supplierCategory.description")}
         backLink="/supplier">
-        <Button onClick={handleCreate} className="gap-1.5 shadow-md">
+        <Button variant="success" onClick={handleCreate} className="gap-1.5 shadow-md">
           <Plus size={16} />
           {t("page.supplierCategory.add")}
         </Button>

@@ -47,6 +47,7 @@ import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
+import TableActions from "@/components/ui/TableActions";
 
 const statusColors = {
   available: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
@@ -294,49 +295,45 @@ const TableList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (row) => (
-        <div className="flex items-center justify-end gap-1">
-          {(row.status === "reserved" || row.status === "occupied") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-green-600"
-              title={t("page.table.setAvailable")}
-              onClick={() => setStatusTarget(row)}>
-              <RotateCcw size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "detail") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              title={t("common.view")}
-              onClick={() => navigate(`/detail-table?id=${row.id || row._id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => openEdit(row)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setQrTarget(row)}>
-            <QrCode size={18} />
-          </Button>
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => setDeleteTarget(row)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          visible={2}
+          align="right"
+          items={[
+            ...(row.status === "reserved" || row.status === "occupied"
+              ? [
+                  {
+                    label: t("page.table.setAvailable"),
+                    icon: RotateCcw,
+                    onClick: () => setStatusTarget(row)
+                  }
+                ]
+              : []),
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/detail-table?id=${row.id || row._id}`),
+              hidden: !canAccess(user, MENU_KEY, "detail")
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => openEdit(row),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("common.qr"),
+              icon: QrCode,
+              onClick: () => setQrTarget(row)
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => setDeleteTarget(row),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -360,6 +357,7 @@ const TableList = () => {
         </div>
         {canAccess(user, MENU_KEY, "add") && isSuperAdmin && (locData?.data || []).length > 0 && (
           <Button
+            variant="success"
             onClick={() => {
               setShowAddModal(true);
               setEditTarget(null);

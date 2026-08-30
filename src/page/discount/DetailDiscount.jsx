@@ -67,7 +67,7 @@ const DetailDiscount = () => {
         <Button variant="outline" onClick={() => refetch()}>
           {t("common.retry")}
         </Button>
-        <Button variant="ghost" onClick={() => navigate("/discount-list")}>
+        <Button variant="danger" onClick={() => navigate("/discount-list")}>
           {t("common.back")}
         </Button>
       </div>

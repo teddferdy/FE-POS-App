@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
@@ -98,6 +99,7 @@ const RoleManagement = () => {
           <div className="flex items-center gap-2 flex-nowrap">
             {canAccess(user, MENU_KEY, "add") && (
               <Button
+                variant="success"
                 data-tour="role-add"
                 onClick={() => navigate("/add-role")}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
@@ -192,7 +194,7 @@ const RoleManagement = () => {
                               ? "bg-red-100 text-red-700"
                               : row.roleType === "admin"
                                 ? "bg-blue-100 text-blue-700"
-                                : "bg-gray-100 text-gray-700"
+                                : "bg-muted text-muted-foreground"
                           }`}>
                           {row.roleType}
                         </span>
@@ -288,32 +290,30 @@ const RoleManagement = () => {
                         { icon: Trash2, label: t("common.delete") }
                       ],
                       render: (row) => (
-                        <div className="flex justify-end gap-1">
-                          {canAccess(user, MENU_KEY, "view") && (
-                            <button
-                              onClick={() => navigate(`/detail-role/${row.id}`)}
-                              className="p-1.5 text-muted-foreground hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all"
-                              title={t("page.globalSetting.roleManagement.tooltip.detail")}>
-                              <Eye size={18} />
-                            </button>
-                          )}
-                          {canAccess(user, MENU_KEY, "edit") && (
-                            <button
-                              onClick={() => navigate(`/edit-role/${row.id}`)}
-                              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                              title={t("common.edit")}>
-                              <Edit size={18} />
-                            </button>
-                          )}
-                          {!isProtected(row) && canAccess(user, MENU_KEY, "delete") && (
-                            <button
-                              onClick={() => setDeleteTarget(row)}
-                              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-                              title={t("common.delete")}>
-                              <Trash2 size={18} />
-                            </button>
-                          )}
-                        </div>
+                        <TableActions
+                          align="right"
+                          items={[
+                            {
+                              label: t("page.globalSetting.roleManagement.tooltip.detail"),
+                              icon: Eye,
+                              onClick: () => navigate(`/detail-role/${row.id}`),
+                              hidden: !canAccess(user, MENU_KEY, "view")
+                            },
+                            {
+                              label: t("common.edit"),
+                              icon: Edit,
+                              onClick: () => navigate(`/edit-role/${row.id}`),
+                              hidden: !canAccess(user, MENU_KEY, "edit")
+                            },
+                            {
+                              label: t("common.delete"),
+                              icon: Trash2,
+                              danger: true,
+                              onClick: () => setDeleteTarget(row),
+                              hidden: !canAccess(user, MENU_KEY, "delete") || isProtected(row)
+                            }
+                          ]}
+                        />
                       )
                     }
                   ]}

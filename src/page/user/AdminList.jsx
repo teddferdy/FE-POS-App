@@ -8,6 +8,7 @@ import { getAllUsers, changeUserStatus } from "@/services/user";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, CheckCircle, FileEdit, Edit, Trash2, XCircle } from "lucide-react";
 import { canAccess } from "@/utils/permission";
@@ -47,7 +48,7 @@ const roleColors = {
     "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800",
   supervisor:
     "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800",
-  manager: "bg-surface-container-high text-on-surface text-label-md font-label-md"
+  manager: "bg-muted text-foreground text-xs font-medium"
 };
 
 const getRoleClass = (role) => {
@@ -153,6 +154,7 @@ const AdminList = () => {
           */}
             {canAccess(user, MENU_KEY, "add") && (
               <Button
+                variant="success"
                 onClick={() => navigate("/add-user")}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
                 <span className="material-symbols-outlined text-lg">person_add</span>
@@ -213,7 +215,7 @@ const AdminList = () => {
                   </h4>
                   <div className="flex gap-3">
                     {canAccess(user, MENU_KEY, "export") && (
-                      <Button variant="outline" size="sm" className="gap-2 h-9">
+                      <Button variant="general" size="sm" className="gap-2 h-9">
                         <span className="material-symbols-outlined text-base">download</span>
                         {t("page.user.adminList.exportCsv")}
                       </Button>
@@ -373,7 +375,7 @@ const AdminList = () => {
                               </td>
                               <td className="px-6 py-4 text-right">
                                 {user.status === "pending" || user.isActive === null ? (
-                                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Button
                                       variant="outline"
                                       size="sm"
@@ -383,32 +385,38 @@ const AdminList = () => {
                                       className="h-8 text-xs gap-1 bg-primary text-primary-foreground hover:brightness-110 border-0">
                                       {t("page.user.adminList.activate")}
                                     </Button>
-                                    <button
-                                      className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-                                      onClick={() =>
-                                        setStatusModal({ id: user.id, status: "inactive" })
-                                      }>
-                                      <span className="material-symbols-outlined text-lg">
-                                        close
-                                      </span>
-                                    </button>
+                                    <TableActions
+                                      align="right"
+                                      visible={2}
+                                      items={[
+                                        {
+                                          label: t("common.deactivate"),
+                                          iconName: "close",
+                                          danger: true,
+                                          onClick: () =>
+                                            setStatusModal({ id: user.id, status: "inactive" })
+                                        }
+                                      ]}
+                                    />
                                   </div>
                                 ) : (
-                                  <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    {canAccess(user, MENU_KEY, "edit") && (
-                                      <button className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all">
-                                        <span className="material-symbols-outlined text-lg">
-                                          edit
-                                        </span>
-                                      </button>
-                                    )}
-                                    {canAccess(user, MENU_KEY, "delete") && (
-                                      <button className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
-                                        <span className="material-symbols-outlined text-lg">
-                                          delete
-                                        </span>
-                                      </button>
-                                    )}
+                                  <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <TableActions
+                                      align="right"
+                                      items={[
+                                        {
+                                          label: t("common.edit"),
+                                          iconName: "edit",
+                                          hidden: !canAccess(user, MENU_KEY, "edit")
+                                        },
+                                        {
+                                          label: t("common.delete"),
+                                          iconName: "delete",
+                                          danger: true,
+                                          hidden: !canAccess(user, MENU_KEY, "delete")
+                                        }
+                                      ]}
+                                    />
                                   </div>
                                 )}
                               </td>

@@ -12,6 +12,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
@@ -111,33 +112,29 @@ const BomList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/bom/detail?id=${item.id}`)}>
-            <Eye size={18} />
-          </Button>
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/bom/add?id=${item.id}`)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => setDeleteTarget(item.id)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          align="right"
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/bom/detail?id=${item.id}`)
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => navigate(`/bom/add?id=${item.id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => setDeleteTarget(item.id),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -161,7 +158,7 @@ const BomList = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("page.bom.list.description")}</p>
         </div>
         {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/bom/add")} className="shrink-0 gap-2">
+          <Button variant="success" onClick={() => navigate("/bom/add")} className="shrink-0 gap-2">
             <Plus size={16} /> {t("page.bom.list.addButton")}
           </Button>
         )}

@@ -260,7 +260,7 @@ const DetailProduct = () => {
         <Button variant="outline" onClick={() => refetch()}>
           {t("common.retry")}
         </Button>
-        <Button variant="ghost" onClick={() => navigate("/product-list")}>
+        <Button variant="danger" onClick={() => navigate("/product-list")}>
           {t("common.back")}
         </Button>
       </div>
@@ -869,7 +869,7 @@ const DetailProduct = () => {
                     <p className="text-sm text-muted-foreground">
                       {t("page.product.detail.noComposition")}
                     </p>
-                    <Button onClick={() => navigate(`/bom/add?productId=${id}`)}>
+                    <Button variant="success" onClick={() => navigate(`/bom/add?productId=${id}`)}>
                       {t("page.product.detail.addComposition")}
                     </Button>
                   </div>

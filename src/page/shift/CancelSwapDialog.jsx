@@ -83,7 +83,7 @@ const CancelSwapDialog = ({ open, onOpenChange, swap, onSuccess }) => {
           </Button>
           <Button
             size="sm"
-            variant="destructive"
+            variant="danger"
             disabled={cancelMutation.isLoading}
             onClick={handleCancel}>
             {cancelMutation.isLoading ? (

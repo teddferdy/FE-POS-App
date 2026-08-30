@@ -311,12 +311,13 @@ const StockAdjustment = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="danger"
                     onClick={() => navigate(-1)}
                     className="w-full sm:w-auto justify-center">
                     {t("page.stockAdjustment.form.cancel")}
                   </Button>
                   <Button
+                    variant="success"
                     type="submit"
                     disabled={submitting || (isSuperAdmin && !queryStore)}
                     className="w-full sm:w-auto justify-center">

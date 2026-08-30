@@ -32,6 +32,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
@@ -249,33 +250,29 @@ const IngredientList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground"
-            onClick={() => navigate(`/detail-ingredient?id=${item.id}`)}>
-            <Eye size={18} />
-          </Button>
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/edit-ingredient?id=${item.id}`)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => setDeleteTarget(item)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          align="right"
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/detail-ingredient?id=${item.id}`)
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => navigate(`/edit-ingredient?id=${item.id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => setDeleteTarget(item),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -340,7 +337,7 @@ const IngredientList = () => {
               )}
               {canAccess(user, MENU_KEY, "export") && (
                 <Button
-                  variant="outline"
+                  variant="general"
                   disabled={downloadingData}
                   onClick={async () => {
                     setDownloadingData(true);
@@ -369,13 +366,16 @@ const IngredientList = () => {
                 </Button>
               )}
               {canAccess(user, MENU_KEY, "import") && (
-                <Button variant="outline" onClick={() => setImportModal(true)}>
+                <Button variant="import" onClick={() => setImportModal(true)}>
                   <Upload size={16} className="mr-1" />
                   {t("page.ingredient.list.btnImport")}
                 </Button>
               )}
               {canAccess(user, MENU_KEY, "add") && (
-                <Button onClick={() => navigate("/add-ingredient")} className="gap-2 shadow-md">
+                <Button
+                  variant="success"
+                  onClick={() => navigate("/add-ingredient")}
+                  className="gap-2 shadow-md">
                   <Plus size={18} /> {t("page.ingredient.list.btnAdd")}
                 </Button>
               )}

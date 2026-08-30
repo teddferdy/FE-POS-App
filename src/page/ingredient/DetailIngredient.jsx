@@ -77,7 +77,7 @@ const DetailIngredient = () => {
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <Package size={40} />
         <p>{t("page.ingredient.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/ingredient")}>
+        <Button variant="danger" onClick={() => navigate("/ingredient")}>
           {t("common.back")}
         </Button>
       </div>
@@ -110,8 +110,8 @@ const DetailIngredient = () => {
       }[ingredient.status] || {
         label: ingredient.status || "-",
         icon: XCircle,
-        bg: "bg-gray-500 text-white",
-        badge: "bg-gray-100 text-gray-800 border border-gray-200"
+        bg: "bg-muted text-muted-foreground",
+        badge: "bg-muted text-muted-foreground border border-border"
       }
     : null;
 
@@ -210,7 +210,7 @@ const DetailIngredient = () => {
         <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
           <Package size={40} />
           <p>{t("page.ingredient.notFound")}</p>
-          <Button variant="outline" onClick={() => navigate("/ingredient-list")}>
+          <Button variant="danger" onClick={() => navigate("/ingredient-list")}>
             {t("common.back")}
           </Button>
         </div>

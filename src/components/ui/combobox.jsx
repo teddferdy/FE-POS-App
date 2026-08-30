@@ -53,15 +53,22 @@ export function Combobox({
             {showClear && (
               <span
                 role="button"
-                tabIndex={-1}
+                tabIndex={0}
                 aria-label="Clear"
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                   onClear?.();
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onClear?.();
+                  }
+                }}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-destructive transition-colors">
+                className="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-destructive transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                 <X size={14} />
               </span>
             )}

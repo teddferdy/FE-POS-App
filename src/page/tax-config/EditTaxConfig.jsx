@@ -354,7 +354,7 @@ const EditTaxConfig = () => {
             />
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
               <Button
-                variant="outline"
+                variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2 w-full sm:w-auto justify-center">
                 <X size={18} />
@@ -363,7 +363,7 @@ const EditTaxConfig = () => {
               <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="draft"
                   onClick={() => setDraftModal(true)}
                   disabled={updateMutation.isLoading}
                   className="gap-2 w-full sm:w-auto justify-center">
@@ -371,6 +371,7 @@ const EditTaxConfig = () => {
                   {t("common.saveAsDraft")}
                 </Button>
                 <Button
+                  variant="success"
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();

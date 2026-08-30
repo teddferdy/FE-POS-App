@@ -26,6 +26,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { useTranslation } from "react-i18next";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -61,7 +62,7 @@ const ReservationList = () => {
     },
     no_show: {
       label: t("page.reservation.status.noShow"),
-      color: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+      color: "bg-muted text-muted-foreground dark:bg-muted/60 dark:text-muted-foreground"
     }
   };
   const navigate = useNavigate();
@@ -265,61 +266,53 @@ const ReservationList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          {item.status === "pending" && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-600"
-                disabled={statusMutation.isLoading}
-                onClick={() =>
-                  setConfirmTarget({
-                    id: item.id,
-                    status: "confirmed",
-                    customerName: item.customerName
-                  })
-                }>
-                <Check size={18} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-red-600"
-                disabled={statusMutation.isLoading}
-                onClick={() =>
-                  setConfirmTarget({
-                    id: item.id,
-                    status: "cancelled",
-                    customerName: item.customerName
-                  })
-                }>
-                <X size={18} />
-              </Button>
-            </>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => navigate(`/reservation/${item.id}`)}>
-            <Eye size={18} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/edit-reservation?id=${item.id}`)}>
-            <Edit size={18} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive"
-            onClick={() => setDeleteTarget(item)}>
-            <Trash2 size={18} />
-          </Button>
-        </div>
+        <TableActions
+          align="right"
+          items={[
+            ...(item.status === "pending"
+              ? [
+                  {
+                    label: t("common.confirm"),
+                    icon: Check,
+                    disabled: statusMutation.isLoading,
+                    onClick: () =>
+                      setConfirmTarget({
+                        id: item.id,
+                        status: "confirmed",
+                        customerName: item.customerName
+                      })
+                  },
+                  {
+                    label: t("common.cancel"),
+                    icon: X,
+                    disabled: statusMutation.isLoading,
+                    onClick: () =>
+                      setConfirmTarget({
+                        id: item.id,
+                        status: "cancelled",
+                        customerName: item.customerName
+                      })
+                  }
+                ]
+              : []),
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/reservation/${item.id}`)
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => navigate(`/edit-reservation?id=${item.id}`)
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => setDeleteTarget(item)
+            }
+          ]}
+        />
       )
     }
   ];
@@ -341,7 +334,7 @@ const ReservationList = () => {
           <h1 className="text-2xl font-bold text-foreground">{t("page.reservation.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.reservation.description")}</p>
         </div>
-        <Button onClick={() => navigate("/add-reservation")} className="gap-2">
+        <Button variant="success" onClick={() => navigate("/add-reservation")} className="gap-2">
           <Plus size={18} /> {t("page.reservation.addButton")}
         </Button>
       </div>

@@ -1207,12 +1207,13 @@ const CheckoutModal = ({
               </div>
               <div className="flex gap-2 px-5 py-4 border-t border-border/50 bg-muted/20">
                 <Button
-                  variant="outline"
+                  variant="success"
                   onClick={() => setAddCustomerOpen(false)}
                   className="flex-1">
                   {t("page.cashier.addCustomerCancel")}
                 </Button>
                 <Button
+                  variant="success"
                   onClick={handleAddCustomer}
                   disabled={!newCustomerName.trim() || addCustomerMutation.isLoading}
                   className="flex-1">
@@ -1247,12 +1248,13 @@ const CheckoutModal = ({
               </div>
               <div className="flex gap-2">
                 <Button
-                  variant="outline"
+                  variant="danger"
                   onClick={() => setQrisPending(false)}
                   className="flex-1 h-12 rounded-xl">
                   {t("page.cashier.cancel", "Batal")}
                 </Button>
                 <Button
+                  variant="success"
                   onClick={handleQrisConfirm}
                   disabled={mutation.isLoading}
                   className="flex-[2] h-12 rounded-xl font-semibold text-sm">
@@ -1269,6 +1271,7 @@ const CheckoutModal = ({
             </>
           ) : (
             <Button
+              variant="success"
               onClick={handleSubmit}
               disabled={!canSubmit || mutation.isLoading}
               className="w-full h-12 rounded-xl font-semibold text-sm relative overflow-hidden group/btn">

@@ -388,7 +388,7 @@ const DashboardUser = () => {
                       shiftActive === true
                         ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                         : shiftActive === false
-                          ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                          ? "bg-muted text-muted-foreground dark:bg-muted/60 dark:text-muted-foreground"
                           : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                     }`}>
                     {shiftActive === true ? (
@@ -683,7 +683,7 @@ const DashboardUser = () => {
                         }
                       : {
                           label: "Dibatalkan",
-                          cls: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+                          cls: "bg-muted text-muted-foreground dark:bg-muted/60 dark:text-muted-foreground",
                           icon: CircleDashed
                         };
               const StatusIcon = statusCfg.icon;
@@ -745,7 +745,7 @@ const DashboardUser = () => {
                   {s.status === "pending" && (
                     <div className="mt-3 pt-2 border-t border-border/60 flex justify-end">
                       <Button
-                        variant="outline"
+                        variant="danger"
                         size="sm"
                         className="h-8 gap-1.5 text-xs text-red-600 dark:text-red-400 hover:text-red-600 dark:hover:text-red-400"
                         onClick={() => setCancelSwap(s)}>

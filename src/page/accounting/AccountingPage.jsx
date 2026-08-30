@@ -331,7 +331,7 @@ const AccountsTab = ({ storeId, isAll }) => {
           <p className="text-sm text-muted-foreground">{t("page.accounting.accounts.desc")}</p>
         </div>
         {!isAll && (
-          <Button size="sm" onClick={openAdd}>
+          <Button variant="success" size="sm" onClick={openAdd}>
             <Plus size={15} className="mr-1" /> {t("page.accounting.accounts.add")}
           </Button>
         )}
@@ -674,7 +674,7 @@ const JournalTab = ({ storeId, isAll }) => {
           <p className="text-sm text-muted-foreground">{t("page.accounting.journal.desc")}</p>
         </div>
         {!isAll && (
-          <Button size="sm" onClick={() => setAdding(true)}>
+          <Button variant="success" size="sm" onClick={() => setAdding(true)}>
             <Plus size={15} className="mr-1" /> {t("page.accounting.journal.add")}
           </Button>
         )}
@@ -955,7 +955,7 @@ const ManualLines = ({ accounts }) => {
         <p className="text-xs font-medium text-muted-foreground">
           {t("page.accounting.journal.lines")}
         </p>
-        <Button type="button" variant="outline" size="sm" onClick={() => setCount((c) => c + 1)}>
+        <Button type="button" variant="success" size="sm" onClick={() => setCount((c) => c + 1)}>
           <Plus size={14} className="mr-1" /> {t("page.accounting.journal.addLine")}
         </Button>
       </div>

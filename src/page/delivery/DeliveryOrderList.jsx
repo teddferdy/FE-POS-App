@@ -8,12 +8,12 @@ import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { Truck, Clock, Route, CheckCircle, XCircle, Eye, Package } from "lucide-react";
 import { toast } from "sonner";
 import { getDeliveryOrders, cancelDeliveryOrder } from "@/services/delivery";
-import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
@@ -52,7 +52,7 @@ const statusBadge = (status) => {
     cancelled:
       "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
   };
-  return safeGet(map, status, "bg-gray-100 text-gray-800");
+  return safeGet(map, status, "bg-muted text-muted-foreground");
 };
 
 const DeliveryOrderList = () => {
@@ -177,28 +177,28 @@ const DeliveryOrderList = () => {
         { icon: XCircle, label: t("common.cancel") }
       ],
       render: (order) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/detail-delivery-order?id=${order.id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") &&
-            order.status !== "delivered" &&
-            order.status !== "cancelled" && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive"
-                onClick={() => setCancelTarget(order)}>
-                <XCircle size={18} />
-              </Button>
-            )}
-        </div>
+        <TableActions
+          align="right"
+          visible={2}
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              hidden: !canAccess(user, MENU_KEY, "view"),
+              onClick: () => navigate(`/detail-delivery-order?id=${order.id}`)
+            },
+            {
+              label: t("common.cancel"),
+              icon: XCircle,
+              danger: true,
+              hidden:
+                !canAccess(user, MENU_KEY, "edit") ||
+                order.status === "delivered" ||
+                order.status === "cancelled",
+              onClick: () => setCancelTarget(order)
+            }
+          ]}
+        />
       )
     }
   ];

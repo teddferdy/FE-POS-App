@@ -904,7 +904,7 @@ const EditCategory = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="danger"
                   className="w-full sm:w-auto justify-center"
                   onClick={() => setCancelModal(true)}>
                   {t("common.cancel")}
@@ -920,13 +920,14 @@ const EditCategory = () => {
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="draft"
                     className="w-full sm:w-auto justify-center"
                     onClick={() => form.handleSubmit((v) => onSubmit(v, true))()}
                     disabled={isSubmitting}>
                     {t("common.saveAsDraft")}
                   </Button>
                   <Button
+                    variant="success"
                     type="button"
                     className="w-full sm:w-auto justify-center"
                     onClick={(e) => {
@@ -1062,7 +1063,7 @@ const EditCategory = () => {
               </div>
 
               <div className="px-8 py-5 border-t border-border bg-muted/30 flex justify-end gap-4">
-                <Button variant="outline" onClick={() => setIconPickerOpen(false)}>
+                <Button variant="danger" onClick={() => setIconPickerOpen(false)}>
                   {t("page.category.iconPicker.cancel")}
                 </Button>
                 <Button

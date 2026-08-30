@@ -400,7 +400,7 @@ const AddBom = () => {
                 </div>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="success"
                   size="sm"
                   onClick={addLine}
                   className="gap-1 mt-2">
@@ -423,7 +423,7 @@ const AddBom = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t">
             <Button
               type="button"
-              variant="outline"
+              variant="danger"
               className="w-full sm:w-auto justify-center"
               onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.bom.add.form.cancel")}
@@ -431,7 +431,7 @@ const AddBom = () => {
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
               <Button
                 type="button"
-                variant="outline"
+                variant="draft"
                 onClick={() => setDraftModal(true)}
                 disabled={isSubmitting}
                 className="gap-2 w-full sm:w-auto justify-center">
@@ -439,6 +439,7 @@ const AddBom = () => {
                 {t("page.bom.add.form.saveDraft")}
               </Button>
               <Button
+                variant="success"
                 type="button"
                 className="w-full sm:w-auto justify-center"
                 onClick={() => handleSaveClick()}

@@ -362,7 +362,7 @@ const AddExpense = () => {
       <div className="space-y-6">
         <div className="flex items-center gap-3">
           <Button
-            variant="outline"
+            variant="danger"
             size="icon"
             className="h-10 w-10 shrink-0"
             onClick={() => setCancelModal(true)}>
@@ -695,7 +695,7 @@ const AddExpense = () => {
                       <div className="p-3 border-t flex items-center justify-between">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="success"
                           size="sm"
                           onClick={() =>
                             appendItem({
@@ -1069,7 +1069,7 @@ const AddExpense = () => {
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
                   <Button
-                    variant="outline"
+                    variant="danger"
                     onClick={() => setCancelModal(true)}
                     className="gap-2 w-full sm:w-auto justify-center">
                     <X size={18} />
@@ -1078,13 +1078,14 @@ const AddExpense = () => {
                   <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="draft"
                       className="w-full sm:w-auto justify-center"
                       onClick={() => setDraftModal(true)}
                       disabled={isSaving}>
                       {t("page.expense.add.saveAsDraft")}
                     </Button>
                     <Button
+                      variant="success"
                       type="button"
                       disabled={isSaving}
                       onClick={() => {

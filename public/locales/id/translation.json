@@ -10,6 +10,8 @@
   "header.logoutSuccessOk": "OK",
   "header.loggingOut": "Sedang keluar...",
   "header.settings": "Pengaturan",
+  "header.toggleTheme": "Ganti tema",
+  "header.openMenu": "Buka menu",
   "header.notifications": "Notifikasi",
   "header.addStore": "Tambah Toko",
   "header.noStore": "Tidak Ada Toko",

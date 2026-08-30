@@ -38,6 +38,8 @@ import PolicyDialog from "@/components/organism/policy-dialog";
 import { register } from "@/services/auth";
 import { getAllLocation } from "@/services/location";
 import { translationSelect } from "@/state/translation";
+import { useThemeStore } from "@/state/theme";
+import { useThemeEffect } from "@/hooks/useThemeEffect";
 import AuthGuideModal from "@/components/organism/AuthGuideModal";
 
 const RegisterPage = () => {
@@ -53,6 +55,8 @@ const RegisterPage = () => {
     location.state?.openGuide && location.state?.guideContext === "register"
   );
   const { translation, updateTranslation } = translationSelect();
+  const { toggleTheme } = useThemeStore();
+  useThemeEffect();
 
   useEffect(() => {
     if (location.state?.openGuide) {
@@ -194,7 +198,7 @@ const RegisterPage = () => {
               </div>
               <button
                 type="button"
-                onClick={() => document.documentElement.classList.toggle("dark")}
+                onClick={toggleTheme}
                 className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 focus:outline-none">
                 <Sun className="w-4 h-4 md:w-5 md:h-5 hidden dark:block" />
                 <Moon className="w-4 h-4 md:w-5 md:h-5 block dark:hidden" />
@@ -245,7 +249,7 @@ const RegisterPage = () => {
                           <Input
                             {...field}
                             placeholder={translationMemo.placeholderUsername}
-                            className="w-full pl-10 md:pl-12 pr-3.5 md:pr-4 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
+                            className="w-full pl-10 md:pl-12 pr-3.5 md:pr-4 h-10 text-sm md:text-base rounded-md border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
                           />
                         </div>
                         {form?.formState?.errors?.userName && (
@@ -269,7 +273,7 @@ const RegisterPage = () => {
                           <Input
                             {...field}
                             placeholder={translationMemo.placeholderEmail}
-                            className="w-full pl-10 md:pl-12 pr-3.5 md:pr-4 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
+                            className="w-full pl-10 md:pl-12 pr-3.5 md:pr-4 h-10 text-sm md:text-base rounded-md border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
                           />
                         </div>
                         {form?.formState?.errors?.email && (
@@ -343,7 +347,7 @@ const RegisterPage = () => {
                               type={showPassword ? "text" : "password"}
                               {...field}
                               placeholder={translationMemo.placeholderPassword}
-                              className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
+                              className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-10 text-sm md:text-base rounded-md border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
                             />
                             <button
                               type="button"
@@ -378,7 +382,7 @@ const RegisterPage = () => {
                               type={showConfirmPassword ? "text" : "password"}
                               {...field}
                               placeholder={translationMemo.placeholderConfirmation}
-                              className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-auto py-3 md:py-4 text-sm md:text-base rounded-xl border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
+                              className="w-full pl-10 md:pl-12 pr-10 md:pr-12 h-10 text-sm md:text-base rounded-md border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
                             />
                             <button
                               type="button"
@@ -402,10 +406,11 @@ const RegisterPage = () => {
 
                   <div className="pt-sm">
                     <Button
+                      variant="success"
                       type="submit"
                       data-tour="auth-submit"
                       disabled={noLocationsAvailable}
-                      className="w-full bg-foreground text-background hover:bg-foreground/90 py-3.5 md:py-4 px-lg rounded-xl font-semibold text-sm md:text-base shadow-sm hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
+                      className="w-full h-10 bg-foreground text-background hover:bg-foreground/90 rounded-md font-semibold text-sm md:text-base shadow-sm transition-colors">
                       {translationMemo.btnCreateAcc}
                     </Button>
                   </div>

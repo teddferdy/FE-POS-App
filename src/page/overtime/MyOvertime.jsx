@@ -315,6 +315,7 @@ const MyOvertime = () => {
           </div>
 
           <Button
+            variant="success"
             className="w-full sm:w-auto gap-2"
             disabled={!canSubmit || createMutation.isLoading}
             onClick={handleSubmit}>
@@ -404,7 +405,7 @@ const MyOvertime = () => {
                     {ot.status === "pending" && (
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="danger"
                         className="h-7 px-2.5 text-[11px] text-destructive border-destructive/40 hover:bg-destructive/10"
                         onClick={() => setCancelTarget(ot)}>
                         Batalkan

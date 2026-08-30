@@ -48,7 +48,7 @@ const gradeBadge = (grade) => {
     D: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
     F: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
   };
-  return safeGet(map, grade, "bg-gray-100 text-gray-800");
+  return safeGet(map, grade, "bg-muted text-muted-foreground");
 };
 
 const SupplierScoreList = () => {
@@ -180,7 +180,7 @@ const SupplierScoreList = () => {
         const rate = parseFloat(row.onTimeRate || 0);
         return (
           <div className="flex items-center gap-2">
-            <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full ${rate >= 80 ? "bg-green-500" : rate >= 60 ? "bg-yellow-500" : "bg-red-500"}`}
                 style={{ width: `${rate}%` }}

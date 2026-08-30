@@ -43,7 +43,7 @@ import Modal from "@/components/organism/modal";
 import { isSalaryCategoryName } from "@/lib/salary-category";
 
 const statusBadge = {
-  draft: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+  draft: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
   pending: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
   approved: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   rejected: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
@@ -556,7 +556,7 @@ const DetailExpense = () => {
                       ) : (
                         <Button
                           className="w-full"
-                          variant="default"
+                          variant="success"
                           disabled={paidMutation.isLoading}
                           onClick={openPaidModal}>
                           <BadgeCheck size={14} className="mr-1.5" />
@@ -573,7 +573,7 @@ const DetailExpense = () => {
                   </Button>
                   <Button
                     className="w-full"
-                    variant="outline"
+                    variant="danger"
                     onClick={() => navigate("/expense-list")}>
                     {t("page.expense.detail.backToList")}
                   </Button>

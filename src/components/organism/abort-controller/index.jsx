@@ -11,8 +11,8 @@ const AbortController = ({ refetch }) => {
     <div className="flex h-[470px] flex-col rounded-lg">
       <div className="flex flex-col flex-1 items-center justify-center rounded-lg gap-5 px-6">
         <div>
-          <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center">
-            <AlertTriangle size={40} className="text-destructive" />
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl border bg-destructive/10 text-destructive shadow-sm">
+            <AlertTriangle className="h-10 w-10" strokeWidth={1.5} />
           </div>
         </div>
         <div className="text-center max-w-md space-y-2">

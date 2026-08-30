@@ -34,6 +34,7 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadTaxConfigExcel } from "@/services/tax-config";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
@@ -217,36 +218,31 @@ const TaxConfigList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "detail") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              title={t("common.view")}
-              onClick={() => navigate(`/detail-tax?id=${item.id || item._id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/edit-tax?id=${item.id || item._id}`)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => handleDelete(item)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          align="right"
+          visible={2}
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              hidden: !canAccess(user, MENU_KEY, "detail"),
+              onClick: () => navigate(`/detail-tax?id=${item.id || item._id}`)
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              hidden: !canAccess(user, MENU_KEY, "edit"),
+              onClick: () => navigate(`/edit-tax?id=${item.id || item._id}`)
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              hidden: !canAccess(user, MENU_KEY, "delete"),
+              onClick: () => handleDelete(item),
+              danger: true
+            }
+          ]}
+        />
       )
     }
   ];
@@ -306,7 +302,7 @@ const TaxConfigList = () => {
             )}
             {canAccess(user, MENU_KEY, "export") && (
               <Button
-                variant="outline"
+                variant="general"
                 disabled={isDownloadingData}
                 onClick={async () => {
                   setIsDownloadingData(true);
@@ -335,13 +331,14 @@ const TaxConfigList = () => {
               </Button>
             )}
             {canAccess(user, MENU_KEY, "import") && (
-              <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+              <Button variant="import" onClick={() => setUploadModalOpen(true)}>
                 <span className="material-symbols-outlined text-lg mr-1">upload</span>
                 {t("page.taxConfig.button.upload")}
               </Button>
             )}
             {canAccess(user, MENU_KEY, "add") && (
               <Button
+                variant="success"
                 data-tour="tax-add"
                 onClick={() => navigate("/add-tax")}
                 className="gap-2 shadow-md">

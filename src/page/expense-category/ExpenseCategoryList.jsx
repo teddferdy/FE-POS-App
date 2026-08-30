@@ -18,6 +18,7 @@ import {
 import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
+import TableActions from "@/components/ui/TableActions";
 import { SearchInput } from "@/components/ui/SearchInput";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
@@ -192,33 +193,29 @@ const ExpenseCategoryList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (row) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/detail-expense-category?id=${row.id || row._id}`)}>
-            <Eye size={18} />
-          </Button>
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/edit-expense-category?id=${row.id || row._id}`)}>
-              <Edit size={18} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => handleDelete(row)}>
-              <Trash2 size={18} />
-            </Button>
-          )}
-        </div>
+        <TableActions
+          align="right"
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/detail-expense-category?id=${row.id || row._id}`)
+            },
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => navigate(`/edit-expense-category?id=${row.id || row._id}`),
+              hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => handleDelete(row),
+              hidden: !canAccess(user, MENU_KEY, "delete")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -247,7 +244,10 @@ const ExpenseCategoryList = () => {
           </p>
         </div>
         {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-expense-category")} className="gap-2">
+          <Button
+            variant="success"
+            onClick={() => navigate("/add-expense-category")}
+            className="gap-2">
             <Plus size={18} />
             {t("page.expenseCategory.button.add")}
           </Button>

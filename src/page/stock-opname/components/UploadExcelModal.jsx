@@ -270,11 +270,11 @@ const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, a
               )}
 
               <div className="flex items-center justify-end gap-3 pt-2">
-                <Button variant="outline" onClick={handleClose}>
+                <Button variant="danger" onClick={handleClose}>
                   {t("common.cancel")}
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="general"
                   disabled={!file}
                   onClick={handlePreview}
                   className="gap-2">
@@ -282,6 +282,7 @@ const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, a
                   {t("page.stockOpname.uploadExcel.preview")}
                 </Button>
                 <Button
+                  variant="import"
                   disabled={!file || uploading}
                   onClick={handleDirectUpload}
                   className="gap-2 min-w-[140px]">

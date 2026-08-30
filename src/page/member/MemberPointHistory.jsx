@@ -70,7 +70,7 @@ const MemberPointHistory = () => {
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-5xl">groups</span>
         <p>Member tidak ditemukan</p>
-        <Button variant="outline" onClick={() => navigate("/member-list")}>
+        <Button variant="danger" onClick={() => navigate("/member-list")}>
           {t("page.member.pointHistory.back")}
         </Button>
       </div>

@@ -419,7 +419,7 @@ const CategoryPreviewModal = ({ open, onOpenChange, category }) => {
             <ShoppingCart size={14} />
             Preview menampilkan bentuk kategori ini pada halaman asli masing-masing aplikasi
           </div>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="danger" onClick={() => onOpenChange(false)}>
             Tutup
           </Button>
         </div>

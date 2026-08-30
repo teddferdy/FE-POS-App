@@ -451,7 +451,7 @@ const AddMember = () => {
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-8 bg-card border border-border rounded-xl p-4">
                 <Button
-                  variant="outline"
+                  variant="danger"
                   onClick={() => setCancelModal(true)}
                   className="gap-2 w-full sm:w-auto justify-center">
                   <span className="material-symbols-outlined text-lg">arrow_back</span>
@@ -460,13 +460,14 @@ const AddMember = () => {
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="draft"
                     onClick={() => setDraftModal(true)}
                     disabled={isSubmitting}
                     className="w-full sm:w-auto justify-center">
                     {t("page.member.add.saveDraft")}
                   </Button>
                   <Button
+                    variant="success"
                     type="button"
                     onClick={() => handleSaveClick()}
                     disabled={isSubmitting}

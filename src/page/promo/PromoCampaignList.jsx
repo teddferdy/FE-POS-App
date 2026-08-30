@@ -30,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
 import TableToolbar from "@/components/ui/TableToolbar";
@@ -59,7 +60,7 @@ const typeOptions = [
 const statusBadge = (status) => {
   const map = {
     draft:
-      "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800",
+      "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800",
     active:
       "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
     paused:
@@ -69,7 +70,7 @@ const statusBadge = (status) => {
     cancelled:
       "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
   };
-  return safeGet(map, status, "bg-gray-100 text-gray-800");
+  return safeGet(map, status, "bg-muted text-muted-foreground");
 };
 
 const typeIcon = (type) => {
@@ -287,57 +288,54 @@ const PromoCampaignList = () => {
       ],
       render: (item) => {
         return (
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => navigate(`/detail-promo?id=${item.id}`)}>
-              <Eye size={18} />
-            </Button>
-            {canAccess(user, MENU_KEY, "edit") && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => navigate(`/edit-promo?id=${item.id}`)}>
-                  <Edit size={14} />
-                </Button>
-                {item.status === "active" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-yellow-600"
-                    onClick={() =>
-                      setStatusTarget({ id: item.id, name: item.name, status: "paused" })
-                    }>
-                    <Pause size={18} />
-                  </Button>
-                )}
-                {item.status === "paused" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-green-600"
-                    onClick={() =>
-                      setStatusTarget({ id: item.id, name: item.name, status: "active" })
-                    }>
-                    <Play size={18} />
-                  </Button>
-                )}
-                {item.status !== "cancelled" && item.status !== "expired" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-red-600"
-                    onClick={() => setDeleteTarget(item)}>
-                    <Trash2 size={18} />
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
+          <TableActions
+            align="center"
+            items={[
+              {
+                label: t("common.view"),
+                icon: Eye,
+                onClick: () => navigate(`/detail-promo?id=${item.id}`)
+              },
+              {
+                label: t("common.edit"),
+                icon: Edit,
+                onClick: () => navigate(`/edit-promo?id=${item.id}`),
+                hidden: !canAccess(user, MENU_KEY, "edit")
+              },
+              ...(item.status === "active"
+                ? [
+                    {
+                      label: t("common.pause"),
+                      icon: Pause,
+                      onClick: () =>
+                        setStatusTarget({ id: item.id, name: item.name, status: "paused" }),
+                      hidden: !canAccess(user, MENU_KEY, "edit")
+                    }
+                  ]
+                : []),
+              ...(item.status === "paused"
+                ? [
+                    {
+                      label: t("common.resume"),
+                      icon: Play,
+                      onClick: () =>
+                        setStatusTarget({ id: item.id, name: item.name, status: "active" }),
+                      hidden: !canAccess(user, MENU_KEY, "edit")
+                    }
+                  ]
+                : []),
+              {
+                label: t("common.delete"),
+                icon: Trash2,
+                danger: true,
+                onClick: () => setDeleteTarget(item),
+                hidden:
+                  !canAccess(user, MENU_KEY, "edit") ||
+                  item.status === "cancelled" ||
+                  item.status === "expired"
+              }
+            ]}
+          />
         );
       }
     }
@@ -361,7 +359,7 @@ const PromoCampaignList = () => {
         title={t("page.promo.list.title")}
         description={t("page.promo.list.description")}>
         {canAccess(user, MENU_KEY, "create") && (
-          <Button onClick={() => navigate("/add-promo")}>
+          <Button variant="success" onClick={() => navigate("/add-promo")}>
             <Plus size={16} className="mr-2" />
             {t("page.promo.list.addButton")}
           </Button>

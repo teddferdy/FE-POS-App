@@ -334,7 +334,7 @@ const LowStock = () => {
                             {group.items.length > 0 && (
                               <Button
                                 size="sm"
-                                variant="outline"
+                                variant="success"
                                 className="gap-1.5"
                                 onClick={() => {
                                   const names = group.items

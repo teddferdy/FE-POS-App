@@ -32,6 +32,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
+import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -261,48 +262,49 @@ const ProductionOrderList = () => {
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "view") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/production-order/detail?id=${item.id}`)}>
-              <Eye size={18} />
-            </Button>
-          )}
-          {item.status === "planned" && canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-indigo-500"
-              onClick={() => setStartTarget(item.id)}>
-              <Play size={18} />
-            </Button>
-          )}
-          {item.status === "in_progress" && canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-green-500"
-              onClick={() => {
-                setCompleteTarget(item.id);
-                setCompleteQty(String(item.plannedQty));
-              }}>
-              <CheckCircle2 size={18} />
-            </Button>
-          )}
-          {(item.status === "draft" || item.status === "cancelled") &&
-            canAccess(user, MENU_KEY, "delete") && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive"
-                onClick={() => setDeleteTarget(item.id)}>
-                <Trash2 size={18} />
-              </Button>
-            )}
-        </div>
+        <TableActions
+          align="right"
+          items={[
+            {
+              label: t("common.view"),
+              icon: Eye,
+              onClick: () => navigate(`/production-order/detail?id=${item.id}`),
+              hidden: !canAccess(user, MENU_KEY, "view")
+            },
+            ...(item.status === "planned"
+              ? [
+                  {
+                    label: t("page.productionOrder.list.modalStartConfirm"),
+                    icon: Play,
+                    onClick: () => setStartTarget(item.id),
+                    hidden: !canAccess(user, MENU_KEY, "edit")
+                  }
+                ]
+              : []),
+            ...(item.status === "in_progress"
+              ? [
+                  {
+                    label: t("page.productionOrder.list.modalCompleteConfirm"),
+                    icon: CheckCircle2,
+                    onClick: () => {
+                      setCompleteTarget(item.id);
+                      setCompleteQty(String(item.plannedQty));
+                    },
+                    hidden: !canAccess(user, MENU_KEY, "edit")
+                  }
+                ]
+              : []),
+            {
+              label: t("common.delete"),
+              icon: Trash2,
+              danger: true,
+              onClick: () => setDeleteTarget(item.id),
+              hidden:
+                !canAccess(user, MENU_KEY, "delete") ||
+                !(item.status === "draft" || item.status === "cancelled")
+            }
+          ]}
+        />
       )
     }
   ];
@@ -331,7 +333,10 @@ const ProductionOrderList = () => {
           </p>
         </div>
         {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-production-order")} className="shrink-0 gap-2">
+          <Button
+            variant="success"
+            onClick={() => navigate("/add-production-order")}
+            className="shrink-0 gap-2">
             <Plus size={16} /> {t("page.productionOrder.list.addButton")}
           </Button>
         )}
@@ -524,7 +529,7 @@ const ProductionOrderList = () => {
                 </div>
                 <div className="flex justify-end gap-2 mt-4">
                   <Button
-                    variant="outline"
+                    variant="danger"
                     onClick={() => {
                       setCompleteTarget(null);
                       setCompleteQty("");
@@ -532,6 +537,7 @@ const ProductionOrderList = () => {
                     {t("page.productionOrder.list.modalCompleteCancel")}
                   </Button>
                   <Button
+                    variant="success"
                     onClick={() =>
                       completeMutation.mutate({ producedQty: parseInt(completeQty) || 0 })
                     }>

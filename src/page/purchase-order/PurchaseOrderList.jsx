@@ -68,21 +68,13 @@ import {
 } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
 import { TipsCard } from "@/components/ui/tips-card";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-
-const IconAction = ({ label, children, ...props }) => (
-  <Tooltip delayDuration={0}>
-    <TooltipTrigger asChild>
-      <Button {...props}>{children}</Button>
-    </TooltipTrigger>
-    <TooltipContent side="top">{label}</TooltipContent>
-  </Tooltip>
-);
 
 const SupplierExpandableRow = ({ supplier, renderSupplierItems }) => {
   const [open, setOpen] = useState(false);
@@ -756,186 +748,139 @@ const PurchaseOrderList = () => {
         { icon: Trash2, label: t("page.purchaseOrder.list.action.delete") }
       ],
       render: (po) => (
-        <div className="flex items-center justify-end gap-1">
-          <IconAction
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground"
-            onClick={() => navigate(`/purchase-order/detail?id=${po.id}`)}
-            label={t("page.purchaseOrder.list.action.detail")}>
-            <Eye size={18} />
-          </IconAction>
-          {po.status !== "cancelled" &&
+        <TableActions
+          align="right"
+          visible={2}
+          items={[
+            {
+              label: t("page.purchaseOrder.list.action.detail"),
+              icon: Eye,
+              onClick: () => navigate(`/purchase-order/detail?id=${po.id}`)
+            },
+            ...(po.status !== "cancelled" &&
             po.status !== "draft" &&
-            (po.totalPaid || 0) < (po.finalAmount || po.totalAmount || 0) &&
-            (po.paymentMethod === "credit" &&
-            (po.totalPaid || 0) <
-              (Number(po.dpPercent || 0) / 100) * Number(po.finalAmount || po.totalAmount || 0) ? (
-              <IconAction
-                variant="default"
-                size="sm"
-                className="h-8 gap-1.5 bg-purple-600 hover:bg-purple-700 text-white"
-                onClick={() => {
-                  setPayPo(po);
-                  setPayForm({
-                    amount: String(
-                      (Number(po.dpPercent || 0) / 100) *
-                        Number(po.finalAmount || po.totalAmount || 0) -
-                        (po.totalPaid || 0)
-                    ),
-                    paymentDate: undefined,
-                    paymentMethod: "cash",
-                    reference: "",
-                    notes: ""
-                  });
-                  setPayModal(true);
-                }}
-                label={t("page.purchaseOrder.list.action.payDP")}>
-                <Wallet size={16} />
-                <span className="text-xs font-semibold">DP</span>
-              </IconAction>
-            ) : (
-              <IconAction
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-600"
-                onClick={() => {
-                  setPayPo(po);
-                  const remaining =
-                    Number(po.finalAmount || po.totalAmount || 0) - (po.totalPaid || 0);
-                  setPayForm({
-                    amount: String(remaining),
-                    paymentDate: undefined,
-                    paymentMethod: "cash",
-                    reference: "",
-                    notes: ""
-                  });
-                  setPayModal(true);
-                }}
-                label={t("page.purchaseOrder.list.action.pay")}>
-                <Wallet size={18} />
-              </IconAction>
-            ))}
-          {po.status === "draft" && (
-            <IconAction
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-blue-600"
-              onClick={() => navigate(`/edit-purchase-order?id=${po.id}`)}
-              label={t("page.purchaseOrder.list.action.edit")}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round">
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-              </svg>
-            </IconAction>
-          )}
-          {(po.status === "draft" || po.status === "pending") && (
-            <IconAction
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-red-600"
-              onClick={() => {
-                setCancelPoId(po.id);
-                setCancelModal(true);
-              }}
-              label={t("page.purchaseOrder.list.action.cancel")}>
-              <XCircle size={18} />
-            </IconAction>
-          )}
-          {(po.status === "draft" || po.status === "cancelled") && (
-            <IconAction
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-red-600"
-              onClick={() => {
-                setDeletePoId(po.id);
-                setDeleteModal(true);
-              }}
-              label={t("page.purchaseOrder.list.action.delete")}>
-              <Trash2 size={18} />
-            </IconAction>
-          )}
-          {po.status === "pending" && (
-            <>
-              <IconAction
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-amber-600"
-                onClick={() => {
-                  setSendPoId(po.id);
-                  setSendModal(true);
-                }}
-                label={t("page.purchaseOrder.list.action.sendToSupplier")}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round">
-                  <path d="M22 2 11 13" />
-                  <path d="m22 2-7 20-4-9-9-4Z" />
-                </svg>
-              </IconAction>
-              <IconAction
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-blue-600"
-                onClick={() => navigate(`/edit-purchase-order?id=${po.id}`)}
-                label={t("page.purchaseOrder.list.action.edit")}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round">
-                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                  <path d="m15 5 4 4" />
-                </svg>
-              </IconAction>
-            </>
-          )}
-          {(po.status === "pending" || po.status === "ordered") && (
-            <IconAction
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-green-600"
-              onClick={() => navigate(`/add-goods-receipt?poId=${po.id}`)}
-              label={t("page.purchaseOrder.list.action.receive")}>
-              <RefreshCw size={18} />
-            </IconAction>
-          )}
-          {(po.status === "ordered" || po.status === "received") && (
-            <IconAction
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-amber-600"
-              onClick={() => {
-                setReturPo(po);
-                setReturReason("");
-                setReturModal(true);
-              }}
-              label={t("page.purchaseOrder.list.action.return")}>
-              <Undo2 size={18} />
-            </IconAction>
-          )}
-        </div>
+            (po.totalPaid || 0) < (po.finalAmount || po.totalAmount || 0)
+              ? [
+                  {
+                    label:
+                      po.paymentMethod === "credit" &&
+                      (po.totalPaid || 0) <
+                        (Number(po.dpPercent || 0) / 100) *
+                          Number(po.finalAmount || po.totalAmount || 0)
+                        ? t("page.purchaseOrder.list.action.payDP")
+                        : t("page.purchaseOrder.list.action.pay"),
+                    icon: Wallet,
+                    onClick: () => {
+                      setPayPo(po);
+                      if (
+                        po.paymentMethod === "credit" &&
+                        (po.totalPaid || 0) <
+                          (Number(po.dpPercent || 0) / 100) *
+                            Number(po.finalAmount || po.totalAmount || 0)
+                      ) {
+                        setPayForm({
+                          amount: String(
+                            (Number(po.dpPercent || 0) / 100) *
+                              Number(po.finalAmount || po.totalAmount || 0) -
+                              (po.totalPaid || 0)
+                          ),
+                          paymentDate: undefined,
+                          paymentMethod: "cash",
+                          reference: "",
+                          notes: ""
+                        });
+                      } else {
+                        const remaining =
+                          Number(po.finalAmount || po.totalAmount || 0) - (po.totalPaid || 0);
+                        setPayForm({
+                          amount: String(remaining),
+                          paymentDate: undefined,
+                          paymentMethod: "cash",
+                          reference: "",
+                          notes: ""
+                        });
+                      }
+                      setPayModal(true);
+                    }
+                  }
+                ]
+              : []),
+            ...(po.status === "draft"
+              ? [
+                  {
+                    label: t("page.purchaseOrder.list.action.edit"),
+                    icon: Edit,
+                    onClick: () => navigate(`/edit-purchase-order?id=${po.id}`)
+                  }
+                ]
+              : []),
+            ...(po.status === "draft" || po.status === "pending"
+              ? [
+                  {
+                    label: t("page.purchaseOrder.list.action.cancel"),
+                    icon: XCircle,
+                    danger: true,
+                    onClick: () => {
+                      setCancelPoId(po.id);
+                      setCancelModal(true);
+                    }
+                  }
+                ]
+              : []),
+            ...(po.status === "draft" || po.status === "cancelled"
+              ? [
+                  {
+                    label: t("page.purchaseOrder.list.action.delete"),
+                    icon: Trash2,
+                    danger: true,
+                    onClick: () => {
+                      setDeletePoId(po.id);
+                      setDeleteModal(true);
+                    }
+                  }
+                ]
+              : []),
+            ...(po.status === "pending"
+              ? [
+                  {
+                    label: t("page.purchaseOrder.list.action.sendToSupplier"),
+                    icon: Send,
+                    onClick: () => {
+                      setSendPoId(po.id);
+                      setSendModal(true);
+                    }
+                  },
+                  {
+                    label: t("page.purchaseOrder.list.action.edit"),
+                    icon: Edit,
+                    onClick: () => navigate(`/edit-purchase-order?id=${po.id}`)
+                  }
+                ]
+              : []),
+            ...(po.status === "pending" || po.status === "ordered"
+              ? [
+                  {
+                    label: t("page.purchaseOrder.list.action.receive"),
+                    icon: RefreshCw,
+                    onClick: () => navigate(`/add-goods-receipt?poId=${po.id}`)
+                  }
+                ]
+              : []),
+            ...(po.status === "ordered" || po.status === "received"
+              ? [
+                  {
+                    label: t("page.purchaseOrder.list.action.return"),
+                    icon: Undo2,
+                    onClick: () => {
+                      setReturPo(po);
+                      setReturReason("");
+                      setReturModal(true);
+                    }
+                  }
+                ]
+              : [])
+          ]}
+        />
       )
     }
   ];
@@ -969,7 +914,7 @@ const PurchaseOrderList = () => {
             {t("page.purchaseOrder.list.export")}
           </Button>
           <Button
-            variant="outline"
+            variant="import"
             size="sm"
             className="gap-1.5"
             onClick={() => setImportModal(true)}>
@@ -977,7 +922,10 @@ const PurchaseOrderList = () => {
             {t("page.purchaseOrder.list.import")}
           </Button>
           {canAccess(user, MENU_KEY, "add") && (
-            <Button onClick={() => navigate("/add-purchase-order")} className="gap-2">
+            <Button
+              variant="success"
+              onClick={() => navigate("/add-purchase-order")}
+              className="gap-2">
               <Plus size={18} />
               {t("breadcrumb.add")}
             </Button>
@@ -1656,7 +1604,7 @@ const PurchaseOrderList = () => {
                 </p>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
+                    variant="danger"
                     onClick={() => {
                       setReturModal(false);
                       setReturPo(null);
@@ -1667,6 +1615,7 @@ const PurchaseOrderList = () => {
                     {t("common.cancel")}
                   </Button>
                   <Button
+                    variant="success"
                     className="bg-amber-600 hover:bg-amber-700 text-white"
                     onClick={() => {
                       const itemsToReturn = returItems
@@ -1993,7 +1942,7 @@ const PurchaseOrderList = () => {
                   </div>
                   <div className="px-6 py-4 border-t border-border flex justify-between gap-3">
                     <Button
-                      variant="outline"
+                      variant="danger"
                       className="h-11 px-6 min-w-[120px]"
                       onClick={() => {
                         setPayModal(false);
@@ -2054,7 +2003,7 @@ const PurchaseOrderList = () => {
               </div>
               <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
                 <Button
-                  variant="outline"
+                  variant="danger"
                   onClick={() => {
                     setCancelModal(false);
                     setCancelPoId(null);
@@ -2123,7 +2072,7 @@ const PurchaseOrderList = () => {
               </div>
               <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
                 <Button
-                  variant="outline"
+                  variant="destructive"
                   onClick={() => {
                     setDeleteModal(false);
                     setDeletePoId(null);
