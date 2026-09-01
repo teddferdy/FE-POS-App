@@ -9,14 +9,20 @@ import {
   BookOpen,
   FileText,
   Video,
-  ExternalLink
+  ExternalLink,
+  Package,
+  KeyRound,
+  Globe,
+  Moon,
+  UserPlus,
+  AlertTriangle
 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 
 const faqItems = [
   {
     id: "how-to-add-product",
-    icon: "package_2",
+    Icon: Package,
     en: {
       q: "How do I add a new product?",
       a: "Go to the Product List page, click the + Tambah button in the top right. Fill in SKU, name, category, price, stock, and image. Click Save."
@@ -28,7 +34,7 @@ const faqItems = [
   },
   {
     id: "reset-password",
-    icon: "lock_reset",
+    Icon: KeyRound,
     en: {
       q: "I forgot my password. How do I reset it?",
       a: "On the login page, click 'Forgot Password'. Enter your registered email — we will send a reset link valid for 1 hour."
@@ -40,7 +46,7 @@ const faqItems = [
   },
   {
     id: "change-language",
-    icon: "translate",
+    Icon: Globe,
     en: {
       q: "How do I switch the interface language?",
       a: "Click the language icon (globe) in the top right header. Choose between Indonesian and English. Your choice is saved for this session."
@@ -52,7 +58,7 @@ const faqItems = [
   },
   {
     id: "dark-mode",
-    icon: "dark_mode",
+    Icon: Moon,
     en: {
       q: "Does the app support dark mode?",
       a: "Yes. Click the sun/moon icon in the header to toggle between light and dark themes. The change is applied instantly."
@@ -64,7 +70,7 @@ const faqItems = [
   },
   {
     id: "invite-employee",
-    icon: "person_add",
+    Icon: UserPlus,
     en: {
       q: "How do I invite employees to use the system?",
       a: "Go to the Employees page, click + Tambah. Fill in name, email, password, role, and assign a store location. The employee can then log in with those credentials."
@@ -76,7 +82,7 @@ const faqItems = [
   },
   {
     id: "low-stock",
-    icon: "warning",
+    Icon: AlertTriangle,
     en: {
       q: "How am I notified about low stock?",
       a: "Low stock items appear red on the dashboard's 'Active Products' card and in the Product List table. The notification bell also shows alerts for items below the minimum threshold."
@@ -108,7 +114,7 @@ const resources = [
     en: "Release Notes",
     id: "Catatan Rilis",
     href: "https://docs.example.com/changelog",
-    color: "text-amber-600 bg-amber-100 dark:bg-amber-900/30"
+    color: "text-amber-600 bg-amber-100 dark:amber-900/30"
   }
 ];
 
@@ -193,15 +199,14 @@ const Support = () => {
               {faqItems.map((item) => {
                 const content = isId ? item.idText : item.en;
                 const isOpen = openId === item.id;
+                const FaqIcon = item.Icon;
                 return (
                   <div key={item.id} className="px-6">
                     <button
                       onClick={() => setOpenId(isOpen ? null : item.id)}
                       className="w-full flex items-center justify-between gap-4 py-4 text-left hover:text-primary transition-colors">
                       <div className="flex items-center gap-3 min-w-0">
-                        <span className="material-symbols-outlined text-primary text-xl shrink-0">
-                          {item.icon}
-                        </span>
+                        <FaqIcon size={20} className="text-primary shrink-0" />
                         <span className="text-sm font-semibold text-foreground">{content.q}</span>
                       </div>
                       <ChevronDown

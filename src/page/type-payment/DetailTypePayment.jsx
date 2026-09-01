@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Edit3, CreditCard } from "lucide-react";
+import { ArrowLeft, Edit3, CreditCard, Percent, Clock, ArrowUpDown } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { getTypePaymentById } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
@@ -183,7 +183,7 @@ const DetailTypePayment = () => {
             </div>
             <div className="p-6 flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                <span className="material-symbols-outlined text-lg">percent</span>
+                <Percent size={20} className="text-lg" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -200,7 +200,7 @@ const DetailTypePayment = () => {
             </div>
             <div className="p-6 flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                <span className="material-symbols-outlined text-lg">schedule</span>
+                <Clock size={20} className="text-lg" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -213,7 +213,7 @@ const DetailTypePayment = () => {
             </div>
             <div className="p-6 flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                <span className="material-symbols-outlined text-lg">sort</span>
+                <ArrowUpDown size={20} className="text-lg" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">

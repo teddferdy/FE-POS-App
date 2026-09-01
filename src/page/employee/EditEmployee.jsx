@@ -14,7 +14,15 @@ import {
   User,
   Briefcase,
   DollarSign,
-  Lock
+  Lock,
+  BadgeCheck,
+  Building2,
+  Plus,
+  Store,
+  Banknote,
+  EyeOff,
+  ArrowLeft,
+  Save
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -551,7 +559,7 @@ const EditEmployee = () => {
   if (!employeeId || !employee.id) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
-        <span className="material-symbols-outlined text-6xl text-muted-foreground">badge</span>
+        <BadgeCheck size={18} className="text-6xl text-muted-foreground" />
         <p className="text-muted-foreground">{t("page.employee.edit.notFound")}</p>
         <Button variant="danger" onClick={() => navigate("/employee-list")}>
           {t("common.cancel")}
@@ -619,7 +627,7 @@ const EditEmployee = () => {
                     <TabsContent value="profile" className="mt-6">
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                          <span className="material-symbols-outlined text-primary">person</span>
+                          <User size={18} className="text-primary" />
                           <h4 className="text-base font-semibold text-foreground">
                             {t("page.employee.edit.personalInfo")}
                           </h4>
@@ -830,7 +838,7 @@ const EditEmployee = () => {
                     <TabsContent value="employment" className="mt-6">
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                          <span className="material-symbols-outlined text-primary">work</span>
+                          <Briefcase size={18} className="text-primary" />
                           <h4 className="text-base font-semibold text-foreground">
                             {t("page.employee.edit.jobInfo")}
                           </h4>
@@ -866,9 +874,10 @@ const EditEmployee = () => {
                                 </FormLabel>
                                 {departments.length === 0 ? (
                                   <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                                    <span className="material-symbols-outlined text-3xl text-muted-foreground">
-                                      domain
-                                    </span>
+                                    <Building2
+                                      size={18}
+                                      className="text-3xl text-muted-foreground"
+                                    />
                                     <div className="text-center">
                                       <p className="text-sm font-medium text-foreground">
                                         {t("page.employee.edit.noDepartments")}
@@ -883,9 +892,7 @@ const EditEmployee = () => {
                                       size="sm"
                                       onClick={() => navigate("/add-department")}
                                       className="gap-2">
-                                      <span className="material-symbols-outlined text-base">
-                                        add
-                                      </span>
+                                      <Plus size={18} className="text-base" />
                                       {t("page.employee.edit.addDepartment")}
                                     </Button>
                                   </div>
@@ -909,9 +916,7 @@ const EditEmployee = () => {
                                       className="shrink-0"
                                       onClick={() => navigate("/add-department")}
                                       title={t("page.employee.edit.addDepartmentNew")}>
-                                      <span className="material-symbols-outlined text-base">
-                                        add
-                                      </span>
+                                      <Plus size={18} className="text-base" />
                                     </Button>
                                   </div>
                                 )}
@@ -929,9 +934,10 @@ const EditEmployee = () => {
                                 </FormLabel>
                                 {positions.length === 0 ? (
                                   <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                                    <span className="material-symbols-outlined text-3xl text-muted-foreground">
-                                      badge
-                                    </span>
+                                    <BadgeCheck
+                                      size={18}
+                                      className="text-3xl text-muted-foreground"
+                                    />
                                     <div className="text-center">
                                       <p className="text-sm font-medium text-foreground">
                                         {t("page.employee.edit.noPositions")}
@@ -946,9 +952,7 @@ const EditEmployee = () => {
                                       size="sm"
                                       onClick={() => navigate("/add-position")}
                                       className="gap-2">
-                                      <span className="material-symbols-outlined text-base">
-                                        add
-                                      </span>
+                                      <Plus size={18} className="text-base" />
                                       {t("page.employee.edit.addPosition")}
                                     </Button>
                                   </div>
@@ -977,9 +981,7 @@ const EditEmployee = () => {
                                       className="shrink-0"
                                       onClick={() => navigate("/add-position")}
                                       title={t("page.employee.edit.addPositionNew")}>
-                                      <span className="material-symbols-outlined text-base">
-                                        add
-                                      </span>
+                                      <Plus size={18} className="text-base" />
                                     </Button>
                                   </div>
                                 )}
@@ -997,9 +999,7 @@ const EditEmployee = () => {
                                 </FormLabel>
                                 {locations.length === 0 ? (
                                   <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                                    <span className="material-symbols-outlined text-3xl text-muted-foreground">
-                                      store
-                                    </span>
+                                    <Store size={18} className="text-3xl text-muted-foreground" />
                                     <div className="text-center">
                                       <p className="text-sm font-medium text-foreground">
                                         {t("page.employee.edit.noStores")}
@@ -1014,9 +1014,7 @@ const EditEmployee = () => {
                                       size="sm"
                                       onClick={() => navigate("/add-location")}
                                       className="gap-2">
-                                      <span className="material-symbols-outlined text-base">
-                                        add
-                                      </span>
+                                      <Plus size={18} className="text-base" />
                                       {t("page.employee.edit.addStore")}
                                     </Button>
                                   </div>
@@ -1043,9 +1041,7 @@ const EditEmployee = () => {
                                       className="shrink-0"
                                       onClick={() => navigate("/add-location")}
                                       title={t("page.employee.edit.addStoreNew")}>
-                                      <span className="material-symbols-outlined text-base">
-                                        add
-                                      </span>
+                                      <Plus size={18} className="text-base" />
                                     </Button>
                                   </div>
                                 )}
@@ -1230,7 +1226,7 @@ const EditEmployee = () => {
                     <TabsContent value="salary" className="mt-6">
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                          <span className="material-symbols-outlined text-primary">payments</span>
+                          <Banknote size={18} className="text-primary" />
                           <h4 className="text-base font-semibold text-foreground">
                             {t("page.employee.edit.payroll")}
                           </h4>
@@ -1293,7 +1289,7 @@ const EditEmployee = () => {
                     <TabsContent value="account" className="mt-6">
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                          <span className="material-symbols-outlined text-primary">lock</span>
+                          <Lock size={18} className="text-primary" />
                           <h4 className="text-base font-semibold text-foreground">
                             {t("page.employee.edit.accountAccess")}
                           </h4>
@@ -1336,9 +1332,11 @@ const EditEmployee = () => {
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer">
-                                    <span className="material-symbols-outlined text-base">
-                                      {showPassword ? "visibility" : "visibility_off"}
-                                    </span>
+                                    {showPassword ? (
+                                      <Eye size={18} className="text-base" />
+                                    ) : (
+                                      <EyeOff size={18} className="text-base" />
+                                    )}
                                   </button>
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">
@@ -1439,9 +1437,7 @@ const EditEmployee = () => {
                     <TabsContent value="documents" className="mt-6">
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                          <span className="material-symbols-outlined text-primary">
-                            description
-                          </span>
+                          <FileText size={18} className="text-primary" />
                           <h4 className="text-base font-semibold text-foreground">
                             {t("page.employee.edit.documents")}
                             <span className="text-destructive">*</span>
@@ -1559,7 +1555,7 @@ const EditEmployee = () => {
                       variant="danger"
                       className="w-full sm:w-auto"
                       onClick={() => setCancelModal(true)}>
-                      <span className="material-symbols-outlined text-lg">arrow_back</span>
+                      <ArrowLeft size={20} className="text-lg" />
                       {t("common.cancel")}
                     </Button>
                     <div className="flex gap-3">
@@ -1586,7 +1582,7 @@ const EditEmployee = () => {
                           }
                           setConfirmSaveModal(true);
                         }}>
-                        <span className="material-symbols-outlined text-lg">save</span>
+                        <Save size={20} className="text-lg" />
                         {t("page.employee.edit.saveChanges")}
                       </Button>
                     </div>

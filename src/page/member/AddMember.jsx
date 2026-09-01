@@ -1,3 +1,4 @@
+import { User, MapPin, Award, Trophy, Star, Info, ArrowLeft, Save } from "lucide-react";
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -152,7 +153,7 @@ const AddMember = () => {
                 <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 mb-6 text-primary">
-                      <span className="material-symbols-outlined">person</span>
+                      <User size={18} />
                       <h3 className="text-base font-semibold text-foreground">
                         {t("page.member.form.personalInfo")}
                       </h3>
@@ -227,7 +228,7 @@ const AddMember = () => {
                               onChange={handleChange}
                               className="sr-only"
                             />
-                            <span className="material-symbols-outlined text-primary">man</span>
+                            <User size={18} className="text-primary" />
                             <span className="text-sm font-medium">{t("page.member.add.male")}</span>
                           </label>
                           <label className="flex-1 flex items-center justify-center gap-2 p-3 border border-border rounded-lg cursor-pointer hover:bg-accent transition-colors has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
@@ -239,7 +240,7 @@ const AddMember = () => {
                               onChange={handleChange}
                               className="sr-only"
                             />
-                            <span className="material-symbols-outlined text-primary">woman</span>
+                            <User size={18} className="text-primary" />
                             <span className="text-sm font-medium">
                               {t("page.member.add.female")}
                             </span>
@@ -251,7 +252,7 @@ const AddMember = () => {
 
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 mb-6 text-primary">
-                      <span className="material-symbols-outlined">location_on</span>
+                      <MapPin size={18} />
                       <h3 className="text-base font-semibold text-foreground">
                         {t("page.member.add.fullAddress")}
                       </h3>
@@ -271,7 +272,7 @@ const AddMember = () => {
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
                     <div className="flex items-center gap-2 mb-6 text-primary relative">
-                      <span className="material-symbols-outlined">military_tech</span>
+                      <Award size={18} />
                       <h3 className="text-base font-semibold text-foreground">
                         {t("page.member.add.membershipTier")}
                       </h3>
@@ -279,9 +280,7 @@ const AddMember = () => {
                     <div className="space-y-3 relative">
                       {tiers.length === 0 ? (
                         <div className="text-center py-6">
-                          <span className="material-symbols-outlined text-3xl text-muted-foreground block mb-2">
-                            military_tech
-                          </span>
+                          <Award size={18} className="text-3xl text-muted-foreground block mb-2" />
                           <p className="text-sm text-muted-foreground">
                             {t("page.member.add.noTier")}
                           </p>
@@ -349,9 +348,7 @@ const AddMember = () => {
                                     <div
                                       className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-lg font-bold shrink-0 shadow-sm"
                                       style={{ backgroundColor: selected.color || "#6366f1" }}>
-                                      <span className="material-symbols-outlined">
-                                        workspace_premium
-                                      </span>
+                                      <Trophy size={18} />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <p className="text-sm font-bold text-foreground truncate">
@@ -420,7 +417,7 @@ const AddMember = () => {
 
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 mb-6 text-primary">
-                      <span className="material-symbols-outlined">stars</span>
+                      <Star size={18} />
                       <h3 className="text-base font-semibold text-foreground">
                         {t("page.member.add.initialPoints")}
                       </h3>
@@ -439,9 +436,7 @@ const AddMember = () => {
                   </div>
 
                   <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-4 flex gap-3">
-                    <span className="material-symbols-outlined text-secondary mt-0.5 text-base">
-                      info
-                    </span>
+                    <Info size={18} className="text-secondary mt-0.5 text-base" />
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {t("page.member.add.dataConfirmation")}
                     </p>
@@ -454,7 +449,7 @@ const AddMember = () => {
                   variant="danger"
                   onClick={() => setCancelModal(true)}
                   className="gap-2 w-full sm:w-auto justify-center">
-                  <span className="material-symbols-outlined text-lg">arrow_back</span>
+                  <ArrowLeft size={20} className="text-lg" />
                   {t("breadcrumb.back")}
                 </Button>
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -472,7 +467,7 @@ const AddMember = () => {
                     onClick={() => handleSaveClick()}
                     disabled={isSubmitting}
                     className="gap-2 w-full sm:w-auto justify-center">
-                    <span className="material-symbols-outlined text-lg">save</span>
+                    <Save size={20} className="text-lg" />
                     {t("page.member.button.save")}
                   </Button>
                 </div>

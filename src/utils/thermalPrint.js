@@ -39,8 +39,12 @@ export const generateReceiptHTML = (data) => {
     showMemberInfo = true,
     showSocialMedia = true,
     addressFieldsVisibility = {},
-    socialMediaVisibility = {}
+    socialMediaVisibility = {},
+    paperSize = "58mm"
   } = data;
+
+  const is80 = paperSize === "80mm";
+  const widthCss = is80 ? "80mm" : "58mm";
 
   const logoHtml =
     showLogo && logo
@@ -111,9 +115,9 @@ export const generateReceiptHTML = (data) => {
   return `
 <!DOCTYPE html>
 <html>
-<head><style>@page { width: 58mm; margin:0; } body { font-family: 'Courier New', Courier, monospace; }</style></head>
+<head><style>@page { width: ${widthCss}; margin:0; } body { font-family: 'Courier New', Courier, monospace; }</style></head>
 <body>
-  <div style="width: 58mm; padding: 0 2px;">
+  <div style="width: ${widthCss}; padding: 0 2px;">
     ${headerHtml}
     ${memberHtml}
     <table style="width:100%;border-collapse:collapse;margin:10px 0;">
@@ -172,7 +176,8 @@ export const generateESCPOS = (data, opts = {}) => {
       .charAt(0)
       .toUpperCase() + String(paymentMethod || "Tunai").slice(1);
 
-  const W = RECEIPT_WIDTH;
+  const is80 = data.paperSize === "80mm" || opts.paperSize === "80mm";
+  const W = is80 ? 48 : 32;
   let enc = "";
 
   const init = "\x1B\x40";
@@ -211,8 +216,8 @@ export const generateESCPOS = (data, opts = {}) => {
 
   enc += line("=", W) + "\n";
   enc += alignLeft;
-  enc += padBoth(dateStr, timeStr) + "\n";
-  enc += padBoth("Invoice: " + orderNumber, "Kasir: " + cashier) + "\n";
+  enc += padBoth(dateStr, timeStr, W) + "\n";
+  enc += padBoth("Invoice: " + orderNumber, "Kasir: " + cashier, W) + "\n";
   if (showMemberInfo && memberName) {
     enc += "Member: " + memberName + "\n";
     if (memberTier) enc += "Tier: " + memberTier + "\n";
@@ -220,8 +225,13 @@ export const generateESCPOS = (data, opts = {}) => {
   }
   enc += line("=", W) + "\n";
 
-  enc += padBoth("Item", "") + "\n";
-  enc += "  " + "Qty".padEnd(3) + "  " + "Harga".padStart(15) + "  " + "Total".padStart(13) + "\n";
+  enc += padBoth("Item", "", W) + "\n";
+  if (is80) {
+    enc +=
+      "  " + "Qty".padEnd(4) + "  " + "Harga".padStart(15) + "  " + "Total".padStart(15) + "\n";
+  } else {
+    enc += "  " + "Qty".padEnd(3) + " " + "Harga".padStart(10) + " " + "Total".padStart(11) + "\n";
+  }
   enc += line("-", W) + "\n";
 
   items.forEach((item) => {
@@ -233,21 +243,27 @@ export const generateESCPOS = (data, opts = {}) => {
 
     enc += name + "\n";
     if (variant) enc += "  - " + variant + "\n";
-    enc += "  " + String(qty).padEnd(3);
-    enc += formatPrice(price).padStart(15);
-    enc += "  " + formatPrice(itemTotal).padStart(13) + "\n";
+    if (is80) {
+      enc += "  " + String(qty).padEnd(4);
+      enc += formatPrice(price).padStart(17);
+      enc += "  " + formatPrice(itemTotal).padStart(15) + "\n";
+    } else {
+      enc += "  " + String(qty).padEnd(3);
+      enc += formatPrice(price).padStart(11);
+      enc += " " + formatPrice(itemTotal).padStart(12) + "\n";
+    }
   });
 
   enc += line("=", W) + "\n";
-  enc += padBoth("Subtotal", formatPrice(subtotal)) + "\n";
-  if (discount > 0) enc += padBoth("Diskon", "-" + formatPrice(discount)) + "\n";
-  if (serviceCharge > 0) enc += padBoth("Biaya Layanan", formatPrice(serviceCharge)) + "\n";
-  enc += padBoth(taxLabel, formatPrice(tax)) + "\n";
+  enc += padBoth("Subtotal", formatPrice(subtotal), W) + "\n";
+  if (discount > 0) enc += padBoth("Diskon", "-" + formatPrice(discount), W) + "\n";
+  if (serviceCharge > 0) enc += padBoth("Biaya Layanan", formatPrice(serviceCharge), W) + "\n";
+  enc += padBoth(taxLabel, formatPrice(tax), W) + "\n";
   enc += boldOn + line("=", W) + "\n";
-  enc += padBoth("TOTAL", formatPrice(total)) + "\n";
+  enc += padBoth("TOTAL", formatPrice(total), W) + "\n";
   enc += boldOff + line("-", W) + "\n";
-  enc += padBoth(paymentLabel, formatPrice(cashAmount)) + "\n";
-  if (changeAmount > 0) enc += padBoth("Kembali", formatPrice(changeAmount)) + "\n";
+  enc += padBoth(paymentLabel, formatPrice(cashAmount), W) + "\n";
+  if (changeAmount > 0) enc += padBoth("Kembali", formatPrice(changeAmount), W) + "\n";
 
   enc += line("=", W) + "\n";
   enc += alignCenter + footer + "\n";
@@ -276,8 +292,19 @@ const mkEl = (tag, style, text) => {
   return el;
 };
 
-const RECEIPT_BODY_STYLE =
-  "@page { width: 58mm; margin:0; } body { font-family: 'Courier New', Courier, monospace; }";
+const getReceiptBodyStyle = (paperSize = "58mm", fontFamily = "monospace", fontSize = "normal") => {
+  const width = paperSize === "80mm" ? "80mm" : "58mm";
+  const fontFam =
+    fontFamily === "sans"
+      ? 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      : fontFamily === "serif"
+        ? 'Georgia, Cambria, "Times New Roman", Times, serif'
+        : "'Courier New', Courier, monospace";
+
+  const baseFont = fontSize === "small" ? "10px" : fontSize === "large" ? "13px" : "11px";
+
+  return `@page { width: ${width}; margin:0; } body { font-family: ${fontFam}; font-size: ${baseFont}; margin: 0; padding: 4px; color: #111; }`;
+};
 
 // ponytail: struk versi cetak dibangun via createElement+textContent —
 // tanpa string HTML yang lewat sink apa pun (innerHTML/write/
@@ -304,12 +331,42 @@ const buildReceiptFragment = (data) => {
     showMemberInfo = true,
     showSocialMedia = true,
     addressFieldsVisibility = {},
-    socialMediaVisibility = {}
+    socialMediaVisibility = {},
+    paperSize = "58mm",
+    fontSize = "normal",
+    fontFamily = "monospace",
+    lineSpacing = "normal"
   } = data;
 
-  const wrap = mkEl("div", "width:58mm;padding:0 2px;");
+  const is80 = paperSize === "80mm";
+  const widthCss = is80 ? "80mm" : "58mm";
 
-  const header = mkEl("div", "background:#111;color:#fff;padding:10px 5px;text-align:center;");
+  const fontFamCss =
+    fontFamily === "sans"
+      ? 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      : fontFamily === "serif"
+        ? 'Georgia, Cambria, "Times New Roman", Times, serif'
+        : "'Courier New', Courier, monospace";
+
+  const sizeMap = {
+    small: { base: "9.5px", title: "12px", header: "9px", price: "11px" },
+    normal: { base: "11px", title: "14px", header: "10px", price: "13px" },
+    large: { base: "13px", title: "16px", header: "12px", price: "15px" }
+  };
+  const currentSize = sizeMap[fontSize] || sizeMap.normal;
+
+  const padY = lineSpacing === "compact" ? "2px" : lineSpacing === "relaxed" ? "6px" : "4px";
+  const myMargin = lineSpacing === "compact" ? "6px" : lineSpacing === "relaxed" ? "14px" : "10px";
+
+  const wrap = mkEl(
+    "div",
+    `width:${widthCss};padding:0 2px;max-width:100%;box-sizing:border-box;font-family:${fontFamCss};font-size:${currentSize.base};`
+  );
+
+  const header = mkEl(
+    "div",
+    `background:#111;color:#fff;padding:${lineSpacing === "compact" ? "6px 4px" : "10px 5px"};text-align:center;`
+  );
   if (showLogo && logo) {
     const logoWrap = mkEl("div", "text-align:center;margin-bottom:8px;");
     const img = document.createElement("img");
@@ -322,11 +379,15 @@ const buildReceiptFragment = (data) => {
   }
   if (showStoreName && addressFieldsVisibility.storeName !== false) {
     header.append(
-      mkEl("div", "font-size:14px;font-weight:bold;text-transform:uppercase;", storeName || "TOKO")
+      mkEl(
+        "div",
+        `font-size:${currentSize.title};font-weight:bold;text-transform:uppercase;`,
+        storeName || "TOKO"
+      )
     );
   }
   if (showAddress) {
-    const addr = mkEl("div", "font-size:10px;color:#ccc;margin-top:4px;");
+    const addr = mkEl("div", `font-size:${currentSize.header};color:#ccc;margin-top:4px;`);
     if (addressFieldsVisibility.address !== false && storeAddress)
       addr.append(mkEl("div", "", storeAddress));
     if (addressFieldsVisibility.phone !== false && storePhone)
@@ -340,13 +401,13 @@ const buildReceiptFragment = (data) => {
   if (showMemberInfo && (memberName || memberTier)) {
     const box = mkEl(
       "div",
-      "background:#fffbeb;padding:8px;border-bottom:1px solid #fef3c7;font-size:10px;color:#78350f;"
+      `background:#fffbeb;padding:${padY} 8px;border-bottom:1px solid #fef3c7;font-size:${currentSize.header};color:#78350f;`
     );
     box.append(
       mkEl("div", "font-weight:bold;text-transform:uppercase;margin-bottom:4px;", "INFO MEMBER")
     );
     const row = (label, value) => {
-      const r = mkEl("div", "display:flex;justify-content:space-between;");
+      const r = mkEl("div", `display:flex;justify-content:space-between;padding:${padY} 0;`);
       r.append(mkEl("span", "", label), mkEl("span", "font-weight:bold;", value));
       return r;
     };
@@ -357,27 +418,27 @@ const buildReceiptFragment = (data) => {
     wrap.append(box);
   }
 
-  const table = mkEl("table", "width:100%;border-collapse:collapse;margin:10px 0;");
+  const table = mkEl("table", `width:100%;border-collapse:collapse;margin:${myMargin} 0;`);
   const headRow = mkEl(
     "tr",
-    "font-size:10px;color:#666;text-transform:uppercase;border-bottom:1px solid #ddd;"
+    `font-size:${currentSize.header};color:#666;text-transform:uppercase;border-bottom:1px solid #ddd;`
   );
   [
-    ["Item", "text-align:left;padding:4px 0;"],
-    ["Qty", "text-align:center;padding:4px 0;"],
-    ["Harga", "text-align:right;padding:4px 0;"],
-    ["Total", "text-align:right;padding:4px 0;"]
+    ["Item", `text-align:left;padding:${padY} 0;`],
+    ["Qty", `text-align:center;padding:${padY} 0;`],
+    ["Harga", `text-align:right;padding:${padY} 0;`],
+    ["Total", `text-align:right;padding:${padY} 0;`]
   ].forEach(([label, st]) => headRow.append(mkEl("th", st, label)));
   table.append(headRow);
   items.forEach((item) => {
-    const tr = mkEl("tr", "font-size:11px;");
+    const tr = mkEl("tr", `font-size:${currentSize.base};`);
     tr.append(
-      mkEl("td", "padding:4px 0;", item.name),
-      mkEl("td", "padding:4px 0;text-align:center;", item.qty),
-      mkEl("td", "padding:4px 0;text-align:right;", formatPrice(item.price)),
+      mkEl("td", `padding:${padY} 0;`, item.name),
+      mkEl("td", `padding:${padY} 0;text-align:center;`, item.qty),
+      mkEl("td", `padding:${padY} 0;text-align:right;`, formatPrice(item.price)),
       mkEl(
         "td",
-        "padding:4px 0;text-align:right;font-weight:bold;",
+        `padding:${padY} 0;text-align:right;font-weight:bold;`,
         formatPrice(item.qty * item.price)
       )
     );
@@ -385,23 +446,33 @@ const buildReceiptFragment = (data) => {
   });
   wrap.append(table);
 
-  const totals = mkEl("div", "padding:5px;background:#f9f9f9;font-size:11px;");
+  const totals = mkEl(
+    "div",
+    `padding:${padY} 5px;background:#f9f9f9;font-size:${currentSize.base};`
+  );
   const trow = (label, value, extra) => {
-    const r = mkEl("div", `display:flex;justify-content:space-between;${extra || ""}`);
+    const r = mkEl(
+      "div",
+      `display:flex;justify-content:space-between;padding:${padY} 0;${extra || ""}`
+    );
     r.append(mkEl("span", "", label), mkEl("span", "", value));
     return r;
   };
   totals.append(trow("Subtotal", formatPrice(subtotal)), trow("Pajak", formatPrice(tax)));
   totals.append(
-    trow("Total", formatPrice(total), "font-weight:bold;margin-top:5px;font-size:13px;")
+    trow(
+      "Total",
+      formatPrice(total),
+      `font-weight:bold;margin-top:4px;font-size:${currentSize.price};`
+    )
   );
   wrap.append(totals);
 
   const foot = mkEl(
     "div",
-    "padding:10px 5px;border-top:1px solid #ddd;font-size:10px;text-align:center;color:#666;"
+    `padding:${lineSpacing === "compact" ? "6px 5px" : "10px 5px"};border-top:1px solid #ddd;font-size:${currentSize.header};text-align:center;color:#666;`
   );
-  foot.append(mkEl("div", "font-style:italic;margin-bottom:8px;", footer ?? ""));
+  foot.append(mkEl("div", "font-style:italic;margin-bottom:6px;", footer ?? ""));
   if (showSocialMedia && socialMedia.length > 0) {
     const smWrap = mkEl("div", "display:flex;justify-content:center;gap:5px;flex-wrap:wrap;");
     socialMedia
@@ -415,12 +486,17 @@ const buildReceiptFragment = (data) => {
 };
 
 export const printViaBrowser = (data) => {
+  const paperSize = data?.paperSize || "58mm";
+  const fontFamily = data?.fontFamily || "monospace";
+  const fontSize = data?.fontSize || "normal";
+  const bodyStyle = getReceiptBodyStyle(paperSize, fontFamily, fontSize);
+
   // ponytail: konten disuntikkan langsung ke dokumen tujuan via DOM API;
   // kalau popup diblokir, iframe tersembunyi mencetak tanpa buka tab baru
   const win = window.open("", "_blank");
   if (win) {
     win.document.title = "Struk";
-    win.document.head.append(mkEl("style", "", RECEIPT_BODY_STYLE));
+    win.document.head.append(mkEl("style", "", bodyStyle));
     win.document.body.append(buildReceiptFragment(data));
     setTimeout(() => {
       win.focus();
@@ -437,7 +513,7 @@ export const printViaBrowser = (data) => {
   style.textContent = "@media print{body>*:not(.print-thermal){display:none!important}}";
   document.body.append(style, iframe);
   const doc = iframe.contentDocument;
-  doc.head.append(mkEl("style", "", RECEIPT_BODY_STYLE));
+  doc.head.append(mkEl("style", "", bodyStyle));
   doc.body.append(buildReceiptFragment(data));
   setTimeout(() => {
     iframe.contentWindow.focus();

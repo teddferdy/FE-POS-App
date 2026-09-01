@@ -12,7 +12,15 @@ import {
   Briefcase,
   DollarSign,
   Lock,
-  FileText as FileTextIcon
+  FileText as FileTextIcon,
+  Building2,
+  Plus,
+  BadgeCheck,
+  Store,
+  Banknote,
+  EyeOff,
+  ArrowLeft,
+  Save
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -478,7 +486,7 @@ const AddEmployee = () => {
                         <TabsContent value="profile">
                           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                              <span className="material-symbols-outlined text-primary">person</span>
+                              <User size={18} className="text-primary" />
                               <h4 className="text-base font-semibold text-foreground">
                                 {t("page.employee.add.personalInfo")}
                               </h4>
@@ -691,7 +699,7 @@ const AddEmployee = () => {
                         <TabsContent value="employment">
                           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                              <span className="material-symbols-outlined text-primary">work</span>
+                              <Briefcase size={18} className="text-primary" />
                               <h4 className="text-base font-semibold text-foreground">
                                 {t("page.employee.add.jobInfo")}
                               </h4>
@@ -727,9 +735,10 @@ const AddEmployee = () => {
                                     </FormLabel>
                                     {departments.length === 0 ? (
                                       <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                                        <span className="material-symbols-outlined text-3xl text-muted-foreground">
-                                          domain
-                                        </span>
+                                        <Building2
+                                          size={18}
+                                          className="text-3xl text-muted-foreground"
+                                        />
                                         <div className="text-center">
                                           <p className="text-sm font-medium text-foreground">
                                             {t("page.employee.add.noDepartment")}
@@ -744,9 +753,7 @@ const AddEmployee = () => {
                                           size="sm"
                                           onClick={() => navigate("/add-department")}
                                           className="gap-2">
-                                          <span className="material-symbols-outlined text-base">
-                                            add
-                                          </span>
+                                          <Plus size={18} className="text-base" />
                                           {t("page.employee.add.addDepartmentButton")}
                                         </Button>
                                       </div>
@@ -772,9 +779,7 @@ const AddEmployee = () => {
                                           className="shrink-0"
                                           onClick={() => navigate("/add-department")}
                                           title={t("page.employee.add.addDepartment")}>
-                                          <span className="material-symbols-outlined text-base">
-                                            add
-                                          </span>
+                                          <Plus size={18} className="text-base" />
                                         </Button>
                                       </div>
                                     )}
@@ -792,9 +797,10 @@ const AddEmployee = () => {
                                     </FormLabel>
                                     {positions.length === 0 ? (
                                       <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                                        <span className="material-symbols-outlined text-3xl text-muted-foreground">
-                                          badge
-                                        </span>
+                                        <BadgeCheck
+                                          size={18}
+                                          className="text-3xl text-muted-foreground"
+                                        />
                                         <div className="text-center">
                                           <p className="text-sm font-medium text-foreground">
                                             {t("page.employee.add.noPosition")}
@@ -809,9 +815,7 @@ const AddEmployee = () => {
                                           size="sm"
                                           onClick={() => navigate("/add-position")}
                                           className="gap-2">
-                                          <span className="material-symbols-outlined text-base">
-                                            add
-                                          </span>
+                                          <Plus size={18} className="text-base" />
                                           {t("page.employee.add.addPositionButton")}
                                         </Button>
                                       </div>
@@ -842,9 +846,7 @@ const AddEmployee = () => {
                                           className="shrink-0"
                                           onClick={() => navigate("/add-position")}
                                           title={t("page.employee.add.addPosition")}>
-                                          <span className="material-symbols-outlined text-base">
-                                            add
-                                          </span>
+                                          <Plus size={18} className="text-base" />
                                         </Button>
                                       </div>
                                     )}
@@ -862,9 +864,10 @@ const AddEmployee = () => {
                                     </FormLabel>
                                     {locations.length === 0 ? (
                                       <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                                        <span className="material-symbols-outlined text-3xl text-muted-foreground">
-                                          store
-                                        </span>
+                                        <Store
+                                          size={18}
+                                          className="text-3xl text-muted-foreground"
+                                        />
                                         <div className="text-center">
                                           <p className="text-sm font-medium text-foreground">
                                             {t("page.employee.add.noStore")}
@@ -879,9 +882,7 @@ const AddEmployee = () => {
                                           size="sm"
                                           onClick={() => navigate("/add-location")}
                                           className="gap-2">
-                                          <span className="material-symbols-outlined text-base">
-                                            add
-                                          </span>
+                                          <Plus size={18} className="text-base" />
                                           {t("page.employee.add.addStoreButton")}
                                         </Button>
                                       </div>
@@ -908,9 +909,7 @@ const AddEmployee = () => {
                                           className="shrink-0"
                                           onClick={() => navigate("/add-location")}
                                           title={t("page.employee.add.addStore")}>
-                                          <span className="material-symbols-outlined text-base">
-                                            add
-                                          </span>
+                                          <Plus size={18} className="text-base" />
                                         </Button>
                                       </div>
                                     )}
@@ -1102,9 +1101,7 @@ const AddEmployee = () => {
                         <TabsContent value="salary">
                           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                              <span className="material-symbols-outlined text-primary">
-                                payments
-                              </span>
+                              <Banknote size={18} className="text-primary" />
                               <h4 className="text-base font-semibold text-foreground">
                                 {t("page.employee.add.salarySection")}
                               </h4>
@@ -1168,7 +1165,7 @@ const AddEmployee = () => {
                         <TabsContent value="account">
                           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                              <span className="material-symbols-outlined text-primary">lock</span>
+                              <Lock size={18} className="text-primary" />
                               <h4 className="text-base font-semibold text-foreground">
                                 {t("page.employee.add.accountSection")}
                               </h4>
@@ -1212,9 +1209,11 @@ const AddEmployee = () => {
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer">
-                                        <span className="material-symbols-outlined text-base">
-                                          {showPassword ? "visibility" : "visibility_off"}
-                                        </span>
+                                        {showPassword ? (
+                                          <Eye size={18} className="text-base" />
+                                        ) : (
+                                          <EyeOff size={18} className="text-base" />
+                                        )}
                                       </button>
                                     </div>
                                     <FormMessage />
@@ -1301,9 +1300,7 @@ const AddEmployee = () => {
                         <TabsContent value="documents">
                           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                              <span className="material-symbols-outlined text-primary">
-                                description
-                              </span>
+                              <FileText size={18} className="text-primary" />
                               <h4 className="text-base font-semibold text-foreground">
                                 {t("page.employee.add.documents")}{" "}
                                 <span className="text-destructive">*</span>
@@ -1382,7 +1379,7 @@ const AddEmployee = () => {
                           variant="success"
                           className="w-full sm:w-auto"
                           onClick={() => setCancelModal(true)}>
-                          <span className="material-symbols-outlined text-lg">arrow_back</span>
+                          <ArrowLeft size={20} className="text-lg" />
                           {t("page.employee.add.cancelButton")}
                         </Button>
                         <div className="flex gap-3">
@@ -1413,7 +1410,7 @@ const AddEmployee = () => {
                               }
                               setConfirmSaveModal(true);
                             }}>
-                            <span className="material-symbols-outlined text-lg">save</span>
+                            <Save size={20} className="text-lg" />
                             {t("page.employee.add.saveButton")}
                           </Button>
                         </div>

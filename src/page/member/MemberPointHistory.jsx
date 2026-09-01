@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
-import { Receipt } from "lucide-react";
+import { Receipt, Users, ArrowLeft, ReceiptText, Star } from "lucide-react";
 import TableActionLegend from "@/components/ui/TableActionLegend";
 
 const formatCurrency = (value) => {
@@ -68,7 +68,7 @@ const MemberPointHistory = () => {
   if (!member) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-5xl">groups</span>
+        <Users size={48} className="text-5xl" />
         <p>Member tidak ditemukan</p>
         <Button variant="danger" onClick={() => navigate("/member-list")}>
           {t("page.member.pointHistory.back")}
@@ -84,7 +84,7 @@ const MemberPointHistory = () => {
           <button
             onClick={() => navigate("/member-list")}
             className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-1">
-            <span className="material-symbols-outlined text-base">arrow_back</span>
+            <ArrowLeft size={18} className="text-base" />
             {t("page.member.pointHistory.backToList")}
           </button>
           <h1 className="text-2xl font-bold text-foreground">{name}</h1>
@@ -146,9 +146,7 @@ const MemberPointHistory = () => {
                 {transactions.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
-                      <span className="material-symbols-outlined text-4xl block mb-2">
-                        receipt_long
-                      </span>
+                      <ReceiptText size={36} className="text-4xl block mb-2" />
                       {t("page.member.pointHistory.noTransaction")}
                     </td>
                   </tr>
@@ -185,7 +183,7 @@ const MemberPointHistory = () => {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all">
-                          <span className="material-symbols-outlined text-lg">receipt</span>
+                          <Receipt size={20} className="text-lg" />
                         </button>
                       </td>
                     </tr>
@@ -269,9 +267,7 @@ const MemberPointHistory = () => {
                     {(pointData?.data || []).length === 0 ? (
                       <tr>
                         <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
-                          <span className="material-symbols-outlined text-4xl block mb-2">
-                            stars
-                          </span>
+                          <Star size={36} className="text-4xl block mb-2" />
                           <p className="text-sm">{t("page.member.pointHistory.noActivity")}</p>
                         </td>
                       </tr>

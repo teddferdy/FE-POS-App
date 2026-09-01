@@ -4,7 +4,17 @@ import { useMutation, useQuery, useQueries, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X, Save, Check, Users, Search, Briefcase, Store, AlertTriangle } from "lucide-react";
+import {
+  X,
+  Save,
+  Check,
+  Users,
+  Search,
+  Briefcase,
+  Store,
+  AlertTriangle,
+  Wand2
+} from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
 import { getAllShift, editShift } from "@/services/shift";
@@ -401,9 +411,7 @@ const EditShift = () => {
             {templates.length > 0 && (
               <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-lg">
-                    auto_fix_high
-                  </span>
+                  <Wand2 size={20} className="text-blue-600 dark:text-blue-400 text-lg" />
                   <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
                     {t("page.shift.template.selectorTitle", "Pilih Template (Opsional)")}
                   </p>

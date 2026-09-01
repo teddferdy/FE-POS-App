@@ -2,6 +2,7 @@ import React from "react";
 import { MoreHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -15,7 +16,7 @@ const ActionIcon = ({ item }) => {
     return <Icon size={16} />;
   }
   if (item.iconName) {
-    return <span className="material-symbols-outlined text-lg leading-none">{item.iconName}</span>;
+    return <DynamicIcon name={item.iconName} size={16} />;
   }
   return null;
 };

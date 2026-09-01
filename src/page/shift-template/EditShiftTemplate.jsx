@@ -21,7 +21,7 @@ import {
   FormMessage,
   FormControl
 } from "@/components/ui/form";
-import { Check } from "lucide-react";
+import { Check, BadgeCheck, X, Save } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
@@ -126,7 +126,7 @@ const EditShiftTemplate = () => {
   if (!templateId) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-4xl">badge</span>
+        <BadgeCheck size={36} className="text-4xl" />
         <p>{t("page.shiftTemplate.detail.idNotFound")}</p>
         <Button variant="danger" onClick={() => navigate("/shift-template-list")}>
           {t("page.shiftTemplate.button.back")}
@@ -141,7 +141,7 @@ const EditShiftTemplate = () => {
   if (!template) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-4xl">badge</span>
+        <BadgeCheck size={36} className="text-4xl" />
         <p>{t("page.shiftTemplate.detail.notFound")}</p>
         <Button variant="danger" onClick={() => navigate("/shift-template-list")}>
           {t("page.shiftTemplate.button.back")}
@@ -182,9 +182,10 @@ const EditShiftTemplate = () => {
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                          badge
-                        </span>
+                        <BadgeCheck
+                          size={18}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base"
+                        />
                         <Input
                           {...field}
                           placeholder={t("page.shiftTemplate.form.namePlaceholder")}
@@ -304,7 +305,7 @@ const EditShiftTemplate = () => {
                 variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2">
-                <span className="material-symbols-outlined text-lg">close</span>
+                <X size={20} className="text-lg" />
                 {t("common.cancel")}
               </Button>
               <div className="flex gap-3">
@@ -330,7 +331,7 @@ const EditShiftTemplate = () => {
                     setSaveConfirm(true);
                   }}
                   className="gap-2 shadow-lg shadow-primary/20">
-                  <span className="material-symbols-outlined text-lg">save</span>
+                  <Save size={20} className="text-lg" />
                   {t("page.shiftTemplate.button.saveChanges")}
                 </Button>
               </div>

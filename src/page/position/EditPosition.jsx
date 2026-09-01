@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Check } from "lucide-react";
+import { Check, BadgeCheck, Plus, Building2, X, Save, Info } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
@@ -122,7 +122,7 @@ const EditPosition = () => {
   if (!positionId) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-4xl">badge</span>
+        <BadgeCheck size={36} className="text-4xl" />
         <p>{t("page.position.edit.idNotFound")}</p>
         <Button variant="danger" onClick={() => navigate("/position-list")}>
           {t("common.cancel")}
@@ -172,7 +172,7 @@ const EditPosition = () => {
   if (!position) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-4xl">badge</span>
+        <BadgeCheck size={36} className="text-4xl" />
         <p>{t("page.position.edit.notFound")}</p>
         <Button variant="danger" onClick={() => navigate("/position-list")}>
           {t("common.cancel")}
@@ -213,9 +213,10 @@ const EditPosition = () => {
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                          badge
-                        </span>
+                        <BadgeCheck
+                          size={18}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base"
+                        />
                         <Input
                           {...field}
                           placeholder={t("page.position.form.namePlaceholder")}
@@ -241,11 +242,7 @@ const EditPosition = () => {
                         <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
                           <div className="text-center flex flex-col items-center gap-3">
                             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span
-                                className="material-symbols-outlined text-primary text-[28px]"
-                                style={{ fontVariationSettings: "'FILL' 1" }}>
-                                domain
-                              </span>
+                              <Building2 size={28} className="text-primary" />
                             </div>
                             <p className="text-sm font-medium text-foreground">
                               {t("page.position.empty.noDepartments")}
@@ -260,16 +257,17 @@ const EditPosition = () => {
                             size="sm"
                             onClick={() => navigate("/add-department")}
                             className="gap-2">
-                            <span className="material-symbols-outlined text-base">add</span>
+                            <Plus size={18} className="text-base" />
                             {t("page.position.button.addDepartment")}
                           </Button>
                         </div>
                       ) : (
                         <div className="flex gap-2">
                           <div className="flex-1 relative">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base z-10">
-                              domain
-                            </span>
+                            <Building2
+                              size={18}
+                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base z-10"
+                            />
                             <Select value={field.value} onValueChange={field.onChange}>
                               <SelectTrigger className="pl-9">
                                 <SelectValue
@@ -292,7 +290,7 @@ const EditPosition = () => {
                             className="shrink-0 mt-0.5"
                             onClick={() => navigate("/add-department")}
                             title={t("page.position.button.addDepartmentNew")}>
-                            <span className="material-symbols-outlined text-base">add</span>
+                            <Plus size={18} className="text-base" />
                           </Button>
                         </div>
                       )}
@@ -372,7 +370,7 @@ const EditPosition = () => {
                 variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2">
-                <span className="material-symbols-outlined text-lg">close</span>
+                <X size={20} className="text-lg" />
                 {t("common.cancel")}
               </Button>
               <div className="flex gap-3">
@@ -399,7 +397,7 @@ const EditPosition = () => {
                   }}
                   disabled={editMutation.isLoading}
                   className="gap-2 shadow-lg shadow-primary/20">
-                  <span className="material-symbols-outlined text-lg">save</span>
+                  <Save size={20} className="text-lg" />
                   {t("page.position.button.saveChanges")}
                 </Button>
               </div>
@@ -409,7 +407,7 @@ const EditPosition = () => {
       </div>
 
       <div className="mt-6 p-4 bg-muted rounded-xl flex items-start gap-3 border-l-4 border-amber-300">
-        <span className="material-symbols-outlined text-amber-700 shrink-0">info</span>
+        <Info size={18} className="text-amber-700 shrink-0" />
         <div>
           <h4 className="text-xs font-bold text-amber-700 uppercase tracking-wider">
             {t("page.position.edit.securityNote")}

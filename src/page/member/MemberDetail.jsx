@@ -4,7 +4,28 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { getMemberById, getMemberPointHistory } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
-import { Stars, ArrowLeft, Users, Edit3 } from "lucide-react";
+import {
+  Stars,
+  ArrowLeft,
+  Users,
+  Edit3,
+  ChevronRight,
+  Calendar,
+  Mail,
+  Phone,
+  MapPin,
+  Trophy,
+  BellRing,
+  ReceiptText,
+  Receipt,
+  ChevronLeft,
+  CheckCircle,
+  Star,
+  ShoppingBag,
+  Banknote,
+  TrendingUp,
+  Minus
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
@@ -74,7 +95,6 @@ const MemberDetail = () => {
   const currentTier = tiers.find((t) => t.id === member?.tier) || {};
   const level = {
     bg: "bg-primary/10 text-primary border border-primary/20",
-    icon: "stars",
     label: currentTier.name || t("page.member.detail.levelSilver"),
     color: currentTier.color || "#f59e0b"
   };
@@ -138,15 +158,12 @@ const MemberDetail = () => {
                     <Skeleton className="h-6 w-28" />
                     <Skeleton className="h-10 w-10 rounded-lg" />
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Skeleton className="h-4 w-4 rounded" />
-                    <Skeleton className="h-3 w-28" />
-                  </div>
+                  <Skeleton className="h-3 w-32" />
                 </div>
               ))}
             </div>
             <div className="bg-card rounded-xl border border-border shadow-sm">
-              <div className="flex gap-2 p-4 border-b border-border">
+              <div className="p-4 border-b border-border flex justify-between">
                 <Skeleton className="h-8 w-32 rounded" />
                 <Skeleton className="h-8 w-28 rounded" />
               </div>
@@ -174,14 +191,6 @@ const MemberDetail = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
-                <Skeleton className="h-3 w-52" />
-                <div className="flex gap-1">
-                  {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="h-8 w-8 rounded-lg" />
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -192,7 +201,7 @@ const MemberDetail = () => {
   if (!member) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-5xl">groups</span>
+        <Users size={48} />
         <p>Member tidak ditemukan</p>
         <Button variant="danger" onClick={() => navigate("/member-list")}>
           Kembali
@@ -235,31 +244,31 @@ const MemberDetail = () => {
     {
       label: t("page.member.detail.totalTransactions"),
       value: `${totalTransactions}`,
-      icon: "receipt_long",
+      IconComponent: ReceiptText,
       iconBg: "bg-primary/10",
       iconColor: "text-primary",
       trend: `${totalSpent > 0 ? formatCurrency(totalSpent) : "Rp 0"} total belanja`,
-      trendIcon: "payments",
+      TrendIconComponent: Banknote,
       trendColor: "text-foreground"
     },
     {
       label: t("page.member.detail.visitFrequency"),
       value: `${visitFrequency} kali`,
-      icon: "calendar_month",
+      IconComponent: Calendar,
       iconBg: "bg-amber-500/10",
       iconColor: "text-amber-700",
       trend: "",
-      trendIcon: "trending_up",
+      TrendIconComponent: TrendingUp,
       trendColor: "text-foreground"
     },
     {
       label: t("page.member.detail.averageSpending"),
       value: formatCurrency(averageSpending),
-      icon: "shopping_bag",
+      IconComponent: ShoppingBag,
       iconBg: "bg-secondary/10",
       iconColor: "text-secondary",
       trend: "",
-      trendIcon: "remove",
+      TrendIconComponent: Minus,
       trendColor: "text-foreground"
     }
   ];
@@ -269,13 +278,13 @@ const MemberDetail = () => {
       <div className="space-y-8">
         <nav className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
           <span>{t("breadcrumb.management")}</span>
-          <span className="material-symbols-outlined text-sm">chevron_right</span>
+          <ChevronRight size={16} className="text-sm" />
           <button
             onClick={() => navigate("/member-list")}
             className="hover:text-primary transition-colors">
             {t("breadcrumb.list")}
           </button>
-          <span className="material-symbols-outlined text-sm">chevron_right</span>
+          <ChevronRight size={16} className="text-sm" />
           <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
         </nav>
         <div className="flex items-center justify-between">
@@ -317,11 +326,7 @@ const MemberDetail = () => {
                   {getInitials(name)}
                 </div>
                 <div className="absolute bottom-1 right-1 bg-primary text-primary-foreground rounded-full p-1 border-2 border-card">
-                  <span
-                    className="material-symbols-outlined text-sm"
-                    style={{ fontVariationSettings: "'FILL' 1" }}>
-                    verified
-                  </span>
+                  <CheckCircle size={14} className="text-primary-foreground" />
                 </div>
               </div>
               <h3 className="text-lg font-semibold text-foreground text-center">{name}</h3>
@@ -331,9 +336,7 @@ const MemberDetail = () => {
               </span>
               <div className="w-full space-y-4 border-t border-border pt-4">
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-muted-foreground text-base">
-                    calendar_today
-                  </span>
+                  <Calendar size={18} className="text-muted-foreground text-base" />
                   <div className="flex flex-col">
                     <span className="text-xs text-muted-foreground">
                       {t("page.member.detail.joinedDate")}
@@ -342,9 +345,7 @@ const MemberDetail = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-muted-foreground text-base">
-                    mail
-                  </span>
+                  <Mail size={18} className="text-muted-foreground text-base" />
                   <div className="flex flex-col">
                     <span className="text-xs text-muted-foreground">
                       {t("page.member.detail.emailAddress")}
@@ -353,9 +354,7 @@ const MemberDetail = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-muted-foreground text-base">
-                    call
-                  </span>
+                  <Phone size={18} className="text-muted-foreground text-base" />
                   <div className="flex flex-col">
                     <span className="text-xs text-muted-foreground">
                       {t("page.member.detail.phoneNumber")}
@@ -364,9 +363,7 @@ const MemberDetail = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-muted-foreground text-base">
-                    location_on
-                  </span>
+                  <MapPin size={18} className="text-muted-foreground text-base" />
                   <div className="flex flex-col">
                     <span className="text-xs text-muted-foreground">
                       {t("page.member.detail.address")}
@@ -380,9 +377,7 @@ const MemberDetail = () => {
             <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
               <div className="bg-foreground text-background p-4 flex flex-wrap gap-2 items-center">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-background">
-                    workspace_premium
-                  </span>
+                  <Trophy size={18} className="text-background" />
                   <span className="text-sm font-semibold">
                     {t("page.member.detail.membershipStatus")}
                   </span>
@@ -395,11 +390,7 @@ const MemberDetail = () => {
                     borderColor: level.color + "40",
                     borderWidth: 1
                   }}>
-                  <span
-                    className="material-symbols-outlined text-sm"
-                    style={{ fontVariationSettings: "'FILL' 1" }}>
-                    {level.icon}
-                  </span>
+                  <Star size={14} />
                   {level.label}
                 </span>
               </div>
@@ -429,9 +420,7 @@ const MemberDetail = () => {
                   </p>
                 </div>
                 <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg flex items-center gap-3">
-                  <span className="material-symbols-outlined text-destructive text-base">
-                    notification_important
-                  </span>
+                  <BellRing size={18} className="text-destructive text-base" />
                   <div>
                     <p className="text-xs font-bold text-destructive">
                       {t("page.member.detail.pointsExpiringSoon")}
@@ -450,27 +439,33 @@ const MemberDetail = () => {
 
           <div className="lg:col-span-8 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-card p-4 rounded-xl border border-border shadow-sm">
-                  <span className="text-xs font-semibold text-muted-foreground block mb-3">
-                    {stat.label}
-                  </span>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-bold text-foreground">{stat.value}</span>
-                    <div className={`${stat.iconBg} ${stat.iconColor} p-2 rounded-lg`}>
-                      <span className="material-symbols-outlined text-base">{stat.icon}</span>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center">
-                    <span className={`material-symbols-outlined text-sm mr-1 ${stat.trendColor}`}>
-                      {stat.trendIcon}
+              {stats.map((stat) => {
+                const StatIcon = stat.IconComponent;
+                const TrendIcon = stat.TrendIconComponent;
+                return (
+                  <div
+                    key={stat.label}
+                    className="bg-card p-4 rounded-xl border border-border shadow-sm">
+                    <span className="text-xs font-semibold text-muted-foreground block mb-3">
+                      {stat.label}
                     </span>
-                    <span className={`text-xs font-semibold ${stat.trendColor}`}>{stat.trend}</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-bold text-foreground">{stat.value}</span>
+                      <div className={`${stat.iconBg} ${stat.iconColor} p-2 rounded-lg`}>
+                        {StatIcon && <StatIcon size={18} />}
+                      </div>
+                    </div>
+                    {stat.trend && (
+                      <div className="mt-3 flex items-center">
+                        {TrendIcon && <TrendIcon size={14} className={`mr-1 ${stat.trendColor}`} />}
+                        <span className={`text-xs font-semibold ${stat.trendColor}`}>
+                          {stat.trend}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="bg-card rounded-xl border border-border shadow-sm">
@@ -524,9 +519,7 @@ const MemberDetail = () => {
                       {transactions.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
-                            <span className="material-symbols-outlined text-4xl block mb-2">
-                              receipt_long
-                            </span>
+                            <ReceiptText size={36} className="text-4xl block mb-2" />
                             Tidak ada transaksi ditemukan
                           </td>
                         </tr>
@@ -563,7 +556,7 @@ const MemberDetail = () => {
                             </td>
                             <td className="px-4 py-3 text-center">
                               <button className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all">
-                                <span className="material-symbols-outlined text-lg">receipt</span>
+                                <Receipt size={20} className="text-lg" />
                               </button>
                             </td>
                           </tr>
@@ -682,7 +675,7 @@ const MemberDetail = () => {
                         onClick={() => setPointPage(Math.max(1, pointPage - 1))}
                         disabled={pointPage <= 1}
                         className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
-                        <span className="material-symbols-outlined text-lg">chevron_left</span>
+                        <ChevronLeft size={20} className="text-lg" />
                       </button>
                       <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
                         {pointPage}
@@ -691,7 +684,7 @@ const MemberDetail = () => {
                         onClick={() => setPointPage(pointPage + 1)}
                         disabled={pointPage >= (pointData?.pagination?.totalPages || 1)}
                         className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
-                        <span className="material-symbols-outlined text-lg">chevron_right</span>
+                        <ChevronRight size={20} className="text-lg" />
                       </button>
                     </div>
                   </div>
@@ -709,13 +702,13 @@ const MemberDetail = () => {
                       onClick={() => setTransactionPage(Math.max(1, transactionPage - 1))}
                       disabled={transactionPage <= 1}
                       className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
-                      <span className="material-symbols-outlined text-lg">chevron_left</span>
+                      <ChevronLeft size={20} className="text-lg" />
                     </button>
                     <button
                       onClick={() => setTransactionPage(transactionPage + 1)}
                       disabled={transactionPage >= (member?.transactionPagination?.totalPages || 1)}
                       className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
-                      <span className="material-symbols-outlined text-lg">chevron_right</span>
+                      <ChevronRight size={20} className="text-lg" />
                     </button>
                   </div>
                 </div>

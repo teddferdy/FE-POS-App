@@ -1,3 +1,4 @@
+import { Sparkles, ShoppingBag, Banknote, Package, RotateCcw } from "lucide-react";
 import React from "react";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,9 +25,9 @@ const BestSellerTab = ({ t, data, isLoading }) => {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-card rounded-xl border border-border p-6">
-            <Skeleton className="h-4 w-48 mb-6" />
+            <Skeleton className="h-4 w-48 mb-4" />
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="space-y-2 mb-4">
+              <div key={i} className="space-y-2 py-2">
                 <div className="flex justify-between">
                   <Skeleton className="h-3 w-32" />
                   <Skeleton className="h-3 w-16" />
@@ -36,28 +37,14 @@ const BestSellerTab = ({ t, data, isLoading }) => {
             ))}
           </div>
           <div className="bg-card rounded-xl border border-border p-6">
-            <Skeleton className="h-3 w-20 mb-4" />
-            <Skeleton className="h-5 w-40 mb-2" />
-            <Skeleton className="h-3 w-48 mb-6" />
+            <Skeleton className="h-4 w-32 mb-4" />
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-3 w-full mb-4" />
             <div className="grid grid-cols-2 gap-3">
               <Skeleton className="h-16 rounded-lg" />
               <Skeleton className="h-16 rounded-lg" />
             </div>
           </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-6">
-          <Skeleton className="h-4 w-56 mb-4" />
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-4 py-3 border-b border-border last:border-0">
-              <Skeleton className="h-3 w-6" />
-              <Skeleton className="h-8 w-8 rounded" />
-              <Skeleton className="h-3 w-32" />
-              <Skeleton className="h-3 w-16 ml-auto" />
-              <Skeleton className="h-3 w-20" />
-            </div>
-          ))}
         </div>
       </div>
     );
@@ -66,70 +53,51 @@ const BestSellerTab = ({ t, data, isLoading }) => {
   return (
     <div>
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div className="w-12 h-1 bg-amber-500 rounded-full mb-3" />
-            <h3 className="text-lg font-semibold text-foreground">
-              {t("page.report.bestSeller.title")}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {t("page.report.bestSeller.description")}
-            </p>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
             {
-              icon: "shopping_bag",
-              iconColor: "text-amber-600",
-              iconBg: "bg-amber-100",
+              Icon: ShoppingBag,
               labelKey: "page.report.bestSeller.kpi.unitsSold",
               value: formatNumber(summary.totalUnitsSold || 0)
             },
             {
-              icon: "payments",
-              iconColor: "text-orange-600",
-              iconBg: "bg-orange-100",
+              Icon: Banknote,
               labelKey: "page.report.bestSeller.kpi.productRevenue",
               value: formatCurrency(summary.totalRevenue || 0)
             },
             {
-              icon: "inventory_2",
-              iconColor: "text-yellow-600",
-              iconBg: "bg-yellow-100",
+              Icon: Package,
               labelKey: "page.report.bestSeller.kpi.activeProducts",
               value: formatNumber(summary.activeProducts || 0)
             },
             {
-              icon: "assignment_return",
-              iconColor: "text-red-600",
-              iconBg: "bg-red-100",
+              Icon: RotateCcw,
               labelKey: "page.report.bestSeller.kpi.returnRate",
               value: "0%"
             }
-          ].map((kpi) => (
-            <div
-              key={kpi.labelKey}
-              className="bg-card p-4 rounded-xl border-l-4 border-amber-500 border border-border shadow-sm">
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {t(kpi.labelKey)}
-                </span>
-                <div className={`p-1.5 ${kpi.iconBg} rounded-lg`}>
-                  <span className={`material-symbols-outlined text-lg ${kpi.iconColor}`}>
-                    {kpi.icon}
-                  </span>
+          ].map((kpi) => {
+            const Icon = kpi.Icon;
+            return (
+              <div
+                key={kpi.labelKey}
+                className="bg-card p-5 rounded-xl border border-border shadow-sm">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="p-2 bg-primary/10 text-primary rounded-lg">
+                    <Icon size={18} />
+                  </div>
                 </div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                  {t(kpi.labelKey)}
+                </p>
+                <p className="text-xl font-bold text-foreground">{kpi.value}</p>
               </div>
-              <p className="text-xl font-bold text-foreground">{kpi.value}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-card p-6 rounded-xl border border-border shadow-sm">
-            <div className="w-8 h-1 bg-amber-500 rounded-full mb-2" />
+            <div className="w-8 h-1 bg-primary rounded-full mb-2" />
             <h3 className="text-base font-semibold text-foreground mb-6">
               {t("page.report.bestSeller.top10Visualization")}
             </h3>
@@ -145,7 +113,7 @@ const BestSellerTab = ({ t, data, isLoading }) => {
                     </div>
                     <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
                       <div
-                        className="bg-amber-500 h-full rounded-full transition-all"
+                        className="bg-primary h-full rounded-full transition-all"
                         style={{ width: `${(item.sold / maxSold) * 100}%` }}
                       />
                     </div>
@@ -160,12 +128,12 @@ const BestSellerTab = ({ t, data, isLoading }) => {
           </div>
 
           {bestSellers[0] && (
-            <div className="bg-gradient-to-br from-amber-600 to-orange-700 text-white rounded-xl p-6 flex flex-col justify-between relative overflow-hidden">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl p-6 flex flex-col justify-between relative overflow-hidden shadow-sm">
               <div className="absolute -right-10 -top-10 opacity-10">
-                <span className="material-symbols-outlined text-[200px]">auto_awesome</span>
+                <Sparkles size={180} />
               </div>
               <div className="relative z-10">
-                <span className="bg-white/20 text-white border border-white/30 px-3 py-1 rounded-full text-xs font-semibold mb-4 inline-block">
+                <span className="bg-white/10 text-white border border-white/20 px-3 py-1 rounded-full text-xs font-semibold mb-4 inline-block">
                   {t("page.report.bestSeller.productSpotlight")}
                 </span>
                 <h4 className="text-lg font-semibold mb-2">{bestSellers[0].name}</h4>
@@ -204,7 +172,7 @@ const BestSellerTab = ({ t, data, isLoading }) => {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-amber-50 border-b border-border">
+                <tr className="bg-muted/50 border-b border-border">
                   <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.report.bestSeller.table.rank")}
                   </th>
@@ -222,8 +190,8 @@ const BestSellerTab = ({ t, data, isLoading }) => {
               <tbody className="divide-y divide-border">
                 {bestSellers.length > 0 ? (
                   bestSellers.map((item, idx) => (
-                    <tr key={item.id} className="hover:bg-amber-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-mono font-bold text-amber-600">
+                    <tr key={item.id} className="hover:bg-accent/30 transition-colors">
+                      <td className="px-6 py-4 text-sm font-mono font-bold text-primary">
                         #{idx + 1}
                       </td>
                       <td className="px-4 py-4">

@@ -10,7 +10,23 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import TableToolbar from "@/components/ui/TableToolbar";
 import TableActions from "@/components/ui/TableActions";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, CheckCircle, FileEdit, Edit, Trash2, XCircle } from "lucide-react";
+import {
+  Shield,
+  CheckCircle,
+  FileEdit,
+  Edit,
+  Trash2,
+  XCircle,
+  ShieldCheck,
+  UserPlus,
+  Download,
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  ShieldAlert,
+  Sparkles
+} from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
@@ -148,7 +164,7 @@ const AdminList = () => {
           <div className="flex items-center gap-3">
             {/* 
           <Button variant="outline" onClick={() => navigate("/role-management")} className="gap-2">
-            <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
+            <ShieldCheck size={20} className="text-lg" />
             {t("page.user.adminList.roleManagement")}
           </Button>
           */}
@@ -157,7 +173,7 @@ const AdminList = () => {
                 variant="success"
                 onClick={() => navigate("/add-user")}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-                <span className="material-symbols-outlined text-lg">person_add</span>
+                <UserPlus size={20} className="text-lg" />
                 {t("page.user.button.add")}
               </Button>
             )}
@@ -216,7 +232,7 @@ const AdminList = () => {
                   <div className="flex gap-3">
                     {canAccess(user, MENU_KEY, "export") && (
                       <Button variant="general" size="sm" className="gap-2 h-9">
-                        <span className="material-symbols-outlined text-base">download</span>
+                        <Download size={18} className="text-base" />
                         {t("page.user.adminList.exportCsv")}
                       </Button>
                     )}
@@ -322,9 +338,7 @@ const AdminList = () => {
                       {users.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
-                            <span className="material-symbols-outlined text-4xl block mb-2">
-                              admin_panel_settings
-                            </span>
+                            <ShieldCheck size={36} className="text-4xl block mb-2" />
                             {t("page.user.adminList.empty")}
                           </td>
                         </tr>
@@ -352,9 +366,7 @@ const AdminList = () => {
                               </td>
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-2">
-                                  <span className="material-symbols-outlined text-muted-foreground text-base">
-                                    location_on
-                                  </span>
+                                  <MapPin size={18} className="text-muted-foreground text-base" />
                                   <span className="text-sm text-muted-foreground">
                                     {user.storeName || user.locationName || "-"}
                                   </span>
@@ -438,7 +450,7 @@ const AdminList = () => {
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page <= 1}
                     className="p-2 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30 transition-colors">
-                    <span className="material-symbols-outlined text-lg">chevron_left</span>
+                    <ChevronLeft size={20} className="text-lg" />
                   </button>
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     const pageNum = i + 1;
@@ -469,7 +481,7 @@ const AdminList = () => {
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
                     disabled={page >= totalPages}
                     className="p-2 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30 transition-colors">
-                    <span className="material-symbols-outlined text-lg">chevron_right</span>
+                    <ChevronRight size={20} className="text-lg" />
                   </button>
                 </div>
               </div>
@@ -495,21 +507,17 @@ const AdminList = () => {
                   </p>
                   <Button variant="link" className="gap-2 p-0 h-auto text-primary font-semibold">
                     {t("page.user.adminList.learnSecurity")}
-                    <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                    <ArrowRight size={20} className="text-lg" />
                   </Button>
                 </div>
                 <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors" />
                 <div className="absolute right-8 top-1/2 -translate-y-1/2 hidden md:block opacity-10 group-hover:opacity-20 transition-opacity">
-                  <span className="material-symbols-outlined text-[120px] text-primary">
-                    shield_person
-                  </span>
+                  <ShieldAlert size={120} className="text-[120px] text-primary" />
                 </div>
               </div>
               <div className="lg:col-span-2 p-8 rounded-2xl bg-foreground text-background border border-border flex flex-col justify-between">
                 <div>
-                  <span className="material-symbols-outlined text-4xl mb-4 opacity-80">
-                    auto_awesome
-                  </span>
+                  <Sparkles size={36} className="text-4xl mb-4 opacity-80" />
                   <h5 className="text-lg font-semibold mb-2">
                     {t("page.user.adminList.quickHelp")}
                   </h5>

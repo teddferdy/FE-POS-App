@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import {
   Bell,
+  Check,
   ChevronLeft,
   Clock,
   Eye,
@@ -9,15 +10,18 @@ import {
   Package,
   Plus,
   QrCode,
+  ReceiptText,
   Search,
   Smartphone,
   Star,
   Tag,
   Utensils,
+  UtensilsCrossed,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { optimizeImage } from "@/utils/image";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 
 const QR_PRIMARY = "#ff6b00";
 const QR_BG = "#fff5ed";
@@ -93,16 +97,14 @@ const CashierView = ({ p, storeName }) => {
           Semua
         </span>
         <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border bg-primary text-primary-foreground border-primary shadow-sm">
-          <span className="material-symbols-outlined !text-sm">{p.categoryIcon || "category"}</span>
+          <DynamicIcon name={p.categoryIcon || "category"} size={14} />
           <span className="truncate">{p.category || "Kategori"}</span>
         </span>
       </div>
 
       <div className="px-4 py-2.5 border-y border-border/40 flex items-center gap-2">
         <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-          <span className="material-symbols-outlined !text-base">
-            {p.categoryIcon || "category"}
-          </span>
+          <DynamicIcon name={p.categoryIcon || "category"} size={16} />
         </div>
         <h4 className="text-sm font-semibold text-foreground truncate">
           {p.category || "Kategori"}
@@ -183,7 +185,7 @@ const QrMenuView = ({ p }) => {
                 <div
                   className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm"
                   style={{ backgroundColor: QR_PRIMARY }}>
-                  <span className="material-symbols-outlined !text-base">restaurant</span>
+                  <Utensils size={16} />
                 </div>
                 <p
                   className="text-[15px] text-gray-900 dark:text-gray-100"
@@ -217,7 +219,7 @@ const QrMenuView = ({ p }) => {
               <span
                 className="shrink-0 inline-flex items-center px-4 py-2.5 rounded-full text-[13px] font-medium whitespace-nowrap shadow-sm text-white"
                 style={{ backgroundColor: QR_PRIMARY }}>
-                <span className="material-symbols-outlined !text-sm">fastfood</span>
+                <UtensilsCrossed size={14} />
                 <span className="ml-1">{p.category || "Kategori"}</span>
               </span>
             </div>
@@ -286,7 +288,7 @@ const QrMenuView = ({ p }) => {
             <div
               key={label}
               className="flex flex-col items-center gap-0.5 text-gray-500 dark:text-gray-400">
-              <span className="material-symbols-outlined !text-lg">receipt_long</span>
+              <ReceiptText size={18} />
               <span className="text-[9px] font-medium">{label}</span>
             </div>
           ))}
@@ -475,7 +477,7 @@ const ProductPreview = ({ product, open, onOpenChange }) => {
       <div className="relative bg-card w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in duration-200">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary">visibility</span>
+            <Eye size={20} className="text-primary" />
             <div>
               <h3 className="text-base font-semibold text-foreground">Preview Produk</h3>
               <p className="text-xs text-muted-foreground">
@@ -516,7 +518,7 @@ const ProductPreview = ({ product, open, onOpenChange }) => {
                 </div>
                 {tab === t.id && (
                   <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
-                    <span className="material-symbols-outlined text-sm">done</span>
+                    <Check size={14} />
                   </span>
                 )}
               </button>

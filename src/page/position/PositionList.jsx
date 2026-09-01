@@ -20,7 +20,12 @@ import {
   XCircle,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  Table,
+  Download,
+  Upload,
+  Plus,
+  Lightbulb
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
@@ -331,7 +336,7 @@ const PositionList = () => {
                   {isDownloadingTemplate ? (
                     <Loader2 size={16} className="mr-1 animate-spin" />
                   ) : (
-                    <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                    <Table size={20} className="text-lg mr-1" />
                   )}
                   {isDownloadingTemplate
                     ? t("common.downloading")
@@ -364,7 +369,7 @@ const PositionList = () => {
                   {isDownloadingData ? (
                     <Loader2 size={16} className="mr-1 animate-spin" />
                   ) : (
-                    <span className="material-symbols-outlined text-lg mr-1">download</span>
+                    <Download size={20} className="text-lg mr-1" />
                   )}
                   {isDownloadingData
                     ? t("common.downloading")
@@ -376,7 +381,7 @@ const PositionList = () => {
                   data-tour="position-upload"
                   variant="import"
                   onClick={() => setUploadModalOpen(true)}>
-                  <span className="material-symbols-outlined text-lg">upload</span>
+                  <Upload size={20} className="text-lg" />
                   {t("page.position.button.uploadExcel")}
                 </Button>
               )}
@@ -386,7 +391,7 @@ const PositionList = () => {
                   variant="success"
                   onClick={() => navigate("/add-position")}
                   className="shadow-md">
-                  <span className="material-symbols-outlined text-lg">add</span>
+                  <Plus size={20} className="text-lg" />
                   {t("page.position.button.add")}
                 </Button>
               )}
@@ -541,7 +546,7 @@ const PositionList = () => {
 
               <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="material-symbols-outlined opacity-80">lightbulb</span>
+                  <Lightbulb size={18} className="opacity-80" />
                   <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
                     {t("page.position.list.tips")}
                   </h4>

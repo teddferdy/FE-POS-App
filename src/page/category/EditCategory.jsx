@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { getCategoryById, editCategory, getAllCategory } from "@/services/category";
 import { getAllLocation } from "@/services/location";
+import { Info, ImagePlus, BookOpen, LayoutGrid, X, Search, SearchX } from "lucide-react";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 import { Button } from "@/components/ui/button";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Input } from "@/components/ui/input";
@@ -758,7 +760,7 @@ const EditCategory = () => {
 
                   <div className="bg-primary/10 rounded-xl p-4 border border-primary/20">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="material-symbols-outlined text-primary text-base">info</span>
+                      <Info size={16} className="text-primary shrink-0" />
                       <span className="text-sm font-semibold text-primary">
                         {t("page.category.form.namingTip")}
                       </span>
@@ -793,9 +795,7 @@ const EditCategory = () => {
                         ) : selectedIcon ? (
                           <div className="flex flex-col items-center gap-3">
                             <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                              <span className="material-symbols-outlined text-6xl">
-                                {selectedIcon}
-                              </span>
+                              <DynamicIcon name={selectedIcon} size={48} />
                             </div>
                             <p className="text-sm font-semibold text-foreground">
                               {t("page.category.form.iconSelected")}
@@ -804,9 +804,7 @@ const EditCategory = () => {
                         ) : category.image && !category.image.startsWith("http") ? (
                           <div className="flex flex-col items-center gap-3">
                             <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                              <span className="material-symbols-outlined text-6xl">
-                                {category.image}
-                              </span>
+                              <DynamicIcon name={category.image} size={48} />
                             </div>
                             <p className="text-sm font-semibold text-foreground">
                               {t("page.category.form.currentIcon")}
@@ -815,9 +813,7 @@ const EditCategory = () => {
                         ) : (
                           <>
                             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
-                              <span className="material-symbols-outlined text-3xl">
-                                image_search
-                              </span>
+                              <ImagePlus size={32} />
                             </div>
                             <p className="text-sm font-semibold text-foreground">
                               {t("page.category.form.clickToUpload")}
@@ -869,7 +865,7 @@ const EditCategory = () => {
                                   ? "bg-primary text-white border-primary"
                                   : "border-border text-muted-foreground hover:bg-primary hover:text-white"
                               }`}>
-                              <span className="material-symbols-outlined">{icon}</span>
+                              <DynamicIcon name={icon} size={20} />
                             </button>
                           ))}
                         </div>
@@ -880,7 +876,7 @@ const EditCategory = () => {
                             setIconPickerOpen(true);
                           }}
                           className="mt-4 py-2 px-4 rounded-lg border border-border text-sm text-muted-foreground hover:bg-accent transition-colors flex items-center gap-2 ml-auto">
-                          <span className="material-symbols-outlined text-base">menu_book</span>
+                          <BookOpen size={16} />
                           {t("page.category.form.viewAllIcons")}
                         </button>
                       </div>
@@ -889,7 +885,7 @@ const EditCategory = () => {
 
                   <div className="bg-primary/10 rounded-xl p-4 border border-primary/20">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="material-symbols-outlined text-primary text-base">info</span>
+                      <Info size={16} className="text-primary shrink-0" />
                       <span className="text-sm font-semibold text-primary">
                         {t("page.category.form.namingTip")}
                       </span>
@@ -963,7 +959,7 @@ const EditCategory = () => {
             <div className="relative bg-card w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in duration-200">
               <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-muted/30">
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-primary">category</span>
+                  <LayoutGrid size={22} className="text-primary" />
                   <h3 className="text-base font-semibold text-foreground">
                     {t("page.category.iconPicker.title")}
                   </h3>
@@ -971,15 +967,16 @@ const EditCategory = () => {
                 <button
                   onClick={() => setIconPickerOpen(false)}
                   className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground">
-                  <span className="material-symbols-outlined">close</span>
+                  <X size={20} />
                 </button>
               </div>
 
               <div className="px-8 py-4 border-b border-border">
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    search
-                  </span>
+                  <Search
+                    size={18}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
                   <input
                     value={iconSearch}
                     onChange={(e) => setIconSearch(e.target.value)}
@@ -1007,7 +1004,7 @@ const EditCategory = () => {
                               ? "bg-primary text-white border-primary"
                               : "bg-card border-border text-muted-foreground group-hover:border-primary group-hover:bg-primary/10 group-hover:text-primary"
                           }`}>
-                          <span className="material-symbols-outlined text-2xl">{ic.icon}</span>
+                          <DynamicIcon name={ic.icon} size={22} />
                         </div>
                         <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">
                           {ic.label}
@@ -1016,9 +1013,7 @@ const EditCategory = () => {
                     ))}
                     {searchedIcons.length === 0 && (
                       <div className="col-span-full py-12 text-center text-muted-foreground">
-                        <span className="material-symbols-outlined text-4xl block mb-2">
-                          search_off
-                        </span>
+                        <SearchX size={36} className="mx-auto mb-2 text-muted-foreground/60" />
                         {t("page.category.iconPicker.empty")}
                       </div>
                     )}
@@ -1046,9 +1041,7 @@ const EditCategory = () => {
                                     ? "bg-primary text-white border-primary"
                                     : "bg-card border-border text-muted-foreground group-hover:border-primary group-hover:bg-primary/10 group-hover:text-primary"
                                 }`}>
-                                <span className="material-symbols-outlined text-2xl">
-                                  {ic.icon}
-                                </span>
+                                <DynamicIcon name={ic.icon} size={22} />
                               </div>
                               <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">
                                 {ic.label}

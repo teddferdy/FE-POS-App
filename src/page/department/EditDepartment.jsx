@@ -21,7 +21,7 @@ import {
   FormMessage,
   FormControl
 } from "@/components/ui/form";
-import { Check } from "lucide-react";
+import { Check, Building2, X, Save } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
@@ -106,7 +106,7 @@ const EditDepartment = () => {
   if (!departmentId) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-4xl">domain</span>
+        <Building2 size={36} className="text-4xl" />
         <p>{t("page.department.detail.idNotFound")}</p>
         <Button variant="danger" onClick={() => navigate("/department-list")}>
           {t("page.department.button.back")}
@@ -121,7 +121,7 @@ const EditDepartment = () => {
   if (!department) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-4xl">domain</span>
+        <Building2 size={36} className="text-4xl" />
         <p>{t("page.department.detail.notFound")}</p>
         <Button variant="danger" onClick={() => navigate("/department-list")}>
           {t("page.department.button.back")}
@@ -158,9 +158,10 @@ const EditDepartment = () => {
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                          domain
-                        </span>
+                        <Building2
+                          size={18}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base"
+                        />
                         <Input
                           {...field}
                           placeholder={t("page.department.form.namePlaceholder")}
@@ -244,7 +245,7 @@ const EditDepartment = () => {
                 variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2">
-                <span className="material-symbols-outlined text-lg">close</span>
+                <X size={20} className="text-lg" />
                 {t("common.cancel")}
               </Button>
               <div className="flex gap-3">
@@ -270,7 +271,7 @@ const EditDepartment = () => {
                     setSaveConfirm(true);
                   }}
                   className="gap-2 shadow-lg shadow-primary/20">
-                  <span className="material-symbols-outlined text-lg">save</span>
+                  <Save size={20} className="text-lg" />
                   {t("page.department.button.saveChanges")}
                 </Button>
               </div>

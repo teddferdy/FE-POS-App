@@ -14,8 +14,15 @@ import {
   Eye,
   Edit,
   Trash2,
-  Package
+  Package,
+  Table,
+  Download,
+  Upload,
+  Plus,
+  Lightbulb,
+  Store
 } from "lucide-react";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 import { useTranslation } from "react-i18next";
 import {
   getAllCategoryTable,
@@ -194,21 +201,11 @@ const CategoryList = () => {
         return (
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-              {cat.image ? (
-                cat.image.startsWith("http") ? (
-                  <img
-                    src={cat.image}
-                    alt={cat.name}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <span className="material-symbols-outlined text-primary">{cat.image}</span>
-                )
-              ) : (
-                <span className="material-symbols-outlined text-primary">
-                  {getCategoryIcon(cat.name)}
-                </span>
-              )}
+              <DynamicIcon
+                name={cat.image || getCategoryIcon(cat.name)}
+                size={20}
+                className="text-primary"
+              />
             </div>
             <div className="flex flex-col gap-0.5 min-w-0">
               <span className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -257,9 +254,7 @@ const CategoryList = () => {
               <span
                 key={s.id}
                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border border-border bg-muted/50 text-foreground/80">
-                <span className="material-symbols-outlined text-sm text-muted-foreground">
-                  store
-                </span>
+                <Store size={14} className="text-muted-foreground" />
                 {s.name || `Store #${s.id}`}
               </span>
             ))}
@@ -437,7 +432,7 @@ const CategoryList = () => {
                 {isDownloadingTemplate ? (
                   <Loader2 size={16} className="mr-1 animate-spin" />
                 ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                  <Table size={16} className="mr-1" />
                 )}
                 {isDownloadingTemplate
                   ? t("page.category.button.downloading")
@@ -470,7 +465,7 @@ const CategoryList = () => {
                 {isDownloadingData ? (
                   <Loader2 size={16} className="mr-1 animate-spin" />
                 ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">download</span>
+                  <Download size={16} className="mr-1" />
                 )}
                 {isDownloadingData
                   ? t("page.category.button.downloading")
@@ -483,7 +478,7 @@ const CategoryList = () => {
                 data-tour="category-upload"
                 variant="import"
                 onClick={() => setUploadModalOpen(true)}>
-                <span className="material-symbols-outlined text-lg">upload</span>
+                <Upload size={16} className="mr-1" />
                 {t("page.category.button.upload")}
               </Button>
             )}
@@ -493,7 +488,7 @@ const CategoryList = () => {
                 data-tour="category-add"
                 onClick={() => navigate("/add-category")}
                 className="shadow-md">
-                <span className="material-symbols-outlined text-lg">add</span>
+                <Plus size={16} className="mr-1" />
                 {t("page.category.button.add")}
               </Button>
             )}
@@ -633,7 +628,7 @@ const CategoryList = () => {
 
               <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="material-symbols-outlined opacity-80">lightbulb</span>
+                  <Lightbulb size={18} className="opacity-80" />
                   <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
                     {t("page.category.tips.title")}
                   </h4>
