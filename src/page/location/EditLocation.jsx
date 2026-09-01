@@ -26,9 +26,14 @@ import {
   Plus,
   Trash2,
   Search,
-  UserPlus
+  UserPlus,
+  ArrowLeft,
+  Home,
+  Settings,
+  MoreHorizontal
 } from "lucide-react";
 import { toast } from "sonner";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Form,
   FormField,
@@ -92,6 +97,34 @@ const categoryOptions = [
   { value: "Warehouse", labelKey: "page.location.category.warehouse" },
   { value: "Office", labelKey: "page.location.category.office" }
 ];
+
+const avatarColors = [
+  "bg-primary/15 text-primary",
+  "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  "bg-sky-500/15 text-sky-600 dark:text-sky-400",
+  "bg-violet-500/15 text-violet-600 dark:text-violet-400",
+  "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+];
+
+const getAvatarColor = (seed = "") => {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return avatarColors[h % avatarColors.length];
+};
+
+const positionBadgeColors = {
+  manager: "bg-primary/10 text-primary border-primary/20",
+  kasir: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+  admin: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20",
+  staff: "bg-muted text-muted-foreground border-border",
+  supervisor: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20"
+};
+
+const getPositionBadge = (position = "") => {
+  const pos = String(position).toLowerCase();
+  return positionBadgeColors[pos] || "bg-muted text-muted-foreground border-border";
+};
 
 const EditLocation = () => {
   const { t } = useTranslation();
@@ -164,6 +197,7 @@ const EditLocation = () => {
   const [showOperasional, setShowOperasional] = useState(false);
   const [showSocialMedia, setShowSocialMedia] = useState(false);
   const [socialLinks, setSocialLinks] = useState([]);
+  const [activeTab, setActiveTab] = useState("informasi");
 
   const addSocialRow = () => setSocialLinks([...socialLinks, { platform: "", account: "" }]);
   const updateSocial = (idx, field, val) => {
@@ -177,7 +211,10 @@ const EditLocation = () => {
   const {
     data: managerEmployeesData,
     isLoading: managerLoading,
-    isFetching: managerFetching
+    isFetching: managerFetching,
+    isError: managerError,
+    error: managerErrorInfo,
+    refetch: managerRefetch
   } = useQuery(
     ["employees-manager-picker", managerFetchSearch, managerPage],
     () =>
@@ -266,6 +303,8 @@ const EditLocation = () => {
       }))
     }
   });
+
+  const selectedManagerName = form.watch("managerName");
 
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -665,7 +704,7 @@ const EditLocation = () => {
             backLink="/location-list"
             onBack={() => setCancelModal(true)}>
             <Button variant="danger" onClick={() => setCancelModal(true)} className="gap-2">
-              <span className="material-symbols-outlined text-lg">arrow_back</span>
+              <ArrowLeft size={20} className="text-lg" />
               {t("breadcrumb.back")}
             </Button>
             <UserGuide guideKey="add-location" />
@@ -684,9 +723,29 @@ const EditLocation = () => {
                   onSubmit(form.getValues());
                 }}
                 className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Left Column - Form Fields */}
-                  <div className="lg:col-span-2 space-y-8">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <div className="overflow-x-auto -mx-1 px-1 mb-4">
+                    <TabsList className="grid w-full grid-cols-4 min-w-[560px]">
+                      <TabsTrigger value="informasi" className="gap-1.5">
+                        <MapPin size={14} />
+                        {t("page.location.form.tabInformasi")}
+                      </TabsTrigger>
+                      <TabsTrigger value="alamat" className="gap-1.5">
+                        <Home size={14} />
+                        {t("page.location.form.tabAlamat")}
+                      </TabsTrigger>
+                      <TabsTrigger value="pengaturan" className="gap-1.5">
+                        <Settings size={14} />
+                        {t("page.location.form.tabPengaturan")}
+                      </TabsTrigger>
+                      <TabsTrigger value="lainnya" className="gap-1.5">
+                        <MoreHorizontal size={14} />
+                        {t("page.location.form.tabLainnya")}
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
+
+                  <TabsContent value="informasi" className="mt-0 space-y-8">
                     {/* Section: Informasi Toko */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 pb-2 border-b border-border">
@@ -797,6 +856,63 @@ const EditLocation = () => {
                       </div>
                     </div>
 
+                    {/* Foto Toko Card */}
+                    <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="text-primary" size={20} />
+                        <h3 className="text-base font-semibold text-foreground">
+                          {t("page.location.form.storePhoto")}{" "}
+                          <span className="text-destructive">*</span>
+                        </h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {t("page.location.form.photoFormat")}
+                      </p>
+                      {validationErrors.photo && (
+                        <p className="text-sm font-medium text-destructive">
+                          {validationErrors.photo}
+                        </p>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                      <div
+                        onClick={handleImageClick}
+                        className="relative rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center bg-muted/30 overflow-hidden cursor-pointer group">
+                        {!imageRemoved && (previewImage || location?.image) ? (
+                          <>
+                            <img
+                              src={previewImage || location?.image}
+                              alt={location?.name || "Preview"}
+                              className="w-full h-auto max-h-[500px] object-contain"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                clearImage();
+                              }}
+                              className="absolute top-2 right-2 z-10 p-2 bg-background/90 rounded-full text-muted-foreground hover:text-foreground shadow-md">
+                              <X size={16} />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors p-8 min-h-[300px] justify-center">
+                            <CloudUpload size={64} className="mb-4" />
+                            <span className="text-base font-semibold text-center">
+                              {t("page.location.form.clickOrDragPhoto")}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="alamat" className="mt-0 space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Address */}
                       <FormField
@@ -1065,7 +1181,9 @@ const EditLocation = () => {
                         </FormItem>
                       )}
                     />
+                  </TabsContent>
 
+                  <TabsContent value="pengaturan" className="mt-0 space-y-8">
                     {/* Category & Manager */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
@@ -1177,7 +1295,9 @@ const EditLocation = () => {
                         </div>
                       )}
                     />
+                  </TabsContent>
 
+                  <TabsContent value="lainnya" className="mt-0 space-y-8">
                     {/* Operasional Toggle */}
                     <div
                       className="flex items-center justify-between bg-muted/30 p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
@@ -1348,64 +1468,6 @@ const EditLocation = () => {
                         </Button>
                       </div>
                     )}
-                  </div>
-
-                  {/* Right Column - Cards */}
-                  <div className="lg:col-span-1 space-y-6">
-                    {/* Foto Toko Card */}
-                    <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="text-primary" size={20} />
-                        <h3 className="text-base font-semibold text-foreground">
-                          {t("page.location.form.storePhoto")}{" "}
-                          <span className="text-destructive">*</span>
-                        </h3>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {t("page.location.form.photoFormat")}
-                      </p>
-                      {validationErrors.photo && (
-                        <p className="text-sm font-medium text-destructive">
-                          {validationErrors.photo}
-                        </p>
-                      )}
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="hidden"
-                      />
-                      <div
-                        onClick={handleImageClick}
-                        className="relative rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center bg-muted/30 overflow-hidden cursor-pointer group">
-                        {!imageRemoved && (previewImage || location?.image) ? (
-                          <>
-                            <img
-                              src={previewImage || location?.image}
-                              alt={location?.name || "Preview"}
-                              className="w-full h-auto max-h-[500px] object-contain"
-                            />
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                clearImage();
-                              }}
-                              className="absolute top-2 right-2 z-10 p-2 bg-background/90 rounded-full text-muted-foreground hover:text-foreground shadow-md">
-                              <X size={16} />
-                            </button>
-                          </>
-                        ) : (
-                          <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors p-8 min-h-[300px] justify-center">
-                            <CloudUpload size={64} className="mb-4" />
-                            <span className="text-base font-semibold text-center">
-                              {t("page.location.form.clickOrDragPhoto")}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
 
                     {/* Help Cards */}
                     <div className="space-y-3">
@@ -1443,8 +1505,8 @@ const EditLocation = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </TabsContent>
+                </Tabs>
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
                   <Button
@@ -1481,7 +1543,7 @@ const EditLocation = () => {
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Dialog open={managerModalOpen} onOpenChange={setManagerModalOpen}>
-        <DialogContent className="max-w-[800px] p-0 gap-0 overflow-hidden">
+        <DialogContent className="w-[90vw] max-w-[90vw] h-[90vh] max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
           <div className="px-6 pt-6 pb-4 border-b border-border">
             <DialogHeader>
               <DialogTitle className="text-lg">{t("page.location.form.selectManager")}</DialogTitle>
@@ -1517,13 +1579,10 @@ const EditLocation = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: "60vh" }}>
+          <div className="flex-1 overflow-auto min-h-0">
             <table className="w-full text-left border-collapse">
               <thead className="sticky top-0 bg-background z-10">
                 <tr className="bg-muted/20">
-                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.location.form.employeeIdHeader")}
-                  </th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
                     {t("page.location.form.employeePhotoHeader")}
                   </th>
@@ -1537,6 +1596,9 @@ const EditLocation = () => {
                     {t("page.location.form.employeeDepartmentHeader")}
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                    {t("page.location.form.employeePositionHeader")}
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
                     {t("page.location.form.employeeStoreHeader")}
                   </th>
                 </tr>
@@ -1546,25 +1608,49 @@ const EditLocation = () => {
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={`skel-${i}`}>
                       <td className="px-4 py-3">
-                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-10 w-10 rounded-full" />
                       </td>
                       <td className="px-4 py-3">
-                        <Skeleton className="h-9 w-9 rounded-full" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <Skeleton className="h-4 w-28" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <Skeleton className="h-4 w-36" />
+                        <Skeleton className="h-4 w-28 mb-1.5" />
+                        <Skeleton className="h-3 w-36" />
                       </td>
                       <td className="px-4 py-3">
                         <Skeleton className="h-4 w-24" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-5 w-20 rounded-full" />
                       </td>
                       <td className="px-4 py-3">
                         <Skeleton className="h-4 w-24" />
                       </td>
                     </tr>
                   ))
+                ) : managerError ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-12 text-center">
+                      <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                        <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center">
+                          <ShieldCheck size={28} className="text-destructive" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{t("common.error")}</p>
+                          <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                            {managerErrorInfo?.response?.data?.message ||
+                              managerErrorInfo?.message ||
+                              t("common.tryAgain")}
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => managerRefetch()}
+                          className="gap-1.5">
+                          <Search size={14} />
+                          {t("common.retry")}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
                 ) : managerEmployees.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
@@ -1573,40 +1659,73 @@ const EditLocation = () => {
                     </td>
                   </tr>
                 ) : (
-                  managerEmployees.map((emp) => (
-                    <tr
-                      key={emp.id || emp._id}
-                      className="hover:bg-muted/20 transition-colors cursor-pointer"
-                      onClick={() => {
-                        form.setValue("managerName", emp.fullName);
-                        setManagerModalOpen(false);
-                      }}>
-                      <td className="px-4 py-3 text-sm font-mono">{emp.employeeID || "-"}</td>
-                      <td className="px-4 py-3">
-                        <div className="w-9 h-9 rounded-full bg-muted overflow-hidden">
-                          {emp.image ? (
-                            <img
-                              src={emp.image}
-                              alt={emp.fullName}
-                              className="w-full h-full object-cover"
-                            />
+                  managerEmployees.map((emp) => {
+                    const position = emp.positionData?.name || emp.role || "";
+                    const isSelected = selectedManagerName && emp.fullName === selectedManagerName;
+                    return (
+                      <tr
+                        key={emp.id || emp._id}
+                        className={`transition-colors ${
+                          isSelected
+                            ? "bg-muted/40 opacity-60 cursor-not-allowed"
+                            : "hover:bg-muted/20 cursor-pointer group"
+                        }`}
+                        onClick={() => {
+                          if (isSelected) return;
+                          form.setValue("managerName", emp.fullName);
+                          setManagerModalOpen(false);
+                        }}>
+                        <td className="px-4 py-3">
+                          <div
+                            className={`w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold ${getAvatarColor(
+                              emp.fullName || emp.employeeID || ""
+                            )} ${isSelected ? "grayscale" : ""}`}>
+                            {emp.image ? (
+                              <img
+                                src={emp.image}
+                                alt={emp.fullName}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              (emp.fullName || emp.employeeID || "?").charAt(0).toUpperCase()
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p
+                            className={`text-sm font-semibold ${
+                              isSelected
+                                ? "text-muted-foreground"
+                                : "text-foreground group-hover:text-primary transition-colors"
+                            }`}>
+                            {emp.fullName}
+                            {isSelected && (
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-muted text-muted-foreground border border-border">
+                                {t("page.location.form.managerCurrentLabel")}
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{emp.email || "-"}</p>
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          {emp.departmentData?.name || emp.department || "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          {position ? (
+                            <span
+                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide border ${getPositionBadge(position)} ${isSelected ? "opacity-60" : ""}`}>
+                              {position}
+                            </span>
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xs font-semibold text-muted-foreground bg-muted">
-                              {(emp.fullName || "?").charAt(0).toUpperCase()}
-                            </div>
+                            <span className="text-sm text-muted-foreground">—</span>
                           )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium">{emp.fullName}</p>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {emp.email || "-"}
-                      </td>
-                      <td className="px-4 py-3 text-sm">{emp.department || "-"}</td>
-                      <td className="px-4 py-3 text-sm">{emp.storeData?.name || "-"}</td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          {emp.storeData?.name || "—"}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

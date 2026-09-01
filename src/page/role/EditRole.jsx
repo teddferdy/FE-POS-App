@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Info, CheckSquare } from "lucide-react";
 import { normalizePayload } from "@/lib/payload-normalizer";
 import { editRole, getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
@@ -349,7 +349,7 @@ const EditRole = () => {
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
             <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
               <div className="flex items-center gap-2 mb-4">
-                <span className="material-symbols-outlined text-primary">info</span>
+                <Info size={18} className="text-primary" />
                 <h3 className="text-base font-semibold text-foreground">
                   {t("page.role.detail.infoTitle")}
                 </h3>
@@ -399,7 +399,7 @@ const EditRole = () => {
               className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
               <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">rule</span>
+                  <CheckSquare size={18} className="text-primary" />
                   <h3 className="text-base font-semibold text-foreground">
                     {t("page.role.detail.matrixTitle")}
                   </h3>

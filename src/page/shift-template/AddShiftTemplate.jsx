@@ -21,7 +21,7 @@ import {
   FormMessage,
   FormControl
 } from "@/components/ui/form";
-import { Check } from "lucide-react";
+import { Check, BadgeCheck, X, Save } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
@@ -122,9 +122,10 @@ const AddShiftTemplate = () => {
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                        badge
-                      </span>
+                      <BadgeCheck
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base"
+                      />
                       <Input
                         {...field}
                         placeholder={t("page.shiftTemplate.form.namePlaceholder")}
@@ -243,7 +244,7 @@ const AddShiftTemplate = () => {
                 variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2 w-full sm:w-auto justify-center">
-                <span className="material-symbols-outlined text-lg">close</span>
+                <X size={20} className="text-lg" />
                 {t("common.cancel")}
               </Button>
               <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -270,7 +271,7 @@ const AddShiftTemplate = () => {
                     setSaveConfirm(true);
                   }}
                   className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
-                  <span className="material-symbols-outlined text-lg">save</span>
+                  <Save size={20} className="text-lg" />
                   {t("page.shiftTemplate.button.save")}
                 </Button>
               </div>

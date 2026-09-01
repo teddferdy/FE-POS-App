@@ -24,7 +24,8 @@ import {
   ChevronRight,
   ChevronDown,
   Check,
-  Eye
+  Eye,
+  AlertTriangle
 } from "lucide-react";
 import { useCookies } from "react-cookie";
 import PageHeader from "@/components/ui/PageHeader";
@@ -969,9 +970,10 @@ const EditProduct = () => {
                                 <FormMessage />
                                 {noStockOpname && (
                                   <div className="flex items-start gap-2.5 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
-                                    <span className="material-symbols-outlined text-amber-600 text-base mt-0.5">
-                                      warning
-                                    </span>
+                                    <AlertTriangle
+                                      size={18}
+                                      className="text-amber-600 text-base mt-0.5"
+                                    />
                                     <div>
                                       <p className="text-xs font-semibold text-amber-800">
                                         {t("page.product.form.noStockOpname")}
@@ -1244,9 +1246,7 @@ const EditProduct = () => {
                                             size="sm"
                                             onClick={() => navigate("/tax-list")}
                                             className="gap-2">
-                                            <span className="material-symbols-outlined text-base">
-                                              add
-                                            </span>
+                                            <Plus size={18} className="text-base" />
                                             {t("page.product.form.addTax")}
                                           </Button>
                                         </div>

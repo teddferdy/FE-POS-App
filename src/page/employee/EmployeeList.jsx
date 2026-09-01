@@ -14,7 +14,19 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
-import { User, Users, CheckCircle, FileEdit, XCircle, Eye, Edit, Trash2 } from "lucide-react";
+import {
+  User,
+  Users,
+  CheckCircle,
+  FileEdit,
+  XCircle,
+  Eye,
+  Edit,
+  Trash2,
+  MapPin,
+  UserPlus,
+  Lightbulb
+} from "lucide-react";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { useTranslation } from "react-i18next";
@@ -192,9 +204,7 @@ const EmployeeList = () => {
       header: t("page.employee.table.branch"),
       render: (row) => (
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-muted-foreground text-base">
-            location_on
-          </span>
+          <MapPin size={18} className="text-muted-foreground text-base" />
           <span className="text-sm text-muted-foreground">
             {row.storeData?.name || "belum ada penempatan store"}
           </span>
@@ -320,7 +330,7 @@ const EmployeeList = () => {
                 data-tour="employee-add"
                 onClick={() => navigate("/add-employee")}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-                <span className="material-symbols-outlined text-lg">person_add</span>
+                <UserPlus size={20} className="text-lg" />
                 {t("page.employee.add.title")}
               </Button>
             )}
@@ -495,7 +505,7 @@ const EmployeeList = () => {
 
               <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="material-symbols-outlined opacity-80">lightbulb</span>
+                  <Lightbulb size={18} className="opacity-80" />
                   <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
                 </div>
                 <ul className="space-y-2">

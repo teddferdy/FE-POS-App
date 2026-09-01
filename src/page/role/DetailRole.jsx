@@ -3,7 +3,7 @@ import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ChevronDown, ChevronRight, Shield, ArrowLeft, Edit3 } from "lucide-react";
+import { ChevronDown, ChevronRight, Shield, ArrowLeft, Edit3, CheckSquare } from "lucide-react";
 import { getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 import {
@@ -289,7 +289,7 @@ const DetailRole = () => {
             <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
               <div className="p-6 border-b border-border bg-muted/30">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">rule</span>
+                  <CheckSquare size={18} className="text-primary" />
                   <h3 className="text-base font-semibold text-foreground">
                     {t("page.role.detail.matrixTitle")}
                   </h3>

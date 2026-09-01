@@ -76,11 +76,7 @@ const ProfilePage = () => {
               className={`absolute -bottom-2 -right-2 p-1 rounded-full border-2 border-background ${
                 statusActive ? "bg-green-500" : "bg-muted-foreground"
               }`}>
-              <span
-                className="material-symbols-outlined text-sm block text-white"
-                style={{ fontVariationSettings: "'FILL' 1" }}>
-                verified
-              </span>
+              <CheckCircle2 size={14} className="text-white" />
             </div>
           </div>
           <div className="flex-1 space-y-1 relative">

@@ -344,18 +344,16 @@ const DashboardLayout = () => {
           onMenuToggle={handleMobileMenuToggle}
           onOpenPalette={() => setIsPaletteOpen(true)}
         />
-        <main className="p-4 lg:p-6 flex flex-col">
-          <div className="flex-1 min-h-0">
-            <SidebarContext.Provider value={sidebarCollapsed}>
-              <div
-                key={location.pathname}
-                className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <Outlet />
-              </div>
-            </SidebarContext.Provider>
-          </div>
+        <main className="p-4 lg:p-6">
+          <SidebarContext.Provider value={sidebarCollapsed}>
+            <div
+              key={location.pathname}
+              className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <Outlet />
+            </div>
+          </SidebarContext.Provider>
           {tips && (
-            <div className="mt-6 shrink-0">
+            <div className="mt-6">
               <TipsCard
                 title={t("common.tips")}
                 variant="default"

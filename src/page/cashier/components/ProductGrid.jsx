@@ -10,20 +10,12 @@ import { optimizeImage } from "@/utils/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import VariantModal from "./VariantModal";
 import ProductPreview from "@/page/product/ProductPreview";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 
 const renderCategoryIcon = (cat, className, imgClassName) => {
   const icon = cat?.image || cat?.icon;
   if (!icon) return null;
-  if (typeof icon === "string" && /^https?:\/\//.test(icon)) {
-    return (
-      <img
-        src={optimizeImage(icon) || icon}
-        alt=""
-        className={imgClassName || "w-3.5 h-3.5 rounded object-cover"}
-      />
-    );
-  }
-  return <span className={`material-symbols-outlined ${className || "!text-sm"}`}>{icon}</span>;
+  return <DynamicIcon icon={icon} size={14} className={className || imgClassName} />;
 };
 
 const ProductGrid = ({
@@ -228,20 +220,6 @@ const ProductGrid = ({
     },
     [cart, store]
   );
-
-  const randomColors = useMemo(() => {
-    const colors = [
-      "from-primary/20 to-primary/5",
-      "from-secondary/20 to-secondary/5",
-      "from-emerald-500/20 to-emerald-500/5",
-      "from-violet-500/20 to-violet-500/5",
-      "from-amber-500/20 to-amber-500/5",
-      "from-rose-500/20 to-rose-500/5",
-      "from-cyan-500/20 to-cyan-500/5",
-      "from-orange-500/20 to-orange-500/5"
-    ];
-    return (id) => colors[(id || 0) % colors.length];
-  }, []);
 
   const getCartCount = useCallback(
     (productId) => {
@@ -491,9 +469,8 @@ const ProductGrid = ({
                                   />
                                 </div>
                               ) : (
-                                <div
-                                  className={`w-full aspect-square rounded-lg bg-gradient-to-br ${randomColors(idx)} border border-border/30 flex items-center justify-center relative`}>
-                                  <Package size={28} className="text-muted-foreground/30" />
+                                <div className="w-full aspect-square rounded-lg bg-muted border border-border/50 flex items-center justify-center relative">
+                                  <Package size={28} className="text-muted-foreground/40" />
                                 </div>
                               )}
                               {cartCount > 0 && (
@@ -617,9 +594,8 @@ const ProductGrid = ({
                                 />
                               </div>
                             ) : (
-                              <div
-                                className={`w-12 h-12 rounded-lg bg-gradient-to-br ${randomColors(idx)} border border-border/30 flex items-center justify-center shrink-0`}>
-                                <Package size={20} className="text-muted-foreground/30" />
+                              <div className="w-12 h-12 rounded-lg bg-muted border border-border/50 flex items-center justify-center shrink-0">
+                                <Package size={20} className="text-muted-foreground/40" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">

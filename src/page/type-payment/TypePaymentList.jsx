@@ -13,7 +13,10 @@ import {
   Loader2,
   CheckCircle,
   FileEdit,
-  XCircle
+  XCircle,
+  Table,
+  Download,
+  Upload
 } from "lucide-react";
 import {
   getAllTypePaymentListActive,
@@ -341,7 +344,7 @@ const TypePaymentList = () => {
                 {isDownloadingTemplate ? (
                   <Loader2 size={16} className="mr-1 animate-spin" />
                 ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                  <Table size={20} className="text-lg mr-1" />
                 )}
                 {t("page.typePayment.button.downloadTemplate")}
               </Button>
@@ -371,14 +374,14 @@ const TypePaymentList = () => {
                 {isDownloadingData ? (
                   <Loader2 size={16} className="mr-1 animate-spin" />
                 ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">download</span>
+                  <Download size={20} className="text-lg mr-1" />
                 )}
                 {t("page.typePayment.button.downloadData")}
               </Button>
             )}
             {canAccess(user, MENU_KEY, "import") && (
               <Button variant="import" onClick={() => setUploadModalOpen(true)}>
-                <span className="material-symbols-outlined text-lg mr-1">upload</span>
+                <Upload size={20} className="text-lg mr-1" />
                 {t("page.typePayment.button.upload")}
               </Button>
             )}

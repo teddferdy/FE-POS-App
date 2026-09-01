@@ -23,7 +23,12 @@ import {
   Coins,
   RotateCcw,
   Printer,
-  X
+  X,
+  Eye,
+  FileText,
+  Type,
+  SlidersHorizontal,
+  AlignJustify
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,6 +67,10 @@ const DEFAULT_INVOICE_TEMPLATE = {
   showLogo: true,
   logo: null,
   footer: "Terima kasih atas kunjungan Anda",
+  paperSize: "58mm",
+  fontSize: "normal",
+  fontFamily: "monospace",
+  lineSpacing: "normal",
   addressFieldsVisibility: {
     storeName: true,
     address: true,
@@ -128,19 +137,104 @@ const InvoicePreview = ({
   socialMediaVisible = {},
   addressFieldsVisible = {},
   memberFieldsVisible = {},
-  footerText = "Terima kasih atas kunjungan Anda"
+  footerText = "Terima kasih atas kunjungan Anda",
+  paperSize = "58mm",
+  fontSize = "normal",
+  fontFamily = "monospace",
+  lineSpacing = "normal"
 }) => {
   const { t } = useTranslation();
   const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
   const tax = Math.round(subtotal * 0.1);
   const total = subtotal + tax;
 
+  const fontFamClass =
+    fontFamily === "sans" ? "font-sans" : fontFamily === "serif" ? "font-serif" : "font-mono";
+
+  const sizeClasses = {
+    small: {
+      title: "text-base font-bold tracking-tight",
+      address: "text-[10px]",
+      memberHeader: "text-[9px]",
+      memberText: "text-[10px]",
+      memberName: "text-[11px] font-semibold",
+      tableTh: "text-[9px]",
+      tableItem: "text-xs",
+      tableSub: "text-[9px]",
+      totalsLabel: "text-xs",
+      totalsValue: "text-xs font-medium",
+      totalsGrand: "text-sm font-bold",
+      footer: "text-[10px]",
+      social: "text-[9px]"
+    },
+    normal: {
+      title: "text-lg font-bold tracking-tight",
+      address: "text-[11px]",
+      memberHeader: "text-[10px]",
+      memberText: "text-[11px]",
+      memberName: "text-xs font-semibold",
+      tableTh: "text-[10px]",
+      tableItem: "text-sm",
+      tableSub: "text-[10px]",
+      totalsLabel: "text-sm",
+      totalsValue: "text-sm font-medium",
+      totalsGrand: "text-base font-bold",
+      footer: "text-xs",
+      social: "text-[10px]"
+    },
+    large: {
+      title: "text-xl font-bold tracking-tight",
+      address: "text-xs",
+      memberHeader: "text-xs",
+      memberText: "text-xs",
+      memberName: "text-sm font-semibold",
+      tableTh: "text-xs",
+      tableItem: "text-base",
+      tableSub: "text-xs",
+      totalsLabel: "text-base",
+      totalsValue: "text-base font-medium",
+      totalsGrand: "text-lg font-bold",
+      footer: "text-sm",
+      social: "text-xs"
+    }
+  };
+  const sz = sizeClasses[fontSize] || sizeClasses.normal;
+
+  const padClasses = {
+    compact: {
+      header: "px-4 py-4",
+      section: "px-4 py-2",
+      tablePy: "py-1",
+      totals: "p-2 space-y-1",
+      footer: "px-4 py-2"
+    },
+    normal: {
+      header: "px-5 py-6",
+      section: "px-5 py-3",
+      tablePy: "py-2",
+      totals: "p-3 space-y-2",
+      footer: "px-5 py-3"
+    },
+    relaxed: {
+      header: "px-6 py-7",
+      section: "px-6 py-4",
+      tablePy: "py-3",
+      totals: "p-4 space-y-3",
+      footer: "px-6 py-4"
+    }
+  };
+  const pd = padClasses[lineSpacing] || padClasses.normal;
+
   const showHeader = showStoreName || showAddress || !!logoUrl;
 
   return (
-    <div className="bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 max-w-sm mx-auto overflow-hidden select-all">
+    <div
+      className={`bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 mx-auto overflow-hidden select-all transition-all duration-200 ${fontFamClass} ${
+        paperSize === "80mm" ? "max-w-[420px]" : "max-w-[320px]"
+      }`}>
       {showHeader && (
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 px-5 py-6 text-white text-center">
+        <div
+          className={`bg-gradient-to-br from-gray-900 to-gray-800 ${pd.header} text-white text-center`}>
           {showLogo && logoUrl && (
             <img
               src={logoUrl}
@@ -148,46 +242,41 @@ const InvoicePreview = ({
               className="h-16 w-16 object-contain bg-white rounded-lg p-1 mx-auto mb-3"
             />
           )}
-          {showStoreName && (
-            <h3 className="text-lg font-bold tracking-tight">{storeName || "NAMA TOKO"}</h3>
-          )}
+          {showStoreName && <h3 className={sz.title}>{storeName || "NAMA TOKO"}</h3>}
           {showAddress && (
             <div className="text-gray-400 mt-2 space-y-0.5">
               {addressFieldsVisible.storeName !== false && storeName && (
-                <p className="text-xs font-medium text-gray-300">{storeName}</p>
+                <p className={`font-medium text-gray-300 ${sz.address}`}>{storeName}</p>
               )}
               {addressFieldsVisible.address !== false && locationDetail?.address && (
-                <p className="text-[11px]">{locationDetail.address}</p>
+                <p className={sz.address}>{locationDetail.address}</p>
               )}
               {addressFieldsVisible.locationDetail !== false && locationDetail?.detailLocation && (
-                <p className="text-[11px]">{locationDetail.detailLocation}</p>
+                <p className={sz.address}>{locationDetail.detailLocation}</p>
               )}
-              {(addressFieldsVisible.province !== false ||
-                addressFieldsVisible.city !== false ||
-                addressFieldsVisible.district !== false ||
-                addressFieldsVisible.village !== false) &&
-                (provinceName || cityName || districtName || villageName) && (
-                  <p className="text-[11px]">
-                    {addressFieldsVisible.province !== false && provinceName
-                      ? `${provinceName}`
-                      : ""}
-                    {addressFieldsVisible.city !== false && cityName ? `, ${cityName}` : ""}
-                    {addressFieldsVisible.district !== false && districtName
-                      ? `, ${districtName}`
-                      : ""}
-                    {addressFieldsVisible.village !== false && villageName
-                      ? `, ${villageName}`
-                      : ""}
-                  </p>
-                )}
+              {((addressFieldsVisible.province !== false && provinceName) ||
+                (addressFieldsVisible.city !== false && cityName) ||
+                (addressFieldsVisible.district !== false && districtName) ||
+                (addressFieldsVisible.village !== false && villageName)) && (
+                <p className={sz.address}>
+                  {[
+                    addressFieldsVisible.province !== false && provinceName ? provinceName : "",
+                    addressFieldsVisible.city !== false && cityName ? cityName : "",
+                    addressFieldsVisible.district !== false && districtName ? districtName : "",
+                    addressFieldsVisible.village !== false && villageName ? villageName : ""
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+              )}
               {addressFieldsVisible.postalCode !== false && postalCodeValue && (
-                <p className="text-[11px]">Kode Pos: {postalCodeValue}</p>
+                <p className={sz.address}>Kode Pos: {postalCodeValue}</p>
               )}
               {addressFieldsVisible.phone !== false && storePhone && (
-                <p className="text-[11px]">Telp: {storePhone}</p>
+                <p className={sz.address}>Telp: {storePhone}</p>
               )}
               {addressFieldsVisible.email !== false && storeEmail && (
-                <p className="text-[11px]">{storeEmail}</p>
+                <p className={sz.address}>{storeEmail}</p>
               )}
             </div>
           )}
@@ -195,33 +284,34 @@ const InvoicePreview = ({
       )}
 
       {showMemberInfo && (memberName || memberTier) && (
-        <div className="px-5 py-3 bg-yellow-50 border-b border-yellow-100">
-          <p className="text-[10px] font-semibold text-yellow-800 uppercase tracking-wider mb-2">
+        <div className={`${pd.section} bg-yellow-50 border-b border-yellow-100`}>
+          <p
+            className={`${sz.memberHeader} font-semibold text-yellow-800 uppercase tracking-wider mb-2`}>
             {t("page.invoice.memberInfo")}
           </p>
           <div className="space-y-1">
             {memberName && memberFieldsVisible.name !== false && (
               <div className="flex justify-between items-center">
-                <span className="text-[11px] text-yellow-900 font-medium">
+                <span className={`${sz.memberText} text-yellow-900 font-medium`}>
                   {t("page.invoice.memberName")}
                 </span>
-                <span className="text-xs text-yellow-800 font-semibold">{memberName}</span>
+                <span className={`${sz.memberName} text-yellow-800`}>{memberName}</span>
               </div>
             )}
             {memberTier && memberFieldsVisible.tier !== false && (
               <div className="flex justify-between items-center">
-                <span className="text-[11px] text-yellow-900 font-medium">
+                <span className={`${sz.memberText} text-yellow-900 font-medium`}>
                   {t("page.invoice.memberTier")}
                 </span>
-                <span className="text-xs text-yellow-800 font-semibold">{memberTier}</span>
+                <span className={`${sz.memberName} text-yellow-800`}>{memberTier}</span>
               </div>
             )}
             {memberPoints !== undefined && memberFieldsVisible.points !== false && (
               <div className="flex justify-between items-center">
-                <span className="text-[11px] text-yellow-900 font-medium">
+                <span className={`${sz.memberText} text-yellow-900 font-medium`}>
                   {t("page.invoice.totalPoints")}
                 </span>
-                <span className="text-xs text-yellow-800 font-semibold">
+                <span className={`${sz.memberName} text-yellow-800`}>
                   {Number(memberPoints).toLocaleString("id-ID")} pts
                 </span>
               </div>
@@ -230,26 +320,32 @@ const InvoicePreview = ({
         </div>
       )}
 
-      <div className="px-5 py-3">
+      <div className={pd.section}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-[10px] text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                <th className="text-left py-2 font-semibold">{t("page.invoice.item")}</th>
-                <th className="text-center py-2 font-semibold w-10">Qty</th>
-                <th className="text-right py-2 font-semibold">Harga</th>
-                <th className="text-right py-2 font-semibold">Total</th>
+              <tr
+                className={`${sz.tableTh} text-gray-500 uppercase tracking-wider border-b border-gray-200`}>
+                <th className={`text-left ${pd.tablePy} font-semibold`}>
+                  {t("page.invoice.item")}
+                </th>
+                <th className={`text-center ${pd.tablePy} font-semibold w-10`}>Qty</th>
+                <th className={`text-right ${pd.tablePy} font-semibold`}>Harga</th>
+                <th className={`text-right ${pd.tablePy} font-semibold`}>Total</th>
               </tr>
             </thead>
             <tbody>
               {sampleItems.map((item, i) => (
                 <tr key={i} className={i % 2 === 0 ? "bg-gray-50/50" : ""}>
-                  <td className="py-2 text-sm text-gray-800">{item.name}</td>
-                  <td className="py-2 text-center text-sm text-gray-600">{item.qty}</td>
-                  <td className="py-2 text-right text-sm text-gray-600">
+                  <td className={`${pd.tablePy} ${sz.tableItem} text-gray-800`}>{item.name}</td>
+                  <td className={`${pd.tablePy} text-center ${sz.tableItem} text-gray-600`}>
+                    {item.qty}
+                  </td>
+                  <td className={`${pd.tablePy} text-right ${sz.tableItem} text-gray-600`}>
                     {formatPrice(item.price)}
                   </td>
-                  <td className="py-2 text-right text-sm font-medium text-gray-900">
+                  <td
+                    className={`${pd.tablePy} text-right ${sz.tableItem} font-medium text-gray-900`}>
                     {formatPrice(item.qty * item.price)}
                   </td>
                 </tr>
@@ -259,26 +355,26 @@ const InvoicePreview = ({
         </div>
       </div>
 
-      <div className="px-5 pb-4">
-        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">{t("page.invoice.subtotal")}</span>
-            <span className="text-gray-700 font-medium">{formatPrice(subtotal)}</span>
+      <div className={pd.section}>
+        <div className={`bg-gray-50 rounded-lg ${pd.totals}`}>
+          <div className="flex justify-between">
+            <span className={`text-gray-500 ${sz.totalsLabel}`}>{t("page.invoice.subtotal")}</span>
+            <span className={`text-gray-700 ${sz.totalsValue}`}>{formatPrice(subtotal)}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Pajak (10%)</span>
-            <span className="text-gray-700 font-medium">{formatPrice(tax)}</span>
+          <div className="flex justify-between">
+            <span className={`text-gray-500 ${sz.totalsLabel}`}>Pajak (10%)</span>
+            <span className={`text-gray-700 ${sz.totalsValue}`}>{formatPrice(tax)}</span>
           </div>
-          <div className="flex justify-between text-sm pt-2 border-t border-gray-200 mt-2">
-            <span className="text-gray-900 font-bold text-base">{t("page.invoice.total")}</span>
-            <span className="text-gray-900 font-bold text-base">{formatPrice(total)}</span>
+          <div className="flex justify-between pt-2 border-t border-gray-200 mt-2">
+            <span className={`text-gray-900 ${sz.totalsGrand}`}>{t("page.invoice.total")}</span>
+            <span className={`text-gray-900 ${sz.totalsGrand}`}>{formatPrice(total)}</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-gray-50 px-5 py-3 border-t border-gray-200">
+      <div className={`bg-gray-50 ${pd.footer} border-t border-gray-200`}>
         <p
-          className="text-center text-gray-400 text-xs italic overflow-hidden"
+          className={`text-center text-gray-400 ${sz.footer} italic overflow-hidden`}
           style={{
             display: "-webkit-box",
             WebkitBoxOrient: "vertical",
@@ -289,11 +385,11 @@ const InvoicePreview = ({
         </p>
         {showSocialMedia &&
           socialMedia.filter((_, i) => safeGet(socialMediaVisible, i)).length > 0 && (
-            <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-gray-200">
+            <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-gray-200 flex-wrap">
               {socialMedia
                 .filter((_, i) => safeGet(socialMediaVisible, i))
                 .map((sm, i) => (
-                  <span key={i} className="text-gray-400 text-[10px]">
+                  <span key={i} className={`text-gray-400 ${sz.social}`}>
                     {sm.platform}: {sm.account}
                   </span>
                 ))}
@@ -367,6 +463,10 @@ const InvoicePage = () => {
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
   const [footerText, setFooterText] = useState("Terima kasih atas kunjungan Anda");
+  const [paperSize, setPaperSize] = useState("58mm");
+  const [fontSize, setFontSize] = useState("normal");
+  const [fontFamily, setFontFamily] = useState("monospace");
+  const [lineSpacing, setLineSpacing] = useState("normal");
   const [isSaving, setIsSaving] = useState(false);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
@@ -439,6 +539,18 @@ const InvoicePage = () => {
       if (settingsData.showLogo !== undefined) setShowLogo(settingsData.showLogo);
       if (settingsData.showSocialMedia !== undefined)
         setShowSocialMedia(settingsData.showSocialMedia);
+      if (settingsData.paperSize) {
+        setPaperSize(settingsData.paperSize);
+      }
+      if (settingsData.fontSize) {
+        setFontSize(settingsData.fontSize);
+      }
+      if (settingsData.fontFamily) {
+        setFontFamily(settingsData.fontFamily);
+      }
+      if (settingsData.lineSpacing) {
+        setLineSpacing(settingsData.lineSpacing);
+      }
       if (settingsData.socialMediaVisibility) {
         try {
           const v =
@@ -549,6 +661,10 @@ const InvoicePage = () => {
       setShowMemberInfo(DEFAULT_INVOICE_TEMPLATE.showMemberInfo);
       setShowLogo(DEFAULT_INVOICE_TEMPLATE.showLogo);
       setFooterText(DEFAULT_INVOICE_TEMPLATE.footer);
+      setPaperSize(DEFAULT_INVOICE_TEMPLATE.paperSize || "58mm");
+      setFontSize(DEFAULT_INVOICE_TEMPLATE.fontSize || "normal");
+      setFontFamily(DEFAULT_INVOICE_TEMPLATE.fontFamily || "monospace");
+      setLineSpacing(DEFAULT_INVOICE_TEMPLATE.lineSpacing || "normal");
       setAddressFieldsVisible(DEFAULT_INVOICE_TEMPLATE.addressFieldsVisibility);
       setMemberFieldsVisible(DEFAULT_INVOICE_TEMPLATE.memberFieldsVisible);
       setLogoUrl(null);
@@ -576,6 +692,10 @@ const InvoicePage = () => {
       payload.append("addressFieldsVisibility", JSON.stringify(addressFieldsVisible));
       payload.append("memberFieldsVisibility", JSON.stringify(memberFieldsVisible));
       payload.append("footer", footerText);
+      payload.append("paperSize", paperSize);
+      payload.append("fontSize", fontSize);
+      payload.append("fontFamily", fontFamily);
+      payload.append("lineSpacing", lineSpacing);
       if (logoFile) {
         payload.append("logo", logoFile);
       } else if (!logoPreview) {
@@ -633,7 +753,11 @@ const InvoicePage = () => {
       paymentMethod: "Tunai",
       cashAmount: total,
       changeAmount: 0,
-      footer: footerText
+      footer: footerText,
+      paperSize,
+      fontSize,
+      fontFamily,
+      lineSpacing
     });
   };
 
@@ -713,7 +837,7 @@ const InvoicePage = () => {
             <Skeleton className="h-5 w-px" />
             <Skeleton className="h-6 w-40" />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
             <div className="lg:col-span-3 space-y-6">
               {[1, 2, 3, 4].map((n) => (
                 <div key={n} className="bg-card rounded-xl border border-border p-6">
@@ -736,7 +860,7 @@ const InvoicePage = () => {
                 <Skeleton className="h-11 flex-1 rounded-md" />
               </div>
             </div>
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 lg:sticky lg:top-20 z-10">
               <div className="bg-card rounded-xl border border-border p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -772,7 +896,7 @@ const InvoicePage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
             <div className="lg:col-span-3 space-y-6">
               <div data-tour="invoice-logo" className="bg-card rounded-xl border border-border p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -830,6 +954,230 @@ const InvoicePage = () => {
                     <p className="text-[11px] text-muted-foreground mt-1">
                       {t("page.invoice.logoFormat")}
                     </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ukuran Kertas Thermal Struk POS */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Printer size={18} className="text-primary" />
+                    <h3 className="text-base font-semibold">Ukuran Kertas Thermal Struk</h3>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                    {paperSize}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Pilih ukuran standar kertas printer POS kasir (58mm mini atau 80mm standar POS
+                  lebar).
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div
+                    onClick={() => setPaperSize("58mm")}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      paperSize === "58mm"
+                        ? "border-primary bg-primary/5 text-foreground shadow-sm"
+                        : "border-border hover:border-border/80 bg-card text-muted-foreground"
+                    }`}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-sm text-foreground">58mm (Standar Mini)</span>
+                      <span
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          paperSize === "58mm" ? "border-primary" : "border-muted-foreground"
+                        }`}>
+                        {paperSize === "58mm" && (
+                          <div className="w-2 h-2 rounded-full bg-primary" />
+                        )}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Printer Bluetooth portabel / thermal POS 58mm compact (~32 kolom).
+                    </p>
+                  </div>
+                  <div
+                    onClick={() => setPaperSize("80mm")}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      paperSize === "80mm"
+                        ? "border-primary bg-primary/5 text-foreground shadow-sm"
+                        : "border-border hover:border-border/80 bg-card text-muted-foreground"
+                    }`}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-sm text-foreground">
+                        80mm (Standar POS Lebar)
+                      </span>
+                      <span
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          paperSize === "80mm" ? "border-primary" : "border-muted-foreground"
+                        }`}>
+                        {paperSize === "80mm" && (
+                          <div className="w-2 h-2 rounded-full bg-primary" />
+                        )}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Printer kasir desktop USB / LAN / Serial 80mm standar (~48 kolom).
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Kustomisasi Font, Gaya Huruf & Tata Letak */}
+              <div className="bg-card rounded-xl border border-border p-6 space-y-6">
+                <div className="flex items-center gap-2">
+                  <Type size={18} className="text-primary" />
+                  <div>
+                    <h3 className="text-base font-semibold">Tipografi & Kerapatan Struk</h3>
+                    <p className="text-xs text-muted-foreground">
+                      Sesuaikan ukuran font, gaya tulisan, dan kerapatan baris pada struk belanja.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Ukuran Font */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-foreground">
+                      Ukuran Font (Font Size)
+                    </Label>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {fontSize === "small"
+                        ? "Kecil (10px)"
+                        : fontSize === "large"
+                          ? "Besar (14px)"
+                          : "Standar (12px)"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: "small", label: "Kecil", desc: "Kompak & hemat kertas" },
+                      { key: "normal", label: "Standar", desc: "Seimbang & nyaman" },
+                      { key: "large", label: "Besar", desc: "Ekstra jelas terbaca" }
+                    ].map((opt) => (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        onClick={() => setFontSize(opt.key)}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          fontSize === opt.key
+                            ? "border-primary bg-primary/5 text-foreground shadow-xs font-medium"
+                            : "border-border hover:border-border/80 text-muted-foreground"
+                        }`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-foreground">{opt.label}</span>
+                          {fontSize === opt.key && (
+                            <div className="w-2 h-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground block mt-0.5">
+                          {opt.desc}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Gaya Font (Font Family) */}
+                <div className="space-y-2.5 pt-4 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-foreground">
+                      Gaya Tulisan (Font Family)
+                    </Label>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {fontFamily === "sans"
+                        ? "Sans-Serif"
+                        : fontFamily === "serif"
+                          ? "Serif"
+                          : "Monospace"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      {
+                        key: "monospace",
+                        label: "Monospace",
+                        fontCls: "font-mono",
+                        desc: "Klasik POS Thermal"
+                      },
+                      {
+                        key: "sans",
+                        label: "Sans-Serif",
+                        fontCls: "font-sans",
+                        desc: "Modern & Bersih"
+                      },
+                      {
+                        key: "serif",
+                        label: "Serif",
+                        fontCls: "font-serif",
+                        desc: "Formal & Elegan"
+                      }
+                    ].map((opt) => (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        onClick={() => setFontFamily(opt.key)}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          fontFamily === opt.key
+                            ? "border-primary bg-primary/5 text-foreground shadow-xs"
+                            : "border-border hover:border-border/80 text-muted-foreground"
+                        }`}>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-xs font-bold text-foreground ${opt.fontCls}`}>
+                            {opt.label}
+                          </span>
+                          {fontFamily === opt.key && (
+                            <div className="w-2 h-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground block mt-0.5">
+                          {opt.desc}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Kerapatan Baris (Line Spacing) */}
+                <div className="space-y-2.5 pt-4 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-foreground">
+                      Kerapatan Baris (Line Spacing)
+                    </Label>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {lineSpacing === "compact"
+                        ? "Rapat"
+                        : lineSpacing === "relaxed"
+                          ? "Longgar"
+                          : "Standar"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: "compact", label: "Rapat", desc: "Hemat ruang kertas" },
+                      { key: "normal", label: "Standar", desc: "Jarak baris normal" },
+                      { key: "relaxed", label: "Longgar", desc: "Lega & berjarak" }
+                    ].map((opt) => (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        onClick={() => setLineSpacing(opt.key)}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          lineSpacing === opt.key
+                            ? "border-primary bg-primary/5 text-foreground shadow-xs font-medium"
+                            : "border-border hover:border-border/80 text-muted-foreground"
+                        }`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-foreground">{opt.label}</span>
+                          {lineSpacing === opt.key && (
+                            <div className="w-2 h-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground block mt-0.5">
+                          {opt.desc}
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1107,31 +1455,35 @@ const InvoicePage = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-2">
+            <div
+              className="lg:col-span-2"
+              style={{ position: "sticky", top: "5rem", alignSelf: "start" }}>
               <div
                 data-tour="invoice-preview"
-                className="bg-card rounded-xl border border-border p-5 sticky top-24">
-                <div className="flex items-center justify-between mb-4">
+                className="bg-card rounded-xl border border-border p-5 shadow-sm">
+                <div className="flex items-center justify-between mb-4 gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary">visibility</span>
+                    <Eye size={18} className="text-primary" />
                     <h3 className="text-base font-semibold">{t("page.invoice.preview")}</h3>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrintPreview}
-                    className="gap-1.5 shrink-0">
-                    <Printer size={14} />
-                    {t("page.invoice.printPreview")}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.print()}
-                    className="gap-1.5 shrink-0">
-                    <span className="material-symbols-outlined text-base">picture_as_pdf</span>
-                    PDF
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePrintPreview}
+                      className="gap-1.5 shrink-0">
+                      <Printer size={14} />
+                      {t("page.invoice.printPreview")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.print()}
+                      className="gap-1.5 shrink-0">
+                      <FileText size={18} className="text-base" />
+                      PDF
+                    </Button>
+                  </div>
                 </div>
                 <InvoicePreview
                   storeName={storeName}
@@ -1159,6 +1511,10 @@ const InvoicePage = () => {
                   addressFieldsVisible={addressFieldsVisible}
                   memberFieldsVisible={memberFieldsVisible}
                   footerText={footerText}
+                  paperSize={paperSize}
+                  fontSize={fontSize}
+                  fontFamily={fontFamily}
+                  lineSpacing={lineSpacing}
                 />
               </div>
             </div>

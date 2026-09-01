@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Save, X, Check } from "lucide-react";
+import { Save, X, Check, Info } from "lucide-react";
 import { normalizePayload } from "@/lib/payload-normalizer";
 import {
   addIngredientCategory,
@@ -271,7 +271,7 @@ const AddCategory = () => {
 
           <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 mt-6">
             <div className="flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined text-primary text-base">info</span>
+              <Info size={18} className="text-primary text-base" />
               <span className="text-sm font-semibold text-primary">
                 {t("page.ingredientCategory.add.tipsPenamaan")}
               </span>

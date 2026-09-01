@@ -1,3 +1,14 @@
+import {
+  Eye,
+  EyeOff,
+  Info,
+  ShieldCheck,
+  BarChart3,
+  Package,
+  Image,
+  ArrowLeft,
+  Save
+} from "lucide-react";
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -184,9 +195,11 @@ const AddAdmin = () => {
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer">
-                      <span className="material-symbols-outlined text-base">
-                        {showPassword ? "visibility" : "visibility_off"}
-                      </span>
+                      {showPassword ? (
+                        <Eye size={18} className="text-base" />
+                      ) : (
+                        <EyeOff size={18} className="text-base" />
+                      )}
                     </button>
                   </div>
                   <p className="text-xs text-muted-foreground">{t("common.passwordMin6")}</p>
@@ -247,9 +260,7 @@ const AddAdmin = () => {
 
               <div className="pt-4 border-t border-border">
                 <div className="flex items-start gap-3 bg-muted p-4 rounded-lg">
-                  <span className="material-symbols-outlined text-primary text-base mt-0.5">
-                    info
-                  </span>
+                  <Info size={18} className="text-primary text-base mt-0.5" />
                   <div>
                     <p className="text-sm font-semibold text-foreground">
                       {t("page.user.addAdmin.emailConfirmation")}
@@ -274,29 +285,27 @@ const AddAdmin = () => {
                 </p>
                 <ul className="space-y-3">
                   <li className="flex items-center gap-3 text-sm text-foreground">
-                    <span className="material-symbols-outlined text-primary">verified_user</span>
+                    <ShieldCheck size={18} className="text-primary" />
                     <span>{t("page.user.addAdmin.superAdminRole")}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm text-foreground">
-                    <span className="material-symbols-outlined text-primary">analytics</span>
+                    <BarChart3 size={18} className="text-primary" />
                     <span>{t("page.user.addAdmin.financeRole")}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm text-foreground">
-                    <span className="material-symbols-outlined text-primary">inventory_2</span>
+                    <Package size={18} className="text-primary" />
                     <span>{t("page.user.addAdmin.inventoryRole")}</span>
                   </li>
                 </ul>
               </div>
               <div className="absolute -right-10 -bottom-10 opacity-10">
-                <span className="material-symbols-outlined text-[200px] text-primary">
-                  admin_panel_settings
-                </span>
+                <ShieldCheck size={180} className="text-[200px] text-primary" />
               </div>
             </div>
 
             <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
               <div className="w-full h-48 bg-muted flex items-center justify-center text-muted-foreground">
-                <span className="material-symbols-outlined text-5xl">image</span>
+                <Image size={48} className="text-5xl" />
               </div>
               <div className="p-4">
                 <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">
@@ -315,7 +324,7 @@ const AddAdmin = () => {
             variant="danger"
             onClick={() => setCancelModal(true)}
             className="gap-2 w-full sm:w-auto justify-center">
-            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            <ArrowLeft size={20} className="text-lg" />
             {t("page.user.button.back")}
           </Button>
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -324,7 +333,7 @@ const AddAdmin = () => {
               onClick={() => setDraftModal(true)}
               disabled={isSubmitting}
               className="gap-2 w-full sm:w-auto justify-center">
-              <span className="material-symbols-outlined text-lg">save</span>
+              <Save size={20} className="text-lg" />
               Simpan sebagai Draft
             </Button>
             <Button
@@ -340,7 +349,7 @@ const AddAdmin = () => {
               }}
               disabled={isSubmitting}
               className="gap-2 w-full sm:w-auto justify-center">
-              <span className="material-symbols-outlined text-lg">save</span>
+              <Save size={20} className="text-lg" />
               {t("page.user.button.save")}
             </Button>
           </div>

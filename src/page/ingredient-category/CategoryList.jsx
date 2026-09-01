@@ -14,7 +14,10 @@ import {
   FileEdit,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  Table,
+  Download,
+  Upload
 } from "lucide-react";
 import {
   getAllIngredientCategoryTable,
@@ -281,7 +284,7 @@ const CategoryList = () => {
                   {isDownloadingTemplate ? (
                     <Loader2 size={16} className="mr-1 animate-spin" />
                   ) : (
-                    <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                    <Table size={20} className="text-lg mr-1" />
                   )}
                   {t("page.ingredientCategory.button.downloadTemplate")}
                 </Button>
@@ -311,14 +314,14 @@ const CategoryList = () => {
                   {isDownloadingData ? (
                     <Loader2 size={16} className="mr-1 animate-spin" />
                   ) : (
-                    <span className="material-symbols-outlined text-lg mr-1">download</span>
+                    <Download size={20} className="text-lg mr-1" />
                   )}
                   {t("page.ingredientCategory.button.downloadData")}
                 </Button>
               )}
               {canAccess(user, MENU_KEY, "import") && (
                 <Button variant="import" onClick={() => setUploadModalOpen(true)}>
-                  <span className="material-symbols-outlined text-lg mr-1">upload</span>
+                  <Upload size={20} className="text-lg mr-1" />
                   {t("page.ingredientCategory.button.upload")}
                 </Button>
               )}

@@ -1,21 +1,27 @@
 import React, { useState } from "react";
 import {
   Bell,
+  Check,
+  Eye,
   Hand,
   History,
+  LayoutGrid,
   MonitorSmartphone,
   Package,
   QrCode,
   Receipt,
+  Rows,
   Search,
   ShoppingBasket,
   ShoppingCart,
   Star,
   Sun,
   Utensils,
+  UtensilsCrossed,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 
 const DISPLAY_FONT = '"Poppins", "Inter", system-ui, sans-serif';
 const QR_PRIMARY = "#ff6b00";
@@ -25,11 +31,11 @@ const IconMedia = ({ icon, image, color, className, imgClassName }) => {
     return <img src={image} alt="" className={`object-cover ${imgClassName || className || ""}`} />;
   }
   return (
-    <span
-      className={`material-symbols-outlined ${className || ""}`}
-      style={color ? { color } : undefined}>
-      {icon || "category"}
-    </span>
+    <DynamicIcon
+      name={icon || "category"}
+      className={className}
+      style={color ? { color } : undefined}
+    />
   );
 };
 
@@ -41,7 +47,7 @@ const QrMenuCard = ({ index, categoryName, color, outOfStock, price }) => (
       <div
         className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg"
         style={{ backgroundColor: color }}>
-        <span className="material-symbols-outlined !text-2xl">fastfood</span>
+        <UtensilsCrossed size={24} />
       </div>
     </div>
     <div className="p-4 space-y-1.5">
@@ -88,7 +94,7 @@ const CategoryPreviewModal = ({ open, onOpenChange, category }) => {
       <div className="relative bg-card w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in duration-200">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary">visibility</span>
+            <Eye size={20} className="text-primary" />
             <div>
               <h3 className="text-base font-semibold text-foreground">Preview Kategori</h3>
               <p className="text-xs text-muted-foreground">
@@ -127,7 +133,7 @@ const CategoryPreviewModal = ({ open, onOpenChange, category }) => {
               </div>
               {view === "cashier" && (
                 <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
-                  <span className="material-symbols-outlined text-sm">done</span> Dipilih
+                  <Check size={14} /> Dipilih
                 </span>
               )}
             </button>
@@ -154,7 +160,7 @@ const CategoryPreviewModal = ({ open, onOpenChange, category }) => {
               </div>
               {view === "qr" && (
                 <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
-                  <span className="material-symbols-outlined text-sm">done</span> Dipilih
+                  <Check size={14} /> Dipilih
                 </span>
               )}
             </button>
@@ -210,10 +216,10 @@ const CategoryPreviewModal = ({ open, onOpenChange, category }) => {
                 </div>
                 <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5 border border-border/40">
                   <span className="p-1 rounded-md bg-background shadow-sm text-foreground">
-                    <span className="material-symbols-outlined !text-sm">grid_view</span>
+                    <LayoutGrid size={14} />
                   </span>
                   <span className="p-1 rounded-md text-muted-foreground">
-                    <span className="material-symbols-outlined !text-sm">view_agenda</span>
+                    <Rows size={14} />
                   </span>
                 </div>
               </div>
@@ -270,9 +276,7 @@ const CategoryPreviewModal = ({ open, onOpenChange, category }) => {
                     <div
                       className="w-full aspect-square rounded-lg border border-border/30 flex items-center justify-center mb-2"
                       style={{ backgroundColor: `${color}14` }}>
-                      <span className="material-symbols-outlined text-muted-foreground/40 !text-2xl">
-                        fastfood
-                      </span>
+                      <UtensilsCrossed size={24} className="text-muted-foreground/40" />
                     </div>
                     <div className="space-y-1">
                       <p className="text-[11px] font-medium text-foreground leading-tight truncate">
@@ -301,7 +305,7 @@ const CategoryPreviewModal = ({ open, onOpenChange, category }) => {
                         <div
                           className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm"
                           style={{ backgroundColor: QR_PRIMARY }}>
-                          <span className="material-symbols-outlined !text-base">restaurant</span>
+                          <Utensils size={16} />
                         </div>
                         <p
                           className="text-[15px] text-gray-900 dark:text-gray-100"

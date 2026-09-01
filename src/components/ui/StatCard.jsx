@@ -1,6 +1,8 @@
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { safeGet } from "@/lib/safe-lookup";
+import DynamicIcon from "@/components/ui/DynamicIcon";
+
 const variantStyles = {
   default: {
     card: "bg-card border border-border",
@@ -95,7 +97,6 @@ const StatCard = ({
   className = ""
 }) => {
   const s = safeGet(variantStyles, variant, variantStyles.default); // ponytail: akses aman anti object-injection
-  const isLucide = typeof icon !== "string";
   return (
     <div
       data-tour={dataTour}
@@ -121,10 +122,8 @@ const StatCard = ({
         className={`w-14 h-14 rounded-2xl ${s.iconBg} flex items-center justify-center ${s.iconColor} group-hover:scale-110 transition-transform`}>
         {isLoading ? (
           <Skeleton className="w-7 h-7 rounded-lg" />
-        ) : isLucide ? (
-          <span className="[&>svg]:w-7 [&>svg]:h-7">{React.createElement(icon, { size: 24 })}</span>
         ) : (
-          <span className="material-symbols-outlined text-3xl">{icon}</span>
+          <DynamicIcon icon={icon} size={28} />
         )}
       </div>
     </div>

@@ -5018,6 +5018,10 @@
   "page.location.form.socialPlatform": "Pilih platform",
   "page.location.form.statusOperational": "Status Operasional",
   "page.location.form.statusOperationalDesc": "Atur status operasional toko",
+  "page.location.form.tabAlamat": "Alamat",
+  "page.location.form.tabInformasi": "Informasi",
+  "page.location.form.tabLainnya": "Lainnya",
+  "page.location.form.tabPengaturan": "Pengaturan",
   "page.location.form.storePhoto": "Foto Toko",
   "page.location.form.nameLabel": "Nama Toko",
   "page.location.form.storeIdLabel": "ID Toko",
@@ -5073,6 +5077,7 @@
   "page.location.form.employeeNameHeader": "Nama",
   "page.location.form.employeeEmailHeader": "Email",
   "page.location.form.employeeDepartmentHeader": "Departemen",
+  "page.location.form.employeePositionHeader": "Posisi",
   "page.location.form.employeeStoreHeader": "Toko",
   "page.location.map.active": "Active",
   "page.location.map.inactive": "Inactive",
@@ -7588,5 +7593,6 @@
   "page.product.form.confirmDisableBatchDesc": "Menonaktifkan Batch akan menghapus semua data batch yang sudah Anda isi. Lanjutkan?",
   "page.product.form.noIngredientOptionsHint": "Anda perlu membuat produk bertipe Bahan Baku terlebih dahulu sebelum mengisi komposisi produk ini.",
   "page.product.form.ingredientName": "Nama Bahan",
-  "page.product.form.compositionSelectStore": "Pilih toko pada bagian Pemilihan Toko terlebih dahulu agar bahan baku komposisi bisa dipilih."
+  "page.product.form.compositionSelectStore": "Pilih toko pada bagian Pemilihan Toko terlebih dahulu agar bahan baku komposisi bisa dipilih.",
+  "page.location.form.managerCurrentLabel": "Manager Saat Ini"
 }
