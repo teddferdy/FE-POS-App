@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { X, Printer, RotateCcw, CheckCircle, Users, Plus, Trash2, Store } from "lucide-react";
+import { X, Printer, RotateCcw, CheckCircle, Users, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "react-query";
 import { useCookies } from "react-cookie";
@@ -9,16 +9,15 @@ import { Input } from "@/components/ui/input";
 import { createSplitBill } from "@/services/split-bill";
 import { getInvoiceSetting } from "@/services/invoice";
 import { getLocationById } from "@/services/location";
+import {
+  getProvinces,
+  getCities,
+  getDistricts,
+  getVillages,
+  getPostalCode
+} from "@/services/general";
 import { toast } from "sonner";
 import { printReceipt } from "@/utils/thermalPrint";
-
-const DashedSeparator = () => (
-  <div className="flex items-center justify-center gap-1 py-1 select-none" aria-hidden="true">
-    {Array.from({ length: 16 }).map((_, i) => (
-      <span key={i} className="w-1 h-px bg-border/70" />
-    ))}
-  </div>
-);
 
 const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const { t } = useTranslation();
@@ -40,12 +39,44 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   );
   const settingsData = invoiceSettings?.data || null;
 
+  const [paperSize, setPaperSize] = useState(settingsData?.paperSize || "58mm");
+
+  React.useEffect(() => {
+    if (settingsData?.paperSize) {
+      setPaperSize(settingsData.paperSize);
+    }
+  }, [settingsData?.paperSize]);
+
   const { data: storeData } = useQuery(
     ["store-detail", storeId],
     () => getLocationById({ id: storeId }),
     { enabled: !!storeId }
   );
   const locationDetail = storeData?.data || storeData || null;
+
+  const { data: provinces } = useQuery(["provinces"], getProvinces, {
+    enabled: !!locationDetail?.province && !locationDetail?.provinceName
+  });
+  const { data: cities } = useQuery(
+    ["cities", locationDetail?.province],
+    () => getCities(locationDetail.province),
+    { enabled: !!locationDetail?.province && !locationDetail?.cityName }
+  );
+  const { data: districts } = useQuery(
+    ["districts", locationDetail?.city],
+    () => getDistricts(locationDetail.city),
+    { enabled: !!locationDetail?.city && !locationDetail?.districtName }
+  );
+  const { data: villages } = useQuery(
+    ["villages", locationDetail?.district],
+    () => getVillages(locationDetail.district),
+    { enabled: !!locationDetail?.district && !locationDetail?.villageName }
+  );
+  const { data: postalCodes } = useQuery(
+    ["postal-codes", locationDetail?.village],
+    () => getPostalCode(locationDetail.village),
+    { enabled: !!locationDetail?.village && !locationDetail?.postalCode }
+  );
 
   const showLogo = settingsData?.showLogo ?? true;
   const showStoreName = settingsData?.showStoreName ?? true;
@@ -76,9 +107,30 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     "";
   const locationDetailAddress =
     locationDetail?.detailLocation || locationDetail?.locationDetail || "";
-  const cityName = locationDetail?.cityName || locationDetail?.city || "";
-  const provinceName = locationDetail?.provinceName || locationDetail?.province || "";
-  const postalCodeValue = locationDetail?.postalCode || "";
+  const provinceName =
+    locationDetail?.provinceName ||
+    provinces?.find((p) => p.kode_prov === locationDetail?.province)?.nama_provinsi ||
+    locationDetail?.province ||
+    "";
+  const cityName =
+    locationDetail?.cityName ||
+    cities?.find((c) => c.kode_kab === locationDetail?.city)?.nama_kabupaten ||
+    locationDetail?.city ||
+    "";
+  const districtName =
+    locationDetail?.districtName ||
+    districts?.find((d) => d.kode_kec === locationDetail?.district)?.nama_kecamatan ||
+    locationDetail?.district ||
+    "";
+  const villageName =
+    locationDetail?.villageName ||
+    villages?.find((v) => v.kode_desa === locationDetail?.village)?.nama_desa ||
+    locationDetail?.village ||
+    "";
+  const postalCodeValue =
+    locationDetail?.postalCode ||
+    postalCodes?.[0]?.kode_pos ||
+    "";
   const storePhone =
     locationDetail?.phoneNumber || locationDetail?.phone || data?.storePhone || data?.phone || "";
   const storeEmail = locationDetail?.email || data?.storeEmail || data?.email || "";
@@ -88,11 +140,15 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     if (addressFieldsVisible.address !== false && locationAddress) parts.push(locationAddress);
     if (addressFieldsVisible.locationDetail !== false && locationDetailAddress)
       parts.push(locationDetailAddress);
-    if (addressFieldsVisible.city !== false && cityName && /^[A-Za-z]/.test(cityName))
-      parts.push(cityName);
-    if (addressFieldsVisible.province !== false && provinceName && /^[A-Za-z]/.test(provinceName))
-      parts.push(provinceName);
-    if (addressFieldsVisible.postalCode !== false && postalCodeValue) parts.push(postalCodeValue);
+    
+    const regionParts = [];
+    if (addressFieldsVisible.province !== false && provinceName) regionParts.push(provinceName);
+    if (addressFieldsVisible.city !== false && cityName) regionParts.push(cityName);
+    if (addressFieldsVisible.district !== false && districtName) regionParts.push(districtName);
+    if (addressFieldsVisible.village !== false && villageName) regionParts.push(villageName);
+    if (regionParts.length > 0) parts.push(regionParts.join(", "));
+
+    if (addressFieldsVisible.postalCode !== false && postalCodeValue) parts.push(`Kode Pos: ${postalCodeValue}`);
     return parts.join(", ");
   };
   const storeAddress = buildStoreAddress();
@@ -225,7 +281,11 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
         showMemberInfo,
         showSocialMedia,
         socialMediaVisibility: settingsData?.socialMediaVisibility,
-        addressFieldsVisibility: addressFieldsVisible
+        addressFieldsVisibility: addressFieldsVisible,
+        paperSize,
+        fontSize: settingsData?.fontSize || "normal",
+        fontFamily: settingsData?.fontFamily || "monospace",
+        lineSpacing: settingsData?.lineSpacing || "normal"
       };
       await printReceipt(receipt, "auto");
       toast.success(t("page.cashier.receipt.toast.printSuccess"));
@@ -238,6 +298,97 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     }
   };
 
+  const fontSize = settingsData?.fontSize || "normal";
+  const fontFamily = settingsData?.fontFamily || "monospace";
+  const lineSpacing = settingsData?.lineSpacing || "normal";
+
+  const fontFamClass =
+    fontFamily === "sans"
+      ? "font-sans"
+      : fontFamily === "serif"
+      ? "font-serif"
+      : "font-mono";
+
+  const sizeClasses = {
+    small: {
+      title: "text-base font-bold tracking-tight",
+      address: "text-[10px]",
+      memberHeader: "text-[9px]",
+      memberText: "text-[10px]",
+      memberName: "text-[11px] font-semibold",
+      metaOrder: "text-xs",
+      metaText: "text-[10px]",
+      tableTh: "text-[9px]",
+      tableItem: "text-xs",
+      tableSub: "text-[9px]",
+      totalsLabel: "text-xs",
+      totalsValue: "text-xs font-medium",
+      totalsGrand: "text-sm font-bold",
+      footer: "text-[10px]",
+      social: "text-[9px]"
+    },
+    normal: {
+      title: "text-lg font-bold tracking-tight",
+      address: "text-[11px]",
+      memberHeader: "text-[10px]",
+      memberText: "text-[11px]",
+      memberName: "text-xs font-semibold",
+      metaOrder: "text-sm",
+      metaText: "text-[11px]",
+      tableTh: "text-[10px]",
+      tableItem: "text-sm",
+      tableSub: "text-[10px]",
+      totalsLabel: "text-sm",
+      totalsValue: "text-sm font-medium",
+      totalsGrand: "text-base font-bold",
+      footer: "text-xs",
+      social: "text-[10px]"
+    },
+    large: {
+      title: "text-xl font-bold tracking-tight",
+      address: "text-xs",
+      memberHeader: "text-xs",
+      memberText: "text-xs",
+      memberName: "text-sm font-semibold",
+      metaOrder: "text-base",
+      metaText: "text-xs",
+      tableTh: "text-xs",
+      tableItem: "text-base",
+      tableSub: "text-xs",
+      totalsLabel: "text-base",
+      totalsValue: "text-base font-medium",
+      totalsGrand: "text-lg font-bold",
+      footer: "text-sm",
+      social: "text-xs"
+    }
+  };
+  const sz = sizeClasses[fontSize] || sizeClasses.normal;
+
+  const padClasses = {
+    compact: {
+      header: "px-4 py-4",
+      section: "px-4 py-2",
+      tablePy: "py-1",
+      totals: "p-2 space-y-1",
+      footer: "px-4 py-2"
+    },
+    normal: {
+      header: "px-5 py-6",
+      section: "px-5 py-3",
+      tablePy: "py-2",
+      totals: "p-3 space-y-2",
+      footer: "px-5 py-3"
+    },
+    relaxed: {
+      header: "px-6 py-7",
+      section: "px-6 py-4",
+      tablePy: "py-3",
+      totals: "p-4 space-y-3",
+      footer: "px-6 py-4"
+    }
+  };
+  const pd = padClasses[lineSpacing] || padClasses.normal;
+
   return (
     <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-card rounded-2xl shadow-2xl border border-border/50 w-[80vw] max-w-none max-h-[90vh] flex flex-col overflow-hidden">
@@ -246,152 +397,255 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
             <CheckCircle size={18} className="text-emerald-500" />
             <h2 className="text-base font-bold">{t("page.cashier.receipt.title")}</h2>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Paper Size selector */}
+            <div className="flex items-center bg-muted p-0.5 rounded-lg text-xs">
+              <button
+                type="button"
+                onClick={() => setPaperSize("58mm")}
+                className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+                  paperSize === "58mm"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}>
+                58mm
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaperSize("80mm")}
+                className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+                  paperSize === "80mm"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}>
+                80mm
+              </button>
+            </div>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          <div className="bg-muted/20 rounded-xl border border-border/40 overflow-hidden">
-            <div className="px-5 pt-5">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Store size={16} className="text-primary" />
-                <p className="font-bold uppercase tracking-wide text-sm">{storeName}</p>
-              </div>
-              {storeAddress && (
-                <p className="text-xs text-muted-foreground text-center">{storeAddress}</p>
+          {/* InvoicePreview-style receipt */}
+          <div
+            className={`bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 mx-auto overflow-hidden transition-all duration-200 ${fontFamClass} ${
+              paperSize === "80mm" ? "max-w-[420px]" : "max-w-[320px]"
+            }`}>
+            {/* Dark header — store name, logo, address */}
+            <div className={`bg-gradient-to-br from-gray-900 to-gray-800 ${pd.header} text-white text-center`}>
+              {showLogo && settingsData?.logo && (
+                <img
+                  src={settingsData.logo}
+                  alt="Logo"
+                  className="h-16 w-16 object-contain bg-white rounded-lg p-1 mx-auto mb-3"
+                />
               )}
-              {storePhone && (
-                <p className="text-xs text-muted-foreground text-center mt-0.5">{storePhone}</p>
+              {showStoreName && <h3 className={sz.title}>{storeName}</h3>}
+              {showAddress && (
+                <div className="text-gray-400 mt-2 space-y-0.5">
+                  {addressFieldsVisible.address !== false && locationAddress && (
+                    <p className={sz.address}>{locationAddress}</p>
+                  )}
+                  {addressFieldsVisible.locationDetail !== false && locationDetailAddress && (
+                    <p className={sz.address}>{locationDetailAddress}</p>
+                  )}
+                  {((addressFieldsVisible.province !== false && provinceName) ||
+                    (addressFieldsVisible.city !== false && cityName) ||
+                    (addressFieldsVisible.district !== false && districtName) ||
+                    (addressFieldsVisible.village !== false && villageName)) && (
+                    <p className={sz.address}>
+                      {[
+                        addressFieldsVisible.province !== false && provinceName ? provinceName : "",
+                        addressFieldsVisible.city !== false && cityName ? cityName : "",
+                        addressFieldsVisible.district !== false && districtName ? districtName : "",
+                        addressFieldsVisible.village !== false && villageName ? villageName : ""
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </p>
+                  )}
+                  {addressFieldsVisible.postalCode !== false && postalCodeValue && (
+                    <p className={sz.address}>Kode Pos: {postalCodeValue}</p>
+                  )}
+                  {addressFieldsVisible.phone !== false && storePhone && (
+                    <p className={sz.address}>Telp: {storePhone}</p>
+                  )}
+                  {addressFieldsVisible.email !== false && storeEmail && (
+                    <p className={sz.address}>{storeEmail}</p>
+                  )}
+                </div>
               )}
             </div>
 
-            <DashedSeparator />
-
-            <div className="px-5">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <CheckCircle size={16} className="text-emerald-500" />
-                <p className="font-semibold text-sm text-emerald-500">
+            {/* Transaction meta */}
+            <div className={`${pd.section} border-b border-gray-200 space-y-1`}>
+              <div className="flex items-center justify-center gap-2">
+                <CheckCircle size={14} className="text-emerald-500" />
+                <p className={`${sz.metaText} font-semibold text-emerald-600`}>
                   {t("page.cashier.receipt.paymentSuccess")}
                 </p>
               </div>
-              <p className="text-center font-mono font-bold text-base tracking-wide">
+              <p className={`text-center font-bold tracking-wide text-gray-800 ${sz.metaOrder}`}>
                 {orderNumber}
               </p>
-              <p className="text-center text-xs text-muted-foreground mt-1">{formattedDate}</p>
-            </div>
-
-            <DashedSeparator />
-
-            <div className="px-5 space-y-1.5 text-sm">
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-muted-foreground">{t("page.cashier.receipt.cashier")}</span>
-                <span className="font-medium text-right">{cashierName}</span>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-muted-foreground">{t("page.cashier.customer")}</span>
-                <span className="font-medium text-right">{customerName}</span>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t("page.cashier.receipt.paymentMethod")}
+              <p className={`text-center text-gray-500 ${sz.metaText}`}>{formattedDate}</p>
+              <div className={`flex justify-between text-gray-600 pt-1 ${sz.metaText}`}>
+                <span>
+                  {t("page.cashier.receipt.cashier")}:{" "}
+                  <span className="font-medium">{cashierName}</span>
                 </span>
-                <span className="font-medium text-right capitalize">{paymentMethod}</span>
+                <span className="capitalize">{paymentMethod}</span>
               </div>
             </div>
 
-            <DashedSeparator />
-
-            <div className="px-5">
-              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">
-                {t("page.cashier.receipt.item")}
-              </p>
-              <div className="space-y-2">
-                {items.length > 0 ? (
-                  items.map((item, idx) => (
-                    <div key={idx} className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {item.nameProduct || item.name || "-"}
-                        </p>
-                        {item.options?.[0]?.name && (
-                          <p className="text-xs text-muted-foreground truncate">
-                            - {item.options[0].name}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted-foreground font-mono">
-                          {item.count || item.qty || 0} x Rp {formatPrice(item.price || 0)}
-                        </p>
-                      </div>
-                      <span className="text-sm font-medium shrink-0 font-mono">
-                        {formatPrice(item.totalPrice || item.price * (item.count || 1) || 0)}
+            {/* Member info band */}
+            {showMemberInfo && (customerName !== "-" || data?.customer?.memberTier) && (
+              <div className={`${pd.section} bg-yellow-50 border-b border-yellow-100`}>
+                <p className={`${sz.memberHeader} font-semibold text-yellow-800 uppercase tracking-wider mb-2`}>
+                  {t("page.invoice.memberInfo")}
+                </p>
+                <div className="space-y-1">
+                  {customerName && customerName !== "-" && (
+                    <div className="flex justify-between items-center">
+                      <span className={`${sz.memberText} text-yellow-900 font-medium`}>
+                        {t("page.invoice.memberName")}
+                      </span>
+                      <span className={`${sz.memberName} text-yellow-800`}>{customerName}</span>
+                    </div>
+                  )}
+                  {data?.customer?.memberTier && (
+                    <div className="flex justify-between items-center">
+                      <span className={`${sz.memberText} text-yellow-900 font-medium`}>
+                        {t("page.invoice.memberTier")}
+                      </span>
+                      <span className={`${sz.memberName} text-yellow-800`}>
+                        {data.customer.memberTier}
                       </span>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">-</p>
+                  )}
+                  {data?.customer?.memberPoints != null && (
+                    <div className="flex justify-between items-center">
+                      <span className={`${sz.memberText} text-yellow-900 font-medium`}>
+                        {t("page.invoice.totalPoints")}
+                      </span>
+                      <span className={`${sz.memberName} text-yellow-800`}>
+                        {Number(data.customer.memberPoints).toLocaleString("id-ID")} pts
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Items table */}
+            <div className={pd.section}>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className={`${sz.tableTh} text-gray-500 uppercase tracking-wider border-b border-gray-200`}>
+                      <th className={`text-left ${pd.tablePy} font-semibold`}>{t("page.invoice.item")}</th>
+                      <th className={`text-center ${pd.tablePy} font-semibold w-10`}>Qty</th>
+                      <th className={`text-right ${pd.tablePy} font-semibold`}>Harga</th>
+                      <th className={`text-right ${pd.tablePy} font-semibold`}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.length > 0 ? (
+                      items.map((item, idx) => (
+                        <tr key={idx} className={idx % 2 === 0 ? "bg-gray-50/50" : ""}>
+                          <td className={`${pd.tablePy} ${sz.tableItem} text-gray-800`}>
+                            <span>{item.nameProduct || item.name || "-"}</span>
+                            {item.options?.[0]?.name && (
+                              <span className={`block text-gray-400 ${sz.tableSub}`}>
+                                – {item.options[0].name}
+                              </span>
+                            )}
+                          </td>
+                          <td className={`${pd.tablePy} text-center ${sz.tableItem} text-gray-600`}>
+                            {item.count || item.qty || 0}
+                          </td>
+                          <td className={`${pd.tablePy} text-right ${sz.tableItem} text-gray-600`}>
+                            Rp{formatPrice(item.price || 0)}
+                          </td>
+                          <td className={`${pd.tablePy} text-right ${sz.tableItem} font-medium text-gray-900`}>
+                            Rp{formatPrice(item.totalPrice || item.price * (item.count || 1) || 0)}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="py-4 text-center text-sm text-gray-400">
+                          -
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Summary card */}
+            <div className={pd.section}>
+              <div className={`bg-gray-50 rounded-lg ${pd.totals}`}>
+                <div className="flex justify-between">
+                  <span className={`text-gray-500 ${sz.totalsLabel}`}>{t("page.invoice.subtotal")}</span>
+                  <span className={`text-gray-700 ${sz.totalsValue}`}>Rp{formatPrice(subtotal)}</span>
+                </div>
+                {tax > 0 && (
+                  <div className="flex justify-between">
+                    <span className={`text-gray-500 ${sz.totalsLabel}`}>
+                      {t("page.cashier.tax")} ({taxRatePercent}%)
+                    </span>
+                    <span className={`text-gray-700 ${sz.totalsValue}`}>Rp{formatPrice(tax)}</span>
+                  </div>
+                )}
+                {discount > 0 && (
+                  <div className="flex justify-between">
+                    <span className={`text-emerald-600 ${sz.totalsLabel}`}>{t("page.cashier.discount")}</span>
+                    <span className={`text-emerald-600 ${sz.totalsValue}`}>-Rp{formatPrice(discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 border-t border-gray-200 mt-2">
+                  <span className={`text-gray-900 ${sz.totalsGrand}`}>
+                    {t("page.invoice.total")}
+                  </span>
+                  <span className={`text-gray-900 ${sz.totalsGrand}`}>Rp{formatPrice(total)}</span>
+                </div>
+                {(paymentMethod === "cash" || paymentMethod?.toLowerCase() === "cash") && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className={`text-gray-500 ${sz.totalsLabel}`}>{t("page.cashier.cashAmount")}</span>
+                      <span className={`text-gray-700 ${sz.totalsValue}`}>Rp{formatPrice(cashAmount)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-gray-500 ${sz.totalsLabel}`}>{t("page.cashier.change")}</span>
+                      <span className={`text-emerald-600 font-semibold ${sz.totalsValue}`}>
+                        Rp{formatPrice(changeAmount)}
+                      </span>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
 
-            <DashedSeparator />
-
-            <div className="px-5 pb-5 space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t("page.cashier.subtotal")}</span>
-                <span className="font-mono">Rp {formatPrice(subtotal)}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {t("page.cashier.tax")} ({taxRatePercent}%)
-                </span>
-                <span className="font-mono">Rp {formatPrice(tax)}</span>
-              </div>
-              {discount > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-emerald-500">{t("page.cashier.discount")}</span>
-                  <span className="text-emerald-500 font-mono">-Rp {formatPrice(discount)}</span>
-                </div>
-              )}
-              <div className="flex items-center justify-between font-bold text-base border-t border-dashed border-border/50 pt-2 mt-2">
-                <span>{t("page.cashier.total")}</span>
-                <span className="text-primary font-mono">Rp {formatPrice(total)}</span>
-              </div>
-              {(paymentMethod === "cash" || paymentMethod?.toLowerCase() === "cash") && (
-                <div className="space-y-1.5 pt-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{t("page.cashier.cashAmount")}</span>
-                    <span className="font-mono">Rp {formatPrice(cashAmount)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{t("page.cashier.change")}</span>
-                    <span className="font-medium text-emerald-500 font-mono">
-                      Rp {formatPrice(changeAmount)}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="px-5 pb-5 border-t border-dashed border-border/50 pt-4">
-              <div className="flex items-center justify-center gap-1.5">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <span key={i} className="w-1 h-px bg-border/60" />
-                ))}
-                <span className="text-[10px] text-muted-foreground font-mono shrink-0">~</span>
-                <span className="text-[10px] text-muted-foreground font-mono shrink-0">~</span>
-                <span className="text-[10px] text-muted-foreground font-mono shrink-0">~</span>
-                <span className="text-[10px] text-muted-foreground font-mono shrink-0">~</span>
-                <span className="text-[10px] text-muted-foreground font-mono shrink-0">~</span>
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <span key={i} className="w-1 h-px bg-border/60" />
-                ))}
-              </div>
-              <p className="text-center text-xs text-muted-foreground mt-2">{footerText}</p>
-              {socialMedia.length > 0 && (
-                <div className="flex items-center justify-center gap-3 mt-1.5">
+            {/* Footer */}
+            <div className={`bg-gray-50 ${pd.footer} border-t border-gray-200`}>
+              <p
+                className={`text-center text-gray-400 ${sz.footer} italic overflow-hidden`}
+                style={{
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: 4,
+                  textOverflow: "ellipsis"
+                }}>
+                {footerText}
+              </p>
+              {showSocialMedia && socialMedia.length > 0 && (
+                <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-gray-200 flex-wrap">
                   {socialMedia.map((sm, idx) => (
-                    <span key={idx} className="text-[10px] text-muted-foreground font-mono">
+                    <span key={idx} className={`text-gray-400 ${sz.social}`}>
                       {typeof sm === "string"
                         ? sm
                         : `${sm.platform || sm.name || ""}: ${sm.account || sm.username || sm.url || ""}`.trim()}

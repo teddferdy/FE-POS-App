@@ -23,7 +23,8 @@ import {
   ChevronRight,
   ChevronDown,
   Check,
-  Eye
+  Eye,
+  TriangleAlert
 } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
@@ -763,9 +764,10 @@ const AddProduct = () => {
                                 <FormMessage />
                                 {noStockOpname && (
                                   <div className="flex items-start gap-2.5 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
-                                    <span className="material-symbols-outlined text-amber-600 text-base mt-0.5">
-                                      warning
-                                    </span>
+                                    <TriangleAlert
+                                      size={16}
+                                      className="text-amber-600 mt-0.5 shrink-0"
+                                    />
                                     <div>
                                       <p className="text-xs font-semibold text-amber-800">
                                         {t("page.product.form.noStockOpname")}
@@ -1040,9 +1042,7 @@ const AddProduct = () => {
                                             size="sm"
                                             onClick={() => navigate("/tax-list")}
                                             className="gap-2">
-                                            <span className="material-symbols-outlined text-base">
-                                              add
-                                            </span>
+                                            <Plus size={16} />
                                             {t("page.product.form.addTax")}
                                           </Button>
                                         </div>

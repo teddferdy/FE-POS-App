@@ -5083,6 +5083,10 @@
   "page.location.form.socialPlatform": "Select platform",
   "page.location.form.statusOperational": "Operational Status",
   "page.location.form.statusOperationalDesc": "Set location operational status",
+  "page.location.form.tabAlamat": "Address",
+  "page.location.form.tabInformasi": "Information",
+  "page.location.form.tabLainnya": "Others",
+  "page.location.form.tabPengaturan": "Settings",
   "page.location.form.storePhoto": "Store Photo",
   "page.location.form.nameLabel": "Store Name",
   "page.location.form.storeIdLabel": "Store ID",
@@ -5138,6 +5142,7 @@
   "page.location.form.employeeNameHeader": "Name",
   "page.location.form.employeeEmailHeader": "Email",
   "page.location.form.employeeDepartmentHeader": "Department",
+  "page.location.form.employeePositionHeader": "Position",
   "page.location.form.employeeStoreHeader": "Store",
   "page.location.map.active": "Active",
   "page.location.map.inactive": "Inactive",
@@ -7588,5 +7593,6 @@
   "page.product.form.confirmDisableBatchDesc": "Disabling Batches will remove all batch data you have filled in. Continue?",
   "page.product.form.noIngredientOptionsHint": "You need to create a Bahan Baku (raw material) product first before filling in this product's composition.",
   "page.product.form.ingredientName": "Ingredient",
-  "page.product.form.compositionSelectStore": "Select a store in the Store Selection section first to be able to pick composition raw materials."
+  "page.product.form.compositionSelectStore": "Select a store in the Store Selection section first to be able to pick composition raw materials.",
+  "page.location.form.managerCurrentLabel": "Current Manager"
 }

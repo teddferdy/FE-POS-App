@@ -679,7 +679,7 @@ const LocationDetail = () => {
                   <div className="bg-card rounded-xl border border-border p-5 space-y-4">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                        <span className="material-symbols-outlined text-base">info</span>
+                        <Info size={18} className="text-base" />
                       </div>
                       <h3 className="text-base font-semibold text-foreground">
                         {t("page.location.detail.systemInfo")}

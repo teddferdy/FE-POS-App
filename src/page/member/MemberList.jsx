@@ -5,7 +5,20 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Users, CheckCircle, FileEdit, XCircle, Eye, Edit, Wallet, Trash2 } from "lucide-react";
+import {
+  Users,
+  CheckCircle,
+  FileEdit,
+  XCircle,
+  Eye,
+  Edit,
+  Wallet,
+  Trash2,
+  UserPlus,
+  Filter,
+  ArrowUpDown,
+  Star
+} from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
@@ -226,13 +239,7 @@ const MemberList = () => {
                     border: "1px solid rgb(0 0 0 / 0.08)"
                   }
             }>
-            {matchedTier && (
-              <span
-                className="material-symbols-outlined text-sm"
-                style={{ fontVariationSettings: "'FILL' 1" }}>
-                stars
-              </span>
-            )}
+            {matchedTier && <Star size={14} />}
             {tierName}
           </span>
         );
@@ -250,15 +257,16 @@ const MemberList = () => {
           : isInactive
             ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
             : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
-        const icon = isActive ? "check_circle" : isInactive ? "cancel" : "drafts";
         return (
           <span
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${badgeClass}`}>
-            <span
-              className="material-symbols-outlined text-sm"
-              style={{ fontVariationSettings: "'FILL' 1" }}>
-              {icon}
-            </span>
+            {isActive ? (
+              <CheckCircle size={14} />
+            ) : isInactive ? (
+              <XCircle size={14} />
+            ) : (
+              <FileEdit size={14} />
+            )}
             {isActive ? t("common.active") : isInactive ? t("common.inactive") : t("common.draft")}
           </span>
         );
@@ -385,7 +393,7 @@ const MemberList = () => {
               data-tour="member-add"
               onClick={() => navigate("/add-member")}
               className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-              <span className="material-symbols-outlined text-lg">person_add</span>
+              <UserPlus size={20} className="text-lg" />
               {t("breadcrumb.add")}
             </Button>
           )}
@@ -463,9 +471,7 @@ const MemberList = () => {
                     tiers.length > 0 && (
                       <>
                         <div className="flex items-center gap-2 mb-4">
-                          <span className="material-symbols-outlined text-primary text-lg">
-                            filter_alt
-                          </span>
+                          <Filter size={20} className="text-primary text-lg" />
                           <h3 className="text-sm font-semibold text-foreground">
                             {t("page.member.list.filter")}
                           </h3>
@@ -473,10 +479,10 @@ const MemberList = () => {
 
                         <div className="flex flex-wrap items-center gap-2">
                           {[
-                            { key: null, label: t("common.all"), icon: "group" },
-                            { key: "draft", label: t("common.draft"), icon: "edit_note" },
-                            { key: "inactive", label: t("common.inactive"), icon: "cancel" }
-                          ].map(({ key, label, icon }) => (
+                            { key: null, label: t("common.all"), Icon: Users },
+                            { key: "draft", label: t("common.draft"), Icon: FileEdit },
+                            { key: "inactive", label: t("common.inactive"), Icon: XCircle }
+                          ].map(({ key, label, Icon }) => (
                             <button
                               key={key ?? "all"}
                               onClick={() => {
@@ -488,7 +494,7 @@ const MemberList = () => {
                                   ? "bg-primary text-primary-foreground shadow-sm"
                                   : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
                               }`}>
-                              <span className="material-symbols-outlined text-sm">{icon}</span>
+                              <Icon size={14} />
                               {label}
                             </button>
                           ))}
@@ -528,9 +534,7 @@ const MemberList = () => {
 
                         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
                           <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-muted-foreground text-sm">
-                              sort
-                            </span>
+                            <ArrowUpDown size={16} className="text-muted-foreground text-sm" />
                             <span className="text-xs text-muted-foreground hidden sm:inline">
                               {t("page.member.list.sort")}
                             </span>
@@ -550,9 +554,7 @@ const MemberList = () => {
                             />
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-muted-foreground text-sm">
-                              people
-                            </span>
+                            <Users size={16} className="text-muted-foreground text-sm" />
                             <span className="text-xs text-muted-foreground whitespace-nowrap">
                               {t("page.member.list.totalMembers")}:{" "}
                               <strong>{total.toLocaleString()}</strong>

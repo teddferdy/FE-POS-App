@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { formatCurrency, formatNumber, periods } from "@/utils/reportUtils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Banknote, ReceiptText, Users, Store } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -121,54 +122,49 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
-              icon: "payments",
-              iconBg: "bg-blue-100",
-              iconColor: "text-blue-600",
+              Icon: Banknote,
               labelKey: "page.report.sales.kpi.totalSales",
               value: formatCurrency(data?.totalSales || 0)
             },
             {
-              icon: "receipt_long",
-              iconBg: "bg-blue-50",
-              iconColor: "text-blue-500",
+              Icon: ReceiptText,
               labelKey: "page.report.sales.kpi.avgTransaction",
               value: formatCurrency(data?.avgTransaction || 0)
             },
             {
-              icon: "group",
-              iconBg: "bg-indigo-100",
-              iconColor: "text-indigo-600",
+              Icon: Users,
               labelKey: "page.report.sales.kpi.totalCustomers",
               value: formatNumber(data?.totalCustomers || 0)
             },
             {
-              icon: "storefront",
-              iconBg: "bg-sky-100",
-              iconColor: "text-sky-600",
+              Icon: Store,
               labelKey: "page.report.sales.kpi.totalOutlets",
               value: formatNumber(data?.totalStores || 0)
             }
-          ].map((kpi) => (
-            <div
-              key={kpi.labelKey}
-              className="bg-card p-4 rounded-xl border-l-4 border-blue-500 border border-border shadow-sm">
-              <div className="flex justify-between items-start mb-3">
-                <div className={`p-2 ${kpi.iconBg} rounded-lg`}>
-                  <span className={`material-symbols-outlined ${kpi.iconColor}`}>{kpi.icon}</span>
+          ].map((kpi) => {
+            const Icon = kpi.Icon;
+            return (
+              <div
+                key={kpi.labelKey}
+                className="bg-card p-5 rounded-xl border border-border shadow-sm">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="p-2 bg-primary/10 text-primary rounded-lg">
+                    <Icon size={18} />
+                  </div>
                 </div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                  {t(kpi.labelKey)}
+                </p>
+                <p className="text-xl font-bold text-foreground">{kpi.value}</p>
               </div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                {t(kpi.labelKey)}
-              </p>
-              <p className="text-xl font-bold text-foreground">{kpi.value}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <div className="w-8 h-1 bg-blue-500 rounded-full mb-2" />
+              <div className="w-8 h-1 bg-primary rounded-full mb-2" />
               <h3 className="text-base font-semibold text-foreground">
                 {t("page.report.sales.revenueTrend")}
               </h3>

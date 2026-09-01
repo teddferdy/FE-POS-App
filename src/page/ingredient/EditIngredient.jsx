@@ -7,7 +7,16 @@ import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Save, X, Check, Info, ArrowRightLeft, Package, ToggleLeft } from "lucide-react";
+import {
+  Save,
+  X,
+  Check,
+  Info,
+  ArrowRightLeft,
+  Package,
+  ToggleLeft,
+  ArrowLeftRight
+} from "lucide-react";
 import { getIngredientById, editIngredient, getProductNamesByFilters } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllIngredientCategory } from "@/services/ingredientCategory";
@@ -715,9 +724,7 @@ const EditIngredient = () => {
                     </div>
                     <div className="border-t border-border pt-4 mt-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="material-symbols-outlined text-primary text-base">
-                          swap_horiz
-                        </span>
+                        <ArrowLeftRight size={18} className="text-primary text-base" />
                         <span className="text-sm font-semibold text-foreground">
                           {t("page.ingredient.form.sidebarKonversi")}
                         </span>
@@ -844,9 +851,7 @@ const EditIngredient = () => {
                     </div>
                     <div className="border-t border-border pt-4 mt-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="material-symbols-outlined text-primary text-base">
-                          inventory_2
-                        </span>
+                        <Package size={18} className="text-primary text-base" />
                         <span className="text-sm font-semibold text-foreground">
                           {t("page.ingredient.form.sidebarManajemenStok")}
                         </span>
@@ -967,7 +972,7 @@ const EditIngredient = () => {
 
               <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 mt-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="material-symbols-outlined text-primary text-base">info</span>
+                  <Info size={18} className="text-primary text-base" />
                   <span className="text-sm font-semibold text-primary">
                     {t("page.ingredient.form.tipsTitle")}
                   </span>

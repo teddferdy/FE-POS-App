@@ -4,7 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { getAllShiftTemplateTable, deleteShiftTemplate } from "@/services/shiftTemplate";
-import { CheckCircle, FileEdit, XCircle, Eye, Edit, Trash2, Clock } from "lucide-react";
+import {
+  CheckCircle,
+  FileEdit,
+  XCircle,
+  Eye,
+  Edit,
+  Trash2,
+  Clock,
+  Plus,
+  Lightbulb
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -213,7 +223,7 @@ const ShiftTemplateList = () => {
                   variant="success"
                   onClick={() => navigate("/add-shift-template")}
                   className="shadow-md">
-                  <span className="material-symbols-outlined text-lg">add</span>
+                  <Plus size={20} className="text-lg" />
                   {t("page.shiftTemplate.button.add")}
                 </Button>
               )}
@@ -341,7 +351,7 @@ const ShiftTemplateList = () => {
 
           <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
             <div className="flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined opacity-80">lightbulb</span>
+              <Lightbulb size={18} className="opacity-80" />
               <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
                 {t("page.shiftTemplate.tips.title")}
               </h4>

@@ -13,7 +13,12 @@ import {
   Delete,
   Save,
   X,
-  Check
+  Check,
+  RefreshCw,
+  Info,
+  Palette,
+  ToggleRight,
+  Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -197,7 +202,7 @@ const EditMemberTier = () => {
   if (isLoading)
     return (
       <div className="flex items-center justify-center h-64">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">sync</span>
+        <RefreshCw size={36} className="animate-spin text-primary text-4xl" />
       </div>
     );
 
@@ -231,7 +236,7 @@ const EditMemberTier = () => {
               <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                   <div className="flex items-center gap-2 mb-6 text-primary">
-                    <span className="material-symbols-outlined">info</span>
+                    <Info size={18} />
                     <h3 className="text-base font-semibold text-foreground">
                       {t("page.memberTier.edit.basicInfo")}
                     </h3>
@@ -324,7 +329,7 @@ const EditMemberTier = () => {
 
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                   <div className="flex items-center gap-2 mb-6 text-primary">
-                    <span className="material-symbols-outlined">palette</span>
+                    <Palette size={18} />
                     <h3 className="text-base font-semibold text-foreground">
                       {t("page.memberTier.edit.visualIdentity")}
                     </h3>
@@ -378,7 +383,7 @@ const EditMemberTier = () => {
 
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                   <div className="flex items-center gap-2 mb-6 text-primary">
-                    <span className="material-symbols-outlined">stars</span>
+                    <Star size={18} />
                     <h3 className="text-base font-semibold text-foreground">
                       {t("page.memberTier.edit.benefits")}
                     </h3>
@@ -421,7 +426,7 @@ const EditMemberTier = () => {
               <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                   <div className="flex items-center gap-2 mb-6 text-primary">
-                    <span className="material-symbols-outlined">toggle_on</span>
+                    <ToggleRight size={18} />
                     <h3 className="text-base font-semibold text-foreground">
                       {t("page.memberTier.add.tierStatus")}
                     </h3>
@@ -466,7 +471,7 @@ const EditMemberTier = () => {
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6 overflow-hidden relative">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
                   <div className="flex items-center gap-2 mb-6 text-primary relative">
-                    <span className="material-symbols-outlined">visibility</span>
+                    <Eye size={18} />
                     <h3 className="text-base font-semibold text-foreground">
                       {t("page.memberTier.edit.previewBadge")}
                     </h3>
@@ -504,9 +509,7 @@ const EditMemberTier = () => {
                 </div>
 
                 <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-4 flex gap-3">
-                  <span className="material-symbols-outlined text-secondary mt-0.5 text-base">
-                    info
-                  </span>
+                  <Info size={18} className="text-secondary mt-0.5 text-base" />
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {t("page.memberTier.add.footerHint")}
                   </p>

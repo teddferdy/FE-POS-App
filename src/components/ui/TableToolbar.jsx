@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const TableToolbar = ({ title, onReset, isFiltered, children }) => {
@@ -17,7 +17,7 @@ const TableToolbar = ({ title, onReset, isFiltered, children }) => {
           size="sm"
           className="gap-2 h-9 lg:hidden"
           onClick={() => setShowFilters(!showFilters)}>
-          <span className="material-symbols-outlined text-base">filter_list</span>
+          <ListFilter size={16} />
           {t("common.filter")}
         </Button>
       </div>

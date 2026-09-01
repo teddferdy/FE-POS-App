@@ -1,3 +1,4 @@
+import { Download } from "lucide-react";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -90,7 +91,7 @@ const SalesReportPage = () => {
           disabled={exportLoading}
           onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted/50 transition-all disabled:opacity-50">
-          <span className="material-symbols-outlined text-lg">download</span>
+          <Download size={20} className="text-lg" />
           {exportLoading ? t("common.downloading") : t("common.export")}
         </button>
       </div>

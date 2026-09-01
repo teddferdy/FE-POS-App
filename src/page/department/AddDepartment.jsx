@@ -21,7 +21,7 @@ import {
   FormMessage,
   FormControl
 } from "@/components/ui/form";
-import { Check } from "lucide-react";
+import { Check, Building2, X, Save } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
@@ -109,9 +109,10 @@ const AddDepartment = () => {
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                          domain
-                        </span>
+                        <Building2
+                          size={18}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base"
+                        />
                         <Input
                           {...field}
                           placeholder={t("page.department.form.namePlaceholder")}
@@ -195,7 +196,7 @@ const AddDepartment = () => {
                 variant="danger"
                 onClick={() => setCancelModal(true)}
                 className="gap-2 w-full sm:w-auto justify-center">
-                <span className="material-symbols-outlined text-lg">close</span>
+                <X size={20} className="text-lg" />
                 {t("common.cancel")}
               </Button>
               <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -222,7 +223,7 @@ const AddDepartment = () => {
                     setSaveConfirm(true);
                   }}
                   className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
-                  <span className="material-symbols-outlined text-lg">save</span>
+                  <Save size={20} className="text-lg" />
                   {t("page.department.button.save")}
                 </Button>
               </div>
