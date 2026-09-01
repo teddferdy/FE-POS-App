@@ -73,15 +73,15 @@ const variantStyles = {
     iconBg: "bg-amber-100 dark:bg-amber-900/40",
     iconColor: "text-amber-600 dark:text-amber-400",
     subtitle: "text-amber-600 dark:text-amber-400",
-    label: "text-amber-700 dark:text-amber-400",
+    label: "text-amber-600 dark:text-amber-400",
     value: "text-amber-900 dark:text-amber-100"
   },
   expiring: {
     card: "bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900/50",
     iconBg: "bg-orange-100 dark:bg-orange-900/40",
     iconColor: "text-orange-600 dark:text-orange-400",
-    subtitle: "text-orange-600 dark:text-orange-400",
-    label: "text-orange-700 dark:text-amber-400",
+    subtitle: "text-orange-600 dark:text-amber-400",
+    label: "text-orange-600 dark:text-amber-400",
     value: "text-orange-900 dark:text-orange-100"
   }
 };
@@ -100,9 +100,9 @@ const StatCard = ({
   return (
     <div
       data-tour={dataTour}
-      className={`${s.card} p-6 rounded-xl shadow-sm flex justify-between items-center group hover:shadow-md transition-shadow ${className}`}>
+      className={`${s.card} p-6 rounded-xl flex justify-between items-start gap-4 group hover:shadow-md transition-shadow ${className}`}>
       <div>
-        <p className={`text-xs font-semibold ${s.label} uppercase tracking-wider mb-1`}>{label}</p>
+        <p className={`text-xs font-semibold ${s.label} uppercase tracking-wider`}>{label}</p>
         {isLoading ? (
           <Skeleton className="h-8 w-24 my-1.5" />
         ) : (

@@ -227,7 +227,7 @@ const DataTable = ({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border/40">
             {data.flatMap((row, rowIndex) => {
               const rowId = getRowId(row);
               const rows = [
@@ -262,6 +262,22 @@ const DataTable = ({
                           : col.accessor
                             ? row[col.accessor]
                             : null}
+                        {col.statusChip && (
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1 text-[10px] font-bold rounded-full",
+                              col.statusChip.value === "success"
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                : col.statusChip.value === "warning"
+                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                                  : col.statusChip.value === "error"
+                                    ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
+                                    : "bg-muted-foreground/40 text-muted-foreground",
+                              "px-2 py-0.5"
+                            )}>
+                            {col.statusChip.label}
+                          </span>
+                        )}
                       </td>
                     );
                   })}
@@ -403,7 +419,7 @@ const DataTable = ({
       {toolbar && <div className="p-4 border-b border-border bg-muted/30">{toolbar}</div>}
       {legendItems.length > 0 && <ActionLegend items={legendItems} />}
 
-      <div className={cn("relative")}>
+      <div className="relative">
         {isLoading ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -431,7 +447,7 @@ const DataTable = ({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/40">
                 {Array.from({ length: 6 }).map((_, rowIdx) => (
                   <tr key={rowIdx}>
                     {allColumns.map((col, colIdx) => (

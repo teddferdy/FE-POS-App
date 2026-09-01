@@ -39,3 +39,6 @@ build-out.txt
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
+
+# git worktrees
+.worktrees/

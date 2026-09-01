@@ -100,6 +100,7 @@ const AddEmployee = () => {
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [missingFieldsByTab, setMissingFieldsByTab] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -167,6 +168,100 @@ const AddEmployee = () => {
   const employmentType = form.watch("employmentType");
   const startDate = form.watch("startDate");
   const contractDuration = form.watch("contractDuration");
+
+  const employeeTabs = [
+    {
+      value: "profile",
+      title: t("page.employee.add.personalInfo"),
+      mandatory: [
+        "fullName",
+        "email",
+        "phoneNumber",
+        "gender",
+        "placeOfBirth",
+        "dateOfBirth",
+        "address"
+      ],
+      group: [
+        "fullName",
+        "email",
+        "phoneNumber",
+        "gender",
+        "placeOfBirth",
+        "dateOfBirth",
+        "address"
+      ]
+    },
+    {
+      value: "employment",
+      title: t("page.employee.add.jobInfo"),
+      mandatory: ["employeeId"],
+      group: ["employeeId"]
+    },
+    {
+      value: "salary",
+      title: t("page.employee.add.salarySection"),
+      mandatory: ["monthlySalary"],
+      group: ["monthlySalary"]
+    },
+    {
+      value: "account",
+      title: t("page.employee.add.accountSection"),
+      mandatory: ["userName", "password"],
+      group: ["userName", "password"]
+    },
+    {
+      value: "documents",
+      title: t("page.employee.add.documents"),
+      mandatory: [],
+      group: []
+    }
+  ];
+
+  const watchedEmployeeValues = form.watch();
+
+  const isEmptyEmployeeValue = (v) =>
+    v === undefined || v === null || v === "" || (typeof v === "number" && Number.isNaN(v));
+
+  const getEmployeeTabStatus = (tab) => {
+    const mandatory = tab.mandatory;
+    if (mandatory.length === 0) return "complete";
+    const empties = mandatory.filter((f) => isEmptyEmployeeValue(watchedEmployeeValues[f]));
+    if (empties.length === 0) return "complete";
+    if (empties.length === mandatory.length) return "untouched";
+    return "incomplete";
+  };
+
+  const employeeTabDot = (tab) => {
+    const status = getEmployeeTabStatus(tab);
+    if (status === "complete") return "bg-green-500";
+    if (status === "incomplete") return "bg-red-500";
+    return "bg-muted-foreground/40";
+  };
+
+  const buildMissingByTab = (values) => {
+    const result = formSchema.safeParse(values);
+    const missingNames = [];
+    if (!result.success) {
+      const seen = new Set();
+      result.error.errors.forEach((err) => {
+        const name = err.path[0];
+        if (!seen.has(name)) {
+          seen.add(name);
+          missingNames.push(name);
+        }
+      });
+    }
+    return employeeTabs
+      .map((tab) => ({
+        stepNum: employeeTabs.findIndex((x) => x.value === tab.value) + 1,
+        title: tab.title,
+        fields: tab.group
+          .filter((f) => missingNames.includes(f))
+          .map((f) => employeeFieldLabels[f] || f)
+      }))
+      .filter((g) => g.fields.length > 0);
+  };
 
   const contractDurations = [
     { value: "3", label: t("page.employee.form.contractDuration.3months") },
@@ -460,28 +555,45 @@ const AddEmployee = () => {
                   <div className="grid grid-cols-12 gap-6">
                     <div className="col-span-12 space-y-6">
                       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="w-full justify-start h-12 bg-muted/50 p-1">
-                          <TabsTrigger value="profile" className="gap-2">
-                            <User size={16} />
-                            {t("page.employee.add.personalInfo")}
-                          </TabsTrigger>
-                          <TabsTrigger value="employment" className="gap-2">
-                            <Briefcase size={16} />
-                            {t("page.employee.add.jobInfo")}
-                          </TabsTrigger>
-                          <TabsTrigger value="salary" className="gap-2">
-                            <DollarSign size={16} />
-                            {t("page.employee.add.salarySection")}
-                          </TabsTrigger>
-                          <TabsTrigger value="account" className="gap-2">
-                            <Lock size={16} />
-                            {t("page.employee.add.accountSection")}
-                          </TabsTrigger>
-                          <TabsTrigger value="documents" className="gap-2">
-                            <FileTextIcon size={16} />
-                            {t("page.employee.add.documents")}
-                          </TabsTrigger>
-                        </TabsList>
+                        <div className="overflow-x-auto -mx-1 px-1 mb-4">
+                          <TabsList className="grid w-full grid-cols-5 min-w-[680px]">
+                            <TabsTrigger value="profile" className="gap-1.5">
+                              <User size={14} />
+                              {t("page.employee.add.personalInfo")}
+                              <span
+                                className={`w-2 h-2 rounded-full ${employeeTabDot(employeeTabs[0])}`}
+                              />
+                            </TabsTrigger>
+                            <TabsTrigger value="employment" className="gap-1.5">
+                              <Briefcase size={14} />
+                              {t("page.employee.add.jobInfo")}
+                              <span
+                                className={`w-2 h-2 rounded-full ${employeeTabDot(employeeTabs[1])}`}
+                              />
+                            </TabsTrigger>
+                            <TabsTrigger value="salary" className="gap-1.5">
+                              <DollarSign size={14} />
+                              {t("page.employee.add.salarySection")}
+                              <span
+                                className={`w-2 h-2 rounded-full ${employeeTabDot(employeeTabs[2])}`}
+                              />
+                            </TabsTrigger>
+                            <TabsTrigger value="account" className="gap-1.5">
+                              <Lock size={14} />
+                              {t("page.employee.add.accountSection")}
+                              <span
+                                className={`w-2 h-2 rounded-full ${employeeTabDot(employeeTabs[3])}`}
+                              />
+                            </TabsTrigger>
+                            <TabsTrigger value="documents" className="gap-1.5">
+                              <FileTextIcon size={14} />
+                              {t("page.employee.add.documents")}
+                              <span
+                                className={`w-2 h-2 rounded-full ${employeeTabDot(employeeTabs[4])}`}
+                              />
+                            </TabsTrigger>
+                          </TabsList>
+                        </div>
 
                         <TabsContent value="profile">
                           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -1376,7 +1488,7 @@ const AddEmployee = () => {
                       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
                         <Button
                           type="button"
-                          variant="success"
+                          variant="danger"
                           className="w-full sm:w-auto"
                           onClick={() => setCancelModal(true)}>
                           <ArrowLeft size={20} className="text-lg" />
@@ -1405,6 +1517,7 @@ const AddEmployee = () => {
                               );
                               if (missing.length > 0) {
                                 setMissingFieldsList(missing);
+                                setMissingFieldsByTab(buildMissingByTab(values));
                                 setMissingFieldsModal(true);
                                 return;
                               }
@@ -1436,9 +1549,10 @@ const AddEmployee = () => {
         type="confirm"
         open={confirmSaveModal}
         onOpenChange={setConfirmSaveModal}
-        title="Konfirmasi Simpan"
-        description="Apakah Anda yakin ingin menyimpan data ini?"
-        confirmText="Ya, Simpan"
+        title={t("modal.saveTitle")}
+        description={t("modal.saveDescription")}
+        confirmText={t("modal.yesSave")}
+        confirmVariant="success"
         onConfirm={() => {
           setConfirmSaveModal(false);
           onSubmit(form.getValues(), false);
@@ -1460,7 +1574,9 @@ const AddEmployee = () => {
         open={cancelModal}
         onOpenChange={setCancelModal}
         title={t("page.employee.add.cancelTitle")}
+        description={t("modal.cancelDescription")}
         confirmText={t("page.employee.add.cancelConfirm")}
+        confirmVariant="success"
         onConfirm={() => setTimeout(() => navigate("/employee-list"), 150)}
       />
       <Modal
@@ -1470,6 +1586,7 @@ const AddEmployee = () => {
         title={t("page.employee.add.draftTitle")}
         description={t("page.employee.add.draftDescription")}
         confirmText={t("page.employee.add.draftConfirm")}
+        confirmVariant="success"
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();
@@ -1480,6 +1597,7 @@ const AddEmployee = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+        items={missingFieldsByTab}
       />
       <Modal
         type="error"

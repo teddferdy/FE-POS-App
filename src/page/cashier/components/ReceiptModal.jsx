@@ -137,7 +137,6 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     if (addressFieldsVisible.address !== false && locationAddress) parts.push(locationAddress);
     if (addressFieldsVisible.locationDetail !== false && locationDetailAddress)
       parts.push(locationDetailAddress);
-
     const regionParts = [];
     if (addressFieldsVisible.province !== false && provinceName) regionParts.push(provinceName);
     if (addressFieldsVisible.city !== false && cityName) regionParts.push(cityName);

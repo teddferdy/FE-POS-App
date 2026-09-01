@@ -1,9 +1,8 @@
-import { safeGet } from "@/lib/safe-lookup";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
-import { TrendingUp, Package, Users, DollarSign, Download } from "lucide-react";
+import { TrendingUp, Package, Users, DollarSign } from "lucide-react";
 import {
   getReportingSalesSummary,
   getReportingProductSales,
@@ -12,7 +11,6 @@ import {
 } from "@/services/report";
 import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -24,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataTable from "@/components/ui/DataTable";
+import ExportButtons from "@/components/organism/ExportButtons";
 import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -32,6 +31,13 @@ const FILTERS = [
   { key: "weekly", label: "Mingguan" },
   { key: "monthly", label: "Bulanan" }
 ];
+
+const TAB_KEY = {
+  sales: "sales",
+  product: "productSales",
+  category: "categorySales",
+  kasir: "kasirPerformance"
+};
 
 const AdvancedReporting = () => {
   const { t } = useTranslation();
@@ -121,54 +127,11 @@ const AdvancedReporting = () => {
     </Card>
   );
 
-  // const getData = () => {
-  //   const map = {
-  //     sales: salesData,
-  //     product: productData,
-  //     category: categoryData,
-  //     kasir: kasirData
-  //   };
-  //   return map[activeTab];
-  // };
-
-  // const getColumns = () => {
-  //   const map = {
-  //     sales: salesColumns,
-  //     product: productColumns,
-  //     category: categoryColumns,
-  //     kasir: kasirColumns
-  //   };
-  //   return map[activeTab];
-  // };
-
-  const handleExport = async (type) => {
-    const dataMap = {
-      sales: salesData,
-      product: productData,
-      category: categoryData,
-      kasir: kasirData
-    };
-    const data = safeGet(dataMap, type)?.data;
-    if (!data) return;
-    const rows = [["Laporan", type, "Periode", period, "Toko", storeId || "Semua"]];
-    rows.push([]);
-    if (Array.isArray(data)) {
-      data.forEach((item) => {
-        rows.push(Object.values(item));
-      });
-    }
-    const XLSX = await import("xlsx");
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, type);
-    XLSX.writeFile(wb, `laporan-${type}-${period}.xlsx`);
-  };
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("page.advancedReporting.title")}</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-[140px]">
               <SelectValue />
@@ -195,6 +158,7 @@ const AdvancedReporting = () => {
               </SelectContent>
             </Select>
           )}
+          <ExportButtons reportKey={TAB_KEY[activeTab]} buildParams={() => ({ store: storeId })} />
         </div>
       </div>
 
@@ -239,12 +203,8 @@ const AdvancedReporting = () => {
                 />
               </div>
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
+                <CardHeader>
                   <CardTitle>Ringkasan Penjualan</CardTitle>
-                  <Button variant="outline" size="sm" onClick={() => handleExport("sales")}>
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </Button>
                 </CardHeader>
                 <CardContent>
                   <DataTable columns={salesColumns} data={salesData.data} />

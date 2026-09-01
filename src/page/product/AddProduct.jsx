@@ -125,6 +125,7 @@ const AddProduct = () => {
   const [compositionOptions, setCompositionOptions] = useState([]);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [missingFieldsByStep, setMissingFieldsByStep] = useState([]);
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
@@ -540,10 +541,69 @@ const AddProduct = () => {
   };
 
   const steps = [
-    { num: 1, title: t("page.product.step.info"), desc: t("page.product.step.infoDesc") },
-    { num: 2, title: t("page.product.step.price"), desc: t("page.product.step.priceDesc") },
-    { num: 3, title: t("page.product.step.media"), desc: t("page.product.step.mediaDesc") }
+    {
+      num: 1,
+      title: t("page.product.step.info"),
+      desc: t("page.product.step.infoDesc"),
+      mandatory: ["nameProduct", "category"],
+      group: ["nameProduct", "category", "store"]
+    },
+    {
+      num: 2,
+      title: t("page.product.step.price"),
+      desc: t("page.product.step.priceDesc"),
+      mandatory: ["price"],
+      group: ["price"]
+    },
+    {
+      num: 3,
+      title: t("page.product.step.media"),
+      desc: t("page.product.step.mediaDesc"),
+      mandatory: [],
+      group: []
+    }
   ];
+
+  const watchedValues = form.watch();
+
+  const isEmptyValue = (v) =>
+    v === undefined || v === null || v === "" || (typeof v === "number" && Number.isNaN(v));
+
+  const getStepStatus = (s) => {
+    const mandatory = s.mandatory;
+    if (mandatory.length === 0) return "complete";
+    const empties = mandatory.filter((f) => isEmptyValue(watchedValues[f]));
+    if (empties.length === 0) return "complete";
+    if (empties.length === mandatory.length) return "untouched";
+    return "incomplete";
+  };
+
+  const buildMissingByStep = (values, extraErrors = []) => {
+    const result = formSchema.safeParse(values);
+    const missingNames = [];
+    if (!result.success) {
+      const seen = new Set();
+      result.error.errors.forEach((err) => {
+        const name = err.path[0];
+        if (!seen.has(name)) {
+          seen.add(name);
+          missingNames.push(name);
+        }
+      });
+    }
+    extraErrors.forEach(({ name }) => {
+      if (!missingNames.includes(name)) missingNames.push(name);
+    });
+    return steps
+      .map((s) => ({
+        stepNum: s.num,
+        title: s.title,
+        fields: s.group
+          .filter((f) => missingNames.includes(f))
+          .map((f) => productFieldLabels[f] || f)
+      }))
+      .filter((g) => g.fields.length > 0);
+  };
 
   const previewValues = form.getValues();
   const selectedCategory = categories.find((c) => String(c.id) === String(previewValues.category));
@@ -593,51 +653,34 @@ const AddProduct = () => {
 
       <div>
         <div>
-          <div className="bg-card rounded-xl shadow-sm border border-border p-4">
-            <div className="flex items-center justify-between max-w-2xl mx-auto">
-              {steps.map((s, i) => (
-                <React.Fragment key={s.num}>
-                  <div className="flex items-center gap-3">
+          <div className="bg-muted p-1 rounded-md mb-6">
+            <div className="grid grid-cols-3 gap-1">
+              {steps.map((s) => {
+                const status = getStepStatus(s);
+                const isActive = s.num === currentStep;
+                return (
+                  <button
+                    key={s.num}
+                    type="button"
+                    onClick={() => setCurrentStep(s.num)}
+                    className={`flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
+                      isActive
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}>
                     <div
-                      onClick={() => setCurrentStep(s.num)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors cursor-pointer ${
-                        currentStep === s.num
-                          ? "bg-primary text-primary-foreground"
-                          : currentStep > s.num
-                            ? "bg-green-500 text-white"
-                            : "bg-muted text-muted-foreground"
-                      }`}>
-                      {currentStep > s.num ? (
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      ) : (
-                        s.num
-                      )}
-                    </div>
-                    <div className="hidden sm:block">
-                      <p
-                        className={`text-sm font-semibold ${currentStep >= s.num ? "text-foreground" : "text-muted-foreground"}`}>
-                        {s.title}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">{s.desc}</p>
-                    </div>
-                  </div>
-                  {i < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-px mx-4 ${currentStep > s.num ? "bg-green-500" : "bg-border"}`}
+                      className={`w-2 h-2 rounded-full ${
+                        status === "complete"
+                          ? "bg-green-500"
+                          : status === "incomplete"
+                            ? "bg-red-500"
+                            : "bg-muted-foreground/40"
+                      }`}
                     />
-                  )}
-                </React.Fragment>
-              ))}
+                    {s.title}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -2027,6 +2070,7 @@ const AddProduct = () => {
                         );
                         if (missing.length > 0) {
                           setMissingFieldsList(missing);
+                          setMissingFieldsByStep(buildMissingByStep(values, extraErrors));
                           setMissingFieldsModal(true);
                           return;
                         }
@@ -2063,6 +2107,7 @@ const AddProduct = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFieldsList}
+        items={missingFieldsByStep}
       />
 
       <Modal

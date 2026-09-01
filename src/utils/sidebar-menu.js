@@ -432,78 +432,6 @@ export const sidebarMenuSuperAdmin = [
     ]
   },
   {
-    title: "Membership & SDM",
-    section: true,
-    i18nKey: "sidebar.section.membershipSdm",
-    icon: BookUser,
-    children: [
-      {
-        title: "Member Tier",
-        i18nKey: "sidebar.memberTier",
-        href: "/member-tier",
-        icon: Award,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Daftar Member",
-        i18nKey: "sidebar.daftarMember",
-        href: "/member-list",
-        icon: BookUser,
-        actions: ["add", "edit", "view", "edit-points"]
-      },
-      {
-        title: "Departemen",
-        i18nKey: "sidebar.departemen",
-        href: "/department-list",
-        icon: Building2,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Posisi",
-        i18nKey: "sidebar.posisi",
-        href: "/position-list",
-        icon: FileText,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Daftar Karyawan",
-        i18nKey: "sidebar.daftarKaryawan",
-        href: "/employee-list",
-        icon: Users,
-        actions: ["add", "view", "edit-access", "reset-password"]
-      },
-      {
-        title: "Shift",
-        i18nKey: "sidebar.shift",
-        href: "/shift-list",
-        icon: CalendarDays,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Template Shift",
-        i18nKey: "sidebar.shiftTemplate",
-        href: "/shift-template-list",
-        icon: Clock,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Shift Saya",
-        i18nKey: "sidebar.myShift",
-        href: "/my-shift",
-        icon: CalendarDays,
-        actions: ["view"]
-      },
-      {
-        title: "Lembur Saya",
-        i18nKey: "sidebar.myOvertime",
-        href: "/my-overtime",
-        icon: AlarmClock,
-        actions: ["view"],
-        activePaths: ["/overtime-approval"]
-      }
-    ]
-  },
-  {
     title: "Pengaturan",
     section: true,
     i18nKey: "sidebar.section.settings",
@@ -905,71 +833,6 @@ export const sidebarMenuAdmin = [
         href: "/best-selling",
         icon: BarChart3,
         actions: ["view", "export"]
-      }
-    ]
-  },
-  {
-    title: "Membership & SDM",
-    section: true,
-    i18nKey: "sidebar.section.membershipSdm",
-    icon: BookUser,
-    children: [
-      {
-        title: "Member Tier",
-        i18nKey: "sidebar.memberTier",
-        href: "/member-tier",
-        icon: TrendingUp,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Daftar Member",
-        i18nKey: "sidebar.daftarMember",
-        href: "/member-list",
-        icon: BookUser,
-        actions: ["add", "edit", "view"]
-      },
-      {
-        title: "Departemen",
-        i18nKey: "sidebar.departemen",
-        href: "/department-list",
-        icon: Building2,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Posisi",
-        i18nKey: "sidebar.posisi",
-        href: "/position-list",
-        icon: FileText,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Daftar Karyawan",
-        i18nKey: "sidebar.daftarKaryawan",
-        href: "/user-list",
-        icon: Users,
-        actions: ["add", "edit", "view", "edit-access"]
-      },
-      {
-        title: "Shift",
-        i18nKey: "sidebar.shift",
-        href: "/shift-list",
-        icon: CalendarDays,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Shift Saya",
-        i18nKey: "sidebar.myShift",
-        href: "/my-shift",
-        icon: CalendarDays,
-        actions: ["view"]
-      },
-      {
-        title: "Lembur Saya",
-        i18nKey: "sidebar.myOvertime",
-        href: "/my-overtime",
-        icon: AlarmClock,
-        actions: ["view"],
-        activePaths: ["/overtime-approval"]
       }
     ]
   },
@@ -1522,38 +1385,6 @@ export const navCategories = {
               href: "/report/cash-flow",
               icon: Receipt
             }
-          ]
-        },
-        {
-          title: "Membership & SDM",
-          i18nKey: "sidebar.section.membershipSdm",
-          items: [
-            {
-              title: "Member Tier",
-              i18nKey: "sidebar.memberTier",
-              href: "/member-tier",
-              icon: Award
-            },
-            {
-              title: "Daftar Member",
-              i18nKey: "sidebar.daftarMember",
-              href: "/member-list",
-              icon: BookUser
-            },
-            {
-              title: "Departemen",
-              i18nKey: "sidebar.departemen",
-              href: "/department-list",
-              icon: Building2
-            },
-            { title: "Posisi", i18nKey: "sidebar.posisi", href: "/position-list", icon: FileText },
-            {
-              title: "Daftar Karyawan",
-              i18nKey: "sidebar.daftarKaryawan",
-              href: "/employee-list",
-              icon: Users
-            },
-            { title: "Shift", i18nKey: "sidebar.shift", href: "/shift-list", icon: CalendarDays }
           ]
         }
       ]
