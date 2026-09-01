@@ -1,14 +1,12 @@
-import { Download } from "lucide-react";
-import React, { useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
-import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getBestSellerReport } from "@/services/report";
 import { getAllLocation } from "@/services/location";
-import { formatCurrency, formatNumber } from "@/utils/reportUtils";
+import ExportButtons from "@/components/organism/ExportButtons";
 import BestSellerTab from "./BestSellerTab";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
@@ -19,7 +17,6 @@ const BestSellingReportPage = () => {
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
-  const [exportLoading, setExportLoading] = useState(false);
 
   const { data: locData } = useQuery(["locations-best-selling"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -35,34 +32,6 @@ const BestSellingReportPage = () => {
     () => getBestSellerReport({ limit: 10, store: isSuperAdmin ? "" : user?.store || "" }),
     {}
   );
-
-  const handleExport = async () => {
-    setExportLoading(true);
-    try {
-      const d = bestSellerData?.data;
-      if (!d) return;
-      const rows = (d.bestSellers || []).map((p, i) => ({
-        [t("page.report.bestSeller.table.rank")]: `#${i + 1}`,
-        [t("page.report.bestSeller.table.productName")]: p.name,
-        [t("page.report.bestSeller.table.totalSold")]: formatNumber(p.sold),
-        [t("page.report.bestSeller.table.revenue")]: formatCurrency(p.revenue)
-      }));
-      const XLSX = await import("xlsx");
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "BestSeller");
-      XLSX.writeFile(wb, `best-seller-${Date.now()}.xlsx`);
-      toast.success(t("common.success"), {
-        description: t("page.report.bestSeller.exportSuccess")
-      });
-    } catch (err) {
-      toast.error(t("common.error"), {
-        description: err?.message || t("page.report.bestSeller.exportFailed")
-      });
-    } finally {
-      setExportLoading(false);
-    }
-  };
 
   return (
     <div data-tour="page-reports" className="space-y-6">
@@ -85,13 +54,7 @@ const BestSellingReportPage = () => {
             {t("page.report.bestSeller.description")}
           </p>
         </div>
-        <button
-          disabled={exportLoading}
-          onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted/50 transition-all disabled:opacity-50">
-          <Download size={20} className="text-lg" />
-          {exportLoading ? t("common.downloading") : t("common.export")}
-        </button>
+        <ExportButtons reportKey="bestSeller" />
       </div>
 
       {locData && (locData?.data || []).length === 0 ? (
