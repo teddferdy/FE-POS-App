@@ -818,9 +818,7 @@ const EditProduct = () => {
                             ? "bg-background text-foreground shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
                         }`}>
-                        <div
-                          className={`w-2 h-2 rounded-full bg-muted-foreground/40`}
-                        />
+                        <div className={`w-2 h-2 rounded-full bg-muted-foreground/40`} />
                         {s.title}
                       </button>
                     );

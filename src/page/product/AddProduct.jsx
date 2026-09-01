@@ -578,15 +578,6 @@ const AddProduct = () => {
     return "incomplete";
   };
 
-  const stepTone = (s) => {
-    if (s.num === currentStep)
-      return { className: "bg-primary text-primary-foreground", checked: false };
-    const status = getStepStatus(s);
-    if (status === "complete") return { className: "bg-green-500 text-white", checked: true };
-    if (status === "incomplete") return { className: "bg-red-500 text-white", checked: false };
-    return { className: "bg-muted text-muted-foreground", checked: false };
-  };
-
   const buildMissingByStep = (values, extraErrors = []) => {
     const result = formSchema.safeParse(values);
     const missingNames = [];

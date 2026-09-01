@@ -6,6 +6,7 @@ const BestSellingReportPage = React.lazy(() => import("@/page/report/BestSelling
 const DailyReport = React.lazy(() => import("@/page/report/DailyReport"));
 const CashFlowReport = React.lazy(() => import("@/page/report/CashFlowReport"));
 const ProfitPerProduct = React.lazy(() => import("@/page/report/ProfitPerProduct"));
+const ReportSettingsPage = React.lazy(() => import("@/page/report/ReportSettingsPage"));
 
 export const reportRoutes = (
   <>
@@ -14,5 +15,6 @@ export const reportRoutes = (
     <Route path="/report/daily" element={<DailyReport />} />
     <Route path="/report/cash-flow" element={<CashFlowReport />} />
     <Route path="/report/profit-per-product" element={<ProfitPerProduct />} />
+    <Route path="/report/settings" element={<ReportSettingsPage />} />
   </>
 );

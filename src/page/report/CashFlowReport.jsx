@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency } from "@/utils/reportUtils";
+import ExportButtons from "@/components/organism/ExportButtons";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 
@@ -131,6 +132,13 @@ const CashFlowReport = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <ExportButtons
+            reportKey="cashFlow"
+            buildParams={() => ({
+              startDate: format(startDate, "yyyy-MM-dd"),
+              endDate: format(endDate, "yyyy-MM-dd")
+            })}
+          />
           <DatePicker date={startDate} setDate={setStartDate} />
           <DatePicker date={endDate} setDate={setEndDate} />
         </div>

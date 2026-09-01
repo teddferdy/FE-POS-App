@@ -8,6 +8,7 @@ import { getProfitPerProduct } from "@/services/report";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import { DateInput } from "@/components/ui/date-input";
+import ExportButtons from "@/components/organism/ExportButtons";
 import AbortController from "@/components/organism/abort-controller";
 import { formatCurrency } from "@/utils/reportUtils";
 
@@ -60,6 +61,10 @@ const ProfitPerProduct = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <ExportButtons
+            reportKey="profitPerProduct"
+            buildParams={() => ({ startDate, endDate })}
+          />
           <DateInput
             type="date"
             value={startDate}
