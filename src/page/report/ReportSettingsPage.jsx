@@ -29,16 +29,16 @@ const ReportSettingsPage = () => {
           cfgMap[r.key] = r.config;
         });
         setConfigs(cfgMap);
-        if (metaList[0]) selectReport(metaList[0].key, cfgMap[metaList[0].key]);
+        if (metaList[0]) selectReport(metaList[0].key, cfgMap[metaList[0].key], metaList);
       } catch (err) {
         toast.error(t("common.error"), { description: err?.message });
       }
     })();
   }, []);
 
-  const selectReport = (key, cfg) => {
+  const selectReport = (key, cfg, reportList = meta) => {
     setActiveKey(key);
-    const report = meta.find((r) => r.key === key);
+    const report = reportList.find((r) => r.key === key);
     const saved = cfg || configs[key] || {};
     setAccent(saved.accentColor || "#0f172a");
     setBranding({ showLogo: true, showAddress: true, showPhone: true, ...(saved.branding || {}) });
