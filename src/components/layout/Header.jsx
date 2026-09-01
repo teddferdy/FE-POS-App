@@ -507,7 +507,7 @@ const globalPages = [
   "/edit-discount"
 ];
 
-const Header = ({ onMenuToggle, onOpenPalette }) => {
+const Header = ({ onMenuToggle, onOpenPalette, sidebarCollapsed }) => {
   const { t } = useTranslation();
   const { translation, updateTranslation } = translationSelect();
   const navigate = useNavigate();
@@ -526,7 +526,8 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
+    <header
+      className={`fixed top-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border transition-[left] duration-300 ${sidebarCollapsed ? "xl:left-16" : "xl:left-64"} left-0`}>
       <div className="flex items-center justify-between px-4 lg:px-6 py-3 gap-4">
         {/* Left */}
         <div className="flex items-center gap-3 flex-1">

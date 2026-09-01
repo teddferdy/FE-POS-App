@@ -127,10 +127,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     villages?.find((v) => v.kode_desa === locationDetail?.village)?.nama_desa ||
     locationDetail?.village ||
     "";
-  const postalCodeValue =
-    locationDetail?.postalCode ||
-    postalCodes?.[0]?.kode_pos ||
-    "";
+  const postalCodeValue = locationDetail?.postalCode || postalCodes?.[0]?.kode_pos || "";
   const storePhone =
     locationDetail?.phoneNumber || locationDetail?.phone || data?.storePhone || data?.phone || "";
   const storeEmail = locationDetail?.email || data?.storeEmail || data?.email || "";
@@ -140,7 +137,6 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     if (addressFieldsVisible.address !== false && locationAddress) parts.push(locationAddress);
     if (addressFieldsVisible.locationDetail !== false && locationDetailAddress)
       parts.push(locationDetailAddress);
-    
     const regionParts = [];
     if (addressFieldsVisible.province !== false && provinceName) regionParts.push(provinceName);
     if (addressFieldsVisible.city !== false && cityName) regionParts.push(cityName);
@@ -148,7 +144,8 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     if (addressFieldsVisible.village !== false && villageName) regionParts.push(villageName);
     if (regionParts.length > 0) parts.push(regionParts.join(", "));
 
-    if (addressFieldsVisible.postalCode !== false && postalCodeValue) parts.push(`Kode Pos: ${postalCodeValue}`);
+    if (addressFieldsVisible.postalCode !== false && postalCodeValue)
+      parts.push(`Kode Pos: ${postalCodeValue}`);
     return parts.join(", ");
   };
   const storeAddress = buildStoreAddress();
@@ -303,11 +300,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const lineSpacing = settingsData?.lineSpacing || "normal";
 
   const fontFamClass =
-    fontFamily === "sans"
-      ? "font-sans"
-      : fontFamily === "serif"
-      ? "font-serif"
-      : "font-mono";
+    fontFamily === "sans" ? "font-sans" : fontFamily === "serif" ? "font-serif" : "font-mono";
 
   const sizeClasses = {
     small: {
@@ -421,7 +414,9 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                 80mm
               </button>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-accent transition-colors">
               <X size={18} />
             </button>
           </div>
@@ -434,7 +429,8 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
               paperSize === "80mm" ? "max-w-[420px]" : "max-w-[320px]"
             }`}>
             {/* Dark header — store name, logo, address */}
-            <div className={`bg-gradient-to-br from-gray-900 to-gray-800 ${pd.header} text-white text-center`}>
+            <div
+              className={`bg-gradient-to-br from-gray-900 to-gray-800 ${pd.header} text-white text-center`}>
               {showLogo && settingsData?.logo && (
                 <img
                   src={settingsData.logo}
@@ -503,7 +499,8 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
             {/* Member info band */}
             {showMemberInfo && (customerName !== "-" || data?.customer?.memberTier) && (
               <div className={`${pd.section} bg-yellow-50 border-b border-yellow-100`}>
-                <p className={`${sz.memberHeader} font-semibold text-yellow-800 uppercase tracking-wider mb-2`}>
+                <p
+                  className={`${sz.memberHeader} font-semibold text-yellow-800 uppercase tracking-wider mb-2`}>
                   {t("page.invoice.memberInfo")}
                 </p>
                 <div className="space-y-1">
@@ -544,8 +541,11 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className={`${sz.tableTh} text-gray-500 uppercase tracking-wider border-b border-gray-200`}>
-                      <th className={`text-left ${pd.tablePy} font-semibold`}>{t("page.invoice.item")}</th>
+                    <tr
+                      className={`${sz.tableTh} text-gray-500 uppercase tracking-wider border-b border-gray-200`}>
+                      <th className={`text-left ${pd.tablePy} font-semibold`}>
+                        {t("page.invoice.item")}
+                      </th>
                       <th className={`text-center ${pd.tablePy} font-semibold w-10`}>Qty</th>
                       <th className={`text-right ${pd.tablePy} font-semibold`}>Harga</th>
                       <th className={`text-right ${pd.tablePy} font-semibold`}>Total</th>
@@ -569,7 +569,8 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                           <td className={`${pd.tablePy} text-right ${sz.tableItem} text-gray-600`}>
                             Rp{formatPrice(item.price || 0)}
                           </td>
-                          <td className={`${pd.tablePy} text-right ${sz.tableItem} font-medium text-gray-900`}>
+                          <td
+                            className={`${pd.tablePy} text-right ${sz.tableItem} font-medium text-gray-900`}>
                             Rp{formatPrice(item.totalPrice || item.price * (item.count || 1) || 0)}
                           </td>
                         </tr>
@@ -590,8 +591,12 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
             <div className={pd.section}>
               <div className={`bg-gray-50 rounded-lg ${pd.totals}`}>
                 <div className="flex justify-between">
-                  <span className={`text-gray-500 ${sz.totalsLabel}`}>{t("page.invoice.subtotal")}</span>
-                  <span className={`text-gray-700 ${sz.totalsValue}`}>Rp{formatPrice(subtotal)}</span>
+                  <span className={`text-gray-500 ${sz.totalsLabel}`}>
+                    {t("page.invoice.subtotal")}
+                  </span>
+                  <span className={`text-gray-700 ${sz.totalsValue}`}>
+                    Rp{formatPrice(subtotal)}
+                  </span>
                 </div>
                 {tax > 0 && (
                   <div className="flex justify-between">
@@ -603,8 +608,12 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                 )}
                 {discount > 0 && (
                   <div className="flex justify-between">
-                    <span className={`text-emerald-600 ${sz.totalsLabel}`}>{t("page.cashier.discount")}</span>
-                    <span className={`text-emerald-600 ${sz.totalsValue}`}>-Rp{formatPrice(discount)}</span>
+                    <span className={`text-emerald-600 ${sz.totalsLabel}`}>
+                      {t("page.cashier.discount")}
+                    </span>
+                    <span className={`text-emerald-600 ${sz.totalsValue}`}>
+                      -Rp{formatPrice(discount)}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between pt-2 border-t border-gray-200 mt-2">
@@ -616,11 +625,17 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                 {(paymentMethod === "cash" || paymentMethod?.toLowerCase() === "cash") && (
                   <>
                     <div className="flex justify-between">
-                      <span className={`text-gray-500 ${sz.totalsLabel}`}>{t("page.cashier.cashAmount")}</span>
-                      <span className={`text-gray-700 ${sz.totalsValue}`}>Rp{formatPrice(cashAmount)}</span>
+                      <span className={`text-gray-500 ${sz.totalsLabel}`}>
+                        {t("page.cashier.cashAmount")}
+                      </span>
+                      <span className={`text-gray-700 ${sz.totalsValue}`}>
+                        Rp{formatPrice(cashAmount)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className={`text-gray-500 ${sz.totalsLabel}`}>{t("page.cashier.change")}</span>
+                      <span className={`text-gray-500 ${sz.totalsLabel}`}>
+                        {t("page.cashier.change")}
+                      </span>
                       <span className={`text-emerald-600 font-semibold ${sz.totalsValue}`}>
                         Rp{formatPrice(changeAmount)}
                       </span>

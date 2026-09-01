@@ -227,7 +227,8 @@ export const generateESCPOS = (data, opts = {}) => {
 
   enc += padBoth("Item", "", W) + "\n";
   if (is80) {
-    enc += "  " + "Qty".padEnd(4) + "  " + "Harga".padStart(15) + "  " + "Total".padStart(15) + "\n";
+    enc +=
+      "  " + "Qty".padEnd(4) + "  " + "Harga".padStart(15) + "  " + "Total".padStart(15) + "\n";
   } else {
     enc += "  " + "Qty".padEnd(3) + " " + "Harga".padStart(10) + " " + "Total".padStart(11) + "\n";
   }
@@ -297,8 +298,8 @@ const getReceiptBodyStyle = (paperSize = "58mm", fontFamily = "monospace", fontS
     fontFamily === "sans"
       ? 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       : fontFamily === "serif"
-      ? 'Georgia, Cambria, "Times New Roman", Times, serif'
-      : "'Courier New', Courier, monospace";
+        ? 'Georgia, Cambria, "Times New Roman", Times, serif'
+        : "'Courier New', Courier, monospace";
 
   const baseFont = fontSize === "small" ? "10px" : fontSize === "large" ? "13px" : "11px";
 
@@ -344,8 +345,8 @@ const buildReceiptFragment = (data) => {
     fontFamily === "sans"
       ? 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       : fontFamily === "serif"
-      ? 'Georgia, Cambria, "Times New Roman", Times, serif'
-      : "'Courier New', Courier, monospace";
+        ? 'Georgia, Cambria, "Times New Roman", Times, serif'
+        : "'Courier New', Courier, monospace";
 
   const sizeMap = {
     small: { base: "9.5px", title: "12px", header: "9px", price: "11px" },
@@ -445,15 +446,25 @@ const buildReceiptFragment = (data) => {
   });
   wrap.append(table);
 
-  const totals = mkEl("div", `padding:${padY} 5px;background:#f9f9f9;font-size:${currentSize.base};`);
+  const totals = mkEl(
+    "div",
+    `padding:${padY} 5px;background:#f9f9f9;font-size:${currentSize.base};`
+  );
   const trow = (label, value, extra) => {
-    const r = mkEl("div", `display:flex;justify-content:space-between;padding:${padY} 0;${extra || ""}`);
+    const r = mkEl(
+      "div",
+      `display:flex;justify-content:space-between;padding:${padY} 0;${extra || ""}`
+    );
     r.append(mkEl("span", "", label), mkEl("span", "", value));
     return r;
   };
   totals.append(trow("Subtotal", formatPrice(subtotal)), trow("Pajak", formatPrice(tax)));
   totals.append(
-    trow("Total", formatPrice(total), `font-weight:bold;margin-top:4px;font-size:${currentSize.price};`)
+    trow(
+      "Total",
+      formatPrice(total),
+      `font-weight:bold;margin-top:4px;font-size:${currentSize.price};`
+    )
   );
   wrap.append(totals);
 

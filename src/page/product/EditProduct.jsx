@@ -789,68 +789,42 @@ const EditProduct = () => {
         <div>
           <Form {...form}>
             <form onSubmit={handleSubmit}>
-              {/* Stepper */}
-              <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
-                <div className="flex items-center justify-between max-w-2xl mx-auto">
+              <div className="bg-muted p-1 rounded-md mb-6">
+                <div className="grid grid-cols-3 gap-1">
                   {[
                     {
                       num: 1,
-                      title: t("page.product.step.info"),
-                      desc: t("page.product.step.infoDesc")
+                      title: t("page.product.step.info")
                     },
                     {
                       num: 2,
-                      title: t("page.product.step.price"),
-                      desc: t("page.product.step.priceDesc")
+                      title: t("page.product.step.price")
                     },
                     {
                       num: 3,
-                      title: t("page.product.step.media"),
-                      desc: t("page.product.step.mediaDesc")
+                      title: t("page.product.step.media")
                     }
-                  ].map((s, i) => (
-                    <React.Fragment key={s.num}>
-                      <div className="flex items-center gap-3">
+                  ].map((s) => {
+                    const isActive = s.num === currentStep;
+                    // Simplify: using a mock validation state for now as edit view
+                    // doesn't have the same mandatory field tracking in EditProduct
+                    return (
+                      <button
+                        key={s.num}
+                        type="button"
+                        onClick={() => setCurrentStep(s.num)}
+                        className={`flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
+                          isActive
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}>
                         <div
-                          onClick={() => setCurrentStep(s.num)}
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors cursor-pointer ${
-                            currentStep === s.num
-                              ? "bg-primary text-primary-foreground"
-                              : currentStep > s.num
-                                ? "bg-green-500 text-white"
-                                : "bg-muted text-muted-foreground"
-                          }`}>
-                          {currentStep > s.num ? (
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          ) : (
-                            s.num
-                          )}
-                        </div>
-                        <div className="hidden sm:block">
-                          <p
-                            className={`text-sm font-semibold ${currentStep >= s.num ? "text-foreground" : "text-muted-foreground"}`}>
-                            {s.title}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground">{s.desc}</p>
-                        </div>
-                      </div>
-                      {i < 2 && (
-                        <div
-                          className={`flex-1 h-px mx-4 ${currentStep > s.num ? "bg-green-500" : "bg-border"}`}
+                          className={`w-2 h-2 rounded-full bg-muted-foreground/40`}
                         />
-                      )}
-                    </React.Fragment>
-                  ))}
+                        {s.title}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

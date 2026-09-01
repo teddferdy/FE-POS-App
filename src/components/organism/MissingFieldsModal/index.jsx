@@ -9,11 +9,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-export default function MissingFieldsModal({ open, onOpenChange, fields = [] }) {
+export default function MissingFieldsModal({ open, onOpenChange, fields = [], items }) {
   const handleClose = () => {
     onOpenChange(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const grouped = Array.isArray(items) && items.length > 0;
 
   return (
     <Dialog
@@ -31,17 +33,49 @@ export default function MissingFieldsModal({ open, onOpenChange, fields = [] }) 
             Silakan lengkapi field berikut sebelum menyimpan:
           </DialogDescription>
         </DialogHeader>
-        <div className="mt-4 max-h-[300px] overflow-y-auto space-y-2">
-          {fields.map((field, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-destructive/5 border border-destructive/10">
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-destructive/10 text-destructive text-xs font-bold shrink-0">
-                {index + 1}
-              </span>
-              <span className="text-sm font-medium text-foreground">{field}</span>
+        <div className="mt-4 max-h-[300px] overflow-y-auto space-y-3">
+          {grouped ? (
+            items.map((group) => (
+              <div key={group.title} className="space-y-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {group.stepNum != null && (
+                      <>
+                        Tab {group.stepNum}
+                        <span className="mx-1.5 text-border">•</span>
+                      </>
+                    )}
+                    {group.title}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {group.fields.map((field, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-destructive/10 text-destructive text-xs font-bold shrink-0">
+                        {index + 1}
+                      </span>
+                      <span className="text-sm font-medium text-foreground">{field}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="space-y-2">
+              {fields.map((field, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-destructive/10 text-destructive text-xs font-bold shrink-0">
+                    {index + 1}
+                  </span>
+                  <span className="text-sm font-medium text-foreground">{field}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
         <div className="flex justify-center mt-4">
           <Button onClick={handleClose} className="px-8">

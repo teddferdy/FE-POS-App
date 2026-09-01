@@ -321,9 +321,88 @@ const AddLocation = () => {
 
   const selectedManagerName = form.watch("managerName");
 
+  const locationTabs = [
+    {
+      value: "informasi",
+      title: t("page.location.form.tabInformasi"),
+      mandatory: ["name", "storeId", "phoneNumber", "email", "photo"],
+      group: ["name", "storeId", "phoneNumber", "email", "photo"]
+    },
+    {
+      value: "alamat",
+      title: t("page.location.form.tabAlamat"),
+      mandatory: ["address", "city", "province", "district", "village", "postalCode"],
+      group: ["address", "city", "province", "district", "village", "postalCode"]
+    },
+    {
+      value: "pengaturan",
+      title: t("page.location.form.tabPengaturan"),
+      mandatory: [],
+      group: []
+    },
+    {
+      value: "lainnya",
+      title: t("page.location.form.tabLainnya"),
+      mandatory: [],
+      group: []
+    }
+  ];
+
+  const watchedLocationValues = form.watch();
+
+  const isEmptyLocationValue = (v) =>
+    v === undefined || v === null || v === "" || (typeof v === "number" && Number.isNaN(v));
+
+  const getLocationTabStatus = (tab) => {
+    const mandatory = tab.mandatory;
+    if (mandatory.length === 0) return "complete";
+    const empties = mandatory.filter((f) => {
+      if (f === "photo") return !imageFile;
+      return isEmptyLocationValue(watchedLocationValues[f]);
+    });
+    if (empties.length === 0) return "complete";
+    if (empties.length === mandatory.length) return "untouched";
+    return "incomplete";
+  };
+
+  const locationTabDot = (tab) => {
+    const status = getLocationTabStatus(tab);
+    if (status === "complete") return "bg-green-500";
+    if (status === "incomplete") return "bg-red-500";
+    return "bg-muted-foreground/40";
+  };
+
+  const buildMissingByTab = (values, extraErrors = []) => {
+    const result = saveSchema.safeParse(values);
+    const missingNames = [];
+    if (!result.success) {
+      const seen = new Set();
+      result.error.errors.forEach((err) => {
+        const name = err.path[0];
+        if (!seen.has(name)) {
+          seen.add(name);
+          missingNames.push(name);
+        }
+      });
+    }
+    extraErrors.forEach(({ name }) => {
+      if (!missingNames.includes(name)) missingNames.push(name);
+    });
+    return locationTabs
+      .map((tab) => ({
+        stepNum: locationTabs.findIndex((x) => x.value === tab.value) + 1,
+        title: tab.title,
+        fields: tab.group
+          .filter((f) => missingNames.includes(f))
+          .map((f) => locationFieldLabels[f] || f)
+      }))
+      .filter((g) => g.fields.length > 0);
+  };
+
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
+  const [missingFieldsByTab, setMissingFieldsByTab] = useState([]);
 
   const [showOperasional, setShowOperasional] = useState(false);
   const [showSocialMedia, setShowSocialMedia] = useState(false);
@@ -450,6 +529,7 @@ const AddLocation = () => {
 
     if (missing.length > 0) {
       setMissingFields(missing);
+      setMissingFieldsByTab(buildMissingByTab(values, extraErrors));
       setMissingFieldsModal(true);
       return;
     }
@@ -599,18 +679,30 @@ const AddLocation = () => {
                       <TabsTrigger value="informasi" className="gap-1.5">
                         <MapPin size={14} />
                         {t("page.location.form.tabInformasi")}
+                        <span
+                          className={`w-2 h-2 rounded-full ${locationTabDot(locationTabs[0])}`}
+                        />
                       </TabsTrigger>
                       <TabsTrigger value="alamat" className="gap-1.5">
                         <Home size={14} />
                         {t("page.location.form.tabAlamat")}
+                        <span
+                          className={`w-2 h-2 rounded-full ${locationTabDot(locationTabs[1])}`}
+                        />
                       </TabsTrigger>
                       <TabsTrigger value="pengaturan" className="gap-1.5">
                         <Settings size={14} />
                         {t("page.location.form.tabPengaturan")}
+                        <span
+                          className={`w-2 h-2 rounded-full ${locationTabDot(locationTabs[2])}`}
+                        />
                       </TabsTrigger>
                       <TabsTrigger value="lainnya" className="gap-1.5">
                         <MoreHorizontal size={14} />
                         {t("page.location.form.tabLainnya")}
+                        <span
+                          className={`w-2 h-2 rounded-full ${locationTabDot(locationTabs[3])}`}
+                        />
                       </TabsTrigger>
                     </TabsList>
                   </div>
@@ -1703,6 +1795,7 @@ const AddLocation = () => {
         open={missingFieldsModal}
         onOpenChange={setMissingFieldsModal}
         fields={missingFields}
+        items={missingFieldsByTab}
       />
     </div>
   );

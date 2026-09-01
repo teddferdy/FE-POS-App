@@ -343,8 +343,9 @@ const DashboardLayout = () => {
         <Header
           onMenuToggle={handleMobileMenuToggle}
           onOpenPalette={() => setIsPaletteOpen(true)}
+          sidebarCollapsed={sidebarCollapsed}
         />
-        <main className="p-4 lg:p-6">
+        <main className="pt-16 lg:pt-20 lg:pb-6 p-4 lg:p-6">
           <SidebarContext.Provider value={sidebarCollapsed}>
             <div
               key={location.pathname}
