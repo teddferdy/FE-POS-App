@@ -1,13 +1,11 @@
-import { Download } from "lucide-react";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
-import { toast } from "sonner";
 import { getSalesSummary } from "@/services/report";
 import { getAllLocation } from "@/services/location";
-import { formatCurrency, formatNumber } from "@/utils/reportUtils";
+import ExportButtons from "@/components/organism/ExportButtons";
 import GlobalSalesTab from "./GlobalSalesTab";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
@@ -19,7 +17,6 @@ const SalesReportPage = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const [salesPeriod, setSalesPeriod] = useState("Today");
-  const [exportLoading, setExportLoading] = useState(false);
 
   const { data: locData } = useQuery(["locations-sales-report"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -33,40 +30,6 @@ const SalesReportPage = () => {
   } = useQuery(["sales-summary", salesPeriod], () =>
     getSalesSummary({ period: salesPeriod.toLowerCase() })
   );
-
-  const handleExport = async () => {
-    setExportLoading(true);
-    try {
-      const d = salesData?.data;
-      if (!d) return;
-      const rows = [
-        [t("page.report.sales.title"), "", "", ""],
-        [],
-        [t("page.report.sales.kpi.totalCustomers"), formatNumber(d.totalCustomers || 0), "", ""],
-        [t("page.report.sales.kpi.totalSales"), formatCurrency(d.totalSales || 0), "", ""],
-        [],
-        [
-          t("page.report.sales.table.storeName"),
-          t("page.report.sales.table.location"),
-          t("page.report.sales.table.totalSales"),
-          t("page.report.sales.table.transactions")
-        ],
-        ...(d.stores || []).map((s) => [s.name, s.city || "-", s.sales || 0, s.transactions || 0])
-      ];
-      const XLSX = await import("xlsx");
-      const ws = XLSX.utils.aoa_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "SalesReport");
-      XLSX.writeFile(wb, `sales-report-${salesPeriod.toLowerCase()}-${Date.now()}.xlsx`);
-      toast.success(t("common.success"), { description: t("page.report.sales.exportSuccess") });
-    } catch (err) {
-      toast.error(t("common.error"), {
-        description: err?.message || t("page.report.sales.exportFailed")
-      });
-    } finally {
-      setExportLoading(false);
-    }
-  };
 
   return (
     <div data-tour="page-reports" className="space-y-6">
@@ -87,13 +50,12 @@ const SalesReportPage = () => {
           </h2>
           <p className="text-sm text-muted-foreground mt-1">{t("page.report.sales.description")}</p>
         </div>
-        <button
-          disabled={exportLoading}
-          onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted/50 transition-all disabled:opacity-50">
-          <Download size={20} className="text-lg" />
-          {exportLoading ? t("common.downloading") : t("common.export")}
-        </button>
+        <ExportButtons
+          reportKey="sales"
+          buildParams={() => ({
+            filter: salesPeriod.toLowerCase()
+          })}
+        />
       </div>
 
       {locData && (locData?.data || []).length === 0 ? (

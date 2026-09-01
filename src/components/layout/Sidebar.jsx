@@ -84,7 +84,8 @@ const MENU_CONTROLLED_GROUPS = [
       "/report/sales",
       "/best-selling",
       "/report/daily",
-      "/report/cash-flow"
+      "/report/cash-flow",
+      "/report/settings"
     ]
   },
   {
