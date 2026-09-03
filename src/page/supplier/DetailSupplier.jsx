@@ -35,6 +35,8 @@ import AbortController from "@/components/organism/abort-controller";
 import { useTranslation } from "react-i18next";
 import { getSupplierById } from "@/services/supplier";
 import { getPaymentsBySupplier, recordPayment } from "@/services/purchase-payment";
+import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
+import { getDocumentSpecForSupplier } from "@/components/document/documentMappers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -115,6 +117,7 @@ const DetailSupplier = () => {
     refetch
   } = useQuery(["supplier-detail", id], () => getSupplierById({ id }), { enabled: !!id });
   const supplier = supplierData?.data || {};
+  const printSpec = supplier.id ? getDocumentSpecForSupplier(supplier, t) : null;
 
   const { data: paymentData, isLoading: loadingPayments } = useQuery(
     ["supplier-payments", id],
@@ -341,6 +344,7 @@ const DetailSupplier = () => {
           </div>
         </div>
         <div className="flex gap-2">
+          <PrintButton />
           {supplier.status !== "inactive" && supplier.status !== "draft" && (
             <Button
               variant="success"
@@ -1175,6 +1179,11 @@ const DetailSupplier = () => {
           </div>
         </div>
       </Modal>
+      {printSpec && (
+        <div className="hidden print:block print-doc">
+          <FormalDocument spec={printSpec} />
+        </div>
+      )}
     </div>
   );
 };

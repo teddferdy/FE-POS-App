@@ -31,6 +31,8 @@ import {
 } from "../../components/ui/dialog";
 import { Skeleton } from "../../components/ui/skeleton";
 import PageHeader from "../../components/ui/PageHeader";
+import { FormalDocument, PrintButton } from "../../components/document/FormalDocument";
+import { getDocumentSpecForPurchaseOrder } from "../../components/document/documentMappers";
 import {
   FileText,
   ShoppingBag,
@@ -652,6 +654,8 @@ export default function DetailPurchaseOrder() {
     );
   }
 
+  const printSpec = po ? getDocumentSpecForPurchaseOrder(po, t) : null;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -690,6 +694,7 @@ export default function DetailPurchaseOrder() {
           <Download size={14} />
           <span className="hidden sm:inline">PDF</span>
         </Button>
+        <PrintButton />
       </PageHeader>
 
       {loading ? (
@@ -1547,6 +1552,11 @@ export default function DetailPurchaseOrder() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {printSpec && (
+        <div className="hidden print:block print-doc">
+          <FormalDocument spec={printSpec} />
+        </div>
+      )}
     </div>
   );
 }

@@ -18,6 +18,8 @@ import { getPurchaseReturnById } from "@/services/purchase-return";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
+import { getDocumentSpecForPurchaseReturn } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
 
 const statusBadge = {
@@ -59,6 +61,7 @@ const DetailPurchaseReturn = () => {
   const ret = data?.data;
   const st = statusBadge[ret?.status] || statusBadge.pending;
   const StatusIcon = st.icon;
+  const printSpec = ret ? getDocumentSpecForPurchaseReturn(ret, t) : null;
 
   if (!id) {
     return (
@@ -126,13 +129,16 @@ const DetailPurchaseReturn = () => {
             )}
           </div>
         </div>
-        {!isLoading && (
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
-            <StatusIcon size={14} />
-            {st.label}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {!isLoading && (
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
+              <StatusIcon size={14} />
+              {st.label}
+            </span>
+          )}
+          {!isLoading && <PrintButton />}
+        </div>
       </div>
 
       {isLoading ? (
@@ -359,6 +365,11 @@ const DetailPurchaseReturn = () => {
               </div>
             </Card>
           </div>
+        </div>
+      )}
+      {printSpec && (
+        <div className="hidden print:block print-doc">
+          <FormalDocument spec={printSpec} />
         </div>
       )}
     </div>

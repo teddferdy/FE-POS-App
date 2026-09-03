@@ -33,7 +33,8 @@ import {
   waiterRoutes,
   supplierPerformanceRoutes,
   promoRoutes,
-  bundleRoutes
+  bundleRoutes,
+  businessTripRoutes
 } from "@/routes";
 
 // Global lazy components
@@ -120,6 +121,7 @@ function App() {
                 {supplierPerformanceRoutes}
                 {promoRoutes}
                 {bundleRoutes}
+                {businessTripRoutes}
               </Route>
             </Routes>
           </ErrorBoundary>

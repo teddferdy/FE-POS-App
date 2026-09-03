@@ -14,6 +14,8 @@ import {
 } from "@/services/delivery";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
+import { getDocumentSpecForDelivery } from "@/components/document/documentMappers";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
@@ -104,6 +106,7 @@ const DeliveryOrderDetail = () => {
   );
 
   const order = data?.data;
+  const printSpec = order ? getDocumentSpecForDelivery(order, t) : null;
   const drivers = driversData?.data || [];
 
   const nextStatusMap = {
@@ -170,6 +173,7 @@ const DeliveryOrderDetail = () => {
           <ArrowLeft size={16} className="mr-1" />
           {t("page.delivery.detail.backToList")}
         </Button>
+        <PrintButton />
       </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -464,6 +468,11 @@ const DeliveryOrderDetail = () => {
           />
         </div>
       </Modal>
+      {printSpec && (
+        <div className="hidden print:block print-doc">
+          <FormalDocument spec={printSpec} />
+        </div>
+      )}
     </div>
   );
 };
