@@ -8,6 +8,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageHeader from "@/components/ui/PageHeader";
 
 const DetailBom = () => {
   const { t, i18n } = useTranslation();
@@ -24,49 +25,21 @@ const DetailBom = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/bom")} className="hover:text-foreground">
-          {t("breadcrumb.bom")}
-        </button>
-        <span className="text-xs">/</span>
-        {isLoading ? (
-          <Skeleton className="h-4 w-20" />
-        ) : (
-          <span className="text-primary font-semibold">{bom?.name || "Detail"}</span>
-        )}
-      </nav>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/bom")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <ClipboardList size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{bom?.name || t("page.bom.detail.title")}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {bom?.name || `${t("page.bom.detail.bomPrefix")}#${bom?.id}`}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.bom"), href: "/bom", i18nKey: "breadcrumb.bom" },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : bom?.name || t("page.bom.detail.title")}
+        description={bom?.name || `${t("page.bom.detail.bomPrefix")}#${bom?.id}`}
+        backLink="/bom"
+        dynamicInfo={false}
+      />
 
       {isLoading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

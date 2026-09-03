@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
+import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 
 const StockAdjustment = () => {
@@ -139,27 +140,22 @@ const StockAdjustment = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.stockAdjustment.title")}</span>
-        </nav>
-      </div>
-
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.stockAdjustment.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.stockAdjustment.description")}
-          </p>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.stockAdjustment.title"),
+            i18nKey: "page.stockAdjustment.title"
+          }
+        ]}
+        title={t("page.stockAdjustment.title")}
+        description={t("page.stockAdjustment.description")}>
         <UserGuide guideKey="adjust-stock" />
-      </div>
+      </PageHeader>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

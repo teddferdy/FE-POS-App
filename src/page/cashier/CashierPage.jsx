@@ -11,6 +11,7 @@ import {
   Moon,
   Store,
   ChevronRight,
+  ChevronLeft,
   MonitorPlay,
   Loader2
 } from "lucide-react";
@@ -127,6 +128,7 @@ const CashierPage = () => {
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
+  const [cartExpanded, setCartExpanded] = useState(true);
 
   useEffect(() => {
     const visited = localStorage.getItem("pos-onboarding-done");
@@ -552,7 +554,17 @@ const CashierPage = () => {
 
           {/* Desktop cart sidebar */}
           {store && (
-            <div className="hidden lg:flex lg:w-[380px] xl:w-[420px] shrink-0 h-full border-l border-border/50 bg-card/50 backdrop-blur-sm">
+            <div
+              className={`hidden lg:flex shrink-0 h-full border-l border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 relative ${
+                cartExpanded ? "lg:w-[380px] xl:w-[420px]" : "lg:w-14"
+              }`}>
+              {/* Toggle button */}
+              <button
+                onClick={() => setCartExpanded(!cartExpanded)}
+                className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-6 h-12 flex items-center justify-center rounded-l-lg bg-card border border-border/50 border-r-0 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                title={cartExpanded ? "Collapse cart" : "Expand cart"}>
+                {cartExpanded ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+              </button>
               <CartPanel
                 items={cart.order}
                 subtotal={subtotal}
@@ -565,6 +577,7 @@ const CashierPage = () => {
                 totalItems={totalItems}
                 onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
                 isLoading={taxLoading}
+                expanded={cartExpanded}
               />
             </div>
           )}

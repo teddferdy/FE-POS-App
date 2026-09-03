@@ -334,32 +334,28 @@ const LocationList = () => {
 
   return (
     <div data-tour="page-location" className="space-y-6">
-      <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[
-              {
-                label: t("breadcrumb.home"),
-                href: "/dashboard-super-admin",
-                i18nKey: "breadcrumb.home"
-              },
-              { label: t("page.location.list.title"), i18nKey: "page.location.list.title" }
-            ]}
-            title={t("page.location.list.title")}
-            description={t("page.location.list.description")}>
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                variant="success"
-                data-tour="location-add"
-                onClick={() => navigate("/add-location")}
-                className="shrink-0">
-                <Plus size={18} />
-                {t("breadcrumb.add")}
-              </Button>
-            )}
-          </PageHeader>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.location.list.title"), i18nKey: "page.location.list.title" }
+        ]}
+        title={t("page.location.list.title")}
+        description={t("page.location.list.description")}>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            variant="success"
+            data-tour="location-add"
+            onClick={() => navigate("/add-location")}
+            className="shrink-0">
+            <Plus size={18} />
+            {t("breadcrumb.add")}
+          </Button>
+        )}
+      </PageHeader>
 
       {isError ? (
         <AbortController refetch={refetch} />

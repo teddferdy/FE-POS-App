@@ -365,7 +365,11 @@ const MyShift = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           { i18nKey: "page.shift.myShift.title" }
         ]}
         title={t("page.shift.myShift.title")}

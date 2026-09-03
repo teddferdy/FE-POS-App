@@ -20,6 +20,7 @@ import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoStore from "@/components/ui/NoStore";
+import PageHeader from "@/components/ui/PageHeader";
 import AbortController from "@/components/organism/abort-controller";
 import {
   Dialog,
@@ -211,22 +212,21 @@ const DashboardUtang = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.apDashboard.title")}</span>
-        </nav>
-      </div>
-
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t("page.apDashboard.title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("page.apDashboard.subtitle")}</p>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.apDashboard.title"),
+            i18nKey: "page.apDashboard.title"
+          }
+        ]}
+        title={t("page.apDashboard.title")}
+        description={t("page.apDashboard.subtitle")}
+      />
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

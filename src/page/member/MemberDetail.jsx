@@ -6,7 +6,6 @@ import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import {
   Stars,
-  ArrowLeft,
   Users,
   Edit3,
   ChevronRight,
@@ -29,6 +28,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const getInitials = (name) => {
   if (!name) return "?";
@@ -276,46 +276,27 @@ const MemberDetail = () => {
   return (
     <div>
       <div className="space-y-8">
-        <nav className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
-          <span>{t("breadcrumb.management")}</span>
-          <ChevronRight size={16} className="text-sm" />
-          <button
-            onClick={() => navigate("/member-list")}
-            className="hover:text-primary transition-colors">
-            {t("breadcrumb.list")}
-          </button>
-          <ChevronRight size={16} className="text-sm" />
-          <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
-        </nav>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" onClick={() => navigate("/member-list")}>
-              <ArrowLeft size={16} />
-            </Button>
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Users size={24} />
-            </div>
-            <div>
-              {isLoading ? (
-                <>
-                  <Skeleton className="h-7 w-48 mb-2" />
-                  <Skeleton className="h-4 w-64" />
-                </>
-              ) : (
-                <>
-                  <h1 className="text-2xl font-bold">{name}</h1>
-                  <p className="text-sm text-muted-foreground">Detail informasi member</p>
-                </>
-              )}
-            </div>
-          </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            { label: t("breadcrumb.member"), href: "/member-list", i18nKey: "breadcrumb.member" },
+            { label: t("breadcrumb.detail") }
+          ]}
+          title={isLoading ? t("common.loading") : name}
+          description="Detail informasi member"
+          backLink="/member-list"
+          dynamicInfo={false}>
           {!isLoading && (
             <Button variant="outline" onClick={() => navigate(`/edit-member?id=${id}`)}>
               <Edit3 size={14} className="mr-1.5" />
               {t("common.edit")}
             </Button>
           )}
-        </div>
+        </PageHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-4 space-y-6">

@@ -30,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadPositionExcel } from "@/services/position";
@@ -282,123 +283,106 @@ const PositionList = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.position.list.title")}</span>
-        </nav>
-      </div>
-
-      <div>
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-foreground">{t("page.position.list.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.position.list.description")}
-            </p>
-          </div>
-          <div
-            className="overflow-x-auto shrink-0"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-            <div className="flex items-center gap-2 flex-nowrap">
-              {canAccess(user, MENU_KEY, "export") && (
-                <Button
-                  data-tour="position-download-template"
-                  variant="outline"
-                  disabled={isDownloadingTemplate}
-                  onClick={async () => {
-                    if (departments.length === 0) {
-                      setNoDepartmentModal(true);
-                      return;
-                    }
-                    setIsDownloadingTemplate(true);
-                    try {
-                      await downloadPositionTemplate();
-                      toast.success(t("common.success"), {
-                        description: t("page.position.toast.templateDownloaded")
-                      });
-                    } catch (err) {
-                      toast.error(t("common.error"), {
-                        description:
-                          err?.response?.data?.message ||
-                          err.message ||
-                          t("page.position.toast.templateDownloadFailed")
-                      });
-                    } finally {
-                      setIsDownloadingTemplate(false);
-                    }
-                  }}>
-                  {isDownloadingTemplate ? (
-                    <Loader2 size={16} className="mr-1 animate-spin" />
-                  ) : (
-                    <Table size={20} className="text-lg mr-1" />
-                  )}
-                  {isDownloadingTemplate
-                    ? t("common.downloading")
-                    : t("page.position.button.downloadTemplate")}
-                </Button>
-              )}
-              {canAccess(user, MENU_KEY, "export") && (
-                <Button
-                  data-tour="position-download-data"
-                  variant="general"
-                  disabled={isDownloadingData}
-                  onClick={async () => {
-                    setIsDownloadingData(true);
-                    try {
-                      await downloadPositionExcel();
-                      toast.success(t("common.success"), {
-                        description: t("page.position.toast.dataDownloaded")
-                      });
-                    } catch (err) {
-                      toast.error(t("common.error"), {
-                        description:
-                          err?.response?.data?.message ||
-                          err.message ||
-                          t("page.position.toast.dataDownloadFailed")
-                      });
-                    } finally {
-                      setIsDownloadingData(false);
-                    }
-                  }}>
-                  {isDownloadingData ? (
-                    <Loader2 size={16} className="mr-1 animate-spin" />
-                  ) : (
-                    <Download size={20} className="text-lg mr-1" />
-                  )}
-                  {isDownloadingData
-                    ? t("common.downloading")
-                    : t("page.position.button.downloadData")}
-                </Button>
-              )}
-              {canAccess(user, MENU_KEY, "import") && (
-                <Button
-                  data-tour="position-upload"
-                  variant="import"
-                  onClick={() => setUploadModalOpen(true)}>
-                  <Upload size={20} className="text-lg" />
-                  {t("page.position.button.uploadExcel")}
-                </Button>
-              )}
-              {canAccess(user, MENU_KEY, "add") && (
-                <Button
-                  data-tour="position-add"
-                  variant="success"
-                  onClick={() => navigate("/add-position")}
-                  className="shadow-md">
-                  <Plus size={20} className="text-lg" />
-                  {t("page.position.button.add")}
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.adminConsole") },
+          { label: t("page.position.list.title") }
+        ]}
+        title={t("page.position.list.title")}
+        description={t("page.position.list.description")}>
+        {canAccess(user, MENU_KEY, "export") && (
+          <Button
+            data-tour="position-download-template"
+            variant="outline"
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
+              if (departments.length === 0) {
+                setNoDepartmentModal(true);
+                return;
+              }
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadPositionTemplate();
+                toast.success(t("common.success"), {
+                  description: t("page.position.toast.templateDownloaded")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.position.toast.templateDownloadFailed")
+                });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
+            }}>
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <Table size={16} className="mr-1" />
+            )}
+            {isDownloadingTemplate
+              ? t("common.downloading")
+              : t("page.position.button.downloadTemplate")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "export") && (
+          <Button
+            data-tour="position-download-data"
+            variant="general"
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadPositionExcel();
+                toast.success(t("common.success"), {
+                  description: t("page.position.toast.dataDownloaded")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.position.toast.dataDownloadFailed")
+                });
+              } finally {
+                setIsDownloadingData(false);
+              }
+            }}>
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <Download size={16} className="mr-1" />
+            )}
+            {isDownloadingData ? t("common.downloading") : t("page.position.button.downloadData")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "import") && (
+          <Button
+            data-tour="position-upload"
+            variant="import"
+            onClick={() => setUploadModalOpen(true)}>
+            <Upload size={16} className="mr-1" />
+            {t("page.position.button.uploadExcel")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            data-tour="position-add"
+            variant="success"
+            onClick={() => navigate("/add-position")}
+            className="shadow-md">
+            <Plus size={16} className="mr-1" />
+            {t("page.position.button.add")}
+          </Button>
+        )}
+      </PageHeader>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

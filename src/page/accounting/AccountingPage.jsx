@@ -37,7 +37,7 @@ import { DatePickerWithRange } from "@/components/ui/date-picker-range";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
 import { getAllLocation } from "@/services/location";
-import { isSuperAdminRole, getHomePath } from "@/utils/role";
+import { isSuperAdminRole } from "@/utils/role";
 import {
   getAccounts,
   createAccount,
@@ -1666,8 +1666,9 @@ const AccountingPage = () => {
 
   const breadcrumbs = [
     {
-      href: getHomePath(user),
-      i18nKey: "page.accounting.breadcrumbHome"
+      label: t("breadcrumb.home"),
+      href: "/dashboard-super-admin",
+      i18nKey: "breadcrumb.home"
     },
     { i18nKey: "page.accounting.breadcrumb" }
   ];
@@ -1675,7 +1676,16 @@ const AccountingPage = () => {
   if (!isSuperAdmin && !storeId) {
     return (
       <div className="space-y-6">
-        <PageHeader breadcrumbs={[{ i18nKey: "page.accounting.breadcrumb" }]} />
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            { i18nKey: "page.accounting.breadcrumb" }
+          ]}
+        />
         <div className="flex min-h-full w-full">
           <NoStore />
         </div>

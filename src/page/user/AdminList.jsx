@@ -32,6 +32,7 @@ import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import StatCard from "@/components/ui/StatCard";
 import TableActionLegend from "@/components/ui/TableActionLegend";
+import PageHeader from "@/components/ui/PageHeader";
 
 const getStatus = (user, t) => {
   const statusConfig = {
@@ -147,38 +148,24 @@ const AdminList = () => {
   return (
     <div>
       <div className="space-y-8">
-        <div className="flex justify-between items-end">
-          <div>
-            <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-              <span>{t("breadcrumb.management")}</span>
-              <span>/</span>
-              <span className="text-primary font-semibold">{t("page.user.adminList.title")}</span>
-            </nav>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              {t("page.user.adminList.pageTitle")}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.user.adminList.description")}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* 
-          <Button variant="outline" onClick={() => navigate("/role-management")} className="gap-2">
-            <ShieldCheck size={20} className="text-lg" />
-            {t("page.user.adminList.roleManagement")}
-          </Button>
-          */}
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                variant="success"
-                onClick={() => navigate("/add-user")}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-                <UserPlus size={20} className="text-lg" />
-                {t("page.user.button.add")}
-              </Button>
-            )}
-          </div>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            { label: t("page.user.adminList.title") }
+          ]}
+          title={t("page.user.adminList.pageTitle")}
+          description={t("page.user.adminList.description")}>
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button variant="success" onClick={() => navigate("/add-user")}>
+              <UserPlus size={20} className="text-lg mr-1" />
+              {t("page.user.button.add")}
+            </Button>
+          )}
+        </PageHeader>
 
         {isError ? (
           <AbortController refetch={refetch} />

@@ -4,7 +4,6 @@ import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
-  RotateCcw,
   ShoppingBag,
   Clock,
   CheckCircle2,
@@ -21,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
 import { getDocumentSpecForPurchaseReturn } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const statusBadge = {
   pending: {
@@ -87,59 +87,33 @@ const DetailPurchaseReturn = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("page.purchaseReturn.detail.breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/purchase-return")}
-          className="hover:text-foreground transition-colors">
-          {t("page.purchaseReturn.detail.breadcrumb.list")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">
-          {t("page.purchaseReturn.detail.breadcrumb.detail")}
-        </span>
-      </nav>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/purchase-return")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <RotateCcw size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{ret?.returnNumber || "-"}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.purchaseReturn.detail.title")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {!isLoading && (
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
-              <StatusIcon size={14} />
-              {st.label}
-            </span>
-          )}
-          {!isLoading && <PrintButton />}
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.purchaseReturn.detail.breadcrumb.list"),
+            href: "/purchase-return-list",
+            i18nKey: "page.purchaseReturn.detail.breadcrumb.list"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : ret?.returnNumber || "-"}
+        description={t("page.purchaseReturn.detail.title")}
+        backLink="/purchase-return-list"
+        dynamicInfo={false}>
+        {!isLoading && (
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
+            <StatusIcon size={14} />
+            {st.label}
+          </span>
+        )}
+        {!isLoading && <PrintButton />}
+      </PageHeader>
 
       {isLoading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

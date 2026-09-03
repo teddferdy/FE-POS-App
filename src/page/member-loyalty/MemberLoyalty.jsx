@@ -47,6 +47,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import AbortController from "@/components/organism/abort-controller";
 import TableActionLegend from "@/components/ui/TableActionLegend";
+import PageHeader from "@/components/ui/PageHeader";
 
 const MemberLoyalty = () => {
   const { t } = useTranslation();
@@ -148,34 +149,40 @@ const MemberLoyalty = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t("page.memberLoyalty.title")}</h1>
-        <div className="flex gap-2">
-          {isSuperAdmin && (
-            <Select value={store} onValueChange={setStore}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Pilih toko" />
-              </SelectTrigger>
-              <SelectContent>
-                {locations.map((loc) => (
-                  <SelectItem key={loc.id} value={String(loc.id)}>
-                    {loc.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <Button
-            variant="success"
-            onClick={() => updateTiersMutation.mutate()}
-            disabled={updateTiersMutation.isLoading}>
-            <RefreshCw
-              className={`w-4 h-4 mr-2 ${updateTiersMutation.isLoading ? "animate-spin" : ""}`}
-            />
-            Update All Tiers
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.memberLoyalty.title") }
+        ]}
+        title={t("page.memberLoyalty.title")}>
+        {isSuperAdmin && (
+          <Select value={store} onValueChange={setStore}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Pilih toko" />
+            </SelectTrigger>
+            <SelectContent>
+              {locations.map((loc) => (
+                <SelectItem key={loc.id} value={String(loc.id)}>
+                  {loc.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        <Button
+          variant="success"
+          onClick={() => updateTiersMutation.mutate()}
+          disabled={updateTiersMutation.isLoading}>
+          <RefreshCw
+            className={`w-4 h-4 mr-2 ${updateTiersMutation.isLoading ? "animate-spin" : ""}`}
+          />
+          Update All Tiers
+        </Button>
+      </PageHeader>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>

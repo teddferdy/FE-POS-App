@@ -4,22 +4,14 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import {
-  ArrowLeft,
-  Edit,
-  Trash2,
-  Package,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Receipt
-} from "lucide-react";
+import { Edit, Trash2, Package, CheckCircle, XCircle, Clock, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { getBundleById, deleteBundle, changeBundleStatus } from "@/services/productBundle";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const DetailBundle = () => {
   const { t } = useTranslation();
@@ -115,21 +107,19 @@ const DetailBundle = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button onClick={() => navigate(-1)} className="hover:text-foreground transition-colors">
-            <ArrowLeft size={14} className="inline mr-1" />
-            {t("common.back")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{bundle.name}</span>
-        </nav>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{bundle.name}</h1>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.bundle"), href: "/bundle-list", i18nKey: "breadcrumb.bundle" },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={bundle.name}
+        description={
+          <div className="flex items-center gap-2 flex-wrap">
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${s.bg}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
@@ -149,9 +139,11 @@ const DetailBundle = () => {
             )}
             <span className="text-sm text-muted-foreground">{bundle.sku}</span>
           </div>
-        </div>
+        }
+        backLink="/bundle-list"
+        dynamicInfo={false}>
         {canEdit && (
-          <div className="flex gap-2">
+          <>
             {bundle.status === "draft" && (
               <Button
                 variant="outline"
@@ -185,9 +177,9 @@ const DetailBundle = () => {
               <Trash2 size={16} />
               {t("common.delete")}
             </Button>
-          </div>
+          </>
         )}
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

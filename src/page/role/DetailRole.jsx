@@ -3,7 +3,7 @@ import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ChevronDown, ChevronRight, Shield, ArrowLeft, Edit3, CheckSquare } from "lucide-react";
+import { ChevronDown, ChevronRight, Shield, Edit3, CheckSquare } from "lucide-react";
 import { getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 import {
@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 // ponytail: action labels map to translation keys. Add new actions here and in id.json/en.json.
 const actionLabelKeys = {
@@ -193,34 +194,29 @@ const DetailRole = () => {
   return (
     <div>
       <div>
-        <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/role-management")}
-            className="hover:text-primary transition-colors">
-            {t("page.role.detail.breadcrumbParent")}
-          </button>
-          <ChevronRight size={14} />
-          <span className="text-foreground font-bold">{t("page.role.detail.title")}</span>
-        </nav>
-
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" onClick={() => navigate("/role-management")}>
-              <ArrowLeft size={16} />
-            </Button>
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Shield size={24} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">{role.name || "-"}</h1>
-              <p className="text-sm text-muted-foreground">{t("page.role.detail.description")}</p>
-            </div>
-          </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.role.detail.breadcrumbParent"),
+              href: "/role-management",
+              i18nKey: "page.role.detail.breadcrumbParent"
+            },
+            { label: t("breadcrumb.detail") }
+          ]}
+          title={role.name || "-"}
+          description={t("page.role.detail.description")}
+          backLink="/role-management"
+          dynamicInfo={false}>
           <Button variant="outline" onClick={() => navigate(`/edit-role/${id}`)}>
             <Edit3 size={14} className="mr-1.5" />
             {t("common.edit")}
           </Button>
-        </div>
+        </PageHeader>
 
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">

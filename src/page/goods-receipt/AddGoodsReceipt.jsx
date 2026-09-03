@@ -494,7 +494,11 @@ const AddGoodsReceipt = () => {
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
         <PageHeader
           breadcrumbs={[
-            { i18nKey: "breadcrumb.dashboard", href: "/dashboard-super-admin" },
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
             { i18nKey: "breadcrumb.goodsReceipt", href: "/goods-receipt" },
             { i18nKey: "breadcrumb.add" }
           ]}

@@ -18,6 +18,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import NoStore from "@/components/ui/NoStore";
+import PageHeader from "@/components/ui/PageHeader";
 
 const BomList = () => {
   const { t } = useTranslation();
@@ -141,28 +142,23 @@ const BomList = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("breadcrumb.bom")}</span>
-        </nav>
-      </div>
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.bom.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.bom.list.description")}</p>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.bom"), i18nKey: "breadcrumb.bom" }
+        ]}
+        title={t("page.bom.list.title")}
+        description={t("page.bom.list.description")}>
         {canAccess(user, MENU_KEY, "add") && (
           <Button variant="success" onClick={() => navigate("/bom/add")} className="shrink-0 gap-2">
             <Plus size={16} /> {t("page.bom.list.addButton")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

@@ -102,6 +102,11 @@ const AddPosition = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           { i18nKey: "breadcrumb.hrm" },
           { i18nKey: "breadcrumb.position" },
           { i18nKey: "page.position.add.title" }

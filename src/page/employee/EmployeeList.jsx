@@ -315,28 +315,29 @@ const EmployeeList = () => {
 
   return (
     <div data-tour="page-employees" className="space-y-6">
-      <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[
-              { label: t("breadcrumb.management"), i18nKey: "breadcrumb.management" },
-              { label: t("page.employee.list.title"), i18nKey: "page.employee.list.title" }
-            ]}
-            title={t("page.employee.list.title")}
-            description={t("page.employee.list.description")}>
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                variant="success"
-                data-tour="employee-add"
-                onClick={() => navigate("/add-employee")}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-                <UserPlus size={20} className="text-lg" />
-                {t("page.employee.add.title")}
-              </Button>
-            )}
-          </PageHeader>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.management"), i18nKey: "breadcrumb.management" },
+          { label: t("page.employee.list.title"), i18nKey: "page.employee.list.title" }
+        ]}
+        title={t("page.employee.list.title")}
+        description={t("page.employee.list.description")}>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            variant="success"
+            data-tour="employee-add"
+            onClick={() => navigate("/add-employee")}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+            <UserPlus size={20} className="text-lg" />
+            {t("page.employee.add.title")}
+          </Button>
+        )}
+      </PageHeader>
 
       <div>
         {locData && (locData?.data || []).length === 0 ? (

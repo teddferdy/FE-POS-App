@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useStore } from "@/contexts/StoreContext";
 import { Store, ArrowLeft, Pencil, Boxes, ChevronRight } from "lucide-react";
@@ -17,10 +16,10 @@ import StatCard from "@/components/ui/StatCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoStore from "@/components/ui/NoStore";
 import TableActionLegend from "@/components/ui/TableActionLegend";
+import PageHeader from "@/components/ui/PageHeader";
 
 const PriceStoreList = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const cookie = useCookies();
   const { setActiveStore } = useStore();
   const user = cookie?.user;
@@ -92,15 +91,18 @@ const PriceStoreList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.priceStore.list.title")}</span>
-      </nav>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.priceStore.list.title") }
+        ]}
+        title={t("page.priceStore.list.title")}
+        description={t("page.priceStore.list.desc")}
+      />
 
       {isLoading || isFetching ? (
         <div className="flex-1 flex items-center justify-center p-6">

@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
+import PageHeader from "@/components/ui/PageHeader";
 
 const statusDetail = {
   sent: { label: "Sent", class: "bg-blue-100 text-blue-800" },
@@ -121,36 +122,25 @@ const DetailStockTransfer = () => {
         <Loading fullscreen size="lg" label={t("common.loadingData")} />
       )}
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.stockTransfer.detail.breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button onClick={() => navigate("/stock-transfer")} className="hover:text-foreground">
-            {t("page.stockTransfer.detail.breadcrumb.list")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.stockTransfer.detail.breadcrumb.detail")}
-          </span>
-        </nav>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" onClick={() => navigate("/stock-transfer")}>
-              <ArrowLeft size={16} />
-            </Button>
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <ArrowRightLeft size={24} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">{t("page.stockTransfer.detail.title")}</h1>
-              <p className="text-sm text-muted-foreground">{transfer.transferNumber}</p>
-            </div>
-          </div>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.stockTransfer.detail.breadcrumb.list"),
+              href: "/stock-transfer-list",
+              i18nKey: "page.stockTransfer.detail.breadcrumb.list"
+            },
+            { label: t("breadcrumb.detail") }
+          ]}
+          title={t("page.stockTransfer.detail.title")}
+          description={transfer.transferNumber}
+          backLink="/stock-transfer-list"
+          dynamicInfo={false}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, X, ArrowRight } from "lucide-react";
+import { Search, X, ArrowRight, Info } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +42,8 @@ const NavigationModal = ({ open, onOpenChange, categories = [], onNavigate }) =>
             categoryTitle: cat.title,
             categoryI18nKey: cat.i18nKey,
             sectionTitle: section.title,
-            sectionI18nKey: section.i18nKey
+            sectionI18nKey: section.i18nKey,
+            sectionSetupHint: section.setupHint
           });
         });
       });
@@ -70,6 +71,7 @@ const NavigationModal = ({ open, onOpenChange, categories = [], onNavigate }) =>
           i18nKey: item.sectionI18nKey,
           categoryTitle: item.categoryTitle,
           categoryI18nKey: item.categoryI18nKey,
+          sectionSetupHint: item.sectionSetupHint,
           items: []
         });
       }
@@ -187,6 +189,31 @@ const NavigationModal = ({ open, onOpenChange, categories = [], onNavigate }) =>
                 const subGroups = partitionBySubGroup(group.items);
                 return (
                   <div key={group.title}>
+                    {/* Setup Hint Banner */}
+                    {!query && group.sectionSetupHint && (
+                      <div className="mx-2 mb-4 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Info size={14} className="text-primary" />
+                          <span className="text-xs font-semibold text-primary">
+                            {group.sectionSetupHint.title}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1">
+                          {group.sectionSetupHint.steps.map((step, i) => (
+                            <span
+                              key={i}
+                              className="text-[11px] text-muted-foreground flex items-center gap-1">
+                              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary/10 text-primary text-[9px] font-bold">
+                                {i + 1}
+                              </span>
+                              <span className="font-medium">{step.label}</span>
+                              <span className="hidden sm:inline">— {step.desc}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Section Header */}
                     <div className="flex items-center gap-3 px-2 mb-3">
                       <span className="text-xs font-bold uppercase tracking-widest text-primary/70">

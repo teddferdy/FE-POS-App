@@ -14,6 +14,7 @@ import TableActions from "@/components/ui/TableActions";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
+import PageHeader from "@/components/ui/PageHeader";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import NoStore from "@/components/ui/NoStore";
@@ -74,42 +75,24 @@ const RoleManagement = () => {
 
   return (
     <div data-tour="page-roles" className="space-y-8">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("breadcrumb.management")}</span>
-      </nav>
-
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            {t("page.globalSetting.roleManagement.title")}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.globalSetting.roleManagement.description")}
-          </p>
-        </div>
-        <div
-          className="overflow-x-auto shrink-0"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-          <div className="flex items-center gap-2 flex-nowrap">
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                variant="success"
-                data-tour="role-add"
-                onClick={() => navigate("/add-role")}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-                <Plus size={18} />
-                {t("page.globalSetting.roleManagement.button.add")}
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.management") }
+        ]}
+        title={t("page.globalSetting.roleManagement.title")}
+        description={t("page.globalSetting.roleManagement.description")}>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button variant="success" data-tour="role-add" onClick={() => navigate("/add-role")}>
+            <Plus size={18} className="mr-1" />
+            {t("page.globalSetting.roleManagement.button.add")}
+          </Button>
+        )}
+      </PageHeader>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

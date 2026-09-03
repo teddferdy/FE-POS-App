@@ -140,7 +140,11 @@ const EditMember = () => {
         <div>
           <PageHeader
             breadcrumbs={[
-              { label: t("breadcrumb.home") },
+              {
+                label: t("breadcrumb.home"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.home"
+              },
               { label: t("breadcrumb.management") },
               { label: t("breadcrumb.edit") }
             ]}

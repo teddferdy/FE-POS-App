@@ -7,7 +7,8 @@ import { useCookies } from "react-cookie";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Save, X, Plus, Trash2, ArrowLeft, User } from "lucide-react";
+import { Save, X, Plus, Trash2, User } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { format } from "date-fns";
 import { addGoodsRequest } from "@/services/goods-request";
 import { getAllLocation } from "@/services/location";
@@ -505,35 +506,25 @@ const AddGoodsRequest = () => {
   return (
     <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="danger"
-            size="icon"
-            className="h-10 w-10 shrink-0"
-            onClick={() => setCancelModal(true)}>
-            <ArrowLeft size={16} />
-          </Button>
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <button
-              onClick={() => navigate("/dashboard-super-admin")}
-              className="hover:text-foreground">
-              {t("breadcrumb.dashboard")}
-            </button>
-            <span className="text-xs">/</span>
-            <button onClick={() => navigate("/goods-request")} className="hover:text-foreground">
-              {t("breadcrumb.goodsRequest")}
-            </button>
-            <span className="text-xs">/</span>
-            <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
-          </nav>
-        </div>
-
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.goodsRequest.add.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.goodsRequest.add.description")}
-          </p>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.dashboard"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.dashboard"
+            },
+            {
+              label: t("breadcrumb.goodsRequest"),
+              href: "/goods-request",
+              i18nKey: "breadcrumb.goodsRequest"
+            },
+            { label: t("breadcrumb.add") }
+          ]}
+          title={t("page.goodsRequest.add.title")}
+          description={t("page.goodsRequest.add.description")}
+          onBack={() => setCancelModal(true)}
+          dynamicInfo={false}
+        />
 
         <form
           onSubmit={handleSubmit((data) => doSubmit(data))}

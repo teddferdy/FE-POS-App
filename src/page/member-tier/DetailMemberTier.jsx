@@ -3,11 +3,12 @@ import PropTypes from "prop-types";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { Award, Coins, Gift, Tag, Calendar, Users, User, ArrowLeft, Edit3 } from "lucide-react";
+import { Award, Coins, Gift, Tag, Calendar, Users, User, Edit3 } from "lucide-react";
 import { getDetailMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -86,53 +87,31 @@ const DetailMemberTier = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          Home
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/member-tier")}
-          className="hover:text-foreground transition-colors">
-          Member Tier
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">
-          {isLoading ? <Skeleton className="h-4 w-32 inline-block" /> : tier.name || "Detail"}
-        </span>
-      </nav>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/member-tier")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Award size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{tier.name || "-"}</h1>
-                <p className="text-sm text-muted-foreground">Member Tier Detail</p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("breadcrumb.memberTier"),
+            href: "/member-tier",
+            i18nKey: "breadcrumb.memberTier"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : tier.name || "-"}
+        description="Member Tier Detail"
+        backLink="/member-tier"
+        dynamicInfo={false}>
         {!isLoading && (
           <Button variant="outline" onClick={() => navigate(`/edit-member-tier/${tier.id}`)}>
             <Edit3 size={14} className="mr-1.5" />
             {t("common.edit")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="space-y-8">

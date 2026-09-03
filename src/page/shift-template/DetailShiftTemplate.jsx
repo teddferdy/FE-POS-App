@@ -1,12 +1,13 @@
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Clock, Edit3, Calendar, User, BadgeCheck } from "lucide-react";
+import { Clock, Edit3, Calendar, User, BadgeCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getShiftTemplateById } from "@/services/shiftTemplate";
 import { Loading } from "@/components/ui/loading";
+import PageHeader from "@/components/ui/PageHeader";
 
 const statusBadge = (status, t) => {
   if (status === "active")
@@ -70,43 +71,29 @@ const DetailShiftTemplate = () => {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/shift-template-list")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/shift-template-list")}
-          className="hover:text-foreground transition-colors">
-          {t("page.shiftTemplate.list.title")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{template?.name || "Detail"}</span>
-      </nav>
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="general" size="icon" onClick={() => navigate("/shift-template-list")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Clock size={28} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">{template?.name || "-"}</h1>
-            <p className="text-sm text-muted-foreground">
-              {t("page.shiftTemplate.edit.description")}
-            </p>
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.shiftTemplate.list.title"),
+            href: "/shift-template-list",
+            i18nKey: "page.shiftTemplate.list.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={template?.name || "-"}
+        description={t("page.shiftTemplate.edit.description")}
+        backLink="/shift-template-list"
+        dynamicInfo={false}>
         <Button variant="general" onClick={() => navigate(`/edit-shift-template?id=${id}`)}>
           <Edit3 size={14} className="mr-1.5" />
           {t("common.edit")}
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Main Content */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

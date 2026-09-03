@@ -11,8 +11,8 @@ import TableToolbar from "@/components/ui/TableToolbar";
 import { useTranslation } from "react-i18next";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
+import PageHeader from "@/components/ui/PageHeader";
 import { DatePicker } from "@/components/ui/date-picker";
-import { useNavigate } from "react-router-dom";
 import { getAllLocation } from "@/services/location";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
@@ -47,11 +47,9 @@ const formatNumber = (num) => {
 
 const StockHistory = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
-  const role = user?.roleType || "";
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -223,34 +221,19 @@ const StockHistory = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() =>
-              navigate(
-                role === "super_admin"
-                  ? "/dashboard-super-admin"
-                  : role === "admin"
-                    ? "/dashboard-admin"
-                    : "/home"
-              )
-            }
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-muted-foreground">{t("breadcrumb.inventory")}</span>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("breadcrumb.stockHistory")}</span>
-        </nav>
-      </div>
-
-      <div>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.stockHistory.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.stockHistory.description")}</p>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.inventory"), i18nKey: "breadcrumb.inventory" },
+          { label: t("breadcrumb.stockHistory"), i18nKey: "breadcrumb.stockHistory" }
+        ]}
+        title={t("page.stockHistory.title")}
+        description={t("page.stockHistory.description")}
+      />
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

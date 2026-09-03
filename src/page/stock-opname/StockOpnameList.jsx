@@ -34,6 +34,7 @@ import StatCard from "@/components/ui/StatCard";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
+import PageHeader from "@/components/ui/PageHeader";
 import { Combobox } from "@/components/ui/combobox";
 
 const StockOpnameList = () => {
@@ -355,39 +356,30 @@ const StockOpnameList = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.stockOpname.list.title")}</span>
-        </nav>
-      </div>
-
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {t("page.stockOpname.list.title")}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.stockOpname.list.description")}
-            </p>
-          </div>
-          {canAccess(user, MENU_KEY, "add") && (
-            <Button
-              variant="success"
-              onClick={() => navigate("/add-stock-opname")}
-              className="shrink-0 gap-2">
-              <Plus size={16} />
-              {t("page.stockOpname.list.addButton")}
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.stockOpname.list.title"),
+            i18nKey: "page.stockOpname.list.title"
+          }
+        ]}
+        title={t("page.stockOpname.list.title")}
+        description={t("page.stockOpname.list.description")}>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            variant="success"
+            onClick={() => navigate("/add-stock-opname")}
+            className="shrink-0 gap-2">
+            <Plus size={16} />
+            {t("page.stockOpname.list.addButton")}
+          </Button>
+        )}
+      </PageHeader>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

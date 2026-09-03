@@ -132,8 +132,9 @@ const CashRegisterOpenClose = () => {
           onBack={() => setCancelModal(true)}
           breadcrumbs={[
             {
+              label: t("breadcrumb.home"),
               href: "/dashboard-super-admin",
-              i18nKey: "page.cashRegister.openClose.breadcrumbDashboard"
+              i18nKey: "breadcrumb.home"
             },
             { i18nKey: "page.cashRegister.openClose.breadcrumb" }
           ]}

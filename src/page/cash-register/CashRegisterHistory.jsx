@@ -233,17 +233,11 @@ const CashRegisterHistory = () => {
 
   const breadcrumbs = isSuperAdmin
     ? [
-        {
-          href: "/dashboard-super-admin",
-          i18nKey: "page.cashRegister.history.breadcrumbDashboard"
-        },
+        { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
         { i18nKey: "page.cashRegister.history.breadcrumb" }
       ]
     : [
-        {
-          href: "/dashboard-super-admin",
-          i18nKey: "page.cashRegister.history.breadcrumbDashboard"
-        },
+        { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
         {
           href: "/cash-register/current",
           i18nKey: "page.cashRegister.history.breadcrumbCashier"

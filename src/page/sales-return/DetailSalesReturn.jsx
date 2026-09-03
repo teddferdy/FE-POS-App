@@ -1,13 +1,14 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ArrowLeft, ShoppingBag, RotateCcw } from "lucide-react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getSalesReturnById } from "@/services/sales-return";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const statusDetail = {
   pending: { label: "Pending", class: "bg-yellow-100 text-yellow-800" },
@@ -91,36 +92,25 @@ const DetailSalesReturn = () => {
   return (
     <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.salesReturn.detail.breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button onClick={() => navigate("/sales-return")} className="hover:text-foreground">
-            {t("page.salesReturn.detail.breadcrumb.list")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.salesReturn.detail.breadcrumb.detail")}
-          </span>
-        </nav>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" onClick={() => navigate("/sales-return")}>
-              <ArrowLeft size={16} />
-            </Button>
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <RotateCcw size={24} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">{t("page.salesReturn.detail.title")}</h1>
-              <p className="text-sm text-muted-foreground">{ret.returnNumber}</p>
-            </div>
-          </div>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.salesReturn.detail.breadcrumb.list"),
+              href: "/sales-return-list",
+              i18nKey: "page.salesReturn.detail.breadcrumb.list"
+            },
+            { label: t("breadcrumb.detail") }
+          ]}
+          title={t("page.salesReturn.detail.title")}
+          description={ret.returnNumber}
+          backLink="/sales-return-list"
+          dynamicInfo={false}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">

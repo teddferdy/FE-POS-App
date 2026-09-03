@@ -9,7 +9,7 @@ import { getAllCategoryActive } from "@/services/category";
 import { optimizeImage } from "@/utils/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import VariantModal from "./VariantModal";
-import ProductPreview from "@/page/product/ProductPreview";
+import ProductDetailModal from "./ProductDetailModal";
 import DynamicIcon from "@/components/ui/DynamicIcon";
 
 const renderCategoryIcon = (cat, className, imgClassName) => {
@@ -27,15 +27,14 @@ const ProductGrid = ({
   onBarcodeChange,
   categoryId,
   onCategoryChange,
-  store,
-  storeName
+  store
 }) => {
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState("grid");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showVariantModal, setShowVariantModal] = useState(false);
-  const [previewProduct, setPreviewProduct] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
+  const [detailProduct, setDetailProduct] = useState(null);
+  const [showDetail, setShowDetail] = useState(false);
   const [inputMode, setInputMode] = useState("search");
   const cart = orderList();
 
@@ -134,69 +133,17 @@ const ProductGrid = ({
     [cart, store, hasChoices, isOutOfStock]
   );
 
-  const buildPreviewData = useCallback(
+  const handleShowDetail = useCallback(
     (product) => {
-      const img = product.image || product.imageProduct || product.photo || null;
       const catId = getCatId(product);
       const category = categories.find((cat) => String(cat.id || cat._id) === String(catId));
-      let composition = [];
-      if (Array.isArray(product.composition)) {
-        composition = product.composition;
-      } else if (typeof product.composition === "string") {
-        try {
-          composition = JSON.parse(product.composition) || [];
-        } catch {
-          composition = [];
-        }
-      }
-      const ingredients = composition
-        .map((c) => (typeof c.name === "string" && c.name.trim() ? c.name.trim() : null))
-        .filter(Boolean);
-
-      let variantGroups = [];
-      if (Array.isArray(product.options) && product.options.length > 0) {
-        variantGroups = product.options;
-      } else if (Array.isArray(product.variant) && product.variant.length > 0) {
-        variantGroups = product.variant;
-      }
-
-      const modifierItems = Array.isArray(product.modifiers)
-        ? product.modifiers.map((m, idx) => ({
-            id: m.id ?? m.idModifier ?? String(idx),
-            name: m.name || m.nameModifier || "",
-            price: Number(m.price ?? m.priceModifier ?? 0)
-          }))
-        : [];
-
-      return {
-        name: product.nameProduct || product.name || "",
-        description: product.description || "",
-        price: product.price || product.sellPrice || 0,
-        image: img,
-        category: category?.nameCategory || category?.name || product.nameCategory || "",
-        categoryIcon: category?.image || category?.icon || "fastfood",
-        storeName: storeName || store || "Nama Toko",
-        stock: product.stock ?? 0,
-        minStock: product.minStock ?? 0,
-        estimatedTime: product.estimationTime || 15,
-        isOption: Boolean(product.isOption),
-        hasModifiers: Boolean(product.hasModifiers),
-        isAvailable: product.isAvailable !== false,
-        isPromo: Boolean(product.isPromo),
-        ingredients,
-        variantGroups,
-        modifierItems
-      };
+      setDetailProduct({
+        ...product,
+        categoryName: category?.nameCategory || category?.name || product.nameCategory || ""
+      });
+      setShowDetail(true);
     },
-    [categories, getCatId, store, storeName]
-  );
-
-  const handlePreview = useCallback(
-    (product) => {
-      setPreviewProduct(buildPreviewData(product));
-      setShowPreview(true);
-    },
-    [buildPreviewData]
+    [categories, getCatId]
   );
 
   const handleAddToCart = useCallback(
@@ -248,7 +195,7 @@ const ProductGrid = ({
           <div className="px-4 lg:px-6 py-3">
             <Skeleton className="h-4 w-32" />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 px-4 lg:px-6 pt-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-4 lg:px-6 pt-3">
             {Array.from({ length: 12 }).map((_, i) => (
               <div
                 key={i}
@@ -431,7 +378,7 @@ const ProductGrid = ({
               </div>
               {catProducts.length > 0 ? (
                 viewMode === "grid" ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 px-4 lg:px-6 pt-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-4 lg:px-6 pt-3">
                     {catProducts.map((product, idx) => {
                       const img = product.image || product.imageProduct || product.photo || null;
                       const productId =
@@ -442,7 +389,7 @@ const ProductGrid = ({
                           <button
                             onClick={() => handleProductClick(product)}
                             disabled={isOutOfStock(product)}
-                            className="group bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-md hover:bg-card transition-all duration-200 text-left active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border/40 disabled:hover:bg-card/80 disabled:hover:shadow-none disabled:active:scale-100">
+                            className="group bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-sm hover:bg-card transition-all duration-200 text-left active:scale-[0.99] disabled:cursor-not-allowed disabled:hover:border-border/40 disabled:hover:bg-card/80 disabled:hover:shadow-none disabled:active:scale-100 w-full">
                             <div className="relative mb-2.5">
                               {img ? (
                                 <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted/50">
@@ -474,7 +421,7 @@ const ProductGrid = ({
                                 </div>
                               )}
                               {cartCount > 0 && (
-                                <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center z-10">
+                                <div className="absolute -top-1.5 right-8 w-6 h-6 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center z-10">
                                   <span className="text-primary-foreground text-[10px] font-bold">
                                     {cartCount}
                                   </span>
@@ -521,7 +468,7 @@ const ProductGrid = ({
                               </div>
                             </div>
                             <div className="space-y-1">
-                              <p className="text-xs font-medium text-foreground leading-tight line-clamp-2 min-h-[2em]">
+                              <p className="text-sm font-medium text-foreground leading-tight line-clamp-2 min-h-[2em]">
                                 {product.nameProduct ||
                                   product.name ||
                                   t("page.cashier.unnamedProduct")}
@@ -547,8 +494,11 @@ const ProductGrid = ({
                           </button>
                           <button
                             type="button"
-                            onClick={() => handlePreview(product)}
-                            title={t("page.product.form.preview")}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleShowDetail(product);
+                            }}
+                            title={t("page.product.form.detail", "Detail Produk")}
                             className="absolute top-2 right-2 z-20 w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-background transition-colors shadow-sm">
                             <Eye size={14} />
                           </button>
@@ -635,8 +585,8 @@ const ProductGrid = ({
                           </button>
                           <button
                             type="button"
-                            onClick={() => handlePreview(product)}
-                            title={t("page.product.form.preview")}
+                            onClick={() => handleShowDetail(product)}
+                            title={t("page.product.form.detail", "Detail Produk")}
                             className="w-10 shrink-0 rounded-xl bg-card/80 backdrop-blur-sm border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-card hover:border-border/80 transition-colors">
                             <Eye size={16} />
                           </button>
@@ -666,8 +616,13 @@ const ProductGrid = ({
         />
       )}
 
-      {showPreview && previewProduct && (
-        <ProductPreview product={previewProduct} open={showPreview} onOpenChange={setShowPreview} />
+      {showDetail && detailProduct && (
+        <ProductDetailModal
+          product={detailProduct}
+          open={showDetail}
+          onOpenChange={setShowDetail}
+          onAddToCart={(p) => handleProductClick(p)}
+        />
       )}
     </>
   );
@@ -682,8 +637,7 @@ ProductGrid.propTypes = {
   onBarcodeChange: PropTypes.func,
   categoryId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onCategoryChange: PropTypes.func,
-  store: PropTypes.any,
-  storeName: PropTypes.string
+  store: PropTypes.any
 };
 
 export default ProductGrid;

@@ -18,10 +18,9 @@ import {
   XCircle,
   Clock,
   Edit3,
-  Lightbulb,
-  Beef,
-  ArrowLeft
+  Lightbulb
 } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { getIngredientById } from "@/services/ingredient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -121,55 +120,31 @@ const DetailIngredient = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/ingredient")}
-          className="hover:text-foreground transition-colors">
-          {t("page.ingredient.list.title")}
-        </button>
-        <span className="text-xs">/</span>
-        {isLoading ? (
-          <Skeleton className="h-4 w-20" />
-        ) : (
-          <span className="text-primary font-semibold">{ingredient?.name || "Detail"}</span>
-        )}
-      </nav>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/ingredient")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Beef size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{ingredient?.name || "-"}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.ingredient.detail.subtitle")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.ingredient.list.title"),
+            href: "/ingredient",
+            i18nKey: "page.ingredient.list.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : ingredient?.name || "-"}
+        description={t("page.ingredient.detail.subtitle")}
+        backLink="/ingredient"
+        dynamicInfo={false}>
         {!isLoading && (
           <Button variant="outline" onClick={() => navigate(`/edit-ingredient?id=${id}`)}>
             <Edit3 size={14} className="mr-1.5" />
             {t("common.edit")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -26,7 +26,6 @@ import ExportButtons from "@/components/organism/ExportButtons";
 import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
-import { getHomePath } from "@/utils/role";
 
 const FILTERS = [
   { key: "daily", labelKey: "page.advancedReporting.period.daily" },
@@ -161,7 +160,11 @@ const AdvancedReporting = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { href: getHomePath(user), i18nKey: "page.advancedReporting.breadcrumbDashboard" },
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           { i18nKey: "page.advancedReporting.breadcrumb" }
         ]}
         title={t("page.advancedReporting.title")}

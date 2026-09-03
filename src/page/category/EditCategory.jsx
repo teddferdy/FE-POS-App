@@ -538,22 +538,23 @@ const EditCategory = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[
-              { label: t("breadcrumb.adminConsole") },
-              { label: t("breadcrumb.category"), href: "/category-list" },
-              { label: t("page.category.edit.title") }
-            ]}
-            title={t("page.category.edit.title")}
-            description={t("page.category.edit.description")}
-            backLink="/category-list"
-            onBack={() => setCancelModal(true)}>
-            <UserGuide guideKey="edit-category" />
-          </PageHeader>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.adminConsole") },
+          { label: t("breadcrumb.category"), href: "/category-list" },
+          { label: t("page.category.edit.title") }
+        ]}
+        title={t("page.category.edit.title")}
+        description={t("page.category.edit.description")}
+        backLink="/category-list"
+        onBack={() => setCancelModal(true)}>
+        <UserGuide guideKey="edit-category" />
+      </PageHeader>
 
       <div>
         <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">

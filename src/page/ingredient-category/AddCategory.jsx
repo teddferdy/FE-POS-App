@@ -121,7 +121,11 @@ const AddCategory = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { label: t("page.ingredientCategory.add.breadcrumbSettings") },
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           {
             label: t("page.ingredientCategory.add.breadcrumbCategory"),
             href: "/ingredient-category"
@@ -129,7 +133,10 @@ const AddCategory = () => {
           {
             label: isEdit
               ? t("page.ingredientCategory.add.breadcrumbEdit")
-              : t("page.ingredientCategory.add.breadcrumbAdd")
+              : t("page.ingredientCategory.add.breadcrumbAdd"),
+            i18nKey: isEdit
+              ? "page.ingredientCategory.add.breadcrumbEdit"
+              : "page.ingredientCategory.add.breadcrumbAdd"
           }
         ]}
         title={
@@ -141,9 +148,7 @@ const AddCategory = () => {
           isEdit
             ? t("page.ingredientCategory.add.subtitleEdit")
             : t("page.ingredientCategory.add.subtitleAdd")
-        }
-        backLink="/ingredient-category"
-        onBack={() => setShowCancel(true)}>
+        }>
         <UserGuide guideKey={isEdit ? "edit-ingredient-category" : "add-ingredient-category"} />
       </PageHeader>
 

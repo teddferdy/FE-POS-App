@@ -362,9 +362,9 @@ const EditShift = () => {
       <PageHeader
         breadcrumbs={[
           {
-            label: t("page.shift.edit.breadcrumb.dashboard"),
+            label: t("breadcrumb.home"),
             href: "/dashboard-super-admin",
-            i18nKey: "page.shift.edit.breadcrumb.dashboard"
+            i18nKey: "breadcrumb.home"
           },
           {
             label: t("page.shift.edit.breadcrumb.list"),
@@ -377,10 +377,11 @@ const EditShift = () => {
           }
         ]}
         title={t("page.shift.edit.title")}
-        description={t("page.shift.edit.subtitle")}
-        backLink="/shift-list"
-        onBack={() => setCancelModal(true)}
-      />
+        description={t("page.shift.edit.subtitle")}>
+        <Button variant="outline" onClick={() => setCancelModal(true)}>
+          {t("action.back")}
+        </Button>
+      </PageHeader>
 
       <Card className="p-6">
         <Form {...form}>

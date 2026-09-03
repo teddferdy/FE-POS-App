@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
 import NoStore from "@/components/ui/NoStore";
+import PageHeader from "@/components/ui/PageHeader";
 import AbortController from "@/components/organism/abort-controller";
 
 const PurchasePaymentList = () => {
@@ -125,27 +126,20 @@ const PurchasePaymentList = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.purchasePayment.list.title")}</span>
-        </nav>
-      </div>
-
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {t("page.purchasePayment.list.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.purchasePayment.list.description")}
-          </p>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.purchasePayment.list.title"),
+            i18nKey: "page.purchasePayment.list.title"
+          }
+        ]}
+        title={t("page.purchasePayment.list.title")}
+        description={t("page.purchasePayment.list.description")}>
         {isSuperAdmin && locData && (
           <StoreFilter
             locations={locData?.data || []}
@@ -158,7 +152,7 @@ const PurchasePaymentList = () => {
             t={t}
           />
         )}
-      </div>
+      </PageHeader>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

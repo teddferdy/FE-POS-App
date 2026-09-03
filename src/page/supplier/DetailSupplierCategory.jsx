@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import {
-  ArrowLeft,
   Tag,
   FileText,
   CalendarDays,
@@ -15,6 +14,7 @@ import {
   Phone,
   Mail
 } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { getSupplierCategoryById } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -80,59 +80,29 @@ const DetailSupplierCategory = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/")} className="hover:text-foreground">
-          Beranda
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/supplier")} className="hover:text-foreground">
-          Supplier
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/supplier-category")} className="hover:text-foreground">
-          {t("page.supplierCategory.title")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold truncate max-w-[200px]">
-          {category.name || "-"}
-        </span>
-      </nav>
-
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="outline" size="icon" onClick={() => navigate("/supplier-category")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <Tag size={24} />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold truncate">{category.name || "-"}</h1>
-              <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                  isActive
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                }`}>
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
-                />
-                {isActive ? t("common.active") : t("common.inactive")}
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground truncate">
-              {t("page.supplierCategory.description")}
-            </p>
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.supplierCategory.title"),
+            href: "/supplier-category-list",
+            i18nKey: "page.supplierCategory.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : category?.name || "-"}
+        description={t("page.supplierCategory.description")}
+        backLink="/supplier-category-list"
+        dynamicInfo={false}>
         <Button onClick={() => navigate(`/supplier-category?edit=${id}`)}>
           <Edit3 size={14} className="mr-1.5" />
           {t("common.edit")}
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Konten */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

@@ -5,7 +5,8 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCookies } from "react-cookie";
-import { X, Save, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { X, Save, Plus, Trash2 } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { parseSalary } from "@/lib/utils";
 import { addExpense, bulkAddExpenses, getExpenseCategories } from "@/services/expense";
 import { getAllEmployee } from "@/services/employee";
@@ -360,35 +361,25 @@ const AddExpense = () => {
   return (
     <div>
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="danger"
-            size="icon"
-            className="h-10 w-10 shrink-0"
-            onClick={() => setCancelModal(true)}>
-            <ArrowLeft size={16} />
-          </Button>
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <button
-              onClick={() => navigate("/dashboard-super-admin")}
-              className="hover:text-foreground transition-colors">
-              {t("breadcrumb.home")}
-            </button>
-            <span className="text-xs">/</span>
-            <button
-              onClick={() => navigate("/expense")}
-              className="hover:text-foreground transition-colors">
-              {t("breadcrumb.management")}
-            </button>
-            <span className="text-xs">/</span>
-            <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
-          </nav>
-        </div>
-
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.expense.add.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.expense.add.description")}</p>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("breadcrumb.management"),
+              href: "/expense",
+              i18nKey: "breadcrumb.management"
+            },
+            { label: t("breadcrumb.add") }
+          ]}
+          title={t("page.expense.add.title")}
+          description={t("page.expense.add.description")}
+          onBack={() => setCancelModal(true)}
+          dynamicInfo={false}
+        />
 
         <Card className="p-6">
           {isLoading || isFetching || (isSuperAdmin && locsLoading) ? (

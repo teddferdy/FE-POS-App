@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  ArrowLeft,
   CalendarDays,
   Edit3,
   Calendar,
@@ -29,6 +28,7 @@ import { resolveKaryawan, splitKaryawanByStore } from "./shiftMembers";
 import { cn } from "@/lib/utils";
 import { safeGet } from "@/lib/safe-lookup";
 import { DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS, SHIFT_TYPES } from "@/constants/shiftTypes";
+import PageHeader from "@/components/ui/PageHeader";
 
 const statusBadge = (status, t) => {
   if (status === "active" || status === true || status === 1)
@@ -49,22 +49,6 @@ const statusBadge = (status, t) => {
     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">
       <span className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-400" />
       {t("common.inactive")}
-    </span>
-  );
-};
-
-const typeBadge = (type) => {
-  const safeType = SHIFT_TYPES.includes(type) ? type : DEFAULT_SHIFT_TYPE;
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold capitalize",
-        safeType === "mingguan"
-          ? "bg-violet-100 text-violet-700 border border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800"
-          : "bg-sky-100 text-sky-700 border border-sky-200 dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-800"
-      )}>
-      <RefreshCcw size={11} />
-      {safeGet(SHIFT_TYPE_LABELS, safeType, safeType)}
     </span>
   );
 };
@@ -261,53 +245,36 @@ const DetailShift = () => {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/shift-list")}
-          className="hover:text-foreground transition-colors">
-          {t("page.shift.list.title")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{shift.nama_shift || "Detail"}</span>
-      </nav>
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3.5">
-          <Button
-            variant="outline"
-            size="icon"
-            className="shrink-0"
-            onClick={() => navigate("/shift-list")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <CalendarDays size={26} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-2xl font-bold">{shift.nama_shift || "-"}</h1>
-              {typeBadge(shift.tipe_shift)}
-            </div>
-            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Store size={13} />
-              {locationName || `Toko #${shift.store || "-"}`}
-              <span className="text-muted-foreground/50">•</span>
-              {statusBadge(shift.status, t)}
-            </div>
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.shift.list.title"),
+            href: "/shift-list",
+            i18nKey: "page.shift.list.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={shift.nama_shift || "-"}
+        description={
+          <span className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+            <Store size={13} />
+            {locationName || `Toko #${shift.store || "-"}`}
+            <span className="text-muted-foreground/50">•</span>
+            {statusBadge(shift.status, t)}
+          </span>
+        }
+        backLink="/shift-list"
+        dynamicInfo={false}>
         <Button variant="outline" onClick={() => navigate(`/edit-shift?id=${id}`)}>
           <Edit3 size={14} className="mr-1.5" />
           {t("common.edit")}
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Main Content */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

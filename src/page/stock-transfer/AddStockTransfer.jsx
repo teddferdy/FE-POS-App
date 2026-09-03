@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/command";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import PageHeader from "@/components/ui/PageHeader";
 
 const AddStockTransfer = () => {
   const { t } = useTranslation();
@@ -154,27 +155,25 @@ const AddStockTransfer = () => {
   return (
     <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.stockTransfer.add.breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button onClick={() => navigate("/stock-transfer")} className="hover:text-foreground">
-            {t("page.stockTransfer.add.breadcrumb.list")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.stockTransfer.add.breadcrumb.add")}
-          </span>
-        </nav>
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.stockTransfer.add.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.stockTransfer.add.subtitle")}
-          </p>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("page.stockTransfer.add.breadcrumb.dashboard"),
+              href: "/dashboard-super-admin",
+              i18nKey: "page.stockTransfer.add.breadcrumb.dashboard"
+            },
+            {
+              label: t("page.stockTransfer.add.breadcrumb.list"),
+              href: "/stock-transfer",
+              i18nKey: "page.stockTransfer.add.breadcrumb.list"
+            },
+            { label: t("page.stockTransfer.add.breadcrumb.add") }
+          ]}
+          title={t("page.stockTransfer.add.title")}
+          description={t("page.stockTransfer.add.subtitle")}
+          onBack={() => setCancelModal(true)}
+          dynamicInfo={false}
+        />
 
         <form
           onSubmit={handleSubmit(onSubmit)}

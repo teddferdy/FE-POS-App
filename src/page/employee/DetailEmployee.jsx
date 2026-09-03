@@ -1,18 +1,8 @@
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  ArrowLeft,
-  Users,
-  UserCheck,
-  Edit3,
-  Calendar,
-  Phone,
-  Mail,
-  Building2,
-  Briefcase,
-  MapPin
-} from "lucide-react";
+import { Users, Edit3, Calendar, Phone, Mail, Building2, Briefcase, MapPin } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -51,57 +41,31 @@ const DetailEmployee = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto p-6 space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">
-            {t("breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/employee-list")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.employee")}
-          </button>
-          <span className="text-xs">/</span>
-          {isLoading ? (
-            <Skeleton className="h-4 w-20" />
-          ) : (
-            <span className="text-primary font-semibold">
-              {employee?.nameEmployee || employee?.name || "Detail"}
-            </span>
-          )}
-        </nav>
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" onClick={() => navigate("/employee-list")}>
-              <ArrowLeft size={16} />
-            </Button>
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <UserCheck size={24} />
-            </div>
-            <div>
-              {isLoading ? (
-                <>
-                  <Skeleton className="h-7 w-48 mb-2" />
-                  <Skeleton className="h-4 w-64" />
-                </>
-              ) : (
-                <>
-                  <h1 className="text-2xl font-bold">
-                    {employee?.nameEmployee || employee?.name || "-"}
-                  </h1>
-                  <p className="text-sm text-muted-foreground">{t("page.employee.detailDesc")}</p>
-                </>
-              )}
-            </div>
-          </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("breadcrumb.employee"),
+              href: "/employee-list",
+              i18nKey: "breadcrumb.employee"
+            },
+            { label: t("breadcrumb.detail") }
+          ]}
+          title={isLoading ? t("common.loading") : employee?.nameEmployee || employee?.name || "-"}
+          description={t("page.employee.detailDesc")}
+          backLink="/employee-list"
+          dynamicInfo={false}>
           {!isLoading && (
             <Button variant="outline" onClick={() => navigate(`/edit-employee?id=${employee?.id}`)}>
               <Edit3 size={14} className="mr-1.5" />
               {t("common.edit")}
             </Button>
           )}
-        </div>
+        </PageHeader>
 
         {isLoading ? (
           <Card className="p-5 space-y-4">

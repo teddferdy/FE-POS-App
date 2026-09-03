@@ -520,6 +520,11 @@ const AddEmployee = () => {
         <div>
           <PageHeader
             breadcrumbs={[
+              {
+                label: t("breadcrumb.home"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.home"
+              },
               { i18nKey: "sidebar.karyawan" },
               { i18nKey: "page.employee.list.title", href: "/employee-list" },
               { i18nKey: "page.employee.add.title" }

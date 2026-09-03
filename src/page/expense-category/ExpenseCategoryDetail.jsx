@@ -3,12 +3,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { Tag, ArrowLeft, Clock, Edit3 } from "lucide-react";
+import { Tag, Clock, Edit3 } from "lucide-react";
 import { getExpenseCategories } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const ExpenseCategoryDetail = () => {
   const { t } = useTranslation();
@@ -64,55 +65,31 @@ const ExpenseCategoryDetail = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/expense-category")}
-          className="hover:text-foreground transition-colors">
-          {t("page.expenseCategory.list.title")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">
-          {isLoading ? <Skeleton className="h-4 w-24" /> : category?.name || "Detail"}
-        </span>
-      </nav>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/expense-category")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Tag size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{category?.name || "-"}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.expenseCategory.detail.title")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.expenseCategory.list.title"),
+            href: "/expense-category-list",
+            i18nKey: "page.expenseCategory.list.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : category?.name || "-"}
+        description={t("page.expenseCategory.detail.title")}
+        backLink="/expense-category-list"
+        dynamicInfo={false}>
         {!isLoading && (
           <Button variant="outline" onClick={() => navigate(`/edit-expense-category?id=${id}`)}>
             <Edit3 size={14} className="mr-1.5" />
             {t("common.edit")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

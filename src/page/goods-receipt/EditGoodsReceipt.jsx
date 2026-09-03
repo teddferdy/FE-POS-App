@@ -499,7 +499,11 @@ const EditGoodsReceipt = () => {
       <div className="space-y-6 animate-in fade-in duration-300">
         <PageHeader
           breadcrumbs={[
-            { label: t("breadcrumb.dashboard"), href: "/dashboard-super-admin" },
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
             { label: t("breadcrumb.goodsReceipt"), href: "/goods-receipt" },
             { label: t("breadcrumb.edit") }
           ]}

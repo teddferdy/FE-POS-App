@@ -56,7 +56,7 @@ const PageHeader = ({
     year: "numeric"
   });
 
-  const showMeta = dynamicInfo && (roleName || storeName || positionName);
+  const showMeta = dynamicInfo;
 
   return (
     <header className="space-y-4">

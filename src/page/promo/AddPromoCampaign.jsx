@@ -408,6 +408,7 @@ const AddPromoCampaign = () => {
       <PageHeader
         breadcrumbs={[
           {
+            label: t("breadcrumb.home"),
             href:
               user?.roleType === "super_admin"
                 ? "/dashboard-super-admin"
@@ -417,16 +418,21 @@ const AddPromoCampaign = () => {
             i18nKey: "breadcrumb.home"
           },
           {
+            label: t("page.promo.list.title"),
             href: "/promo-list",
             i18nKey: "sidebar.promo"
           },
-          { i18nKey: "page.promo.add.title" }
+          {
+            label: t("page.promo.add.title"),
+            i18nKey: "page.promo.add.title"
+          }
         ]}
         title={t("page.promo.add.title")}
-        description={t("page.promo.add.description")}
-        backLink="/promo-list"
-        onBack={() => setCancelModalOpen(true)}
-      />
+        description={t("page.promo.add.description")}>
+        <Button variant="outline" onClick={() => setCancelModalOpen(true)}>
+          {t("action.back")}
+        </Button>
+      </PageHeader>
 
       <Form {...form}>
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">

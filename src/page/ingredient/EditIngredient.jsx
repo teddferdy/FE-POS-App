@@ -326,9 +326,9 @@ const EditIngredient = () => {
           <PageHeader
             breadcrumbs={[
               {
-                label: t("page.ingredient.edit.breadcrumbDashboard"),
+                label: t("breadcrumb.home"),
                 href: "/dashboard-super-admin",
-                i18nKey: "page.ingredient.edit.breadcrumbDashboard"
+                i18nKey: "breadcrumb.home"
               },
               {
                 label: t("page.ingredient.edit.breadcrumbIngredient"),
@@ -367,9 +367,9 @@ const EditIngredient = () => {
         <PageHeader
           breadcrumbs={[
             {
-              label: t("page.ingredient.edit.breadcrumbDashboard"),
+              label: t("breadcrumb.home"),
               href: "/dashboard-super-admin",
-              i18nKey: "page.ingredient.edit.breadcrumbDashboard"
+              i18nKey: "breadcrumb.home"
             },
             {
               label: t("page.ingredient.edit.breadcrumbIngredient"),

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Save, X, Plus, Trash2 } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { addBom } from "@/services/bom";
 import { getAllProduct } from "@/services/product";
 import { getAllIngredients } from "@/services/ingredient";
@@ -190,27 +191,25 @@ const AddBom = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button onClick={() => navigate("/bom")} className="hover:text-foreground">
-            {t("breadcrumb.bom")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
-        </nav>
-      </div>
-      <div>
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.bom.add.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.bom.add.description")}</p>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.dashboard"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.dashboard"
+          },
+          {
+            label: t("breadcrumb.bom"),
+            href: "/bom",
+            i18nKey: "breadcrumb.bom"
+          },
+          { label: t("breadcrumb.add") }
+        ]}
+        title={t("page.bom.add.title")}
+        description={t("page.bom.add.description")}
+        onBack={() => setCancelModal(true)}
+        dynamicInfo={false}
+      />
 
       <div>
         <form

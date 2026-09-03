@@ -395,6 +395,7 @@ const EditPromoCampaign = () => {
       <PageHeader
         breadcrumbs={[
           {
+            label: t("breadcrumb.home"),
             href:
               user?.roleType === "super_admin"
                 ? "/dashboard-super-admin"
@@ -404,15 +405,17 @@ const EditPromoCampaign = () => {
             i18nKey: "breadcrumb.home"
           },
           {
+            label: t("page.promo.list.title"),
             href: "/promo-list",
             i18nKey: "sidebar.promo"
           },
-          { i18nKey: "page.promo.edit.title" }
+          {
+            label: t("page.promo.edit.title"),
+            i18nKey: "page.promo.edit.title"
+          }
         ]}
         title={t("page.promo.edit.title")}
-        description={t("page.promo.edit.description")}
-        backLink="/promo-list"
-        onBack={() => setCancelModalOpen(true)}>
+        description={t("page.promo.edit.description")}>
         <Button variant="danger" onClick={() => setCancelModalOpen(true)}>
           {t("common.cancel")}
         </Button>

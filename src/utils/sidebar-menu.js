@@ -1134,6 +1134,13 @@ export const navCategories = {
         {
           title: "Meja & Reservasi",
           i18nKey: "sidebar.section.mejaReservasi",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Meja", desc: "Buat data meja per toko" },
+              { label: "Reservasi Meja", desc: "Kelola reservasi meja" }
+            ]
+          },
           items: [
             {
               title: "Meja",
@@ -1160,6 +1167,14 @@ export const navCategories = {
         {
           title: "SDM",
           i18nKey: "sidebar.section.sdm",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Departemen", desc: "Buat struktur departemen terlebih dahulu" },
+              { label: "Posisi", desc: "Buat daftar posisi dalam departemen" },
+              { label: "Daftar Karyawan", desc: "Daftarkan karyawan ke posisi" }
+            ]
+          },
           items: [
             {
               title: "Departemen",
@@ -1192,6 +1207,13 @@ export const navCategories = {
         {
           title: "Shift",
           i18nKey: "sidebar.shift",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Template Shift", desc: "Buat template jadwal shift" },
+              { label: "Shift", desc: "Atur shift berdasarkan template" }
+            ]
+          },
           items: [
             {
               title: "Template Shift",
@@ -1216,6 +1238,13 @@ export const navCategories = {
         {
           title: "Membership",
           i18nKey: "sidebar.section.membership",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Member Tier", desc: "Buat level keanggotaan" },
+              { label: "Daftar Member", desc: "Daftarkan member baru" }
+            ]
+          },
           items: [
             {
               title: "Member Tier",
@@ -1242,6 +1271,13 @@ export const navCategories = {
         {
           title: "Produk",
           i18nKey: "sidebar.section.produkPromo",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Kategori", desc: "Buat kategori produk terlebih dahulu" },
+              { label: "Daftar Produk", desc: "Tambahkan produk ke kategori" }
+            ]
+          },
           items: [
             { title: "Kategori", i18nKey: "sidebar.kategori", href: "/category-list", icon: Tag },
             {
@@ -1255,6 +1291,13 @@ export const navCategories = {
         {
           title: "Promo",
           i18nKey: "sidebar.section.produkPromo",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Diskon", desc: "Buat diskon jika diperlukan" },
+              { label: "Kampanye Promo", desc: "Jalankan kampanye promosi" }
+            ]
+          },
           items: [
             { title: "Bundle / Combo", i18nKey: "sidebar.bundle", href: "/bundle", icon: Package },
             {
@@ -1280,8 +1323,16 @@ export const navCategories = {
       i18nKey: "sidebar.section.bahanBakuPembelian",
       sections: [
         {
-          title: "Supplier & Bahan Baku",
-          i18nKey: "sidebar.section.bahanBakuPembelian",
+          title: "Supplier",
+          i18nKey: "sidebar.supplier",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Kategori Supplier", desc: "Buat kategori supplier" },
+              { label: "Supplier", desc: "Daftarkan supplier" },
+              { label: "Skor Supplier", desc: "Evaluasi performa supplier" }
+            ]
+          },
           items: [
             {
               title: "Kategori Supplier",
@@ -1295,7 +1346,20 @@ export const navCategories = {
               i18nKey: "sidebar.supplierPerformance",
               href: "/supplier-score-list",
               icon: TrendingUp
-            },
+            }
+          ]
+        },
+        {
+          title: "Bahan Baku",
+          i18nKey: "sidebar.bahanBaku",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Kategori Bahan Baku", desc: "Buat kategori bahan baku" },
+              { label: "Bahan Baku", desc: "Tambahkan bahan baku" }
+            ]
+          },
+          items: [
             {
               title: "Kategori Bahan Baku",
               i18nKey: "sidebar.ingredientCategory",
@@ -1307,7 +1371,13 @@ export const navCategories = {
               i18nKey: "sidebar.bahanBaku",
               href: "/ingredient",
               icon: Package
-            },
+            }
+          ]
+        },
+        {
+          title: "Pembelian & Gudang",
+          i18nKey: "sidebar.section.bahanBakuPembelian",
+          items: [
             {
               title: "Permintaan Barang",
               i18nKey: "sidebar.goodsRequest",
@@ -1555,8 +1625,16 @@ export const navCategories = {
       i18nKey: "sidebar.section.bahanBakuPembelian",
       sections: [
         {
-          title: "Supplier & Bahan Baku",
-          i18nKey: "sidebar.section.bahanBakuPembelian",
+          title: "Supplier",
+          i18nKey: "sidebar.supplier",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Kategori Supplier", desc: "Buat kategori supplier" },
+              { label: "Supplier", desc: "Daftarkan supplier" },
+              { label: "Skor Supplier", desc: "Evaluasi performa supplier" }
+            ]
+          },
           items: [
             {
               title: "Kategori Supplier",
@@ -1570,7 +1648,20 @@ export const navCategories = {
               i18nKey: "sidebar.supplierPerformance",
               href: "/supplier-score-list",
               icon: TrendingUp
-            },
+            }
+          ]
+        },
+        {
+          title: "Bahan Baku",
+          i18nKey: "sidebar.bahanBaku",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Kategori Bahan Baku", desc: "Buat kategori bahan baku" },
+              { label: "Bahan Baku", desc: "Tambahkan bahan baku" }
+            ]
+          },
+          items: [
             {
               title: "Kategori Bahan Baku",
               i18nKey: "sidebar.ingredientCategory",
@@ -1582,7 +1673,13 @@ export const navCategories = {
               i18nKey: "sidebar.bahanBaku",
               href: "/ingredient",
               icon: Package
-            },
+            }
+          ]
+        },
+        {
+          title: "Pembelian & Gudang",
+          i18nKey: "sidebar.section.bahanBakuPembelian",
+          items: [
             {
               title: "Permintaan Barang",
               i18nKey: "sidebar.goodsRequest",
@@ -1720,14 +1817,31 @@ export const navCategories = {
       ]
     },
     {
-      id: "membershipSdm",
-      icon: BookUser,
-      title: "Membership & SDM",
-      i18nKey: "sidebar.section.membershipSdm",
+      id: "inventory",
+      icon: Warehouse,
+      title: "Inventory & Pembelian",
+      i18nKey: "sidebar.section.bahanBakuPembelian",
+      setupHint: {
+        title: "Urutan Pembuatan Data",
+        steps: [
+          { label: "Kategori Supplier", desc: "Buat kategori supplier" },
+          { label: "Supplier", desc: "Daftarkan supplier" },
+          { label: "Kategori Bahan Baku", desc: "Buat kategori bahan baku" },
+          { label: "Bahan Baku", desc: "Tambahkan bahan baku" },
+          { label: "Purchase Order", desc: "Buat pesanan pembelian" }
+        ]
+      },
       sections: [
         {
           title: "Membership",
           i18nKey: "sidebar.section.membership",
+          setupHint: {
+            title: "Urutan Pembuatan Data",
+            steps: [
+              { label: "Member Tier", desc: "Buat level keanggotaan" },
+              { label: "Daftar Member", desc: "Daftarkan member baru" }
+            ]
+          },
           items: [
             {
               title: "Member Tier",
