@@ -12,6 +12,7 @@ import {
   changeBusinessTripStatus
 } from "@/services/business-trip";
 import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/ui/PageHeader";
 import { SearchInput } from "@/components/ui/SearchInput";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
@@ -211,37 +212,26 @@ const BusinessTripList = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() =>
-              navigate(user?.roleType === "super_admin" ? "/dashboard-super-admin" : "/dashboard")
-            }
-            className="hover:text-foreground">
-            {t("breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.businessTrip.list.title")}</span>
-        </nav>
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {t("page.businessTrip.list.title")}
-          </h1>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {canAccess(user, MENU_KEY, "add") && (
-            <Button
-              variant="success"
-              onClick={() => navigate("/add-business-trip")}
-              className="shrink-0 gap-2">
-              <Plus size={16} /> {t("page.businessTrip.list.addNew")}
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.businessTrip.list.title"), i18nKey: "page.businessTrip.list.title" }
+        ]}
+        title={t("page.businessTrip.list.title")}
+        description={t("page.businessTrip.list.description")}>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            variant="success"
+            onClick={() => navigate("/add-business-trip")}
+            className="shrink-0 gap-2 shadow-md">
+            <Plus size={16} /> {t("page.businessTrip.list.addNew")}
+          </Button>
+        )}
+      </PageHeader>
 
       {isFetching || isLoading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

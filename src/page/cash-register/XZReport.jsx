@@ -568,7 +568,16 @@ const XZReport = () => {
   if (!isSuperAdmin && !cookieStoreId) {
     return (
       <div className="space-y-6">
-        <PageHeader breadcrumbs={[{ i18nKey: "page.cashRegister.xz.breadcrumb" }]} />
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            { i18nKey: "page.cashRegister.xz.breadcrumb" }
+          ]}
+        />
         <div className="flex min-h-full w-full">
           <NoStore />
         </div>
@@ -577,10 +586,7 @@ const XZReport = () => {
   }
 
   const breadcrumbs = [
-    {
-      href: user?.roleType === "super_admin" ? "/dashboard-super-admin" : "/cash-register/current",
-      i18nKey: "page.cashRegister.xz.breadcrumbDashboard"
-    },
+    { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
     { i18nKey: "page.cashRegister.xz.breadcrumb" }
   ];
 

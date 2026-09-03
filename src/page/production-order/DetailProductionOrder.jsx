@@ -10,6 +10,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
 import { getDocumentSpecForProductionOrder } from "@/components/document/documentMappers";
+import PageHeader from "@/components/ui/PageHeader";
 
 const DetailProductionOrder = () => {
   const { t } = useTranslation();
@@ -71,50 +72,26 @@ const DetailProductionOrder = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.productionOrder.detail.breadcrumbDashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button onClick={() => navigate("/production-order")} className="hover:text-foreground">
-            {t("page.productionOrder.detail.breadcrumbPO")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.productionOrder.detail.breadcrumbDetail")}
-          </span>
-        </nav>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/production-order")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <ClipboardList size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{order?.productionNo || "-"}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.productionOrder.detail.title")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("breadcrumb.productionOrder"),
+            href: "/production-order-list",
+            i18nKey: "breadcrumb.productionOrder"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : order?.productionNo || "-"}
+        description={t("page.productionOrder.detail.title")}
+        backLink="/production-order-list"
+        dynamicInfo={false}>
         {!isLoading && order && <PrintButton />}
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

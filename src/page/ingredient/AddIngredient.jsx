@@ -11,13 +11,13 @@ import {
   Save,
   X,
   Check,
-  ArrowLeft,
   Info,
   ArrowRightLeft,
   Package,
   ToggleLeft,
   ArrowLeftRight
 } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { addIngredient, getProductNamesByFilters } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllIngredientCategory } from "@/services/ingredientCategory";
@@ -279,40 +279,25 @@ const AddIngredient = () => {
     <div>
       <div>
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <Button
-              variant="danger"
-              size="icon"
-              className="h-10 w-10 shrink-0 mt-0.5"
-              onClick={() => setCancelModal(true)}>
-              <ArrowLeft size={16} />
-            </Button>
-            <div>
-              <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-                <button
-                  onClick={() => navigate("/dashboard-super-admin")}
-                  className="hover:text-primary transition-colors">
-                  {t("page.ingredient.add.breadcrumbDashboard")}
-                </button>
-                <span>/</span>
-                <button
-                  onClick={() => navigate("/ingredient")}
-                  className="hover:text-primary transition-colors">
-                  {t("page.ingredient.add.breadcrumbIngredient")}
-                </button>
-                <span>/</span>
-                <span className="text-primary font-semibold">
-                  {t("page.ingredient.add.breadcrumbAdd")}
-                </span>
-              </nav>
-              <h2 className="text-2xl font-bold text-foreground tracking-tight">
-                {t("page.ingredient.add.title")}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t("page.ingredient.add.subtitle")}
-              </p>
-            </div>
-          </div>
+          <PageHeader
+            breadcrumbs={[
+              {
+                label: t("page.ingredient.add.breadcrumbDashboard"),
+                href: "/dashboard-super-admin",
+                i18nKey: "page.ingredient.add.breadcrumbDashboard"
+              },
+              {
+                label: t("page.ingredient.add.breadcrumbIngredient"),
+                href: "/ingredient",
+                i18nKey: "page.ingredient.add.breadcrumbIngredient"
+              },
+              { label: t("page.ingredient.add.breadcrumbAdd") }
+            ]}
+            title={t("page.ingredient.add.title")}
+            description={t("page.ingredient.add.subtitle")}
+            onBack={() => setCancelModal(true)}
+            dynamicInfo={false}
+          />
           <UserGuide guideKey="add-ingredient" />
         </div>
 

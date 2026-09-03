@@ -296,15 +296,27 @@ const AddShift = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
-          { i18nKey: "page.shift.list.title", href: "/shift-list" },
-          { i18nKey: "page.shift.add.title" }
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.shift.list.title"),
+            href: "/shift-list",
+            i18nKey: "page.shift.list.title"
+          },
+          {
+            label: t("page.shift.add.title"),
+            i18nKey: "page.shift.add.title"
+          }
         ]}
         title={t("page.shift.add.title")}
-        description={t("page.shift.list.description")}
-        backLink="/shift-list"
-        onBack={() => setCancelModal(true)}>
+        description={t("page.shift.list.description")}>
         <UserGuide guideKey="add-shift" />
+        <Button variant="outline" onClick={() => setCancelModal(true)}>
+          {t("action.back")}
+        </Button>
       </PageHeader>
 
       {isInitialLoading ? (

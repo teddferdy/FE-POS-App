@@ -8,6 +8,7 @@ import { getAllLocation } from "@/services/location";
 import { getOvertimes, createOvertime, cancelOvertime } from "@/services/overtime";
 import { safeGet } from "@/lib/safe-lookup";
 import { useUserSession } from "@/hooks/useUserSession";
+import { useTranslation } from "react-i18next";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,6 +85,7 @@ const durationLabel = (d) => {
 };
 
 const MyOvertime = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = useUserSession() || cookie?.user || {};
@@ -198,7 +200,15 @@ const MyOvertime = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        breadcrumbs={[{ label: "SDM" }, { label: "Lembur", i18nKey: "sidebar.overtime" }]}
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: "SDM" },
+          { label: "Lembur", i18nKey: "sidebar.overtime" }
+        ]}
         title="Lembur Saya"
         description="Ajukan lembur berdasarkan shift aktif dan pantau status pengajuan."
       />

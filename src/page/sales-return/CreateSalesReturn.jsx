@@ -25,6 +25,7 @@ import { returnOrder } from "@/services/sales-return";
 import { getAllTypePayment } from "@/services/type-payment";
 import { getBatches } from "@/services/inventory";
 import Modal from "@/components/organism/modal";
+import PageHeader from "@/components/ui/PageHeader";
 
 const reasonKeys = [
   "damaged",
@@ -187,15 +188,25 @@ const CreateSalesReturn = () => {
   if (!orderId) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/sales-return")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{t("page.salesReturn.create.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.salesReturn.create.subtitle")}</p>
-          </div>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.salesReturn.list.title"),
+              href: "/sales-return",
+              i18nKey: "page.salesReturn.list.title"
+            },
+            { label: t("page.salesReturn.create.title") }
+          ]}
+          title={t("page.salesReturn.create.title")}
+          description={t("page.salesReturn.create.subtitle")}
+          backLink="/sales-return"
+          dynamicInfo={false}
+        />
 
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-5">
@@ -259,22 +270,25 @@ const CreateSalesReturn = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Button variant="outline" size="icon" onClick={() => navigate("/sales-return")}>
-          <ArrowLeft size={16} />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.salesReturn.create.title")}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t("page.salesReturn.create.orderLabel")}: {order?.orderNumber}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {t("page.salesReturn.create.customerLabel")}:{" "}
-            {order?.customerName || t("page.salesReturn.create.guest")}
-            {order?.customerPhone ? ` · ${order.customerPhone}` : ""}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.salesReturn.list.title"),
+            href: "/sales-return",
+            i18nKey: "page.salesReturn.list.title"
+          },
+          { label: t("page.salesReturn.create.title") }
+        ]}
+        title={t("page.salesReturn.create.title")}
+        description={`${t("page.salesReturn.create.orderLabel")}: ${order?.orderNumber} | ${t("page.salesReturn.create.customerLabel")}: ${order?.customerName || t("page.salesReturn.create.guest")}${order?.customerPhone ? ` · ${order.customerPhone}` : ""}`}
+        backLink="/sales-return"
+        dynamicInfo={false}
+      />
 
       {hasExpiredSelected && (
         <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg p-4 flex items-start gap-3">

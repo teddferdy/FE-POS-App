@@ -44,6 +44,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import PageHeader from "@/components/ui/PageHeader";
 
 const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100];
 const DEFAULT_PAGE_SIZE = 10;
@@ -326,31 +327,25 @@ const SupplierComparison = () => {
 
   return (
     <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/")} className="hover:text-foreground">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/supplier")} className="hover:text-foreground">
-          {t("breadcrumb.supplier")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.supplier.comparison.title")}</span>
-      </nav>
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/supplier")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div>
-            <h1 className="text-lg sm:text-2xl font-bold">{t("page.supplier.comparison.title")}</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {t("page.supplier.comparison.subtitle")}
-            </p>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("breadcrumb.supplier"),
+            href: "/supplier"
+          },
+          { label: t("page.supplier.comparison.title") }
+        ]}
+        title={t("page.supplier.comparison.title")}
+        description={t("page.supplier.comparison.subtitle")}>
+        <Button variant="outline" size="icon" onClick={() => navigate("/supplier")}>
+          <ArrowLeft size={16} />
+        </Button>
+      </PageHeader>
 
       <Card className="p-4 md:p-5 space-y-3 md:space-y-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">

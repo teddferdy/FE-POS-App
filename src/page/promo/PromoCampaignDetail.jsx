@@ -8,6 +8,7 @@ import { getCampaignById, updateCampaignStatus } from "@/services/promo";
 import { getProductById } from "@/services/product";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import {
   ArrowLeft,
@@ -251,46 +252,50 @@ const PromoCampaignDetail = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/promo-list")}>
-            <ArrowLeft size={16} />
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.promo.list.title"),
+            href: "/promo-campaign-list",
+            i18nKey: "page.promo.list.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={campaign.name}
+        description={
+          campaign.code
+            ? `${campaign.code} · ${campaign.description || t("page.promo.detail.description")}`
+            : campaign.description || t("page.promo.detail.description")
+        }
+        backLink="/promo-campaign-list"
+        dynamicInfo={false}>
+        {campaign.status === "active" ? (
+          <Button
+            variant="outline"
+            onClick={() => handleStatusChange("pause")}
+            disabled={statusMutation?.isLoading}>
+            <Pause size={16} className="mr-1" />
+            {t("page.promo.detail.pause")}
           </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Icon size={24} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{campaign.name}</h1>
-            <p className="text-sm text-muted-foreground">
-              {campaign.code ? `${campaign.code} · ` : ""}
-              {campaign.description || t("page.promo.detail.description")}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          {campaign.status === "active" ? (
-            <Button
-              variant="outline"
-              onClick={() => handleStatusChange("pause")}
-              disabled={statusMutation?.isLoading}>
-              <Pause size={16} className="mr-1" />
-              {t("page.promo.detail.pause")}
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              onClick={() => handleStatusChange("activate")}
-              disabled={statusMutation?.isLoading}>
-              <Play size={16} className="mr-1" />
-              {t("page.promo.detail.activate")}
-            </Button>
-          )}
-          <Button onClick={() => navigate(`/edit-promo-campaign?id=${id}`)}>
-            <Edit size={16} className="mr-1" />
-            {t("common.edit")}
+        ) : (
+          <Button
+            variant="outline"
+            onClick={() => handleStatusChange("activate")}
+            disabled={statusMutation?.isLoading}>
+            <Play size={16} className="mr-1" />
+            {t("page.promo.detail.activate")}
           </Button>
-        </div>
-      </div>
+        )}
+        <Button onClick={() => navigate(`/edit-promo-campaign?id=${id}`)}>
+          <Edit size={16} className="mr-1" />
+          {t("common.edit")}
+        </Button>
+      </PageHeader>
 
       <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8 md:p-10">

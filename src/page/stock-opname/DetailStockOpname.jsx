@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ArrowLeft, ClipboardCheck, Edit3 } from "lucide-react";
+import { Edit3 } from "lucide-react";
 import { getStockOpnameById } from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
 import { getDocumentSpecForStockOpname } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const statusColors = {
   draft:
@@ -104,31 +105,32 @@ const DetailStockOpname = () => {
   return (
     <div>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" onClick={() => navigate("/stock-opname")}>
-              <ArrowLeft size={16} />
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.stockOpname.list.title", "Stock Opname"),
+              href: "/stock-opname-list",
+              i18nKey: "page.stockOpname.list.title"
+            },
+            { label: t("breadcrumb.detail") }
+          ]}
+          title={t("page.stockOpname.detail.title")}
+          description={opname.auditId || `#${opname.id}`}
+          backLink="/stock-opname-list"
+          dynamicInfo={false}>
+          <PrintButton />
+          {canEdit && (
+            <Button variant="success" onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>
+              <Edit3 size={14} className="mr-1.5" />
+              {t("common.edit")}
             </Button>
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <ClipboardCheck size={24} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">{t("page.stockOpname.detail.title")}</h1>
-              <p className="text-sm text-muted-foreground">{opname.auditId || `#${opname.id}`}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <PrintButton />
-            {canEdit && (
-              <Button
-                variant="success"
-                onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>
-                <Edit3 size={14} className="mr-1.5" />
-                {t("common.edit")}
-              </Button>
-            )}
-          </div>
-        </div>
+          )}
+        </PageHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-5 shadow-sm border-border">

@@ -31,8 +31,6 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import { useUserSession } from "@/hooks/useUserSession";
-import { getHomePath } from "@/utils/role";
 import { formatCurrency } from "@/utils/reportUtils";
 import ExcelPreviewSummary from "@/components/report/ExcelPreviewSummary";
 import ExcelPreviewRanking from "@/components/report/ExcelPreviewRanking";
@@ -68,7 +66,6 @@ const SAMPLE_ROWS = [
 
 const ReportSettingsPage = () => {
   const { t } = useTranslation();
-  const user = useUserSession();
 
   const [meta, setMeta] = useState([]);
   const [configs, setConfigs] = useState({});
@@ -179,7 +176,11 @@ const ReportSettingsPage = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { href: getHomePath(user), i18nKey: "breadcrumb.home" },
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           { i18nKey: "page.reportSettings.title" }
         ]}
         title={t("page.reportSettings.title")}

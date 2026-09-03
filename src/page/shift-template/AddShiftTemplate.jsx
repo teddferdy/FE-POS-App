@@ -99,6 +99,11 @@ const AddShiftTemplate = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           { i18nKey: "sidebar.section.membershipSdm" },
           { i18nKey: "page.shiftTemplate.list.title" },
           { i18nKey: "page.shiftTemplate.add.title" }

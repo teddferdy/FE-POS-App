@@ -500,7 +500,11 @@ const AddStockOpname = () => {
         <div>
           <PageHeader
             breadcrumbs={[
-              { i18nKey: "breadcrumb.home" },
+              {
+                label: t("breadcrumb.home"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.home"
+              },
               { i18nKey: "page.stockOpname.list.title" },
               { i18nKey: id ? "breadcrumb.edit" : "breadcrumb.add" }
             ]}

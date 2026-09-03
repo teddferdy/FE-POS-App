@@ -245,9 +245,9 @@ const EditReservation = () => {
         <PageHeader
           breadcrumbs={[
             {
-              label: t("page.reservation.edit.breadcrumb.dashboard"),
+              label: t("breadcrumb.home"),
               href: "/dashboard-super-admin",
-              i18nKey: "page.reservation.edit.breadcrumb.dashboard"
+              i18nKey: "breadcrumb.home"
             },
             {
               label: t("page.reservation.edit.breadcrumb.list"),

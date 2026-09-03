@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "react-query";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Save, X, ArrowLeft } from "lucide-react";
+import { Save, X } from "lucide-react";
 import { format } from "date-fns";
 import { getBusinessTripById, editBusinessTrip } from "@/services/business-trip";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import PageHeader from "@/components/ui/PageHeader";
 
 const toDate = (v) => {
   if (!v) return null;
@@ -130,26 +131,24 @@ const EditBusinessTrip = () => {
   return (
     <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="danger"
-            size="icon"
-            className="h-10 w-10 shrink-0"
-            onClick={() => setCancelModal(true)}>
-            <ArrowLeft size={16} />
-          </Button>
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <button onClick={() => navigate("/business-trip")} className="hover:text-foreground">
-              {t("page.businessTrip.list.title")}
-            </button>
-            <span className="text-xs">/</span>
-            <span className="text-primary font-semibold">{t("page.businessTrip.edit.title")}</span>
-          </nav>
-        </div>
-
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.businessTrip.edit.title")}</h1>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.businessTrip.list.title"),
+              href: "/business-trip",
+              i18nKey: "page.businessTrip.list.title"
+            },
+            { label: t("page.businessTrip.edit.title") }
+          ]}
+          title={t("page.businessTrip.edit.title")}
+          onBack={() => setCancelModal(true)}
+          dynamicInfo={false}
+        />
 
         <form
           onSubmit={handleSubmit((data) => doSubmit(data))}

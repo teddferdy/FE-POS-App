@@ -40,6 +40,7 @@ import TableActions from "@/components/ui/TableActions";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
+import PageHeader from "@/components/ui/PageHeader";
 
 const TypePaymentList = () => {
   const { t, i18n } = useTranslation();
@@ -296,107 +297,90 @@ const TypePaymentList = () => {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.typePayment.list.title")}</span>
-      </nav>
-
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-foreground">{t("page.typePayment.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.typePayment.list.description")}
-          </p>
-        </div>
-        <div
-          className="overflow-x-auto shrink-0"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-          <div className="flex items-center gap-2 flex-nowrap">
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                variant="outline"
-                disabled={isDownloadingTemplate}
-                onClick={async () => {
-                  setIsDownloadingTemplate(true);
-                  try {
-                    await downloadTypePaymentTemplate();
-                    toast.success(t("common.success"), {
-                      description: t("page.typePayment.toast.templateSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.typePayment.toast.templateError")
-                    });
-                  } finally {
-                    setIsDownloadingTemplate(false);
-                  }
-                }}>
-                {isDownloadingTemplate ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <Table size={20} className="text-lg mr-1" />
-                )}
-                {t("page.typePayment.button.downloadTemplate")}
-              </Button>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.typePayment.list.title") }
+        ]}
+        title={t("page.typePayment.list.title")}
+        description={t("page.typePayment.list.description")}>
+        {canAccess(user, MENU_KEY, "export") && (
+          <Button
+            variant="outline"
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadTypePaymentTemplate();
+                toast.success(t("common.success"), {
+                  description: t("page.typePayment.toast.templateSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.typePayment.toast.templateError")
+                });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
+            }}>
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <Table size={20} className="text-lg mr-1" />
             )}
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                variant="general"
-                disabled={isDownloadingData}
-                onClick={async () => {
-                  setIsDownloadingData(true);
-                  try {
-                    await downloadTypePaymentExcel();
-                    toast.success(t("common.success"), {
-                      description: t("page.typePayment.toast.dataSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.typePayment.toast.dataError")
-                    });
-                  } finally {
-                    setIsDownloadingData(false);
-                  }
-                }}>
-                {isDownloadingData ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <Download size={20} className="text-lg mr-1" />
-                )}
-                {t("page.typePayment.button.downloadData")}
-              </Button>
+            {t("page.typePayment.button.downloadTemplate")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "export") && (
+          <Button
+            variant="general"
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadTypePaymentExcel();
+                toast.success(t("common.success"), {
+                  description: t("page.typePayment.toast.dataSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.typePayment.toast.dataError")
+                });
+              } finally {
+                setIsDownloadingData(false);
+              }
+            }}>
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <Download size={20} className="text-lg mr-1" />
             )}
-            {canAccess(user, MENU_KEY, "import") && (
-              <Button variant="import" onClick={() => setUploadModalOpen(true)}>
-                <Upload size={20} className="text-lg mr-1" />
-                {t("page.typePayment.button.upload")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                variant="success"
-                onClick={() => navigate("/add-type-payment")}
-                className="gap-2 shadow-md">
-                <Plus size={18} />
-                {t("page.typePayment.button.add")}
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
+            {t("page.typePayment.button.downloadData")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "import") && (
+          <Button variant="import" onClick={() => setUploadModalOpen(true)}>
+            <Upload size={20} className="text-lg mr-1" />
+            {t("page.typePayment.button.upload")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button variant="success" onClick={() => navigate("/add-type-payment")}>
+            <Plus size={18} className="mr-1" />
+            {t("page.typePayment.button.add")}
+          </Button>
+        )}
+      </PageHeader>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

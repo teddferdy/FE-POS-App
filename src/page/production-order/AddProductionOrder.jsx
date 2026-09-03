@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Save, X } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
@@ -122,38 +123,35 @@ const AddProductionOrder = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.productionOrder.add.breadcrumbDashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button onClick={() => navigate("/production-order")} className="hover:text-foreground">
-            {t("page.productionOrder.add.breadcrumbPO")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {id
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("page.productionOrder.add.breadcrumbDashboard"),
+            href: "/dashboard-super-admin",
+            i18nKey: "page.productionOrder.add.breadcrumbDashboard"
+          },
+          {
+            label: t("page.productionOrder.add.breadcrumbPO"),
+            href: "/production-order",
+            i18nKey: "page.productionOrder.add.breadcrumbPO"
+          },
+          {
+            label: id
               ? t("page.productionOrder.add.breadcrumbEdit")
-              : t("page.productionOrder.add.breadcrumbAdd")}
-          </span>
-        </nav>
-      </div>
-
-      <div>
-        <div>
-          <h1 className="text-2xl font-bold">
-            {id ? t("page.productionOrder.add.titleEdit") : t("page.productionOrder.add.titleAdd")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {id
-              ? t("page.productionOrder.add.subtitleEdit")
-              : t("page.productionOrder.add.subtitleAdd")}
-          </p>
-        </div>
-      </div>
+              : t("page.productionOrder.add.breadcrumbAdd")
+          }
+        ]}
+        title={
+          id ? t("page.productionOrder.add.titleEdit") : t("page.productionOrder.add.titleAdd")
+        }
+        description={
+          id
+            ? t("page.productionOrder.add.subtitleEdit")
+            : t("page.productionOrder.add.subtitleAdd")
+        }
+        onBack={() => setCancelModal(true)}
+        dynamicInfo={false}
+      />
 
       <div>
         <form

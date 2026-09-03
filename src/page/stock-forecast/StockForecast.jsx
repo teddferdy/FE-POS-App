@@ -30,6 +30,7 @@ import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
+import PageHeader from "@/components/ui/PageHeader";
 
 const StockForecast = () => {
   const { t } = useTranslation();
@@ -131,31 +132,37 @@ const StockForecast = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t("page.stockForecast.title")}</h1>
-        <div className="flex gap-2">
-          {isSuperAdmin && (
-            <Select value={store} onValueChange={setStore}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Pilih toko" />
-              </SelectTrigger>
-              <SelectContent>
-                {locations.map((loc) => (
-                  <SelectItem key={loc.id} value={String(loc.id)}>
-                    {loc.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <Button onClick={handleRunForecast} disabled={runForecastMutation.isLoading}>
-            <RefreshCw
-              className={`w-4 h-4 mr-2 ${runForecastMutation.isLoading ? "animate-spin" : ""}`}
-            />
-            {t("page.stockForecast.runForecast")}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.stockForecast.title") }
+        ]}
+        title={t("page.stockForecast.title")}>
+        {isSuperAdmin && (
+          <Select value={store} onValueChange={setStore}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Pilih toko" />
+            </SelectTrigger>
+            <SelectContent>
+              {locations.map((loc) => (
+                <SelectItem key={loc.id} value={String(loc.id)}>
+                  {loc.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        <Button onClick={handleRunForecast} disabled={runForecastMutation.isLoading}>
+          <RefreshCw
+            className={`w-4 h-4 mr-2 ${runForecastMutation.isLoading ? "animate-spin" : ""}`}
+          />
+          {t("page.stockForecast.runForecast")}
+        </Button>
+      </PageHeader>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>

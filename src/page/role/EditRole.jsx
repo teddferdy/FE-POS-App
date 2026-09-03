@@ -23,6 +23,7 @@ import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import PageHeader from "@/components/ui/PageHeader";
 
 // ponytail: action labels map to translation keys. Add new actions here and in id.json/en.json.
 const actionLabelKeys = {
@@ -326,24 +327,20 @@ const EditRole = () => {
   return (
     <div>
       <div>
-        <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/role-management")}
-            className="hover:text-primary transition-colors">
-            {t("page.role.detail.breadcrumbParent")}
-          </button>
-          <ChevronRight size={14} />
-          <span className="text-foreground font-bold">{t("page.role.edit.title")}</span>
-        </nav>
-
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              {`${t("page.role.edit.title")}: ${name}`}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.role.edit.description")}</p>
-          </div>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("page.role.detail.breadcrumbParent"),
+              href: "/role-management",
+              i18nKey: "page.role.detail.breadcrumbParent"
+            },
+            { label: t("page.role.edit.title") }
+          ]}
+          title={`${t("page.role.edit.title")}: ${name}`}
+          description={t("page.role.edit.description")}
+          onBack={() => setCancelModal(true)}
+          dynamicInfo={false}
+        />
 
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">

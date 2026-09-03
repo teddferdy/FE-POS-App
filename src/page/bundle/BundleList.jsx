@@ -22,6 +22,7 @@ import StatCard from "@/components/ui/StatCard";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
+import PageHeader from "@/components/ui/PageHeader";
 import { TipsCard } from "@/components/ui/tips-card";
 import {
   Select,
@@ -495,28 +496,22 @@ const BundleList = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate(isSuperAdmin ? "/dashboard-super-admin" : "/dashboard-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("sidebar.bundle")}</span>
-        </nav>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.bundle.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.bundle.description")}</p>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("sidebar.bundle"), i18nKey: "sidebar.bundle" }
+        ]}
+        title={t("page.bundle.title")}
+        description={t("page.bundle.description")}>
         <Button variant="success" onClick={() => navigate("/bundle/add")} className="gap-2">
           <Plus size={16} />
           {t("page.bundle.addButton")}
         </Button>
-      </div>
+      </PageHeader>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

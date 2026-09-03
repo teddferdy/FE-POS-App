@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
 import { getDocumentSpecForGoodsReceipt } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const DetailGoodsReceipt = () => {
   const { t } = useTranslation();
@@ -42,48 +43,26 @@ const DetailGoodsReceipt = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/goods-receipt")} className="hover:text-foreground">
-          {t("breadcrumb.goodsReceipt")}
-        </button>
-        <span className="text-xs">/</span>
-        {isLoading ? (
-          <Skeleton className="h-4 w-20" />
-        ) : (
-          <span className="text-primary font-semibold">{receipt?.receiptNumber || "Detail"}</span>
-        )}
-      </nav>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/goods-receipt")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <PrintButton />
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Package size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{t("page.goodsReceipt.detail.title")}</h1>
-                <p className="text-sm text-muted-foreground mt-1">{receipt?.receiptNumber}</p>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("breadcrumb.goodsReceipt"),
+            href: "/goods-receipt-list",
+            i18nKey: "breadcrumb.goodsReceipt"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : t("page.goodsReceipt.detail.title")}
+        description={receipt?.receiptNumber}
+        backLink="/goods-receipt-list"
+        dynamicInfo={false}>
+        <PrintButton />
+      </PageHeader>
 
       {isLoading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -1,7 +1,8 @@
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Tags, Percent, Edit3, Calendar, User, Store } from "lucide-react";
+import { Tags, Edit3, Calendar, User, Store } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -86,53 +87,31 @@ const DetailDiscount = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">
-          {t("breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/discount-list")}
-          className="hover:text-foreground transition-colors">
-          {t("page.discount.list.title")}
-        </button>
-        <span className="text-xs">/</span>
-        {isLoading ? (
-          <Skeleton className="h-4 w-20" />
-        ) : (
-          <span className="text-primary font-semibold">{discount?.name || "Detail"}</span>
-        )}
-      </nav>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/discount-list")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Percent size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{discount?.name || "-"}</h1>
-                <p className="text-sm text-muted-foreground">{t("page.discount.detail.title")}</p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.discount.list.title"),
+            href: "/discount-list",
+            i18nKey: "page.discount.list.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : discount?.name || "-"}
+        description={t("page.discount.detail.title")}
+        backLink="/discount-list"
+        dynamicInfo={false}>
         {!isLoading && (
           <Button variant="outline" onClick={() => navigate(`/edit-discount?id=${id}`)}>
             <Edit3 size={14} className="mr-1.5" />
             {t("common.edit")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

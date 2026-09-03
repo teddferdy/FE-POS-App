@@ -40,6 +40,7 @@ import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import PageHeader from "@/components/ui/PageHeader";
 import ExtendShiftModal from "./ExtendShiftModal";
 import SwapApproval from "./SwapApproval";
 import TableActions from "@/components/ui/TableActions";
@@ -365,36 +366,28 @@ const ShiftList = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate(isSuperAdmin ? "/dashboard-super-admin" : "/dashboard-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.shift.list.title")}</span>
-        </nav>
-      </div>
-
-      <div>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.shift.list.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.shift.list.description")}</p>
-          </div>
-          {canAccess(user, MENU_KEY, "add") && (
-            <Button
-              variant="success"
-              onClick={() => navigate("/add-shift")}
-              className="gap-2"
-              data-tour="shift-add">
-              <Plus size={18} />
-              {t("breadcrumb.add")}
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.shift.list.title"), i18nKey: "page.shift.list.title" }
+        ]}
+        title={t("page.shift.list.title")}
+        description={t("page.shift.list.description")}>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            variant="success"
+            onClick={() => navigate("/add-shift")}
+            className="gap-2 shrink-0"
+            data-tour="shift-add">
+            <Plus size={18} />
+            {t("breadcrumb.add")}
+          </Button>
+        )}
+      </PageHeader>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="flex flex-wrap h-auto w-fit">

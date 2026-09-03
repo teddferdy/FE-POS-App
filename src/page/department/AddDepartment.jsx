@@ -84,6 +84,11 @@ const AddDepartment = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           { i18nKey: "breadcrumb.employee" },
           { i18nKey: "breadcrumb.department" },
           { i18nKey: "page.department.add.title" }

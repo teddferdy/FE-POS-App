@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
-import { Receipt, Users, ArrowLeft, ReceiptText, Star } from "lucide-react";
+import { Receipt, Users, ReceiptText, Star } from "lucide-react";
 import TableActionLegend from "@/components/ui/TableActionLegend";
+import PageHeader from "@/components/ui/PageHeader";
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat("id-ID", {
@@ -79,21 +80,25 @@ const MemberPointHistory = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <button
-            onClick={() => navigate("/member-list")}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-1">
-            <ArrowLeft size={18} className="text-base" />
-            {t("page.member.pointHistory.backToList")}
-          </button>
-          <h1 className="text-2xl font-bold text-foreground">{name}</h1>
-          <p className="text-sm text-muted-foreground">
-            Total Poin:{" "}
-            <span className="font-semibold text-foreground">{points.toLocaleString()}</span>
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.member.pointHistory.backToList"),
+            href: "/member-list",
+            i18nKey: "page.member.pointHistory.backToList"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={name}
+        description={`Total Poin: ${points.toLocaleString()}`}
+        backLink="/member-list"
+        dynamicInfo={false}
+      />
 
       <div className="bg-card rounded-xl border border-border shadow-sm">
         <div className="flex border-b border-border px-4">

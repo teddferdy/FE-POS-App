@@ -216,7 +216,11 @@ const EditMemberTier = () => {
         <div>
           <PageHeader
             breadcrumbs={[
-              { i18nKey: "breadcrumb.home" },
+              {
+                label: t("breadcrumb.home"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.home"
+              },
               { i18nKey: "breadcrumb.management" },
               { i18nKey: "page.memberTier.list.title", href: "/member-tier" },
               { i18nKey: "page.memberTier.edit.title" }

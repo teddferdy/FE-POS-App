@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   Building2,
   Phone,
   Mail,
@@ -26,7 +25,6 @@ import {
   CalendarDays,
   Percent,
   Store,
-  Tag,
   FileText,
   Wallet
 } from "lucide-react";
@@ -38,6 +36,7 @@ import { getPaymentsBySupplier, recordPayment } from "@/services/purchase-paymen
 import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
 import { getDocumentSpecForSupplier } from "@/components/document/documentMappers";
 import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/ui/PageHeader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
@@ -78,12 +77,6 @@ const statusKeys = {
   ordered: "ordered",
   received: "received",
   cancelled: "cancelled"
-};
-
-const supplierStatusBadge = {
-  active: { class: "bg-green-100 text-green-800", labelKey: "active" },
-  inactive: { class: "bg-gray-200 text-gray-700", labelKey: "inactive" },
-  draft: { class: "bg-yellow-100 text-yellow-800", labelKey: "draft" }
 };
 
 // ponytail: price dari BE kini string (bigint pg) — Number() sebelum diformat
@@ -293,72 +286,40 @@ const DetailSupplier = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/")} className="hover:text-foreground">
-          {t("page.supplier.detail.breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/supplier")} className="hover:text-foreground">
-          {t("page.supplier.detail.breadcrumb.list")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">
-          {isLoading ? "..." : supplier.name || "Detail"}
-        </span>
-      </nav>
-
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="outline" size="icon" onClick={() => navigate("/supplier")}>
-            <ArrowLeft size={16} />
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.supplier.detail.breadcrumb.list"),
+            href: "/supplier",
+            i18nKey: "page.supplier.detail.breadcrumb.list"
+          },
+          { label: isLoading ? "..." : supplier.name || "Detail" }
+        ]}
+        title={isLoading ? t("common.loading") : supplier.name || "-"}
+        description={
+          supplier.website
+            ? `${supplier.website} · ${t("page.supplier.detail.subtitle")}`
+            : t("page.supplier.detail.subtitle")
+        }
+        backLink="/supplier"
+        dynamicInfo={false}>
+        <PrintButton />
+        {supplier.status !== "inactive" && supplier.status !== "draft" && (
+          <Button variant="success" onClick={() => navigate(`/add-purchase-order?supplier=${id}`)}>
+            <ShoppingCart size={14} className="mr-1.5" />
+            {t("page.supplier.detail.createPo", "Buat PO")}
           </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <Building2 size={24} />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold truncate">{supplier.name || "-"}</h1>
-              {(() => {
-                const st = supplierStatusBadge[supplier.status] || {
-                  class: "bg-muted text-muted-foreground",
-                  labelKey: ""
-                };
-                return (
-                  <span
-                    className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold capitalize ${st.class}`}>
-                    {supplier.status || "-"}
-                  </span>
-                );
-              })()}
-              {supplier.categoryData?.name && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                  <Tag size={11} />
-                  {supplier.categoryData.name}
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground truncate">
-              {supplier.website ? `${supplier.website} · ` : ""}
-              {t("page.supplier.detail.subtitle")}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <PrintButton />
-          {supplier.status !== "inactive" && supplier.status !== "draft" && (
-            <Button
-              variant="success"
-              onClick={() => navigate(`/add-purchase-order?supplier=${id}`)}>
-              <ShoppingCart size={14} className="mr-1.5" />
-              {t("page.supplier.detail.createPo", "Buat PO")}
-            </Button>
-          )}
-          <Button onClick={() => navigate(`/edit-supplier?id=${id}`)}>
-            <Edit3 size={14} className="mr-1.5" />
-            {t("page.supplier.detail.editSupplier")}
-          </Button>
-        </div>
-      </div>
+        )}
+        <Button onClick={() => navigate(`/edit-supplier?id=${id}`)}>
+          <Edit3 size={14} className="mr-1.5" />
+          {t("page.supplier.detail.editSupplier")}
+        </Button>
+      </PageHeader>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {/* ponytail: 6 tab terlalu sempit di ponsel — scroll horizontal */}

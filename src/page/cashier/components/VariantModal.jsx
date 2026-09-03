@@ -63,8 +63,8 @@ const VariantModal = ({ product, onSelect, onClose }) => {
                 />
               </div>
             ) : (
-              <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center shrink-0">
-                <Package size={24} className="text-primary/40" />
+              <div className="w-16 h-16 rounded-lg bg-muted border border-border/50 flex items-center justify-center shrink-0">
+                <Package size={24} className="text-muted-foreground/40" />
               </div>
             )}
             <div>

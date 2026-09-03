@@ -397,104 +397,105 @@ const CategoryList = () => {
 
   return (
     <div data-tour="page-category" className="space-y-6">
-      <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[
-              { label: t("breadcrumb.adminConsole") },
-              { label: t("breadcrumb.category") }
-            ]}
-            title={t("page.category.list.title")}
-            description={t("page.category.list.description")}>
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                data-tour="category-download-template"
-                variant="outline"
-                disabled={isDownloadingTemplate}
-                onClick={async () => {
-                  setIsDownloadingTemplate(true);
-                  try {
-                    await downloadTemplate();
-                    toast.success(t("common.success"), {
-                      description: t("page.category.toast.templateSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.category.toast.templateError")
-                    });
-                  } finally {
-                    setIsDownloadingTemplate(false);
-                  }
-                }}>
-                {isDownloadingTemplate ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <Table size={16} className="mr-1" />
-                )}
-                {isDownloadingTemplate
-                  ? t("page.category.button.downloading")
-                  : t("page.category.button.downloadTemplate")}
-              </Button>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.adminConsole") },
+          { label: t("breadcrumb.category") }
+        ]}
+        title={t("page.category.list.title")}
+        description={t("page.category.list.description")}>
+        {canAccess(user, MENU_KEY, "export") && (
+          <Button
+            data-tour="category-download-template"
+            variant="outline"
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadTemplate();
+                toast.success(t("common.success"), {
+                  description: t("page.category.toast.templateSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.category.toast.templateError")
+                });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
+            }}>
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <Table size={16} className="mr-1" />
             )}
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                data-tour="category-download-data"
-                variant="general"
-                disabled={isDownloadingData}
-                onClick={async () => {
-                  setIsDownloadingData(true);
-                  try {
-                    await downloadExcel();
-                    toast.success(t("common.success"), {
-                      description: t("page.category.toast.dataSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.category.toast.dataError")
-                    });
-                  } finally {
-                    setIsDownloadingData(false);
-                  }
-                }}>
-                {isDownloadingData ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <Download size={16} className="mr-1" />
-                )}
-                {isDownloadingData
-                  ? t("page.category.button.downloading")
-                  : t("page.category.button.downloadData")}
-              </Button>
+            {isDownloadingTemplate
+              ? t("page.category.button.downloading")
+              : t("page.category.button.downloadTemplate")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "export") && (
+          <Button
+            data-tour="category-download-data"
+            variant="general"
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadExcel();
+                toast.success(t("common.success"), {
+                  description: t("page.category.toast.dataSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.category.toast.dataError")
+                });
+              } finally {
+                setIsDownloadingData(false);
+              }
+            }}>
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <Download size={16} className="mr-1" />
             )}
-            {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
-            {canAccess(user, MENU_KEY, "import") && (
-              <Button
-                data-tour="category-upload"
-                variant="import"
-                onClick={() => setUploadModalOpen(true)}>
-                <Upload size={16} className="mr-1" />
-                {t("page.category.button.upload")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                variant="success"
-                data-tour="category-add"
-                onClick={() => navigate("/add-category")}
-                className="shadow-md">
-                <Plus size={16} className="mr-1" />
-                {t("page.category.button.add")}
-              </Button>
-            )}
-          </PageHeader>
-        </div>
-      </div>
+            {isDownloadingData
+              ? t("page.category.button.downloading")
+              : t("page.category.button.downloadData")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
+        {canAccess(user, MENU_KEY, "import") && (
+          <Button
+            data-tour="category-upload"
+            variant="import"
+            onClick={() => setUploadModalOpen(true)}>
+            <Upload size={16} className="mr-1" />
+            {t("page.category.button.upload")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            variant="success"
+            data-tour="category-add"
+            onClick={() => navigate("/add-category")}
+            className="shadow-md">
+            <Plus size={16} className="mr-1" />
+            {t("page.category.button.add")}
+          </Button>
+        )}
+      </PageHeader>
 
       <div>
         <div>

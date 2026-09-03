@@ -25,6 +25,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { normalizePayload } from "@/lib/payload-normalizer";
+import PageHeader from "@/components/ui/PageHeader";
 
 const AddAdmin = () => {
   const { t } = useTranslation();
@@ -128,25 +129,25 @@ const AddAdmin = () => {
     <div>
       <div>
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-              <span>{t("breadcrumb.management")}</span>
-              <span>/</span>
-              <button
-                onClick={() => navigate("/user-list")}
-                className="hover:text-primary transition-colors">
-                {t("page.user.adminList.title")}
-              </button>
-              <span>/</span>
-              <span className="text-primary font-semibold">{t("page.user.addAdmin.title")}</span>
-            </nav>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              {t("page.user.addAdmin.title")}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.user.addAdmin.description")}
-            </p>
-          </div>
+          <PageHeader
+            breadcrumbs={[
+              {
+                label: t("breadcrumb.management"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.management"
+              },
+              {
+                label: t("page.user.adminList.title"),
+                href: "/user-list",
+                i18nKey: "page.user.adminList.title"
+              },
+              { label: t("page.user.addAdmin.title") }
+            ]}
+            title={t("page.user.addAdmin.title")}
+            description={t("page.user.addAdmin.description")}
+            onBack={() => setCancelModal(true)}
+            dynamicInfo={false}
+          />
         </div>
 
         <div className="grid grid-cols-12 gap-6">

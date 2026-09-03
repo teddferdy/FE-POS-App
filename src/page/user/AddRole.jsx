@@ -15,6 +15,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import PageHeader from "@/components/ui/PageHeader";
 
 const actionLabels = {
   view: "Lihat",
@@ -220,24 +221,20 @@ const AddRole = () => {
   return (
     <div>
       <div>
-        <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/role-management")}
-            className="hover:text-primary transition-colors">
-            Manajemen Role & Izin
-          </button>
-          <ChevronRight size={14} />
-          <span className="text-foreground font-bold">{t("page.role.add.title")}</span>
-        </nav>
-
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              {t("page.role.add.title")}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.role.add.description")}</p>
-          </div>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("page.role.detail.breadcrumbParent"),
+              href: "/role-management",
+              i18nKey: "page.role.detail.breadcrumbParent"
+            },
+            { label: t("page.role.add.title") }
+          ]}
+          title={t("page.role.add.title")}
+          description={t("page.role.add.description")}
+          onBack={() => setCancelModal(true)}
+          dynamicInfo={false}
+        />
 
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">

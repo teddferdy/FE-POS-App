@@ -5,7 +5,6 @@ import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import {
-  ArrowLeft,
   Building2,
   User,
   Calendar,
@@ -14,12 +13,12 @@ import {
   ShoppingCart,
   Receipt,
   FileText,
-  Coins,
-  Wallet
+  Coins
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 import { getOrdersByStore } from "@/services/order";
 const formatIDR = (num) => {
   if (!num && num !== 0) return "-";
@@ -85,29 +84,29 @@ const CashRegisterDetail = () => {
   if (!item) {
     return (
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.cashRegister.detail.breadcrumbDashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/cash-register/current")}
-            className="hover:text-foreground">
-            {t("page.cashRegister.detail.breadcrumbCashier")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/cash-register/history")}
-            className="hover:text-foreground">
-            {t("page.cashRegister.detail.breadcrumbHistory")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.cashRegister.detail.breadcrumb")}
-          </span>
-        </nav>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.cashRegister.detail.breadcrumbCashier"),
+              href: "/cash-register/current",
+              i18nKey: "page.cashRegister.detail.breadcrumbCashier"
+            },
+            {
+              label: t("page.cashRegister.detail.breadcrumbHistory"),
+              href: "/cash-register/history",
+              i18nKey: "page.cashRegister.detail.breadcrumbHistory"
+            },
+            { label: t("page.cashRegister.detail.breadcrumb") }
+          ]}
+          title={t("page.cashRegister.detail.breadcrumb")}
+          backLink="/cash-register-history"
+          dynamicInfo={false}
+        />
         <div className="bg-card p-12 rounded-xl border border-border text-center">
           <Receipt size={48} className="mx-auto text-muted-foreground/40 mb-3" />
           <p className="text-muted-foreground">{t("page.cashRegister.detail.notFound")}</p>
@@ -115,7 +114,7 @@ const CashRegisterDetail = () => {
             variant="danger"
             onClick={() => navigate("/cash-register/history")}
             className="mt-4">
-            <ArrowLeft size={16} className="mr-1" /> {t("page.cashRegister.detail.backToHistory")}
+            {t("page.cashRegister.detail.backToHistory")}
           </Button>
         </div>
       </div>
@@ -188,53 +187,34 @@ const CashRegisterDetail = () => {
   return (
     <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.cashRegister.detail.breadcrumbDashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/cash-register/current")}
-            className="hover:text-foreground">
-            {t("page.cashRegister.detail.breadcrumbCashier")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/cash-register/history")}
-            className="hover:text-foreground">
-            {t("page.cashRegister.detail.breadcrumbHistory")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.cashRegister.detail.breadcrumb")}
-          </span>
-        </nav>
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigate("/cash-register/history")}>
-              <ArrowLeft size={16} />
-            </Button>
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Wallet size={24} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">{t("page.cashRegister.detail.title")}</h1>
-              <p className="text-sm text-muted-foreground">
-                {new Date(item.openedAt).toLocaleDateString("id")}
-              </p>
-            </div>
-          </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.cashRegister.detail.breadcrumbCashier"),
+              href: "/cash-register/current",
+              i18nKey: "page.cashRegister.detail.breadcrumbCashier"
+            },
+            {
+              label: t("page.cashRegister.detail.breadcrumbHistory"),
+              href: "/cash-register/history",
+              i18nKey: "page.cashRegister.detail.breadcrumbHistory"
+            },
+            { label: t("page.cashRegister.detail.breadcrumb") }
+          ]}
+          title={t("page.cashRegister.detail.title")}
+          description={new Date(item.openedAt).toLocaleDateString("id")}
+          backLink="/cash-register-history"
+          dynamicInfo={false}>
           <span
             className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase ${sc.class}`}>
             {sc.label}
           </span>
-        </div>
+        </PageHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-card rounded-xl border border-border overflow-hidden">

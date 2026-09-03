@@ -1,7 +1,8 @@
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Building2, Edit3, Calendar, Store, User, Users } from "lucide-react";
+import { Building2, Edit3, Calendar, Store, User, Users } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -67,59 +68,31 @@ const DetailDepartment = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/department-list")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/department-list")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.department")}
-        </button>
-        <span className="text-xs">/</span>
-        {isLoading ? (
-          <Skeleton className="h-4 w-20" />
-        ) : (
-          <span className="text-primary font-semibold">{department?.name || "Detail"}</span>
-        )}
-      </nav>
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/department-list")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Building2 size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{department?.name || "-"}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.department.detail.description")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("breadcrumb.department"),
+            href: "/department-list",
+            i18nKey: "breadcrumb.department"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : department?.name || "-"}
+        description={t("page.department.detail.description")}
+        backLink="/department-list"
+        dynamicInfo={false}>
         {!isLoading && (
           <Button variant="outline" onClick={() => navigate(`/edit-department?id=${id}`)}>
             <Edit3 size={14} className="mr-1.5" />
             {t("common.edit")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {/* Main Content */}
       {isLoading ? (

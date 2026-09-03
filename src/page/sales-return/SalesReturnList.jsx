@@ -19,6 +19,7 @@ import { getAllLocation } from "@/services/location";
 import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const statusCfg = {
   pending: {
@@ -262,35 +263,24 @@ const SalesReturnList = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.salesReturn.list.breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.salesReturn.list.title")}</span>
-        </nav>
-      </div>
-      <div>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {t("page.salesReturn.list.title")}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.salesReturn.list.subtitle")}
-            </p>
-          </div>
-          <Button
-            variant="success"
-            onClick={() => navigate("/sales-return/create")}
-            className="w-full md:w-auto">
-            {t("page.salesReturn.list.button.create")}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("page.salesReturn.list.breadcrumb.dashboard"),
+            href: "/dashboard-super-admin",
+            i18nKey: "page.salesReturn.list.breadcrumb.dashboard"
+          },
+          { label: t("page.salesReturn.list.title") }
+        ]}
+        title={t("page.salesReturn.list.title")}
+        description={t("page.salesReturn.list.subtitle")}>
+        <Button
+          variant="success"
+          onClick={() => navigate("/sales-return/create")}
+          className="w-full md:w-auto">
+          {t("page.salesReturn.list.button.create")}
+        </Button>
+      </PageHeader>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft,
   Package,
   Edit3,
   Calendar,
@@ -27,6 +26,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -373,62 +373,22 @@ const DetailProduct = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">
-          {t("breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/product-list")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.product")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">
-          {isLoading ? (
-            <Skeleton className="h-4 w-32 inline-block" />
-          ) : (
-            product.nameProduct || product.name || "Detail"
-          )}
-        </span>
-      </nav>
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/product-list")}>
-            <ArrowLeft size={16} />
-          </Button>
-          {hasImage ? (
-            <div className="w-14 h-14 rounded-xl overflow-hidden border border-border/50 shrink-0">
-              <img
-                src={imageUrl}
-                alt={product.nameProduct || product.name || ""}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-              <Package size={24} />
-            </div>
-          )}
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{product.nameProduct || product.name || "-"}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {product.sku ? `SKU: ${product.sku}` : t("page.product.detail.description")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.product"), href: "/product-list", i18nKey: "breadcrumb.product" },
+          { label: isLoading ? "..." : product.nameProduct || product.name || "Detail" }
+        ]}
+        title={isLoading ? t("common.loading") : product.nameProduct || product.name || "-"}
+        description={product.sku ? `SKU: ${product.sku}` : t("page.product.detail.description")}
+        backLink="/product-list"
+        dynamicInfo={false}>
         {!isLoading && (
-          <div className="flex items-center gap-2">
+          <>
             {product.categoryData?.name && (
               <span className="hidden lg:inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border/50">
                 {product.categoryData.name}
@@ -442,9 +402,9 @@ const DetailProduct = () => {
               <Edit3 size={14} className="mr-1.5" />
               {t("common.edit")}
             </Button>
-          </div>
+          </>
         )}
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

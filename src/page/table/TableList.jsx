@@ -41,6 +41,7 @@ import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import TableQRModal from "@/components/organism/TableQRModal";
 import { useTranslation } from "react-i18next";
@@ -340,21 +341,17 @@ const TableList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("breadcrumb.table")}</span>
-      </nav>
-
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.table.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.table.list.description")}</p>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.table"), i18nKey: "breadcrumb.table" }
+        ]}
+        title={t("page.table.list.title")}
+        description={t("page.table.list.description")}>
         {canAccess(user, MENU_KEY, "add") && isSuperAdmin && (locData?.data || []).length > 0 && (
           <Button
             variant="success"
@@ -372,7 +369,7 @@ const TableList = () => {
             {t("page.table.button.add")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {isError ? (
         <AbortController refetch={refetch} />

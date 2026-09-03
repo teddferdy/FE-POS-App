@@ -134,6 +134,11 @@ const EditDepartment = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           { label: t("breadcrumb.employee") },
           { label: t("breadcrumb.department"), href: "/department-list" },
           { label: t("page.department.edit.title") }

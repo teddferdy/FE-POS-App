@@ -5,16 +5,15 @@ import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
-  ClipboardList,
-  Check,
-  Ban,
   Edit,
   Trash2,
   ShoppingCart,
   User,
   Truck,
-  FileText
+  FileText,
+  Check,
+  Ban,
+  ArrowLeft
 } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import {
@@ -30,6 +29,7 @@ import { Loading } from "@/components/ui/loading";
 import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
 import { getDocumentSpecForGoodsRequest } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const statusMap = {
   pending: { class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" },
@@ -107,51 +107,27 @@ const DetailGoodsRequest = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/goods-request")} className="hover:text-foreground">
-          {t("breadcrumb.goodsRequest")}
-        </button>
-        <span className="text-xs">/</span>
-        {isLoading ? (
-          <Skeleton className="h-4 w-24" />
-        ) : (
-          <span className="text-primary font-semibold">
-            {request?.requestNumber || t("breadcrumb.detail")}
-          </span>
-        )}
-      </nav>
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/goods-request")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <ClipboardList size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{t("page.goodsRequest.detail.title")}</h1>
-                <p className="text-sm text-muted-foreground mt-1">{request?.requestNumber}</p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("breadcrumb.goodsRequest"),
+            href: "/goods-request-list",
+            i18nKey: "breadcrumb.goodsRequest"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : t("page.goodsRequest.detail.title")}
+        description={request?.requestNumber}
+        backLink="/goods-request-list"
+        dynamicInfo={false}>
         {!isLoading && request && <PrintButton />}
         {!isLoading && request && request.status === "pending" && (
-          <div className="flex items-center gap-2 shrink-0">
+          <>
             {canAccess(user, MENU_KEY, "update") && (
               <Button
                 variant="outline"
@@ -183,7 +159,7 @@ const DetailGoodsRequest = () => {
                 <Trash2 size={16} className="mr-1" /> {t("common.delete")}
               </Button>
             )}
-          </div>
+          </>
         )}
         {!isLoading && request && request.status === "approved" && request.purchaseOrderData && (
           <Button
@@ -193,7 +169,7 @@ const DetailGoodsRequest = () => {
             {request.purchaseOrderData.orderNumber} — {t("page.goodsRequest.detail.viewPO")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

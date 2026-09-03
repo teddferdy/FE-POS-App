@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, ArrowLeft } from "lucide-react";
+import { X, Save } from "lucide-react";
 import { createReservation } from "@/services/reservation";
 import { getAllLocation, getLocationDetail } from "@/services/location";
 import { getTablesByStore } from "@/services/table";
@@ -37,6 +37,7 @@ import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import PageHeader from "@/components/ui/PageHeader";
 
 const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
@@ -205,35 +206,25 @@ const AddReservation = () => {
   return (
     <div>
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="danger"
-            size="icon"
-            className="h-10 w-10 shrink-0"
-            onClick={() => setCancelModal(true)}>
-            <ArrowLeft size={16} />
-          </Button>
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <button
-              onClick={() => navigate("/dashboard-super-admin")}
-              className="hover:text-foreground transition-colors">
-              {t("breadcrumb.home")}
-            </button>
-            <span className="text-xs">/</span>
-            <button
-              onClick={() => navigate("/reservation")}
-              className="hover:text-foreground transition-colors">
-              Reservasi
-            </button>
-            <span className="text-xs">/</span>
-            <span className="text-primary font-semibold">Tambah Reservasi</span>
-          </nav>
-        </div>
-
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Tambah Reservasi</h1>
-          <p className="text-sm text-muted-foreground mt-1">Buat reservasi meja baru</p>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: "Reservasi",
+              href: "/reservation",
+              i18nKey: "breadcrumb.reservation"
+            },
+            { label: "Tambah Reservasi" }
+          ]}
+          title="Tambah Reservasi"
+          description="Buat reservasi meja baru"
+          onBack={() => setCancelModal(true)}
+          dynamicInfo={false}
+        />
 
         <Card className="p-6">
           <Form {...form}>

@@ -1,13 +1,13 @@
 import React from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Wallet, Building2, FileText, User, CreditCard } from "lucide-react";
+import { Wallet, Building2, FileText, User } from "lucide-react";
 import { getPaymentById } from "@/services/purchase-payment";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const methodBadge = {
   cash: {
@@ -60,7 +60,6 @@ const Row = ({ label, children }) => (
 
 const PurchasePaymentDetail = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
@@ -84,48 +83,28 @@ const PurchasePaymentDetail = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/purchase-payment")}
-          className="hover:text-foreground transition-colors">
-          {t("page.purchasePayment.list.title")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.purchasePayment.detail.title")}</span>
-      </nav>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/purchase-payment")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <CreditCard size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">
-                  {t("page.purchasePayment.detail.title")} #{payment?.id}
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.purchasePayment.detail.pageDesc")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.purchasePayment.list.title"),
+            href: "/purchase-payment-list",
+            i18nKey: "page.purchasePayment.list.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={
+          isLoading
+            ? t("common.loading")
+            : `${t("page.purchasePayment.detail.title")} #${payment?.id || ""}`
+        }
+        description={t("page.purchasePayment.detail.pageDesc")}
+        backLink="/purchase-payment-list"
+        dynamicInfo={false}>
         {!isLoading && (
           <span
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${mb?.class}`}>
@@ -133,7 +112,7 @@ const PurchasePaymentDetail = () => {
             {t(`page.purchaseOrder.paymentMethod.${payment?.paymentMethod}`) || mb?.label}
           </span>
         )}
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -21,6 +21,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import PageHeader from "@/components/ui/PageHeader";
 
 const fmt = (d) => {
   if (!d) return "-";
@@ -323,6 +324,20 @@ const SwapApproval = ({ user, store, locations }) => {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: "Dashboard",
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: "Shift" },
+          { label: "Swap Approval" }
+        ]}
+        title="Swap Approval"
+        description="Kelola permintaan tukar jadwal shift"
+      />
+
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
         {statItem("Menunggu", stats.pending || 0, "text-amber-600 dark:text-amber-400")}
         {statItem("Disetujui", stats.approved || 0, "text-green-600 dark:text-green-400")}

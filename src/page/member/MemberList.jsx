@@ -33,6 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
+import PageHeader from "@/components/ui/PageHeader";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { useTranslation } from "react-i18next";
@@ -367,38 +368,28 @@ const MemberList = () => {
 
   return (
     <div data-tour="page-member" className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.member.list.title")}</span>
-        </nav>
-      </div>
-
-      <div>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.member.list.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.member.list.description")}
-            </p>
-          </div>
-          {canAccess(user, MENU_KEY, "add") && (
-            <Button
-              variant="success"
-              data-tour="member-add"
-              onClick={() => navigate("/add-member")}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-              <UserPlus size={20} className="text-lg" />
-              {t("breadcrumb.add")}
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.member.list.title"), i18nKey: "page.member.list.title" }
+        ]}
+        title={t("page.member.list.title")}
+        description={t("page.member.list.description")}>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            variant="success"
+            data-tour="member-add"
+            onClick={() => navigate("/add-member")}
+            className="shrink-0 flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+            <UserPlus size={20} className="text-lg" />
+            {t("breadcrumb.add")}
+          </Button>
+        )}
+      </PageHeader>
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

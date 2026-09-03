@@ -2,8 +2,6 @@ import React, { useMemo, useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  ArrowLeft,
-  FolderTree,
   Edit3,
   Calendar,
   Tag,
@@ -18,6 +16,7 @@ import {
   Wallet,
   User
 } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -154,67 +153,31 @@ const DetailIngredientCategory = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/ingredient-category")}
-          className="hover:text-foreground transition-colors">
-          {t("page.ingredientCategory.list.title")}
-        </button>
-        <span className="text-xs">/</span>
-        {isLoading ? (
-          <Skeleton className="h-4 w-20" />
-        ) : (
-          <span className="text-primary font-semibold truncate max-w-[220px]">
-            {category?.name || "Detail"}
-          </span>
-        )}
-      </nav>
-
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="outline" size="icon" onClick={() => navigate("/ingredient-category")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <FolderTree size={24} />
-          </div>
-          <div className="min-w-0">
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl font-bold truncate">{category?.name || "-"}</h1>
-                  {st && (
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${st.badge}`}>
-                      {StatusIcon && <StatusIcon size={12} />}
-                      {t(`common.${category?.status || "draft"}`)}
-                    </span>
-                  )}
-                  <span className="inline-flex px-2 py-0.5 rounded-md text-[11px] font-mono bg-muted text-muted-foreground">
-                    #ICAT-{String(category?.id).padStart(3, "0")}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.ingredientCategory.detail.description")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.ingredientCategory.list.title"),
+            href: "/ingredient-category-list",
+            i18nKey: "page.ingredientCategory.list.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : category?.name || "-"}
+        description={t("page.ingredientCategory.detail.description")}
+        backLink="/ingredient-category-list"
+        dynamicInfo={false}>
         {!isLoading && (
           <Button onClick={() => navigate(`/edit-ingredient-category?id=${id}`)}>
             <Edit3 size={14} className="mr-1.5" />
             {t("common.edit")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {/* Stat Cards */}
       {isLoading ? (

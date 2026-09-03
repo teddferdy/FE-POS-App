@@ -36,6 +36,7 @@ import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StatCard from "@/components/ui/StatCard";
 import StoreFilter from "@/components/ui/StoreFilter";
+import PageHeader from "@/components/ui/PageHeader";
 
 const ReservationList = () => {
   const { t } = useTranslation();
@@ -319,25 +320,21 @@ const ReservationList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.reservation.title")}</span>
-      </nav>
-
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.reservation.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.reservation.description")}</p>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.reservation.title"), i18nKey: "page.reservation.title" }
+        ]}
+        title={t("page.reservation.title")}
+        description={t("page.reservation.description")}>
         <Button variant="success" onClick={() => navigate("/add-reservation")} className="gap-2">
           <Plus size={18} /> {t("page.reservation.addButton")}
         </Button>
-      </div>
+      </PageHeader>
 
       {isError ? (
         <AbortController refetch={refetch} />

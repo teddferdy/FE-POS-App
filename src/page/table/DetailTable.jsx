@@ -2,12 +2,13 @@ import { safeGet } from "@/lib/safe-lookup";
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Sofa, Edit3, Calendar, Store, User, Users } from "lucide-react";
+import { Sofa, Edit3, Calendar, Store, User, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTableById } from "@/services/table";
+import PageHeader from "@/components/ui/PageHeader";
 
 const statusBadge = (status, t) => {
   const colors = {
@@ -68,57 +69,31 @@ const DetailTable = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/table-list")}
-          className="hover:text-foreground transition-colors">
-          {t("page.table.list.title")}
-        </button>
-        <span className="text-xs">/</span>
-        {isLoading ? (
-          <Skeleton className="h-4 w-20" />
-        ) : (
-          <span className="text-primary font-semibold">{table?.name || "Detail"}</span>
-        )}
-      </nav>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/table-list")}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Sofa size={24} />
-          </div>
-          <div>
-            {isLoading ? (
-              <>
-                <Skeleton className="h-7 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{table?.name || table?.number || "-"}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.table.detail.description")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.table.list.title"),
+            href: "/table-list",
+            i18nKey: "page.table.list.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : table?.name || table?.number || "-"}
+        description={t("page.table.detail.description")}
+        backLink="/table-list"
+        dynamicInfo={false}>
         {!isLoading && (
           <Button variant="outline" onClick={() => navigate("/table-list")}>
             <Edit3 size={14} className="mr-1.5" />
             {t("common.edit")}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -26,6 +26,7 @@ import { useSidebar } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
+import PageHeader from "@/components/ui/PageHeader";
 
 const LowStockAll = () => {
   const { t } = useTranslation();
@@ -287,24 +288,18 @@ const LowStockAll = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate(isSuperAdmin ? "/dashboard-super-admin" : "/dashboard-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("sidebar.lowStockAll")}</span>
-        </nav>
-      </div>
-
-      <div>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("sidebar.lowStockAll")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.lowStock.description")}</p>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: isSuperAdmin ? "/dashboard-super-admin" : "/dashboard-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("sidebar.lowStockAll") }
+        ]}
+        title={t("sidebar.lowStockAll")}
+        description={t("page.lowStock.description")}
+      />
 
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />

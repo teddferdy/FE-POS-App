@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
+import PageHeader from "@/components/ui/PageHeader";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
@@ -60,17 +61,18 @@ const CashRegisterCurrent = () => {
   if (!storeId) {
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.cashRegister.current.breadcrumbDashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.cashRegister.current.breadcrumb")}
-          </span>
-        </nav>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("page.cashRegister.current.breadcrumbDashboard"),
+              href: "/dashboard-super-admin",
+              i18nKey: "page.cashRegister.current.breadcrumbDashboard"
+            },
+            { label: t("page.cashRegister.current.breadcrumb") },
+            { label: t("page.cashRegister.current.title") }
+          ]}
+          title={t("page.cashRegister.current.title")}
+        />
         <div className="flex min-h-full w-full">
           <NoStore />
         </div>
@@ -107,36 +109,27 @@ const CashRegisterCurrent = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          Dashboard
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">
-          {t("page.cashRegister.current.breadcrumb")}
-        </span>
-      </nav>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.cashRegister.current.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.cashRegister.current.shiftStatus")}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate("/cash-register/history")}>
-            <Wallet size={16} className="mr-1" /> {t("page.cashRegister.current.historyBtn")}
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: "Dashboard",
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.cashRegister.current.breadcrumb") },
+          { label: t("page.cashRegister.current.title") }
+        ]}
+        title={t("page.cashRegister.current.title")}
+        description={t("page.cashRegister.current.shiftStatus")}>
+        <Button variant="outline" onClick={() => navigate("/cash-register/history")}>
+          <Wallet size={16} className="mr-1" /> {t("page.cashRegister.current.historyBtn")}
+        </Button>
+        {!reg && (
+          <Button variant="danger" onClick={() => navigate("/cash-register/open-close")}>
+            <DollarSign size={16} className="mr-1" /> {t("page.cashRegister.current.openBtn")}
           </Button>
-          {!reg && (
-            <Button variant="danger" onClick={() => navigate("/cash-register/open-close")}>
-              <DollarSign size={16} className="mr-1" /> {t("page.cashRegister.current.openBtn")}
-            </Button>
-          )}
-        </div>
-      </div>
+        )}
+      </PageHeader>
 
       {!reg ? (
         <div className="bg-card p-6 rounded-xl border border-border text-center">

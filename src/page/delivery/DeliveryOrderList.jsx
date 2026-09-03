@@ -208,6 +208,7 @@ const DeliveryOrderList = () => {
       <PageHeader
         breadcrumbs={[
           {
+            label: t("breadcrumb.home"),
             href:
               user?.roleType === "super_admin"
                 ? "/dashboard-super-admin"
@@ -216,7 +217,7 @@ const DeliveryOrderList = () => {
                   : "/home",
             i18nKey: "breadcrumb.home"
           },
-          { i18nKey: "sidebar.deliveryOrders" }
+          { label: t("page.delivery.list.title"), i18nKey: "sidebar.deliveryOrders" }
         ]}
         title={t("page.delivery.list.title")}
         description={t("page.delivery.list.description")}

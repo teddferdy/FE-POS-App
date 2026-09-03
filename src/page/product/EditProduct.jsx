@@ -694,7 +694,11 @@ const EditProduct = () => {
         <div>
           <PageHeader
             breadcrumbs={[
-              { label: t("breadcrumb.dashboard"), href: "/dashboard-super-admin" },
+              {
+                label: t("breadcrumb.home"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.home"
+              },
               { label: t("page.product.form.productList"), href: "/product-list" },
               { label: t("page.product.form.editTitle") }
             ]}
@@ -770,8 +774,9 @@ const EditProduct = () => {
           <PageHeader
             breadcrumbs={[
               {
-                label: t("breadcrumb.dashboard"),
-                href: role === "super_admin" ? "/dashboard-super-admin" : "/dashboard-admin"
+                label: t("breadcrumb.home"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.home"
               },
               { label: t("breadcrumb.product"), href: "/product-list" },
               { label: product.nameProduct || t("page.product.edit.title") }

@@ -154,7 +154,11 @@ const EditShiftTemplate = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { label: t("breadcrumb.employee") },
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           {
             label: t("page.shiftTemplate.list.title"),
             href: "/shift-template-list"

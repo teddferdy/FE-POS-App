@@ -300,7 +300,11 @@ const AddBundle = () => {
     <div className="space-y-6 pb-4">
       <PageHeader
         breadcrumbs={[
-          { label: t("breadcrumb.home"), href: "/", i18nKey: "breadcrumb.home" },
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           { label: t("page.bundle.title"), href: "/bundle", i18nKey: "page.bundle.title" },
           { label: t("page.bundle.addTitle"), i18nKey: "page.bundle.addTitle" }
         ]}
