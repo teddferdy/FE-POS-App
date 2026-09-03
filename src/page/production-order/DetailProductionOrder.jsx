@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
+import { getDocumentSpecForProductionOrder } from "@/components/document/documentMappers";
 
 const DetailProductionOrder = () => {
   const { t } = useTranslation();
@@ -49,6 +51,7 @@ const DetailProductionOrder = () => {
   );
 
   const order = data?.data;
+  const printSpec = order ? getDocumentSpecForProductionOrder(order, t) : null;
 
   if (isError) return <AbortController refetch={refetch} />;
 
@@ -110,6 +113,7 @@ const DetailProductionOrder = () => {
             )}
           </div>
         </div>
+        {!isLoading && order && <PrintButton />}
       </div>
 
       {isLoading ? (
@@ -239,6 +243,11 @@ const DetailProductionOrder = () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {printSpec && (
+        <div className="hidden print:block print-doc">
+          <FormalDocument spec={printSpec} />
         </div>
       )}
     </div>

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
+import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
+import { getDocumentSpecForStockOpname } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
 
 const statusColors = {
@@ -36,6 +38,7 @@ const DetailStockOpname = () => {
   const items = opname?.items || [];
   const store = opname?.store || {};
   const canEdit = opname?.status === "draft";
+  const printSpec = opname ? getDocumentSpecForStockOpname(opname, t) : null;
 
   if (isError) return <AbortController refetch={refetch} />;
 
@@ -114,12 +117,17 @@ const DetailStockOpname = () => {
               <p className="text-sm text-muted-foreground">{opname.auditId || `#${opname.id}`}</p>
             </div>
           </div>
-          {canEdit && (
-            <Button variant="success" onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>
-              <Edit3 size={14} className="mr-1.5" />
-              {t("common.edit")}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <PrintButton />
+            {canEdit && (
+              <Button
+                variant="success"
+                onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>
+                <Edit3 size={14} className="mr-1.5" />
+                {t("common.edit")}
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -308,6 +316,11 @@ const DetailStockOpname = () => {
           )}
         </div>
       </div>
+      {printSpec && (
+        <div className="hidden print:block print-doc">
+          <FormalDocument spec={printSpec} />
+        </div>
+      )}
     </div>
   );
 };

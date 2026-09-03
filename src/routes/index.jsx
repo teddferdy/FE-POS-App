@@ -15,3 +15,4 @@ export { waiterRoutes } from "./waiter.routes";
 export { supplierPerformanceRoutes } from "./supplierPerformance.routes";
 export { promoRoutes } from "./promo.routes";
 export { bundleRoutes } from "./bundle.routes";
+export { businessTripRoutes } from "./businessTrip.routes";
