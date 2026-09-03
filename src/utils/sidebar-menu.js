@@ -37,6 +37,7 @@ import {
   Clock,
   HandPlatter,
   AlarmClock,
+  Plane,
   // MonitorPlay,
   Landmark
 } from "lucide-react";
@@ -274,6 +275,14 @@ export const sidebarMenuSuperAdmin = [
         actions: ["view", "add", "edit", "delete"]
       },
       {
+        title: "Perjalanan Dinas",
+        i18nKey: "sidebar.businessTrip",
+        href: "/business-trip",
+        icon: Plane,
+        activePaths: ["/business-trip/detail", "/add-business-trip", "/edit-business-trip"],
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
         title: "Goods Receipt",
         i18nKey: "sidebar.goodsReceipt",
         href: "/goods-receipt",
@@ -428,6 +437,13 @@ export const sidebarMenuSuperAdmin = [
         href: "/report/cash-flow",
         icon: Receipt,
         actions: ["view"]
+      },
+      {
+        title: "Advanced Reporting",
+        i18nKey: "sidebar.advancedReporting",
+        href: "/advanced-reporting",
+        icon: BarChart3,
+        actions: ["view"]
       }
     ]
   },
@@ -470,6 +486,13 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.backup",
         href: "/backup",
         icon: Database,
+        actions: ["view"]
+      },
+      {
+        title: "Pengaturan Laporan",
+        i18nKey: "sidebar.reportSettings",
+        href: "/report/settings",
+        icon: FileText,
         actions: ["view"]
       }
     ]
@@ -693,6 +716,14 @@ export const sidebarMenuAdmin = [
         actions: ["view", "add", "edit", "delete"]
       },
       {
+        title: "Perjalanan Dinas",
+        i18nKey: "sidebar.businessTrip",
+        href: "/business-trip",
+        icon: Plane,
+        activePaths: ["/business-trip/detail", "/add-business-trip", "/edit-business-trip"],
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
         title: "Goods Receipt",
         i18nKey: "sidebar.goodsReceipt",
         href: "/goods-receipt",
@@ -833,6 +864,13 @@ export const sidebarMenuAdmin = [
         href: "/best-selling",
         icon: BarChart3,
         actions: ["view", "export"]
+      },
+      {
+        title: "Advanced Reporting",
+        i18nKey: "sidebar.advancedReporting",
+        href: "/advanced-reporting",
+        icon: BarChart3,
+        actions: ["view"]
       }
     ]
   },
@@ -861,6 +899,13 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.backup",
         href: "/backup",
         icon: Database,
+        actions: ["view"]
+      },
+      {
+        title: "Pengaturan Laporan",
+        i18nKey: "sidebar.reportSettings",
+        href: "/report/settings",
+        icon: FileText,
         actions: ["view"]
       }
     ]
@@ -902,6 +947,7 @@ const accessMenuSubGroups = {
     "/ingredient": "Bahan Baku",
     "/purchase-order": "Pembelian",
     "/goods-request": "Pembelian",
+    "/business-trip": "Pembelian",
     "/goods-receipt": "Pembelian",
     "/purchase-return": "Pembelian",
     "/ap-dashboard": "Pembayaran",
@@ -926,7 +972,8 @@ const accessMenuSubGroups = {
     "/report/sales": "Laporan Penjualan",
     "/best-selling": "Laporan Penjualan",
     "/report/daily": "Laporan Keuangan",
-    "/report/cash-flow": "Laporan Keuangan"
+    "/report/cash-flow": "Laporan Keuangan",
+    "/advanced-reporting": "Laporan Keuangan"
   },
   "sidebar.section.membershipSdm": {
     "/member-tier": "Membership",
@@ -935,6 +982,10 @@ const accessMenuSubGroups = {
     "/position-list": "SDM",
     "/employee-list": "SDM",
     "/user-list": "SDM",
+    "/business-trip": "SDM",
+    "/add-business-trip": "SDM",
+    "/edit-business-trip": "SDM",
+    "/business-trip/detail": "SDM",
     "/shift-list": "Shift",
     "/shift-template-list": "Shift",
     "/my-overtime": "Shift",
@@ -945,7 +996,8 @@ const accessMenuSubGroups = {
     "/type-payment-list": "Struk & Pembayaran",
     "/tax-list": "Struk & Pembayaran",
     "/role-management": "Sistem & Keamanan",
-    "/backup": "Sistem & Keamanan"
+    "/backup": "Sistem & Keamanan",
+    "/report/settings": "Struk & Pembayaran"
   }
 };
 
@@ -1126,6 +1178,14 @@ export const navCategories = {
               i18nKey: "sidebar.daftarKaryawan",
               href: "/employee-list",
               icon: Users
+            },
+            {
+              title: "Perjalanan Dinas",
+              i18nKey: "sidebar.businessTrip",
+              href: "/business-trip",
+              icon: Plane,
+              activePaths: ["/business-trip/detail", "/add-business-trip", "/edit-business-trip"],
+              actions: ["view", "add", "edit", "delete"]
             }
           ]
         },
@@ -1253,6 +1313,12 @@ export const navCategories = {
               i18nKey: "sidebar.goodsRequest",
               href: "/goods-request",
               icon: ClipboardList
+            },
+            {
+              title: "Perjalanan Dinas",
+              i18nKey: "sidebar.businessTrip",
+              href: "/business-trip",
+              icon: Plane
             },
             {
               title: "Purchase Order",
@@ -1384,6 +1450,12 @@ export const navCategories = {
               i18nKey: "sidebar.arusKas",
               href: "/report/cash-flow",
               icon: Receipt
+            },
+            {
+              title: "Advanced Reporting",
+              i18nKey: "sidebar.advancedReporting",
+              href: "/advanced-reporting",
+              icon: BarChart3
             }
           ]
         }
@@ -1423,6 +1495,12 @@ export const navCategories = {
               i18nKey: "sidebar.backup",
               href: "/backup",
               icon: Database
+            },
+            {
+              title: "Pengaturan Laporan",
+              i18nKey: "sidebar.reportSettings",
+              href: "/report/settings",
+              icon: FileText
             }
           ]
         }
@@ -1510,6 +1588,12 @@ export const navCategories = {
               i18nKey: "sidebar.goodsRequest",
               href: "/goods-request",
               icon: ClipboardList
+            },
+            {
+              title: "Perjalanan Dinas",
+              i18nKey: "sidebar.businessTrip",
+              href: "/business-trip",
+              icon: Plane
             },
             {
               title: "Purchase Order",
@@ -1624,6 +1708,12 @@ export const navCategories = {
               i18nKey: "sidebar.produkTerlaris",
               href: "/best-selling",
               icon: BarChart3
+            },
+            {
+              title: "Advanced Reporting",
+              i18nKey: "sidebar.advancedReporting",
+              href: "/advanced-reporting",
+              icon: BarChart3
             }
           ]
         }
@@ -1682,6 +1772,14 @@ export const navCategories = {
               icon: Users
             },
             {
+              title: "Perjalanan Dinas",
+              i18nKey: "sidebar.businessTrip",
+              href: "/business-trip",
+              icon: Plane,
+              activePaths: ["/business-trip/detail", "/add-business-trip", "/edit-business-trip"],
+              actions: ["view", "add", "edit", "delete"]
+            },
+            {
               title: "Shift",
               i18nKey: "sidebar.shift",
               href: "/shift-list",
@@ -1730,6 +1828,12 @@ export const navCategories = {
               i18nKey: "sidebar.backup",
               href: "/backup",
               icon: Database
+            },
+            {
+              title: "Pengaturan Laporan",
+              i18nKey: "sidebar.reportSettings",
+              href: "/report/settings",
+              icon: FileText
             }
           ]
         }
@@ -1787,6 +1891,12 @@ export const urlWithArrowBack = [
     title: "Goods Request",
     i18nKey: "sidebar.goodsRequest",
     pathName: "/goods-request"
+  },
+  {
+    url: -1,
+    title: "Business Trip",
+    i18nKey: "sidebar.businessTrip",
+    pathName: "/business-trip"
   },
   {
     url: -1,
@@ -1984,6 +2094,24 @@ export const urlWithArrowBack = [
     title: "Detail Goods Request",
     i18nKey: "breadcrumb.detail",
     pathName: "/goods-request/detail"
+  },
+  {
+    url: "/business-trip",
+    title: "Add Business Trip",
+    i18nKey: "breadcrumb.add",
+    pathName: "/add-business-trip"
+  },
+  {
+    url: "/business-trip",
+    title: "Edit Business Trip",
+    i18nKey: "breadcrumb.edit",
+    pathName: "/edit-business-trip"
+  },
+  {
+    url: "/business-trip",
+    title: "Detail Business Trip",
+    i18nKey: "breadcrumb.detail",
+    pathName: "/business-trip/detail"
   },
   {
     url: "/stock-opname",

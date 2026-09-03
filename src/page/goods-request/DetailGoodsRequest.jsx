@@ -27,6 +27,8 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
+import { getDocumentSpecForGoodsRequest } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
 
 const statusMap = {
@@ -57,6 +59,7 @@ const DetailGoodsRequest = () => {
   );
 
   const request = data?.data;
+  const printSpec = request ? getDocumentSpecForGoodsRequest(request, t) : null;
 
   const deleteMutation = useMutation(deleteGoodsRequest, {
     onSuccess: () => {
@@ -146,6 +149,7 @@ const DetailGoodsRequest = () => {
             )}
           </div>
         </div>
+        {!isLoading && request && <PrintButton />}
         {!isLoading && request && request.status === "pending" && (
           <div className="flex items-center gap-2 shrink-0">
             {canAccess(user, MENU_KEY, "update") && (
@@ -526,6 +530,11 @@ const DetailGoodsRequest = () => {
       />
       {(deleteMutation.isLoading || statusMutation.isLoading) && (
         <Loading fullscreen size="lg" label={t("common.loadingData")} />
+      )}
+      {printSpec && (
+        <div className="hidden print:block print-doc">
+          <FormalDocument spec={printSpec} />
+        </div>
       )}
     </div>
   );

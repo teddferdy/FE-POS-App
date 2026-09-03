@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   FileText,
   Package,
-  Printer,
   CheckCircle2,
   AlertTriangle,
   BarChart3,
@@ -20,6 +19,8 @@ import { getGoodsReceiptById } from "@/services/goods-receipt";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
+import { getDocumentSpecForGoodsReceipt } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
 
 const DetailGoodsReceipt = () => {
@@ -35,6 +36,7 @@ const DetailGoodsReceipt = () => {
   );
 
   const receipt = data?.data;
+  const printSpec = receipt ? getDocumentSpecForGoodsReceipt(receipt, t) : null;
 
   if (isError) return <AbortController refetch={refetch} />;
 
@@ -63,13 +65,7 @@ const DetailGoodsReceipt = () => {
           <Button variant="outline" size="icon" onClick={() => navigate("/goods-receipt")}>
             <ArrowLeft size={16} />
           </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => window.print()}
-            title={t("common.print")}>
-            <Printer size={16} />
-          </Button>
+          <PrintButton />
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
             <Package size={24} />
           </div>
@@ -601,20 +597,13 @@ const DetailGoodsReceipt = () => {
           );
         })()
       )}
+      {printSpec && (
+        <div className="hidden print:block print-doc">
+          <FormalDocument spec={printSpec} />
+        </div>
+      )}
     </div>
   );
 };
-
-const style = document.createElement("style");
-style.textContent = `
-  @media print {
-    nav, .flex.items-center.justify-between > div:first-child > button, button[title] { display: none !important; }
-    body { background: white !important; }
-    .bg-card { border: 1px solid #ddd !important; box-shadow: none !important; }
-    .space-y-6 > div:last-child { break-inside: avoid; }
-    @page { margin: 1.5cm; }
-  }
-`;
-document.head.appendChild(style);
 
 export default DetailGoodsReceipt;
