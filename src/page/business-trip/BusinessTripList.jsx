@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Plus, Eye, Edit, Trash2, FileText, Plane, Check, Ban } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, FileText, Plane, Check, Ban, Download } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import {
   getAllBusinessTrip,
@@ -18,6 +18,7 @@ import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
+import BusinessTripDownloadModal from "@/components/organism/business-trip-download-modal";
 import { Combobox } from "@/components/ui/combobox";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
@@ -51,6 +52,16 @@ const formatDate = (d) => {
     : "-";
 };
 
+const formatDateTime = (d) => {
+  const date = parseDate(d);
+  if (!date) return "-";
+  return (
+    date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) +
+    ", " +
+    date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+  );
+};
+
 const BusinessTripList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -65,6 +76,7 @@ const BusinessTripList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [approveTarget, setApproveTarget] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
+  const [downloadTarget, setDownloadTarget] = useState(null);
 
   const isFiltered = statusFilter !== "all" || search !== "";
 
@@ -126,17 +138,52 @@ const BusinessTripList = () => {
     },
     {
       header: t("page.businessTrip.list.employee"),
-      render: (item) => <span className="text-sm">{item.employeeName || "-"}</span>
+      render: (item) => {
+        const count = item.employees?.length || (item.employeeName ? 1 : 0);
+        return (
+          <span className="text-sm">
+            {count > 0 ? `${count} ${t("page.businessTrip.list.employeeCount")}` : "-"}
+          </span>
+        );
+      }
     },
     {
       header: t("page.businessTrip.list.destination"),
       render: (item) => <span className="text-sm">{item.destination || "-"}</span>
     },
     {
+      header: t("page.businessTrip.list.store"),
+      render: (item) => <span className="text-sm">{item.store?.name || "-"}</span>
+    },
+    {
       header: t("page.businessTrip.list.dates"),
       render: (item) => (
         <span className="text-sm font-mono text-muted-foreground">
           {formatDate(item.departureDate)} → {formatDate(item.returnDate)}
+        </span>
+      )
+    },
+    {
+      header: t("page.businessTrip.list.createdBy"),
+      render: (item) => <span className="text-sm">{item.createdByUser?.fullName || "-"}</span>
+    },
+    {
+      header: t("page.businessTrip.list.createdDate"),
+      render: (item) => (
+        <span className="text-xs font-mono text-muted-foreground">
+          {formatDateTime(item.createdAt)}
+        </span>
+      )
+    },
+    {
+      header: t("page.businessTrip.list.modifiedBy"),
+      render: (item) => <span className="text-sm">{item.modifiedByUser?.fullName || "-"}</span>
+    },
+    {
+      header: t("page.businessTrip.list.modifiedDate"),
+      render: (item) => (
+        <span className="text-xs font-mono text-muted-foreground">
+          {formatDateTime(item.updatedAt)}
         </span>
       )
     },
@@ -159,6 +206,7 @@ const BusinessTripList = () => {
       stickyRight: true,
       legend: [
         { icon: Eye, label: t("common.view") },
+        { icon: Download, label: t("page.businessTrip.list.download") },
         { icon: Check, label: t("page.businessTrip.list.approve") },
         { icon: Ban, label: t("page.businessTrip.list.reject") },
         { icon: Edit, label: t("common.edit") },
@@ -173,6 +221,12 @@ const BusinessTripList = () => {
               label: t("common.view"),
               icon: Eye,
               onClick: () => navigate(`/business-trip/detail?id=${item.id}`),
+              hidden: !canAccess(user, MENU_KEY, "view")
+            },
+            {
+              label: t("page.businessTrip.list.download"),
+              icon: Download,
+              onClick: () => setDownloadTarget(item.id),
               hidden: !canAccess(user, MENU_KEY, "view")
             },
             ...(item.status === "draft" || item.status === "pending" || item.status === "rejected"
@@ -366,6 +420,11 @@ const BusinessTripList = () => {
         confirmText={t("page.businessTrip.list.reject")}
         loading={statusMutation.isLoading}
         onConfirm={() => statusMutation.mutate({ id: rejectTarget, status: "rejected" })}
+      />
+      <BusinessTripDownloadModal
+        open={!!downloadTarget}
+        onOpenChange={(o) => !o && setDownloadTarget(null)}
+        tripId={downloadTarget}
       />
     </div>
   );

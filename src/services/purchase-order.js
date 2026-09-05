@@ -50,12 +50,6 @@ export const sendToSupplierPurchaseOrder = async (id) => {
   return data;
 };
 
-export const receivePurchaseOrder = async (id) => {
-  const { data, status } = await axiosInstance.put(`/purchase-order/receive/${id}`);
-  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
-  return data;
-};
-
 export const returnPurchaseOrder = async (id, payload, files = []) => {
   const fileList = Array.isArray(files) ? files : files ? [files] : [];
   const body = { purchaseOrder: id, ...payload };
@@ -91,10 +85,6 @@ const downloadBlob = async (url, filename) => {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(link.href);
-};
-
-export const downloadPurchaseOrderTemplate = async () => {
-  return downloadBlob("/purchase-order/template", `template-po.xlsx`);
 };
 
 export const downloadPurchaseOrderExcel = async () => {

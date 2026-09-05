@@ -50,6 +50,17 @@ const CheckoutModal = ({
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
+  // Generated once per modal mount (i.e. once per checkout attempt — the
+  // parent only mounts this modal via `{checkoutOpen && <CheckoutModal/>}`
+  // and unmounts it on success or close) and reused across every retry of
+  // that same attempt, so a double-click or a resubmit after a timeout
+  // hits the backend's idempotency-key unique constraint instead of
+  // creating a second order. A fresh checkout (new mount) gets a fresh key.
+  const [idempotencyKey] = useState(() =>
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
   const [step] = useState("payment");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [cashAmount, setCashAmount] = useState("");
@@ -477,6 +488,7 @@ const CheckoutModal = ({
     const method = paymentMethod || "points";
     const payload = {
       store: store,
+      idempotencyKey,
       cashierId: cashierId || cookie?.user?.id || cookie?.user?.ID,
       cashierName: cashierName || cookie?.user?.userName || cookie?.user?.name,
       customerId: selectedCustomer?.id || selectedCustomer?._id || null,
@@ -517,6 +529,7 @@ const CheckoutModal = ({
     cashierId,
     cashierName,
     store,
+    idempotencyKey,
     selectedCustomer,
     selectedDiscount,
     promoCode,

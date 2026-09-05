@@ -82,6 +82,14 @@ const WaiterRequestList = () => {
     setPage(1);
   };
 
+  // Realtime updates normally come from the socket (below); when no socket
+  // is available at all (e.g. the deployment target that disables it
+  // entirely — see useSocket), these queries would otherwise never refresh
+  // on their own (refetchOnWindowFocus/refetchOnReconnect are off globally),
+  // so new/changed requests would only ever appear after a manual reload.
+  // Poll only in that fallback case — a live socket makes polling redundant.
+  const pollFallback = socket ? false : 15000;
+
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["waiter-request-list", page, limit, storeId, statusFilter],
     () =>
@@ -94,7 +102,8 @@ const WaiterRequestList = () => {
     {
       retry: 1,
       keepPreviousData: true,
-      enabled: !!storeId || storeId === ""
+      enabled: !!storeId || storeId === "",
+      refetchInterval: pollFallback
     }
   );
 
@@ -109,7 +118,8 @@ const WaiterRequestList = () => {
       }),
     {
       retry: 1,
-      enabled: !!storeId || storeId === ""
+      enabled: !!storeId || storeId === "",
+      refetchInterval: pollFallback
     }
   );
 
@@ -124,7 +134,8 @@ const WaiterRequestList = () => {
       }),
     {
       retry: 1,
-      enabled: !!storeId || storeId === ""
+      enabled: !!storeId || storeId === "",
+      refetchInterval: pollFallback
     }
   );
 
@@ -150,9 +161,16 @@ const WaiterRequestList = () => {
       const onChanged = () => invalidate();
       socket.on("waiter-request:new", onNew);
       socket.on("waiter-request:statusChanged", onChanged);
+      // A disconnect/reconnect window (network blip) can silently miss
+      // domain events that fired while offline — refetch on every
+      // (re)connect, not just on explicit domain events, so a reconnect
+      // reconciles state instead of leaving it stale indefinitely.
+      const onConnect = () => invalidate();
+      socket.on("connect", onConnect);
       return () => {
         socket.off("waiter-request:new", onNew);
         socket.off("waiter-request:statusChanged", onChanged);
+        socket.off("connect", onConnect);
       };
     }
   }, [socket, storeId, invalidate]);
@@ -408,7 +426,7 @@ const WaiterRequestList = () => {
         }?`}
         confirmText="Setujui"
         onConfirm={() => statusMutation.mutate({ id: approveTarget?.id, status: "approved" })}
-        isLoading={statusMutation.isLoading}
+        loading={statusMutation.isLoading}
       />
 
       {/* Reject Modal */}
@@ -423,7 +441,7 @@ const WaiterRequestList = () => {
         confirmText="Tolak"
         confirmVariant="destructive"
         onConfirm={() => statusMutation.mutate({ id: rejectTarget?.id, status: "rejected" })}
-        isLoading={statusMutation.isLoading}
+        loading={statusMutation.isLoading}
       />
 
       {/* Done Modal */}
@@ -437,7 +455,7 @@ const WaiterRequestList = () => {
         } sebagai selesai?`}
         confirmText="Selesai"
         onConfirm={() => statusMutation.mutate({ id: doneTarget?.id, status: "done" })}
-        isLoading={statusMutation.isLoading}
+        loading={statusMutation.isLoading}
       />
     </div>
   );

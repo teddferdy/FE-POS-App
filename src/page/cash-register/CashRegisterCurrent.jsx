@@ -340,6 +340,7 @@ const CashRegisterCurrent = () => {
         })}
         confirmText={t("page.cashRegister.current.modalConfirm")}
         onConfirm={() => closeMut.mutate()}
+        loading={closeMut.isLoading}
       />
     </div>
   );

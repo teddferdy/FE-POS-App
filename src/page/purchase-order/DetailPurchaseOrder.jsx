@@ -6,6 +6,9 @@ import { getPurchaseOrderById } from "../../services/purchase-order";
 import { getPaymentsByPO, deletePayment, recordPayment } from "../../services/purchase-payment";
 import { getReturnsByPO } from "../../services/purchase-return";
 import { returnPurchaseOrder } from "../../services/purchase-order";
+import { useQueryClient } from "react-query";
+import { invalidatePurchasePaymentCaches } from "@/utils/purchasePaymentCache";
+import { newPurchasePaymentKey } from "@/utils/paymentIdempotency";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { Button } from "../../components/ui/button";
@@ -76,6 +79,7 @@ export default function DetailPurchaseOrder() {
   const [payDate, setPayDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [payRef, setPayRef] = useState("");
   const [paySubmitting, setPaySubmitting] = useState(false);
+  const payIdKeyRef = useRef("");
 
   const formatIDR = (num) => {
     if (!num && num !== 0) return "";
@@ -97,6 +101,7 @@ export default function DetailPurchaseOrder() {
   const [returnDocs, setReturnDocs] = useState([]);
   const docInputRef = useRef(null);
   const [collapsedGroups, setCollapsedGroups] = useState({});
+  const queryClient = useQueryClient();
 
   const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const remaining = (po?.finalAmount || 0) - totalPaid;
@@ -162,19 +167,25 @@ export default function DetailPurchaseOrder() {
     const primarySupplier = po?.items?.[0]?.supplierData?.id ?? po?.items?.[0]?.supplier ?? null;
     try {
       setPaySubmitting(true);
+      if (!payIdKeyRef.current) {
+        payIdKeyRef.current = newPurchasePaymentKey();
+      }
       await recordPayment({
         purchaseOrder: po.id,
         supplier: primarySupplier,
         amount: Number(payAmount),
         paymentDate: payDate || new Date().toISOString(),
         paymentMethod: payMethod,
-        reference: payRef || null
+        reference: payRef || null,
+        idempotencyKey: payIdKeyRef.current
       });
       toast.success(t("page.purchaseOrder.detail.toast.paymentRecorded"));
       setPaymentModalOpen(false);
       setPayAmount("");
       setPayRef("");
+      payIdKeyRef.current = "";
       loadData();
+      invalidatePurchasePaymentCaches(queryClient);
     } catch (err) {
       toast.error(
         err.response?.data?.message || t("page.purchaseOrder.detail.toast.paymentRecordFailed")
@@ -191,6 +202,7 @@ export default function DetailPurchaseOrder() {
       setDeleteModalOpen(false);
       setPaymentToDelete(null);
       loadData();
+      invalidatePurchasePaymentCaches(queryClient);
     } catch (err) {
       toast.error(
         err.response?.data?.message || t("page.purchaseOrder.detail.paymentDeleteFailed")
@@ -1074,7 +1086,13 @@ export default function DetailPurchaseOrder() {
                 {t("page.purchaseOrder.detail.payment")}
               </h2>
               {remaining > 0 && po.status !== "cancelled" && po.status !== "draft" && (
-                <Button size="sm" variant="outline" onClick={() => setPaymentModalOpen(true)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    payIdKeyRef.current = "";
+                    setPaymentModalOpen(true);
+                  }}>
                   <Banknote size={14} className="mr-1" />
                   {t("page.purchaseOrder.detail.pay")}
                 </Button>

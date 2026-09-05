@@ -1,7 +1,14 @@
 import { safeGet } from "@/lib/safe-lookup";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  AlertTriangle
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,6 +20,9 @@ const DataTable = ({
   columns = [],
   data = [],
   isLoading,
+  isError,
+  errorMessage: errorMessageProp,
+  onRetry,
   emptyMessage: emptyMessageProp,
   emptyIcon: EmptyIcon,
   containerClassName,
@@ -34,6 +44,7 @@ const DataTable = ({
 }) => {
   const { t } = useTranslation();
   const emptyMessage = emptyMessageProp ?? t("common.noData");
+  const errorMessage = errorMessageProp ?? t("common.loadError");
   const legendItems = columns.flatMap((col) => (Array.isArray(col.legend) ? col.legend : []));
   const [expandedRows, setExpandedRows] = React.useState(new Set());
   const scrollRef = React.useRef(null);
@@ -122,6 +133,8 @@ const DataTable = ({
                 e.stopPropagation();
                 toggleRowExpanded(rowId);
               }}
+              aria-label={isExpanded ? t("common.collapseRow") : t("common.expandRow")}
+              aria-expanded={isExpanded}
               className="p-1 hover:bg-accent rounded transition-colors">
               <ChevronRight
                 size={14}
@@ -190,6 +203,20 @@ const DataTable = ({
   }, [measureStickyLeft]);
 
   const renderTable = () => {
+    if (isError) {
+      return (
+        <div className="px-4 py-12 text-center text-muted-foreground">
+          <AlertTriangle size={40} className="mx-auto mb-3 opacity-30 text-destructive" />
+          <p>{errorMessage}</p>
+          {onRetry && (
+            <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
+              {t("common.retry")}
+            </Button>
+          )}
+        </div>
+      );
+    }
+
     if (data.length === 0) {
       return (
         <div className="px-4 py-12 text-center text-muted-foreground">
@@ -347,12 +374,14 @@ const DataTable = ({
           <button
             onClick={() => onPageChange(1)}
             disabled={page <= 1}
+            aria-label={t("common.firstPage")}
             className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
             <ChevronsLeft size={14} />
           </button>
           <button
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
+            aria-label={t("common.previousPage")}
             className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
             <ChevronLeft size={14} />
           </button>
@@ -396,12 +425,14 @@ const DataTable = ({
           <button
             onClick={() => onPageChange(page + 1)}
             disabled={page >= tp}
+            aria-label={t("common.nextPage")}
             className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
             <ChevronRight size={14} />
           </button>
           <button
             onClick={() => onPageChange(tp)}
             disabled={page >= tp}
+            aria-label={t("common.lastPage")}
             className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
             <ChevronsRight size={14} />
           </button>

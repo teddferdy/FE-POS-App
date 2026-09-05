@@ -12,13 +12,12 @@ jest.mock("react-router-dom", () => ({
   useSearchParams: () => [new URLSearchParams("id=1")]
 }));
 
+jest.mock("../utils/businessTripExcel", () => ({
+  downloadTripWorkbook: jest.fn()
+}));
+
 jest.mock("../services/business-trip", () => ({
-  getBusinessTripById: () => Promise.resolve({ data: mockTrip }),
-  getBusinessTrips: () => Promise.resolve({ data: { rows: [], total: 0 } }),
-  addBusinessTrip: jest.fn(),
-  editBusinessTrip: jest.fn(),
-  deleteBusinessTrip: jest.fn(),
-  changeBusinessTripStatus: jest.fn()
+  getBusinessTripById: () => Promise.resolve({ data: mockTrip })
 }));
 
 jest.mock("react-query", () => ({
@@ -35,15 +34,39 @@ let mockTrip = {
   id: 1,
   tripNumber: "BT-20260902-0001",
   status: "approved",
-  employeeName: "Andi",
-  employeePosition: "Manager",
   destination: "Jakarta",
   tripPurpose: "Meeting",
   departureDate: "2026-09-10",
   returnDate: "2026-09-12",
-  budget: 2000000,
+  budget: 1500000,
   notes: "Laporan",
-  createdByUser: { fullName: "Andi" },
+  employees: [
+    {
+      id: 1,
+      employeeId: 10,
+      employeeName: "Andi",
+      employeePosition: "Manager",
+      employeeUser: { fullName: "Andi" }
+    },
+    {
+      id: 2,
+      employeeId: 11,
+      employeeName: "Budi",
+      employeePosition: "Leader",
+      employeeUser: { fullName: "Budi" }
+    }
+  ],
+  budgetItems: [
+    {
+      id: 1,
+      komponen: "Transportasi",
+      qty: 2,
+      satuan: "pax",
+      tarif: 500000,
+      total: 1000000,
+      catatan: "Tiket"
+    }
+  ],
   approvedByUser: { fullName: "Budi" }
 };
 
@@ -53,30 +76,59 @@ describe("DetailBusinessTrip", () => {
       id: 1,
       tripNumber: "BT-20260902-0001",
       status: "approved",
-      employeeName: "Andi",
-      employeePosition: "Manager",
       destination: "Jakarta",
       tripPurpose: "Meeting",
       departureDate: "2026-09-10",
       returnDate: "2026-09-12",
-      budget: 2000000,
+      budget: 1500000,
       notes: "Laporan",
-      createdByUser: { fullName: "Andi" },
+      employees: [
+        {
+          id: 1,
+          employeeId: 10,
+          employeeName: "Andi",
+          employeePosition: "Manager",
+          employeeUser: { fullName: "Andi" }
+        },
+        {
+          id: 2,
+          employeeId: 11,
+          employeeName: "Budi",
+          employeePosition: "Leader",
+          employeeUser: { fullName: "Budi" }
+        }
+      ],
+      budgetItems: [
+        {
+          id: 1,
+          komponen: "Transportasi",
+          qty: 2,
+          satuan: "pax",
+          tarif: 500000,
+          total: 1000000,
+          catatan: "Tiket"
+        }
+      ],
       approvedByUser: { fullName: "Budi" }
     };
   });
 
-  test("renders Surat Tugas and trip data after load", () => {
+  test("renders trip number and multi-employee names", () => {
     render(<DetailBusinessTrip />);
     expect(screen.getByText("BT-20260902-0001")).toBeInTheDocument();
-    expect(screen.getAllByText("page.businessTrip.detail.suratTugas").length).toBeGreaterThan(0);
-    // destination appears in both the info card and the printable document
-    expect(screen.getAllByText("Jakarta").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Andi").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Budi").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Leader").length).toBeGreaterThan(0);
   });
 
-  test("renders the signature block columns for the printable document", () => {
+  test("renders the RAB breakdown and download button", () => {
     render(<DetailBusinessTrip />);
-    expect(screen.getAllByText("document.preparedBy").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("document.approvedBy").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Transportasi").length).toBeGreaterThan(0);
+    expect(screen.getByText(/page.businessTrip.detail.download/)).toBeInTheDocument();
+  });
+
+  test("wraps the SPPD document in a print container", () => {
+    const { container } = render(<DetailBusinessTrip />);
+    expect(container.querySelector(".print-doc")).toBeInTheDocument();
   });
 });

@@ -40,25 +40,6 @@ export const getRoleById = async (id) => {
   return data;
 };
 
-export const updateUserRole = async (payload) => {
-  const { data, status } = await axiosInstance.put("/role/update-user-role", payload);
-  if (status !== 200) throw Error(`${data?.message || data?.error}`);
-  return data;
-};
-
-export const getUsersByRole = async ({ store, roleId, search } = {}) => {
-  const params = new URLSearchParams();
-  if (store) params.append("store", store);
-  if (roleId) params.append("roleId", roleId);
-  if (search) params.append("search", search);
-  const query = params.toString();
-  const { data, status } = await axiosInstance.get(
-    `/role/get-users-by-role${query ? `?${query}` : ""}`
-  );
-  if (status !== 200) throw Error(`${data?.message}`);
-  return data;
-};
-
 export const updateAccessMenu = async (payload) => {
   const { data, status } = await axiosInstance.put("/role/update-access-menu", payload);
   if (status !== 200) throw Error(`${data?.message || data?.error}`);

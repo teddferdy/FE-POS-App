@@ -14,6 +14,7 @@ import {
 import { getAllMember, addMemberPoints } from "@/services/member";
 import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
+import Modal from "@/components/organism/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -61,6 +62,7 @@ const MemberLoyalty = () => {
   const [search, setSearch] = useState("");
   const [selectedMember, setSelectedMember] = useState(null);
   const [redeemPoints, setRedeemPoints] = useState("");
+  const [deleteTierTarget, setDeleteTierTarget] = useState(null);
 
   const { data: locData } = useQuery(["locations-loyalty"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -95,6 +97,7 @@ const MemberLoyalty = () => {
     onSuccess: () => {
       toast.success("Tier berhasil dihapus");
       queryClient.invalidateQueries(["member-tiers"]);
+      setDeleteTierTarget(null);
     },
     onError: (err) => toast.error(err?.message || "Gagal menghapus tier")
   });
@@ -266,7 +269,8 @@ const MemberLoyalty = () => {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => deleteTierMutation.mutate({ id: tier.id })}>
+                            aria-label={`Hapus tier ${tier.name}`}
+                            onClick={() => setDeleteTierTarget(tier)}>
                             <Trash className="w-4 h-4" />
                           </Button>
                         </div>
@@ -392,6 +396,18 @@ const MemberLoyalty = () => {
           { icon: Edit, label: t("common.edit") },
           { icon: Trash, label: t("common.delete") }
         ]}
+      />
+
+      <Modal
+        type="confirm"
+        open={!!deleteTierTarget}
+        onOpenChange={(open) => !open && setDeleteTierTarget(null)}
+        title="Hapus Tier"
+        description={`Yakin ingin menghapus tier "${deleteTierTarget?.name}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmText="Hapus"
+        confirmVariant="destructive"
+        onConfirm={() => deleteTierMutation.mutate({ id: deleteTierTarget.id })}
+        loading={deleteTierMutation.isLoading}
       />
     </div>
   );

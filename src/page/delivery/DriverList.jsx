@@ -89,7 +89,7 @@ const DriverList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/driver-list";
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["drivers", page, limit, storeFilter, search, statusFilter],
     () =>
       getDrivers({
@@ -335,6 +335,8 @@ const DriverList = () => {
         columns={columns}
         data={drivers}
         isLoading={isLoading || isFetching}
+        isError={isError}
+        onRetry={refetch}
         emptyMessage={t("page.delivery.driver.list.empty")}
         emptyIcon={Users}
         toolbar={

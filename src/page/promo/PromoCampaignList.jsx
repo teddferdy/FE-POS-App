@@ -113,7 +113,7 @@ const PromoCampaignList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/promo-list";
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["promo-campaigns", page, limit, storeFilter, search, statusFilter, typeFilter],
     () =>
       getCampaigns({
@@ -398,8 +398,9 @@ const PromoCampaignList = () => {
         <DataTable
           columns={columns}
           data={data?.data || []}
-          isLoading={isLoading}
-          isFetching={isFetching}
+          isLoading={isLoading || isFetching}
+          isError={isError}
+          onRetry={refetch}
           toolbar={
             <TableToolbar
               title={t("page.promo.list.title")}
@@ -467,7 +468,7 @@ const PromoCampaignList = () => {
         description={t("page.promo.modal.deleteDescription", { name: deleteTarget?.name })}
         confirmText={t("common.delete")}
         onConfirm={() => deleteMutation.mutate(deleteTarget?.id)}
-        isLoading={deleteMutation.isLoading}
+        loading={deleteMutation.isLoading}
       />
 
       {/* Status Change Modal */}
@@ -494,7 +495,7 @@ const PromoCampaignList = () => {
           statusMutation.mutate({ id: statusTarget?.id, status: statusTarget?.status });
           setStatusTarget(null);
         }}
-        isLoading={statusMutation.isLoading}
+        loading={statusMutation.isLoading}
       />
     </div>
   );

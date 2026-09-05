@@ -115,7 +115,7 @@ const CategoryList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["categories", page, limit, search, statusFilter, storeFilter],
     () =>
       getAllCategoryTable({
@@ -554,6 +554,8 @@ const CategoryList = () => {
                   columns={columns}
                   data={categories}
                   isLoading={isLoading || isFetching}
+                  isError={isError}
+                  onRetry={refetch}
                   emptyMessage={t("page.category.list.empty")}
                   toolbar={
                     <TableToolbar

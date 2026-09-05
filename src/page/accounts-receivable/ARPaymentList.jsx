@@ -46,6 +46,7 @@ const ARPaymentList = () => {
       toast.success(t("page.accountsReceivable.list.toast.paymentSuccess"));
       setPayModal(null);
       setPayAmount("");
+      refetch();
     },
     onError: (err) =>
       toast.error(err?.message || t("page.accountsReceivable.list.toast.paymentError"))

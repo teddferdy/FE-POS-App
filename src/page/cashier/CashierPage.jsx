@@ -16,6 +16,7 @@ import {
   Loader2
 } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslation } from "react-i18next";
 import { getProductByOutlet } from "@/services/product";
 import { getAllLocation } from "@/services/location";
@@ -168,35 +169,47 @@ const CashierPage = () => {
 
   const cart = orderList();
 
+  // Debounced for the network request only — the input itself stays
+  // controlled by the raw `search` state so typing feels instant, and the
+  // client-side re-filter below also uses the raw value against whatever
+  // is already loaded. Without this, every keystroke fired a live request
+  // against the store's full product list (this is the highest-traffic
+  // screen in the app).
+  const debouncedSearch = useDebounce(search, 300);
+
   const {
     data: productsData,
     isLoading,
     isError,
     refetch
   } = useQuery(
-    ["products-outlet", store, search],
-    () => getProductByOutlet({ location: store, search: search || undefined }),
+    ["products-outlet", store, debouncedSearch],
+    () => getProductByOutlet({ location: store, search: debouncedSearch || undefined }),
     {
       enabled: !!store
     }
   );
 
   const products = productsData?.data || productsData || [];
-  const bundles = productsData?.bundles || [];
+  const bundles = useMemo(() => productsData?.bundles || [], [productsData]);
 
-  const bundleProducts = bundles.map((b) => ({
-    id: b.id,
-    nameProduct: b.name,
-    sku: b.sku,
-    sellPrice: b.bundlePrice,
-    price: b.bundlePrice,
-    stock: b.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
-    isBundle: true,
-    category: { id: "bundle", nameCategory: "Bundle" },
-    bundleData: b
-  }));
+  const bundleProducts = useMemo(
+    () =>
+      bundles.map((b) => ({
+        id: b.id,
+        nameProduct: b.name,
+        sku: b.sku,
+        sellPrice: b.bundlePrice,
+        price: b.bundlePrice,
+        stock: b.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
+        isBundle: true,
+        category: { id: "bundle", nameCategory: "Bundle" },
+        bundleData: b
+      })),
+    [bundles]
+  );
 
-  const allProducts = [...products, ...bundleProducts];
+  const allProducts = useMemo(() => [...products, ...bundleProducts], [products, bundleProducts]);
 
   const catId = (p) => {
     const raw =
@@ -216,14 +229,18 @@ const CashierPage = () => {
     return raw;
   };
 
-  const filteredProducts = allProducts.filter((p) => {
-    const name = (p.nameProduct || p.name || "").toLowerCase();
-    const sku = (p.sku || "").toLowerCase();
-    const q = search.toLowerCase();
-    const matchesSearch = !search || name.includes(q) || sku.includes(q);
-    const matchesCategory = !categoryId || String(catId(p)) === String(categoryId);
-    return matchesSearch && matchesCategory;
-  });
+  const filteredProducts = useMemo(
+    () =>
+      allProducts.filter((p) => {
+        const name = (p.nameProduct || p.name || "").toLowerCase();
+        const sku = (p.sku || "").toLowerCase();
+        const q = search.toLowerCase();
+        const matchesSearch = !search || name.includes(q) || sku.includes(q);
+        const matchesCategory = !categoryId || String(catId(p)) === String(categoryId);
+        return matchesSearch && matchesCategory;
+      }),
+    [allProducts, search, categoryId]
+  );
 
   const totalItems = cart.order.reduce((sum, item) => sum + (item.count || 0), 0);
   const subtotal = cart.order.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);

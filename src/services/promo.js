@@ -31,12 +31,3 @@ export const updateCampaignStatus = (id, { status }) =>
 
 export const deleteCampaign = (id) =>
   axiosInstance.delete(`/promo/campaigns/${id}`).then((r) => r.data);
-
-export const applyPromo = (payload) =>
-  axiosInstance.post("/promo/apply", payload).then((r) => r.data);
-
-export const recordPromoUsage = (payload) =>
-  axiosInstance.post("/promo/usage", payload).then((r) => r.data);
-
-export const autoActivateCampaigns = () =>
-  axiosInstance.post("/promo/auto-activate").then((r) => r.data);

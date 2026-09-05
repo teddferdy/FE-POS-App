@@ -1,12 +1,36 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { X, Printer, RotateCcw, CheckCircle, Users, Plus, Trash2 } from "lucide-react";
+import {
+  X,
+  Printer,
+  RotateCcw,
+  CheckCircle,
+  Users,
+  Plus,
+  Trash2,
+  Banknote,
+  Merge
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createSplitBill } from "@/services/split-bill";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import {
+  createSplitBill,
+  getSplitBillByOrder,
+  paySplitBill,
+  cancelSplitBill,
+  mergeSplitBills
+} from "@/services/split-bill";
+import { getAllTypePayment } from "@/services/type-payment";
 import { getInvoiceSetting } from "@/services/invoice";
 import { getLocationById } from "@/services/location";
 import {
@@ -191,11 +215,45 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     Array.from({ length: 2 }, (_, i) => (i === 0 ? Math.ceil(total / 2) : Math.floor(total / 2)))
   );
 
+  const queryClient = useQueryClient();
+  // Only super_admin/admin may pay/cancel/merge a split (BE:
+  // requireRole('super_admin','admin') on those three routes — getByOrder
+  // itself has no role restriction, so a kasir can still see the list).
+  // Mirrored here purely so a kasir isn't offered an action that is
+  // guaranteed to 403 — the BE remains the actual authority.
+  const canManageSplits = user?.roleType === "super_admin" || user?.roleType === "admin";
+  const [payingId, setPayingId] = useState(null);
+  const [payMethodChoice, setPayMethodChoice] = useState("");
+  const [selectedMergeIds, setSelectedMergeIds] = useState([]);
+
+  const { data: existingSplitsData, refetch: refetchSplits } = useQuery(
+    ["split-bills", orderId],
+    () => getSplitBillByOrder(orderId),
+    { enabled: !!orderId && showSplit }
+  );
+  const existingSplits = existingSplitsData?.data?.splits || [];
+  const splitSummary = existingSplitsData?.data?.summary || {
+    totalSplits: 0,
+    totalPaid: 0,
+    totalPending: 0
+  };
+
+  const { data: splitPaymentMethodsData } = useQuery(
+    ["payment-methods-active", storeId],
+    () => getAllTypePayment({ store: storeId, status: "active" }),
+    { enabled: showSplit && canManageSplits && !!storeId }
+  );
+  const splitPaymentMethods = (
+    splitPaymentMethodsData?.data ||
+    (Array.isArray(splitPaymentMethodsData) ? splitPaymentMethodsData : []) ||
+    []
+  ).map((pm) => ({ id: pm.type || pm.id?.toString() || pm.name?.toLowerCase(), label: pm.name }));
+
   const splitMutation = useMutation({
     mutationFn: (payload) => createSplitBill(payload),
     onSuccess: () => {
       toast.success(t("page.cashier.receipt.toast.splitSuccess"));
-      setShowSplit(false);
+      refetchSplits();
     },
     onError: (err) => {
       toast.error(
@@ -203,6 +261,68 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
       );
     }
   });
+
+  const paySplitMutation = useMutation({
+    mutationFn: ({ id, paymentMethod }) => paySplitBill(id, { paymentMethod }),
+    onSuccess: (result) => {
+      toast.success(t("page.cashier.receipt.toast.splitPaySuccess"));
+      setPayingId(null);
+      setPayMethodChoice("");
+      refetchSplits();
+      if (result?.data?.orderComplete) {
+        // Matches OrderQueue.jsx's actual query keys — each status tab is
+        // its own key (["cashier-orders-<status>", store]), not a shared
+        // prefix, so each needs its own invalidation call.
+        ["pending", "confirmed", "preparing", "ready"].forEach((status) =>
+          queryClient.invalidateQueries(["cashier-orders-" + status, storeId])
+        );
+      }
+    },
+    onError: (err) => {
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          t("page.cashier.receipt.toast.splitPayFailed")
+      );
+    }
+  });
+
+  const cancelSplitMutation = useMutation({
+    mutationFn: (id) => cancelSplitBill(id),
+    onSuccess: () => {
+      toast.success(t("page.cashier.receipt.toast.splitCancelSuccess"));
+      refetchSplits();
+    },
+    onError: (err) => {
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          t("page.cashier.receipt.toast.splitCancelFailed")
+      );
+    }
+  });
+
+  const mergeMutation = useMutation({
+    mutationFn: (splitIds) => mergeSplitBills({ order: orderId, splitIds }),
+    onSuccess: () => {
+      toast.success(t("page.cashier.receipt.toast.splitMergeSuccess"));
+      setSelectedMergeIds([]);
+      refetchSplits();
+    },
+    onError: (err) => {
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          t("page.cashier.receipt.toast.splitMergeFailed")
+      );
+    }
+  });
+
+  const toggleMergeSelect = (id) => {
+    setSelectedMergeIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
 
   const handleSplitCountChange = (n) => {
     const count = Math.max(2, Math.min(20, Number(n) || 2));
@@ -722,84 +842,225 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{t("page.cashier.receipt.splitPeople")}</span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-8 h-8 p-0"
-                    onClick={() => handleSplitCountChange(splitCount - 1)}>
-                    <Plus size={14} className="rotate-45" />
-                  </Button>
-                  <span className="w-8 text-center font-bold">{splitCount}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-8 h-8 p-0"
-                    onClick={() => handleSplitCountChange(splitCount + 1)}>
-                    <Plus size={14} />
+            {existingSplits.length > 0 ? (
+              <>
+                <div className="flex-1 overflow-y-auto p-5 space-y-3">
+                  {existingSplits.map((split) => {
+                    const isPending = split.status === "pending";
+                    const isChoosingMethod = payingId === split.id;
+                    const isSelected = selectedMergeIds.includes(split.id);
+                    return (
+                      <div
+                        key={split.id}
+                        className={`border rounded-xl p-3 space-y-2 ${
+                          isSelected ? "border-primary bg-primary/5" : "border-border/60"
+                        }`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {canManageSplits && isPending && (
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleMergeSelect(split.id)}
+                                className="w-4 h-4 accent-primary"
+                                aria-label={t("page.cashier.receipt.splitSelectForMerge")}
+                              />
+                            )}
+                            <span className="text-sm font-semibold">{split.splitNumber}</span>
+                          </div>
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                              isPending
+                                ? "bg-amber-500/10 text-amber-600"
+                                : "bg-emerald-500/10 text-emerald-600"
+                            }`}>
+                            {isPending
+                              ? t("page.cashier.receipt.splitStatusPending")
+                              : t("page.cashier.receipt.splitStatusPaid")}
+                          </span>
+                        </div>
+                        <div className="text-sm font-bold">Rp {formatPrice(split.amount)}</div>
+
+                        {isPending &&
+                          canManageSplits &&
+                          (isChoosingMethod ? (
+                            <div className="flex items-center gap-2">
+                              <Select value={payMethodChoice} onValueChange={setPayMethodChoice}>
+                                <SelectTrigger className="h-8 text-xs flex-1">
+                                  <SelectValue placeholder={t("page.cashier.paymentMethod")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {splitPaymentMethods.map((m) => (
+                                    <SelectItem key={m.id} value={m.id}>
+                                      {m.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                size="sm"
+                                variant="success"
+                                className="h-8 w-8 p-0 shrink-0"
+                                disabled={!payMethodChoice || paySplitMutation.isLoading}
+                                onClick={() =>
+                                  paySplitMutation.mutate({
+                                    id: split.id,
+                                    paymentMethod: payMethodChoice
+                                  })
+                                }>
+                                <CheckCircle size={14} />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 w-8 p-0 shrink-0"
+                                onClick={() => setPayingId(null)}>
+                                <X size={14} />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="success"
+                                className="flex-1 h-8 text-xs"
+                                onClick={() => {
+                                  setPayingId(split.id);
+                                  setPayMethodChoice("");
+                                }}>
+                                <Banknote size={14} className="mr-1" />
+                                {t("page.cashier.receipt.splitPay")}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="danger"
+                                className="h-8 w-8 p-0 shrink-0"
+                                disabled={cancelSplitMutation.isLoading}
+                                aria-label={t("page.cashier.receipt.splitCancel")}
+                                onClick={() => cancelSplitMutation.mutate(split.id)}>
+                                <Trash2 size={14} />
+                              </Button>
+                            </div>
+                          ))}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="border-t border-border/50 p-4 shrink-0 space-y-2">
+                  {splitSummary.totalPending === 0 && splitSummary.totalSplits > 0 && (
+                    <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium justify-center">
+                      <CheckCircle size={16} />
+                      {t("page.cashier.receipt.splitAllPaid")}
+                    </div>
+                  )}
+                  {canManageSplits && selectedMergeIds.length >= 2 && (
+                    <Button
+                      variant="outline"
+                      className="w-full h-9 text-xs"
+                      disabled={mergeMutation.isLoading}
+                      onClick={() => mergeMutation.mutate(selectedMergeIds)}>
+                      <Merge size={14} className="mr-1" />
+                      {t("page.cashier.receipt.splitMergeSelected", {
+                        count: selectedMergeIds.length
+                      })}
+                    </Button>
+                  )}
+                  <Button variant="danger" className="w-full" onClick={() => setShowSplit(false)}>
+                    {t("common.close")}
                   </Button>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                {splitAmounts.map((amount, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground w-6 shrink-0">#{idx + 1}</span>
-                    <Input
-                      type="number"
-                      value={amount}
-                      onChange={(e) => handleSplitAmountChange(idx, e.target.value)}
-                      className="flex-1"
-                    />
-                    {splitCount > 2 && (
-                      <button
-                        onClick={() => {
-                          const next = splitAmounts.filter((_, i) => i !== idx);
-                          setSplitAmounts(next);
-                          setSplitCount(next.length);
-                        }}
-                        className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-destructive">
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between text-sm font-medium pt-2 border-t border-border">
-                <span>{t("page.cashier.total")}</span>
-                <span
-                  className={
-                    splitAmounts.reduce((s, a) => s + a, 0) === total
-                      ? "text-primary"
-                      : "text-destructive"
-                  }>
-                  Rp {formatPrice(splitAmounts.reduce((s, a) => s + a, 0))}
-                  {splitAmounts.reduce((s, a) => s + a, 0) !== total && (
-                    <span className="text-xs ml-1">
-                      ({t("page.cashier.receipt.splitMustEqual", { total: formatPrice(total) })})
+              </>
+            ) : (
+              <>
+                <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">
+                      {t("page.cashier.receipt.splitPeople")}
                     </span>
-                  )}
-                </span>
-              </div>
-            </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-8 h-8 p-0"
+                        onClick={() => handleSplitCountChange(splitCount - 1)}>
+                        <Plus size={14} className="rotate-45" />
+                      </Button>
+                      <span className="w-8 text-center font-bold">{splitCount}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-8 h-8 p-0"
+                        onClick={() => handleSplitCountChange(splitCount + 1)}>
+                        <Plus size={14} />
+                      </Button>
+                    </div>
+                  </div>
 
-            <div className="border-t border-border/50 p-4 shrink-0 flex items-center gap-2">
-              <Button variant="danger" className="flex-1" onClick={() => setShowSplit(false)}>
-                {t("common.cancel")}
-              </Button>
-              <Button
-                variant="success"
-                className="flex-1"
-                onClick={handleSplitSubmit}
-                loading={splitMutation.isLoading}
-                disabled={splitAmounts.reduce((s, a) => s + a, 0) !== total}>
-                {t("common.save")}
-              </Button>
-            </div>
+                  <div className="space-y-2">
+                    {splitAmounts.map((amount, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground w-6 shrink-0">
+                          #{idx + 1}
+                        </span>
+                        <Input
+                          type="number"
+                          value={amount}
+                          onChange={(e) => handleSplitAmountChange(idx, e.target.value)}
+                          className="flex-1"
+                        />
+                        {splitCount > 2 && (
+                          <button
+                            onClick={() => {
+                              const next = splitAmounts.filter((_, i) => i !== idx);
+                              setSplitAmounts(next);
+                              setSplitCount(next.length);
+                            }}
+                            aria-label={t("page.cashier.receipt.splitRemovePerson", {
+                              number: idx + 1
+                            })}
+                            className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-destructive">
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm font-medium pt-2 border-t border-border">
+                    <span>{t("page.cashier.total")}</span>
+                    <span
+                      className={
+                        splitAmounts.reduce((s, a) => s + a, 0) === total
+                          ? "text-primary"
+                          : "text-destructive"
+                      }>
+                      Rp {formatPrice(splitAmounts.reduce((s, a) => s + a, 0))}
+                      {splitAmounts.reduce((s, a) => s + a, 0) !== total && (
+                        <span className="text-xs ml-1">
+                          ({t("page.cashier.receipt.splitMustEqual", { total: formatPrice(total) })}
+                          )
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="border-t border-border/50 p-4 shrink-0 flex items-center gap-2">
+                  <Button variant="danger" className="flex-1" onClick={() => setShowSplit(false)}>
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    variant="success"
+                    className="flex-1"
+                    onClick={handleSplitSubmit}
+                    loading={splitMutation.isLoading}
+                    disabled={splitAmounts.reduce((s, a) => s + a, 0) !== total}>
+                    {t("common.save")}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

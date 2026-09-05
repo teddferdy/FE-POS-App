@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueries } from "react-query";
+import { useMutation, useQuery, useQueries, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,6 +44,7 @@ import { safeGet } from "@/lib/safe-lookup";
 const AddShift = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { isSuperAdmin, user } = useStore();
   const [cookie] = useCookies();
   const userStoreId = isSuperAdmin ? null : cookie?.user?.store;
@@ -258,7 +259,10 @@ const AddShift = () => {
   };
 
   const createMutation = useMutation(addShift, {
-    onSuccess: () => setSuccessModal(true),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["shifts"]);
+      setSuccessModal(true);
+    },
     onError: (err) => {
       setModalMessage(err?.response?.data?.message || err.message || "Gagal menambahkan shift");
       setErrorModal(true);

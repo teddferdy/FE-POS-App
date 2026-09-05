@@ -40,9 +40,3 @@ export const rejectPurchaseReturn = async (id) => {
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };
-
-export const createPurchaseReturn = async (payload) => {
-  const { data, status } = await axiosInstance.post(`/purchase-return/create`, payload);
-  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
-  return data;
-};

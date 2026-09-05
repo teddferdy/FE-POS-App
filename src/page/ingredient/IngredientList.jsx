@@ -80,7 +80,7 @@ const IngredientList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["ingredients", search, storeFilter, page, statusFilter],
     () =>
       getAllIngredients({
@@ -435,6 +435,8 @@ const IngredientList = () => {
               columns={columns}
               data={ingredients}
               isLoading={isLoading || isFetching}
+              isError={isError}
+              onRetry={refetch}
               emptyMessage={t("page.ingredient.list.emptyMessage")}
               emptyIcon={Package}
               pagination={{

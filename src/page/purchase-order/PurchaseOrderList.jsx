@@ -50,6 +50,8 @@ import { getAllLocation } from "@/services/location";
 import { getBatches } from "@/services/inventory";
 import NoStore from "@/components/ui/NoStore";
 import { recordPayment } from "@/services/purchase-payment";
+import { invalidatePurchasePaymentCaches } from "@/utils/purchasePaymentCache";
+import { newPurchasePaymentKey } from "@/utils/paymentIdempotency";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -179,11 +181,13 @@ const PurchaseOrderList = () => {
     reference: "",
     notes: ""
   });
+  const payIdKeyRef = useRef("");
 
   const payMutation = useMutation(recordPayment, {
     onSuccess: () => {
       toast.success(t("page.purchaseOrder.detail.toast.paymentRecorded"));
-      queryClient.invalidateQueries(["purchase-orders"]);
+      invalidatePurchasePaymentCaches(queryClient);
+      payIdKeyRef.current = "";
       setPayModal(false);
       setPayPo(null);
       setPayForm({
@@ -384,7 +388,7 @@ const PurchaseOrderList = () => {
   const deleteMutation = useMutation(deletePurchaseOrder, {
     onSuccess: () => {
       toast.success(t("common.success"));
-      queryClient.invalidateQueries(["purchase-orders"]);
+      invalidatePurchasePaymentCaches(queryClient);
       setDeleteModal(false);
       setDeletePoId(null);
     },
@@ -800,6 +804,7 @@ const PurchaseOrderList = () => {
                           notes: ""
                         });
                       }
+                      payIdKeyRef.current = "";
                       setPayModal(true);
                     }
                   }
@@ -1966,7 +1971,9 @@ const PurchaseOrderList = () => {
                             : format(new Date(), "yyyy-MM-dd"),
                           paymentMethod: payForm.paymentMethod,
                           reference: payForm.reference,
-                          notes: payForm.notes
+                          notes: payForm.notes,
+                          idempotencyKey:
+                            payIdKeyRef.current || (payIdKeyRef.current = newPurchasePaymentKey())
                         });
                       }}
                       disabled={payMutation.isLoading}>
