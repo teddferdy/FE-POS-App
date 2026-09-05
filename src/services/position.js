@@ -40,6 +40,14 @@ export const getPositionById = async (payload) => {
   return data;
 };
 
+export const getPositionByDepartment = async (departmentId) => {
+  const { data, status } = await axiosInstance.get(
+    `/position/get-position-by-department/${departmentId}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const deletePosition = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/position/delete-position/${payload.id}`, {
     data: payload

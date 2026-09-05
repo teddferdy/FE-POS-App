@@ -72,7 +72,7 @@ const DeliveryOrderList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/delivery-orders";
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["delivery-orders", page, limit, storeFilter, search, statusFilter, sourceFilter],
     () =>
       getDeliveryOrders({
@@ -269,6 +269,8 @@ const DeliveryOrderList = () => {
         columns={columns}
         data={orders}
         isLoading={isLoading || isFetching}
+        isError={isError}
+        onRetry={refetch}
         emptyMessage={t("page.delivery.list.empty")}
         emptyIcon={Package}
         toolbar={

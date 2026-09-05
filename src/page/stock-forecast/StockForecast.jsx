@@ -424,7 +424,7 @@ const StockForecast = () => {
         description="Semua batch dengan tanggal kedaluwarsa yang sudah lewat akan dihapus dari stok dan dicatat di Stock History. Lanjutkan?"
         confirmText="Ya, Write-off"
         onConfirm={handleWriteOff}
-        isLoading={writeOffMutation.isLoading}
+        loading={writeOffMutation.isLoading}
       />
     </div>
   );

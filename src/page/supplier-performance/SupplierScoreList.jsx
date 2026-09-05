@@ -84,7 +84,7 @@ const SupplierScoreList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/supplier-score-list";
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["supplier-scores", page, limit, storeFilter, search, periodFilter, gradeFilter],
     () =>
       getSupplierScores({
@@ -306,8 +306,9 @@ const SupplierScoreList = () => {
         <DataTable
           columns={columns}
           data={data?.data || []}
-          isLoading={isLoading}
-          isFetching={isFetching}
+          isLoading={isLoading || isFetching}
+          isError={isError}
+          onRetry={refetch}
           toolbar={
             <TableToolbar
               title={t("page.supplierPerformance.list.title")}

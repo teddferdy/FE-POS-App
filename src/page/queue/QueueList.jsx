@@ -92,7 +92,7 @@ const QueueList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/queue-list";
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["queue-list", page, limit, storeFilter, search, statusFilter, priorityFilter],
     () =>
       getQueueList({
@@ -314,8 +314,9 @@ const QueueList = () => {
         <DataTable
           columns={columns}
           data={data?.data || []}
-          isLoading={isLoading}
-          isFetching={isFetching}
+          isLoading={isLoading || isFetching}
+          isError={isError}
+          onRetry={refetch}
           toolbar={
             <TableToolbar
               title={t("page.queue.list.title")}
@@ -383,7 +384,7 @@ const QueueList = () => {
         description={t("page.queue.modal.seatDescription", { name: seatedTarget?.customerName })}
         confirmText={t("page.queue.modal.confirmSeat")}
         onConfirm={() => seatMutation.mutate({ id: seatedTarget?.id })}
-        isLoading={seatMutation.isLoading}
+        loading={seatMutation.isLoading}
       />
 
       {/* Cancel Modal */}
@@ -395,7 +396,7 @@ const QueueList = () => {
         description={t("page.queue.modal.cancelDescription", { name: cancelTarget?.customerName })}
         confirmText={t("page.queue.modal.confirmCancel")}
         onConfirm={() => cancelMutation.mutate({ id: cancelTarget?.id })}
-        isLoading={cancelMutation.isLoading}
+        loading={cancelMutation.isLoading}
       />
     </div>
   );

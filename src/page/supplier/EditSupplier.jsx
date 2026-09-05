@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -128,9 +127,6 @@ const EditSupplier = () => {
   const [accountNumber, setAccountNumber] = useState("");
   const [accountName, setAccountName] = useState("");
   const [bankIsDefault, setBankIsDefault] = useState(false);
-
-  // --- Supplier Categories ---
-  const [categoryId, setCategoryId] = useState(null);
 
   // Supplier Products state
   const [supplierProducts, setSupplierProducts] = useState([]);
@@ -396,7 +392,7 @@ const EditSupplier = () => {
   const handleDownloadTemplate = async () => {
     try {
       await downloadSupplierProductTemplate(supplierId);
-    } catch (err) {
+    } catch {
       toast.error(t("common.error"), { description: t("page.supplier.products.templateFailed") });
     }
   };

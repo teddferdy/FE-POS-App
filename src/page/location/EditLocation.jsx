@@ -181,6 +181,15 @@ const EditLocation = () => {
   const districtsRef = useRef(districts);
   const villagesRef = useRef(villages);
 
+  // Stale-response guards: changing province/city/district twice in quick
+  // succession before the first lookup resolves could otherwise let the
+  // first (now-stale) response land after the second and overwrite it.
+  // Each handler bumps its own counter before awaiting, and only applies
+  // the result if it's still the most recent request for that level.
+  const citiesRequestRef = useRef(0);
+  const districtsRequestRef = useRef(0);
+  const villagesRequestRef = useRef(0);
+
   useEffect(() => {
     provincesRef.current = provinces;
   }, [provinces]);
@@ -1083,14 +1092,18 @@ const EditLocation = () => {
                                 setVillages([]);
 
                                 if (val) {
+                                  const requestId = ++citiesRequestRef.current;
                                   setCitiesLoading(true);
                                   try {
                                     const citiesResponse = await getCities(val);
-                                    setCities(citiesResponse || []);
+                                    if (requestId === citiesRequestRef.current) {
+                                      setCities(citiesResponse || []);
+                                    }
                                   } catch (error) {
                                     console.error("Error fetching cities:", error);
                                   } finally {
-                                    setCitiesLoading(false);
+                                    if (requestId === citiesRequestRef.current)
+                                      setCitiesLoading(false);
                                   }
                                 }
                                 handleAreaSelect();
@@ -1125,14 +1138,18 @@ const EditLocation = () => {
                                 setVillages([]);
 
                                 if (val) {
+                                  const requestId = ++districtsRequestRef.current;
                                   setDistrictsLoading(true);
                                   try {
                                     const districtsResponse = await getDistricts(val);
-                                    setDistricts(districtsResponse || []);
+                                    if (requestId === districtsRequestRef.current) {
+                                      setDistricts(districtsResponse || []);
+                                    }
                                   } catch (error) {
                                     console.error("Error fetching districts:", error);
                                   } finally {
-                                    setDistrictsLoading(false);
+                                    if (requestId === districtsRequestRef.current)
+                                      setDistrictsLoading(false);
                                   }
                                 }
                                 handleAreaSelect();
@@ -1169,14 +1186,18 @@ const EditLocation = () => {
                                 setVillages([]);
 
                                 if (val) {
+                                  const requestId = ++villagesRequestRef.current;
                                   setVillagesLoading(true);
                                   try {
                                     const villagesResponse = await getVillages(val);
-                                    setVillages(villagesResponse || []);
+                                    if (requestId === villagesRequestRef.current) {
+                                      setVillages(villagesResponse || []);
+                                    }
                                   } catch (error) {
                                     console.error("Error fetching villages:", error);
                                   } finally {
-                                    setVillagesLoading(false);
+                                    if (requestId === villagesRequestRef.current)
+                                      setVillagesLoading(false);
                                   }
                                 } else {
                                   form.setValue("postalCode", "");

@@ -103,7 +103,7 @@ const ProductList = () => {
     // }
   }, [role, locData, locationParam, storeFilter, isLoadingLocations, navigate]);
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["products", page, limit, storeFilter, search, categoryFilter, sortFilter, statusFilter],
     () =>
       getAllProductTable({
@@ -610,6 +610,8 @@ const ProductList = () => {
               columns={columns}
               data={products}
               isLoading={isLoading || isFetching}
+              isError={isError}
+              onRetry={refetch}
               emptyMessage={t("page.product.list.empty")}
               emptyIcon={Package}
               toolbar={

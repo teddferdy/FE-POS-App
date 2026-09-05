@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -14,19 +14,24 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/ui/PageHeader";
+import EditProfileModal from "@/components/organism/edit-profile-modal";
+
+const readStoredUser = () => {
+  try {
+    const stored = sessionStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
 
 const ProfilePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
-  const user = useMemo(() => {
-    try {
-      const stored = sessionStorage.getItem("user");
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  }, []);
+  const initialUser = useMemo(() => readStoredUser(), []);
+  const [user, setUser] = useState(initialUser);
 
   if (!user) {
     return (
@@ -117,10 +122,7 @@ const ProfilePage = () => {
           </div>
         </div>
         <div className="flex gap-3 w-full md:w-auto relative">
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => navigate(`/edit-employee?id=${user.id}`)}>
+          <Button variant="outline" className="gap-2" onClick={() => setEditModalOpen(true)}>
             <User size={16} />
             {t("page.profile.editProfile")}
           </Button>
@@ -291,6 +293,13 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      <EditProfileModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        user={user}
+        onSuccess={setUser}
+      />
     </div>
   );
 };

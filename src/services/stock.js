@@ -1,13 +1,5 @@
 import { axiosInstance } from ".";
 
-export const getStockHistory = async (payload) => {
-  const { data, status } = await axiosInstance.get(
-    `/stock-history/get-all?store=${payload?.location || ""}&page=${payload?.page || 1}&limit=${payload?.limit || 10}`
-  );
-  if (status !== 200) throw Error(`${data.message}`);
-  return data;
-};
-
 export const getAllStockHistory = async (payload) => {
   const params = new URLSearchParams();
   if (payload?.page) params.append("page", payload.page);
@@ -153,24 +145,6 @@ export const downloadStockOpnameTemplate = async () => {
   const link = document.createElement("a");
   link.href = url;
   link.setAttribute("download", "template-stock-opname.xlsx");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-};
-
-export const exportStockOpnameExcel = async () => {
-  const { data, status } = await axiosInstance.get("/stock-opname/download-excel", {
-    responseType: "arraybuffer"
-  });
-  if (status !== 200) throw new Error("Gagal export data");
-  const blob = new Blob([data], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", "data-stock-opname.xlsx");
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

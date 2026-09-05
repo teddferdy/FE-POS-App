@@ -509,7 +509,7 @@ const CreateSalesReturn = () => {
           mutation.mutate();
           setConfirmModal(false);
         }}
-        isLoading={mutation.isLoading}
+        loading={mutation.isLoading}
       />
     </div>
   );

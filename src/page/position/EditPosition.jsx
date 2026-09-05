@@ -35,6 +35,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import DepartmentPositions from "@/components/organism/DepartmentPositions";
 import { getMissingFields } from "@/lib/validation";
 
 const EditPosition = () => {
@@ -101,6 +102,7 @@ const EditPosition = () => {
     onSuccess: () => {
       toast.success(t("common.success"), { description: t("page.position.toast.updated") });
       queryClient.invalidateQueries(["positions"]);
+      queryClient.invalidateQueries(["positions-by-department"]);
       navigate("/position-list");
     },
     onError: (err) => {
@@ -305,6 +307,11 @@ const EditPosition = () => {
                 )}
               />
             </div>
+
+            <DepartmentPositions
+              departmentId={form.watch("department")}
+              currentPositionId={positionId}
+            />
 
             <FormField
               control={form.control}

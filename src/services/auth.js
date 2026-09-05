@@ -32,7 +32,13 @@ export const logOut = async (payload) => {
 };
 
 export const editProfile = async (payload) => {
-  const { data, status } = await axiosInstance.put("/auth/edit-user", payload);
-  if (status !== 200 && status !== 201) throw Error(data?.error);
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, value instanceof Blob ? value : String(value));
+    }
+  });
+  const { data, status } = await axiosInstance.put("/auth/edit-user", formData);
+  if (status !== 200 && status !== 201) throw Error(data?.error || data?.message);
   return data;
 };

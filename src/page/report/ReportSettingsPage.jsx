@@ -74,12 +74,15 @@ const ReportSettingsPage = () => {
   const [accent, setAccent] = useState("#0f172a");
   const [branding, setBranding] = useState({ showLogo: true, showAddress: true, showPhone: true });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTab, setPreviewTab] = useState("pdf");
 
-  useEffect(() => {
+  const loadReports = () => {
+    setLoading(true);
+    setLoadError(false);
     (async () => {
       try {
         const [metaRes, configRes] = await Promise.all([getReportConfigMeta(), getReportConfigs()]);
@@ -92,11 +95,19 @@ const ReportSettingsPage = () => {
         setConfigs(cfgMap);
         if (metaList[0]) selectReport(metaList[0].key, cfgMap[metaList[0].key], metaList);
       } catch (err) {
+        // A failed fetch otherwise left `meta` at its initial empty array,
+        // rendering exactly like "no report types configured" — with no
+        // way to tell the two apart or retry.
         toast.error(t("common.error"), { description: err?.message });
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
     })();
+  };
+
+  useEffect(() => {
+    loadReports();
   }, []);
 
   const selectReport = (key, cfg, reportList = meta) => {
@@ -213,6 +224,13 @@ const ReportSettingsPage = () => {
                 {[...Array(3)].map((_, i) => (
                   <Skeleton key={i} className="h-9 rounded-lg" />
                 ))}
+              </div>
+            ) : loadError ? (
+              <div className="text-center py-4 space-y-2">
+                <p className="text-xs text-muted-foreground">{t("common.loadError")}</p>
+                <Button variant="outline" size="sm" onClick={loadReports}>
+                  {t("common.retry")}
+                </Button>
               </div>
             ) : (
               meta.map((r) => (

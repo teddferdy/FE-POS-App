@@ -76,7 +76,7 @@ const EmployeeList = () => {
     setPage(1);
   };
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["employees", page, limit, search, locationFilter, positionFilter],
     () =>
       getAllEmployee({ page, limit, search, location: locationFilter, position: positionFilter }),
@@ -404,6 +404,8 @@ const EmployeeList = () => {
                   columns={columns}
                   data={filteredEmployees}
                   isLoading={isLoading || isFetching}
+                  isError={isError}
+                  onRetry={refetch}
                   emptyMessage={t("page.employee.list.empty")}
                   toolbar={
                     <TableToolbar

@@ -102,7 +102,7 @@ const PositionList = () => {
   );
   const departments = departmentData?.data || departmentData?.departments || [];
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["positions", page, limit, search, statusFilter],
     () =>
       getAllPositionTable({
@@ -449,6 +449,8 @@ const PositionList = () => {
                   columns={columns}
                   data={filteredPositions}
                   isLoading={isLoading || isFetching}
+                  isError={isError}
+                  onRetry={refetch}
                   emptyMessage={t("page.position.list.empty")}
                   toolbar={
                     <TableToolbar

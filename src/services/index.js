@@ -54,16 +54,21 @@ axiosInstance.interceptors.request.use(
         }
       }
     } else {
-      // Non Super Admin: Mandatory activeStore injection
-      if (activeStore && !urlHasStore && !paramsHaveStore && !dataHasStore) {
+      // Non Super Admin: Mandatory activeStore injection.
+      // Prefer the user's assigned store (from the decoded login payload in
+      // the `user` cookie) over the client-controlled `activeStore` cookie,
+      // which could be tampered with in the DOM. Fall back to activeStore only
+      // when the user cookie lacks a store.
+      const nonAdminStore = user?.store || activeStore;
+      if (nonAdminStore && !urlHasStore && !paramsHaveStore && !dataHasStore) {
         if (isGet) {
-          req.params = { ...req.params, store: activeStore };
+          req.params = { ...req.params, store: nonAdminStore };
         } else if (isMutation) {
           // Inject into Body for mutations
           if (req.data instanceof FormData) {
-            req.data.append("store", activeStore);
+            req.data.append("store", nonAdminStore);
           } else if (typeof req.data === "object" || !req.data) {
-            req.data = { ...(req.data || {}), store: activeStore };
+            req.data = { ...(req.data || {}), store: nonAdminStore };
           }
         }
       }

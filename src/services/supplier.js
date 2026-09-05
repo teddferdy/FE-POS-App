@@ -91,15 +91,6 @@ export const importSupplierProducts = async ({ id, file }) => {
   return data;
 };
 
-export const compareSuppliers = async ({ productId, search }) => {
-  const params = new URLSearchParams();
-  if (productId) params.append("productId", productId);
-  if (search) params.append("search", search);
-  const { data, status } = await axiosInstance.get(`/supplier/compare?${params.toString()}`);
-  if (status !== 200) throw Error(`${data.message}`);
-  return data;
-};
-
 // ===================== Supplier Categories =====================
 export const getAllSupplierCategories = async (params = {}) => {
   const searchParam = params?.search ? `&search=${params.search}` : "";

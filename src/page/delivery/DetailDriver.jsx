@@ -284,7 +284,7 @@ const DetailDriver = () => {
         description={t("page.delivery.driver.modal.statusDescription")}
         confirmText={t("common.confirm")}
         onConfirm={() => statusMutation.mutate({ status: statusModal.type })}
-        isLoading={statusMutation.isLoading}
+        loading={statusMutation.isLoading}
       />
     </div>
   );

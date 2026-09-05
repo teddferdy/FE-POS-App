@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -54,8 +54,6 @@ import { getAllTaxConfig } from "@/services/tax-config";
 
 import UserGuide from "@/components/organism/UserGuide";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
-import { DatePicker } from "@/components/ui/date-picker";
-import { format } from "date-fns";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
@@ -118,8 +116,6 @@ const AddProduct = () => {
   const [variantGroups, setVariantGroups] = useState([]);
   const [modifierItems, setModifierItems] = useState([]);
   const [priceTiers, setPriceTiers] = useState([]);
-  const [hasBatch, setHasBatch] = useState(false);
-  const [batches, setBatches] = useState([]);
   const [noStockOpname, setNoStockOpname] = useState(false);
   const [composition, setComposition] = useState([]);
   const [compositionOptions, setCompositionOptions] = useState([]);
@@ -248,6 +244,22 @@ const AddProduct = () => {
       setCompositionOptions([]);
     }
   }, [selectedStores]);
+
+  // `categories` and `compositionOptions` are both refetched per-store (keyed
+  // on `firstStore` above), but the already-picked `category` field value and
+  // `composition` list were never cleared when the store changes — so a
+  // category/ingredient id valid for the old store could silently survive
+  // and get submitted against the new store. Only reset on an actual store
+  // change, not on first mount (prevFirstStoreRef starts equal to the
+  // initial firstStore).
+  const prevFirstStoreRef = useRef(firstStore);
+  useEffect(() => {
+    if (prevFirstStoreRef.current !== firstStore) {
+      form.setValue("category", "");
+      setComposition([]);
+      prevFirstStoreRef.current = firstStore;
+    }
+  }, [firstStore, form]);
 
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -427,21 +439,6 @@ const AddProduct = () => {
     if (!checked) setModifierItems([]);
   };
 
-  const handleToggleBatch = (checked) => {
-    if (!checked && batches.length > 0) {
-      setConfirmAction({
-        title: t("page.product.form.confirmDisableBatchTitle"),
-        description: t("page.product.form.confirmDisableBatchDesc"),
-        onConfirm: () => {
-          setHasBatch(false);
-          setBatches([]);
-        }
-      });
-      return;
-    }
-    setHasBatch(checked);
-  };
-
   const confirmRemove = (onConfirm, count) => {
     if (count > 1) {
       setConfirmAction({
@@ -504,13 +501,6 @@ const AddProduct = () => {
               .filter((m) => m.name && m.name.trim())
               .map((m) => ({ ...m, name: m.name.trim(), price: Number(m.price) || 0 }))
           : [],
-      batches:
-        hasBatch && batches.length > 0
-          ? batches.map((b) => ({
-              ...b,
-              expiryDate: b.expiryDate ? format(b.expiryDate, "yyyy-MM-dd") : null
-            }))
-          : [],
       composition: composition.length > 0 ? composition : [],
       priceTiers: priceTiers.length > 0 ? priceTiers : [],
       createdBy: user?.id
@@ -534,7 +524,7 @@ const AddProduct = () => {
 
     const payload = normalizePayload(data, {
       isFormData: true,
-      jsonFields: ["stores", "options", "modifiers", "batches", "composition", "priceTiers"]
+      jsonFields: ["stores", "options", "modifiers", "composition", "priceTiers"]
     });
 
     createMutation.mutate(payload);
@@ -1448,123 +1438,6 @@ const AddProduct = () => {
                               </FormItem>
                             )}
                           />
-                        </div>
-                      </div>
-
-                      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                          <Package size={18} className="text-primary" />
-                          <h3 className="text-base font-semibold text-foreground">
-                            {t("page.product.form.batchSection")}
-                          </h3>
-                        </div>
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">
-                                {t("page.product.form.hasBatch")}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {t("page.product.form.hasBatchDesc")}
-                              </p>
-                            </div>
-                            <Switch checked={hasBatch} onCheckedChange={handleToggleBatch} />
-                          </div>
-                          {hasBatch && (
-                            <div className="space-y-3">
-                              {batches.map((batch, idx) => (
-                                <div key={batch.id} className="bg-muted/30 rounded-lg p-4">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-xs font-semibold text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">
-                                      {idx + 1}
-                                    </span>
-                                    <span className="text-xs font-medium text-muted-foreground">
-                                      {t("page.product.form.batchSection")} {idx + 1}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Input
-                                      placeholder={t("page.product.form.batchNumberPlaceholder")}
-                                      value={batch.batchNumber}
-                                      onChange={(e) => {
-                                        setBatches((prev) =>
-                                          prev.map((b, i) =>
-                                            i === idx ? { ...b, batchNumber: e.target.value } : b
-                                          )
-                                        );
-                                      }}
-                                      className="h-9 text-sm flex-1"
-                                    />
-                                    <DatePicker
-                                      date={batch.expiryDate}
-                                      setDate={(date) =>
-                                        setBatches((prev) =>
-                                          prev.map((b, i) =>
-                                            i === idx ? { ...b, expiryDate: date } : b
-                                          )
-                                        )
-                                      }
-                                    />
-                                    <div className="relative w-24 shrink-0">
-                                      <Input
-                                        type="text"
-                                        inputMode="numeric"
-                                        placeholder="0"
-                                        value={
-                                          batch.stock !== ""
-                                            ? Number(batch.stock).toLocaleString("id-ID")
-                                            : ""
-                                        }
-                                        onChange={(e) => {
-                                          const raw = e.target.value.replace(/[^0-9]/g, "");
-                                          setBatches((prev) =>
-                                            prev.map((b, i) =>
-                                              i === idx
-                                                ? { ...b, stock: raw ? Number(raw) : "" }
-                                                : b
-                                            )
-                                          );
-                                        }}
-                                        className="h-9 text-sm"
-                                      />
-                                    </div>
-                                    <Button
-                                      type="button"
-                                      variant="destructive"
-                                      size="icon"
-                                      className="h-8 w-8 text-destructive shrink-0"
-                                      onClick={() =>
-                                        confirmRemove(
-                                          () =>
-                                            setBatches((prev) => prev.filter((_, i) => i !== idx)),
-                                          batches.length
-                                        )
-                                      }>
-                                      <Trash2 size={18} />
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
-                              <Button
-                                type="button"
-                                variant="success"
-                                size="sm"
-                                className="gap-1"
-                                onClick={() =>
-                                  setBatches((prev) => [
-                                    ...prev,
-                                    {
-                                      id: Date.now(),
-                                      batchNumber: "",
-                                      expiryDate: undefined,
-                                      stock: ""
-                                    }
-                                  ])
-                                }>
-                                <Plus size={18} /> {t("page.product.form.addBatch")}
-                              </Button>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </>

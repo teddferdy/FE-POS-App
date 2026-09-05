@@ -94,7 +94,7 @@ const DepartmentList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["departments", page, limit, search, statusFilter],
     () => getAllDepartmentTable({ page, limit, statusRole: statusFilter, search }),
     { keepPreviousData: true }
@@ -445,7 +445,9 @@ const DepartmentList = () => {
                 <DataTable
                   columns={columns}
                   data={departments}
-                  isLoading={isFetching}
+                  isLoading={isLoading || isFetching}
+                  isError={isError}
+                  onRetry={refetch}
                   emptyMessage={t("page.department.list.empty")}
                   toolbar={
                     <TableToolbar

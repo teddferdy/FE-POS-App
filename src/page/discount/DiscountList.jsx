@@ -110,7 +110,7 @@ const DiscountList = () => {
   const { data: locData } = useQuery(["locations-discounts"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["discounts", page, limit, search, storeFilter, statusFilter],
     () => getAllDiscount({ location: locationParam, page, limit, status: statusFilter }),
     { keepPreviousData: true }
@@ -541,6 +541,8 @@ const DiscountList = () => {
               columns={columns}
               data={discounts}
               isLoading={isLoading || isFetching}
+              isError={isError}
+              onRetry={refetch}
               emptyMessage={t("page.discount.list.empty")}
               emptyIcon={Gift}
               toolbar={

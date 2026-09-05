@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import ReportSettingsPage from "../page/report/ReportSettingsPage";
+import { getReportConfigMeta, getReportConfigs } from "../services/reportConfig";
 
 jest.mock("react-router-dom", () => ({
   useNavigate: () => jest.fn()
@@ -162,5 +163,45 @@ describe("ReportSettingsPage", () => {
     await waitFor(() => {
       expect(screen.getByText(/page.reportSettings.archetype.roster/i)).toBeInTheDocument();
     });
+  });
+});
+
+// Regression coverage for a bug where a failed fetch left `meta` at its
+// initial empty array — rendering identically to "no reports configured,"
+// with no way to tell the two apart or retry. Reverting the loadError
+// state/branch in ReportSettingsPage.jsx would make these fail (no error
+// text/retry button would ever appear, and retry couldn't recover).
+describe("ReportSettingsPage — API failure is a distinct error state, not empty", () => {
+  afterEach(() => {
+    getReportConfigMeta.mockReset().mockResolvedValue({ data: META.data });
+    getReportConfigs.mockReset().mockResolvedValue({ data: [] });
+  });
+
+  test("shows a distinct error state with retry on fetch failure, not the empty list", async () => {
+    getReportConfigMeta.mockRejectedValue(new Error("network down"));
+    getReportConfigs.mockRejectedValue(new Error("network down"));
+
+    render(<ReportSettingsPage />);
+
+    await waitFor(() => expect(screen.getByText("common.loadError")).toBeInTheDocument());
+    expect(screen.getByText("common.retry")).toBeInTheDocument();
+  });
+
+  test("retry re-invokes the fetch and can recover to the normal list", async () => {
+    getReportConfigMeta
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockResolvedValueOnce({ data: META.data });
+    getReportConfigs.mockResolvedValue({ data: [] });
+
+    render(<ReportSettingsPage />);
+
+    await waitFor(() => expect(screen.getByText("common.loadError")).toBeInTheDocument());
+    fireEvent.click(screen.getByText("common.retry"));
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Laporan Harian/i })).toBeInTheDocument()
+    );
+    expect(screen.queryByText("common.loadError")).not.toBeInTheDocument();
+    expect(getReportConfigMeta).toHaveBeenCalledTimes(2);
   });
 });

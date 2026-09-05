@@ -78,12 +78,6 @@ export const getExpenseSummary = async (payload) => {
   return data;
 };
 
-export const deleteExpense = async (id) => {
-  const { data, status } = await axiosInstance.delete(`/expense/delete/${id}`);
-  if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error);
-  return data;
-};
-
 export const rejectExpense = async (id) => {
   const { data, status } = await axiosInstance.put(`/expense/reject/${id}`);
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);

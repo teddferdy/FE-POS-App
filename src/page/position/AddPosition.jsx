@@ -36,6 +36,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
+import DepartmentPositions from "@/components/organism/DepartmentPositions";
 import { getMissingFields } from "@/lib/validation";
 
 const AddPosition = () => {
@@ -79,6 +80,7 @@ const AddPosition = () => {
     onSuccess: () => {
       toast.success(t("common.success"), { description: t("page.position.toast.added") });
       queryClient.invalidateQueries(["positions"]);
+      queryClient.invalidateQueries(["positions-by-department"]);
       navigate("/position-list");
     },
     onError: (err) => {
@@ -250,6 +252,8 @@ const AddPosition = () => {
                     )}
                   />
                 </div>
+
+                <DepartmentPositions departmentId={form.watch("department")} />
 
                 <FormField
                   control={form.control}

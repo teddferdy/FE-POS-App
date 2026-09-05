@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
 import {
   Building2,
   Phone,
@@ -32,17 +31,15 @@ import { useCookies } from "react-cookie";
 import AbortController from "@/components/organism/abort-controller";
 import { useTranslation } from "react-i18next";
 import { getSupplierById } from "@/services/supplier";
-import { getPaymentsBySupplier, recordPayment } from "@/services/purchase-payment";
+import { getPaymentsBySupplier } from "@/services/purchase-payment";
+import SupplierPaymentModal from "@/components/organism/supplier-payment-modal";
 import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
 import { getDocumentSpecForSupplier } from "@/components/document/documentMappers";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/ui/PageHeader";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import DataTable from "@/components/ui/DataTable";
-import Modal from "@/components/organism/modal";
 import {
   Table,
   TableHeader,
@@ -52,7 +49,6 @@ import {
   TableCell
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DatePicker } from "@/components/ui/date-picker";
 import {
   Pagination,
   PaginationContent,
@@ -94,11 +90,6 @@ const DetailSupplier = () => {
 
   const [activeTab, setActiveTab] = useState("general");
   const [paymentModal, setPaymentModal] = useState(false);
-  const [payAmount, setPayAmount] = useState("");
-  const [payDate, setPayDate] = useState(new Date());
-  const [payMethod, setPayMethod] = useState("cash");
-  const [payRef, setPayRef] = useState("");
-  const [payNotes, setPayNotes] = useState("");
   const [productPage, setProductPage] = useState(1);
   const [productPageSize, setProductPageSize] = useState(10);
 
@@ -118,21 +109,6 @@ const DetailSupplier = () => {
     { enabled: !!id }
   );
   const { purchaseOrders = [], summary = {} } = paymentData?.data || {};
-
-  const recordMutation = useMutation(recordPayment, {
-    onSuccess: () => {
-      toast.success(t("page.supplier.detail.toast.success"), {
-        description: t("page.supplier.detail.toast.paymentSuccessDesc")
-      });
-      queryClient.invalidateQueries(["supplier-payments", id]);
-      setPaymentModal(false);
-      setPayAmount("");
-    },
-    onError: (err) =>
-      toast.error(t("page.supplier.detail.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      })
-  });
 
   if (!id) {
     return (
@@ -1066,80 +1042,13 @@ const DetailSupplier = () => {
         </TabsContent>
       </Tabs>
 
-      <Modal
-        type="form"
+      <SupplierPaymentModal
         open={paymentModal}
-        onOpenChange={(o) => !o && setPaymentModal(false)}
-        title={t("page.supplier.detail.modal.title")}
-        confirmText={t("page.supplier.detail.modal.confirm")}
-        onConfirm={() => {
-          if (!payAmount || parseFloat(payAmount) <= 0) {
-            toast.error(t("page.supplier.detail.modal.validation"), {
-              description: t("page.supplier.detail.modal.validationDesc")
-            });
-            return;
-          }
-          recordMutation.mutate({
-            purchaseOrder: null,
-            supplier: parseInt(id),
-            amount: parseFloat(payAmount),
-            paymentDate: format(payDate, "yyyy-MM-dd"),
-            paymentMethod: payMethod,
-            reference: payRef,
-            notes: payNotes
-          });
-        }}
-        loading={recordMutation.isLoading}>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>{t("page.supplier.detail.modal.amountLabel")}</Label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              value={payAmount}
-              onChange={(e) => setPayAmount(e.target.value.replace(/[^0-9]/g, ""))}
-              placeholder={t("page.supplier.detail.modal.amountPlaceholder")}
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t("page.supplier.detail.modal.paymentDateLabel")}</Label>
-              <DatePicker date={payDate} setDate={setPayDate} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("page.supplier.detail.modal.methodLabel")}</Label>
-              <Combobox
-                options={[
-                  { value: "cash", label: t("page.supplier.detail.modal.methodCash") },
-                  { value: "transfer", label: t("page.supplier.detail.modal.methodTransfer") },
-                  { value: "cheque", label: t("page.supplier.detail.modal.methodCheque") },
-                  { value: "credit", label: t("page.supplier.detail.modal.methodCredit") }
-                ]}
-                value={payMethod}
-                onChange={(v) => setPayMethod(v)}
-                placeholder="Pilih metode..."
-                searchPlaceholder="Cari metode..."
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>{t("page.supplier.detail.modal.referenceLabel")}</Label>
-            <Input
-              value={payRef}
-              onChange={(e) => setPayRef(e.target.value)}
-              placeholder={t("page.supplier.detail.modal.referencePlaceholder")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>{t("page.supplier.detail.modal.notesLabel")}</Label>
-            <Input
-              value={payNotes}
-              onChange={(e) => setPayNotes(e.target.value)}
-              placeholder={t("page.supplier.detail.modal.notesPlaceholder")}
-            />
-          </div>
-        </div>
-      </Modal>
+        onOpenChange={setPaymentModal}
+        supplierId={id}
+        purchaseOrders={purchaseOrders}
+        onSuccess={() => queryClient.invalidateQueries(["supplier-payments", id])}
+      />
       {printSpec && (
         <div className="hidden print:block print-doc">
           <FormalDocument spec={printSpec} />

@@ -39,12 +39,30 @@ export default function Modal({
   onConfirm,
   onCancel,
   loading,
+  isLoading,
   className,
   children
 }) {
   const { t } = useTranslation();
   const isKnownType = KNOWN_TYPES.includes(type);
   const isForm = type === "form";
+  // `loading` is the real prop; `isLoading` has repeatedly been passed by
+  // mistake at call sites (mutation.isLoading naming bleeding into the prop
+  // name) and was silently dropped, leaving the confirm button armed for
+  // duplicate submits during the request. Accept it as a fallback so a
+  // future typo degrades to "worked anyway" instead of "silently disabled
+  // nothing" while still surfacing the mistake in dev.
+  const resolvedLoading = loading ?? isLoading;
+  if (isLoading !== undefined && loading === undefined) {
+    // A plain console.warn rather than a build-tool dev-mode check: this
+    // component is imported by many Jest test files that don't go through
+    // Vite's `import.meta.env` transform, and the warning is harmless (and
+    // should never fire again post-fix) if it ever reaches a production
+    // console.
+    console.warn(
+      "[Modal] received `isLoading` — this prop is `loading`. Falling back to `isLoading` for now; rename it at the call site."
+    );
+  }
 
   const defaultText = {
     success: { confirm: t("common.ok") },
@@ -72,8 +90,16 @@ export default function Modal({
 
   const handleClose = () => onOpenChange?.(false);
 
-  const handleConfirm = () => {
-    const result = onConfirm?.();
+  const handleConfirm = async () => {
+    // `await` on a non-Promise value resolves immediately to that value, so
+    // this handles both conventions identically: a synchronous `onConfirm`
+    // returning `false` (existing usage, e.g. SupplierScoreList.jsx) and an
+    // async `onConfirm` that only resolves to `false` after its own
+    // validation/try-catch runs (e.g. edit-profile-modal,
+    // supplier-payment-modal) — previously an async handler's Promise was
+    // never `=== false`, so the modal closed immediately on click
+    // regardless of validation failures or in-flight requests.
+    const result = await onConfirm?.();
     if (result === false) return;
     handleClose();
   };
@@ -109,9 +135,9 @@ export default function Modal({
                 type="button"
                 variant={confirmBtnVariant}
                 className={confirmBtnClass}
-                disabled={loading}
+                disabled={resolvedLoading}
                 onClick={handleConfirm}>
-                {loading ? t("common.loading") : confirmLabel}
+                {resolvedLoading ? t("common.loading") : confirmLabel}
               </Button>
             </div>
           </>
@@ -125,7 +151,12 @@ export default function Modal({
                 </DialogDescription>
               )}
             </DialogHeader>
-            <div className="py-4">{children}</div>
+            {/* DialogContent caps at max-h-[90vh] with no scroll of its own — on a
+                short viewport a form with several fields clipped past the fold
+                instead of scrolling. max-h here is the dialog's cap minus roughly
+                the header+footer+padding, so the fields scroll while the title and
+                confirm/cancel buttons stay put and visible. */}
+            <div className="py-4 max-h-[65vh] overflow-y-auto">{children}</div>
             {isForm && (
               <div className="flex justify-end gap-3">
                 <Button type="button" variant="danger" onClick={handleCancel}>
@@ -135,9 +166,9 @@ export default function Modal({
                   type="button"
                   variant={confirmBtnVariant}
                   className={confirmBtnClass}
-                  disabled={loading}
+                  disabled={resolvedLoading}
                   onClick={handleConfirm}>
-                  {loading ? t("common.loading") : confirmLabel}
+                  {resolvedLoading ? t("common.loading") : confirmLabel}
                 </Button>
               </div>
             )}

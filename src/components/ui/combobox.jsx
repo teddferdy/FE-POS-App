@@ -15,6 +15,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export function Combobox({
+  id,
   options = [],
   value,
   onChange,
@@ -34,6 +35,7 @@ export function Combobox({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disabled || loading}>
         <Button
+          id={id}
           variant="outline"
           role="combobox"
           aria-expanded={open}
