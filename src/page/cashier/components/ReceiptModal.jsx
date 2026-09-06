@@ -209,6 +209,23 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const changeAmount = data?.changeAmount || data?.payment?.changeAmount || 0;
 
   const [showSplit, setShowSplit] = useState(false);
+
+  // Plain fixed-overlay div, not the Radix Dialog primitive, so it never
+  // picked up Escape-to-close like every other modal in the app does. Closes
+  // whichever layer is on top, mirroring each one's existing X/close button.
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key !== "Escape") return;
+      if (showSplit) {
+        setShowSplit(false);
+      } else {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showSplit, onClose]);
+
   const [splitCount, setSplitCount] = useState(2);
   // ponytail: simple equal-split default, manual override per person
   const [splitAmounts, setSplitAmounts] = useState(() =>

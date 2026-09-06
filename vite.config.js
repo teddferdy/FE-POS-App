@@ -30,22 +30,15 @@ try {
   /* fallback tetap "0" */
 }
 
-// ponytail: HANYA isolasi lib super-heavy ke chunk sendiri beserta seluruh
-// dependensinya; sisanya default Rollup. Object-form/manualChunks granuler
-// terbukti membuat simbol lintas-chunk diekspor lewat chunk charts sehingga
-// SEMUA halaman ikut memuat recharts (423KB).
-const chartDeps = [
-  "/node_modules/recharts/",
-  "/node_modules/react-resizable-panels/",
-  "/node_modules/react-smooth/",
-  "/node_modules/victory-vendor/",
-  "/node_modules/victory/",
-  "/node_modules/d3-",
-  "/node_modules/internmap/",
-  "/node_modules/lodash/",
-  "/node_modules/react-transition-group/",
-  "/node_modules/recharts-scale/"
-];
+// ponytail: manualChunks granuler pernah dicoba untuk isolasi recharts +
+// dependensinya (chartDeps: recharts, react-resizable-panels, react-smooth,
+// victory-vendor/victory, d3-*, internmap, lodash, react-transition-group,
+// recharts-scale) ke chunk sendiri, tapi object-form granuler terbukti
+// membuat simbol lintas-chunk diekspor lewat chunk charts sehingga SEMUA
+// halaman ikut memuat recharts (423KB). Direvert — recharts+dependensinya
+// sekarang lewat default Rollup splitting (sudah terisolasi per lazy route,
+// lihat dist chunk generateCategoricalChart-*.js). HANYA lucide-react yang
+// masih diisolasi manual di bawah.
 
 export default defineConfig({
   plugins: [react()],

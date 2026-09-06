@@ -28,6 +28,10 @@ test-results/
 # Deployment
 .vercel/
 
+# Python build artifacts
+__pycache__/
+*.pyc
+
 # Misc
 *.log
 npm-debug.log*

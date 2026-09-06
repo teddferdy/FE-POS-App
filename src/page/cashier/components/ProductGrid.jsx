@@ -1,9 +1,10 @@
 import { safeGet } from "@/lib/safe-lookup";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Search, Barcode, Grid3X3, List, Tag, Package, X, Eye } from "lucide-react";
+import { Search, Barcode, Grid3X3, List, Tag, Package, X, Eye, SearchX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
+import { toast } from "sonner";
 import { orderList } from "@/state/order-list";
 import { getAllCategoryActive } from "@/services/category";
 import { optimizeImage } from "@/utils/image";
@@ -20,6 +21,7 @@ const renderCategoryIcon = (cat, className, imgClassName) => {
 
 const ProductGrid = ({
   products: propProducts,
+  allProducts: propAllProducts,
   isLoading,
   search,
   onSearchChange,
@@ -27,7 +29,8 @@ const ProductGrid = ({
   onBarcodeChange,
   categoryId,
   onCategoryChange,
-  store
+  store,
+  refocusSignal
 }) => {
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState("grid");
@@ -36,6 +39,21 @@ const ProductGrid = ({
   const [detailProduct, setDetailProduct] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
   const [inputMode, setInputMode] = useState("search");
+  const activeInputRef = useRef(null);
+  const isFirstRefocus = useRef(true);
+
+  // The cashier shouldn't have to click back into search/barcode after
+  // finishing a sale — CashierPage bumps `refocusSignal` once the screen
+  // returns to "ready to sell" (New Transaction) so the next scan/search can
+  // start immediately. Skipped on mount so the grid doesn't steal focus from
+  // wherever the page naturally lands on first render.
+  useEffect(() => {
+    if (isFirstRefocus.current) {
+      isFirstRefocus.current = false;
+      return;
+    }
+    activeInputRef.current?.focus();
+  }, [refocusSignal]);
   const cart = orderList();
 
   const { data: categoriesData } = useQuery(
@@ -48,6 +66,7 @@ const ProductGrid = ({
   const categories = categoriesData?.data || categoriesData || [];
 
   const products = propProducts || [];
+  const allProducts = propAllProducts || products;
 
   const formatPrice = (value) => {
     if (value == null || isNaN(value)) return "0";
@@ -131,6 +150,33 @@ const ProductGrid = ({
       }
     },
     [cart, store, hasChoices, isOutOfStock]
+  );
+
+  // Scanner input types the code then sends Enter — look up an exact SKU
+  // match against the full unfiltered product list (not the search/category
+  // -filtered `products` prop, which could hide the scanned item) and add it
+  // straight to cart, mirroring the same variant/stock checks a manual tap
+  // would go through. Previously this input had no handler at all, so
+  // switching to "barcode mode" and scanning silently did nothing.
+  const handleBarcodeKeyDown = useCallback(
+    (e) => {
+      if (e.key !== "Enter") return;
+      // A held-down Enter key (or a stuck scanner trigger) fires repeated
+      // keydown events for the same keypress — e.repeat marks every one
+      // after the first, so a single physical scan can't add the item
+      // twice just because the key auto-repeated before the field cleared.
+      if (e.repeat) return;
+      const code = barcode.trim();
+      if (!code) return;
+      const match = allProducts.find((p) => (p.sku || "").toLowerCase() === code.toLowerCase());
+      if (!match) {
+        toast.error(t("page.cashier.barcodeNotFound"));
+        return;
+      }
+      handleProductClick(match);
+      onBarcodeChange("");
+    },
+    [barcode, allProducts, handleProductClick, onBarcodeChange, t]
   );
 
   const handleShowDetail = useCallback(
@@ -219,7 +265,10 @@ const ProductGrid = ({
       <div className="flex items-center gap-3 px-4 lg:px-6 pt-4 pb-3">
         <div className="flex items-center gap-2 bg-muted/50 rounded-xl p-0.5 border border-border/40">
           <button
+            type="button"
             onClick={() => setInputMode("search")}
+            aria-pressed={inputMode === "search"}
+            aria-label={t("page.cashier.searchPlaceholder")}
             className={`p-1.5 rounded-lg transition-all ${
               inputMode === "search"
                 ? "bg-background shadow-sm text-foreground"
@@ -228,7 +277,10 @@ const ProductGrid = ({
             <Search size={16} />
           </button>
           <button
+            type="button"
             onClick={() => setInputMode("barcode")}
+            aria-pressed={inputMode === "barcode"}
+            aria-label={t("page.cashier.barcodePlaceholder")}
             className={`p-1.5 rounded-lg transition-all ${
               inputMode === "barcode"
                 ? "bg-background shadow-sm text-foreground"
@@ -246,16 +298,19 @@ const ProductGrid = ({
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <input
+                ref={activeInputRef}
                 type="text"
                 value={search}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder={t("page.cashier.searchPlaceholder")}
-                className="w-full h-10 pl-9 pr-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
+                className="w-full h-10 pl-9 pr-9 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
               />
               {search && (
                 <button
+                  type="button"
                   onClick={() => onSearchChange("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  aria-label={t("common.clear", "Clear")}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground">
                   <X size={14} />
                 </button>
               )}
@@ -267,16 +322,21 @@ const ProductGrid = ({
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <input
+                ref={activeInputRef}
                 type="text"
                 value={barcode}
                 onChange={(e) => onBarcodeChange(e.target.value)}
+                onKeyDown={handleBarcodeKeyDown}
                 placeholder={t("page.cashier.barcodePlaceholder")}
-                className="w-full h-10 pl-9 pr-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors font-mono tracking-wider"
+                autoFocus
+                className="w-full h-10 pl-9 pr-9 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors font-mono tracking-wider"
               />
               {barcode && (
                 <button
+                  type="button"
                   onClick={() => onBarcodeChange("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  aria-label={t("common.clear", "Clear")}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground">
                   <X size={14} />
                 </button>
               )}
@@ -286,7 +346,10 @@ const ProductGrid = ({
 
         <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-0.5 border border-border/40">
           <button
+            type="button"
             onClick={() => setViewMode("grid")}
+            aria-pressed={viewMode === "grid"}
+            aria-label="Grid view"
             className={`p-1.5 rounded-lg transition-all ${
               viewMode === "grid"
                 ? "bg-background shadow-sm text-foreground"
@@ -295,7 +358,10 @@ const ProductGrid = ({
             <Grid3X3 size={16} />
           </button>
           <button
+            type="button"
             onClick={() => setViewMode("list")}
+            aria-pressed={viewMode === "list"}
+            aria-label="List view"
             className={`p-1.5 rounded-lg transition-all ${
               viewMode === "list"
                 ? "bg-background shadow-sm text-foreground"
@@ -347,6 +413,36 @@ const ProductGrid = ({
                     {t("page.cashier.noStoreDesc")}
                   </p>
                 </>
+              ) : search || categoryId ? (
+                // Distinct from the "store has no products at all" case below —
+                // a cashier who scanned/typed something with zero matches needs
+                // to know it's their filter, not an empty catalog, and how to
+                // get back to browsing everything.
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center mx-auto mb-3">
+                    <SearchX size={32} className="text-muted-foreground/40" />
+                  </div>
+                  <p className="font-medium text-muted-foreground">
+                    {t("page.cashier.noSearchResults", "Tidak ada produk yang cocok")}
+                  </p>
+                  <p className="text-sm text-muted-foreground/60 mt-1">
+                    {search
+                      ? t("page.cashier.noSearchResultsDesc", {
+                          query: search,
+                          defaultValue: `Tidak ada hasil untuk "${search}"`
+                        })
+                      : t("page.cashier.noCategoryResultsDesc", "Tidak ada produk di kategori ini")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSearchChange("");
+                      onCategoryChange("");
+                    }}
+                    className="mt-4 text-sm font-medium text-primary hover:underline">
+                    {t("page.cashier.clearSearchFilters", "Hapus pencarian & filter")}
+                  </button>
+                </>
               ) : (
                 <>
                   <div className="w-16 h-16 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center mx-auto mb-3">
@@ -397,6 +493,8 @@ const ProductGrid = ({
                                     src={optimizeImage(img) || "/placeholder.svg"}
                                     alt={product.nameProduct || product.name || ""}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    loading="lazy"
+                                    decoding="async"
                                     onError={(e) => {
                                       e.target.style.display = "none";
                                       e.target.parentElement.classList.add(
@@ -525,6 +623,8 @@ const ProductGrid = ({
                                   src={optimizeImage(img) || "/placeholder.svg"}
                                   alt={product.nameProduct || product.name || ""}
                                   className="w-full h-full object-cover"
+                                  loading="lazy"
+                                  decoding="async"
                                   onError={(e) => {
                                     e.target.style.display = "none";
                                     e.target.parentElement.classList.add(
@@ -630,6 +730,7 @@ const ProductGrid = ({
 
 ProductGrid.propTypes = {
   products: PropTypes.array,
+  allProducts: PropTypes.array,
   isLoading: PropTypes.bool,
   search: PropTypes.string,
   onSearchChange: PropTypes.func,
@@ -637,7 +738,8 @@ ProductGrid.propTypes = {
   onBarcodeChange: PropTypes.func,
   categoryId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onCategoryChange: PropTypes.func,
-  store: PropTypes.any
+  store: PropTypes.any,
+  refocusSignal: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
 export default ProductGrid;

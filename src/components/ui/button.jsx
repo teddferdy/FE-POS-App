@@ -44,6 +44,7 @@ const Button = React.forwardRef(
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={props.disabled || loading}
+        aria-busy={loading || undefined}
         {...props}>
         {loading && <Loader2 size={16} className="mr-2 animate-spin" />}
         {children}

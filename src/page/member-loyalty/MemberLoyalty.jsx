@@ -354,7 +354,15 @@ const MemberLoyalty = () => {
                 <div className="flex gap-4 items-end">
                   <div className="flex-1">
                     <Label htmlFor="redeem-member">Member</Label>
-                    <Select onValueChange={(val) => setSelectedMember(Number(val))}>
+                    <Select
+                      onValueChange={(val) => {
+                        setSelectedMember(Number(val));
+                        // A points amount typed for the previous member is
+                        // meaningless once a different member is selected —
+                        // clear it so the field can't be misread as still
+                        // applying to whoever is now selected.
+                        setRedeemPoints("");
+                      }}>
                       <SelectTrigger id="redeem-member">
                         <SelectValue placeholder="Pilih member" />
                       </SelectTrigger>
@@ -378,9 +386,11 @@ const MemberLoyalty = () => {
                       placeholder="Jumlah poin"
                     />
                   </div>
-                  <Button onClick={() => selectedMember && handleRedeemPoints(selectedMember)}>
+                  <Button
+                    onClick={() => selectedMember && handleRedeemPoints(selectedMember)}
+                    disabled={redeemMutation.isLoading}>
                     <Gift className="w-4 h-4 mr-2" />
-                    Redeem
+                    {redeemMutation.isLoading ? t("common.processing") : "Redeem"}
                   </Button>
                 </div>
               </div>
@@ -414,6 +424,7 @@ const MemberLoyalty = () => {
 };
 
 const AddTierForm = ({ onSuccess }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [minPoints, setMinPoints] = useState(0);
   const [maxPoints, setMaxPoints] = useState(0);
@@ -430,6 +441,16 @@ const AddTierForm = ({ onSuccess }) => {
   });
   const handleSubmit = (e) => {
     e.preventDefault();
+    // maxPoints of 0 is this form's "no upper bound" sentinel (matches the
+    // "∞" shown for it in the tier list), so only flag a real max < min.
+    if (maxPoints > 0 && maxPoints < minPoints) {
+      toast.error(t("page.memberLoyalty.tier.validation.maxLessThanMin"));
+      return;
+    }
+    if (discountPercent < 0 || discountPercent > 100) {
+      toast.error(t("page.memberLoyalty.tier.validation.discountRange"));
+      return;
+    }
     addTier.mutate({ name, minPoints, maxPoints, discountPercent, color, status });
   };
   return (
@@ -491,6 +512,7 @@ const AddTierForm = ({ onSuccess }) => {
 };
 
 const EditTierForm = ({ tier, onSuccess }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState(tier.name || "");
   const [minPoints, setMinPoints] = useState(tier.minPoints || 0);
   const [maxPoints, setMaxPoints] = useState(tier.maxPoints ?? 0);
@@ -507,6 +529,14 @@ const EditTierForm = ({ tier, onSuccess }) => {
   });
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (maxPoints > 0 && maxPoints < minPoints) {
+      toast.error(t("page.memberLoyalty.tier.validation.maxLessThanMin"));
+      return;
+    }
+    if (discountPercent < 0 || discountPercent > 100) {
+      toast.error(t("page.memberLoyalty.tier.validation.discountRange"));
+      return;
+    }
     editTier.mutate({ name, minPoints, maxPoints, discountPercent, color, status });
   };
   return (

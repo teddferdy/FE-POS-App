@@ -75,6 +75,7 @@ const ProfitPerProduct = () => {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
+            min={startDate}
             className="w-40"
           />
         </div>

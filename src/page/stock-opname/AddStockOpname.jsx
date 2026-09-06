@@ -359,6 +359,15 @@ const AddStockOpname = () => {
     setValue(`items.${index}.lokasiId`, String(locationId), { shouldValidate: true });
     setValue(`items.${index}.lokasiLabel`, loc?.name || loc?.storeName || String(locationId));
     setValue(`items.${index}.store`, loc?.store || String(loc?.id || ""));
+    // A product picked under the previous location belongs to that
+    // location's inventory, not the new one — clear it (mirroring exactly
+    // the fields handleProductSelect populates) so the row can't keep
+    // showing a product/stock count that no longer applies here.
+    setValue(`items.${index}.productId`, "");
+    setValue(`items.${index}.kodeBarang`, "");
+    setValue(`items.${index}.namaBarang`, "");
+    setValue(`items.${index}.satuan`, "");
+    setValue(`items.${index}.stokAwalJumlah`, "");
   };
 
   const handleProductSelect = (index, product) => {

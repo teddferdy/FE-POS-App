@@ -554,7 +554,15 @@ const AddProduct = () => {
     }
   ];
 
-  const watchedValues = form.watch();
+  // ponytail: watch() tanpa argumen subscribe ke SELURUH form (termasuk
+  // variantGroups/modifierItems yang bisa berisi banyak baris), jadi tiap
+  // keystroke di field manapun rerender seluruh tree wizard ini hanya demi
+  // badge status step. Persempit ke field mandatory saja.
+  const mandatoryFieldNames = [...new Set(steps.flatMap((s) => s.mandatory))];
+  const watchedMandatory = form.watch(mandatoryFieldNames);
+  const watchedValues = Object.fromEntries(
+    mandatoryFieldNames.map((f, i) => [f, watchedMandatory[i]])
+  );
 
   const isEmptyValue = (v) =>
     v === undefined || v === null || v === "" || (typeof v === "number" && Number.isNaN(v));

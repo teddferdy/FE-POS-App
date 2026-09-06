@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
@@ -114,6 +114,14 @@ const AddStockTransfer = () => {
     { enabled: !!fromStore }
   );
   const products = prodData?.data || [];
+
+  // The product list is scoped to `fromStore` (query key above), so a
+  // product already picked from the previous store no longer exists in the
+  // new one's options — without this, the field silently kept holding an
+  // id from the wrong store's inventory instead of forcing a fresh pick.
+  useEffect(() => {
+    fields.forEach((_, idx) => setValue(`items.${idx}.productId`, ""));
+  }, [fromStore]);
 
   const addItem = () => append({ productId: "", qty: "", unit: "pcs", notes: "" });
   const removeItem = (idx) => {

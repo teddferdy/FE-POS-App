@@ -24,7 +24,8 @@ export function Combobox({
   emptyMessage = "Data tidak ditemukan",
   disabled = false,
   loading = false,
-  onClear
+  onClear,
+  className
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -40,7 +41,7 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           disabled={disabled || loading}
-          className="w-full justify-between font-normal h-10">
+          className={cn("w-full justify-between font-normal h-10", className)}>
           {loading ? (
             <span className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
