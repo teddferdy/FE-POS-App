@@ -97,10 +97,15 @@ const KitchenDisplay = () => {
     }
   );
 
+  // Poll only as a fallback when no socket is connected — otherwise the
+  // socket listeners below (new-order/order-updated/item-status-updated)
+  // already invalidate this query in real time, so polling on top of that
+  // would just double the request rate for no benefit (same pattern as
+  // WaiterRequestList's pollFallback).
   const { data, isLoading, isError, refetch } = useQuery(
     ["kitchen-orders", storeId],
     () => getKitchenOrders(storeId ? { store: storeId } : {}),
-    { enabled: !!storeId || storeId === "", refetchInterval: 15000 }
+    { enabled: !!storeId || storeId === "", refetchInterval: socket ? false : 15000 }
   );
   const orders = data?.data || [];
 

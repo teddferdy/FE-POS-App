@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import PropTypes from "prop-types";
 import { X, Package, Check, PackageOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -36,6 +36,18 @@ const VariantModal = ({ product, onSelect, onClose }) => {
 
   const needsOption = hasVariants || hasOptions;
   const canAdd = needsOption ? !!selectedOption : true;
+
+  // This overlay is a plain fixed div, not the Radix Dialog primitive, so it
+  // gets none of Radix's built-in Escape handling — every other modal in the
+  // app already closes on Escape, so without this a cashier who reaches for
+  // the keyboard to back out of a variant pick hits a dead key instead.
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   if (!product) return null;
 

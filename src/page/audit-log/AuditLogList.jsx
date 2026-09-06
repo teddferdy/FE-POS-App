@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Card } from "@/components/ui/card";
-import { Select } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { useQuery } from "react-query";
 import StoreFilter from "@/components/ui/StoreFilter";
 import TableToolbar from "@/components/ui/TableToolbar";
@@ -157,7 +157,7 @@ const AuditLogList = () => {
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Aksi
                   </label>
-                  <Select
+                  <Combobox
                     value={actionFilter}
                     onChange={(v) => {
                       setActionFilter(v);
@@ -165,14 +165,17 @@ const AuditLogList = () => {
                     }}
                     options={[
                       { value: "", label: t("page.auditLog.allActions") },
-                      { value: "CREATE", label: "CREATE" },
-                      { value: "UPDATE", label: "UPDATE" },
-                      { value: "DELETE", label: "DELETE" },
-                      { value: "PAYMENT", label: "PAYMENT" },
-                      { value: "REFUND", label: "REFUND" },
-                      { value: "VOID", label: "VOID" },
-                      { value: "LOGIN", label: "LOGIN" },
-                      { value: "STATUS_CHANGE", label: "STATUS_CHANGE" }
+                      { value: "create", label: "CREATE" },
+                      { value: "update", label: "UPDATE" },
+                      { value: "delete", label: "DELETE" },
+                      { value: "approve", label: "APPROVE" },
+                      { value: "reject", label: "REJECT" },
+                      { value: "import", label: "IMPORT" },
+                      { value: "void", label: "VOID" },
+                      { value: "payment", label: "PAYMENT" },
+                      { value: "refund", label: "REFUND" },
+                      { value: "login", label: "LOGIN" },
+                      { value: "status_change", label: "STATUS CHANGE" }
                     ]}
                     className="w-full sm:w-48"
                   />
@@ -181,7 +184,7 @@ const AuditLogList = () => {
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Entitas
                   </label>
-                  <Select
+                  <Combobox
                     value={entityFilter}
                     onChange={(v) => {
                       setEntityFilter(v);
@@ -235,25 +238,29 @@ const AuditLogList = () => {
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              log.action === "CREATE"
+                              log.action === "create"
                                 ? "bg-emerald-100 text-emerald-700"
-                                : log.action === "UPDATE"
+                                : log.action === "update"
                                   ? "bg-blue-100 text-blue-700"
-                                  : log.action === "DELETE"
+                                  : log.action === "delete"
                                     ? "bg-red-100 text-red-700"
-                                    : log.action === "LOGIN"
-                                      ? "bg-purple-100 text-purple-700"
-                                      : log.action === "PAYMENT"
-                                        ? "bg-amber-100 text-amber-700"
-                                        : log.action === "REFUND"
-                                          ? "bg-orange-100 text-orange-700"
-                                          : log.action === "VOID"
-                                            ? "bg-rose-100 text-rose-700"
-                                            : log.action === "STATUS_CHANGE"
-                                              ? "bg-violet-100 text-violet-700"
-                                              : "bg-muted text-muted-foreground"
+                                    : log.action === "approve"
+                                      ? "bg-emerald-100 text-emerald-700"
+                                      : log.action === "reject"
+                                        ? "bg-red-100 text-red-700"
+                                        : log.action === "login"
+                                          ? "bg-purple-100 text-purple-700"
+                                          : log.action === "payment"
+                                            ? "bg-amber-100 text-amber-700"
+                                            : log.action === "refund"
+                                              ? "bg-orange-100 text-orange-700"
+                                              : log.action === "void"
+                                                ? "bg-rose-100 text-rose-700"
+                                                : log.action === "status_change"
+                                                  ? "bg-violet-100 text-violet-700"
+                                                  : "bg-muted text-muted-foreground"
                             }`}>
-                            {log.action}
+                            {log.action?.toUpperCase()}
                           </span>
                           <span className="font-bold text-sm font-mono text-primary">
                             {log.entity}

@@ -7,6 +7,7 @@ const TableToolbar = ({ title, onReset, isFiltered, children }) => {
   const { t } = useTranslation();
   const [showFilters, setShowFilters] = useState(false);
   const filters = React.Children.toArray(children).filter(Boolean);
+  const filtersId = React.useId();
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -16,12 +17,15 @@ const TableToolbar = ({ title, onReset, isFiltered, children }) => {
           variant={showFilters ? "default" : "outline"}
           size="sm"
           className="gap-2 h-9 lg:hidden"
+          aria-expanded={showFilters}
+          aria-controls={filtersId}
           onClick={() => setShowFilters(!showFilters)}>
           <ListFilter size={16} />
           {t("common.filter")}
         </Button>
       </div>
       <div
+        id={filtersId}
         className={`${showFilters ? "flex" : "hidden"} lg:flex flex-row flex-wrap items-end gap-3 w-full`}>
         {filters.map((filter, i) => (
           <div key={i} className="flex flex-col gap-1.5 flex-1 min-w-[150px]">

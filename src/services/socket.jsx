@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { io } from "socket.io-client";
 import { ENDPOINT } from "@/utils/endpoints";
 import { getToken } from "@/utils/cookies";
 import PropTypes from "prop-types";
@@ -14,36 +13,47 @@ export const SocketProvider = ({ children }) => {
     const token = getToken();
     if (!token || ENDPOINT.BASE_URL.includes("vercel")) return;
 
-    const s = io(ENDPOINT.BASE_URL, {
-      auth: { token },
-      transports: ["polling"],
-      reconnection: true,
-      reconnectionAttempts: 3,
-      reconnectionDelay: 3000
-    });
+    let cancelled = false;
+    let s;
 
-    s.on("connect", () => {
-      console.log("Socket connected:", s.id);
-    });
+    // ponytail: socket.io-client (~40KB gz) di-dynamic-import supaya tidak
+    // ikut critical path main entry — dipakai hanya oleh Header (notification
+    // badge) di balik DashboardLayout, tidak relevan untuk /login maupun /cashier.
+    import("socket.io-client").then(({ io }) => {
+      if (cancelled) return;
 
-    s.on("new-notification-global", (notification) => {
-      setNewNotification(notification);
-    });
+      s = io(ENDPOINT.BASE_URL, {
+        auth: { token },
+        transports: ["polling"],
+        reconnection: true,
+        reconnectionAttempts: 3,
+        reconnectionDelay: 3000
+      });
 
-    s.on("disconnect", (reason) => {
-      if (reason !== "io client disconnect") {
-        console.log("Socket disconnected:", reason);
-      }
-    });
+      s.on("connect", () => {
+        console.log("Socket connected:", s.id);
+      });
 
-    s.on("connect_error", (err) => {
-      console.warn("Socket connection error (realtime notifications unavailable):", err.message);
-    });
+      s.on("new-notification-global", (notification) => {
+        setNewNotification(notification);
+      });
 
-    setSocket(s);
+      s.on("disconnect", (reason) => {
+        if (reason !== "io client disconnect") {
+          console.log("Socket disconnected:", reason);
+        }
+      });
+
+      s.on("connect_error", (err) => {
+        console.warn("Socket connection error (realtime notifications unavailable):", err.message);
+      });
+
+      setSocket(s);
+    });
 
     return () => {
-      s.disconnect();
+      cancelled = true;
+      s?.disconnect();
     };
   }, []);
 

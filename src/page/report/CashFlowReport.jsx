@@ -140,7 +140,7 @@ const CashFlowReport = () => {
             })}
           />
           <DatePicker date={startDate} setDate={setStartDate} />
-          <DatePicker date={endDate} setDate={setEndDate} />
+          <DatePicker date={endDate} setDate={setEndDate} minDate={startDate} />
         </div>
       </div>
 

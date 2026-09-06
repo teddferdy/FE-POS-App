@@ -269,7 +269,7 @@ const CashRegisterOpenClose = () => {
                     <X size={16} /> {t("page.cashRegister.openClose.cancel")}
                   </Button>
                   <Button
-                    variant="danger"
+                    variant="success"
                     onClick={() => {
                       if (selectedStoreIsOpen) {
                         toast.error(t("page.cashRegister.openClose.fail"), {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useQuery } from "react-query";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -44,6 +44,8 @@ import CartPanel from "./components/CartPanel";
 import CheckoutModal from "./components/CheckoutModal";
 import ReceiptModal from "./components/ReceiptModal";
 import OrderQueue from "./components/OrderQueue";
+import ParkedCartPanel from "./components/ParkedCartPanel";
+import { createParkedCart } from "@/services/parked-cart";
 import Sidebar from "@/components/layout/Sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserDropdown, NotificationBell } from "@/components/layout/Header";
@@ -126,10 +128,14 @@ const CashierPage = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [clearCartOpen, setClearCartOpen] = useState(false);
+  const [parkCartOpen, setParkCartOpen] = useState(false);
+  const [parkNotes, setParkNotes] = useState("");
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
   const [cartExpanded, setCartExpanded] = useState(true);
+  const [pendingLoadOrder, setPendingLoadOrder] = useState(null);
+  const [refocusSignal, setRefocusSignal] = useState(0);
 
   useEffect(() => {
     const visited = localStorage.getItem("pos-onboarding-done");
@@ -287,6 +293,69 @@ const CashierPage = () => {
     return () => clearTimeout(timer);
   }, [cart.order, totalItems, subtotal, taxRate, taxAmount, selectedTable]);
 
+  const queryClient = useQueryClient();
+
+  // storeAtInvocation is captured synchronously here, before the request
+  // starts — onSuccess invalidates that captured store's cache entry,
+  // never whatever `store` happens to be selected once the response
+  // resolves. This is what makes a park started on Store A, followed by
+  // a switch to Store B before the response returns, unable to touch
+  // Store B's parked-cart list.
+  const parkMutation = useMutation(
+    (payload) => {
+      const storeAtInvocation = store;
+      return createParkedCart(payload).then((res) => ({ res, storeAtInvocation }));
+    },
+    {
+      onSuccess: ({ res, storeAtInvocation }) => {
+        queryClient.invalidateQueries(["parked-carts", storeAtInvocation]);
+        if (res?.data?.status === "active") {
+          cart.resetOrder();
+          setSelectedTable(null);
+        }
+        setParkCartOpen(false);
+        setParkNotes("");
+        toast.success(t("page.cashier.parkedCart.parked", "Cart parked"));
+      },
+      onError: (err) => {
+        toast.error(t("page.cashier.parkedCart.parkFailed", "Could not park cart"), {
+          description: err?.response?.data?.message || err.message
+        });
+      }
+    }
+  );
+
+  const handleParkCart = useCallback(() => {
+    parkMutation.mutate({
+      tableId: selectedTable?.id || null,
+      notes: parkNotes || undefined,
+      cart: {
+        items: cart.order,
+        orderType: selectedTable ? "dine-in" : "takeaway"
+      }
+    });
+  }, [parkMutation, selectedTable, parkNotes, cart.order]);
+
+  // The server has already committed the resume transition by the time
+  // this runs (ParkedCartPanel only calls onResumed after a genuine 200)
+  // — this is purely client-side rehydration of an already-confirmed
+  // server state, using the payload the server just returned rather than
+  // any locally-cached copy.
+  const handleResumeParkedCart = useCallback(
+    (parkedCart) => {
+      cart.resetOrder();
+      const items = parkedCart?.cartPayload?.items || [];
+      items.forEach((item) => cart.addingProduct(item));
+      setSelectedTable(
+        parkedCart?.tableId ? { id: parkedCart.tableId, name: parkedCart.table?.name || "" } : null
+      );
+      toast.success(t("page.cashier.parkedCart.resumed", "Parked cart resumed"), {
+        description: t("page.cashier.orderLoadedDesc", { count: items.length })
+      });
+    },
+    [cart, t]
+  );
+
   const handleLoadOrder = useCallback(
     (order) => {
       cart.resetOrder();
@@ -315,6 +384,22 @@ const CashierPage = () => {
     [cart, t]
   );
 
+  // Loading a queued order wipes the active cart via handleLoadOrder's
+  // cart.resetOrder() — guard that behind a confirmation whenever the
+  // cashier already has unpaid items in progress, so a stray click on the
+  // order queue can't silently destroy an in-progress sale. An empty cart
+  // loads immediately (no added friction for the common case).
+  const requestLoadOrder = useCallback(
+    (order) => {
+      if (cart.order.length > 0) {
+        setPendingLoadOrder(order);
+      } else {
+        handleLoadOrder(order);
+      }
+    },
+    [cart.order.length, handleLoadOrder]
+  );
+
   const handleCheckoutComplete = useCallback(
     (result) => {
       setReceiptData(result);
@@ -335,6 +420,9 @@ const CashierPage = () => {
     cart.resetOrder();
     setSelectedTable(null);
     setReceiptData(null);
+    // Return the cashier straight to scanning/typing the next sale instead
+    // of leaving them to click back into the search/barcode field.
+    setRefocusSignal((n) => n + 1);
   }, [cart]);
 
   return (
@@ -518,9 +606,16 @@ const CashierPage = () => {
             </div>
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
-              <OrderQueue store={store} onLoadOrder={handleLoadOrder} />
+              <OrderQueue store={store} onLoadOrder={requestLoadOrder} />
+              <ParkedCartPanel
+                store={store}
+                onResumed={handleResumeParkedCart}
+                hasCartItems={cart.order.length > 0}
+              />
               <ProductGrid
                 products={filteredProducts}
+                allProducts={allProducts}
+                refocusSignal={refocusSignal}
                 isLoading={isLoading}
                 search={search}
                 onSearchChange={setSearch}
@@ -561,6 +656,9 @@ const CashierPage = () => {
                   onDecrement={cart.decrementOrder}
                   onDelete={cart.handleDeleteOrder}
                   onCheckout={() => setCheckoutOpen(true)}
+                  onClearCart={() => setClearCartOpen(true)}
+                  onParkCart={() => setParkCartOpen(true)}
+                  isParkingCart={parkMutation.isLoading}
                   totalItems={totalItems}
                   onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
                   isLoading={taxLoading}
@@ -591,6 +689,9 @@ const CashierPage = () => {
                 onDecrement={cart.decrementOrder}
                 onDelete={cart.handleDeleteOrder}
                 onCheckout={() => setCheckoutOpen(true)}
+                onClearCart={() => setClearCartOpen(true)}
+                onParkCart={() => setParkCartOpen(true)}
+                isParkingCart={parkMutation.isLoading}
                 totalItems={totalItems}
                 onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
                 isLoading={taxLoading}
@@ -622,6 +723,31 @@ const CashierPage = () => {
           />
         )}
 
+        {/* Load Order Confirmation — only shown when the active cart already has items */}
+        <Dialog
+          open={!!pendingLoadOrder}
+          onOpenChange={(open) => !open && setPendingLoadOrder(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("page.cashier.loadOrderConfirmTitle")}</DialogTitle>
+              <DialogDescription>{t("page.cashier.loadOrderConfirmDesc")}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="danger" onClick={() => setPendingLoadOrder(null)}>
+                {t("page.cashier.cancel")}
+              </Button>
+              <Button
+                variant="success"
+                onClick={() => {
+                  handleLoadOrder(pendingLoadOrder);
+                  setPendingLoadOrder(null);
+                }}>
+                {t("page.cashier.loadOrderConfirmButton")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Clear Cart Confirmation */}
         <Dialog open={clearCartOpen} onOpenChange={setClearCartOpen}>
           <DialogContent>
@@ -641,6 +767,37 @@ const CashierPage = () => {
                   toast.info(t("page.cashier.cartCleared"));
                 }}>
                 {t("page.cashier.clear")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Park Cart Confirmation */}
+        <Dialog open={parkCartOpen} onOpenChange={setParkCartOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("page.cashier.parkedCart.parkTitle", "Park this cart?")}</DialogTitle>
+              <DialogDescription>
+                {t(
+                  "page.cashier.parkedCart.parkDesc",
+                  "The cart will be saved and can be resumed from any terminal in this store."
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <textarea
+              value={parkNotes}
+              onChange={(e) => setParkNotes(e.target.value)}
+              placeholder={t("page.cashier.parkedCart.notesPlaceholder", "Notes (optional)")}
+              className="w-full min-h-[80px] rounded-lg border border-border/60 bg-transparent p-2 text-sm outline-none focus:border-primary/50"
+            />
+            <DialogFooter>
+              <Button variant="danger" onClick={() => setParkCartOpen(false)}>
+                {t("page.cashier.cancel")}
+              </Button>
+              <Button variant="success" disabled={parkMutation.isLoading} onClick={handleParkCart}>
+                {parkMutation.isLoading
+                  ? t("page.cashier.parkedCart.parking", "Parking...")
+                  : t("page.cashier.parkedCart.parkAction", "Park Cart")}
               </Button>
             </DialogFooter>
           </DialogContent>

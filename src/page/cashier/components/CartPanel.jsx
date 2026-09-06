@@ -13,7 +13,9 @@ import {
   Edit3,
   Check,
   X,
-  Package
+  Package,
+  PackageX,
+  Archive
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +37,9 @@ const CartPanel = ({
   onDecrement,
   onDelete,
   onCheckout,
+  onClearCart,
+  onParkCart,
+  isParkingCart,
   totalItems,
   onUpdatePrice,
   isLoading,
@@ -143,6 +148,29 @@ const CartPanel = ({
             <h2 className="font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               {t("page.cashier.orderCount", { count: totalItems })}
             </h2>
+            {!isEmpty && (
+              <div className="flex items-center gap-3">
+                {onParkCart && (
+                  <button
+                    type="button"
+                    onClick={onParkCart}
+                    disabled={isParkingCart}
+                    className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <Archive size={14} />
+                    {t("page.cashier.parkCart", "Park Cart")}
+                  </button>
+                )}
+                {onClearCart && (
+                  <button
+                    type="button"
+                    onClick={onClearCart}
+                    className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive transition-colors">
+                    <PackageX size={14} />
+                    {t("page.cashier.clearCart")}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex-1 overflow-y-auto scrollbar-thin overscroll-contain min-h-0 px-3 py-3 space-y-2">
@@ -213,16 +241,20 @@ const CartPanel = ({
                             </p>
                           </div>
                           <button
-                            onClick={() => onDelete(item)}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-all shrink-0">
+                            type="button"
+                            onClick={() => setDeleteConfirm(item)}
+                            aria-label={t("page.cashier.deleteTitle")}
+                            className="opacity-60 group-hover:opacity-100 p-1.5 rounded-md text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-all shrink-0">
                             <Trash2 size={14} />
                           </button>
                         </div>
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center gap-1">
                             <button
+                              type="button"
                               onClick={() => handleDecrement(item)}
-                              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all active:scale-90">
+                              aria-label={t("page.cashier.decreaseQty", "Decrease quantity")}
+                              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all active:scale-90">
                               <Minus size={14} />
                             </button>
                             <div className="relative">
@@ -249,8 +281,10 @@ const CartPanel = ({
                               />
                             </div>
                             <button
+                              type="button"
                               onClick={() => onIncrement(item)}
-                              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all active:scale-90">
+                              aria-label={t("page.cashier.increaseQty", "Increase quantity")}
+                              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all active:scale-90">
                               <Plus size={14} />
                             </button>
                           </div>
@@ -274,13 +308,17 @@ const CartPanel = ({
                                   />
                                 </div>
                                 <button
+                                  type="button"
                                   onClick={() => savePrice(item)}
-                                  className="p-1 rounded-md text-emerald-500 hover:bg-emerald-500/10 transition-all">
+                                  aria-label={t("common.save")}
+                                  className="p-1.5 rounded-md text-emerald-500 hover:bg-emerald-500/10 transition-all">
                                   <Check size={14} />
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={cancelEditingPrice}
-                                  className="p-1 rounded-md text-muted-foreground hover:bg-accent transition-all">
+                                  aria-label={t("common.cancel")}
+                                  className="p-1.5 rounded-md text-muted-foreground hover:bg-accent transition-all">
                                   <X size={14} />
                                 </button>
                               </div>
@@ -290,8 +328,10 @@ const CartPanel = ({
                                   Rp {formatPrice(lineTotal)}
                                 </span>
                                 <button
+                                  type="button"
                                   onClick={() => startEditingPrice(item)}
-                                  className="p-1 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-accent transition-all opacity-0 group-hover:opacity-100">
+                                  aria-label={t("page.cashier.editPrice", "Edit price")}
+                                  className="p-1.5 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-accent transition-all opacity-60 group-hover:opacity-100">
                                   <Edit3 size={12} />
                                 </button>
                               </>
@@ -376,7 +416,7 @@ const CartPanel = ({
             <DialogDescription>{t("page.cashier.deleteDesc")}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="destructive" onClick={() => setDeleteConfirm(null)}>
+            <Button variant="danger" onClick={() => setDeleteConfirm(null)}>
               {t("page.cashier.deleteNo")}
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm}>
@@ -398,6 +438,9 @@ CartPanel.propTypes = {
   onDecrement: PropTypes.func,
   onDelete: PropTypes.func,
   onCheckout: PropTypes.func,
+  onClearCart: PropTypes.func,
+  onParkCart: PropTypes.func,
+  isParkingCart: PropTypes.bool,
   totalItems: PropTypes.number,
   onUpdatePrice: PropTypes.func,
   isLoading: PropTypes.bool,

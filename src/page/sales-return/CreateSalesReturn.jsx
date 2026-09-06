@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -126,16 +126,48 @@ const CreateSalesReturn = () => {
     { enabled: !orderId, retry: false }
   );
 
+  // Reused across retries of the SAME submission (e.g. a network drop
+  // after the request already reached the server), so the server-side
+  // idempotency check can recognize a resubmit instead of creating a
+  // duplicate pending return. Cleared whenever the actual return content
+  // changes, so a genuinely different draft never gets silently rejected
+  // as a "payload mismatch" against a stale key from an earlier edit.
+  const idempotencyKeyRef = useRef(null);
+  useEffect(() => {
+    idempotencyKeyRef.current = null;
+  }, [items, reason, refundMethod]);
+
   const mutation = useMutation(
-    () => returnOrder(orderId, { items, reason, returnedBy: userId, refundMethod, notes }),
+    () => {
+      if (!idempotencyKeyRef.current) {
+        idempotencyKeyRef.current =
+          (typeof crypto !== "undefined" && crypto.randomUUID?.()) ||
+          `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      }
+      return returnOrder(orderId, {
+        items,
+        reason,
+        returnedBy: userId,
+        refundMethod,
+        notes,
+        idempotencyKey: idempotencyKeyRef.current
+      });
+    },
     {
       onSuccess: () => {
         toast.success(t("page.salesReturn.create.toast.success"));
         queryClient.invalidateQueries(["sales-returns"]);
+        idempotencyKeyRef.current = null;
         navigate("/sales-return");
       },
       onError: (err) => {
-        toast.error(err?.response?.data?.message || t("page.salesReturn.create.toast.error"));
+        const status = err?.response?.status;
+        const message = err?.response?.data?.message;
+        if (status === 409) {
+          toast.error(message || t("page.salesReturn.create.toast.conflict"));
+        } else {
+          toast.error(message || t("page.salesReturn.create.toast.error"));
+        }
       }
     }
   );

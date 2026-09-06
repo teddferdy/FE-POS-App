@@ -27,6 +27,7 @@ import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
 import { logOut } from "@/services/auth";
 import { setLogoutInProgress } from "@/services";
+import { orderList } from "@/state/order-list";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import NavigationModal from "./NavigationModal";
@@ -263,6 +264,11 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
     } catch (_e) {
       /* ignore */
     }
+    // The cashier cart is sessionStorage-backed (zustand persist), so it
+    // otherwise survives a logout within the same browser tab — a real risk
+    // on a shared POS terminal where the next cashier to log in on that tab
+    // would inherit whatever was left unpaid in the previous cashier's cart.
+    orderList.getState().resetOrder();
     removeCookie("token");
     removeCookie("user");
     removeCookie("activeStore");

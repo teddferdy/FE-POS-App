@@ -85,6 +85,21 @@ const SalesReturnList = () => {
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
 
+  // A 409 here means a real business conflict (already terminal, order
+  // cancelled/void, or the refund now exceeds what's actually left
+  // refundable) — the backend message already names which one; surface
+  // it under a distinct title instead of a generic "failed" toast, and
+  // refresh the list so the now-stale row (e.g. still showing "pending")
+  // doesn't mislead the next click.
+  const describeMutationError = (err) => {
+    const status = err?.response?.status;
+    const message = err?.response?.data?.message || err.message;
+    if (status === 409) {
+      return { title: t("page.salesReturn.list.toast.conflict"), description: message };
+    }
+    return { title: t("page.salesReturn.list.toast.error"), description: message };
+  };
+
   const approveMut = useMutation(approveSalesReturn, {
     onSuccess: () => {
       toast.success(t("page.salesReturn.list.toast.success"), {
@@ -93,10 +108,11 @@ const SalesReturnList = () => {
       queryClient.invalidateQueries(["sales-returns"]);
       setActionTarget(null);
     },
-    onError: (err) =>
-      toast.error(t("page.salesReturn.list.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      })
+    onError: (err) => {
+      const { title, description } = describeMutationError(err);
+      toast.error(title, { description });
+      queryClient.invalidateQueries(["sales-returns"]);
+    }
   });
 
   const rejectMut = useMutation(rejectSalesReturn, {
@@ -107,10 +123,11 @@ const SalesReturnList = () => {
       queryClient.invalidateQueries(["sales-returns"]);
       setActionTarget(null);
     },
-    onError: (err) =>
-      toast.error(t("page.salesReturn.list.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      })
+    onError: (err) => {
+      const { title, description } = describeMutationError(err);
+      toast.error(title, { description });
+      queryClient.invalidateQueries(["sales-returns"]);
+    }
   });
 
   const columns = [

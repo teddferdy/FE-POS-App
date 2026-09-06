@@ -73,6 +73,7 @@ const PageHeader = ({
                 </button>
               ) : (
                 <span
+                  aria-current={i === breadcrumbs.length - 1 ? "page" : undefined}
                   className={
                     i === breadcrumbs.length - 1
                       ? "text-primary font-semibold whitespace-nowrap"

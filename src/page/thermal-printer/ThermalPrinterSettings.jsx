@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { toast } from "sonner";
 import { testPrint, getPrinterStatus, configurePrinter } from "@/services/thermalPrinter";
 
@@ -182,7 +182,7 @@ const ThermalPrinterSettings = () => {
         <div className="p-4 space-y-4">
           <div>
             <Label>{t("page.thermalPrinter.type")}</Label>
-            <Select
+            <Combobox
               value={printerConfig.type}
               onChange={(v) => setPrinterConfig({ ...printerConfig, type: v })}
               options={printerTypes.map((t) => ({ value: t.value, label: `${t.icon} ${t.label}` }))}
@@ -258,11 +258,9 @@ const ThermalPrinterSettings = () => {
 
           <div>
             <Label htmlFor="columns">{t("page.thermalPrinter.columns")}</Label>
-            <Select
+            <Combobox
               value={String(printerConfig.columns)}
-              onChange={(e) =>
-                setPrinterConfig({ ...printerConfig, columns: parseInt(e.target.value) })
-              }
+              onChange={(v) => setPrinterConfig({ ...printerConfig, columns: parseInt(v) })}
               options={[
                 { value: "32", label: "32 kolom (58mm)" },
                 { value: "48", label: "48 kolom (80mm)" }

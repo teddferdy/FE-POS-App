@@ -48,3 +48,38 @@ export const getZReport = async (registerId) => {
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
+
+export const createCashMovement = async (registerId, payload) => {
+  const { data, status } = await axiosInstance.post(
+    `/cash-register/${registerId}/movement`,
+    payload
+  );
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const decideCashMovement = async (movementId, decision) => {
+  const { data, status } = await axiosInstance.post(
+    `/cash-register/movement/${movementId}/decide`,
+    { decision }
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const reverseCashMovement = async (movementId, payload) => {
+  const { data, status } = await axiosInstance.post(
+    `/cash-register/movement/${movementId}/reverse`,
+    payload
+  );
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const decideCashVariance = async (registerId, decision) => {
+  const { data, status } = await axiosInstance.put(`/cash-register/${registerId}/decide-variance`, {
+    decision
+  });
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};

@@ -261,9 +261,22 @@ const DataTable = ({
                 <tr
                   key={rowId !== undefined && rowId !== null ? rowId : rowIndex}
                   onClick={() => onRowClick?.(row)}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  role={onRowClick ? "button" : undefined}
+                  onKeyDown={
+                    onRowClick
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onRowClick(row);
+                          }
+                        }
+                      : undefined
+                  }
                   className={cn(
                     "hover:bg-accent/30 transition-colors",
-                    onRowClick && "cursor-pointer",
+                    onRowClick &&
+                      "cursor-pointer focus-visible:outline-none focus-visible:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
                     rowClassName?.(row, rowIndex)
                   )}>
                   {allColumns.map((col, colIndex) => {
@@ -354,8 +367,11 @@ const DataTable = ({
       <div className="px-4 py-3 border-t border-border bg-muted/30 flex flex-col sm:flex-row justify-between items-center gap-3">
         <div className="flex items-center gap-3">
           {onPageSizeChange && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Show</span>
+            <div
+              role="group"
+              aria-label={t("common.rowsPerPage", { defaultValue: "Rows per page" })}
+              className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span aria-hidden="true">Show</span>
               <Combobox
                 options={pageSizeOptions.map((opt) => ({ value: String(opt), label: String(opt) }))}
                 value={String(pageSize || 10)}
@@ -363,7 +379,7 @@ const DataTable = ({
                 placeholder="10"
                 searchPlaceholder="Cari..."
               />
-              <span>entries</span>
+              <span aria-hidden="true">entries</span>
             </div>
           )}
           <span className="text-sm text-muted-foreground">

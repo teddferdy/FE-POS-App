@@ -2079,7 +2079,7 @@ const PurchaseOrderList = () => {
               </div>
               <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
                 <Button
-                  variant="destructive"
+                  variant="danger"
                   onClick={() => {
                     setDeleteModal(false);
                     setDeletePoId(null);

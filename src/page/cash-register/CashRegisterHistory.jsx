@@ -326,7 +326,6 @@ const CashRegisterHistory = () => {
                   </>
                 )}
                 <Button
-                  variant="danger"
                   onClick={() => navigate("/cash-register/open-close")}
                   className="shrink-0 gap-2">
                   <Plus size={16} /> {t("page.cashRegister.history.openRegister")}
