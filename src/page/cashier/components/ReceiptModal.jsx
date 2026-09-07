@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   X,
@@ -266,10 +266,29 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     []
   ).map((pm) => ({ id: pm.type || pm.id?.toString() || pm.name?.toLowerCase(), label: pm.name }));
 
+  // Reused across retries of the SAME submission (e.g. a network drop after
+  // the request already reached the server), so the server-side idempotency
+  // check can recognize a resubmit instead of creating a duplicate round of
+  // splits. Cleared whenever the actual split content changes, so a
+  // genuinely different draft never gets rejected as a "payload mismatch"
+  // against a stale key from an earlier edit.
+  const splitIdempotencyKeyRef = useRef(null);
+  useEffect(() => {
+    splitIdempotencyKeyRef.current = null;
+  }, [orderId, splitAmounts]);
+
   const splitMutation = useMutation({
-    mutationFn: (payload) => createSplitBill(payload),
+    mutationFn: (payload) => {
+      if (!splitIdempotencyKeyRef.current) {
+        splitIdempotencyKeyRef.current =
+          (typeof crypto !== "undefined" && crypto.randomUUID?.()) ||
+          `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      }
+      return createSplitBill({ ...payload, idempotencyKey: splitIdempotencyKeyRef.current });
+    },
     onSuccess: () => {
       toast.success(t("page.cashier.receipt.toast.splitSuccess"));
+      splitIdempotencyKeyRef.current = null;
       refetchSplits();
     },
     onError: (err) => {
