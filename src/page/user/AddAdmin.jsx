@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { z } from "zod";
 import { toast } from "sonner";
-import { createUser } from "@/services/user";
+import { addEmployee } from "@/services/employee";
 import { getAllLocation } from "@/services/location";
 import { getAllRole } from "@/services/role";
 import { Button } from "@/components/ui/button";
@@ -81,7 +81,7 @@ const AddAdmin = () => {
   const { data: rolesData } = useQuery(["roles-all"], () => getAllRole(), {});
   const roles = rolesData?.data || rolesData?.roles || [];
 
-  const createMutation = useMutation(createUser, {
+  const createMutation = useMutation(addEmployee, {
     onSuccess: () => {
       queryClient.invalidateQueries(["admins", "users"]);
       setIsSubmitting(false);
@@ -115,7 +115,7 @@ const AddAdmin = () => {
         confirmPassword: form.password,
         phoneNumber: form.phoneNumber,
         store: form.locationId ? Number(form.locationId) : null,
-        role: form.role, // Added role field
+        roleId: form.role ? Number(form.role) : null,
         userType: "admin",
         status: saveAsDraft ? "draft" : "active"
       },
@@ -245,7 +245,7 @@ const AddAdmin = () => {
                     options={[
                       { value: "", label: t("page.user.form.rolePlaceholder") },
                       ...roles.map((role) => ({
-                        value: role.name || role.role,
+                        value: String(role.id),
                         label: (role.name || role.role)
                           .replace(/_/g, " ")
                           .replace(/\b\w/g, (l) => l.toUpperCase())
