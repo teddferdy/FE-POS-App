@@ -79,7 +79,7 @@ const KitchenDisplay = () => {
   // const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
-  const { socket } = useSocket();
+  const { socket, connected } = useSocket();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
@@ -97,15 +97,17 @@ const KitchenDisplay = () => {
     }
   );
 
-  // Poll only as a fallback when no socket is connected — otherwise the
+  // Poll only as a fallback when no socket is *connected* — otherwise the
   // socket listeners below (new-order/order-updated/item-status-updated)
   // already invalidate this query in real time, so polling on top of that
   // would just double the request rate for no benefit (same pattern as
-  // WaiterRequestList's pollFallback).
+  // WaiterRequestList's pollFallback). Branch on `connected` (not on `socket`
+  // being non-null): a client that exists but is not connected delivers no
+  // events, so the screen must keep polling until it actually connects.
   const { data, isLoading, isError, refetch } = useQuery(
     ["kitchen-orders", storeId],
     () => getKitchenOrders(storeId ? { store: storeId } : {}),
-    { enabled: !!storeId || storeId === "", refetchInterval: socket ? false : 15000 }
+    { enabled: !!storeId || storeId === "", refetchInterval: connected ? false : 15000 }
   );
   const orders = data?.data || [];
 

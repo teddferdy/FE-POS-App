@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   push:
@@ -68,22 +68,7 @@ jobs:
           path: dist/
           retention-days: 7
 
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    environment: production
-
-    steps:
-      - name: Log deployment
-        env:
-          DEPLOY_SHA: ${{ github.sha }}
-          DEPLOY_ACTOR: ${{ github.actor }}
-          DEPLOY_MESSAGE: ${{ github.event.head_commit.message }}
-          DEPLOY_TIMESTAMP: ${{ github.event.head_commit.timestamp }}
-        run: |
-          echo "Deployment triggered by commit: $DEPLOY_SHA"
-          echo "Author: $DEPLOY_ACTOR"
-          echo "Message: $DEPLOY_MESSAGE"
-          echo "Timestamp: $DEPLOY_TIMESTAMP"
+# Deploy is NOT performed by GitHub Actions: this app is shipped via the
+# Vercel Git integration on merge to master. CI here only validates the
+# changes (lint + tests + production build); see the release runbook in
+# RELEASING.md.

@@ -2,6 +2,7 @@ import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
+import * as ReactQuery from "react-query";
 import WaiterRequestList from "../page/waiterRequest/WaiterRequestList";
 import { useSocket } from "@/services/socket";
 import { getWaiterRequestList } from "@/services/waiterRequest";
@@ -88,45 +89,92 @@ jest.mock(
 // disabled entirely (useSocket returns socket: null), this screen had zero
 // refresh mechanism at all — refetchOnWindowFocus/refetchOnReconnect are
 // off globally and no refetchInterval compensated, so new/changed waiter
-// requests never appeared without a manual page reload. Reverting the
-// `pollFallback` wiring would make the first assertion below fail (the
-// query would have no refetchInterval when there's no socket).
-describe("WaiterRequestList — polling fallback when no socket is available", () => {
+// requests never appeared without a manual page reload.
+//
+// P6-02 hardening: the fallback is now keyed to *connection* state, not just
+// socket existence. A socket.io client is created synchronously whether or not
+// it ever connects (and stays non-null across disconnect windows), so branching
+// on `socket !== null` silently disabled polling while no events could arrive.
+// These assertions pin the connected-model semantics; reverting `pollFallback`
+// to `socket ? false : 15000` (or dropping `connected` anywhere) fails here.
+describe("WaiterRequestList — polling fallback keyed to socket connection state", () => {
+  const socketStub = { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+
   const renderWithClient = () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } }
     });
-    render(
+    const utils = render(
       <QueryClientProvider client={queryClient}>
         <WaiterRequestList />
       </QueryClientProvider>
     );
-    return queryClient;
+    return { queryClient, ...utils };
   };
 
-  test("sets a refetchInterval on the main list query when no socket exists", async () => {
-    useSocket.mockReturnValue({ socket: null });
-    const queryClient = renderWithClient();
-
-    await waitFor(() => expect(getWaiterRequestList).toHaveBeenCalled());
-
-    const query = queryClient
+  const getMainListQuery = (queryClient) =>
+    queryClient
       .getQueryCache()
       .findAll()
       .find((q) => q.queryKey[0] === "waiter-request-list");
-    expect(query.options.refetchInterval).toBe(15000);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  test("disables refetchInterval (relies on socket events) when a live socket exists", async () => {
-    useSocket.mockReturnValue({ socket: { on: jest.fn(), off: jest.fn(), emit: jest.fn() } });
-    const queryClient = renderWithClient();
+  test("polls (15000) when no socket exists at all", async () => {
+    useSocket.mockReturnValue({ socket: null, connected: false });
+    const { queryClient } = renderWithClient();
 
     await waitFor(() => expect(getWaiterRequestList).toHaveBeenCalled());
+    expect(getMainListQuery(queryClient).options.refetchInterval).toBe(15000);
+  });
 
-    const query = queryClient
-      .getQueryCache()
-      .findAll()
-      .find((q) => q.queryKey[0] === "waiter-request-list");
-    expect(query.options.refetchInterval).toBe(false);
+  test("polls (15000) while a socket client exists but is not connected", async () => {
+    useSocket.mockReturnValue({ socket: socketStub, connected: false });
+    const { queryClient } = renderWithClient();
+
+    await waitFor(() => expect(getWaiterRequestList).toHaveBeenCalled());
+    expect(getMainListQuery(queryClient).options.refetchInterval).toBe(15000);
+  });
+
+  test("disables polling once the socket is connected (relies on socket events)", async () => {
+    useSocket.mockReturnValue({ socket: socketStub, connected: true });
+    const { queryClient } = renderWithClient();
+
+    await waitFor(() => expect(getWaiterRequestList).toHaveBeenCalled());
+    expect(getMainListQuery(queryClient).options.refetchInterval).toBe(false);
+  });
+
+  test("turns polling back on after a disconnect and off again after reconnect", async () => {
+    const useQuerySpy = jest.spyOn(ReactQuery, "useQuery");
+    const lastListOptions = () => {
+      const calls = useQuerySpy.mock.calls.filter(
+        (call) => call?.[0]?.[0] === "waiter-request-list"
+      );
+      return calls[calls.length - 1][2];
+    };
+
+    useSocket.mockReturnValue({ socket: socketStub, connected: false });
+    const { queryClient, rerender } = renderWithClient();
+
+    await waitFor(() => expect(getWaiterRequestList).toHaveBeenCalled());
+    expect(getMainListQuery(queryClient).options.refetchInterval).toBe(15000);
+
+    useSocket.mockReturnValue({ socket: socketStub, connected: true });
+    rerender(
+      <QueryClientProvider client={queryClient}>
+        <WaiterRequestList />
+      </QueryClientProvider>
+    );
+    await waitFor(() => expect(lastListOptions().refetchInterval).toBe(false));
+
+    useSocket.mockReturnValue({ socket: socketStub, connected: false });
+    rerender(
+      <QueryClientProvider client={queryClient}>
+        <WaiterRequestList />
+      </QueryClientProvider>
+    );
+    await waitFor(() => expect(lastListOptions().refetchInterval).toBe(15000));
   });
 });

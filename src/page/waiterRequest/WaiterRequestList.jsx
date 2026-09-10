@@ -52,7 +52,7 @@ const WaiterRequestList = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
-  const { socket } = useSocket();
+  const { socket, connected } = useSocket();
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
@@ -82,13 +82,15 @@ const WaiterRequestList = () => {
     setPage(1);
   };
 
-  // Realtime updates normally come from the socket (below); when no socket
-  // is available at all (e.g. the deployment target that disables it
-  // entirely — see useSocket), these queries would otherwise never refresh
-  // on their own (refetchOnWindowFocus/refetchOnReconnect are off globally),
-  // so new/changed requests would only ever appear after a manual reload.
-  // Poll only in that fallback case — a live socket makes polling redundant.
-  const pollFallback = socket ? false : 15000;
+  // Realtime updates normally come from the socket (below); when the socket is
+  // not *connected* (no deployment that enables it, or a client that exists
+  // but is not yet / no longer connected), these queries would otherwise never
+  // refresh on their own (refetchOnWindowFocus/refetchOnReconnect are off
+  // globally — see useSocket), so new/changed requests would only ever appear
+  // after a manual reload. Poll only in that fallback case — a live connection
+  // makes polling redundant. Branching on `connected` (not `socket !== null`)
+  // is what keeps the fallback alive during disconnected windows.
+  const pollFallback = connected ? false : 15000;
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["waiter-request-list", page, limit, storeId, statusFilter],
