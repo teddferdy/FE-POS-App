@@ -26,6 +26,11 @@ const statusConfig = {
     color: "bg-emerald-500",
     textColor: "text-emerald-600 dark:text-emerald-400",
     label: "Ready"
+  },
+  served: {
+    color: "bg-purple-500",
+    textColor: "text-purple-600 dark:text-purple-400",
+    label: "Served"
   }
 };
 
@@ -182,17 +187,34 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
     { enabled: !!store, refetchInterval: 30000 }
   );
 
-  const allOrders = useMemo(() => {
-    const orders = [
-      ...(pendingOrders || []),
-      ...(confirmedOrders || []),
-      ...(preparingOrders || []),
-      ...(readyOrders || [])
-    ];
-    return orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [pendingOrders, confirmedOrders, preparingOrders, readyOrders]);
+  // P5-03: a served QR order must stay reachable in the queue for payment —
+  // it has the same payment/collect-payment semantics as every other
+  // unpaid order listed here.
+  const { data: servedOrders, isLoading: servedLoading } = useQuery(
+    ["cashier-orders-served", store],
+    () => fetchOrders("served"),
+    { enabled: !!store, refetchInterval: 30000 }
+  );
 
-  const isLoading = pendingLoading || confirmedLoading || preparingLoading || readyLoading;
+  const allOrders = useMemo(() => {
+    // statuses are disjoint server-side, but guard against the same order
+    // leaking into two results during a transition — key by id (the served
+    // entry wins, being last) so no order is ever rendered twice.
+    const byId = new Map();
+    const push = (list) =>
+      (list || []).forEach((o) => {
+        if (o && o.id != null) byId.set(String(o.id), o);
+      });
+    push(pendingOrders);
+    push(confirmedOrders);
+    push(preparingOrders);
+    push(readyOrders);
+    push(servedOrders);
+    return Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [pendingOrders, confirmedOrders, preparingOrders, readyOrders, servedOrders]);
+
+  const isLoading =
+    pendingLoading || confirmedLoading || preparingLoading || readyLoading || servedLoading;
 
   if (!store) return null;
 

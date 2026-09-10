@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
@@ -21,7 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { axiosInstance } from "@/services";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
+import { useSocket } from "@/services/socket";
 import StoreFilter from "@/components/ui/StoreFilter";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -49,6 +50,32 @@ const CustomerOrderManagement = () => {
   const [search, setSearch] = useState("");
   const [acceptingId, setAcceptingId] = useState(null);
 
+  // P5-01: this screen previously only refreshed via the manual Refresh
+  // button, so QR orders placed by customers stayed invisible to staff until
+  // someone clicked it. When a socket is available, join the store room and
+  // refetch the pending list on the backend's store-scoped `new-order` event.
+  // The effective store mirrors the query below so the room matches exactly
+  // the store whose pending orders are shown.
+  const effectiveStore = isSuperAdmin ? (storeFilter === "all" ? "" : storeFilter || store) : store;
+
+  const { socket } = useSocket();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!socket || !effectiveStore) return;
+    socket.emit("join-store", effectiveStore);
+    return () => socket.emit("leave-store", effectiveStore);
+  }, [socket, effectiveStore]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleNewOrder = () => {
+      queryClient.invalidateQueries(["customer-orders", store, storeFilter, isSuperAdmin]);
+    };
+    socket.on("new-order", handleNewOrder);
+    return () => socket.off("new-order", handleNewOrder);
+  }, [socket, queryClient, store, storeFilter, isSuperAdmin]);
+
   const isFiltered = storeFilter !== "all" || search !== "";
 
   const resetFilters = () => {
@@ -72,11 +99,6 @@ const CustomerOrderManagement = () => {
   } = useQuery(
     ["customer-orders", store, storeFilter, isSuperAdmin],
     () => {
-      const effectiveStore = isSuperAdmin
-        ? storeFilter === "all"
-          ? ""
-          : storeFilter || store
-        : store;
       if (!isSuperAdmin && !effectiveStore) {
         return [];
       }
