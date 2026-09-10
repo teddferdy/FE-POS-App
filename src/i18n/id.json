@@ -2728,6 +2728,7 @@
   "page.cashier.orderQueue.status.confirmed": "Confirmed",
   "page.cashier.orderQueue.status.preparing": "Preparing",
   "page.cashier.orderQueue.status.ready": "Ready",
+  "page.cashier.orderQueue.status.served": "Served",
   "page.cashier.orderQueue.dineIn": "Dine In",
   "page.cashier.orderQueue.takeaway": "Takeaway",
   "page.cashier.orderQueue.table": "Table",
