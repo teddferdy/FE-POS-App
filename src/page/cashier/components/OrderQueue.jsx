@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
-import { Clock, Utensils, ShoppingBag } from "lucide-react";
+import { Clock, Utensils, ShoppingBag, Wallet } from "lucide-react";
 import { getOrdersByStore } from "@/services/order";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -56,57 +56,79 @@ function timeAgo(dateStr) {
   return `${Math.floor(diffHr / 24)} days ago`;
 }
 
-const OrderCard = ({ order, onClick }) => {
+const OrderCard = ({ order, onClick, onCollectPayment }) => {
   const { t } = useTranslation();
   const status = statusConfig[order.status] || statusConfig.pending;
   const payCfg = paymentStatusConfig[order.paymentStatus] || paymentStatusConfig.unpaid;
   const isDineIn = !!order.tableId;
   const itemCount = order.totalQuantity || order.items?.length || 0;
+  // F4-01: every order this queue lists is, by construction, not yet paid
+  // (a POS-created order is created already status:'paid' and never appears
+  // here) — so "Collect Payment" is offered whenever the caller wired it up,
+  // regardless of the order's kitchen-progress status.
+  const canCollectPayment =
+    typeof onCollectPayment === "function" && order.paymentStatus !== "paid";
 
   return (
-    <button
-      onClick={() => onClick(order)}
-      className="shrink-0 w-56 bg-card border border-border/60 rounded-xl p-3.5 hover:border-primary/50 hover:shadow-md hover:shadow-primary/5 transition-all text-left group">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-bold text-foreground">
-          #{order.orderNumber?.slice(-5) || order.id}
-        </span>
-        <span
-          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${status.color} text-white`}>
-          {t(`page.cashier.orderQueue.status.${order.status}`, status.label)}
-        </span>
-      </div>
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-        {isDineIn ? <Utensils size={12} /> : <ShoppingBag size={12} />}
-        <span>
-          {isDineIn
-            ? `${t("page.cashier.orderQueue.dineIn")} / ${t("page.cashier.orderQueue.table")} ${order.tableId}`
-            : t("page.cashier.orderQueue.takeaway")}
-        </span>
-      </div>
-      <div className="flex flex-wrap items-center gap-1 mb-1.5">
-        {order.paymentStatus && (
+    <div className="shrink-0 w-56 bg-card border border-border/60 rounded-xl p-3.5 hover:border-primary/50 hover:shadow-md hover:shadow-primary/5 transition-all group space-y-2.5">
+      <button onClick={() => onClick(order)} className="w-full text-left">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-bold text-foreground">
+            #{order.orderNumber?.slice(-5) || order.id}
+          </span>
           <span
-            className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${payCfg.color}`}>
-            {t(`page.cashier.orderQueue.paymentStatus.${order.paymentStatus}`, order.paymentStatus)}
+            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${status.color} text-white`}>
+            {t(`page.cashier.orderQueue.status.${order.status}`, status.label)}
           </span>
-        )}
-        {order.source && order.source !== "pos" && (
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border border-border/60 text-muted-foreground uppercase">
-            {t(`page.delivery.source.${order.source}`, order.source)}
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+          {isDineIn ? <Utensils size={12} /> : <ShoppingBag size={12} />}
+          <span>
+            {isDineIn
+              ? `${t("page.cashier.orderQueue.dineIn")} / ${t("page.cashier.orderQueue.table")} ${order.tableId}`
+              : t("page.cashier.orderQueue.takeaway")}
           </span>
-        )}
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">
-          {itemCount} {t("page.cashier.orderQueue.items")}
-        </span>
-        <span className="text-[10px] text-muted-foreground/70 flex items-center gap-1">
-          <Clock size={10} />
-          {timeAgo(order.createdAt)}
-        </span>
-      </div>
-    </button>
+        </div>
+        <div className="flex flex-wrap items-center gap-1 mb-1.5">
+          {order.paymentStatus && (
+            <span
+              className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${payCfg.color}`}>
+              {t(
+                `page.cashier.orderQueue.paymentStatus.${order.paymentStatus}`,
+                order.paymentStatus
+              )}
+            </span>
+          )}
+          {order.source && order.source !== "pos" && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border border-border/60 text-muted-foreground uppercase">
+              {t(`page.delivery.source.${order.source}`, order.source)}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">
+            {itemCount} {t("page.cashier.orderQueue.items")}
+          </span>
+          <span className="text-[10px] text-muted-foreground/70 flex items-center gap-1">
+            <Clock size={10} />
+            {timeAgo(order.createdAt)}
+          </span>
+        </div>
+      </button>
+      {canCollectPayment && (
+        <button
+          type="button"
+          aria-label={t("page.cashier.orderQueue.collectPayment")}
+          onClick={(e) => {
+            e.stopPropagation();
+            onCollectPayment(order);
+          }}
+          className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+          <Wallet size={12} />
+          {t("page.cashier.orderQueue.collectPayment")}
+        </button>
+      )}
+    </div>
   );
 };
 
@@ -130,7 +152,7 @@ const OrderQueueSkeleton = () => (
   </div>
 );
 
-const OrderQueue = ({ store, onLoadOrder }) => {
+const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
   const fetchOrders = async (status) => {
     const res = await getOrdersByStore({ location: store, status, limit: 50 });
     return res?.data || [];
@@ -182,7 +204,12 @@ const OrderQueue = ({ store, onLoadOrder }) => {
         <div className="overflow-x-auto scrollbar-none mt-6">
           <div className="flex gap-3 px-4 lg:px-6 pb-1">
             {allOrders.map((order) => (
-              <OrderCard key={order.id} order={order} onClick={onLoadOrder} />
+              <OrderCard
+                key={order.id}
+                order={order}
+                onClick={onLoadOrder}
+                onCollectPayment={onCollectPayment}
+              />
             ))}
           </div>
         </div>
@@ -193,7 +220,8 @@ const OrderQueue = ({ store, onLoadOrder }) => {
 
 OrderQueue.propTypes = {
   store: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  onLoadOrder: PropTypes.func.isRequired
+  onLoadOrder: PropTypes.func.isRequired,
+  onCollectPayment: PropTypes.func
 };
 
 export default OrderQueue;

@@ -30,7 +30,7 @@ import { getAllDiscount, lookupDiscountByCode } from "@/services/discount";
 import { getAllMemberTier } from "@/services/member-tier";
 import { getAllTypePayment } from "@/services/type-payment";
 import { getMemberById } from "@/services/member";
-import { getTableAvailability } from "@/services/table";
+import { getTableAvailability, getTablesWithActiveOrders } from "@/services/table";
 import { getPaymentIconKind } from "@/utils/payment";
 import { toast } from "sonner";
 import { dispatchDisplayEvent, DISPLAY_EVENT_TYPES } from "@/utils/customerDisplayBoard";
@@ -157,15 +157,44 @@ const CheckoutModal = ({
     () => getTableAvailability({ location: store }),
     { enabled: !!store, staleTime: 0, refetchOnMount: true }
   );
+  // The static availability snapshot (table.status above) is stale against
+  // QR/customer orders, which the backend creates without flipping the table
+  // to "occupied". An order-aware snapshot is the source of truth for which
+  // tables are genuinely free for a NEW pos order — every table carrying at
+  // least one active (pending/confirmed/preparing/ready/served) order is
+  // treated as occupied here regardless of what the cached status says.
+  const {
+    data: activeOrdersData,
+    isLoading: activeOrdersLoading,
+    isFetching: activeOrdersFetching,
+    isError: activeOrdersError
+  } = useQuery(
+    ["table-active-orders", store],
+    () => getTablesWithActiveOrders({ location: store }),
+    { enabled: !!store, staleTime: 0, refetchOnMount: true }
+  );
+  const tableIdsWithActiveOrders = useMemo(() => {
+    const list = Array.isArray(activeOrdersData?.data) ? activeOrdersData.data : [];
+    return new Set(
+      list.filter((t) => Array.isArray(t.orders) && t.orders.length > 0).map((t) => t.id)
+    );
+  }, [activeOrdersData]);
   const allTables = useMemo(() => tablesData?.data?.tables || [], [tablesData]);
   const partySizeNum = Number(partySize) || 0;
+  const occupancyLoading = tablesLoading || activeOrdersLoading || activeOrdersFetching;
+  const occupancyError = !!activeOrdersError;
+  // Fail closed: until occupancy is known (and unless it errored) no table is
+  // offered as safely available for a new order.
+  const canResolveTableSafety = !occupancyLoading && !occupancyError;
   const availableTables = useMemo(
     () =>
       allTables.filter(
         (t) =>
-          t.status === "available" && (partySizeNum === 0 || Number(t.capacity) >= partySizeNum)
+          t.status === "available" &&
+          !tableIdsWithActiveOrders.has(t.id) &&
+          (partySizeNum === 0 || Number(t.capacity) >= partySizeNum)
       ),
-    [allTables, partySizeNum]
+    [allTables, tableIdsWithActiveOrders, partySizeNum]
   );
 
   const isQrisPayment = paymentMethod === "e-wallet" || paymentMethod === "qris";
@@ -484,9 +513,26 @@ const CheckoutModal = ({
   );
 
   const handleSubmit = useCallback(() => {
-    if (orderType === "dine-in" && !selectedTable) {
-      toast.error(t("page.cashier.selectTable", "Pilih meja terlebih dahulu"));
-      return;
+    if (orderType === "dine-in") {
+      if (!selectedTable) {
+        toast.error(t("page.cashier.selectTable", "Pilih meja terlebih dahulu"));
+        return;
+      }
+      if (!canResolveTableSafety) {
+        toast.error(
+          occupancyError
+            ? t("page.cashier.tableOccupancyError", "Gagal memuat status meja")
+            : t("page.cashier.tableOccupancyLoading", "Memeriksa ketersediaan meja...")
+        );
+        return;
+      }
+      // Defense in depth: the UI blocks occupied tables, but a QR order can
+      // land after the table was picked — re-check at submit time so a second
+      // order is never created on a table with an active customer order.
+      if (tableIdsWithActiveOrders.has(selectedTable.id)) {
+        toast.error(t("page.cashier.tableOccupied", "Meja sedang digunakan"));
+        return;
+      }
     }
     if (remainingTotal > 0 && !paymentMethod) {
       toast.error(t("page.cashier.selectPayment"));
@@ -549,6 +595,9 @@ const CheckoutModal = ({
     change,
     orderType,
     selectedTable,
+    canResolveTableSafety,
+    occupancyError,
+    tableIdsWithActiveOrders,
     mutation,
     cookie,
     t,
@@ -691,31 +740,43 @@ const CheckoutModal = ({
                       options={[
                         { value: "", label: t("page.cashier.selectTable", "Pilih Meja") },
                         ...allTables.map((tbl) => {
-                          const isAvailable = tbl.status === "available";
-                          const statusLabel = t(
-                            `page.table.status.${tbl.status || "available"}`,
-                            tbl.status || "available"
-                          );
+                          const hasActiveOrder = tableIdsWithActiveOrders.has(tbl.id);
+                          const isAvailable = tbl.status === "available" && !hasActiveOrder;
+                          const statusKey = hasActiveOrder ? "occupied" : tbl.status || "available";
+                          const statusLabel = t(`page.table.status.${statusKey}`, statusKey);
                           return {
                             value: String(tbl.id),
                             label: `${tbl.name} (${t("page.cashier.capacity", "Kapasitas")}: ${tbl.capacity}) — ${statusLabel}`,
-                            disabled: !isAvailable
+                            disabled: !isAvailable || !canResolveTableSafety
                           };
                         })
                       ]}
                       value={String(selectedTable?.id || "")}
+                      loading={!canResolveTableSafety}
                       onChange={(v) => {
                         const tbl = allTables.find(
-                          (tb) => String(tb.id) === v && tb.status === "available"
+                          (tb) =>
+                            String(tb.id) === v &&
+                            tb.status === "available" &&
+                            !tableIdsWithActiveOrders.has(tb.id)
                         );
                         setSelectedTable(tbl || null);
                       }}
                       placeholder={t("page.cashier.selectTable", "Pilih Meja")}
                       searchPlaceholder="Cari meja..."
                     />
+                    {occupancyError && (
+                      <p className="mt-1 text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        {t(
+                          "page.cashier.tableOccupancyError",
+                          "Gagal memuat status meja, mohon coba lagi"
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
-                {partySizeNum > 0 && !tablesLoading && availableTables.length === 0 && (
+                {partySizeNum > 0 && canResolveTableSafety && availableTables.length === 0 && (
                   <p className="text-xs text-muted-foreground">
                     {t(
                       "page.cashier.guestsNoTable",

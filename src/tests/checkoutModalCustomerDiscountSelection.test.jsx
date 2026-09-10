@@ -41,7 +41,8 @@ jest.mock("../services/member", () => ({
   getMemberById: jest.fn(() => Promise.resolve({ data: {} }))
 }));
 jest.mock("../services/table", () => ({
-  getTableAvailability: jest.fn(() => Promise.resolve({ data: { tables: [] } }))
+  getTableAvailability: jest.fn(() => Promise.resolve({ data: { tables: [] } })),
+  getTablesWithActiveOrders: jest.fn(() => Promise.resolve({ data: [] }))
 }));
 
 const customers = [
