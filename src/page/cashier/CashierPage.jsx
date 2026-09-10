@@ -44,6 +44,7 @@ import CartPanel from "./components/CartPanel";
 import CheckoutModal from "./components/CheckoutModal";
 import ReceiptModal from "./components/ReceiptModal";
 import OrderQueue from "./components/OrderQueue";
+import CollectPaymentModal from "./components/CollectPaymentModal";
 import ParkedCartPanel from "./components/ParkedCartPanel";
 import { createParkedCart } from "@/services/parked-cart";
 import Sidebar from "@/components/layout/Sidebar";
@@ -136,6 +137,10 @@ const CashierPage = () => {
   const [cartExpanded, setCartExpanded] = useState(true);
   const [pendingLoadOrder, setPendingLoadOrder] = useState(null);
   const [refocusSignal, setRefocusSignal] = useState(0);
+  // F4-01: order selected from the queue for payment settlement — kept
+  // separate from `pendingLoadOrder`/cart state since settling an existing
+  // order never touches the cart.
+  const [collectPaymentOrder, setCollectPaymentOrder] = useState(null);
 
   useEffect(() => {
     const visited = localStorage.getItem("pos-onboarding-done");
@@ -606,7 +611,11 @@ const CashierPage = () => {
             </div>
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
-              <OrderQueue store={store} onLoadOrder={requestLoadOrder} />
+              <OrderQueue
+                store={store}
+                onLoadOrder={requestLoadOrder}
+                onCollectPayment={setCollectPaymentOrder}
+              />
               <ParkedCartPanel
                 store={store}
                 onResumed={handleResumeParkedCart}
@@ -720,6 +729,17 @@ const CashierPage = () => {
             data={receiptData}
             onClose={() => setReceiptData(null)}
             onNewTransaction={handleNewTransaction}
+          />
+        )}
+
+        {/* F4-01: settles an EXISTING order (e.g. a QR order from the queue
+            above) in place — never creates a new order via CheckoutModal. */}
+        {collectPaymentOrder && (
+          <CollectPaymentModal
+            order={collectPaymentOrder}
+            store={store}
+            onClose={() => setCollectPaymentOrder(null)}
+            onOpenReceipt={setReceiptData}
           />
         )}
 
