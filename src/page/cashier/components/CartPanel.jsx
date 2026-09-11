@@ -43,7 +43,8 @@ const CartPanel = ({
   totalItems,
   onUpdatePrice,
   isLoading,
-  expanded = true
+  expanded = true,
+  canEditPrice = false
 }) => {
   const { t } = useTranslation();
   const [editingPrice, setEditingPrice] = useState(null);
@@ -52,6 +53,11 @@ const CartPanel = ({
   const inputRef = useRef(null);
   const [quantities, setQuantities] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  // F7-01: a pending, not-yet-committed price override — set once the typed
+  // value passes validation, cleared on confirm/cancel. Keeping this separate
+  // from `editingPrice` is what makes the override a deliberate two-step
+  // action instead of committing the moment the cashier hits Enter/Check.
+  const [priceConfirm, setPriceConfirm] = useState(null);
 
   const itemKey = (item) => item.cartKey || item.id || item.ID || item.idProduct || item._id;
 
@@ -106,21 +112,30 @@ const CartPanel = ({
   const savePrice = (item) => {
     const key = itemKey(item);
     const val = parseFloat(priceValue);
-    if (isNaN(val) || val < 0) {
+    if (isNaN(val) || val < 0 || priceValue.trim() === "") {
       setPriceErrors((prev) => ({ ...prev, [key]: t("page.cashier.invalidPrice") }));
       return;
     }
-    onUpdatePrice?.(item, val);
-    setEditingPrice(null);
-    setPriceErrors((prev) => {
-      return Object.fromEntries(Object.entries(prev).filter(([k]) => k !== key));
-    });
+    // F7-01: a validated value doesn't commit yet — it waits for an explicit
+    // confirmation so a price override always takes a deliberate second step.
+    setPriceConfirm({ item, newPrice: val, oldPrice: item.price || item.unitPrice || 0 });
   };
 
   const cancelEditingPrice = () => {
     setEditingPrice(null);
     setPriceValue("");
   };
+
+  const confirmPriceOverride = () => {
+    if (!priceConfirm) return;
+    const key = itemKey(priceConfirm.item);
+    onUpdatePrice?.(priceConfirm.item, priceConfirm.newPrice);
+    setPriceConfirm(null);
+    setEditingPrice(null);
+    setPriceErrors((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== key)));
+  };
+
+  const cancelPriceOverride = () => setPriceConfirm(null);
 
   const formatPrice = (value) => {
     if (value == null || isNaN(value)) return "0";
@@ -189,7 +204,7 @@ const CartPanel = ({
             ) : (
               items.map((item, idx) => {
                 const key = itemKey(item);
-                const isEditing = editingPrice === key;
+                const isEditing = canEditPrice && editingPrice === key;
                 const err = safeGet(priceErrors, key);
                 const price = item.price || item.unitPrice || 0;
                 const count = item.count || item.qty || 0;
@@ -327,13 +342,15 @@ const CartPanel = ({
                                 <span className="text-sm font-bold text-foreground">
                                   Rp {formatPrice(lineTotal)}
                                 </span>
-                                <button
-                                  type="button"
-                                  onClick={() => startEditingPrice(item)}
-                                  aria-label={t("page.cashier.editPrice", "Edit price")}
-                                  className="p-1.5 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-accent transition-all opacity-60 group-hover:opacity-100">
-                                  <Edit3 size={12} />
-                                </button>
+                                {canEditPrice && (
+                                  <button
+                                    type="button"
+                                    onClick={() => startEditingPrice(item)}
+                                    aria-label={t("page.cashier.editPrice", "Edit price")}
+                                    className="p-1.5 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-accent transition-all opacity-60 group-hover:opacity-100">
+                                    <Edit3 size={12} />
+                                  </button>
+                                )}
                               </>
                             )}
                           </div>
@@ -425,6 +442,35 @@ const CartPanel = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* F7-01: price override confirmation — a validated price change never
+          commits directly from the input; it always passes through here. */}
+      <Dialog open={!!priceConfirm} onOpenChange={(open) => !open && cancelPriceOverride()}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("page.cashier.confirmPriceOverrideTitle")}</DialogTitle>
+            <DialogDescription>{t("page.cashier.confirmPriceOverrideDesc")}</DialogDescription>
+          </DialogHeader>
+          {priceConfirm && (
+            <div className="flex items-center justify-center gap-2 text-sm py-2">
+              <span className="text-muted-foreground line-through">
+                Rp {formatPrice(priceConfirm.oldPrice)}
+              </span>
+              <span className="font-bold text-foreground">
+                Rp {formatPrice(priceConfirm.newPrice)}
+              </span>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="danger" onClick={cancelPriceOverride}>
+              {t("page.cashier.confirmPriceOverrideNo")}
+            </Button>
+            <Button variant="success" onClick={confirmPriceOverride}>
+              {t("page.cashier.confirmPriceOverrideYes")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -443,6 +489,7 @@ CartPanel.propTypes = {
   isParkingCart: PropTypes.bool,
   totalItems: PropTypes.number,
   onUpdatePrice: PropTypes.func,
+  canEditPrice: PropTypes.bool,
   isLoading: PropTypes.bool,
   expanded: PropTypes.bool
 };
