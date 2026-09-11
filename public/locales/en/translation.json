@@ -7146,6 +7146,8 @@
   "page.cashier.cart": "Cart",
   "page.cashier.orderLoaded": "Order Loaded",
   "page.cashier.orderLoadedDesc": "Order successfully loaded into cart",
+  "page.cashier.orderLoadFailed": "Could not load this order",
+  "page.cashier.orderLoadFailedDesc": "The order data looks incomplete. The current cart was not changed.",
   "page.cashier.loadOrderConfirmTitle": "Replace Current Cart?",
   "page.cashier.loadOrderConfirmDesc": "The current cart still has unpaid items. Loading this order will replace the active cart.",
   "page.cashier.loadOrderConfirmButton": "Yes, Replace Cart",

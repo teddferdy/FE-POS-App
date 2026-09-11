@@ -16,6 +16,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -209,22 +210,6 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const changeAmount = data?.changeAmount || data?.payment?.changeAmount || 0;
 
   const [showSplit, setShowSplit] = useState(false);
-
-  // Plain fixed-overlay div, not the Radix Dialog primitive, so it never
-  // picked up Escape-to-close like every other modal in the app does. Closes
-  // whichever layer is on top, mirroring each one's existing X/close button.
-  React.useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key !== "Escape") return;
-      if (showSplit) {
-        setShowSplit(false);
-      } else {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showSplit, onClose]);
 
   const [splitCount, setSplitCount] = useState(2);
   // ponytail: simple equal-split default, manual override per person
@@ -539,12 +524,22 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const pd = padClasses[lineSpacing] || padClasses.normal;
 
   return (
-    <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card rounded-2xl shadow-2xl border border-border/50 w-[80vw] max-w-none max-h-[90vh] flex flex-col overflow-hidden">
+    // F9-04: migrated onto the project's accessible Dialog primitive —
+    // the manual window-keydown Escape handler (removed) is superseded by
+    // Radix's own per-dialog Escape handling, which already closes only
+    // the topmost of two stacked dialogs (this modal + the split-bill
+    // dialog below), matching the prior "closes whichever layer is on
+    // top" behavior without extra code.
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="w-[80vw] max-w-none max-h-[90vh] flex flex-col overflow-hidden p-0"
+        withX={false}>
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-2">
             <CheckCircle size={18} className="text-emerald-500" />
-            <h2 className="text-base font-bold">{t("page.cashier.receipt.title")}</h2>
+            <DialogTitle className="text-base font-bold">
+              {t("page.cashier.receipt.title")}
+            </DialogTitle>
           </div>
           <div className="flex items-center gap-3">
             {/* Paper Size selector */}
@@ -861,15 +856,23 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
             </Button>
           </div>
         </div>
-      </div>
+      </DialogContent>
 
+      {/* F9-04: a second, independent Dialog for the split-bill sub-flow —
+          Radix supports these stacked, and closes only the topmost one on
+          Escape, matching the prior "closes whichever layer is on top"
+          behavior of the manual handler this replaced. */}
       {showSplit && (
-        <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card rounded-2xl shadow-2xl border border-border/50 w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden">
+        <Dialog open onOpenChange={(open) => !open && setShowSplit(false)}>
+          <DialogContent
+            className="max-w-sm max-h-[80vh] flex flex-col overflow-hidden p-0"
+            withX={false}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-border/50 shrink-0">
               <div className="flex items-center gap-2">
                 <Users size={18} className="text-primary" />
-                <h3 className="font-bold">{t("page.cashier.receipt.splitTitle")}</h3>
+                <DialogTitle className="font-bold">
+                  {t("page.cashier.receipt.splitTitle")}
+                </DialogTitle>
               </div>
               <button
                 onClick={() => setShowSplit(false)}
@@ -1097,10 +1100,10 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                 </div>
               </>
             )}
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
-    </div>
+    </Dialog>
   );
 };
 

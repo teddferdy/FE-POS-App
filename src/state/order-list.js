@@ -10,14 +10,17 @@ export const orderList = create(
         const cartKey = `${id}_${product.variantName || ""}`;
         const existing = get().order.find((item) => item.cartKey === cartKey);
         if (existing) {
+          // F9-02: increment by this line's own current price, not the
+          // catalog price passed in — a line's price can have diverged from
+          // the catalog via an authorized override (updateItemPrice), and
+          // re-adding the same product must keep totalPrice = price * count.
           return set((state) => ({
             order: state.order.map((item) => {
               if (item.cartKey === cartKey) {
                 return {
                   ...item,
                   count: (item.count || 0) + 1,
-                  totalPrice:
-                    Number(item.totalPrice || 0) + Number(product.price || product.sellPrice || 0)
+                  totalPrice: Number(item.totalPrice || 0) + Number(item.price || 0)
                 };
               }
               return item;
@@ -65,7 +68,10 @@ export const orderList = create(
                   totalPrice: Number(items.totalPrice) - Number(items.price)
                 };
               } else {
-                return { ...items };
+                // F9-08: keep the same reference for every other line so a
+                // memoized cart row can bail on re-rendering via a plain
+                // reference-equality check on its own `item` prop.
+                return items;
               }
             })
           };
@@ -84,7 +90,7 @@ export const orderList = create(
                   totalPrice: Number(items.totalPrice) + Number(items.price)
                 };
               } else {
-                return { ...items };
+                return items;
               }
             })
           };
@@ -172,7 +178,7 @@ export const orderList = create(
                   totalPrice: price * (items.count || 1)
                 };
               }
-              return { ...items };
+              return items;
             })
           };
         });

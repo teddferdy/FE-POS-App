@@ -24,6 +24,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { createOrder } from "@/services/order";
 import { getAllCustomer, addCustomer } from "@/services/customer";
 import { getAllDiscount, lookupDiscountByCode } from "@/services/discount";
@@ -403,23 +404,6 @@ const CheckoutModal = ({
     }
   }, [customerId, memberData]);
 
-  // Neither this modal nor the Add-Customer sub-modal is the Radix Dialog
-  // primitive, so — unlike every other modal in the app — Escape did
-  // nothing here. Close whichever layer is on top, mirroring each one's
-  // existing X button exactly (same target, just a keyboard path to it).
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key !== "Escape") return;
-      if (addCustomerOpen) {
-        setAddCustomerOpen(false);
-      } else {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [addCustomerOpen, onClose]);
-
   const mutation = useMutation({
     mutationFn: (payload) => createOrder(payload),
     onSuccess: (res, variables) => {
@@ -433,8 +417,17 @@ const CheckoutModal = ({
         subtotal: order.subTotal,
         total: order.totalPrice,
         grandTotal: order.totalPrice,
+        // F9-01: the backend recomputes prices/total server-side and
+        // ignores whatever the client submitted — reconciling changeAmount
+        // against the client's pre-submit `variables.changeAmount` (computed
+        // against the client's own, possibly stale, total) could show cash
+        // change that doesn't match what was actually charged. Always
+        // derive it from the server-authoritative `order.totalPrice`.
         cashAmount: variables.paymentMethod === "cash" ? variables.cashAmount : order.totalPrice,
-        changeAmount: variables.paymentMethod === "cash" ? variables.changeAmount : 0,
+        changeAmount:
+          variables.paymentMethod === "cash"
+            ? Math.max(0, Number(variables.cashAmount || 0) - Number(order.totalPrice || 0))
+            : 0,
         items: (order.items || []).map((item) => ({
           ...item,
           nameProduct: item.productName,
@@ -620,12 +613,20 @@ const CheckoutModal = ({
     (paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal));
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/50 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+    // F9-04: migrated onto the project's accessible Dialog primitive —
+    // the manual window-keydown Escape handler (removed) is superseded by
+    // Radix's own per-dialog Escape handling, which already closes only
+    // the topmost of two stacked dialogs (this modal + the nested
+    // add-customer dialog below), matching the prior "closes whichever
+    // layer is on top" behavior without extra code.
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden p-0"
+        withX={false}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-2">
             <Receipt size={20} className="text-primary" />
-            <h2 className="text-lg font-bold">{t("page.cashier.payment")}</h2>
+            <DialogTitle className="text-lg font-bold">{t("page.cashier.payment")}</DialogTitle>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
             <X size={18} />
@@ -1154,15 +1155,19 @@ const CheckoutModal = ({
           )}
         </div>
 
+        {/* F9-04: a second, independent Dialog for the add-customer
+            sub-flow — Radix supports these stacked, and closes only the
+            topmost one on Escape, matching the prior "closes whichever
+            layer is on top" behavior of the manual handler this replaced. */}
         {addCustomerOpen && (
-          <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-            <div
-              className="bg-card rounded-2xl shadow-2xl border border-border/50 w-full max-w-md overflow-hidden"
-              onClick={(e) => e.stopPropagation()}>
+          <Dialog open onOpenChange={(open) => !open && setAddCustomerOpen(false)}>
+            <DialogContent className="max-w-md p-0 overflow-hidden" withX={false}>
               <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
                 <div className="flex items-center gap-2">
                   <UserPlus size={18} className="text-primary" />
-                  <h3 className="font-semibold">{t("page.cashier.addCustomerTitle")}</h3>
+                  <DialogTitle className="font-semibold">
+                    {t("page.cashier.addCustomerTitle")}
+                  </DialogTitle>
                 </div>
                 <button
                   onClick={() => setAddCustomerOpen(false)}
@@ -1281,8 +1286,8 @@ const CheckoutModal = ({
                   {t("page.cashier.addCustomerSave")}
                 </Button>
               </div>
-            </div>
-          </div>
+            </DialogContent>
+          </Dialog>
         )}
 
         <div className="border-t border-border/50 p-4 shrink-0 space-y-2">
@@ -1345,8 +1350,8 @@ const CheckoutModal = ({
             </Button>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
