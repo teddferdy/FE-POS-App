@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getOrderById, updateOrderStatus } from "@/services/order";
 
 // F4-01: settles an order that already exists (e.g. created through
@@ -116,10 +117,17 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const formatPrice = (value) => Number(value || 0).toLocaleString("id-ID");
 
   return (
-    <div className="fixed inset-0 z-[75] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card rounded-2xl shadow-2xl border border-border/50 w-full max-w-sm overflow-hidden">
+    // F9-04: migrated onto the project's accessible Dialog primitive —
+    // Escape now closes this modal the same way its own X button already
+    // did unconditionally (there was no business rule blocking a close via
+    // the X, even mid-mutation), so wiring Escape to the same `onClose`
+    // is a consistency fix, not new behavior.
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-sm p-0 overflow-hidden" withX={false}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
-          <h2 className="text-base font-bold">{t("page.cashier.collectPayment.title")}</h2>
+          <DialogTitle className="text-base font-bold">
+            {t("page.cashier.collectPayment.title")}
+          </DialogTitle>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent">
             <X size={18} />
           </button>
@@ -195,8 +203,8 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
             </>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

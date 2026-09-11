@@ -28,6 +28,238 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 
+const itemKey = (item) => item.cartKey || item.id || item.ID || item.idProduct || item._id;
+
+const formatPrice = (value) => {
+  if (value == null || isNaN(value)) return "0";
+  return Number(value).toLocaleString("id-ID");
+};
+
+// F9-08: extracted + memoized so a change to one cart line (quantity,
+// price override, delete) doesn't force React to re-diff every other
+// line — mirrors Phase 8's ProductGridTile pattern. Only genuinely
+// narrow, per-row values (booleans/primitives precomputed by the
+// parent) and stable callbacks are passed down; everything the row
+// types into (quantity input, price input) is local state here, synced
+// from the item via effects, so an unrelated row's props truly never
+// change on this row's edits. This also relies on order-list.js now
+// preserving object references for untouched items on every mutation
+// (also part of F9-08), so the default reference-equality check this
+// memo uses actually bails for unrelated rows.
+const CartLineItem = React.memo(function CartLineItem({
+  item,
+  canEditPrice,
+  isEditing,
+  hasError,
+  onIncrement,
+  onDecrement,
+  onRequestDelete,
+  onStartEditPrice,
+  onCancelEditPrice,
+  onSavePrice
+}) {
+  const { t } = useTranslation();
+  const priceInputRef = useRef(null);
+  const price = item.price || item.unitPrice || 0;
+  const count = item.count || item.qty || 0;
+  const lineTotal = item.totalPrice || price * count;
+  const img = item.image || item.photo || item.ImageURL || item.imageProduct || item.image_url;
+
+  const [qtyValue, setQtyValue] = useState(count);
+  useEffect(() => {
+    setQtyValue(count);
+  }, [count]);
+
+  const [priceValue, setPriceValue] = useState(String(price));
+  useEffect(() => {
+    if (isEditing) {
+      setPriceValue(String(price));
+      const timer = setTimeout(() => priceInputRef.current?.focus(), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isEditing, price]);
+
+  const commitQtyChange = (newQty) => {
+    const diff = newQty - count;
+    if (diff > 0) {
+      for (let i = 0; i < diff; i++) onIncrement(item);
+    } else if (diff < 0) {
+      if (count <= 1) {
+        onRequestDelete(item);
+      } else {
+        for (let i = 0; i < Math.abs(diff); i++) onDecrement(item);
+      }
+    }
+  };
+
+  const handleMinusClick = () => {
+    if (count <= 1) {
+      onRequestDelete(item);
+    } else {
+      onDecrement(item);
+    }
+  };
+
+  return (
+    <div className="group bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-sm transition-all duration-200">
+      <div className="flex gap-3">
+        {img ? (
+          <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-muted/50">
+            <img
+              src={optimizeImage(img) || "/placeholder.svg"}
+              alt={item.nameProduct || item.name || ""}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.parentElement.classList.add("flex", "items-center", "justify-center");
+                const fallback = document.createElement("span");
+                fallback.className = "text-xl font-bold text-muted-foreground/30";
+                fallback.textContent =
+                  (item.nameProduct || item.name || "?")[0]?.toUpperCase() || "?";
+                e.target.parentElement.appendChild(fallback);
+              }}
+            />
+          </div>
+        ) : (
+          <div className="w-14 h-14 rounded-lg bg-muted border border-border/50 flex items-center justify-center shrink-0">
+            <Package size={20} className="text-muted-foreground/40" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="font-medium text-sm text-foreground truncate">
+                {item.nameProduct || item.name || t("page.cashier.unnamedProduct")}
+                {item.variantName && (
+                  <span className="text-muted-foreground/70 font-normal ml-1">
+                    - {item.variantName}
+                  </span>
+                )}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onRequestDelete(item)}
+              aria-label={t("page.cashier.deleteTitle")}
+              className="opacity-60 group-hover:opacity-100 p-1.5 rounded-md text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-all shrink-0">
+              <Trash2 size={14} />
+            </button>
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleMinusClick}
+                aria-label={t("page.cashier.decreaseQty", "Decrease quantity")}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all active:scale-90">
+                <Minus size={14} />
+              </button>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="1"
+                  value={qtyValue}
+                  onChange={(e) => setQtyValue(parseInt(e.target.value) || 0)}
+                  onBlur={() => commitQtyChange(qtyValue)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      commitQtyChange(qtyValue);
+                      e.target.blur();
+                    }
+                  }}
+                  className="w-10 text-center text-sm font-semibold bg-transparent border-none outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => onIncrement(item)}
+                aria-label={t("page.cashier.increaseQty", "Increase quantity")}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all active:scale-90">
+                <Plus size={14} />
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              {isEditing ? (
+                <div className="flex items-center gap-1">
+                  <div className="relative">
+                    <span className="text-[10px] text-muted-foreground absolute left-1.5 top-1/2 -translate-y-1/2">
+                      Rp
+                    </span>
+                    <input
+                      ref={priceInputRef}
+                      type="number"
+                      value={priceValue}
+                      onChange={(e) => setPriceValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") onSavePrice(item, priceValue);
+                        if (e.key === "Escape") onCancelEditPrice();
+                      }}
+                      className="w-24 pl-6 pr-2 py-1 text-xs rounded-lg bg-accent border border-border/60 outline-none focus:border-primary/50 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onSavePrice(item, priceValue)}
+                    aria-label={t("common.save")}
+                    className="p-1.5 rounded-md text-emerald-500 hover:bg-emerald-500/10 transition-all">
+                    <Check size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onCancelEditPrice}
+                    aria-label={t("common.cancel")}
+                    className="p-1.5 rounded-md text-muted-foreground hover:bg-accent transition-all">
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span className="text-sm font-bold text-foreground">
+                    Rp {formatPrice(lineTotal)}
+                  </span>
+                  {canEditPrice && (
+                    <button
+                      type="button"
+                      onClick={() => onStartEditPrice(item)}
+                      aria-label={t("page.cashier.editPrice", "Edit price")}
+                      className="p-1.5 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-accent transition-all opacity-60 group-hover:opacity-100">
+                      <Edit3 size={12} />
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+          {hasError && (
+            <p className="text-[10px] text-destructive mt-1">{t("page.cashier.invalidPrice")}</p>
+          )}
+          {item.discount > 0 && (
+            <div className="flex items-center gap-1 mt-1.5">
+              <Percent size={10} className="text-emerald-500" />
+              <span className="text-[10px] text-emerald-500 font-medium">
+                {t("page.cashier.discountLabel")} {item.discount}%
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+CartLineItem.displayName = "CartLineItem";
+CartLineItem.propTypes = {
+  item: PropTypes.object.isRequired,
+  canEditPrice: PropTypes.bool,
+  isEditing: PropTypes.bool,
+  hasError: PropTypes.bool,
+  onIncrement: PropTypes.func.isRequired,
+  onDecrement: PropTypes.func.isRequired,
+  onRequestDelete: PropTypes.func.isRequired,
+  onStartEditPrice: PropTypes.func.isRequired,
+  onCancelEditPrice: PropTypes.func.isRequired,
+  onSavePrice: PropTypes.func.isRequired
+};
+
 const CartPanel = ({
   items,
   subtotal,
@@ -47,37 +279,14 @@ const CartPanel = ({
   canEditPrice = false
 }) => {
   const { t } = useTranslation();
-  const [editingPrice, setEditingPrice] = useState(null);
-  const [priceValue, setPriceValue] = useState("");
+  const [editingKey, setEditingKey] = useState(null);
   const [priceErrors, setPriceErrors] = useState({});
-  const inputRef = useRef(null);
-  const [quantities, setQuantities] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   // F7-01: a pending, not-yet-committed price override — set once the typed
   // value passes validation, cleared on confirm/cancel. Keeping this separate
-  // from `editingPrice` is what makes the override a deliberate two-step
+  // from `editingKey` is what makes the override a deliberate two-step
   // action instead of committing the moment the cashier hits Enter/Check.
   const [priceConfirm, setPriceConfirm] = useState(null);
-
-  const itemKey = (item) => item.cartKey || item.id || item.ID || item.idProduct || item._id;
-
-  useEffect(() => {
-    setQuantities(
-      Object.fromEntries(items.map((item) => [itemKey(item), item.count || item.qty || 0]))
-    );
-  }, [items]);
-
-  const handleDecrement = useCallback(
-    (item) => {
-      const currentQty = item.count || item.qty || 0;
-      if (currentQty <= 1) {
-        setDeleteConfirm(item);
-      } else {
-        onDecrement(item);
-      }
-    },
-    [onDecrement]
-  );
 
   const handleDeleteConfirm = () => {
     if (deleteConfirm) {
@@ -86,61 +295,38 @@ const CartPanel = ({
     }
   };
 
-  const handleQtyChange = useCallback(
-    (item, newQty) => {
-      const currentQty = item.count || item.qty || 0;
-      const diff = newQty - currentQty;
-      if (diff > 0) {
-        for (let i = 0; i < diff; i++) onIncrement(item);
-      } else if (diff < 0) {
-        if (currentQty <= 1) {
-          setDeleteConfirm(item);
-        } else {
-          for (let i = 0; i < Math.abs(diff); i++) onDecrement(item);
-        }
-      }
-    },
-    [onIncrement, onDecrement]
-  );
-
-  const startEditingPrice = (item) => {
-    setEditingPrice(itemKey(item));
-    setPriceValue(String(item.price || item.unitPrice || 0));
-    setTimeout(() => inputRef.current?.focus(), 50);
-  };
-
-  const savePrice = (item) => {
+  // F9-08: stable across renders (empty/minimal deps) so passing these to
+  // every memoized CartLineItem never itself defeats the memoization.
+  const requestDelete = useCallback((item) => setDeleteConfirm(item), []);
+  const startEditPrice = useCallback((item) => setEditingKey(itemKey(item)), []);
+  const cancelEditPrice = useCallback(() => setEditingKey(null), []);
+  const savePrice = useCallback((item, rawValue) => {
     const key = itemKey(item);
-    const val = parseFloat(priceValue);
-    if (isNaN(val) || val < 0 || priceValue.trim() === "") {
-      setPriceErrors((prev) => ({ ...prev, [key]: t("page.cashier.invalidPrice") }));
+    const val = parseFloat(rawValue);
+    if (isNaN(val) || val < 0 || String(rawValue).trim() === "") {
+      setPriceErrors((prev) => ({ ...prev, [key]: true }));
       return;
     }
     // F7-01: a validated value doesn't commit yet — it waits for an explicit
     // confirmation so a price override always takes a deliberate second step.
     setPriceConfirm({ item, newPrice: val, oldPrice: item.price || item.unitPrice || 0 });
-  };
-
-  const cancelEditingPrice = () => {
-    setEditingPrice(null);
-    setPriceValue("");
-  };
+  }, []);
 
   const confirmPriceOverride = () => {
     if (!priceConfirm) return;
     const key = itemKey(priceConfirm.item);
     onUpdatePrice?.(priceConfirm.item, priceConfirm.newPrice);
     setPriceConfirm(null);
-    setEditingPrice(null);
-    setPriceErrors((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== key)));
+    setEditingKey(null);
+    setPriceErrors((prev) => {
+      if (!(key in prev)) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   };
 
   const cancelPriceOverride = () => setPriceConfirm(null);
-
-  const formatPrice = (value) => {
-    if (value == null || isNaN(value)) return "0";
-    return Number(value).toLocaleString("id-ID");
-  };
 
   const isEmpty = !items || items.length === 0;
 
@@ -204,169 +390,20 @@ const CartPanel = ({
             ) : (
               items.map((item, idx) => {
                 const key = itemKey(item);
-                const isEditing = canEditPrice && editingPrice === key;
-                const err = safeGet(priceErrors, key);
-                const price = item.price || item.unitPrice || 0;
-                const count = item.count || item.qty || 0;
-                const lineTotal = item.totalPrice || price * count;
-                const img =
-                  item.image || item.photo || item.ImageURL || item.imageProduct || item.image_url;
-
                 return (
-                  <div
+                  <CartLineItem
                     key={key || idx}
-                    className="group bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-sm transition-all duration-200">
-                    <div className="flex gap-3">
-                      {img ? (
-                        <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-muted/50">
-                          <img
-                            src={optimizeImage(img) || "/placeholder.svg"}
-                            alt={item.nameProduct || item.name || ""}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.style.display = "none";
-                              e.target.parentElement.classList.add(
-                                "flex",
-                                "items-center",
-                                "justify-center"
-                              );
-                              const fallback = document.createElement("span");
-                              fallback.className = "text-xl font-bold text-muted-foreground/30";
-                              fallback.textContent =
-                                (item.nameProduct || item.name || "?")[0]?.toUpperCase() || "?";
-                              e.target.parentElement.appendChild(fallback);
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-14 h-14 rounded-lg bg-muted border border-border/50 flex items-center justify-center shrink-0">
-                          <Package size={20} className="text-muted-foreground/40" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm text-foreground truncate">
-                              {item.nameProduct || item.name || t("page.cashier.unnamedProduct")}
-                              {item.variantName && (
-                                <span className="text-muted-foreground/70 font-normal ml-1">
-                                  - {item.variantName}
-                                </span>
-                              )}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteConfirm(item)}
-                            aria-label={t("page.cashier.deleteTitle")}
-                            className="opacity-60 group-hover:opacity-100 p-1.5 rounded-md text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-all shrink-0">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleDecrement(item)}
-                              aria-label={t("page.cashier.decreaseQty", "Decrease quantity")}
-                              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all active:scale-90">
-                              <Minus size={14} />
-                            </button>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                min="1"
-                                value={
-                                  safeGet(quantities, key) !== undefined
-                                    ? safeGet(quantities, key)
-                                    : count
-                                }
-                                onChange={(e) => {
-                                  const val = parseInt(e.target.value) || 0;
-                                  setQuantities((prev) => ({ ...prev, [key]: val }));
-                                }}
-                                onBlur={() => handleQtyChange(item, safeGet(quantities, key))}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    handleQtyChange(item, safeGet(quantities, key));
-                                    e.target.blur();
-                                  }
-                                }}
-                                className="w-10 text-center text-sm font-semibold bg-transparent border-none outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                              />
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => onIncrement(item)}
-                              aria-label={t("page.cashier.increaseQty", "Increase quantity")}
-                              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all active:scale-90">
-                              <Plus size={14} />
-                            </button>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {isEditing ? (
-                              <div className="flex items-center gap-1">
-                                <div className="relative">
-                                  <span className="text-[10px] text-muted-foreground absolute left-1.5 top-1/2 -translate-y-1/2">
-                                    Rp
-                                  </span>
-                                  <input
-                                    ref={inputRef}
-                                    type="number"
-                                    value={priceValue}
-                                    onChange={(e) => setPriceValue(e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") savePrice(item);
-                                      if (e.key === "Escape") cancelEditingPrice();
-                                    }}
-                                    className="w-24 pl-6 pr-2 py-1 text-xs rounded-lg bg-accent border border-border/60 outline-none focus:border-primary/50 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                  />
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => savePrice(item)}
-                                  aria-label={t("common.save")}
-                                  className="p-1.5 rounded-md text-emerald-500 hover:bg-emerald-500/10 transition-all">
-                                  <Check size={14} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={cancelEditingPrice}
-                                  aria-label={t("common.cancel")}
-                                  className="p-1.5 rounded-md text-muted-foreground hover:bg-accent transition-all">
-                                  <X size={14} />
-                                </button>
-                              </div>
-                            ) : (
-                              <>
-                                <span className="text-sm font-bold text-foreground">
-                                  Rp {formatPrice(lineTotal)}
-                                </span>
-                                {canEditPrice && (
-                                  <button
-                                    type="button"
-                                    onClick={() => startEditingPrice(item)}
-                                    aria-label={t("page.cashier.editPrice", "Edit price")}
-                                    className="p-1.5 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-accent transition-all opacity-60 group-hover:opacity-100">
-                                    <Edit3 size={12} />
-                                  </button>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        {err && <p className="text-[10px] text-destructive mt-1">{err}</p>}
-                        {item.discount > 0 && (
-                          <div className="flex items-center gap-1 mt-1.5">
-                            <Percent size={10} className="text-emerald-500" />
-                            <span className="text-[10px] text-emerald-500 font-medium">
-                              {t("page.cashier.discountLabel")} {item.discount}%
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                    item={item}
+                    canEditPrice={canEditPrice}
+                    isEditing={canEditPrice && editingKey === key}
+                    hasError={!!safeGet(priceErrors, key)}
+                    onIncrement={onIncrement}
+                    onDecrement={onDecrement}
+                    onRequestDelete={requestDelete}
+                    onStartEditPrice={startEditPrice}
+                    onCancelEditPrice={cancelEditPrice}
+                    onSavePrice={savePrice}
+                  />
                 );
               })
             )}

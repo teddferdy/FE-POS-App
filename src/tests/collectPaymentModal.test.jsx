@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import CollectPaymentModal from "../page/cashier/components/CollectPaymentModal";
@@ -213,5 +213,41 @@ describe("CollectPaymentModal — F4-01 QR order settlement", () => {
     expect(screen.queryByText("page.cashier.collectPayment.payFull")).not.toBeInTheDocument();
     expect(screen.queryByText("page.cashier.collectPayment.splitBill")).not.toBeInTheDocument();
     expect(updateOrderStatus).not.toHaveBeenCalled();
+  });
+});
+
+describe("CollectPaymentModal — accessible dialog semantics (F9-04)", () => {
+  beforeEach(() => {
+    getOrderById.mockReset().mockResolvedValue({ data: qrOrder });
+    updateOrderStatus.mockReset();
+    createOrder.mockReset();
+  });
+
+  test("renders as a properly-labelled dialog", async () => {
+    renderModal();
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveAccessibleName("page.cashier.collectPayment.title");
+  });
+
+  test("Escape closes the modal the same way its own close button already does", async () => {
+    const onClose = jest.fn();
+    renderModal({ onClose });
+    await screen.findByRole("dialog");
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+  });
+
+  test("the existing close button still works", async () => {
+    const onClose = jest.fn();
+    renderModal({ onClose });
+    const dialog = await screen.findByRole("dialog");
+
+    // The header's own close button renders before any payment-action
+    // buttons in DOM order.
+    fireEvent.click(within(dialog).getAllByRole("button")[0]);
+
+    expect(onClose).toHaveBeenCalled();
   });
 });

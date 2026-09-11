@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import PropTypes from "prop-types";
 import { X, Package, Check, PackageOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { optimizeImage } from "@/utils/image";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 const VariantModal = ({ product, onSelect, onClose }) => {
   const { t } = useTranslation();
@@ -37,27 +38,21 @@ const VariantModal = ({ product, onSelect, onClose }) => {
   const needsOption = hasVariants || hasOptions;
   const canAdd = needsOption ? !!selectedOption : true;
 
-  // This overlay is a plain fixed div, not the Radix Dialog primitive, so it
-  // gets none of Radix's built-in Escape handling — every other modal in the
-  // app already closes on Escape, so without this a cashier who reaches for
-  // the keyboard to back out of a variant pick hits a dead key instead.
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
   if (!product) return null;
 
   return (
-    <div className="fixed inset-0 z-[55] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/50 w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+    // F9-04: migrated onto the project's accessible Dialog primitive —
+    // Escape-to-close was previously a manual window keydown listener
+    // (removed) working around the plain overlay div having none of
+    // Radix's built-in Escape/focus-trap/focus-return behavior.
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="max-w-lg max-h-[90vh] flex flex-col overflow-hidden p-0"
+        withX={false}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-2">
             <Package size={20} className="text-primary" />
-            <h2 className="text-lg font-bold">{t(titleKey)}</h2>
+            <DialogTitle className="text-lg font-bold">{t(titleKey)}</DialogTitle>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
             <X size={18} />
@@ -316,8 +311,8 @@ const VariantModal = ({ product, onSelect, onClose }) => {
             </span>
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

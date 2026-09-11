@@ -7136,6 +7136,8 @@
   "page.cashier.cart": "Keranjang",
   "page.cashier.orderLoaded": "Pesanan Dimuat",
   "page.cashier.orderLoadedDesc": "Pesanan berhasil dimuat ke keranjang",
+  "page.cashier.orderLoadFailed": "Gagal memuat pesanan ini",
+  "page.cashier.orderLoadFailedDesc": "Data pesanan tampak tidak lengkap. Keranjang saat ini tidak diubah.",
   "page.cashier.loadOrderConfirmTitle": "Ganti Keranjang Saat Ini?",
   "page.cashier.loadOrderConfirmDesc": "Keranjang saat ini masih berisi item yang belum dibayar. Memuat pesanan ini akan menggantikan keranjang aktif.",
   "page.cashier.loadOrderConfirmButton": "Ya, Ganti Keranjang",

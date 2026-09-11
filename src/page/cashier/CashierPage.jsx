@@ -369,25 +369,33 @@ const CashierPage = () => {
 
   const handleLoadOrder = useCallback(
     (order) => {
-      cart.resetOrder();
-      if (order?.items?.length) {
-        order.items.forEach((item) => {
-          cart.addingProduct({
-            id: item.product,
-            cartKey: `${item.product}_${item.options?.[0]?.name || ""}`,
-            nameProduct: item.productName,
-            variantName: item.options?.[0]?.name || null,
-            price: item.price,
-            count: item.quantity,
-            totalPrice: item.totalPrice || item.price * item.quantity,
-            image: null,
-            unit: "",
-            sku: "",
-            point: 0,
-            redeemPoints: 0
-          });
+      // F9-03: a malformed/incomplete order (no `items` array at all) must
+      // not wipe the active cart on its way to a crash — bail before
+      // resetting anything, and tell the cashier clearly instead of
+      // silently leaving them with an empty cart and no feedback.
+      if (!Array.isArray(order?.items)) {
+        toast.error(t("page.cashier.orderLoadFailed"), {
+          description: t("page.cashier.orderLoadFailedDesc")
         });
+        return;
       }
+      cart.resetOrder();
+      order.items.forEach((item) => {
+        cart.addingProduct({
+          id: item.product,
+          cartKey: `${item.product}_${item.options?.[0]?.name || ""}`,
+          nameProduct: item.productName,
+          variantName: item.options?.[0]?.name || null,
+          price: item.price,
+          count: item.quantity,
+          totalPrice: item.totalPrice || item.price * item.quantity,
+          image: null,
+          unit: "",
+          sku: "",
+          point: 0,
+          redeemPoints: 0
+        });
+      });
       toast.success(t("page.cashier.orderLoaded"), {
         description: t("page.cashier.orderLoadedDesc", { count: order.items.length })
       });

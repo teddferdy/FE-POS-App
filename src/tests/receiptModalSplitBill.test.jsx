@@ -213,3 +213,55 @@ describe("ReceiptModal split-bill management", () => {
     );
   });
 });
+
+describe("ReceiptModal — accessible dialog semantics (F9-04)", () => {
+  beforeEach(() => {
+    mockCookieUser = { id: 1, roleType: "admin", store: 7 };
+    getSplitBillByOrder.mockReset();
+  });
+
+  test("renders as a properly-labelled dialog", async () => {
+    renderModal();
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveAccessibleName("page.cashier.receipt.title");
+  });
+
+  test("Escape closes the main receipt when the split-bill dialog is not open", async () => {
+    const onClose = jest.fn();
+    render(
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <ReceiptModal data={orderData} onClose={onClose} onNewTransaction={jest.fn()} />
+      </QueryClientProvider>
+    );
+    await screen.findByRole("dialog");
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+  });
+
+  test("Escape closes only the split-bill dialog (the topmost layer), not the main receipt", async () => {
+    getSplitBillByOrder.mockResolvedValue({
+      data: { splits: [], summary: { totalSplits: 0, totalPaid: 0, totalPending: 0 } }
+    });
+    const onClose = jest.fn();
+    render(
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <ReceiptModal data={orderData} onClose={onClose} onNewTransaction={jest.fn()} />
+      </QueryClientProvider>
+    );
+    fireEvent.click(screen.getByText("page.cashier.receipt.split"));
+    await waitFor(() =>
+      expect(screen.getByText("page.cashier.receipt.splitTitle")).toBeInTheDocument()
+    );
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    await waitFor(() =>
+      expect(screen.queryByText("page.cashier.receipt.splitTitle")).not.toBeInTheDocument()
+    );
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});

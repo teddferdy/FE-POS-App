@@ -82,6 +82,65 @@ describe("order-list store: price override safety (F7-01)", () => {
   });
 });
 
+describe("order-list store: addOrder re-add after a price override (F9-02)", () => {
+  beforeEach(() => {
+    orderList.setState({ order: [] });
+  });
+
+  test("adding the same product again after an override increases the total by the overridden price, not the catalog price", () => {
+    const product = { id: 5, nameProduct: "Product C", price: 100 };
+    orderList.getState().addOrder(product);
+    const cartItem = orderList.getState().order[0];
+    orderList.getState().updateItemPrice(cartItem, 80);
+
+    orderList.getState().addOrder(product);
+
+    const item = orderList.getState().order[0];
+    expect(item.count).toBe(2);
+    expect(item.price).toBe(80);
+    expect(item.totalPrice).toBe(160); // 80 * 2, not 80 + 100
+  });
+
+  test("adding a normal (non-overridden) product again still totals correctly from the catalog price", () => {
+    const product = { id: 6, nameProduct: "Product D", price: 50 };
+    orderList.getState().addOrder(product);
+    orderList.getState().addOrder(product);
+
+    const item = orderList.getState().order[0];
+    expect(item.count).toBe(2);
+    expect(item.price).toBe(50);
+    expect(item.totalPrice).toBe(100);
+  });
+});
+
+describe("order-list store: unrelated items keep their object reference on mutation (F9-08)", () => {
+  const itemA = { id: 1, cartKey: "1_", nameProduct: "A", price: 1000, count: 1, totalPrice: 1000 };
+  const itemB = { id: 2, cartKey: "2_", nameProduct: "B", price: 2000, count: 1, totalPrice: 2000 };
+
+  beforeEach(() => {
+    orderList.setState({ order: [itemA, itemB] });
+  });
+
+  test("incrementOrder does not recreate the object reference of an unrelated item", () => {
+    orderList.getState().incrementOrder(itemA);
+    const [, b] = orderList.getState().order;
+    expect(b).toBe(itemB);
+  });
+
+  test("decrementOrder does not recreate the object reference of an unrelated item", () => {
+    orderList.setState({ order: [{ ...itemA, count: 2 }, itemB] });
+    orderList.getState().decrementOrder(orderList.getState().order[0]);
+    const [, b] = orderList.getState().order;
+    expect(b).toBe(itemB);
+  });
+
+  test("updateItemPrice does not recreate the object reference of an unrelated item", () => {
+    orderList.getState().updateItemPrice(itemA, 1500);
+    const [, b] = orderList.getState().order;
+    expect(b).toBe(itemB);
+  });
+});
+
 describe("order-list store: regression around price-override change", () => {
   beforeEach(() => {
     orderList.setState({ order: [] });
