@@ -27,6 +27,10 @@ export const getProductByOutlet = async ({ location, search }) => {
   const params = new URLSearchParams();
   if (location) params.append("store", location);
   if (search) params.append("search", search);
+  // F7-02: the endpoint defaults to a 200-row page when `limit` is omitted,
+  // silently truncating any store with a larger catalog. 500 is its hard
+  // max (mirrors the same pattern already used by getIngredients above).
+  params.append("limit", "500");
   const { data, status } = await axiosInstance.get(`/product/get-product-by-super-admin?${params}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;

@@ -152,8 +152,14 @@ export const orderList = create(
         });
       },
 
-      // Update Item Price (override)
+      // Update Item Price (override) — F7-01: reject non-finite/negative
+      // values here too, not just in the CartPanel UI, so this action can
+      // never leave the cart in a NaN/negative-price state no matter what
+      // calls it.
       updateItemPrice: (target, newPrice) => {
+        if (newPrice === "" || newPrice === null || newPrice === undefined) return;
+        const price = Number(newPrice);
+        if (!Number.isFinite(price) || price < 0) return;
         return set((state) => {
           return {
             order: state.order.map((items) => {
@@ -162,8 +168,8 @@ export const orderList = create(
               if (itemKey === matchKey) {
                 return {
                   ...items,
-                  price: Number(newPrice),
-                  totalPrice: Number(newPrice) * (items.count || 1)
+                  price,
+                  totalPrice: price * (items.count || 1)
                 };
               }
               return { ...items };

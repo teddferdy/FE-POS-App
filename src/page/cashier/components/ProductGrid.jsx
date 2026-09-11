@@ -19,6 +19,250 @@ const renderCategoryIcon = (cat, className, imgClassName) => {
   return <DynamicIcon icon={icon} size={14} className={className || imgClassName} />;
 };
 
+const formatPrice = (value) => {
+  if (value == null || isNaN(value)) return "0";
+  return Number(value).toLocaleString("id-ID");
+};
+
+// F7-02: a stable fallback reference — `categoriesData?.data || categoriesData
+// || []` would otherwise mint a brand-new empty array every render while the
+// categories query is still loading, which cascades into new callback
+// identities (handleShowDetail depends on `categories`) and defeats tile
+// memoization for the whole grid on every render.
+const EMPTY_ARRAY = [];
+
+// F7-02: extracted + memoized so a cart mutation that only changes one
+// product's `cartCount` doesn't force React to re-diff every tile in a
+// large catalog — React.memo lets it bail on every tile whose own props
+// (product identity, cartCount) haven't changed. `t` is read via its own
+// hook call here rather than passed down as a prop, since react-i18next's
+// `t` reference isn't guaranteed stable across the parent's renders and
+// would otherwise defeat the memoization for every tile on every render.
+const ProductGridTile = React.memo(function ProductGridTile({
+  product,
+  cartCount,
+  onSelect,
+  onShowDetail,
+  hasChoices,
+  isOutOfStock
+}) {
+  const { t } = useTranslation();
+  const img = product.image || product.imageProduct || product.photo || null;
+  const outOfStock = isOutOfStock(product);
+  const withChoices = hasChoices(product);
+  return (
+    <div className="relative">
+      <button
+        onClick={() => onSelect(product)}
+        disabled={outOfStock}
+        className="group bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-sm hover:bg-card transition-all duration-200 text-left active:scale-[0.99] disabled:cursor-not-allowed disabled:hover:border-border/40 disabled:hover:bg-card/80 disabled:hover:shadow-none disabled:active:scale-100 w-full">
+        <div className="relative mb-2.5">
+          {img ? (
+            <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted/50">
+              <img
+                src={optimizeImage(img) || "/placeholder.svg"}
+                alt={product.nameProduct || product.name || ""}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                  e.target.parentElement.classList.add("flex", "items-center", "justify-center");
+                  const fallback = document.createElement("span");
+                  fallback.className = "text-2xl font-bold text-muted-foreground/30";
+                  fallback.textContent =
+                    (product.nameProduct || product.name || "?")[0]?.toUpperCase() || "?";
+                  e.target.parentElement.appendChild(fallback);
+                }}
+              />
+            </div>
+          ) : (
+            <div className="w-full aspect-square rounded-lg bg-muted border border-border/50 flex items-center justify-center relative">
+              <Package size={28} className="text-muted-foreground/40" />
+            </div>
+          )}
+          {cartCount > 0 && (
+            <div className="absolute -top-1.5 right-8 w-6 h-6 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center z-10">
+              <span className="text-primary-foreground text-[10px] font-bold">{cartCount}</span>
+            </div>
+          )}
+          {!product.isAvailable && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] rounded-lg flex items-center justify-center">
+              <span className="text-[10px] font-bold text-white bg-destructive/90 px-2 py-1 rounded-md uppercase tracking-wider">
+                {t("page.cashier.product.notFound")}
+              </span>
+            </div>
+          )}
+          {outOfStock && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] rounded-lg flex items-center justify-center">
+              <span className="text-[10px] font-bold text-white bg-destructive/90 px-2 py-1 rounded-md uppercase tracking-wider">
+                {t("page.cashier.product.outOfStock")}
+              </span>
+            </div>
+          )}
+          <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
+            {withChoices && (
+              <span className="px-1.5 py-0.5 rounded-md bg-amber-500/90 backdrop-blur-sm shadow-sm">
+                <span className="text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-0.5">
+                  <Tag size={8} />
+                  {t("page.cashier.variant")}
+                </span>
+              </span>
+            )}
+            {product.point > 0 && (
+              <span className="px-1.5 py-0.5 rounded-md bg-violet-500/90 backdrop-blur-sm shadow-sm">
+                <span className="text-[9px] font-bold text-white flex items-center gap-0.5">
+                  {product.point} pts
+                </span>
+              </span>
+            )}
+            {product.isBundle && (
+              <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/90 backdrop-blur-sm shadow-sm">
+                <span className="text-[9px] font-bold text-white flex items-center gap-0.5">
+                  <Package size={8} />
+                  Bundle
+                </span>
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-foreground leading-tight line-clamp-2 min-h-[2em]">
+            {product.nameProduct || product.name || t("page.cashier.unnamedProduct")}
+          </p>
+          {product.brand && (
+            <p className="text-[10px] text-muted-foreground/60 truncate">{product.brand}</p>
+          )}
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-bold text-primary">
+              Rp {formatPrice(product.price || product.sellPrice || 0)}
+            </p>
+            {product.stock !== undefined &&
+              Number(product.stock) > 0 &&
+              Number(product.stock) <= Number(product.minStock) && (
+                <span className="text-[9px] text-amber-500 font-semibold">
+                  {t("page.cashier.stock")} {product.stock}
+                </span>
+              )}
+          </div>
+        </div>
+      </button>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onShowDetail(product);
+        }}
+        title={t("page.product.form.detail", "Detail Produk")}
+        className="absolute top-2 right-2 z-20 w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-background transition-colors shadow-sm">
+        <Eye size={14} />
+      </button>
+    </div>
+  );
+});
+ProductGridTile.displayName = "ProductGridTile";
+ProductGridTile.propTypes = {
+  product: PropTypes.object.isRequired,
+  cartCount: PropTypes.number,
+  onSelect: PropTypes.func.isRequired,
+  onShowDetail: PropTypes.func.isRequired,
+  hasChoices: PropTypes.func.isRequired,
+  isOutOfStock: PropTypes.func.isRequired
+};
+
+// F7-02: list-view counterpart to ProductGridTile — same memoization
+// rationale, own `t` hook call for the same reason.
+const ProductListTile = React.memo(function ProductListTile({
+  product,
+  cartCount,
+  onSelect,
+  onShowDetail,
+  hasChoices,
+  isOutOfStock
+}) {
+  const { t } = useTranslation();
+  const img = product.image || product.imageProduct || product.photo || null;
+  const outOfStock = isOutOfStock(product);
+  const withChoices = hasChoices(product);
+  return (
+    <div className="flex items-stretch gap-2">
+      <button
+        onClick={() => onSelect(product)}
+        disabled={outOfStock}
+        className="flex-1 min-w-0 group flex items-center gap-3 bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-sm hover:bg-card transition-all duration-200 text-left active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border/40 disabled:hover:bg-card/80 disabled:hover:shadow-none disabled:active:scale-100">
+        {img ? (
+          <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted/50">
+            <img
+              src={optimizeImage(img) || "/placeholder.svg"}
+              alt={product.nameProduct || product.name || ""}
+              className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.parentElement.classList.add("flex", "items-center", "justify-center");
+                const fallback = document.createElement("span");
+                fallback.className = "text-lg font-bold text-muted-foreground/30";
+                fallback.textContent =
+                  (product.nameProduct || product.name || "?")[0]?.toUpperCase() || "?";
+                e.target.parentElement.appendChild(fallback);
+              }}
+            />
+          </div>
+        ) : (
+          <div className="w-12 h-12 rounded-lg bg-muted border border-border/50 flex items-center justify-center shrink-0">
+            <Package size={20} className="text-muted-foreground/40" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">
+              {product.nameProduct || product.name || t("page.cashier.unnamedProduct")}
+            </p>
+            {withChoices && (
+              <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                <Tag size={8} className="inline mr-0.5" />
+                {t("page.cashier.variant")}
+              </span>
+            )}
+            {product.isBundle && (
+              <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                <Package size={8} className="inline mr-0.5" />
+                Bundle
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground/60 truncate">{product.sku || ""}</p>
+        </div>
+        {cartCount > 0 && (
+          <div className="w-6 h-6 rounded-full bg-primary shadow-sm flex items-center justify-center shrink-0">
+            <span className="text-primary-foreground text-[10px] font-bold">{cartCount}</span>
+          </div>
+        )}
+        <p className="text-sm font-bold text-primary shrink-0">
+          Rp {formatPrice(product.price || product.sellPrice || 0)}
+        </p>
+      </button>
+      <button
+        type="button"
+        onClick={() => onShowDetail(product)}
+        title={t("page.product.form.detail", "Detail Produk")}
+        className="w-10 shrink-0 rounded-xl bg-card/80 backdrop-blur-sm border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-card hover:border-border/80 transition-colors">
+        <Eye size={16} />
+      </button>
+    </div>
+  );
+});
+ProductListTile.displayName = "ProductListTile";
+ProductListTile.propTypes = {
+  product: PropTypes.object.isRequired,
+  cartCount: PropTypes.number,
+  onSelect: PropTypes.func.isRequired,
+  onShowDetail: PropTypes.func.isRequired,
+  hasChoices: PropTypes.func.isRequired,
+  isOutOfStock: PropTypes.func.isRequired
+};
+
 const ProductGrid = ({
   products: propProducts,
   allProducts: propAllProducts,
@@ -54,7 +298,13 @@ const ProductGrid = ({
     }
     activeInputRef.current?.focus();
   }, [refocusSignal]);
-  const cart = orderList();
+  // F7-02: narrow selectors instead of subscribing to the whole cart store —
+  // `addOrder` never changes reference, and `order` is the only piece of
+  // cart state this component actually needs (for the per-tile count
+  // badges), so a price override or quantity change elsewhere in the cart
+  // only invalidates what genuinely depends on `order`.
+  const addOrder = orderList((state) => state.addOrder);
+  const order = orderList((state) => state.order);
 
   const { data: categoriesData } = useQuery(
     ["categories-cashier", store],
@@ -63,15 +313,10 @@ const ProductGrid = ({
 
     { enabled: !!store }
   );
-  const categories = categoriesData?.data || categoriesData || [];
+  const categories = categoriesData?.data || categoriesData || EMPTY_ARRAY;
 
   const products = propProducts || [];
   const allProducts = propAllProducts || products;
-
-  const formatPrice = (value) => {
-    if (value == null || isNaN(value)) return "0";
-    return Number(value).toLocaleString("id-ID");
-  };
 
   const getCatId = useCallback((product) => {
     const raw =
@@ -146,10 +391,10 @@ const ProductGrid = ({
         setSelectedProduct(product);
         setShowVariantModal(true);
       } else {
-        cart.addOrder(product, store);
+        addOrder(product, store);
       }
     },
-    [cart, store, hasChoices, isOutOfStock]
+    [addOrder, store, hasChoices, isOutOfStock]
   );
 
   // Scanner input types the code then sends Enter — look up an exact SKU
@@ -204,23 +449,32 @@ const ProductGrid = ({
           ID: product.ID || product.id,
           idProduct: product.idProduct || product.id
         };
-        cart.addOrder(variantProduct, store);
+        addOrder(variantProduct, store);
       } else {
-        cart.addOrder(product, store);
+        addOrder(product, store);
       }
       setShowVariantModal(false);
       setSelectedProduct(null);
     },
-    [cart, store]
+    [addOrder, store]
   );
 
-  const getCartCount = useCallback(
-    (productId) => {
-      const item = cart.order.find((item) => item.idProduct === productId || item.id === productId);
-      return item?.count || 0;
-    },
-    [cart.order]
-  );
+  // F7-02: a single pass over the cart building a lookup keyed by every
+  // idProduct/id value it contains, instead of re-scanning the whole cart
+  // with .find() for every product tile on every render (O(products × cart)
+  // → O(products + cart)). Matches the original .find() semantics exactly:
+  // first cart line to provide a given key wins.
+  const cartCountMap = useMemo(() => {
+    const counts = new Map();
+    order.forEach((item) => {
+      const qty = item.count || 0;
+      [item.idProduct, item.id].forEach((key) => {
+        if (key === undefined || key === null) return;
+        if (!counts.has(key)) counts.set(key, qty);
+      });
+    });
+    return counts;
+  }, [order]);
 
   if (isLoading) {
     return (
@@ -476,221 +730,38 @@ const ProductGrid = ({
                 viewMode === "grid" ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-4 lg:px-6 pt-3">
                     {catProducts.map((product, idx) => {
-                      const img = product.image || product.imageProduct || product.photo || null;
                       const productId =
                         product.id || product.ID || product.idProduct || product._id;
-                      const cartCount = getCartCount(productId);
+                      const cartCount = cartCountMap.get(productId) || 0;
                       return (
-                        <div key={productId || idx} className="relative">
-                          <button
-                            onClick={() => handleProductClick(product)}
-                            disabled={isOutOfStock(product)}
-                            className="group bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-sm hover:bg-card transition-all duration-200 text-left active:scale-[0.99] disabled:cursor-not-allowed disabled:hover:border-border/40 disabled:hover:bg-card/80 disabled:hover:shadow-none disabled:active:scale-100 w-full">
-                            <div className="relative mb-2.5">
-                              {img ? (
-                                <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted/50">
-                                  <img
-                                    src={optimizeImage(img) || "/placeholder.svg"}
-                                    alt={product.nameProduct || product.name || ""}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                    loading="lazy"
-                                    decoding="async"
-                                    onError={(e) => {
-                                      e.target.style.display = "none";
-                                      e.target.parentElement.classList.add(
-                                        "flex",
-                                        "items-center",
-                                        "justify-center"
-                                      );
-                                      const fallback = document.createElement("span");
-                                      fallback.className =
-                                        "text-2xl font-bold text-muted-foreground/30";
-                                      fallback.textContent =
-                                        (product.nameProduct ||
-                                          product.name ||
-                                          "?")[0]?.toUpperCase() || "?";
-                                      e.target.parentElement.appendChild(fallback);
-                                    }}
-                                  />
-                                </div>
-                              ) : (
-                                <div className="w-full aspect-square rounded-lg bg-muted border border-border/50 flex items-center justify-center relative">
-                                  <Package size={28} className="text-muted-foreground/40" />
-                                </div>
-                              )}
-                              {cartCount > 0 && (
-                                <div className="absolute -top-1.5 right-8 w-6 h-6 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center z-10">
-                                  <span className="text-primary-foreground text-[10px] font-bold">
-                                    {cartCount}
-                                  </span>
-                                </div>
-                              )}
-                              {!product.isAvailable && (
-                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] rounded-lg flex items-center justify-center">
-                                  <span className="text-[10px] font-bold text-white bg-destructive/90 px-2 py-1 rounded-md uppercase tracking-wider">
-                                    {t("page.cashier.product.notFound")}
-                                  </span>
-                                </div>
-                              )}
-                              {isOutOfStock(product) && (
-                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] rounded-lg flex items-center justify-center">
-                                  <span className="text-[10px] font-bold text-white bg-destructive/90 px-2 py-1 rounded-md uppercase tracking-wider">
-                                    {t("page.cashier.product.outOfStock")}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
-                                {hasChoices(product) && (
-                                  <span className="px-1.5 py-0.5 rounded-md bg-amber-500/90 backdrop-blur-sm shadow-sm">
-                                    <span className="text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-0.5">
-                                      <Tag size={8} />
-                                      {t("page.cashier.variant")}
-                                    </span>
-                                  </span>
-                                )}
-                                {product.point > 0 && (
-                                  <span className="px-1.5 py-0.5 rounded-md bg-violet-500/90 backdrop-blur-sm shadow-sm">
-                                    <span className="text-[9px] font-bold text-white flex items-center gap-0.5">
-                                      {product.point} pts
-                                    </span>
-                                  </span>
-                                )}
-                                {product.isBundle && (
-                                  <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/90 backdrop-blur-sm shadow-sm">
-                                    <span className="text-[9px] font-bold text-white flex items-center gap-0.5">
-                                      <Package size={8} />
-                                      Bundle
-                                    </span>
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium text-foreground leading-tight line-clamp-2 min-h-[2em]">
-                                {product.nameProduct ||
-                                  product.name ||
-                                  t("page.cashier.unnamedProduct")}
-                              </p>
-                              {product.brand && (
-                                <p className="text-[10px] text-muted-foreground/60 truncate">
-                                  {product.brand}
-                                </p>
-                              )}
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-bold text-primary">
-                                  Rp {formatPrice(product.price || product.sellPrice || 0)}
-                                </p>
-                                {product.stock !== undefined &&
-                                  Number(product.stock) > 0 &&
-                                  Number(product.stock) <= Number(product.minStock) && (
-                                    <span className="text-[9px] text-amber-500 font-semibold">
-                                      {t("page.cashier.stock")} {product.stock}
-                                    </span>
-                                  )}
-                              </div>
-                            </div>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleShowDetail(product);
-                            }}
-                            title={t("page.product.form.detail", "Detail Produk")}
-                            className="absolute top-2 right-2 z-20 w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-background transition-colors shadow-sm">
-                            <Eye size={14} />
-                          </button>
-                        </div>
+                        <ProductGridTile
+                          key={productId || idx}
+                          product={product}
+                          cartCount={cartCount}
+                          onSelect={handleProductClick}
+                          onShowDetail={handleShowDetail}
+                          hasChoices={hasChoices}
+                          isOutOfStock={isOutOfStock}
+                        />
                       );
                     })}
                   </div>
                 ) : (
                   <div className="space-y-2 px-4 lg:px-6 pt-3">
                     {catProducts.map((product, idx) => {
-                      const img = product.image || product.imageProduct || product.photo || null;
                       const productId =
                         product.id || product.ID || product.idProduct || product._id;
-                      const cartCount = getCartCount(productId);
+                      const cartCount = cartCountMap.get(productId) || 0;
                       return (
-                        <div key={productId || idx} className="flex items-stretch gap-2">
-                          <button
-                            onClick={() => handleProductClick(product)}
-                            disabled={isOutOfStock(product)}
-                            className="flex-1 min-w-0 group flex items-center gap-3 bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-sm hover:bg-card transition-all duration-200 text-left active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border/40 disabled:hover:bg-card/80 disabled:hover:shadow-none disabled:active:scale-100">
-                            {img ? (
-                              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted/50">
-                                <img
-                                  src={optimizeImage(img) || "/placeholder.svg"}
-                                  alt={product.nameProduct || product.name || ""}
-                                  className="w-full h-full object-cover"
-                                  loading="lazy"
-                                  decoding="async"
-                                  onError={(e) => {
-                                    e.target.style.display = "none";
-                                    e.target.parentElement.classList.add(
-                                      "flex",
-                                      "items-center",
-                                      "justify-center"
-                                    );
-                                    const fallback = document.createElement("span");
-                                    fallback.className =
-                                      "text-lg font-bold text-muted-foreground/30";
-                                    fallback.textContent =
-                                      (product.nameProduct ||
-                                        product.name ||
-                                        "?")[0]?.toUpperCase() || "?";
-                                    e.target.parentElement.appendChild(fallback);
-                                  }}
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-12 h-12 rounded-lg bg-muted border border-border/50 flex items-center justify-center shrink-0">
-                                <Package size={20} className="text-muted-foreground/40" />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-sm font-medium text-foreground truncate">
-                                  {product.nameProduct ||
-                                    product.name ||
-                                    t("page.cashier.unnamedProduct")}
-                                </p>
-                                {hasChoices(product) && (
-                                  <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 text-[9px] font-bold uppercase tracking-wider shrink-0">
-                                    <Tag size={8} className="inline mr-0.5" />
-                                    {t("page.cashier.variant")}
-                                  </span>
-                                )}
-                                {product.isBundle && (
-                                  <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-bold uppercase tracking-wider shrink-0">
-                                    <Package size={8} className="inline mr-0.5" />
-                                    Bundle
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground/60 truncate">
-                                {product.sku || ""}
-                              </p>
-                            </div>
-                            {cartCount > 0 && (
-                              <div className="w-6 h-6 rounded-full bg-primary shadow-sm flex items-center justify-center shrink-0">
-                                <span className="text-primary-foreground text-[10px] font-bold">
-                                  {cartCount}
-                                </span>
-                              </div>
-                            )}
-                            <p className="text-sm font-bold text-primary shrink-0">
-                              Rp {formatPrice(product.price || product.sellPrice || 0)}
-                            </p>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleShowDetail(product)}
-                            title={t("page.product.form.detail", "Detail Produk")}
-                            className="w-10 shrink-0 rounded-xl bg-card/80 backdrop-blur-sm border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-card hover:border-border/80 transition-colors">
-                            <Eye size={16} />
-                          </button>
-                        </div>
+                        <ProductListTile
+                          key={productId || idx}
+                          product={product}
+                          cartCount={cartCount}
+                          onSelect={handleProductClick}
+                          onShowDetail={handleShowDetail}
+                          hasChoices={hasChoices}
+                          isOutOfStock={isOutOfStock}
+                        />
                       );
                     })}
                   </div>

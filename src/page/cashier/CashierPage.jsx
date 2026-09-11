@@ -22,6 +22,7 @@ import { getProductByOutlet } from "@/services/product";
 import { getAllLocation } from "@/services/location";
 import { getAllTaxConfig } from "@/services/tax-config";
 import { storeIdsEqual } from "@/utils/storeId";
+import { isAdminRole } from "@/utils/role";
 import { orderList } from "@/state/order-list";
 import {
   CART_MIRROR_KEY,
@@ -78,6 +79,11 @@ const CashierPage = () => {
   }, [cookie?.user]);
   const role = user?.roleType;
   const isSuperAdmin = role === "super_admin";
+  // F7-01: price override is a UX/safety gate only — mirrors admin/super_admin
+  // roles the same way ReceiptModal's split-bill actions already do for this
+  // page. The backend remains the actual authority on whether an override
+  // is ever accepted.
+  const canOverridePrice = isAdminRole(user);
   const [searchParams, setSearchParams] = useSearchParams();
   const storeParam = searchParams.get("store");
   const [pickedStore, setPickedStore] = useState(null);
@@ -670,6 +676,7 @@ const CashierPage = () => {
                   isParkingCart={parkMutation.isLoading}
                   totalItems={totalItems}
                   onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
+                  canEditPrice={canOverridePrice}
                   isLoading={taxLoading}
                 />
               </div>
@@ -703,6 +710,7 @@ const CashierPage = () => {
                 isParkingCart={parkMutation.isLoading}
                 totalItems={totalItems}
                 onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
+                canEditPrice={canOverridePrice}
                 isLoading={taxLoading}
                 expanded={cartExpanded}
               />
