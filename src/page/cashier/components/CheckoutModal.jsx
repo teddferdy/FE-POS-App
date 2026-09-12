@@ -101,6 +101,11 @@ const CheckoutModal = ({
   const [partySize, setPartySize] = useState("");
   const [qrisPending, setQrisPending] = useState(false);
   const [pendingPayload, setPendingPayload] = useState(null);
+  // F-SMOKE-02: mutation.isLoading flips a tick after mutate() runs, too
+  // late to stop several fireEvent-speed clicks in the same turn — mirrors
+  // CollectPaymentModal's synchronous guard (set on the click that starts
+  // the submission, cleared in onSettled regardless of outcome).
+  const isSubmittingRef = useRef(false);
   const cashInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const discountSearchRef = useRef(null);
@@ -451,6 +456,9 @@ const CheckoutModal = ({
       toast.error(
         err?.response?.data?.message || err?.message || t("page.cashier.transactionError")
       );
+    },
+    onSettled: () => {
+      isSubmittingRef.current = false;
     }
   });
 
@@ -487,6 +495,8 @@ const CheckoutModal = ({
 
   const handleQrisConfirm = useCallback(() => {
     if (!pendingPayload) return;
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     mutation.mutate(pendingPayload);
   }, [pendingPayload, mutation]);
 
@@ -551,8 +561,12 @@ const CheckoutModal = ({
       source: "pos",
       tableId: orderType === "dine-in" ? selectedTable?.id || null : null,
       totalCovers: orderType === "dine-in" ? partySizeNum : 0,
-      cashAmount: method === "cash" ? cashAmountNum : total,
-      changeAmount: method === "cash" ? change : 0,
+      // F-SMOKE-01: the backend's cash-tender validation (validateCashTender)
+      // rejects any non-cash order that carries cashAmount/changeAmount at
+      // all, even a "harmless" placeholder like the total/0 sent here
+      // before — so these keys must be entirely absent for non-cash
+      // methods, not merely zeroed.
+      ...(method === "cash" ? { cashAmount: cashAmountNum, changeAmount: change } : {}),
       items: items.map((item) => ({
         product: item.idProduct,
         productName: item.nameProduct,
@@ -570,6 +584,8 @@ const CheckoutModal = ({
       return;
     }
 
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     mutation.mutate(payload);
   }, [
     paymentMethod,
