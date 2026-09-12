@@ -54,7 +54,7 @@ import { getAllTaxConfig } from "@/services/tax-config";
 import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
 import { checkStockOpnameExists } from "@/services/stock";
-import { getUnsavedStorePriceRows } from "@/lib/store-price-guard";
+import { getUnsavedStorePriceRows, buildSavedStorePriceMap } from "@/lib/store-price-guard";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import UserGuide from "@/components/organism/UserGuide";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
@@ -180,11 +180,7 @@ const EditProduct = () => {
       const prices = storePricesData.data.storePrices || storePricesData.data;
       const list = Array.isArray(prices) ? prices : [];
       setStorePrices(list);
-      const saved = {};
-      list.forEach((sp) => {
-        if (sp.storeId != null) saved[sp.storeId] = sp.price;
-      });
-      setSavedStorePriceMap(saved);
+      setSavedStorePriceMap(buildSavedStorePriceMap(list));
     }
   }, [storePricesData]);
 
@@ -414,8 +410,8 @@ const EditProduct = () => {
       toast.success(t("page.product.form.success"), {
         description: t("page.product.form.storePriceUpdated")
       });
-      const storeId = variables?.get?.("storeId");
-      const price = variables?.get?.("price");
+      const storeId = variables?.storePrices?.[0]?.storeId;
+      const price = variables?.storePrices?.[0]?.price;
       if (storeId != null) {
         setSavedStorePriceMap((prev) => ({ ...prev, [storeId]: price }));
       }
@@ -433,10 +429,10 @@ const EditProduct = () => {
 
   const handleSaveStorePrice = (storeId, price) => {
     setSavingStoreId(storeId);
-    const payload = new FormData();
-    payload.append("productId", productId);
-    payload.append("storeId", storeId);
-    payload.append("price", price);
+    const payload = {
+      productId,
+      storePrices: [{ storeId, price: String(price) }]
+    };
     updateStorePriceMutation.mutate(payload);
   };
 

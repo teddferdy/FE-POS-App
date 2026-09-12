@@ -182,3 +182,97 @@ describe("EditProduct — store prices are not silently lost on main save (F9-25
     expect(editProduct).not.toHaveBeenCalled();
   });
 });
+
+describe("EditProduct — per-store price save speaks the canonical JSON contract (F9-25)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    getProductById.mockResolvedValue({ data: seededProduct });
+    getProductPriceByStore.mockResolvedValue({
+      data: {
+        storePrices: [
+          { storeId: "1", storeName: "Toko A", price: "25000" },
+          { storeId: "2", storeName: "Toko B", price: "26000" }
+        ]
+      }
+    });
+    updateProductPriceByStore.mockResolvedValue({ data: { success: true } });
+    editProduct.mockResolvedValue({ data: { id: 1 } });
+  });
+
+  const renderAndEditRow = async () => {
+    renderPage();
+    await screen.findByDisplayValue("Kopi");
+    fireEvent.click(screen.getByText("page.product.form.next"));
+    const saveStoreButtons = await screen.findAllByText("page.product.form.saveStorePrice");
+    const row = saveStoreButtons[0].closest("div.flex");
+    const storePriceInput = within(row).getByRole("spinbutton");
+    fireEvent.change(storePriceInput, { target: { value: "30000" } });
+    return { row };
+  };
+
+  test("saves a per-store price with the canonical JSON payload, not FormData", async () => {
+    const { row } = await renderAndEditRow();
+    fireEvent.click(within(row).getByText("page.product.form.saveStorePrice"));
+
+    await waitFor(() => expect(updateProductPriceByStore).toHaveBeenCalled());
+    expect(updateProductPriceByStore).toHaveBeenCalledWith({
+      productId: "1",
+      storePrices: [{ storeId: "1", price: "30000" }]
+    });
+  });
+
+  test("a successful per-store save advances the baseline so the main save proceeds", async () => {
+    let callCount = 0;
+    getProductPriceByStore.mockImplementation(() => {
+      callCount += 1;
+      const price = callCount === 1 ? "25000" : "30000";
+      return Promise.resolve({
+        data: {
+          storePrices: [
+            { storeId: "1", storeName: "Toko A", price },
+            { storeId: "2", storeName: "Toko B", price: "26000" }
+          ]
+        }
+      });
+    });
+    renderPage();
+    await screen.findByDisplayValue("Kopi");
+    fireEvent.click(screen.getByText("page.product.form.next"));
+
+    const saveStoreButtons = await screen.findAllByText("page.product.form.saveStorePrice");
+    const row = saveStoreButtons[0].closest("div.flex");
+    const storePriceInput = within(row).getByRole("spinbutton");
+    fireEvent.change(storePriceInput, { target: { value: "30000" } });
+    fireEvent.click(within(row).getByText("page.product.form.saveStorePrice"));
+
+    await waitFor(() => expect(updateProductPriceByStore).toHaveBeenCalled());
+    await waitFor(() => expect(callCount).toBeGreaterThan(1));
+
+    fireEvent.click(await screen.findByText("page.product.form.next"));
+    fireEvent.click(await screen.findByText("page.product.form.saveEdit"));
+    fireEvent.click(await screen.findByText("common.yesSave"));
+
+    await waitFor(() => expect(editProduct).toHaveBeenCalled());
+    expect(screen.queryByText(/page\.product\.form\.unsavedStorePrices/)).not.toBeInTheDocument();
+  });
+
+  test("a failed per-store save keeps the baseline dirty so the main save stays blocked", async () => {
+    updateProductPriceByStore.mockRejectedValueOnce({
+      response: { data: { message: "server error" } }
+    });
+    const { row } = await renderAndEditRow();
+    fireEvent.click(within(row).getByText("page.product.form.saveStorePrice"));
+
+    await waitFor(() => expect(screen.getByText("common.ok")).toBeInTheDocument());
+    fireEvent.click(screen.getByText("common.ok"));
+
+    fireEvent.click(await screen.findByText("page.product.form.next"));
+    fireEvent.click(await screen.findByText("page.product.form.saveEdit"));
+    fireEvent.click(await screen.findByText("common.yesSave"));
+
+    await waitFor(() =>
+      expect(screen.getByText(/page\.product\.form\.unsavedStorePrices/)).toBeInTheDocument()
+    );
+    expect(editProduct).not.toHaveBeenCalled();
+  });
+});

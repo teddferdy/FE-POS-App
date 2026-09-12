@@ -1,4 +1,4 @@
-import { getUnsavedStorePriceRows } from "../lib/store-price-guard";
+import { getUnsavedStorePriceRows, buildSavedStorePriceMap } from "../lib/store-price-guard";
 
 // Unit coverage for the F9-25 dirty-detection core. These tests encode the
 // exact rule the edit form relies on to refuse silently discarding per-store
@@ -40,5 +40,26 @@ describe("getUnsavedStorePriceRows (F9-25)", () => {
     const storePrices = [{ storeId: "99", storeName: "Toko Z", price: "50000" }];
     const saved = { 1: "25000" };
     expect(getUnsavedStorePriceRows(storePrices, saved)).toEqual([]);
+  });
+});
+
+describe("buildSavedStorePriceMap (canonical GET contract)", () => {
+  test("maps canonical storePrice rows to a baseline dictionary keyed by storeId", () => {
+    expect(
+      buildSavedStorePriceMap([
+        { storeId: 1, storeName: "Toko A", price: 25000 },
+        { storeId: 2, storeName: "Toko B", price: 26000 }
+      ])
+    ).toEqual({ 1: 25000, 2: 26000 });
+  });
+
+  test("skips rows without a valid storeId so no phantom baseline is invented", () => {
+    expect(
+      buildSavedStorePriceMap([
+        { storeId: null, storeName: "Phantom", price: 0 },
+        { storeId: undefined, storeName: "Ghost", price: 100 },
+        { storeId: 1, storeName: "Toko A", price: 25000 }
+      ])
+    ).toEqual({ 1: 25000 });
   });
 });

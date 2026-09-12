@@ -9,3 +9,11 @@ export const getUnsavedStorePriceRows = (storePrices = [], savedStorePriceMap = 
     return String(savedStorePriceMap[sp.storeId]) !== String(sp.price ?? "");
   });
 };
+
+export const buildSavedStorePriceMap = (rows = []) => {
+  const saved = {};
+  rows.forEach((sp) => {
+    if (sp.storeId != null && sp.storeId !== "") saved[sp.storeId] = sp.price;
+  });
+  return saved;
+};
