@@ -6,6 +6,17 @@ export const createOrder = async (payload) => {
   return data;
 };
 
+// F-SMOKE-01: reads the exact rate order/create will apply (same
+// getActiveTaxRate/getServiceChargeRate resolution, fallback included) so the
+// cashier UI can never show a percentage that diverges from what gets charged.
+export const getCustomerTaxRate = async (store) => {
+  const { data, status } = await axiosInstance.get("/order/customer-tax-rate", {
+    params: { store }
+  });
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const getOrdersByStore = async (payload) => {
   const params = new URLSearchParams();
   if (payload?.location) params.set("store", payload.location);

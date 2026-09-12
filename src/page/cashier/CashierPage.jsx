@@ -20,7 +20,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslation } from "react-i18next";
 import { getProductByOutlet } from "@/services/product";
 import { getAllLocation } from "@/services/location";
-import { getAllTaxConfig } from "@/services/tax-config";
+import { getCustomerTaxRate } from "@/services/order";
 import { storeIdsEqual } from "@/utils/storeId";
 import { isAdminRole } from "@/utils/role";
 import { orderList } from "@/state/order-list";
@@ -262,19 +262,18 @@ const CashierPage = () => {
   const totalItems = cart.order.reduce((sum, item) => sum + (item.count || 0), 0);
   const subtotal = cart.order.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
 
-  const { data: taxConfigData, isLoading: taxLoading } = useQuery(
-    ["cashier-tax-config", store],
-    () => getAllTaxConfig({ location: store, status: "active", limit: 50 }),
+  // F-SMOKE-01: fetches the same store-or-global, fallback-included rate
+  // order/create actually charges (getActiveTaxRate/getServiceChargeRate),
+  // instead of re-deriving it locally from the raw tax-config list — a
+  // re-derivation that had no equivalent to the backend's 11% default and
+  // so silently showed 0% whenever no active ppn row existed.
+  const { data: customerTaxRateData, isLoading: taxLoading } = useQuery(
+    ["cashier-customer-tax-rate", store],
+    () => getCustomerTaxRate(store),
     { enabled: !!store }
   );
 
-  const taxConfigs = taxConfigData?.data || [];
-  const taxRatePercent = useMemo(() => {
-    return taxConfigs
-      .filter((tc) => tc.type === "ppn" && tc.status === "active")
-      .reduce((sum, tc) => sum + (tc.rate || 0), 0);
-  }, [taxConfigs]);
-  const taxRate = taxRatePercent / 100;
+  const taxRate = (customerTaxRateData?.data?.rate || 0) / 100;
   const taxAmount = Math.round(subtotal * taxRate);
 
   useEffect(() => {
