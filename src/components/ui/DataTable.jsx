@@ -299,9 +299,13 @@ const DataTable = ({
                         )}>
                         {col.render
                           ? col.render(row, rowIndex)
-                          : col.accessor
-                            ? row[col.accessor]
-                            : null}
+                          : col.cell
+                            ? col.cell({ row: { original: row }, index: rowIndex })
+                            : col.accessor
+                              ? row[col.accessor]
+                              : col.accessorKey
+                                ? row[col.accessorKey]
+                                : null}
                         {col.statusChip && (
                           <span
                             className={cn(

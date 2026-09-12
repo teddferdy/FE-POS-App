@@ -80,15 +80,28 @@ const CartLineItem = React.memo(function CartLineItem({
   }, [isEditing, price]);
 
   const commitQtyChange = (newQty) => {
-    const diff = newQty - count;
+    const target = Number(newQty);
+    // F9-24: never let a non-numeric or below-one quantity reach the line.
+    // Garbage/empty text resets the field; 0 or negative asks for the
+    // explicit delete confirmation instead of silently driving the count
+    // to 0/negative.
+    if (!Number.isFinite(target) || Number.isNaN(target)) {
+      setQtyValue(count);
+      return;
+    }
+    if (target === count) {
+      setQtyValue(count);
+      return;
+    }
+    if (target < 1) {
+      onRequestDelete(item);
+      return;
+    }
+    const diff = Math.round(target) - count;
     if (diff > 0) {
       for (let i = 0; i < diff; i++) onIncrement(item);
     } else if (diff < 0) {
-      if (count <= 1) {
-        onRequestDelete(item);
-      } else {
-        for (let i = 0; i < Math.abs(diff); i++) onDecrement(item);
-      }
+      for (let i = 0; i < Math.abs(diff); i++) onDecrement(item);
     }
   };
 
@@ -159,7 +172,10 @@ const CartLineItem = React.memo(function CartLineItem({
                   type="number"
                   min="1"
                   value={qtyValue}
-                  onChange={(e) => setQtyValue(parseInt(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const parsed = Number.parseInt(e.target.value, 10);
+                    setQtyValue(Number.isNaN(parsed) ? count : parsed);
+                  }}
                   onBlur={() => commitQtyChange(qtyValue)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -451,7 +467,7 @@ const CartPanel = ({
             )}
             <Button
               onClick={onCheckout}
-              disabled={isLoading}
+              disabled={isLoading || isEmpty}
               className="w-full h-11 rounded-xl font-semibold text-sm relative overflow-hidden group/btn">
               <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/90 opacity-90 group-hover/btn:opacity-100 transition-opacity" />
               <span className="relative flex items-center justify-center gap-2">

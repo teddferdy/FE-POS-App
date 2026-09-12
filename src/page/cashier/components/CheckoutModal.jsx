@@ -516,6 +516,11 @@ const CheckoutModal = ({
   );
 
   const handleSubmit = useCallback(() => {
+    // F9-23: an empty cart must never reach the payment/order creation path.
+    if (items.length === 0) {
+      toast.error(t("page.cashier.emptyCart", "Keranjang kosong"));
+      return;
+    }
     if (orderType === "dine-in") {
       if (!selectedTable) {
         toast.error(t("page.cashier.selectTable", "Pilih meja terlebih dahulu"));
@@ -625,8 +630,9 @@ const CheckoutModal = ({
   }, [total]);
 
   const canSubmit =
-    remainingTotal === 0 ||
-    (paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal));
+    items.length > 0 &&
+    (remainingTotal === 0 ||
+      (paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal)));
 
   return (
     // F9-04: migrated onto the project's accessible Dialog primitive —
