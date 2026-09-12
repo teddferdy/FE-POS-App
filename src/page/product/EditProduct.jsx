@@ -54,6 +54,7 @@ import { getAllTaxConfig } from "@/services/tax-config";
 import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
 import { checkStockOpnameExists } from "@/services/stock";
+import { getUnsavedStorePriceRows } from "@/lib/store-price-guard";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import UserGuide from "@/components/organism/UserGuide";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
@@ -114,6 +115,7 @@ const EditProduct = () => {
   const [priceTiers, setPriceTiers] = useState([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [storePrices, setStorePrices] = useState([]);
+  const [savedStorePriceMap, setSavedStorePriceMap] = useState({});
   const [savingStoreId, setSavingStoreId] = useState(null);
   const [selectedStores, setSelectedStores] = useState([]);
   const [allStores, setAllStores] = useState(false);
@@ -176,7 +178,13 @@ const EditProduct = () => {
   useEffect(() => {
     if (storePricesData?.data) {
       const prices = storePricesData.data.storePrices || storePricesData.data;
-      setStorePrices(Array.isArray(prices) ? prices : []);
+      const list = Array.isArray(prices) ? prices : [];
+      setStorePrices(list);
+      const saved = {};
+      list.forEach((sp) => {
+        if (sp.storeId != null) saved[sp.storeId] = sp.price;
+      });
+      setSavedStorePriceMap(saved);
     }
   }, [storePricesData]);
 
@@ -402,10 +410,15 @@ const EditProduct = () => {
   });
 
   const updateStorePriceMutation = useMutation(updateProductPriceByStore, {
-    onSuccess: () => {
+    onSuccess: (res, variables) => {
       toast.success(t("page.product.form.success"), {
         description: t("page.product.form.storePriceUpdated")
       });
+      const storeId = variables?.get?.("storeId");
+      const price = variables?.get?.("price");
+      if (storeId != null) {
+        setSavedStorePriceMap((prev) => ({ ...prev, [storeId]: price }));
+      }
       queryClient.invalidateQueries(["product-store-prices"]);
       setSavingStoreId(null);
     },
@@ -589,6 +602,21 @@ const EditProduct = () => {
   };
 
   const handleSave = async (values, saveAsDraft = false) => {
+    // F9-25: per-store prices are only persisted via each row's own Save
+    // button; the main product save must not silently discard pending edits.
+    if (!saveAsDraft && isSuperAdmin) {
+      const dirtyStorePrices = getUnsavedStorePriceRows(storePrices, savedStorePriceMap);
+      if (dirtyStorePrices.length > 0) {
+        setModalMessage(
+          `${t(
+            "page.product.form.unsavedStorePrices",
+            "Simpan harga per toko terlebih dahulu"
+          )}: ${dirtyStorePrices.map((sp) => sp.storeName || sp.storeId).join(", ")}`
+        );
+        setErrorModal(true);
+        return;
+      }
+    }
     if (!allStores && selectedStores.length === 0 && !saveAsDraft) {
       form.setError("store", { message: t("page.product.form.selectStoreError") });
       return;

@@ -40,6 +40,8 @@ const TAB_KEY = {
   kasir: "kasirPerformance"
 };
 
+const PAGE_SIZE = 10;
+
 const AdvancedReporting = () => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
@@ -48,6 +50,18 @@ const AdvancedReporting = () => {
   const [period, setPeriod] = useState("daily");
   const [store, setStore] = useState(cookie?.activeStore || "");
   const [activeTab, setActiveTab] = useState("sales");
+  const [reportPages, setReportPages] = useState({
+    sales: 1,
+    productSales: 1,
+    categorySales: 1,
+    kasirPerformance: 1
+  });
+  const [reportLimits, setReportLimits] = useState({
+    sales: PAGE_SIZE,
+    productSales: PAGE_SIZE,
+    categorySales: PAGE_SIZE,
+    kasirPerformance: PAGE_SIZE
+  });
 
   const { data: locData } = useQuery(["locations-report"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -70,8 +84,14 @@ const AdvancedReporting = () => {
     isError: salesError,
     refetch: salesRefetch
   } = useQuery(
-    ["advanced-sales-summary", period, storeId],
-    () => getReportingSalesSummary({ store: storeId, period }),
+    ["advanced-sales-summary", period, storeId, reportPages.sales, reportLimits.sales],
+    () =>
+      getReportingSalesSummary({
+        store: storeId,
+        period,
+        page: reportPages.sales,
+        limit: reportLimits.sales
+      }),
     { enabled: !!storeId }
   );
 
@@ -81,8 +101,20 @@ const AdvancedReporting = () => {
     isError: productError,
     refetch: productRefetch
   } = useQuery(
-    ["advanced-product-sales", period, storeId],
-    () => getReportingProductSales({ store: storeId, period }),
+    [
+      "advanced-product-sales",
+      period,
+      storeId,
+      reportPages.productSales,
+      reportLimits.productSales
+    ],
+    () =>
+      getReportingProductSales({
+        store: storeId,
+        period,
+        page: reportPages.productSales,
+        limit: reportLimits.productSales
+      }),
     { enabled: !!storeId }
   );
 
@@ -92,8 +124,20 @@ const AdvancedReporting = () => {
     isError: categoryError,
     refetch: categoryRefetch
   } = useQuery(
-    ["advanced-category-sales", period, storeId],
-    () => getReportingCategorySales({ store: storeId, period }),
+    [
+      "advanced-category-sales",
+      period,
+      storeId,
+      reportPages.categorySales,
+      reportLimits.categorySales
+    ],
+    () =>
+      getReportingCategorySales({
+        store: storeId,
+        period,
+        page: reportPages.categorySales,
+        limit: reportLimits.categorySales
+      }),
     { enabled: !!storeId }
   );
 
@@ -103,44 +147,112 @@ const AdvancedReporting = () => {
     isError: kasirError,
     refetch: kasirRefetch
   } = useQuery(
-    ["advanced-kasir-performance", period, storeId],
-    () => getReportingKasirPerformance({ store: storeId, period }),
+    [
+      "advanced-kasir-performance",
+      period,
+      storeId,
+      reportPages.kasirPerformance,
+      reportLimits.kasirPerformance
+    ],
+    () =>
+      getReportingKasirPerformance({
+        store: storeId,
+        period,
+        page: reportPages.kasirPerformance,
+        limit: reportLimits.kasirPerformance
+      }),
     { enabled: !!storeId }
   );
 
   const salesColumns = [
-    { key: "tanggal", label: t("page.advancedReporting.column.date") },
-    { key: "totalTransaksi", label: t("page.advancedReporting.column.transactions") },
-    { key: "totalPenjualan", label: t("page.advancedReporting.column.totalSales") },
-    { key: "totalDiscount", label: t("page.advancedReporting.column.totalDiscount") },
-    { key: "totalQty", label: t("page.advancedReporting.column.totalQty") },
-    { key: "totalCovers", label: t("page.advancedReporting.column.totalCovers") }
+    { header: t("page.advancedReporting.column.date"), accessorKey: "report_date" },
+    { header: t("page.advancedReporting.column.transactions"), accessorKey: "total_transactions" },
+    {
+      header: t("page.advancedReporting.column.totalSales"),
+      render: (row) => formatCurrency(row.total_sales)
+    },
+    {
+      header: t("page.advancedReporting.column.totalDiscount"),
+      render: (row) => formatCurrency(row.total_discount)
+    },
+    { header: t("page.advancedReporting.column.totalQty"), accessorKey: "total_items" },
+    {
+      header: t("page.advancedReporting.column.avgTransaction"),
+      render: (row) => formatCurrency(row.average_transaction)
+    }
   ];
 
   const productColumns = [
-    { key: "product", label: t("page.advancedReporting.column.product") },
-    { key: "quantitySold", label: t("page.advancedReporting.column.quantitySold") },
-    { key: "revenue", label: t("page.advancedReporting.column.revenue") },
-    { key: "cost", label: t("page.advancedReporting.column.cost") },
-    { key: "profit", label: t("page.advancedReporting.column.profit") }
+    {
+      header: t("page.advancedReporting.column.product"),
+      render: (row) => row.productData?.nameProduct || "-"
+    },
+    { header: t("page.advancedReporting.column.quantitySold"), accessorKey: "quantity_sold" },
+    {
+      header: t("page.advancedReporting.column.revenue"),
+      render: (row) => formatCurrency(row.revenue)
+    },
+    { header: t("page.advancedReporting.column.cost"), render: (row) => formatCurrency(row.cost) },
+    {
+      header: t("page.advancedReporting.column.profit"),
+      render: (row) => formatCurrency(row.profit)
+    }
   ];
 
   const categoryColumns = [
-    { key: "category", label: t("page.advancedReporting.column.category") },
-    { key: "quantitySold", label: t("page.advancedReporting.column.quantitySold") },
-    { key: "revenue", label: t("page.advancedReporting.column.revenue") },
-    { key: "cost", label: t("page.advancedReporting.column.cost") },
-    { key: "profit", label: t("page.advancedReporting.column.profit") }
+    {
+      header: t("page.advancedReporting.column.category"),
+      render: (row) => row.categoryData?.name || "-"
+    },
+    { header: t("page.advancedReporting.column.quantitySold"), accessorKey: "quantity_sold" },
+    {
+      header: t("page.advancedReporting.column.revenue"),
+      render: (row) => formatCurrency(row.revenue)
+    },
+    { header: t("page.advancedReporting.column.cost"), render: (row) => formatCurrency(row.cost) },
+    {
+      header: t("page.advancedReporting.column.profit"),
+      render: (row) => formatCurrency(row.profit)
+    }
   ];
 
   const kasirColumns = [
-    { key: "cashier", label: t("page.advancedReporting.column.cashier") },
-    { key: "totalSales", label: t("page.advancedReporting.column.totalSales") },
-    { key: "transactions", label: t("page.advancedReporting.column.transactions") },
-    { key: "avgTransaction", label: t("page.advancedReporting.column.avgTransaction") },
-    { key: "itemsSold", label: t("page.advancedReporting.column.itemsSold") },
-    { key: "accuracyRate", label: t("page.advancedReporting.column.accuracyRate") }
+    {
+      header: t("page.advancedReporting.column.cashier"),
+      render: (row) => row.cashierData?.fullName || row.cashierData?.userName || "-"
+    },
+    {
+      header: t("page.advancedReporting.column.totalSales"),
+      render: (row) => formatCurrency(row.total_sales)
+    },
+    { header: t("page.advancedReporting.column.transactions"), accessorKey: "transactions" },
+    {
+      header: t("page.advancedReporting.column.avgTransaction"),
+      render: (row) => formatCurrency(row.avg_transaction)
+    },
+    { header: t("page.advancedReporting.column.itemsSold"), accessorKey: "items_sold" },
+    { header: t("page.advancedReporting.column.accuracyRate"), accessorKey: "accuracy_rate" }
   ];
+
+  const paginationFor = (key, bePagination) => {
+    if (!bePagination || Number.isNaN(Number(bePagination.total))) return undefined;
+    const page = reportPages[key] || 1;
+    const pageSize = reportLimits[key] || PAGE_SIZE;
+    const totalPages =
+      Number(bePagination.totalPages) ||
+      Math.max(1, Math.ceil(Number(bePagination.total) / pageSize));
+    return {
+      page,
+      totalPages,
+      total: Number(bePagination.total),
+      pageSize,
+      onPageChange: (p) => setReportPages((prev) => ({ ...prev, [key]: p })),
+      onPageSizeChange: (size) => {
+        setReportLimits((prev) => ({ ...prev, [key]: size }));
+        setReportPages((prev) => ({ ...prev, [key]: 1 }));
+      }
+    };
+  };
 
   const StatCard = ({ icon: Icon, label, value }) => (
     <Card>
@@ -244,7 +356,11 @@ const AdvancedReporting = () => {
                   <CardTitle>{t("page.advancedReporting.table.salesTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <DataTable columns={salesColumns} data={salesData.data} />
+                  <DataTable
+                    columns={salesColumns}
+                    data={salesData.data}
+                    pagination={paginationFor("sales", salesData.pagination)}
+                  />
                 </CardContent>
               </Card>
             </>
@@ -264,7 +380,11 @@ const AdvancedReporting = () => {
                 <CardTitle>{t("page.advancedReporting.table.productTitle")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <DataTable columns={productColumns} data={productData.data} />
+                <DataTable
+                  columns={productColumns}
+                  data={productData.data}
+                  pagination={paginationFor("productSales", productData.pagination)}
+                />
               </CardContent>
             </Card>
           ) : (
@@ -283,7 +403,11 @@ const AdvancedReporting = () => {
                 <CardTitle>{t("page.advancedReporting.table.categoryTitle")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <DataTable columns={categoryColumns} data={categoryData.data} />
+                <DataTable
+                  columns={categoryColumns}
+                  data={categoryData.data}
+                  pagination={paginationFor("categorySales", categoryData.pagination)}
+                />
               </CardContent>
             </Card>
           ) : (
@@ -302,7 +426,11 @@ const AdvancedReporting = () => {
                 <CardTitle>{t("page.advancedReporting.table.kasirTitle")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <DataTable columns={kasirColumns} data={kasirData.data} />
+                <DataTable
+                  columns={kasirColumns}
+                  data={kasirData.data}
+                  pagination={paginationFor("kasirPerformance", kasirData.pagination)}
+                />
               </CardContent>
             </Card>
           ) : (
