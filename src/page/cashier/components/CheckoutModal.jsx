@@ -33,6 +33,7 @@ import { getAllTypePayment } from "@/services/type-payment";
 import { getMemberById } from "@/services/member";
 import { getTableAvailability, getTablesWithActiveOrders } from "@/services/table";
 import { getPaymentIconKind } from "@/utils/payment";
+import MemberSearchModal from "@/components/MemberSearchModal";
 import { toast } from "sonner";
 import { dispatchDisplayEvent, DISPLAY_EVENT_TYPES } from "@/utils/customerDisplayBoard";
 
@@ -97,6 +98,7 @@ const CheckoutModal = ({
   const [redeemPoints, setRedeemPoints] = useState("");
   const [memberPoints, setMemberPoints] = useState(0);
   const [useTax, setUseTax] = useState(true);
+  const [isMemberSearchOpen, setIsMemberSearchOpen] = useState(false);
   const [orderType, setOrderType] = useState("take-away");
   const [selectedTable, setSelectedTable] = useState(null);
   const [partySize, setPartySize] = useState("");
@@ -984,6 +986,14 @@ const CheckoutModal = ({
                   </button>
                 )}
               </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsMemberSearchOpen(true)}
+                className="shrink-0 h-10 px-4">
+                <Search size={16} className="mr-2" />
+                Cari Pelanggan
+              </Button>
               <button
                 onClick={() => setAddCustomerOpen(true)}
                 className="shrink-0 w-10 h-10 rounded-xl bg-primary/10 border border-border/60 flex items-center justify-center text-primary hover:bg-primary/20 transition-all"
@@ -1026,23 +1036,46 @@ const CheckoutModal = ({
               )}
           </div>
 
-          {selectedCustomer && matchedTier && (
-            <div className="flex items-center gap-2 px-1 -mt-1">
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: matchedTier.color || "#f59e0b" }}
-              />
-              <span className="text-xs font-semibold">{matchedTier.name}</span>
-              {matchedTier.discountPercent > 0 && (
-                <span className="text-xs text-emerald-500 font-medium">
-                  {matchedTier.discountPercent}% {t("page.cashier.discount")}
-                </span>
+          {selectedCustomer && (
+            <div className="bg-card border border-border/60 rounded-xl p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-sm">
+                    {selectedCustomer.name || selectedCustomer.Name || "-"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Member:{" "}
+                    {selectedCustomer.phone ||
+                      selectedCustomer.Phone ||
+                      selectedCustomer.phoneNumber ||
+                      "-"}
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setIsMemberSearchOpen(true)}>
+                  Ganti Pelanggan
+                </Button>
+              </div>
+              {matchedTier && (
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: matchedTier.color || "#f59e0b" }}
+                  />
+                  <span className="text-xs font-semibold">{matchedTier.name}</span>
+                  {matchedTier.discountPercent > 0 && (
+                    <span className="text-xs text-emerald-500 font-medium">
+                      {matchedTier.discountPercent}% {t("page.cashier.discount")}
+                    </span>
+                  )}
+                </div>
               )}
-              {memberPoints > 0 && (
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {memberPoints.toLocaleString("id-ID")} pts
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-muted-foreground">Poin:</span>
+                <span className="font-medium">{memberPoints.toLocaleString("id-ID")} pts</span>
+                <span className="text-muted-foreground">
+                  Status: {selectedCustomer.status || "Aktif"}
                 </span>
-              )}
+              </div>
             </div>
           )}
 
@@ -1393,6 +1426,15 @@ const CheckoutModal = ({
           )}
         </div>
       </DialogContent>
+      <MemberSearchModal
+        open={isMemberSearchOpen}
+        onClose={() => setIsMemberSearchOpen(false)}
+        onSelect={(member) => {
+          setSelectedCustomer(member);
+          setCustomerSearch(member.name || member.Name || "");
+          setIsMemberSearchOpen(false);
+        }}
+      />
     </Dialog>
   );
 };
