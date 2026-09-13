@@ -35,6 +35,37 @@ describe("MemberSearchModal", () => {
     expect(screen.getByText("Search")).toBeInTheDocument();
   });
 
+  test("initial state prompts the cashier to search before any request is made", () => {
+    renderModal();
+    expect(screen.getByText("Silakan cari member.")).toBeInTheDocument();
+    expect(memberService.getAllMember).not.toHaveBeenCalled();
+  });
+
+  test("shows an error state with a retry action when the search request fails", async () => {
+    memberService.getAllMember.mockRejectedValue(new Error("network down"));
+    renderModal();
+    fireEvent.change(screen.getByPlaceholderText("Nama member"), { target: { value: "Budi" } });
+    fireEvent.click(screen.getByText("Search"));
+    await waitFor(() => expect(screen.getByText(/Gagal mencari member\./)).toBeInTheDocument());
+    expect(screen.getByText("Coba Lagi")).toBeInTheDocument();
+
+    memberService.getAllMember.mockResolvedValue({
+      data: [{ id: 1, name: "Budi", phoneNumber: "081234", point: 120, status: "Aktif" }]
+    });
+    fireEvent.click(screen.getByText("Coba Lagi"));
+    await waitFor(() => expect(screen.getByText("Budi")).toBeInTheDocument());
+  });
+
+  test("Escape closes the modal", () => {
+    const onClose = jest.fn();
+    renderModal(jest.fn(), onClose);
+    fireEvent.keyDown(screen.getByPlaceholderText("Nomor HP / Member"), {
+      key: "Escape",
+      code: "Escape"
+    });
+    expect(onClose).toHaveBeenCalled();
+  });
+
   test("search by member number", async () => {
     memberService.getAllMember.mockResolvedValue({
       data: [{ id: 1, name: "Budi", phoneNumber: "081234", point: 120, status: "Aktif" }]
