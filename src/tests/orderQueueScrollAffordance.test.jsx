@@ -20,6 +20,9 @@ jest.mock("@/services/order", () => ({
     Promise.resolve({ data: mockOrdersByStatus[status] || [] })
   )
 }));
+jest.mock("@/services/socket", () => ({
+  useSocket: () => ({ socket: null, connected: false })
+}));
 
 if (!Element.prototype.scrollBy) Element.prototype.scrollBy = jest.fn();
 
