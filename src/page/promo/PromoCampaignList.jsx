@@ -452,9 +452,15 @@ const PromoCampaignList = () => {
               </div>
             </TableToolbar>
           }
-          pagination={data?.pagination}
-          onPageChange={setPage}
-          onLimitChange={setLimit}
+          pagination={{
+            ...data?.pagination,
+            pageSize: limit,
+            onPageChange: setPage,
+            onPageSizeChange: (v) => {
+              setLimit(v);
+              setPage(1);
+            }
+          }}
           emptyMessage={t("page.promo.list.empty")}
         />
       </div>

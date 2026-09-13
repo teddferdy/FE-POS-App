@@ -288,7 +288,7 @@ const EditReservation = () => {
                           if (d && offDays.includes(d.getDay())) return;
                           field.onChange(d);
                         }}
-                        disabled={(date) => offDays.includes(date.getDay())}
+                        disabledDates={(date) => offDays.includes(date.getDay())}
                       />
                       <FormMessage />
                     </FormItem>

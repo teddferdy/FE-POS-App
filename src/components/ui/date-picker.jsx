@@ -14,6 +14,13 @@ function DatePicker({
   placeholder = "Pilih tanggal",
   className,
   disabled = false,
+  // C10: a per-day disable predicate for the popover Calendar, distinct from
+  // `disabled` (a boolean that only ever disabled the trigger Button). A
+  // caller previously had no way to pass one — the Calendar's own `disabled`
+  // prop was hardcoded to `isBeforeMinDate` — so callers that tried using
+  // `disabled` as that predicate instead got a truthy function object on the
+  // Button's boolean prop, permanently disabling the trigger.
+  disabledDates,
   fromYear = 1945,
   toYear = 2999,
   captionLayout = "dropdown",
@@ -67,7 +74,9 @@ function DatePicker({
             }}
             month={month}
             onMonthChange={setMonth}
-            disabled={isBeforeMinDate}
+            disabled={(d) =>
+              isBeforeMinDate(d) || (typeof disabledDates === "function" && disabledDates(d))
+            }
             initialFocus
             captionLayout={captionLayout}
             fromYear={fromYear}

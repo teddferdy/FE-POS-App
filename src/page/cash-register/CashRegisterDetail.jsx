@@ -104,7 +104,7 @@ const CashRegisterDetail = () => {
             { label: t("page.cashRegister.detail.breadcrumb") }
           ]}
           title={t("page.cashRegister.detail.breadcrumb")}
-          backLink="/cash-register-history"
+          backLink="/cash-register/history"
           dynamicInfo={false}
         />
         <div className="bg-card p-12 rounded-xl border border-border text-center">
@@ -208,7 +208,7 @@ const CashRegisterDetail = () => {
           ]}
           title={t("page.cashRegister.detail.title")}
           description={new Date(item.openedAt).toLocaleDateString("id")}
-          backLink="/cash-register-history"
+          backLink="/cash-register/history"
           dynamicInfo={false}>
           <span
             className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase ${sc.class}`}>

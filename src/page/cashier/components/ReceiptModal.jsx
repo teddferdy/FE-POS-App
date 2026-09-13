@@ -192,6 +192,11 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     minute: "2-digit"
   });
   const cashierName = data?.cashierName || data?.cashier || "-";
+  // C11: mirrors the same table?.name-or-raw-id fallback already used by
+  // Dapur KDS (kitchen-display/index.jsx) — only renders once a table
+  // association is actually resolved, so an order with no table (takeaway,
+  // no tableId) shows nothing rather than a stray label.
+  const tableName = data?.table?.name || (data?.tableId ? String(data.tableId) : null);
   const customerName = data?.customerName || data?.customer?.name || "-";
   const paymentMethod = data?.paymentMethod || data?.payment?.method || "-";
   const items = data?.items || data?.orderItems || [];
@@ -645,6 +650,12 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                 </span>
                 <span className="capitalize">{paymentMethod}</span>
               </div>
+              {tableName && (
+                <div className={`flex justify-between text-gray-600 ${sz.metaText}`}>
+                  <span>{t("page.cashier.receipt.table", "Meja")}</span>
+                  <span className="font-medium">{tableName}</span>
+                </div>
+              )}
             </div>
 
             {/* Member info band */}
