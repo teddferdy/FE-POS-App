@@ -14,7 +14,7 @@ export default function MemberSearchModal({ open, onClose, onSelect }) {
   const [searchParams, setSearchParams] = useState(null);
   const store = cookie?.activeStore || cookie?.user?.store || "";
 
-  const { data, isLoading, isError } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["member-search", searchParams],
     () => getAllMember({ ...searchParams, store, page: 1, limit: 10 }),
     { enabled: !!searchParams }
@@ -71,13 +71,18 @@ export default function MemberSearchModal({ open, onClose, onSelect }) {
             </Button>
           </div>
 
+          {!searchParams && !isLoading && (
+            <div className="text-center py-4 text-sm text-muted-foreground">
+              Silakan cari member.
+            </div>
+          )}
           {isLoading && (
             <div className="text-center py-4 text-sm text-muted-foreground">Mencari member...</div>
           )}
           {isError && (
             <div className="text-center py-4 text-sm text-destructive">
               Gagal mencari member.{" "}
-              <button onClick={handleSearch} className="underline">
+              <button onClick={() => refetch()} className="underline">
                 Coba Lagi
               </button>
             </div>
