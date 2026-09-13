@@ -5,6 +5,7 @@ import { useQuery } from "react-query";
 import { Clock, Utensils, ShoppingBag, Wallet } from "lucide-react";
 import { getOrdersByStore } from "@/services/order";
 import { Skeleton } from "@/components/ui/skeleton";
+import ScrollRail from "@/components/ui/ScrollRail";
 
 const statusConfig = {
   pending: {
@@ -158,6 +159,7 @@ const OrderQueueSkeleton = () => (
 );
 
 const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
+  const { t } = useTranslation();
   const fetchOrders = async (status) => {
     const res = await getOrdersByStore({ location: store, status, limit: 50 });
     return res?.data || [];
@@ -223,8 +225,14 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
       {isLoading ? (
         <OrderQueueSkeleton />
       ) : allOrders.length > 0 ? (
-        <div className="overflow-x-auto scrollbar-none mt-6">
-          <div className="flex gap-3 px-4 lg:px-6 pb-1">
+        <ScrollRail
+          leftLabel={t("page.cashier.orderQueue.scrollLeft")}
+          rightLabel={t("page.cashier.orderQueue.scrollRight")}
+          railTestId="order-queue-rail"
+          fadeTestIdPrefix="order-queue"
+          gutterClassName="mt-6 flex items-center gap-2 px-4 lg:px-6"
+          railClassName="pb-1">
+          <div className="flex gap-3">
             {allOrders.map((order) => (
               <OrderCard
                 key={order.id}
@@ -234,7 +242,7 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
               />
             ))}
           </div>
-        </div>
+        </ScrollRail>
       ) : null}
     </div>
   );

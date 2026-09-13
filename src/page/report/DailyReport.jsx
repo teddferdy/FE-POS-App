@@ -10,6 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency } from "@/utils/reportUtils";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
+import StoreFilter from "@/components/ui/StoreFilter";
 import ExportButtons from "@/components/organism/ExportButtons";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
@@ -22,17 +24,21 @@ const DailyReport = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
+  const storeId = isSuperAdmin && storeFilter && storeFilter !== "all" ? storeFilter : "";
+  const storeParams = storeId ? { store: storeId } : {};
 
   const { data: locData } = useQuery(["locations-daily-report"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["daily-report", startDate, endDate],
+    ["daily-report", startDate, endDate, storeId],
     () =>
       getDailyReport({
         startDate: format(startDate, "yyyy-MM-dd"),
-        endDate: format(endDate, "yyyy-MM-dd")
+        endDate: format(endDate, "yyyy-MM-dd"),
+        ...storeParams
       }),
     {}
   );
@@ -59,11 +65,21 @@ const DailyReport = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("page.report.daily.description")}</p>
         </div>
         <div className="flex items-center gap-2">
+          {isSuperAdmin && (
+            <StoreFilter
+              locations={locData?.data || []}
+              value={storeFilter}
+              onChange={setGlobalStoreFilter}
+              isSuperAdmin={isSuperAdmin}
+              t={t}
+            />
+          )}
           <ExportButtons
             reportKey="daily"
             buildParams={() => ({
               startDate: format(startDate, "yyyy-MM-dd"),
-              endDate: format(endDate, "yyyy-MM-dd")
+              endDate: format(endDate, "yyyy-MM-dd"),
+              ...storeParams
             })}
           />
           <DatePicker date={startDate} setDate={setStartDate} />
