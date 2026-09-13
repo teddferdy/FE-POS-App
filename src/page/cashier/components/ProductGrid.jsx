@@ -9,6 +9,7 @@ import { orderList } from "@/state/order-list";
 import { getAllCategoryActive } from "@/services/category";
 import { optimizeImage } from "@/utils/image";
 import { Skeleton } from "@/components/ui/skeleton";
+import ScrollRail from "@/components/ui/ScrollRail";
 import VariantModal from "./VariantModal";
 import ProductDetailModal from "./ProductDetailModal";
 import DynamicIcon from "@/components/ui/DynamicIcon";
@@ -627,30 +628,41 @@ const ProductGrid = ({
       </div>
 
       {categories.length > 0 && (
-        <div className="flex items-center gap-2 px-4 lg:px-6 pb-2 overflow-x-auto scrollbar-none">
-          <button
-            onClick={() => onCategoryChange("")}
-            className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-              !categoryId
-                ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                : "bg-card border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
-            }`}>
-            {t("page.cashier.allCategories")}
-          </button>
-          {categories.map((cat) => (
+        <ScrollRail
+          leftLabel={t("page.cashier.scrollLeft")}
+          rightLabel={t("page.cashier.scrollRight")}
+          railTestId="product-category-rail"
+          fadeTestIdPrefix="product-category"
+          gutterClassName="flex items-center gap-2 px-4 lg:px-6 pb-2">
+          <div className="flex gap-2">
             <button
-              key={cat.id || cat._id}
-              onClick={() => onCategoryChange(cat.id || cat._id)}
-              className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                categoryId === (cat.id || cat._id)
+              onClick={() => onCategoryChange("")}
+              className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                !categoryId
                   ? "bg-primary text-primary-foreground border-primary shadow-sm"
                   : "bg-card border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
               }`}>
-              {renderCategoryIcon(cat, "!text-sm text-current", "w-3.5 h-3.5 rounded object-cover")}
-              <span className="truncate">{cat.nameCategory || cat.name}</span>
+              {t("page.cashier.allCategories")}
             </button>
-          ))}
-        </div>
+            {categories.map((cat) => (
+              <button
+                key={cat.id || cat._id}
+                onClick={() => onCategoryChange(cat.id || cat._id)}
+                className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                  categoryId === (cat.id || cat._id)
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-card border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
+                }`}>
+                {renderCategoryIcon(
+                  cat,
+                  "!text-sm text-current",
+                  "w-3.5 h-3.5 rounded object-cover"
+                )}
+                <span className="truncate">{cat.nameCategory || cat.name}</span>
+              </button>
+            ))}
+          </div>
+        </ScrollRail>
       )}
 
       <div className="flex-1 overflow-y-auto pb-4">
