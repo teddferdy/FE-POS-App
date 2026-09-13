@@ -2481,6 +2481,111 @@ stateDiagram-v2
 
 ---
 
+## 11. Update Fitur Phase 17/18/19 — Checkout, Pajak, Member & Performa
+
+### 11.1 Phase 17 — Validasi Quantity & Batas Diskon
+
+**Latar belakang:** Ditemukan celah di mana `quantity: 0` bisa bikin order `totalPrice: 0` yang tetap disimpan sebagai `paid`, dan `discount > subTotal` bisa bikin `totalPrice` negatif.
+
+**Flow FE (Cashier):**
+
+```mermaid
+flowchart LR
+  A[FE CartPanel] -->|quantity| B[Zustand orderList]
+  B --> C[CheckoutModal]
+  C -->|items[].quantity| D[BE POST /order/create]
+```
+
+*   **FE:** `PANDUAN.md` — CartPanel tetap izinkan input, tapi `FE-POS-App:src/state/order-list.js:165` `updateItemPrice` dan `BE` yang akan menolak `quantity <=0`.
+*   **API:** `BE-POS-App:POST /order/create` dan `POST /order/customer-create` sekarang validasi `Number.isFinite(qty) && qty > 0` → `400 Quantity must be greater than 0`. `tests: info01-quantity-validation.test.js` 6 kasus (`0`, `-1`, `NaN`, `Infinity`, `"abc"` → 400; `1` → 201).
+*   **BE:** `BE-POS-App:api/controller/order.js:765` `loadAndPriceOrderItems` guard, dan `BE-POS-App:api/controller/order.js:578` `calculateOrderTotals` cap `discountAmount = min(discountAmount, subTotal)` + `totalPrice = Math.max(0, ...)`. `tests: info03-discount-cap.test.js` 6 kasus (`normal 1000`, `exact 10000→0`, `huge 1M→0`).
+*   **Hasil:** `subTotal >=0, discountAmount 0..subTotal, totalPrice >=0` selalu.
+
+### 11.2 Phase 18 — Toggle Pajak, Member & Tukar Poin
+
+**Flow Pajak (Cashier):**
+
+```mermaid
+flowchart TB
+  A[FE CheckoutModal: Gunakan Pajak ON/OFF] -->|useTax: true/false| B[BE POST /order/create]
+  B --> C[BE getActiveTaxRate(store) → tax_config DB]
+  C --> D{useTax?}
+  D -->|true| E[taxRate = DB 11%]
+  D -->|false| F[taxRate = 0]
+  E --> G[taxAmount = Math.round(afterDiscount * taxRate/100)]
+  F --> G
+  G --> H[totalPrice = Math.max(0, afterDiscount+tax)]
+  H --> I[Order.taxRate/taxAmount/totalPrice snapshot]
+  I --> J[Payment & Receipt]
+```
+
+*   **FE:** `FE-POS-App:src/page/cashier/components/CheckoutModal.jsx:101` `useTax` state default `true`, UI `Gunakan Pajak [ON/OFF]` (665), `taxAmount = useTax ? subtotal*taxRate : 0` (283), payload `useTax` (567). `taxRate` dari `getCustomerTaxRate(store)` (BE).
+*   **API:** `BE-POS-App:POST /order/create` body `useTax?: boolean` (`api/validation/schemas.js:262` `z.boolean().optional().default(true)`), `taxRate`/`taxAmount`/`totalPrice` dari client diabaikan (`z.any().optional()`), BE hitung `taxRate = useTaxFlag ? getActiveTaxRate(store) : 0` (`api/controller/order.js:989`).
+*   **Tax Config:** `FE-POS-App:src/page/tax-config/*` CRUD `tax_config` (`store`, `rate`, `type: ppn`, `status: active`) → `BE-POS-App:db/models/taxConfig.js` → `BE-POS-App:api/controller/taxConfig.js` store-isolated.
+*   **Test:** `BE-POS-App:__tests__/phase18-tax-toggle.test.js` 4 kasus (`ON 1650/16650`, `OFF 0/15000`, fake `taxRate 0` diabaikan).
+
+**Flow Member & Poin:**
+
+```mermaid
+flowchart LR
+  A[FE CheckoutModal: Cari member] -->|phone/name| B[BE GET /member/get-member?store=&nameMember=]
+  B --> C[BE store-isolated findOne]
+  C --> D[FE tampil: Nama, Tier Gold, Poin 2.500]
+  D --> E[FE Redeem Poin: input 1000]
+  E -->|customerId + redeemedPoints| F[BE POST /order/create]
+  F --> G[BE resolveOrderDiscount: cek member.store, totalPoints >= redeemedPoints]
+  G --> H[BE adjustMemberPoints: LOCK.UPDATE + GREATEST, transaksi atomik]
+  H --> I[Order.redeemedPoints + totalPrice final]
+  I --> J[Receipt: Redeem Point distinct, Total Sebelum Redeem]
+```
+
+*   **FE:** `FE-POS-App:src/page/cashier/components/CheckoutModal.jsx:345` `filteredCustomers` (phone/name/email LIKE), `404 setMemberPoints`, `1158 Redeem Poin` UI (`Tersedia: 2500`, `Point digunakan`, `Nilai Rp10.000`), `receipt` `FE-POS-App:src/page/cashier/components/ReceiptModal.jsx:781` `Redeem Point (1000 Poin) → -Rp10.000` + `Total sebelum redeem`.
+*   **API:** `BE-POS-App:POST /order/create` body `customerId` + `redeemedPoints` (integer ≥0), `GET /member/get-member?store=...&nameMember=` store-isolated, `BE-POS-App:api/controller/member.js:7` `store = req.user?.store` untuk non-SA.
+*   **BE:** `BE-POS-App:api/controller/order.js:678` `POINT_VALUE=1` (1 poin = Rp1), validasi `redeemedPoints` finite integer ≥0, `member.store` harus sama, `totalPoints` cukup, `adjustMemberPoints` dengan `lock: UPDATE` + `GREATEST(totalPoints + delta, 0)` di transaksi yang sama dengan `Order` (1154), `idempotencyKey` cegah double-deduct.
+*   **DB:** `BE-POS-App:db/models/order.js:179` `redeemedPoints INTEGER DEFAULT 0`, `db/migrations/20260917000001` `describeTable` guard, `hasOrderColumn` check.
+*   **Test:** `BE-POS-App:__tests__/phase18-member-redeem.test.js` 6 kasus (`found`, `store isolation 403`, `valid 1000→1500`, `exceed 400`, `negative 400`, `idempotent`).
+
+**Flow BISA Price & Pajak:**
+
+*   **BISA client price TIDAK dipercaya:** `BE-POS-App:api/controller/order.js:3113` `SERVER-SIDE PRICE VALIDATION` loop `serverPrice=getServerItemPrice(prod)` → `item.price=serverPrice` sebelum `subtotal`, `BISA-MAKAN-APP:__tests__/f18-01-bisa-price.test.js` 5 kasus (`price 1/999999/0/-100 → subTotal 100000`).
+*   **BISA pajak:** `BISA-MAKAN-APP:src/services/storeService.ts:60` `GET /tax-config/public?store=` → `taxRate/100` else `0` (sebelumnya hard-coded `0.11` di `useCartStore`, `useStoreConfig`, `storeService` — dihapus di Phase 18, sekarang `0`).
+
+### 11.3 Phase 19 Batch 1 — Otorisasi Harga & Performa
+
+**F7-01 Role-Based Price Override:**
+
+*   **Aturan:** Hanya `super_admin`/`admin` (via `isAdminRole`) boleh edit harga di cart. `FE-POS-App:src/page/cashier/CashierPage.jsx:86` `canOverridePrice = isAdminRole(user)`, `CartPanel.jsx:236` `{canEditPrice && Edit price}`. BE tetap otoritas (`getServerItemPrice`).
+*   **Flow:** `FE CartPanel → Edit price → confirm modal → updateItemPrice(price)` → `BE POST /order/create` tetap pakai `serverPrice`, bukan `item.price` dari FE. `tests: cartPanelPriceOverride.test.jsx` 14 kasus.
+*   **API:** Tidak ada endpoint khusus price override; `PUT /product/edit-product` tetap butuh `super_admin/admin`.
+
+**F7-02 ProductGrid Performance:**
+
+*   **Masalah:** `ProductGrid` langganan seluruh `orderList()` dan tiap tile `order.find()` → `O(products*cart)`.
+*   **Solusi:** `FE-POS-App:src/page/cashier/components/ProductGrid.jsx:468` `cartCountMap = useMemo(() => Map<productId, qty>, [order])` single pass `O(products+cart)`, `ProductGridTile` di-`React.memo`, `EMPTY_ARRAY` cegah array baru, `t` tidak di-pass sebagai prop. `tests: productGridCartCountAndRerender.test.jsx` (badge tampil, update live, hanya 1 tile re-render saat `addOrder`).
+
+**API yang dipakai FE (Cashier) secara detail:**
+
+| Aksi FE | API BE | Method | Auth | Store Scope |
+| ------- | ------ | ------ | ---- | ----------- |
+| Muat produk | `getProductByOutlet` → `GET /product/get-product?location=&search=` | GET | JWT | `store` param |
+| Muat kategori | `getAllCategoryActive` → `GET /category/get-category-all` | GET | JWT | `store` |
+| Cek pajak | `getCustomerTaxRate` → `GET /order/customer-tax-rate?store=` → `getActiveTaxRate` | GET | JWT | `store` |
+| Cari member | `getAllMember` → `GET /member/get-member?store=&nameMember=&phoneNumber=` | GET | JWT + `validateStoreAccess` | `req.storeId` |
+| Cari diskon | `getAllDiscount` → `GET /discount/get-discount-by-location?store=` | GET | JWT | `store` |
+| Terapkan promo | `lookupDiscountByCode` → `GET /discount/lookup-by-code/:code?store=` | GET | — | `store` |
+| Buat order | `createOrder` → `POST /order/create` `{store, items[{product, quantity}], discountId, promoCode, customerId, redeemedPoints, useTax, paymentMethod, cashAmount, changeAmount, idempotencyKey, tableId}` | POST | JWT + `validateStoreAccess` | `req.storeId` authoritative, `items[].price` diabaikan, `taxRate` diabaikan, `discount` di-lookup, `member` store-isolated |
+| BISA order | `createCustomerOrder` → `POST /order/customer-create` `{store, tableId, items[{productId, quantity, price (diabaikan)}], idempotencyKey}` | POST | — (public, `table.store` authoritative) | `table.store` |
+
+**Alur Kasir Lengkap (FE → BE → DB → Receipt):**
+
+1. Kasir buka `POS` (`/home?store=1`) → pilih toko → `getProductByOutlet` + `getCustomerTaxRate`.
+2. Tambah produk ke `Zustand orderList` → `CartPanel` → `CheckoutModal` (pilih `useTax`, cari member, input `redeemedPoints`, pilih `discountId`/`promoCode`, pilih `paymentMethod`).
+3. Klik Bayar → FE hitung preview `subtotal + taxAmount - discount - redeem` (display only) → `POST /order/create` dengan `useTax`, `redeemedPoints`, `idempotencyKey`.
+4. BE `loadAndPriceOrderItems` (qty>0, serverPrice), `resolveOrderDiscount` (DB discount + tier + points), `calculateOrderTotals` (cap discount, `Math.max(0, total)`), `calculateFinalTotals` (promo + point cap), `validateCashTender` (`cash - change === totalPrice`), transaksi `Order` + `OrderItem` + `Transaction` + `member_point_history` (atomic, `LOCK.UPDATE`).
+5. Response `Order` (`subTotal`, `discountAmount`, `redeemedPoints`, `taxRate`, `taxAmount`, `totalPrice`) → FE `ReceiptModal` tampil `Subtotal`, `Pajak (11% atau 0)`, `Diskon`, `Redeem Point` (violet) + `Total sebelum redeem`, `Grand Total` → cetak struk / kirim WA.
+
+---
+
 > **Pertanyaan?** Hubungi tim support atau buka menu `Support` di aplikasi.
 >
 > _Dokumen ini dibuat otomatis — diagram pake Mermaid, render di GitHub atau Markdown viewer._
