@@ -96,6 +96,7 @@ const CheckoutModal = ({
   const [promoLoading, setPromoLoading] = useState(false);
   const [redeemPoints, setRedeemPoints] = useState("");
   const [memberPoints, setMemberPoints] = useState(0);
+  const [useTax, setUseTax] = useState(true);
   const [orderType, setOrderType] = useState("take-away");
   const [selectedTable, setSelectedTable] = useState(null);
   const [partySize, setPartySize] = useState("");
@@ -279,7 +280,7 @@ const CheckoutModal = ({
   }, [paymentMethodsData]);
 
   const taxRate = Number.isFinite(propTaxRate) ? propTaxRate : 0.11;
-  const taxAmount = subtotal * taxRate;
+  const taxAmount = useTax ? subtotal * taxRate : 0;
   const matchedTier = useMemo(() => {
     if (!memberPoints || memberTiers.length === 0) return null;
     const active = memberTiers.filter((t) => t.status === "active");
@@ -562,6 +563,7 @@ const CheckoutModal = ({
       discountId: selectedDiscount?.id || selectedDiscount?._id || null,
       promoCode: promoCode.trim() || undefined,
       redeemedPoints: Number(redeemPoints) || 0,
+      useTax,
       paymentMethod: method,
       source: "pos",
       tableId: orderType === "dine-in" ? selectedTable?.id || null : null,
@@ -660,6 +662,24 @@ const CheckoutModal = ({
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t("page.cashier.subtotal")}</span>
               <span className="font-medium">Rp {formatPrice(subtotal)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground flex items-center gap-2">
+                Gunakan Pajak
+                <button
+                  type="button"
+                  onClick={() => setUseTax(!useTax)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useTax ? "bg-primary" : "bg-muted"}`}
+                  aria-label="Gunakan Pajak">
+                  <span
+                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${useTax ? "translate-x-5" : "translate-x-1"}`}
+                  />
+                </button>
+                <span className="text-xs font-medium">{useTax ? "ON" : "OFF"}</span>
+              </span>
+              <span className="font-medium text-xs text-muted-foreground">
+                {useTax ? "Pajak aktif" : "Pajak nonaktif"}
+              </span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
