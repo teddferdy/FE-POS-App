@@ -1,9 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { Clock, Utensils, ShoppingBag, Wallet } from "lucide-react";
 import { getOrdersByStore } from "@/services/order";
+import { useSocket } from "@/services/socket";
 import { Skeleton } from "@/components/ui/skeleton";
 import ScrollRail from "@/components/ui/ScrollRail";
 
@@ -160,15 +161,35 @@ const OrderQueueSkeleton = () => (
 
 const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  // Defensive fallback (`|| {}`): unlike KDS/WaiterRequestList, several
+  // existing OrderQueue tests render this component with no SocketProvider
+  // in the tree at all, so useSocket() legitimately returns null there.
+  const { socket, connected } = useSocket() || {};
   const fetchOrders = async (status) => {
     const res = await getOrdersByStore({ location: store, status, limit: 50 });
     return res?.data || [];
   };
 
+  // Phase 20 Batch 2: realtime-first with polling fallback, mirroring the
+  // exact pattern already established by kitchen-display/index.jsx and
+  // WaiterRequestList.jsx. Branch on `connected` (not `socket` truthiness) —
+  // a socket.io client object exists as soon as it's constructed, well
+  // before (or even if never) it actually connects.
+  //
+  // Only 4 of the 5 statuses have a real backend event to react to (see the
+  // socket effect below for exactly which ones and why) — 'confirmed' has no
+  // corresponding emit anywhere in BE-POS-App today (order.js's
+  // updateOrderItemStatus cascade only ever targets pending/preparing/ready/
+  // served), so its poll stays unconditionally on rather than silently going
+  // stale forever once connected. This is a real, audited backend contract
+  // gap, not an oversight — see the Phase 20 Batch 2 report.
+  const pollFallback = connected ? false : 30000;
+
   const { data: pendingOrders, isLoading: pendingLoading } = useQuery(
     ["cashier-orders-pending", store],
     () => fetchOrders("pending"),
-    { enabled: !!store, refetchInterval: 30000 }
+    { enabled: !!store, refetchInterval: pollFallback }
   );
 
   const { data: confirmedOrders, isLoading: confirmedLoading } = useQuery(
@@ -180,13 +201,13 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
   const { data: preparingOrders, isLoading: preparingLoading } = useQuery(
     ["cashier-orders-preparing", store],
     () => fetchOrders("preparing"),
-    { enabled: !!store, refetchInterval: 30000 }
+    { enabled: !!store, refetchInterval: pollFallback }
   );
 
   const { data: readyOrders, isLoading: readyLoading } = useQuery(
     ["cashier-orders-ready", store],
     () => fetchOrders("ready"),
-    { enabled: !!store, refetchInterval: 30000 }
+    { enabled: !!store, refetchInterval: pollFallback }
   );
 
   // P5-03: a served QR order must stay reachable in the queue for payment —
@@ -195,8 +216,54 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
   const { data: servedOrders, isLoading: servedLoading } = useQuery(
     ["cashier-orders-served", store],
     () => fetchOrders("served"),
-    { enabled: !!store, refetchInterval: 30000 }
+    { enabled: !!store, refetchInterval: pollFallback }
   );
+
+  const invalidatePending = useCallback(() => {
+    queryClient.invalidateQueries(["cashier-orders-pending", store]);
+  }, [queryClient, store]);
+
+  // Covers exactly the statuses updateOrderItemStatus's cascade can produce
+  // (api/controller/order.js: statusMap = {pending, preparing, ready,
+  // served}) — deliberately excludes 'confirmed', which that cascade never
+  // targets, so this event can never make it stale.
+  const invalidateKitchenCascade = useCallback(() => {
+    queryClient.invalidateQueries(["cashier-orders-pending", store]);
+    queryClient.invalidateQueries(["cashier-orders-preparing", store]);
+    queryClient.invalidateQueries(["cashier-orders-ready", store]);
+    queryClient.invalidateQueries(["cashier-orders-served", store]);
+  }, [queryClient, store]);
+
+  useEffect(() => {
+    if (!socket || !store) return;
+    // BE-POS-App's emitNewOrder/emitItemStatusUpdate (api/service/socket.js)
+    // broadcast to the `kitchen-${storeId}` room — the same room
+    // kitchen-display already joins. Room membership is verified
+    // server-side against the caller's own JWT `store` claim
+    // (canJoinStore), so this can never receive another store's events.
+    socket.emit("join-kitchen", store);
+
+    const handleNewOrder = () => invalidatePending();
+    const handleItemStatusUpdate = () => invalidateKitchenCascade();
+    // A disconnect/reconnect window can silently miss domain events that
+    // fired while offline — reconcile everything on every (re)connect,
+    // matching WaiterRequestList/KitchenDisplay's own reconnect handling.
+    const handleReconnect = () => {
+      invalidatePending();
+      invalidateKitchenCascade();
+    };
+
+    socket.on("new-order", handleNewOrder);
+    socket.on("item-status-updated", handleItemStatusUpdate);
+    socket.on("connect", handleReconnect);
+
+    return () => {
+      socket.off("new-order", handleNewOrder);
+      socket.off("item-status-updated", handleItemStatusUpdate);
+      socket.off("connect", handleReconnect);
+      socket.emit("leave-kitchen", store);
+    };
+  }, [socket, store, invalidatePending, invalidateKitchenCascade]);
 
   const allOrders = useMemo(() => {
     // statuses are disjoint server-side, but guard against the same order

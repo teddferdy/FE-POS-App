@@ -12,6 +12,9 @@ jest.mock("react-i18next", () => ({
 jest.mock("../services/order", () => ({
   getOrdersByStore: jest.fn()
 }));
+jest.mock("../services/socket", () => ({
+  useSocket: () => ({ socket: null, connected: false })
+}));
 
 const qrOrder = {
   id: 55,
