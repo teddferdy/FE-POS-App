@@ -275,7 +275,8 @@ const ProductGrid = ({
   categoryId,
   onCategoryChange,
   store,
-  refocusSignal
+  refocusSignal,
+  onRemoteBarcodeLookup
 }) => {
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState("grid");
@@ -408,7 +409,7 @@ const ProductGrid = ({
   // would go through. Previously this input had no handler at all, so
   // switching to "barcode mode" and scanning silently did nothing.
   const handleBarcodeKeyDown = useCallback(
-    (e) => {
+    async (e) => {
       if (e.key !== "Enter") return;
       // A held-down Enter key (or a stuck scanner trigger) fires repeated
       // keydown events for the same keypress — e.repeat marks every one
@@ -417,15 +418,39 @@ const ProductGrid = ({
       if (e.repeat) return;
       const code = barcode.trim();
       if (!code) return;
-      const match = allProducts.find((p) => (p.sku || "").toLowerCase() === code.toLowerCase());
-      if (!match) {
+      const localMatch = allProducts.find(
+        (p) => (p.sku || "").toLowerCase() === code.toLowerCase()
+      );
+      if (localMatch) {
+        handleProductClick(localMatch);
+        onBarcodeChange("");
+        return;
+      }
+      // `allProducts` is only the store's first catalog page (backend caps a
+      // page at 500 rows, F7-02) — a store with more active products than
+      // that has real, sellable items this local list never received. Before
+      // declaring the code unknown, ask the parent (which owns product
+      // fetching) to do one narrowly-scoped live lookup.
+      if (!onRemoteBarcodeLookup) {
         toast.error(t("page.cashier.barcodeNotFound"));
         return;
       }
-      handleProductClick(match);
-      onBarcodeChange("");
+      try {
+        const remoteResults = await onRemoteBarcodeLookup(code);
+        const remoteMatch = (remoteResults || []).find(
+          (p) => (p.sku || "").toLowerCase() === code.toLowerCase()
+        );
+        if (!remoteMatch) {
+          toast.error(t("page.cashier.barcodeNotFound"));
+          return;
+        }
+        handleProductClick(remoteMatch);
+        onBarcodeChange("");
+      } catch {
+        toast.error(t("page.cashier.barcodeNotFound"));
+      }
     },
-    [barcode, allProducts, handleProductClick, onBarcodeChange, t]
+    [barcode, allProducts, handleProductClick, onBarcodeChange, t, onRemoteBarcodeLookup]
   );
 
   const handleShowDetail = useCallback(
@@ -825,7 +850,8 @@ ProductGrid.propTypes = {
   categoryId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onCategoryChange: PropTypes.func,
   store: PropTypes.any,
-  refocusSignal: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  refocusSignal: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onRemoteBarcodeLookup: PropTypes.func
 };
 
 // P20-B3: memoize the grid itself so a parent re-render (e.g. CashierPage cart totals)
