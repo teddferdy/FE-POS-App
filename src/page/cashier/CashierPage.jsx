@@ -259,6 +259,20 @@ const CashierPage = () => {
     [allProducts, search, categoryId]
   );
 
+  // `allProducts` only ever holds the store's first catalog page (backend
+  // caps a page at 500 rows, F7-02) — a store with more active products than
+  // that has real, sellable items ProductGrid's local barcode lookup can
+  // never see. Give it a narrowly-scoped live fallback instead of letting a
+  // valid scan for one of those items falsely report "not found".
+  const lookupProductRemote = useCallback(
+    async (code) => {
+      if (!store) return [];
+      const res = await getProductByOutlet({ location: store, search: code });
+      return res?.data || [];
+    },
+    [store]
+  );
+
   const totalItems = cart.order.reduce((sum, item) => sum + (item.count || 0), 0);
   const subtotal = cart.order.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
 
@@ -647,6 +661,7 @@ const CashierPage = () => {
                 onCategoryChange={setCategoryId}
                 store={store}
                 storeName={storeName}
+                onRemoteBarcodeLookup={lookupProductRemote}
               />
             </div>
           )}
