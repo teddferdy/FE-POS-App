@@ -1117,8 +1117,12 @@ const AddProduct = () => {
                               {t("page.product.form.composition")}
                             </h3>
                           </div>
-                          <p className="text-xs text-muted-foreground -mt-2 mb-4">
+                          <p className="text-xs text-muted-foreground -mt-2 mb-1">
                             {t("page.product.form.compositionInfo")}
+                          </p>
+                          <p className="text-[11px] text-amber-600 dark:text-amber-500 mb-4">
+                            {t("page.product.form.compositionBomNotice")}{" "}
+                            {t("page.product.form.bomHintAddProduct")}
                           </p>
                           <div className="space-y-3">
                             {selectedStores.length === 0 ? (
