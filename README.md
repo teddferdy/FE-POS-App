@@ -82,7 +82,7 @@ src/
 │   ├── organism/         # Complex feature components (modals, tour, FAQ chat)
 │   └── ui/               # shadcn/ui base components (Button, Input, Table, etc.)
 ├── hooks/                # Custom hooks (useDebounce, useKeyboardShortcuts, etc.)
-├── i18n/                 # Translations (en.json, id.json, jpn.json)
+├── i18n/                 # Translations (en.json, id.json)
 ├── lib/                  # Utility libraries, constants
 ├── page/                 # Page components (45+ modules, lazy-loaded)
 ├── services/             # API service layer (50+ files, Axios-based)
