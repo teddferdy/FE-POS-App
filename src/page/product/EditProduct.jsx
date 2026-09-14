@@ -50,6 +50,7 @@ import { getProductById, editProduct, getIngredients } from "@/services/product"
 import { normalizePayload } from "@/lib/payload-normalizer";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllTaxConfig } from "@/services/tax-config";
+import { getBomByProduct } from "@/services/bom";
 
 import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
@@ -141,6 +142,16 @@ const EditProduct = () => {
     refetchOnMount: true
   });
   const product = productData?.data || {};
+
+  // F21 Batch 3 (P2): lets the "Komposisi" section point the merchant at
+  // the actual mechanism that drives ingredient stock deduction (BOM) —
+  // Komposisi itself stays a display/reference-only field, unchanged.
+  const { data: bomData } = useQuery(
+    ["bom-for-product", product.id],
+    () => getBomByProduct(product.id),
+    { enabled: !!product.id }
+  );
+  const existingBom = bomData?.data || null;
 
   const productStore = selectedStores[0] || "";
   const { data: categoriesData } = useQuery(
@@ -1313,14 +1324,36 @@ const EditProduct = () => {
 
                       {tipeProduk === "menu" && (
                         <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                          <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                            <Package size={18} className="text-primary" />
-                            <h3 className="text-base font-semibold text-foreground">
-                              {t("page.product.form.composition")}
-                            </h3>
+                          <div className="flex items-center justify-between gap-2 pb-4 border-b border-border mb-5">
+                            <div className="flex items-center gap-2">
+                              <Package size={18} className="text-primary" />
+                              <h3 className="text-base font-semibold text-foreground">
+                                {t("page.product.form.composition")}
+                              </h3>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="gap-1.5 shrink-0"
+                              onClick={() =>
+                                navigate(
+                                  existingBom
+                                    ? `/bom/detail?id=${existingBom.id}`
+                                    : `/bom/add?productId=${product.id}`
+                                )
+                              }>
+                              <Layers size={14} />
+                              {existingBom
+                                ? t("page.product.form.manageBom")
+                                : t("page.product.form.createBom")}
+                            </Button>
                           </div>
-                          <p className="text-xs text-muted-foreground -mt-2 mb-4">
+                          <p className="text-xs text-muted-foreground -mt-2 mb-1">
                             {t("page.product.form.compositionInfo")}
+                          </p>
+                          <p className="text-[11px] text-amber-600 dark:text-amber-500 mb-4">
+                            {t("page.product.form.compositionBomNotice")}
                           </p>
                           <div className="space-y-3">
                             {selectedStores.length === 0 ? (

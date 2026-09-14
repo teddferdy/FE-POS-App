@@ -17,6 +17,19 @@ export const getBomById = async (id) => {
   return data;
 };
 
+// Not finding a BOM for a product is an expected, normal state (most
+// products don't have one) — returns null rather than throwing so callers
+// can treat "no BOM yet" the same as any other successful lookup.
+export const getBomByProduct = async (productId) => {
+  try {
+    const { data } = await axiosInstance.get(`/bom/get-by-product/${productId}`);
+    return data;
+  } catch (err) {
+    if (err?.response?.status === 404) return null;
+    throw err;
+  }
+};
+
 export const addBom = async (payload) => {
   const { data, status } = await axiosInstance.post("/bom/add", payload);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);

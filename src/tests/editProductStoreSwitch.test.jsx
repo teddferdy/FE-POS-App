@@ -79,6 +79,9 @@ jest.mock("@/services/price-store", () => ({
 jest.mock("@/services/stock", () => ({
   checkStockOpnameExists: jest.fn(() => Promise.resolve({ data: { exists: true } }))
 }));
+jest.mock("@/services/bom", () => ({
+  getBomByProduct: jest.fn(() => Promise.resolve(null))
+}));
 jest.mock(
   "@/components/organism/UserGuide",
   () =>
