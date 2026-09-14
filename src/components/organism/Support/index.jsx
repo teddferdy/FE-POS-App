@@ -4,7 +4,14 @@ import FaqChat from "../FaqChat";
 import { useLocation } from "react-router-dom";
 
 const Support = () => {
-  const notShowLocation = ["/", "/register", "/reset-password", "/login", "/forgot-password"];
+  const notShowLocation = [
+    "/",
+    "/register",
+    "/reset-password",
+    "/login",
+    "/forgot-password",
+    "/home"
+  ];
 
   const location = useLocation();
 
