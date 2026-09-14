@@ -902,6 +902,14 @@ const CheckoutModal = ({
                     setCashAmount(e.target.value.replace(/[^0-9]/g, ""));
                     setFullPayment(false);
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key !== "Enter") return;
+                    if (e.nativeEvent?.isComposing || e.isComposing) return;
+                    if (paymentMethod !== "cash") return;
+                    if (!canSubmit || mutation.isLoading || isSubmittingRef.current) return;
+                    e.preventDefault();
+                    handleSubmit();
+                  }}
                   placeholder="Rp 0"
                   className="w-full h-12 px-4 text-lg font-bold rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors text-right"
                   inputMode="numeric"
