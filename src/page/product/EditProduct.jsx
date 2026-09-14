@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -256,6 +256,18 @@ const EditProduct = () => {
     return String(t?.id ?? t);
   };
 
+  // `categories` and `compositionOptions` are both refetched per-store
+  // (keyed on `productStore`), but the already-loaded `category` field value
+  // and `composition` list were never cleared when the store changes on an
+  // existing product — so a category/ingredient id valid only for the old
+  // store could silently survive a store switch and get submitted against
+  // the new store (the same class of bug fixed in AddProduct via
+  // prevFirstStoreRef). Track the store this product hydrated with, and only
+  // reset on a genuine post-hydration change, not on the initial load.
+  const hydratedRef = useRef(false);
+  const prevStoreRef = useRef("");
+  const appliedInitialCategoryRef = useRef(false);
+
   useEffect(() => {
     if (product.id) {
       form.reset({
@@ -306,24 +318,50 @@ const EditProduct = () => {
             ? [product.image]
             : [];
       setProductImages(existingGallery.map((url) => ({ url, isNew: false })));
+      let hydratedFirstStore = "";
       if (product.store !== undefined) {
         const storeArr = Array.isArray(product.store) ? product.store : [];
         if (storeArr.length === 0) {
           setAllStores(true);
           setSelectedStores([]);
         } else {
+          const ids = storeArr.map((s) => (typeof s === "object" ? s.id : s));
           setAllStores(false);
-          setSelectedStores(storeArr.map((s) => (typeof s === "object" ? s.id : s)));
+          setSelectedStores(ids);
+          hydratedFirstStore = ids[0] || "";
         }
       }
+      prevStoreRef.current = String(hydratedFirstStore);
+      hydratedRef.current = true;
+      appliedInitialCategoryRef.current = false;
     }
   }, [product, form]);
 
+  // Only reapplies the product's originally-loaded category once, right
+  // after it hydrates (categories for its store may still be loading at
+  // that point). Without the guard this effect re-fires on every store
+  // switch too (since `categories` is refetched per-store), stomping the
+  // reset below with the stale category id.
   useEffect(() => {
-    if (product.id && categories.length > 0 && product.category) {
+    if (
+      product.id &&
+      categories.length > 0 &&
+      product.category &&
+      !appliedInitialCategoryRef.current
+    ) {
       form.setValue("category", parseJsonOrId(product.category));
+      appliedInitialCategoryRef.current = true;
     }
   }, [categories, product.id, product.category, form]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    if (prevStoreRef.current !== productStore) {
+      form.setValue("category", "");
+      setComposition([]);
+      prevStoreRef.current = productStore;
+    }
+  }, [productStore, form]);
 
   useEffect(() => {
     if (product.id && taxOptions.length > 0 && product.tax) {
