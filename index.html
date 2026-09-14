@@ -29,7 +29,7 @@
       try {
         var t = JSON.parse(sessionStorage.getItem("translation") || "{}");
         var lng = (t.state && t.state.translation) || "id";
-        var supported = ["en", "id", "jpn"];
+        var supported = ["en", "id"];
         if (supported.indexOf(lng) === -1) lng = "id";
         var l = document.createElement("link");
         l.rel = "preload";

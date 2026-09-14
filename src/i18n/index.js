@@ -38,10 +38,11 @@ i18n
     debug: false,
     lng: initialLng,
     // ponytail: en & id sudah 100% paralel — tanpa fallback kedua file
-    // translation.json (~180KB) tidak ikut termuat; jpn tetap fallback ke en
+    // translation.json (~180KB) tidak ikut termuat; kode bahasa lain yang tak
+    // terdaftar tetap difallback ke en (mekanisme defensif, tak ada UI pemilih)
     fallbackLng: (code) => (code === "en" || code === "id" ? [] : ["en"]),
     load: "languageOnly",
-    supportedLngs: ["en", "id", "jpn"],
+    supportedLngs: ["en", "id"],
     keySeparator: false,
     interpolation: { escapeValue: false },
     backend: {
