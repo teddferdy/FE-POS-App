@@ -123,7 +123,7 @@ export const filterPaletteGroups = (groups, query) => {
     .map((g) => ({
       ...g,
       items: g.items.filter((item) =>
-        `${item.label} ${item.keywords} ${item.path}`.toLowerCase().includes(q)
+        `${item.label} ${item.keywords} ${item.path} ${g.title}`.toLowerCase().includes(q)
       )
     }))
     .filter((g) => g.items.length > 0);
