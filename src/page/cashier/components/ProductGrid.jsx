@@ -339,22 +339,25 @@ const ProductGrid = ({
 
   const productsByCategory = useMemo(() => {
     // ponytail: fromEntries + daftar grup berkunci catId — bebas object injection
+    // P20-B3: use Map for O(1) group lookup instead of O(G) array find per product (O(N*G) → O(N+C))
     const catMap = Object.fromEntries((categories || []).map((cat) => [cat.id || cat._id, cat]));
-    const groupList = [];
+    const groupMap = new Map();
+    const groupOrder = [];
     products.forEach((p) => {
       const catId = getCatId(p);
-      let group = groupList.find((g) => g.catId === catId);
+      let group = groupMap.get(catId);
       if (!group) {
         group = { catId, category: safeGet(catMap, catId, null), products: [] };
-        groupList.push(group);
+        groupMap.set(catId, group);
+        groupOrder.push(group);
       }
       group.products.push(p);
     });
     const toPublic = ({ category, products }) => ({ category, products });
-    if (!categories?.length) return groupList.map(toPublic);
+    if (!categories?.length) return groupOrder.map(toPublic);
     return categories.map((cat) => {
       const catId = cat.id || cat._id;
-      const found = groupList.find((g) => g.catId === catId);
+      const found = groupMap.get(catId);
       return found ? toPublic(found) : { category: cat, products: [] };
     });
   }, [categories, products, getCatId]);
@@ -725,8 +728,8 @@ const ProductGrid = ({
             </div>
           </div>
         ) : (
-          productsByCategory.map(({ category, products: catProducts }) => (
-            <div key={category?.id || category?._id} className="mb-6">
+          productsByCategory.map(({ category, products: catProducts }, grpIdx) => (
+            <div key={category?.id || category?._id || `uncat-${grpIdx}`} className="mb-6">
               <div className="px-4 lg:px-6 py-3 border-b border-border/40 flex items-center gap-2">
                 {category &&
                   renderCategoryIcon(
@@ -825,4 +828,7 @@ ProductGrid.propTypes = {
   refocusSignal: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
-export default ProductGrid;
+// P20-B3: memoize the grid itself so a parent re-render (e.g. CashierPage cart totals)
+// with unchanged product props does not re-execute the grouping/cartCount work;
+// internal Zustand `order` changes still trigger an update via the selector.
+export default React.memo(ProductGrid);
