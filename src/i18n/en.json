@@ -5669,6 +5669,8 @@
   "page.purchaseOrder.add.cancelModalTitle": "Cancel This Order?",
   "page.purchaseOrder.add.discount": "Discount",
   "page.purchaseOrder.add.discountLabel": "Discount",
+  "page.purchaseOrder.add.taxRate": "Tax (%)",
+  "page.purchaseOrder.add.taxLabel": "Tax {{rate}}%",
   "page.purchaseOrder.add.additionalCost": "Additional Cost",
   "page.purchaseOrder.add.additionalCostNotes": "Cost Note",
   "page.purchaseOrder.add.additionalCostNotesPlaceholder": "e.g. Shipping, Bank Fee, etc.",
