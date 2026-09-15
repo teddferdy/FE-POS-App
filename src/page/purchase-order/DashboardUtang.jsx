@@ -37,6 +37,20 @@ const statusStyles = {
   received: "bg-green-100 text-green-800"
 };
 
+// Phase 22 Batch 3 — mirrors the BE's single authoritative classification
+// (utils/businessDate.js classifyDueDate); this is display-only styling,
+// not a second copy of the classification rule itself (BE already
+// computed `classification` before it reached the FE).
+const dueClassificationStyles = {
+  OVERDUE: "bg-red-100 text-red-700",
+  DUE_TODAY: "bg-orange-100 text-orange-700",
+  "H-1": "bg-amber-100 text-amber-700",
+  "H-2": "bg-amber-100 text-amber-700",
+  "H-3": "bg-amber-100 text-amber-700",
+  "H-4": "bg-amber-100 text-amber-700",
+  UPCOMING: "bg-green-100 text-green-700"
+};
+
 const DashboardUtang = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -70,6 +84,8 @@ const DashboardUtang = () => {
           dueDate: po.dueDate,
           status: po.status,
           daysOverdue: po.daysOverdue,
+          daysUntilDue: po.daysUntilDue,
+          classification: po.classification,
           totalFinalAmount: 0,
           totalPaid: 0,
           totalOutstanding: 0,
@@ -188,10 +204,15 @@ const DashboardUtang = () => {
       header: t("page.apDashboard.po.overdue"),
       align: "center",
       render: (po) =>
-        po.daysOverdue > 0 ? (
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-red-600">
+        po.classification && po.classification !== "UPCOMING" ? (
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${
+              dueClassificationStyles[po.classification] || "bg-muted"
+            }`}>
             <Clock size={12} />
-            {po.daysOverdue} {t("page.apDashboard.po.days")}
+            {po.classification === "OVERDUE"
+              ? `${po.daysOverdue} ${t("page.apDashboard.po.days")}`
+              : t(`page.apDashboard.po.classification.${po.classification}`)}
           </span>
         ) : (
           <span className="text-xs text-green-600">-</span>
@@ -367,10 +388,17 @@ const DashboardUtang = () => {
                                   : "-"}
                               </td>
                               <td className="py-2.5 px-2 text-center">
-                                {group.daysOverdue > 0 ? (
-                                  <span className="inline-flex items-center gap-1 text-xs font-bold text-red-600">
+                                {group.classification && group.classification !== "UPCOMING" ? (
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${
+                                      dueClassificationStyles[group.classification] || "bg-muted"
+                                    }`}>
                                     <Clock size={12} />
-                                    {group.daysOverdue} {t("page.apDashboard.po.days")}
+                                    {group.classification === "OVERDUE"
+                                      ? `${group.daysOverdue} ${t("page.apDashboard.po.days")}`
+                                      : t(
+                                          `page.apDashboard.po.classification.${group.classification}`
+                                        )}
                                   </span>
                                 ) : (
                                   <span className="text-xs text-green-600">-</span>
