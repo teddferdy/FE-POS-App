@@ -471,6 +471,7 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.roleManagement",
         href: "/role-management",
         icon: Shield,
+        keywords: "role permission izin pengaturan settings manajemen",
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
