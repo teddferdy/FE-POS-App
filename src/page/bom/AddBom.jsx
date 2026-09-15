@@ -113,7 +113,13 @@ const AddBom = () => {
         return {
           value: match ? String(match.id) : "",
           label: p.name,
-          unit: match?.unit || p.unit || "pcs",
+          // Batch 15: BE's bom.js requires bom_line.unit === ingredient.baseUnit
+          // (the stock/consumption unit), not ingredient.unit (the purchase/
+          // display unit) — these two intentionally differ whenever an
+          // ingredient is bought in one unit and stocked in another. Using
+          // match.unit here made every such BOM line fail BE's "Unit
+          // mismatch" validation.
+          unit: match?.baseUnit || match?.unit || p.unit || "pcs",
           matched: !!match
         };
       });
