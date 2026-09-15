@@ -105,6 +105,7 @@ const EditPurchaseOrder = () => {
   const [selectedStore, setSelectedStore] = useState("");
   const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
+  const [taxRate, setTaxRate] = useState(0);
   const [additionalCost, setAdditionalCost] = useState(0);
   const [additionalCostNotes, setAdditionalCostNotes] = useState("");
   const [overDeliveryTolerance, setOverDeliveryTolerance] = useState(10);
@@ -147,6 +148,7 @@ const EditPurchaseOrder = () => {
     setPicId(po.pic);
     setNotes(po.notes || "");
     setDiscount(po.discount || 0);
+    setTaxRate(po.taxRate || 0);
     setAdditionalCost(po.additionalCost || 0);
     setAdditionalCostNotes(po.additionalCostNotes || "");
     setOverDeliveryTolerance(po.overDeliveryTolerance ?? 10);
@@ -413,7 +415,11 @@ const EditPurchaseOrder = () => {
     () => groups.flatMap((g) => g.items).reduce((sum, item) => sum + item.qty * item.price, 0),
     [groups]
   );
-  const finalAmount = totalAmount - discount + additionalCost;
+  // Preview only — BE remains authoritative and recomputes taxAmount/
+  // finalAmount from taxRate server-side (Phase 22 Batch 2).
+  const taxableBase = totalAmount - discount;
+  const taxAmount = Math.round(taxableBase * ((Number(taxRate) || 0) / 100));
+  const finalAmount = taxableBase + taxAmount + additionalCost;
 
   const hasDuplicateItems = useMemo(() => {
     const seen = new Set();
@@ -502,6 +508,7 @@ const EditPurchaseOrder = () => {
       notes,
       pic: picId,
       discount,
+      taxRate,
       additionalCost,
       additionalCostNotes: additionalCostNotes || null,
       overDeliveryTolerance,
@@ -1229,6 +1236,21 @@ const EditPurchaseOrder = () => {
                         </div>
                         <div className="flex items-center gap-3">
                           <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                            {t("page.purchaseOrder.add.taxRate")}
+                          </Label>
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0"
+                            value={taxRate || ""}
+                            onChange={(e) =>
+                              setTaxRate(Number(e.target.value.replace(/[^0-9.]/g, "")) || 0)
+                            }
+                            className="h-9 text-sm w-20 text-right"
+                          />
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
                             {t("page.purchaseOrder.add.additionalCost")}
                           </Label>
                           <Input
@@ -1279,7 +1301,7 @@ const EditPurchaseOrder = () => {
                             Rp {totalAmount.toLocaleString("id-ID")}
                           </p>
                         </div>
-                        {(discount > 0 || additionalCost > 0) && (
+                        {(discount > 0 || taxAmount > 0 || additionalCost > 0) && (
                           <>
                             <div className="border-t border-border/60 my-2" />
                             <div className="text-right space-y-0.5">
@@ -1287,6 +1309,12 @@ const EditPurchaseOrder = () => {
                                 <p className="text-xs font-medium text-destructive">
                                   {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
                                   {discount.toLocaleString("id-ID")}
+                                </p>
+                              )}
+                              {taxAmount > 0 && (
+                                <p className="text-xs font-medium text-foreground">
+                                  {t("page.purchaseOrder.add.taxLabel", { rate: taxRate })} + Rp{" "}
+                                  {taxAmount.toLocaleString("id-ID")}
                                 </p>
                               )}
                               {additionalCost > 0 && (
@@ -1326,7 +1354,7 @@ const EditPurchaseOrder = () => {
                   </p>
                   <p className="text-sm font-semibold">
                     Rp{" "}
-                    {(discount > 0 || additionalCost > 0
+                    {(discount > 0 || taxAmount > 0 || additionalCost > 0
                       ? finalAmount
                       : totalAmount
                     ).toLocaleString("id-ID")}

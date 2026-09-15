@@ -5605,6 +5605,8 @@
   "page.purchaseOrder.add.cancelModalTitle": "Batalkan PO?",
   "page.purchaseOrder.add.discount": "Diskon",
   "page.purchaseOrder.add.discountLabel": "Diskon",
+  "page.purchaseOrder.add.taxRate": "Pajak (%)",
+  "page.purchaseOrder.add.taxLabel": "Pajak {{rate}}%",
   "page.purchaseOrder.add.additionalCost": "Biaya Tambahan",
   "page.purchaseOrder.add.additionalCostNotes": "Keterangan Biaya",
   "page.purchaseOrder.add.additionalCostNotesPlaceholder": "Misal: Ongkir, Admin Bank, dll.",
