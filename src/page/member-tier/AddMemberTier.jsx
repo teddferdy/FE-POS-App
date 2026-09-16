@@ -159,10 +159,7 @@ const AddMemberTier = () => {
       minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
       maxPoints: formData.maxPoints === "" ? 0 : Number(formData.maxPoints),
       discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
-      benefits: formData.perks
-        .map((p) => p.text)
-        .filter((t) => t.trim() !== "")
-        .join("\n"),
+      benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== ""),
       status: saveAsDraft ? "draft" : formData.isActive ? "active" : "inactive",
       color: formData.selectedColor
     });
@@ -546,10 +543,7 @@ const AddMemberTier = () => {
             minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
             maxPoints: formData.maxPoints === "" ? 0 : Number(formData.maxPoints),
             discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
-            benefits: formData.perks
-              .map((p) => p.text)
-              .filter((t) => t.trim() !== "")
-              .join("\n"),
+            benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== ""),
             status: "draft",
             color: formData.selectedColor
           });
