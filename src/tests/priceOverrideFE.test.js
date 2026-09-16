@@ -72,7 +72,7 @@ describe("FE price override — checkout payload", () => {
       ...(item.priceOverridden ? { priceOverride: item.price } : {}),
       price: item.price,
       basePrice: item.price,
-      subtotal: item.totalPrice,
+      subtotal: item.totalPrice
     }));
 
   test("overridden line includes priceOverride, normal line does not", () => {
