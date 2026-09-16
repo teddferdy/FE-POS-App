@@ -577,9 +577,10 @@ const CheckoutModal = ({
       // methods, not merely zeroed.
       ...(method === "cash" ? { cashAmount: cashAmountNum, changeAmount: change } : {}),
       items: items.map((item) => ({
-        product: item.idProduct,
+        product: item.product || item.idProduct || item.id,
         productName: item.nameProduct,
         quantity: item.count,
+        ...(item.priceOverridden ? { priceOverride: item.price } : {}),
         price: item.price,
         basePrice: item.price,
         subtotal: item.totalPrice,

@@ -39,6 +39,7 @@ export const orderList = create(
               price,
               count: 1,
               totalPrice: price,
+              priceOverridden: false,
               image: product.image || product.imageProduct || product.photo || null,
               unit: product.unit || "",
               sku: product.sku || "",
@@ -162,10 +163,12 @@ export const orderList = create(
       // values here too, not just in the CartPanel UI, so this action can
       // never leave the cart in a NaN/negative-price state no matter what
       // calls it.
+      // Price override is transient, order-specific, admin-only (enforced server-side),
+      // and distinguishable via priceOverridden boolean even when price equals catalog.
       updateItemPrice: (target, newPrice) => {
         if (newPrice === "" || newPrice === null || newPrice === undefined) return;
         const price = Number(newPrice);
-        if (!Number.isFinite(price) || price < 0) return;
+        if (!Number.isFinite(price) || price < 0 || !Number.isInteger(price)) return;
         return set((state) => {
           return {
             order: state.order.map((items) => {
@@ -175,7 +178,8 @@ export const orderList = create(
                 return {
                   ...items,
                   price,
-                  totalPrice: price * (items.count || 1)
+                  totalPrice: price * (items.count || 1),
+                  priceOverridden: true
                 };
               }
               return items;
