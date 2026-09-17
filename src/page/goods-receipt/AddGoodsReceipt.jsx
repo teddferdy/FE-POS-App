@@ -424,7 +424,8 @@ const AddGoodsReceipt = () => {
   const updateItem = (idx, field, value) => setValue(`items.${idx}.${field}`, value);
 
   const newGrIdempotencyKey = () =>
-    globalThis?.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    globalThis?.crypto?.randomUUID?.() ||
+    `${Date.now()}-${globalThis?.crypto?.getRandomValues?.(new Uint32Array(2))?.[0]?.toString(36) ?? 0}`;
 
   const doSubmit = async (data, saveAsDraft = false) => {
     if (isSubmitting) return;
