@@ -18,7 +18,7 @@ import {
 import AbortController from "@/components/organism/abort-controller";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslation } from "react-i18next";
-import { getProductByOutlet } from "@/services/product";
+import { getFullProductCatalog, getProductByOutlet } from "@/services/product";
 import { getAllLocation } from "@/services/location";
 import { getCustomerTaxRate } from "@/services/order";
 import { storeIdsEqual } from "@/utils/storeId";
@@ -184,7 +184,11 @@ const CashierPage = () => {
   const handleSidebarHoverChange = (collapsed) => setSidebarCollapsed(collapsed);
   const handleMobileMenuToggle = () => setMobileSidebarOpen((prev) => !prev);
 
-  const cart = orderList();
+  // Phase 31 Batch 2 (PERF-1): subscribe to the cart `order` slice only —
+  // the previous whole-store subscription re-rendered this page (and
+  // re-created every cart callback below) on any store write. Actions are
+  // stable references read via getState() without subscribing.
+  const cartOrder = orderList((s) => s.order);
 
   // Debounced for the network request only — the input itself stays
   // controlled by the raw `search` state so typing feels instant, and the
@@ -201,7 +205,7 @@ const CashierPage = () => {
     refetch
   } = useQuery(
     ["products-outlet", store, debouncedSearch],
-    () => getProductByOutlet({ location: store, search: debouncedSearch || undefined }),
+    () => getFullProductCatalog({ location: store, search: debouncedSearch || undefined }),
     {
       enabled: !!store
     }
@@ -273,8 +277,8 @@ const CashierPage = () => {
     [store]
   );
 
-  const totalItems = cart.order.reduce((sum, item) => sum + (item.count || 0), 0);
-  const subtotal = cart.order.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
+  const totalItems = cartOrder.reduce((sum, item) => sum + (item.count || 0), 0);
+  const subtotal = cartOrder.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
 
   // F-SMOKE-01: fetches the same store-or-global, fallback-included rate
   // order/create actually charges (getActiveTaxRate/getServiceChargeRate),
@@ -301,7 +305,7 @@ const CashierPage = () => {
           taxAmount,
           total: subtotal + taxAmount,
           tableName: selectedTable?.name || "",
-          items: cart.order.map((item) => ({
+          items: cartOrder.map((item) => ({
             cartKey: item.cartKey || item.id,
             nameProduct: item.nameProduct || item.name || "",
             variantName: item.variantName || null,
@@ -315,7 +319,7 @@ const CashierPage = () => {
       );
     }, 150);
     return () => clearTimeout(timer);
-  }, [cart.order, totalItems, subtotal, taxRate, taxAmount, selectedTable]);
+  }, [cartOrder, totalItems, subtotal, taxRate, taxAmount, selectedTable]);
 
   const queryClient = useQueryClient();
 
@@ -334,7 +338,7 @@ const CashierPage = () => {
       onSuccess: ({ res, storeAtInvocation }) => {
         queryClient.invalidateQueries(["parked-carts", storeAtInvocation]);
         if (res?.data?.status === "active") {
-          cart.resetOrder();
+          orderList.getState().resetOrder();
           setSelectedTable(null);
         }
         setParkCartOpen(false);
@@ -354,11 +358,11 @@ const CashierPage = () => {
       tableId: selectedTable?.id || null,
       notes: parkNotes || undefined,
       cart: {
-        items: cart.order,
+        items: cartOrder,
         orderType: selectedTable ? "dine-in" : "takeaway"
       }
     });
-  }, [parkMutation, selectedTable, parkNotes, cart.order]);
+  }, [parkMutation, selectedTable, parkNotes, cartOrder]);
 
   // The server has already committed the resume transition by the time
   // this runs (ParkedCartPanel only calls onResumed after a genuine 200)
@@ -367,9 +371,9 @@ const CashierPage = () => {
   // any locally-cached copy.
   const handleResumeParkedCart = useCallback(
     (parkedCart) => {
-      cart.resetOrder();
+      orderList.getState().resetOrder();
       const items = parkedCart?.cartPayload?.items || [];
-      items.forEach((item) => cart.addingProduct(item));
+      items.forEach((item) => orderList.getState().addingProduct(item));
       setSelectedTable(
         parkedCart?.tableId ? { id: parkedCart.tableId, name: parkedCart.table?.name || "" } : null
       );
@@ -377,7 +381,7 @@ const CashierPage = () => {
         description: t("page.cashier.orderLoadedDesc", { count: items.length })
       });
     },
-    [cart, t]
+    [t]
   );
 
   const handleLoadOrder = useCallback(
@@ -392,9 +396,9 @@ const CashierPage = () => {
         });
         return;
       }
-      cart.resetOrder();
+      orderList.getState().resetOrder();
       order.items.forEach((item) => {
-        cart.addingProduct({
+        orderList.getState().addingProduct({
           id: item.product,
           cartKey: `${item.product}_${item.options?.[0]?.name || ""}`,
           nameProduct: item.productName,
@@ -413,7 +417,7 @@ const CashierPage = () => {
         description: t("page.cashier.orderLoadedDesc", { count: order.items.length })
       });
     },
-    [cart, t]
+    [t]
   );
 
   // Loading a queued order wipes the active cart via handleLoadOrder's
@@ -423,20 +427,20 @@ const CashierPage = () => {
   // loads immediately (no added friction for the common case).
   const requestLoadOrder = useCallback(
     (order) => {
-      if (cart.order.length > 0) {
+      if (cartOrder.length > 0) {
         setPendingLoadOrder(order);
       } else {
         handleLoadOrder(order);
       }
     },
-    [cart.order.length, handleLoadOrder]
+    [cartOrder.length, handleLoadOrder]
   );
 
   const handleCheckoutComplete = useCallback(
     (result) => {
       setReceiptData(result);
       setCheckoutOpen(false);
-      cart.resetOrder();
+      orderList.getState().resetOrder();
       dispatchDisplayEvent({
         type: DISPLAY_EVENT_TYPES.TRANSACTION_SUCCESS,
         store,
@@ -445,17 +449,17 @@ const CashierPage = () => {
         total: result?.total || result?.grandTotal || result?.totalPrice || 0
       });
     },
-    [cart, store]
+    [store]
   );
 
   const handleNewTransaction = useCallback(() => {
-    cart.resetOrder();
+    orderList.getState().resetOrder();
     setSelectedTable(null);
     setReceiptData(null);
     // Return the cashier straight to scanning/typing the next sale instead
     // of leaving them to click back into the search/barcode field.
     setRefocusSignal((n) => n + 1);
-  }, [cart]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background relative">
@@ -646,7 +650,7 @@ const CashierPage = () => {
               <ParkedCartPanel
                 store={store}
                 onResumed={handleResumeParkedCart}
-                hasCartItems={cart.order.length > 0}
+                hasCartItems={cartOrder.length > 0}
               />
               <ProductGrid
                 products={filteredProducts}
@@ -685,19 +689,21 @@ const CashierPage = () => {
                   </button>
                 </div>
                 <CartPanel
-                  items={cart.order}
+                  items={cartOrder}
                   subtotal={subtotal}
                   taxRate={taxRate}
                   taxAmount={taxAmount}
-                  onIncrement={cart.incrementOrder}
-                  onDecrement={cart.decrementOrder}
-                  onDelete={cart.handleDeleteOrder}
+                  onIncrement={orderList.getState().incrementOrder}
+                  onDecrement={orderList.getState().decrementOrder}
+                  onDelete={orderList.getState().handleDeleteOrder}
                   onCheckout={() => setCheckoutOpen(true)}
                   onClearCart={() => setClearCartOpen(true)}
                   onParkCart={() => setParkCartOpen(true)}
                   isParkingCart={parkMutation.isLoading}
                   totalItems={totalItems}
-                  onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
+                  onUpdatePrice={(item, newPrice) =>
+                    orderList.getState().updateItemPrice(item, newPrice)
+                  }
                   canEditPrice={canOverridePrice}
                   isLoading={taxLoading}
                 />
@@ -719,19 +725,21 @@ const CashierPage = () => {
                 {cartExpanded ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
               </button>
               <CartPanel
-                items={cart.order}
+                items={cartOrder}
                 subtotal={subtotal}
                 taxRate={taxRate}
                 taxAmount={taxAmount}
-                onIncrement={cart.incrementOrder}
-                onDecrement={cart.decrementOrder}
-                onDelete={cart.handleDeleteOrder}
+                onIncrement={orderList.getState().incrementOrder}
+                onDecrement={orderList.getState().decrementOrder}
+                onDelete={orderList.getState().handleDeleteOrder}
                 onCheckout={() => setCheckoutOpen(true)}
                 onClearCart={() => setClearCartOpen(true)}
                 onParkCart={() => setParkCartOpen(true)}
                 isParkingCart={parkMutation.isLoading}
                 totalItems={totalItems}
-                onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
+                onUpdatePrice={(item, newPrice) =>
+                  orderList.getState().updateItemPrice(item, newPrice)
+                }
                 canEditPrice={canOverridePrice}
                 isLoading={taxLoading}
                 expanded={cartExpanded}
@@ -743,7 +751,7 @@ const CashierPage = () => {
         {checkoutOpen && (
           <CheckoutModal
             onClose={() => setCheckoutOpen(false)}
-            items={cart.order}
+            items={cartOrder}
             subtotal={subtotal}
             taxRate={taxRate}
             store={store}
@@ -812,7 +820,7 @@ const CashierPage = () => {
               <Button
                 variant="destructive"
                 onClick={() => {
-                  cart.resetOrder();
+                  orderList.getState().resetOrder();
                   setClearCartOpen(false);
                   toast.info(t("page.cashier.cartCleared"));
                 }}>

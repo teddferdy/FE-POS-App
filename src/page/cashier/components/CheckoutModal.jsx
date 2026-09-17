@@ -33,6 +33,8 @@ import { getAllTypePayment } from "@/services/type-payment";
 import { getMemberById } from "@/services/member";
 import { getTableAvailability, getTablesWithActiveOrders } from "@/services/table";
 import { getPaymentIconKind } from "@/utils/payment";
+import { calculateCheckoutTotals } from "@/utils/checkoutTotals";
+import { useDebounce } from "@/hooks/useDebounce";
 import MemberSearchModal from "@/components/MemberSearchModal";
 import { toast } from "sonner";
 import { dispatchDisplayEvent, DISPLAY_EVENT_TYPES } from "@/utils/customerDisplayBoard";
@@ -82,11 +84,16 @@ const CheckoutModal = ({
   const [paymentMethod, setPaymentMethod] = useState("");
   const [cashAmount, setCashAmount] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
+  // Phase 31 Batch 2 (PERF-1): debounce the dropdown text into the
+  // server-side nameMember/search filters so typing narrows remotely
+  // instead of pulling the whole list on every open.
+  const debouncedCustomerSearch = useDebounce(customerSearch, 300);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [selectedDiscount, setSelectedDiscount] = useState(null);
   const [showDiscountDropdown, setShowDiscountDropdown] = useState(false);
   const [discountSearch, setDiscountSearch] = useState("");
+  const debouncedDiscountSearch = useDebounce(discountSearch, 300);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [fullPayment, setFullPayment] = useState(false);
   const [addCustomerOpen, setAddCustomerOpen] = useState(false);
@@ -146,13 +153,26 @@ const CheckoutModal = ({
   );
 
   const { data: customersData } = useQuery(
-    ["customers", store],
-    () => getAllCustomer({ page: 1, limit: 999, store }),
+    ["customers", store, debouncedCustomerSearch],
+    () =>
+      getAllCustomer({
+        page: 1,
+        limit: 50,
+        store,
+        ...(debouncedCustomerSearch ? { nameMember: debouncedCustomerSearch } : {})
+      }),
     { enabled: !!store }
   );
   const { data: discountsData } = useQuery(
-    ["discounts-active", store],
-    () => getAllDiscount({ page: 1, limit: 999, location: store, status: "active" }),
+    ["discounts-active", store, debouncedDiscountSearch],
+    () =>
+      getAllDiscount({
+        page: 1,
+        limit: 50,
+        location: store,
+        status: "active",
+        ...(debouncedDiscountSearch ? { search: debouncedDiscountSearch } : {})
+      }),
     { enabled: !!store }
   );
   const { data: tiersData } = useQuery(["member-tiers-active"], () =>
@@ -282,7 +302,6 @@ const CheckoutModal = ({
   }, [paymentMethodsData]);
 
   const taxRate = Number.isFinite(propTaxRate) ? propTaxRate : 0.11;
-  const taxAmount = useTax ? subtotal * taxRate : 0;
   const matchedTier = useMemo(() => {
     if (!memberPoints || memberTiers.length === 0) return null;
     const active = memberTiers.filter((t) => t.status === "active");
@@ -303,7 +322,16 @@ const CheckoutModal = ({
       : selectedDiscount.value
     : discountAmount;
   const totalDiscount = discountValue + tierDiscountValue;
-  const total = Math.max(0, subtotal + taxAmount - totalDiscount);
+  // Phase 31 Batch 2 (F-1): derive display tax/total with BE canonical
+  // semantics (discount clamped + rounded, tax rounded on post-discount
+  // base) so the cashier sees what the server will charge. BE stays
+  // authoritative — persisted totals always come from /order/create.
+  const { taxAmount, total } = calculateCheckoutTotals({
+    subtotal,
+    discount: totalDiscount,
+    taxRate,
+    useTax
+  });
   const pointsDiscount = Number(redeemPoints) || 0;
   const remainingTotal = Math.max(0, total - pointsDiscount);
   const cashAmountNum = parseFloat(cashAmount) || 0;

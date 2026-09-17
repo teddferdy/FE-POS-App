@@ -1,10 +1,11 @@
 import { axiosInstance } from ".";
 
-export const getAllDiscount = async ({ page, limit, location, status } = {}) => {
+export const getAllDiscount = async ({ page, limit, location, status, search } = {}) => {
   const storeParam = location ? `&store=${location}` : "";
   const statusParam = status && status !== "all" ? `&status=${status}` : "";
+  const searchParam = search ? `&search=${encodeURIComponent(search)}` : "";
   const { data, status: resStatus } = await axiosInstance.get(
-    `/discount/get-discount?page=${page}&limit=${limit}${storeParam}${statusParam}`
+    `/discount/get-discount?page=${page}&limit=${limit}${storeParam}${statusParam}${searchParam}`
   );
   if (resStatus !== 200) throw Error(`${data?.message}`);
   return data;

@@ -23,7 +23,7 @@ export const getAllProduct = async ({ location, nameProduct, category, status } 
   return data;
 };
 
-export const getProductByOutlet = async ({ location, search }) => {
+export const getProductByOutlet = async ({ location, search, page }) => {
   const params = new URLSearchParams();
   if (location) params.append("store", location);
   if (search) params.append("search", search);
@@ -31,9 +31,41 @@ export const getProductByOutlet = async ({ location, search }) => {
   // silently truncating any store with a larger catalog. 500 is its hard
   // max (mirrors the same pattern already used by getIngredients above).
   params.append("limit", "500");
+  if (page != null) params.append("page", String(page));
   const { data, status } = await axiosInstance.get(`/product/get-product-by-super-admin?${params}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
+};
+
+// Phase 31 Batch 2 (PERF-1): follow the endpoint's existing
+// pagination.hasMore contract so catalogs larger than one 500-row page are
+// concatenated instead of silently truncated. Bounded (10 pages) so a
+// pathological catalog cannot fan out requests without limit. Bundles ride
+// along on every page response; the first page's copy is kept.
+export const getFullProductCatalog = async ({ location, search } = {}) => {
+  const MAX_CATALOG_PAGES = 10;
+  let page = 1;
+  let allItems = [];
+  let bundles = [];
+  let first = true;
+  for (;;) {
+    const res = await getProductByOutlet({ location, search, page });
+    const items = res?.data || [];
+    if (first) {
+      bundles = res?.bundles || [];
+      first = false;
+    }
+    allItems = allItems.concat(items);
+    const hasMore = res?.pagination?.hasMore === true;
+    if (!hasMore || page >= MAX_CATALOG_PAGES) {
+      return {
+        data: allItems,
+        bundles,
+        pagination: { page, limit: 500, hasMore: hasMore && page >= MAX_CATALOG_PAGES }
+      };
+    }
+    page += 1;
+  }
 };
 
 export const getIngredients = async ({ store, search } = {}) => {
