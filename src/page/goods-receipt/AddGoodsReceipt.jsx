@@ -78,6 +78,8 @@ const AddGoodsReceipt = () => {
   const user = cookies?.user;
   const [selectedStores, setSelectedStores] = useState([]);
   const [allStores, setAllStores] = useState(true);
+  // T-10 idempotency: one key per intentional submission, reused on retry
+  const grIdempotencyRef = useRef("");
 
   const { data: locationsData, isLoading: locationsLoading } = useQuery(
     ["allLocations"],
@@ -421,7 +423,12 @@ const AddGoodsReceipt = () => {
 
   const updateItem = (idx, field, value) => setValue(`items.${idx}.${field}`, value);
 
+  const newGrIdempotencyKey = () =>
+    globalThis?.crypto?.randomUUID?.() ||
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
   const doSubmit = async (data, saveAsDraft = false) => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       const validItems = data.items.filter(
@@ -449,6 +456,7 @@ const AddGoodsReceipt = () => {
         toast.error(t("page.goodsReceipt.add.toast.dateBeforePo"));
         return;
       }
+      if (!grIdempotencyRef.current) grIdempotencyRef.current = newGrIdempotencyKey();
       const payload = {
         purchaseOrderId: parseInt(data.poId),
         receivedDate:
@@ -460,6 +468,7 @@ const AddGoodsReceipt = () => {
         suratJalan: suratJalan.trim() || null,
         taxInvoiceNo: taxInvoiceNo.trim() || null,
         shippingCost: parseFloat(shippingCost) || 0,
+        idempotencyKey: grIdempotencyRef.current,
         status: saveAsDraft ? "draft" : "completed",
         items: validItems.map((it) => ({
           purchaseOrderItem: it.purchaseOrderItem,
@@ -476,6 +485,7 @@ const AddGoodsReceipt = () => {
         }))
       };
       await addGoodsReceipt(payload, docFiles);
+      grIdempotencyRef.current = "";
       toast.success(t("page.goodsReceipt.add.toast.success"), {
         description: t("page.goodsReceipt.add.toast.successDesc")
       });
