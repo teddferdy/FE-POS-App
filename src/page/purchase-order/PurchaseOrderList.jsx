@@ -42,6 +42,7 @@ import {
   cancelPurchaseOrder,
   deletePurchaseOrder,
   returnPurchaseOrder,
+  resolveReturnedBy,
   sendToSupplierPurchaseOrder,
   uploadPurchaseOrderExcel,
   downloadPurchaseOrderExcel
@@ -300,7 +301,7 @@ const PurchaseOrderList = () => {
         {
           reason,
           items,
-          returnedBy: user?.id
+          returnedBy: resolveReturnedBy(user, null)
         },
         files
       ),

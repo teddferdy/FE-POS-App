@@ -5,7 +5,8 @@ import { safeGet } from "@/lib/safe-lookup";
 import { getPurchaseOrderById } from "../../services/purchase-order";
 import { getPaymentsByPO, deletePayment, recordPayment } from "../../services/purchase-payment";
 import { getReturnsByPO } from "../../services/purchase-return";
-import { returnPurchaseOrder } from "../../services/purchase-order";
+import { returnPurchaseOrder, resolveReturnedBy } from "../../services/purchase-order";
+import { useCookies } from "react-cookie";
 import { useQueryClient } from "react-query";
 import { invalidatePurchasePaymentCaches } from "@/utils/purchasePaymentCache";
 import { newPurchasePaymentKey } from "@/utils/paymentIdempotency";
@@ -102,6 +103,10 @@ export default function DetailPurchaseOrder() {
   const docInputRef = useRef(null);
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const queryClient = useQueryClient();
+  // Phase 32 Batch A (PR-10): authenticated identity for the return
+  // payload; the typed name remains as fallback.
+  const [cookie] = useCookies();
+  const authUser = cookie?.user;
 
   const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const remaining = (po?.finalAmount || 0) - totalPaid;
@@ -278,7 +283,7 @@ export default function DetailPurchaseOrder() {
             unit: i.unit
           })),
           reason: returnReason || null,
-          returnedBy: returnedByName || null
+          returnedBy: resolveReturnedBy(authUser, returnedByName)
         },
         returnDocs.map((d) => d.file)
       );

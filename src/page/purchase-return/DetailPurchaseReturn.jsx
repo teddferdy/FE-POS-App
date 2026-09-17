@@ -96,14 +96,14 @@ const DetailPurchaseReturn = () => {
           },
           {
             label: t("page.purchaseReturn.detail.breadcrumb.list"),
-            href: "/purchase-return-list",
+            href: "/purchase-return",
             i18nKey: "page.purchaseReturn.detail.breadcrumb.list"
           },
           { label: t("breadcrumb.detail") }
         ]}
         title={isLoading ? t("common.loading") : ret?.returnNumber || "-"}
         description={t("page.purchaseReturn.detail.title")}
-        backLink="/purchase-return-list"
+        backLink="/purchase-return"
         dynamicInfo={false}>
         {!isLoading && (
           <span
@@ -273,7 +273,7 @@ const DetailPurchaseReturn = () => {
                       {t("page.purchaseReturn.detail.table.totalQty")}
                     </p>
                     <p className="text-lg font-bold text-foreground font-mono">
-                      {ret.items.reduce((s, i) => s + (parseInt(i.qty) || 0), 0)}
+                      {ret.items.reduce((s, i) => s + (Number(i.qty) || 0), 0)}
                     </p>
                   </Card>
                   <Card className="p-4 bg-muted/20 border-border/50">
