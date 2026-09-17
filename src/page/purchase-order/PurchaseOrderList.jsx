@@ -819,7 +819,8 @@ const PurchaseOrderList = () => {
                   }
                 ]
               : []),
-            ...(po.status === "draft" || po.status === "pending"
+            ...((po.status === "draft" || po.status === "pending") &&
+            !(po.items || []).some((it) => Number(it.receivedQuantity) > 0)
               ? [
                   {
                     label: t("page.purchaseOrder.list.action.cancel"),

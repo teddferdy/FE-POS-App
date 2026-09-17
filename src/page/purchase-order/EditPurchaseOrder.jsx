@@ -140,6 +140,11 @@ const EditPurchaseOrder = () => {
     refetch
   } = useQuery(["po-edit", id], () => getPurchaseOrderById(id), { enabled: !!id });
   const po = poData?.data;
+  // T-02/T-03/T-04 financial lock after first receipt (BE authoritative, FE mirrors for UX)
+  const hasFinancialLock = useMemo(
+    () => !!(po && po.items && po.items.some((it) => Number(it.receivedQuantity) > 0)),
+    [po]
+  );
 
   useEffect(() => {
     if (!po) return;
@@ -503,6 +508,8 @@ const EditPurchaseOrder = () => {
       });
     });
 
+    // T-11 lifecycle: only draft->pending via update is allowed; all other status changes use dedicated endpoints
+    const isActivatingDraft = !saveAsDraft && po.status === "draft";
     const payload = {
       store: selectedStore,
       notes,
@@ -523,7 +530,8 @@ const EditPurchaseOrder = () => {
         return d;
       })(),
       items: itemsPayload,
-      status: saveAsDraft ? "draft" : po.status === "draft" ? "pending" : po.status
+      ...(isActivatingDraft ? { status: "pending" } : {}),
+      ...(saveAsDraft && po.status === "draft" ? { status: "draft" } : {})
     };
 
     updateMutation.mutate(normalizePayload(payload, { isFormData: false }));
@@ -1212,6 +1220,12 @@ const EditPurchaseOrder = () => {
                         value={discount ? formatIDR(discount) : ""}
                         onChange={(e) => setDiscount(parseIDR(e.target.value))}
                         className="h-9 text-sm w-32 sm:w-36 text-right"
+                        disabled={hasFinancialLock}
+                        title={
+                          hasFinancialLock
+                            ? t("page.purchaseOrder.edit.lockedAfterReceipt")
+                            : undefined
+                        }
                       />
                     </div>
                     <div className="flex items-center gap-3">
@@ -1227,6 +1241,12 @@ const EditPurchaseOrder = () => {
                           setTaxRate(Number(e.target.value.replace(/[^0-9.]/g, "")) || 0)
                         }
                         className="h-9 text-sm w-20 text-right"
+                        disabled={hasFinancialLock}
+                        title={
+                          hasFinancialLock
+                            ? t("page.purchaseOrder.edit.lockedAfterReceipt")
+                            : undefined
+                        }
                       />
                     </div>
                     <div className="flex items-center gap-3">
@@ -1238,6 +1258,12 @@ const EditPurchaseOrder = () => {
                         value={additionalCost ? formatIDR(additionalCost) : ""}
                         onChange={(e) => setAdditionalCost(parseIDR(e.target.value))}
                         className="h-9 text-sm w-32 sm:w-36 text-right"
+                        disabled={hasFinancialLock}
+                        title={
+                          hasFinancialLock
+                            ? t("page.purchaseOrder.edit.lockedAfterReceipt")
+                            : undefined
+                        }
                       />
                     </div>
                     {additionalCost > 0 && (
@@ -1250,6 +1276,7 @@ const EditPurchaseOrder = () => {
                           value={additionalCostNotes}
                           onChange={(e) => setAdditionalCostNotes(e.target.value)}
                           className="h-9 text-sm flex-1 min-w-[160px]"
+                          disabled={hasFinancialLock}
                         />
                       </div>
                     )}
@@ -1267,6 +1294,12 @@ const EditPurchaseOrder = () => {
                           )
                         }
                         className="h-9 text-sm w-20 text-right"
+                        disabled={hasFinancialLock}
+                        title={
+                          hasFinancialLock
+                            ? t("page.purchaseOrder.edit.lockedAfterReceipt")
+                            : undefined
+                        }
                       />
                     </div>
                   </div>
