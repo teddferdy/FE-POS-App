@@ -1,5 +1,13 @@
 import { axiosInstance } from ".";
 
+// Phase 32 Batch A (PR-10): normalize the purchase-return `returnedBy`
+// payload to the authenticated user identifier whenever one is available,
+// falling back to the typed name. Both shapes are accepted by the existing
+// BE contract (returnedBy is a free-text STRING column; responses resolve
+// display identity from createdBy), but the stable identifier is preferred
+// for auditability over free text.
+export const resolveReturnedBy = (user, fallbackName) => user?.id ?? (fallbackName || null);
+
 export const getAllPurchaseOrder = async (payload) => {
   const query = new URLSearchParams({
     ...(payload?.stores ? { stores: payload.stores } : {}),
