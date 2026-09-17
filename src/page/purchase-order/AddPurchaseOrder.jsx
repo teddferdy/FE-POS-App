@@ -593,30 +593,26 @@ const AddPurchaseOrder = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[
-              {
-                label: t("breadcrumb.home"),
-                href: "/dashboard-super-admin",
-                i18nKey: "breadcrumb.home"
-              },
-              {
-                label: t("page.purchaseOrder.list.title"),
-                href: "/purchase-order",
-                i18nKey: "page.purchaseOrder.list.title"
-              },
-              { label: t("page.purchaseOrder.add.title"), i18nKey: "page.purchaseOrder.add.title" }
-            ]}
-            title={t("page.purchaseOrder.add.title")}
-            description={t("page.purchaseOrder.add.description")}
-            backLink="/purchase-order"
-            onBack={() => setCancelModal(true)}>
-            <UserGuide guideKey="add-purchase-order" />
-          </PageHeader>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.purchaseOrder.list.title"),
+            href: "/purchase-order",
+            i18nKey: "page.purchaseOrder.list.title"
+          },
+          { label: t("page.purchaseOrder.add.title"), i18nKey: "page.purchaseOrder.add.title" }
+        ]}
+        title={t("page.purchaseOrder.add.title")}
+        description={t("page.purchaseOrder.add.description")}
+        backLink="/purchase-order"
+        onBack={() => setCancelModal(true)}>
+        <UserGuide guideKey="add-purchase-order" />
+      </PageHeader>
 
       {!headerReady ? (
         <div className="space-y-6">
@@ -648,728 +644,699 @@ const AddPurchaseOrder = () => {
           </Card>
         </div>
       ) : (
-        <div>
-          <div>
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-              <Card className="overflow-hidden border-0 shadow-md rounded-xl">
-                <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
-                      <ShoppingCart size={18} className="text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-semibold text-white">
-                        {t("page.purchaseOrder.add.supplierSection")}
-                      </h3>
-                      <p className="text-xs text-blue-100">
-                        {t("page.purchaseOrder.add.supplierSectionDesc")}
-                      </p>
-                    </div>
-                  </div>
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+            <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+                  <ShoppingCart size={18} className="text-white" />
                 </div>
-                <div className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">
-                        {t("page.purchaseOrder.add.store")}{" "}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <Combobox
-                        options={[
-                          { value: "", label: t("page.purchaseOrder.add.selectStore") },
-                          ...locations.map((loc) => ({
-                            value: normalizeStoreId(loc.id),
-                            label: loc.name
-                          }))
-                        ]}
-                        value={selectedStore}
-                        onChange={(val) => {
-                          setSelectedStore(val);
-                          setGroups([emptyGroup()]);
-                          setErrors((prev) => ({ ...prev, store: undefined }));
-                        }}
-                        disabled={!isSuperAdmin || !!lockedStore}
-                        placeholder={t("page.purchaseOrder.add.selectStore")}
-                        searchPlaceholder={t("page.purchaseOrder.add.selectStore")}
-                      />
-                      {errors.store && (
-                        <p className="text-xs text-destructive mt-1">{errors.store}</p>
-                      )}
-                    </div>
-                    <div className="relative">
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">
-                        {t("page.purchaseOrder.add.pic")}{" "}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      {!selectedStore ? (
-                        <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-foreground">
-                              {t("page.purchaseOrder.add.selectStoreFirst") ||
-                                "Pilih toko terlebih dahulu"}
-                            </p>
-                          </div>
-                        </div>
-                      ) : employeesLoading ? (
-                        <Skeleton className="h-10 w-full" />
-                      ) : employees.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-foreground">
-                              {t("page.purchaseOrder.add.noEmployee")}{" "}
-                              {selectedStore && locations.length > 0 && (
-                                <span className="text-muted-foreground">
-                                  {t("page.purchaseOrder.add.inStore", {
-                                    storeName:
-                                      locations.find((l) => storeIdsEqual(l.id, selectedStore))
-                                        ?.name || ""
-                                  })}
-                                </span>
-                              )}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {t("page.purchaseOrder.add.addEmployeeFirst")}
-                            </p>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="success"
-                            size="sm"
-                            onClick={() => navigate("/add-employee")}
-                            className="gap-2">
-                            <Plus size={18} />
-                            {t("page.purchaseOrder.add.addEmployee")}
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          <Input
-                            placeholder={t("page.purchaseOrder.add.picPlaceholder")}
-                            value={picSearch}
-                            onChange={(e) => {
-                              setPicSearch(e.target.value);
-                              setPicId(null);
-                              setShowPicList(true);
-                              setErrors((prev) => ({ ...prev, pic: undefined }));
-                            }}
-                            onFocus={() => setShowPicList(true)}
-                            onBlur={() => setTimeout(() => setShowPicList(false), 200)}
-                            className={`h-10 ${errors.pic ? "border-destructive" : ""}`}
-                          />
-                          {errors.pic && (
-                            <p className="text-xs text-destructive mt-1">{errors.pic}</p>
-                          )}
-                          {showPicList && (
-                            <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                              {filteredEmployees.length > 0 ? (
-                                filteredEmployees.map((e) => (
-                                  <button
-                                    key={e.id || e._id}
-                                    type="button"
-                                    onMouseDown={() => selectPic(e)}
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
-                                    {e.fullName || e.userName}
-                                  </button>
-                                ))
-                              ) : picSearch ? (
-                                <p className="p-3 text-xs text-muted-foreground text-center">
-                                  {t("page.purchaseOrder.add.noEmployeeFound")}
-                                </p>
-                              ) : (
-                                <p className="p-3 text-xs text-muted-foreground text-center">
-                                  {t("page.purchaseOrder.add.typeToSearchPic")}
-                                </p>
-                              )}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">
-                        {t("page.purchaseOrder.add.poDate")}{" "}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <DatePicker
-                        date={orderDate}
-                        setDate={(d) => {
-                          setOrderDate(d);
-                          setErrors((prev) => ({ ...prev, orderDate: undefined }));
-                        }}
-                      />
-                      {errors.orderDate && (
-                        <p className="text-xs text-destructive mt-1">{errors.orderDate}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">
-                        {t("page.purchaseOrder.add.time")}{" "}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <TimePicker
-                        value={orderTime}
-                        onChange={(v) => {
-                          setOrderTime(v);
-                          setErrors((prev) => ({ ...prev, orderTime: undefined }));
-                        }}
-                      />
-                      {errors.orderTime && (
-                        <p className="text-xs text-destructive mt-1">{errors.orderTime}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">
-                        {t("page.purchaseOrder.add.paymentMethod")}{" "}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <Combobox
-                        options={[
-                          { value: "cash", label: t("page.purchaseOrder.add.paymentMethodCash") },
-                          {
-                            value: "credit",
-                            label: t("page.purchaseOrder.add.paymentMethodCredit")
-                          }
-                        ]}
-                        value={paymentMethod}
-                        onChange={(val) => {
-                          setPaymentMethod(val);
-                          if (val === "cash") {
-                            setTenor(0);
-                            setDpPercent(0);
-                            setDueDate(null);
-                          }
-                        }}
-                        placeholder={t("page.purchaseOrder.add.paymentMethodCash")}
-                        searchPlaceholder={t("page.purchaseOrder.add.paymentMethodCash")}
-                      />
-                    </div>
-                    {paymentMethod === "credit" && (
-                      <div>
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">
-                          {t("page.purchaseOrder.add.dpPercent")}
-                        </label>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder={t("page.purchaseOrder.add.dpPercentPlaceholder")}
-                          value={dpPercent || ""}
-                          onChange={(e) => {
-                            const val = Number(e.target.value);
-                            if (val >= 0 && val <= 100) setDpPercent(val);
-                          }}
-                          className="h-10"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("page.purchaseOrder.add.dpPercentHint")}
-                        </p>
-                        {dpPercent > 0 && (
-                          <p className="text-xs text-primary font-medium mt-1">
-                            {t("page.purchaseOrder.add.dpAmount")}: Rp{" "}
-                            {((finalAmount * dpPercent) / 100).toLocaleString("id-ID")}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    {paymentMethod === "credit" && (
-                      <div>
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">
-                          {t("page.purchaseOrder.add.dueDate")}{" "}
-                          <span className="text-destructive">*</span>
-                        </label>
-                        <DatePicker
-                          date={dueDate}
-                          setDate={(d) => {
-                            setDueDate(d);
-                            setErrors((prev) => ({ ...prev, dueDate: undefined }));
-                          }}
-                        />
-                        {errors.dueDate && (
-                          <p className="text-xs text-destructive mt-1">{errors.dueDate}</p>
-                        )}
-                      </div>
-                    )}
-                    {paymentMethod === "credit" && (
-                      <div>
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">
-                          {t("page.purchaseOrder.add.tenor")}{" "}
-                          <span className="text-destructive">*</span>
-                        </label>
-                        <Input
-                          type="number"
-                          min="1"
-                          placeholder={t("page.purchaseOrder.add.tenorPlaceholder")}
-                          value={tenor || ""}
-                          onChange={(e) => setTenor(Number(e.target.value) || 0)}
-                          className="h-10"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("page.purchaseOrder.add.tenorHint")}
-                        </p>
-                      </div>
-                    )}
-                    <div className="md:col-span-2">
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">
-                        {t("page.purchaseOrder.add.notes")}
-                      </label>
-                      <Textarea
-                        placeholder={t("page.purchaseOrder.add.notesPlaceholder")}
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        className="min-h-[80px] resize-none"
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <h3 className="text-base font-semibold text-white">
+                    {t("page.purchaseOrder.add.supplierSection")}
+                  </h3>
+                  <p className="text-xs text-blue-100">
+                    {t("page.purchaseOrder.add.supplierSectionDesc")}
+                  </p>
                 </div>
-              </Card>
-
-              <Card className="overflow-hidden border-0 shadow-md rounded-xl">
-                <div className="bg-gradient-to-r from-emerald-600/90 to-emerald-700/90 px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
-                      <Package size={18} className="text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-semibold text-white">
-                        {t("page.purchaseOrder.add.itemSection")}
-                      </h3>
-                      <p className="text-xs text-emerald-100">
-                        {t("page.purchaseOrder.add.itemSectionDesc")}
-                      </p>
-                    </div>
-                  </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
+                    {t("page.purchaseOrder.add.store")} <span className="text-destructive">*</span>
+                  </label>
+                  <Combobox
+                    options={[
+                      { value: "", label: t("page.purchaseOrder.add.selectStore") },
+                      ...locations.map((loc) => ({
+                        value: normalizeStoreId(loc.id),
+                        label: loc.name
+                      }))
+                    ]}
+                    value={selectedStore}
+                    onChange={(val) => {
+                      setSelectedStore(val);
+                      setGroups([emptyGroup()]);
+                      setErrors((prev) => ({ ...prev, store: undefined }));
+                    }}
+                    disabled={!isSuperAdmin || !!lockedStore}
+                    placeholder={t("page.purchaseOrder.add.selectStore")}
+                    searchPlaceholder={t("page.purchaseOrder.add.selectStore")}
+                  />
+                  {errors.store && <p className="text-xs text-destructive mt-1">{errors.store}</p>}
                 </div>
-                <div className="p-4 sm:p-6">
+                <div className="relative">
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
+                    {t("page.purchaseOrder.add.pic")} <span className="text-destructive">*</span>
+                  </label>
                   {!selectedStore ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                      <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
-                        <ShoppingCart size={22} className="text-muted-foreground" />
+                    <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-foreground">
+                          {t("page.purchaseOrder.add.selectStoreFirst") ||
+                            "Pilih toko terlebih dahulu"}
+                        </p>
                       </div>
-                      <p className="text-sm font-medium text-foreground">
-                        {t("page.purchaseOrder.add.selectStoreFirst") ||
-                          "Pilih store terlebih dahulu"}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1.5 max-w-xs">
-                        {t("page.purchaseOrder.add.selectStoreHint") ||
-                          "Item pesanan akan muncul setelah store dipilih"}
-                      </p>
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {errors.items && (
-                        <div className="flex items-center gap-2 rounded-lg bg-destructive/5 border border-destructive/20 px-3 py-2">
-                          <span className="text-xs text-destructive font-medium">
-                            {errors.items}
-                          </span>
-                        </div>
-                      )}
-
-                      {groups.map((group, gIdx) => (
-                        <div key={gIdx} className="border rounded-lg overflow-hidden">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 border-b bg-muted/40">
-                            <Label className="shrink-0 text-xs text-muted-foreground">
-                              {t("page.purchaseOrder.add.table.supplier")}
-                            </Label>
-                            <div className="flex-1 min-w-[220px]">
-                              <Combobox
-                                options={supplierOptions}
-                                value={group.supplier ? String(group.supplier) : ""}
-                                onChange={(val) => pickGroupSupplier(gIdx, val)}
-                                onClear={() => handleClearSupplierClick(gIdx)}
-                                placeholder={t("page.purchaseOrder.add.selectSupplier")}
-                                searchPlaceholder={t("common.search")}
-                                emptyMessage={t("page.purchaseOrder.add.noSupplierFound")}
-                                disabled={!selectedStore || suppliersLoading}
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                              onClick={() => handleRemoveGroupClick(gIdx)}
-                              disabled={groups.length === 1}>
-                              <Trash2 size={14} />
-                            </Button>
-                          </div>
-
-                          {group.supplier &&
-                          safeGet(supplierItemsBySupplier, group.supplier, []).length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-10 text-center px-4">
-                              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                                <Package size={20} className="text-muted-foreground" />
-                              </div>
-                              <p className="text-sm font-medium text-foreground">
-                                {t("page.purchaseOrder.add.supplierNoItems")}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {t("page.purchaseOrder.add.supplierNoItemsDesc")}
-                              </p>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="overflow-x-auto">
-                                <table className="w-full text-sm min-w-[820px]">
-                                  <thead>
-                                    <tr className="border-b">
-                                      <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                                        {t("page.purchaseOrder.add.table.name")}
-                                      </th>
-                                      <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                                        {t("page.purchaseOrder.add.table.qty")}
-                                      </th>
-                                      <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                                        {t("page.purchaseOrder.add.table.unit")}
-                                      </th>
-                                      <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
-                                        {t("page.purchaseOrder.add.table.price")}
-                                      </th>
-                                      <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
-                                        {t("page.purchaseOrder.add.table.subtotal")}
-                                      </th>
-                                      <th className="w-10"></th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {group.items.map((item, iIdx) => (
-                                      <tr key={iIdx} className="border-b border-muted/20">
-                                        <td className="px-3 py-2 min-w-[280px]">
-                                          <Combobox
-                                            options={itemOptionsForRow(gIdx, iIdx, group.supplier)}
-                                            value={selectedItemValue(item, group.supplier)}
-                                            onChange={(val) => pickItemOption(gIdx, iIdx, val)}
-                                            placeholder={
-                                              group.supplier
-                                                ? t("page.purchaseOrder.add.placeholder.selectItem")
-                                                : t("page.purchaseOrder.add.selectSupplierFirst")
-                                            }
-                                            searchPlaceholder={t("common.search")}
-                                            emptyMessage={t(
-                                              "page.purchaseOrder.add.noIngredientFound"
-                                            )}
-                                            disabled={!group.supplier}
-                                          />
-                                          {item.name &&
-                                            !selectedItemValue(item, group.supplier) && (
-                                              <p className="text-[10px] text-muted-foreground mt-1 truncate">
-                                                {item.name}
-                                              </p>
-                                            )}
-                                        </td>
-                                        <td className="px-3 py-2">
-                                          <Input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={item.qty === 0 ? "" : String(item.qty)}
-                                            onChange={(e) =>
-                                              updateItem(
-                                                gIdx,
-                                                iIdx,
-                                                "qty",
-                                                Number(
-                                                  e.target.value
-                                                    .replace(/[^0-9.]/g, "")
-                                                    .replace(/(\..*)\./g, "$1")
-                                                ) || 0
-                                              )
-                                            }
-                                            className="h-8 text-xs text-center w-20 mx-auto"
-                                            placeholder="0"
-                                          />
-                                        </td>
-                                        <td className="px-3 py-2 align-top">
-                                          <div className="flex justify-center">
-                                            <Combobox
-                                              options={unitOptions.map((opt) => ({
-                                                value: opt.value,
-                                                label: opt.label
-                                              }))}
-                                              value={item.unit}
-                                              onChange={(val) =>
-                                                updateItem(gIdx, iIdx, "unit", val)
-                                              }
-                                              placeholder="pcs"
-                                              searchPlaceholder={t("common.search")}
-                                            />
-                                          </div>
-                                          <div className="mt-1">
-                                            <Input
-                                              type="text"
-                                              inputMode="decimal"
-                                              value={
-                                                item.conversionToBase
-                                                  ? String(item.conversionToBase)
-                                                  : "1"
-                                              }
-                                              onChange={(e) =>
-                                                updateItem(
-                                                  gIdx,
-                                                  iIdx,
-                                                  "conversionToBase",
-                                                  Number(e.target.value.replace(/[^0-9.]/g, "")) ||
-                                                    1
-                                                )
-                                              }
-                                              className="h-7 text-xs text-center"
-                                              title={t(
-                                                "page.purchaseOrder.add.conversionPlaceholder",
-                                                {
-                                                  unit: item.unit || "pcs"
-                                                }
-                                              )}
-                                              aria-label={t(
-                                                "page.purchaseOrder.add.conversionPlaceholder",
-                                                { unit: item.unit || "pcs" }
-                                              )}
-                                            />
-                                            <p className="text-[10px] text-muted-foreground text-center mt-0.5">
-                                              {t("page.purchaseOrder.add.conversionPlaceholder", {
-                                                unit: item.unit || "pcs"
-                                              })}
-                                            </p>
-                                          </div>
-                                        </td>
-                                        <td className="px-3 py-2">
-                                          <Input
-                                            placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                                            value={item.price ? formatIDR(item.price) : ""}
-                                            onChange={(e) =>
-                                              updateItem(
-                                                gIdx,
-                                                iIdx,
-                                                "price",
-                                                parseIDR(e.target.value)
-                                              )
-                                            }
-                                            className="h-8 text-xs text-right w-36 ml-auto"
-                                          />
-                                        </td>
-                                        <td className="px-3 py-2">
-                                          <div className="text-right">
-                                            <p className="text-sm font-semibold text-foreground">
-                                              Rp {(item.qty * item.price).toLocaleString("id-ID")}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                              {item.qty} x {formatIDR(item.price)}
-                                            </p>
-                                          </div>
-                                        </td>
-                                        <td className="px-3 py-2 text-center">
-                                          <button
-                                            type="button"
-                                            onClick={() => handleRemoveItemClick(gIdx, iIdx)}
-                                            disabled={group.items.length === 1}
-                                            className="text-muted-foreground/40 hover:text-destructive disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-muted-foreground/40">
-                                            <Trash2 size={14} />
-                                          </button>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-
-                              <div className="p-3 border-t">
-                                <Button
-                                  type="button"
-                                  variant="success"
-                                  size="sm"
-                                  onClick={() => addItem(gIdx)}
-                                  className="gap-1">
-                                  <Plus size={14} /> {t("page.purchaseOrder.add.form.addItem")}
-                                </Button>
-                              </div>
-                            </>
+                  ) : employeesLoading ? (
+                    <Skeleton className="h-10 w-full" />
+                  ) : employees.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-foreground">
+                          {t("page.purchaseOrder.add.noEmployee")}{" "}
+                          {selectedStore && locations.length > 0 && (
+                            <span className="text-muted-foreground">
+                              {t("page.purchaseOrder.add.inStore", {
+                                storeName:
+                                  locations.find((l) => storeIdsEqual(l.id, selectedStore))?.name ||
+                                  ""
+                              })}
+                            </span>
                           )}
-                        </div>
-                      ))}
-
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t("page.purchaseOrder.add.addEmployeeFirst")}
+                        </p>
+                      </div>
                       <Button
                         type="button"
                         variant="success"
                         size="sm"
-                        onClick={addGroup}
-                        disabled={!selectedStore || suppliersLoading}
-                        className="gap-1">
-                        <Plus size={14} /> {t("page.purchaseOrder.add.form.addSupplier")}
+                        onClick={() => navigate("/add-employee")}
+                        className="gap-2">
+                        <Plus size={18} />
+                        {t("page.purchaseOrder.add.addEmployee")}
                       </Button>
-
-                      <div className="rounded-xl bg-gradient-to-b from-muted/50 to-muted/20 border border-border/60 p-4 sm:p-5">
-                        <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 justify-end">
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 sm:pt-1">
-                            <div className="flex items-center gap-3">
-                              <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
-                                {t("page.purchaseOrder.add.discount")}
-                              </Label>
-                              <Input
-                                placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                                value={discount ? formatIDR(discount) : ""}
-                                onChange={(e) => setDiscount(parseIDR(e.target.value))}
-                                className="h-9 text-sm w-32 sm:w-36 text-right"
-                              />
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
-                                {t("page.purchaseOrder.add.taxRate")}
-                              </Label>
-                              <Input
-                                type="text"
-                                inputMode="decimal"
-                                placeholder="0"
-                                value={taxRate || ""}
-                                onChange={(e) =>
-                                  setTaxRate(Number(e.target.value.replace(/[^0-9.]/g, "")) || 0)
-                                }
-                                className="h-9 text-sm w-20 text-right"
-                              />
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
-                                {t("page.purchaseOrder.add.additionalCost")}
-                              </Label>
-                              <Input
-                                placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                                value={additionalCost ? formatIDR(additionalCost) : ""}
-                                onChange={(e) => setAdditionalCost(parseIDR(e.target.value))}
-                                className="h-9 text-sm w-32 sm:w-36 text-right"
-                              />
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
-                                {t("page.purchaseOrder.add.overDeliveryTolerance")}
-                              </Label>
-                              <Input
-                                type="text"
-                                inputMode="decimal"
-                                value={overDeliveryTolerance || ""}
-                                onChange={(e) =>
-                                  setOverDeliveryTolerance(
-                                    Number(e.target.value.replace(/[^0-9.]/g, "")) || 0
-                                  )
-                                }
-                                className="h-9 text-sm w-20 text-right"
-                              />
-                            </div>
-                          </div>
-                          <div className="flex-1 max-w-[280px] ml-auto">
-                            <div className="text-right space-y-1">
-                              <p className="text-xs text-muted-foreground">
-                                {t("page.purchaseOrder.add.totalPrice")}
-                              </p>
-                              <p className="text-xl sm:text-2xl font-bold text-foreground">
-                                Rp {totalAmount.toLocaleString("id-ID")}
-                              </p>
-                            </div>
-                            {(discount > 0 || taxAmount > 0 || additionalCost > 0) && (
-                              <>
-                                <div className="border-t border-border/60 my-2" />
-                                <div className="text-right space-y-0.5">
-                                  {discount > 0 && (
-                                    <p className="text-xs font-medium text-destructive">
-                                      {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
-                                      {discount.toLocaleString("id-ID")}
-                                    </p>
-                                  )}
-                                  {taxAmount > 0 && (
-                                    <p className="text-xs font-medium text-foreground">
-                                      {t("page.purchaseOrder.add.taxLabel", { rate: taxRate })} + Rp{" "}
-                                      {taxAmount.toLocaleString("id-ID")}
-                                    </p>
-                                  )}
-                                  {additionalCost > 0 && (
-                                    <p className="text-xs font-medium text-emerald-600">
-                                      {t("page.purchaseOrder.add.additionalCostLabel")} + Rp{" "}
-                                      {additionalCost.toLocaleString("id-ID")}
-                                    </p>
-                                  )}
-                                  <p className="text-base sm:text-lg font-bold text-foreground">
-                                    Rp {finalAmount.toLocaleString("id-ID")}
-                                  </p>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
                     </div>
+                  ) : (
+                    <>
+                      <Input
+                        placeholder={t("page.purchaseOrder.add.picPlaceholder")}
+                        value={picSearch}
+                        onChange={(e) => {
+                          setPicSearch(e.target.value);
+                          setPicId(null);
+                          setShowPicList(true);
+                          setErrors((prev) => ({ ...prev, pic: undefined }));
+                        }}
+                        onFocus={() => setShowPicList(true)}
+                        onBlur={() => setTimeout(() => setShowPicList(false), 200)}
+                        className={`h-10 ${errors.pic ? "border-destructive" : ""}`}
+                      />
+                      {errors.pic && <p className="text-xs text-destructive mt-1">{errors.pic}</p>}
+                      {showPicList && (
+                        <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          {filteredEmployees.length > 0 ? (
+                            filteredEmployees.map((e) => (
+                              <button
+                                key={e.id || e._id}
+                                type="button"
+                                onMouseDown={() => selectPic(e)}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
+                                {e.fullName || e.userName}
+                              </button>
+                            ))
+                          ) : picSearch ? (
+                            <p className="p-3 text-xs text-muted-foreground text-center">
+                              {t("page.purchaseOrder.add.noEmployeeFound")}
+                            </p>
+                          ) : (
+                            <p className="p-3 text-xs text-muted-foreground text-center">
+                              {t("page.purchaseOrder.add.typeToSearchPic")}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
-              </Card>
-
-              {/* ponytail: mobile = 3 tombol setara memenuhi lebar; desktop
-                  tetap satu baris justify-between */}
-              <div className="sticky bottom-4 flex flex-wrap justify-between items-center gap-3 bg-card border border-border/60 shadow-lg rounded-xl p-4 backdrop-blur-sm">
-                <Button
-                  type="button"
-                  variant="danger"
-                  onClick={() => setCancelModal(true)}
-                  className="gap-2 flex-1 sm:flex-none">
-                  <X size={18} />
-                  {t("common.cancel")}
-                </Button>
-                <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                  <div className="text-right hidden sm:block">
-                    <p className="text-xs text-muted-foreground">
-                      {t("page.purchaseOrder.add.totalAfterDiscount")}
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
+                    {t("page.purchaseOrder.add.poDate")} <span className="text-destructive">*</span>
+                  </label>
+                  <DatePicker
+                    date={orderDate}
+                    setDate={(d) => {
+                      setOrderDate(d);
+                      setErrors((prev) => ({ ...prev, orderDate: undefined }));
+                    }}
+                  />
+                  {errors.orderDate && (
+                    <p className="text-xs text-destructive mt-1">{errors.orderDate}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
+                    {t("page.purchaseOrder.add.time")} <span className="text-destructive">*</span>
+                  </label>
+                  <TimePicker
+                    value={orderTime}
+                    onChange={(v) => {
+                      setOrderTime(v);
+                      setErrors((prev) => ({ ...prev, orderTime: undefined }));
+                    }}
+                  />
+                  {errors.orderTime && (
+                    <p className="text-xs text-destructive mt-1">{errors.orderTime}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
+                    {t("page.purchaseOrder.add.paymentMethod")}{" "}
+                    <span className="text-destructive">*</span>
+                  </label>
+                  <Combobox
+                    options={[
+                      { value: "cash", label: t("page.purchaseOrder.add.paymentMethodCash") },
+                      {
+                        value: "credit",
+                        label: t("page.purchaseOrder.add.paymentMethodCredit")
+                      }
+                    ]}
+                    value={paymentMethod}
+                    onChange={(val) => {
+                      setPaymentMethod(val);
+                      if (val === "cash") {
+                        setTenor(0);
+                        setDpPercent(0);
+                        setDueDate(null);
+                      }
+                    }}
+                    placeholder={t("page.purchaseOrder.add.paymentMethodCash")}
+                    searchPlaceholder={t("page.purchaseOrder.add.paymentMethodCash")}
+                  />
+                </div>
+                {paymentMethod === "credit" && (
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.dpPercent")}
+                    </label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      placeholder={t("page.purchaseOrder.add.dpPercentPlaceholder")}
+                      value={dpPercent || ""}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (val >= 0 && val <= 100) setDpPercent(val);
+                      }}
+                      className="h-10"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("page.purchaseOrder.add.dpPercentHint")}
                     </p>
-                    <p className="text-sm font-semibold">
-                      Rp{" "}
-                      {(discount > 0 || taxAmount > 0 || additionalCost > 0
-                        ? finalAmount
-                        : totalAmount
-                      ).toLocaleString("id-ID")}
+                    {dpPercent > 0 && (
+                      <p className="text-xs text-primary font-medium mt-1">
+                        {t("page.purchaseOrder.add.dpAmount")}: Rp{" "}
+                        {((finalAmount * dpPercent) / 100).toLocaleString("id-ID")}
+                      </p>
+                    )}
+                  </div>
+                )}
+                {paymentMethod === "credit" && (
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.dueDate")}{" "}
+                      <span className="text-destructive">*</span>
+                    </label>
+                    <DatePicker
+                      date={dueDate}
+                      setDate={(d) => {
+                        setDueDate(d);
+                        setErrors((prev) => ({ ...prev, dueDate: undefined }));
+                      }}
+                    />
+                    {errors.dueDate && (
+                      <p className="text-xs text-destructive mt-1">{errors.dueDate}</p>
+                    )}
+                  </div>
+                )}
+                {paymentMethod === "credit" && (
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.tenor")}{" "}
+                      <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder={t("page.purchaseOrder.add.tenorPlaceholder")}
+                      value={tenor || ""}
+                      onChange={(e) => setTenor(Number(e.target.value) || 0)}
+                      className="h-10"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("page.purchaseOrder.add.tenorHint")}
                     </p>
                   </div>
-                  <div className="flex gap-3">
-                    <Button
-                      type="button"
-                      variant="draft"
-                      onClick={() => setDraftModal(true)}
-                      disabled={createMutation.isLoading}
-                      className="flex-1 sm:flex-none">
-                      {t("page.purchaseOrder.add.saveDraft")}
-                    </Button>
-                    <Button
-                      variant="success"
-                      type="button"
-                      disabled={createMutation.isLoading}
-                      className="gap-2 flex-1 sm:flex-none min-w-0 sm:min-w-[140px] shadow-md"
-                      onClick={() => {
-                        const missing = getMissingFields(
-                          {
-                            store: Number(selectedStore) || 0,
-                            pic: picId,
-                            orderDate,
-                            orderTime,
-                            dueDate,
-                            items: allFilledItems.map((it) => ({
-                              name: it.name,
-                              qty: it.qty,
-                              price: it.price,
-                              unit: it.unit
-                            }))
-                          },
-                          poSchema,
-                          poFieldLabels
-                        );
-                        if (missing.length > 0) {
-                          setMissingFieldsList(missing);
-                          setMissingFieldsModal(true);
-                          return;
-                        }
-                        setConfirmModal(true);
-                      }}>
-                      <Save size={18} />
-                      {createMutation.isLoading
-                        ? t("common.saving")
-                        : t("page.purchaseOrder.add.savePo")}
-                    </Button>
-                  </div>
+                )}
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
+                    {t("page.purchaseOrder.add.notes")}
+                  </label>
+                  <Textarea
+                    placeholder={t("page.purchaseOrder.add.notesPlaceholder")}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="min-h-[80px] resize-none"
+                  />
                 </div>
               </div>
-            </form>
+            </div>
+          </Card>
+
+          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+            <div className="bg-gradient-to-r from-emerald-600/90 to-emerald-700/90 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+                  <Package size={18} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-white">
+                    {t("page.purchaseOrder.add.itemSection")}
+                  </h3>
+                  <p className="text-xs text-emerald-100">
+                    {t("page.purchaseOrder.add.itemSectionDesc")}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 sm:p-6">
+              {!selectedStore ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+                  <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <ShoppingCart size={22} className="text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">
+                    {t("page.purchaseOrder.add.selectStoreFirst") || "Pilih store terlebih dahulu"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1.5 max-w-xs">
+                    {t("page.purchaseOrder.add.selectStoreHint") ||
+                      "Item pesanan akan muncul setelah store dipilih"}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {errors.items && (
+                    <div className="flex items-center gap-2 rounded-lg bg-destructive/5 border border-destructive/20 px-3 py-2">
+                      <span className="text-xs text-destructive font-medium">{errors.items}</span>
+                    </div>
+                  )}
+
+                  {groups.map((group, gIdx) => (
+                    <div key={gIdx} className="border rounded-lg overflow-hidden">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 border-b bg-muted/40">
+                        <Label className="shrink-0 text-xs text-muted-foreground">
+                          {t("page.purchaseOrder.add.table.supplier")}
+                        </Label>
+                        <div className="flex-1 min-w-[220px]">
+                          <Combobox
+                            options={supplierOptions}
+                            value={group.supplier ? String(group.supplier) : ""}
+                            onChange={(val) => pickGroupSupplier(gIdx, val)}
+                            onClear={() => handleClearSupplierClick(gIdx)}
+                            placeholder={t("page.purchaseOrder.add.selectSupplier")}
+                            searchPlaceholder={t("common.search")}
+                            emptyMessage={t("page.purchaseOrder.add.noSupplierFound")}
+                            disabled={!selectedStore || suppliersLoading}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => handleRemoveGroupClick(gIdx)}
+                          disabled={groups.length === 1}>
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+
+                      {group.supplier &&
+                      safeGet(supplierItemsBySupplier, group.supplier, []).length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+                          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                            <Package size={20} className="text-muted-foreground" />
+                          </div>
+                          <p className="text-sm font-medium text-foreground">
+                            {t("page.purchaseOrder.add.supplierNoItems")}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t("page.purchaseOrder.add.supplierNoItemsDesc")}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm min-w-[820px]">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                                    {t("page.purchaseOrder.add.table.name")}
+                                  </th>
+                                  <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                                    {t("page.purchaseOrder.add.table.qty")}
+                                  </th>
+                                  <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                                    {t("page.purchaseOrder.add.table.unit")}
+                                  </th>
+                                  <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                                    {t("page.purchaseOrder.add.table.price")}
+                                  </th>
+                                  <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                                    {t("page.purchaseOrder.add.table.subtotal")}
+                                  </th>
+                                  <th className="w-10"></th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {group.items.map((item, iIdx) => (
+                                  <tr key={iIdx} className="border-b border-muted/20">
+                                    <td className="px-3 py-2 min-w-[280px]">
+                                      <Combobox
+                                        options={itemOptionsForRow(gIdx, iIdx, group.supplier)}
+                                        value={selectedItemValue(item, group.supplier)}
+                                        onChange={(val) => pickItemOption(gIdx, iIdx, val)}
+                                        placeholder={
+                                          group.supplier
+                                            ? t("page.purchaseOrder.add.placeholder.selectItem")
+                                            : t("page.purchaseOrder.add.selectSupplierFirst")
+                                        }
+                                        searchPlaceholder={t("common.search")}
+                                        emptyMessage={t("page.purchaseOrder.add.noIngredientFound")}
+                                        disabled={!group.supplier}
+                                      />
+                                      {item.name && !selectedItemValue(item, group.supplier) && (
+                                        <p className="text-[10px] text-muted-foreground mt-1 truncate">
+                                          {item.name}
+                                        </p>
+                                      )}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                      <Input
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={item.qty === 0 ? "" : String(item.qty)}
+                                        onChange={(e) =>
+                                          updateItem(
+                                            gIdx,
+                                            iIdx,
+                                            "qty",
+                                            Number(
+                                              e.target.value
+                                                .replace(/[^0-9.]/g, "")
+                                                .replace(/(\..*)\./g, "$1")
+                                            ) || 0
+                                          )
+                                        }
+                                        className="h-8 text-xs text-center w-20 mx-auto"
+                                        placeholder="0"
+                                      />
+                                    </td>
+                                    <td className="px-3 py-2 align-top">
+                                      <div className="flex justify-center">
+                                        <Combobox
+                                          options={unitOptions.map((opt) => ({
+                                            value: opt.value,
+                                            label: opt.label
+                                          }))}
+                                          value={item.unit}
+                                          onChange={(val) => updateItem(gIdx, iIdx, "unit", val)}
+                                          placeholder="pcs"
+                                          searchPlaceholder={t("common.search")}
+                                        />
+                                      </div>
+                                      <div className="mt-1">
+                                        <Input
+                                          type="text"
+                                          inputMode="decimal"
+                                          value={
+                                            item.conversionToBase
+                                              ? String(item.conversionToBase)
+                                              : "1"
+                                          }
+                                          onChange={(e) =>
+                                            updateItem(
+                                              gIdx,
+                                              iIdx,
+                                              "conversionToBase",
+                                              Number(e.target.value.replace(/[^0-9.]/g, "")) || 1
+                                            )
+                                          }
+                                          className="h-7 text-xs text-center"
+                                          title={t("page.purchaseOrder.add.conversionPlaceholder", {
+                                            unit: item.unit || "pcs"
+                                          })}
+                                          aria-label={t(
+                                            "page.purchaseOrder.add.conversionPlaceholder",
+                                            { unit: item.unit || "pcs" }
+                                          )}
+                                        />
+                                        <p className="text-[10px] text-muted-foreground text-center mt-0.5">
+                                          {t("page.purchaseOrder.add.conversionPlaceholder", {
+                                            unit: item.unit || "pcs"
+                                          })}
+                                        </p>
+                                      </div>
+                                    </td>
+                                    <td className="px-3 py-2">
+                                      <Input
+                                        placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                                        value={item.price ? formatIDR(item.price) : ""}
+                                        onChange={(e) =>
+                                          updateItem(gIdx, iIdx, "price", parseIDR(e.target.value))
+                                        }
+                                        className="h-8 text-xs text-right w-36 ml-auto"
+                                      />
+                                    </td>
+                                    <td className="px-3 py-2">
+                                      <div className="text-right">
+                                        <p className="text-sm font-semibold text-foreground">
+                                          Rp {(item.qty * item.price).toLocaleString("id-ID")}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground">
+                                          {item.qty} x {formatIDR(item.price)}
+                                        </p>
+                                      </div>
+                                    </td>
+                                    <td className="px-3 py-2 text-center">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveItemClick(gIdx, iIdx)}
+                                        disabled={group.items.length === 1}
+                                        className="text-muted-foreground/40 hover:text-destructive disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-muted-foreground/40">
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <div className="p-3 border-t">
+                            <Button
+                              type="button"
+                              variant="success"
+                              size="sm"
+                              onClick={() => addItem(gIdx)}
+                              className="gap-1">
+                              <Plus size={14} /> {t("page.purchaseOrder.add.form.addItem")}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="success"
+                    size="sm"
+                    onClick={addGroup}
+                    disabled={!selectedStore || suppliersLoading}
+                    className="gap-1">
+                    <Plus size={14} /> {t("page.purchaseOrder.add.form.addSupplier")}
+                  </Button>
+
+                  <div className="rounded-xl bg-gradient-to-b from-muted/50 to-muted/20 border border-border/60 p-4 sm:p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 justify-end">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 sm:pt-1">
+                        <div className="flex items-center gap-3">
+                          <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                            {t("page.purchaseOrder.add.discount")}
+                          </Label>
+                          <Input
+                            placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                            value={discount ? formatIDR(discount) : ""}
+                            onChange={(e) => setDiscount(parseIDR(e.target.value))}
+                            className="h-9 text-sm w-32 sm:w-36 text-right"
+                          />
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                            {t("page.purchaseOrder.add.taxRate")}
+                          </Label>
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0"
+                            value={taxRate || ""}
+                            onChange={(e) =>
+                              setTaxRate(Number(e.target.value.replace(/[^0-9.]/g, "")) || 0)
+                            }
+                            className="h-9 text-sm w-20 text-right"
+                          />
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                            {t("page.purchaseOrder.add.additionalCost")}
+                          </Label>
+                          <Input
+                            placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                            value={additionalCost ? formatIDR(additionalCost) : ""}
+                            onChange={(e) => setAdditionalCost(parseIDR(e.target.value))}
+                            className="h-9 text-sm w-32 sm:w-36 text-right"
+                          />
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Label className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+                            {t("page.purchaseOrder.add.overDeliveryTolerance")}
+                          </Label>
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            value={overDeliveryTolerance || ""}
+                            onChange={(e) =>
+                              setOverDeliveryTolerance(
+                                Number(e.target.value.replace(/[^0-9.]/g, "")) || 0
+                              )
+                            }
+                            className="h-9 text-sm w-20 text-right"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1 max-w-[280px] ml-auto">
+                        <div className="text-right space-y-1">
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.purchaseOrder.add.totalPrice")}
+                          </p>
+                          <p className="text-xl sm:text-2xl font-bold text-foreground">
+                            Rp {totalAmount.toLocaleString("id-ID")}
+                          </p>
+                        </div>
+                        {(discount > 0 || taxAmount > 0 || additionalCost > 0) && (
+                          <>
+                            <div className="border-t border-border/60 my-2" />
+                            <div className="text-right space-y-0.5">
+                              {discount > 0 && (
+                                <p className="text-xs font-medium text-destructive">
+                                  {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
+                                  {discount.toLocaleString("id-ID")}
+                                </p>
+                              )}
+                              {taxAmount > 0 && (
+                                <p className="text-xs font-medium text-foreground">
+                                  {t("page.purchaseOrder.add.taxLabel", { rate: taxRate })} + Rp{" "}
+                                  {taxAmount.toLocaleString("id-ID")}
+                                </p>
+                              )}
+                              {additionalCost > 0 && (
+                                <p className="text-xs font-medium text-emerald-600">
+                                  {t("page.purchaseOrder.add.additionalCostLabel")} + Rp{" "}
+                                  {additionalCost.toLocaleString("id-ID")}
+                                </p>
+                              )}
+                              <p className="text-base sm:text-lg font-bold text-foreground">
+                                Rp {finalAmount.toLocaleString("id-ID")}
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* ponytail: mobile = 3 tombol setara memenuhi lebar; desktop
+                  tetap satu baris justify-between */}
+          <div className="sticky bottom-4 flex flex-wrap justify-between items-center gap-3 bg-card border border-border/60 shadow-lg rounded-xl p-4 backdrop-blur-sm">
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => setCancelModal(true)}
+              className="gap-2 flex-1 sm:flex-none">
+              <X size={18} />
+              {t("common.cancel")}
+            </Button>
+            <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs text-muted-foreground">
+                  {t("page.purchaseOrder.add.totalAfterDiscount")}
+                </p>
+                <p className="text-sm font-semibold">
+                  Rp{" "}
+                  {(discount > 0 || taxAmount > 0 || additionalCost > 0
+                    ? finalAmount
+                    : totalAmount
+                  ).toLocaleString("id-ID")}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="draft"
+                  onClick={() => setDraftModal(true)}
+                  disabled={createMutation.isLoading}
+                  className="flex-1 sm:flex-none">
+                  {t("page.purchaseOrder.add.saveDraft")}
+                </Button>
+                <Button
+                  variant="success"
+                  type="button"
+                  disabled={createMutation.isLoading}
+                  className="gap-2 flex-1 sm:flex-none min-w-0 sm:min-w-[140px] shadow-md"
+                  onClick={() => {
+                    const missing = getMissingFields(
+                      {
+                        store: Number(selectedStore) || 0,
+                        pic: picId,
+                        orderDate,
+                        orderTime,
+                        dueDate,
+                        items: allFilledItems.map((it) => ({
+                          name: it.name,
+                          qty: it.qty,
+                          price: it.price,
+                          unit: it.unit
+                        }))
+                      },
+                      poSchema,
+                      poFieldLabels
+                    );
+                    if (missing.length > 0) {
+                      setMissingFieldsList(missing);
+                      setMissingFieldsModal(true);
+                      return;
+                    }
+                    setConfirmModal(true);
+                  }}>
+                  <Save size={18} />
+                  {createMutation.isLoading
+                    ? t("common.saving")
+                    : t("page.purchaseOrder.add.savePo")}
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
+        </form>
       )}
 
       {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}

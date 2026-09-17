@@ -153,131 +153,128 @@ const AddProductionOrder = () => {
         dynamicInfo={false}
       />
 
-      <div>
-        <form
-          onSubmit={handleSubmit((data) => doSubmit(data, false))}
-          className="bg-card p-6 rounded-xl border border-border space-y-6 max-w-2xl">
-          <div className="space-y-2">
-            <Label>
-              {t("page.productionOrder.add.labelProduk")}{" "}
-              <span className="text-destructive">*</span>
-            </Label>
-            <Controller
-              control={control}
-              name="productId"
-              render={({ field }) => (
-                <Combobox
-                  options={[
-                    { value: "", label: t("page.productionOrder.add.placeholderPilihProduk") },
-                    ...products.map((p) => ({
-                      value: p.id,
-                      label: `${p.nameProduct} (${p.sku || "-"})`
-                    }))
-                  ]}
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder={t("page.productionOrder.add.placeholderPilihProduk")}
-                  searchPlaceholder="Cari produk..."
-                />
-              )}
-            />
-            {errors.productId && (
-              <p className="text-xs text-destructive">{errors.productId.message}</p>
+      <form
+        onSubmit={handleSubmit((data) => doSubmit(data, false))}
+        className="bg-card p-6 rounded-xl border border-border space-y-6 max-w-2xl">
+        <div className="space-y-2">
+          <Label>
+            {t("page.productionOrder.add.labelProduk")} <span className="text-destructive">*</span>
+          </Label>
+          <Controller
+            control={control}
+            name="productId"
+            render={({ field }) => (
+              <Combobox
+                options={[
+                  { value: "", label: t("page.productionOrder.add.placeholderPilihProduk") },
+                  ...products.map((p) => ({
+                    value: p.id,
+                    label: `${p.nameProduct} (${p.sku || "-"})`
+                  }))
+                ]}
+                value={field.value}
+                onChange={field.onChange}
+                placeholder={t("page.productionOrder.add.placeholderPilihProduk")}
+                searchPlaceholder="Cari produk..."
+              />
             )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>
-              {t("page.productionOrder.add.labelJumlahProduksi")}{" "}
-              <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              type="number"
-              min="1"
-              {...form.register("plannedQty")}
-              placeholder={t("page.productionOrder.add.placeholderJumlah")}
-            />
-            {errors.plannedQty && (
-              <p className="text-xs text-destructive">{errors.plannedQty.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("page.productionOrder.add.labelJadwal")}</Label>
-            <Controller
-              control={control}
-              name="scheduledDate"
-              render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("page.productionOrder.add.labelCatatan")}</Label>
-            <Textarea
-              rows={3}
-              {...form.register("notes")}
-              placeholder={t("page.productionOrder.add.placeholderCatatan")}
-            />
-          </div>
-
-          {selectedProduct?.composition?.length > 0 && (
-            <div className="bg-blue-50/80 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {t("page.productionOrder.add.bomComponents")}
-              </p>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs min-w-[420px]">
-                  <thead>
-                    <tr className="text-left text-blue-600 dark:text-blue-400">
-                      <th className="pb-1">{t("page.productionOrder.add.bomBahan")}</th>
-                      <th className="pb-1">{t("page.productionOrder.add.bomQtyPerUnit")}</th>
-                      <th className="pb-1">{t("page.productionOrder.add.bomUnit")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedProduct.composition.map((c, i) => (
-                      <tr key={i} className="text-blue-800 dark:text-blue-200">
-                        <td>{c.ingredientName || c.name}</td>
-                        <td>{c.qty}</td>
-                        <td>{c.unit || "pcs"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          />
+          {errors.productId && (
+            <p className="text-xs text-destructive">{errors.productId.message}</p>
           )}
+        </div>
 
-          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t">
-            <Button
-              type="button"
-              variant="success"
-              className="w-full sm:w-auto"
-              onClick={() => setCancelModal(true)}>
-              <X size={16} className="mr-1" /> {t("page.productionOrder.add.cancelButton")}
-            </Button>
-            <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
-              <Button
-                variant="draft"
-                className="w-full sm:w-auto"
-                onClick={() => setDraftModal(true)}
-                disabled={isSubmitting}>
-                Save as Draft
-              </Button>
-              <Button
-                variant="success"
-                type="submit"
-                className="w-full sm:w-auto"
-                disabled={isSubmitting}>
-                <Save size={16} className="mr-1" />{" "}
-                {isSubmitting
-                  ? t("page.productionOrder.add.savingButton")
-                  : t("page.productionOrder.add.saveButton")}
-              </Button>
+        <div className="space-y-2">
+          <Label>
+            {t("page.productionOrder.add.labelJumlahProduksi")}{" "}
+            <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            type="number"
+            min="1"
+            {...form.register("plannedQty")}
+            placeholder={t("page.productionOrder.add.placeholderJumlah")}
+          />
+          {errors.plannedQty && (
+            <p className="text-xs text-destructive">{errors.plannedQty.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>{t("page.productionOrder.add.labelJadwal")}</Label>
+          <Controller
+            control={control}
+            name="scheduledDate"
+            render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>{t("page.productionOrder.add.labelCatatan")}</Label>
+          <Textarea
+            rows={3}
+            {...form.register("notes")}
+            placeholder={t("page.productionOrder.add.placeholderCatatan")}
+          />
+        </div>
+
+        {selectedProduct?.composition?.length > 0 && (
+          <div className="bg-blue-50/80 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">
+              {t("page.productionOrder.add.bomComponents")}
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs min-w-[420px]">
+                <thead>
+                  <tr className="text-left text-blue-600 dark:text-blue-400">
+                    <th className="pb-1">{t("page.productionOrder.add.bomBahan")}</th>
+                    <th className="pb-1">{t("page.productionOrder.add.bomQtyPerUnit")}</th>
+                    <th className="pb-1">{t("page.productionOrder.add.bomUnit")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedProduct.composition.map((c, i) => (
+                    <tr key={i} className="text-blue-800 dark:text-blue-200">
+                      <td>{c.ingredientName || c.name}</td>
+                      <td>{c.qty}</td>
+                      <td>{c.unit || "pcs"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        </form>
-      </div>
+        )}
+
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t">
+          <Button
+            type="button"
+            variant="success"
+            className="w-full sm:w-auto"
+            onClick={() => setCancelModal(true)}>
+            <X size={16} className="mr-1" /> {t("page.productionOrder.add.cancelButton")}
+          </Button>
+          <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
+            <Button
+              variant="draft"
+              className="w-full sm:w-auto"
+              onClick={() => setDraftModal(true)}
+              disabled={isSubmitting}>
+              Save as Draft
+            </Button>
+            <Button
+              variant="success"
+              type="submit"
+              className="w-full sm:w-auto"
+              disabled={isSubmitting}>
+              <Save size={16} className="mr-1" />{" "}
+              {isSubmitting
+                ? t("page.productionOrder.add.savingButton")
+                : t("page.productionOrder.add.saveButton")}
+            </Button>
+          </div>
+        </div>
+      </form>
 
       {isSubmitting && (
         <Loading fullscreen size="lg" label={t("page.productionOrder.add.loadingLabel")} />

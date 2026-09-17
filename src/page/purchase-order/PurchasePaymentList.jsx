@@ -158,19 +158,17 @@ const PurchasePaymentList = () => {
         <NoStore />
       ) : (
         <>
-          <div>
-            <Card className="p-5">
-              <div className="flex items-center gap-2 text-sm">
-                <Wallet size={16} className="text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  {t("page.purchasePayment.list.totalLabel")}:
-                </span>
-                <span className="font-bold text-lg">
-                  Rp {Number(totalAmount).toLocaleString("id-ID")}
-                </span>
-              </div>
-            </Card>
-          </div>
+          <Card className="p-5">
+            <div className="flex items-center gap-2 text-sm">
+              <Wallet size={16} className="text-muted-foreground" />
+              <span className="text-muted-foreground">
+                {t("page.purchasePayment.list.totalLabel")}:
+              </span>
+              <span className="font-bold text-lg">
+                Rp {Number(totalAmount).toLocaleString("id-ID")}
+              </span>
+            </div>
+          </Card>
 
           {isError ? (
             <AbortController refetch={refetch} />
@@ -197,16 +195,14 @@ const PurchasePaymentList = () => {
             </div>
           )}
 
-          <div>
-            <TipsCard
-              tips={[
-                t("page.purchasePayment.list.tips.1"),
-                t("page.purchasePayment.list.tips.2"),
-                t("page.purchasePayment.list.tips.3"),
-                t("page.purchasePayment.list.tips.4")
-              ]}
-            />
-          </div>
+          <TipsCard
+            tips={[
+              t("page.purchasePayment.list.tips.1"),
+              t("page.purchasePayment.list.tips.2"),
+              t("page.purchasePayment.list.tips.3"),
+              t("page.purchasePayment.list.tips.4")
+            ]}
+          />
         </>
       )}
     </div>

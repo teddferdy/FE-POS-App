@@ -322,444 +322,427 @@ const LocationDetail = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[
-              {
-                label: t("breadcrumb.home"),
-                href: "/dashboard-super-admin",
-                i18nKey: "breadcrumb.home"
-              },
-              {
-                label: t("page.location.list.title"),
-                href: "/location-list",
-                i18nKey: "page.location.list.title"
-              },
-              { label: t("breadcrumb.detail") }
-            ]}
-            title={location?.name || "-"}
-            description={t("page.location.detail.description")}
-            backLink="/location-list"
-            dynamicInfo={false}>
-            <Button variant="outline" onClick={() => navigate(`/edit-location?id=${id}`)}>
-              <Edit3 size={14} className="mr-1.5" />
-              {t("common.edit")}
-            </Button>
-          </PageHeader>
-        </div>
-      </div>
-      <div>
-        <div>
-          {/* Main Card */}
-          <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
-            {/* Content */}
-            <div className="p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* ===== LEFT COLUMN (2/3) ===== */}
-                <div className="lg:col-span-2 space-y-8">
-                  {/* Informasi Toko */}
-                  <div className="space-y-4">
-                    <SectionHeader
-                      icon={Building2}
-                      title={t("page.location.detail.informasiToko")}
-                    />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                      <DetailRow
-                        icon={Store}
-                        label={t("page.location.detail.storeName")}
-                        value={location.name}
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.location.list.title"),
+            href: "/location-list",
+            i18nKey: "page.location.list.title"
+          },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={location?.name || "-"}
+        description={t("page.location.detail.description")}
+        backLink="/location-list"
+        dynamicInfo={false}>
+        <Button variant="outline" onClick={() => navigate(`/edit-location?id=${id}`)}>
+          <Edit3 size={14} className="mr-1.5" />
+          {t("common.edit")}
+        </Button>
+      </PageHeader>
+
+      {/* Main Card */}
+      <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
+        {/* Content */}
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* ===== LEFT COLUMN (2/3) ===== */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Informasi Toko */}
+              <div className="space-y-4">
+                <SectionHeader icon={Building2} title={t("page.location.detail.informasiToko")} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                  <DetailRow
+                    icon={Store}
+                    label={t("page.location.detail.storeName")}
+                    value={location.name}
+                  />
+                  <DetailRow
+                    icon={Hash}
+                    label={t("page.location.detail.storeId")}
+                    value={location.id}
+                  />
+                  <DetailRow
+                    icon={Layers}
+                    label={t("page.location.detail.category")}
+                    value={location.category}
+                  />
+                  <DetailRow
+                    icon={User}
+                    label={t("page.location.detail.manager")}
+                    value={location.managerName}
+                  />
+                </div>
+              </div>
+
+              {/* Kontak */}
+              <div className="space-y-4">
+                <SectionHeader icon={Smartphone} title={t("page.location.detail.kontak")} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                  <DetailRow
+                    icon={Phone}
+                    label={t("page.location.detail.phoneNumber")}
+                    value={location.phoneNumber}
+                  />
+                  <DetailRow
+                    icon={Mail}
+                    label={t("page.location.detail.email")}
+                    value={location.email}
+                  />
+                </div>
+              </div>
+
+              {/* Alamat & Wilayah */}
+              <div className="space-y-4">
+                <SectionHeader icon={MapPin} title={t("page.location.detail.alamatWilayah")} />
+                <div className="space-y-0">
+                  <DetailRow
+                    icon={MapPin}
+                    label={t("page.location.detail.fullAddress")}
+                    value={location.address}
+                  />
+                  <DetailRow
+                    icon={Globe}
+                    label={t("page.location.detail.detailLocation")}
+                    value={location.detailLocation}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                  <DetailRow
+                    icon={Building2}
+                    label={t("page.location.detail.province")}
+                    value={provinceName}
+                  />
+                  <DetailRow
+                    icon={Building2}
+                    label={t("page.location.detail.city")}
+                    value={cityName}
+                  />
+                  <DetailRow
+                    icon={Building2}
+                    label={t("page.location.detail.district")}
+                    value={districtName}
+                  />
+                  <DetailRow
+                    icon={Building2}
+                    label={t("page.location.detail.village")}
+                    value={villageName}
+                  />
+                  <DetailRow
+                    icon={Hash}
+                    label={t("page.location.detail.postalCode")}
+                    value={postalCodeValue}
+                  />
+                </div>
+              </div>
+
+              {/* Jam Operasional */}
+              <div className="space-y-4">
+                <SectionHeader icon={Clock} title={t("page.location.detail.operationalHours")} />
+                <div className="bg-muted/20 rounded-lg p-4 border border-border">
+                  <FormattedOpeningHours openingHours={location.openingHours} t={t} />
+                </div>
+              </div>
+
+              {/* Lokasi Peta */}
+              <div className="space-y-4">
+                <SectionHeader
+                  icon={Map}
+                  title={t("page.location.detail.mapLocation")}
+                  action={
+                    hasCoordinates &&
+                    googleMapsUrl && (
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
+                        <Navigation size={13} />
+                        {t("page.location.detail.openRoute")}
+                      </a>
+                    )
+                  }
+                />
+                {hasCoordinates ? (
+                  <div className="relative z-0 rounded-lg overflow-hidden border border-border">
+                    <style>{LEAFLET_Z_STYLES}</style>
+                    <MapContainer
+                      center={[lat, lng]}
+                      zoom={15}
+                      style={{ height: "320px", width: "100%" }}
+                      scrollWheelZoom={false}
+                      dragging={false}
+                      touchZoom={false}
+                      doubleClickZoom={false}
+                      zoomControl={false}>
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       />
-                      <DetailRow
-                        icon={Hash}
-                        label={t("page.location.detail.storeId")}
-                        value={location.id}
-                      />
-                      <DetailRow
-                        icon={Layers}
-                        label={t("page.location.detail.category")}
-                        value={location.category}
-                      />
-                      <DetailRow
-                        icon={User}
-                        label={t("page.location.detail.manager")}
-                        value={location.managerName}
-                      />
+                      <Marker position={[lat, lng]}>
+                        <Popup>
+                          <div className="text-sm">
+                            <p className="font-semibold">{location.name}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {location.address}
+                            </p>
+                            <p className="text-xs mt-1">
+                              {lat.toFixed(6)}, {lng.toFixed(6)}
+                            </p>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    </MapContainer>
+                    <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-t border-border text-xs text-muted-foreground">
+                      <span>
+                        <span className="font-medium">{t("page.location.detail.lat")}:</span>{" "}
+                        {lat.toFixed(6)}
+                      </span>
+                      <span>
+                        <span className="font-medium">{t("page.location.detail.lng")}:</span>{" "}
+                        {lng.toFixed(6)}
+                      </span>
                     </div>
                   </div>
-
-                  {/* Kontak */}
-                  <div className="space-y-4">
-                    <SectionHeader icon={Smartphone} title={t("page.location.detail.kontak")} />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                      <DetailRow
-                        icon={Phone}
-                        label={t("page.location.detail.phoneNumber")}
-                        value={location.phoneNumber}
-                      />
-                      <DetailRow
-                        icon={Mail}
-                        label={t("page.location.detail.email")}
-                        value={location.email}
-                      />
-                    </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-3 bg-muted/30 rounded-lg border border-dashed border-border">
+                    <MapPin size={32} />
+                    <p className="text-sm">{t("page.location.detail.noCoordinates")}</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/edit-location?id=${id}`)}>
+                      {t("page.location.detail.setLocation")}
+                    </Button>
                   </div>
+                )}
+              </div>
+            </div>
 
-                  {/* Alamat & Wilayah */}
-                  <div className="space-y-4">
-                    <SectionHeader icon={MapPin} title={t("page.location.detail.alamatWilayah")} />
-                    <div className="space-y-0">
-                      <DetailRow
-                        icon={MapPin}
-                        label={t("page.location.detail.fullAddress")}
-                        value={location.address}
-                      />
-                      <DetailRow
-                        icon={Globe}
-                        label={t("page.location.detail.detailLocation")}
-                        value={location.detailLocation}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                      <DetailRow
-                        icon={Building2}
-                        label={t("page.location.detail.province")}
-                        value={provinceName}
-                      />
-                      <DetailRow
-                        icon={Building2}
-                        label={t("page.location.detail.city")}
-                        value={cityName}
-                      />
-                      <DetailRow
-                        icon={Building2}
-                        label={t("page.location.detail.district")}
-                        value={districtName}
-                      />
-                      <DetailRow
-                        icon={Building2}
-                        label={t("page.location.detail.village")}
-                        value={villageName}
-                      />
-                      <DetailRow
-                        icon={Hash}
-                        label={t("page.location.detail.postalCode")}
-                        value={postalCodeValue}
-                      />
-                    </div>
+            {/* ===== RIGHT COLUMN (1/3) ===== */}
+            <div className="lg:col-span-1 space-y-6">
+              {/* Status */}
+              <div className="flex items-center justify-between bg-muted/30 p-4 rounded-lg border border-border">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      isActive
+                        ? "bg-green-600 dark:bg-green-700 text-white"
+                        : "bg-red-600 dark:bg-red-900 text-white"
+                    }`}>
+                    {isActive ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
                   </div>
-
-                  {/* Jam Operasional */}
-                  <div className="space-y-4">
-                    <SectionHeader
-                      icon={Clock}
-                      title={t("page.location.detail.operationalHours")}
-                    />
-                    <div className="bg-muted/20 rounded-lg p-4 border border-border">
-                      <FormattedOpeningHours openingHours={location.openingHours} t={t} />
-                    </div>
-                  </div>
-
-                  {/* Lokasi Peta */}
-                  <div className="space-y-4">
-                    <SectionHeader
-                      icon={Map}
-                      title={t("page.location.detail.mapLocation")}
-                      action={
-                        hasCoordinates &&
-                        googleMapsUrl && (
-                          <a
-                            href={googleMapsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
-                            <Navigation size={13} />
-                            {t("page.location.detail.openRoute")}
-                          </a>
-                        )
-                      }
-                    />
-                    {hasCoordinates ? (
-                      <div className="relative z-0 rounded-lg overflow-hidden border border-border">
-                        <style>{LEAFLET_Z_STYLES}</style>
-                        <MapContainer
-                          center={[lat, lng]}
-                          zoom={15}
-                          style={{ height: "320px", width: "100%" }}
-                          scrollWheelZoom={false}
-                          dragging={false}
-                          touchZoom={false}
-                          doubleClickZoom={false}
-                          zoomControl={false}>
-                          <TileLayer
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                          />
-                          <Marker position={[lat, lng]}>
-                            <Popup>
-                              <div className="text-sm">
-                                <p className="font-semibold">{location.name}</p>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  {location.address}
-                                </p>
-                                <p className="text-xs mt-1">
-                                  {lat.toFixed(6)}, {lng.toFixed(6)}
-                                </p>
-                              </div>
-                            </Popup>
-                          </Marker>
-                        </MapContainer>
-                        <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-t border-border text-xs text-muted-foreground">
-                          <span>
-                            <span className="font-medium">{t("page.location.detail.lat")}:</span>{" "}
-                            {lat.toFixed(6)}
-                          </span>
-                          <span>
-                            <span className="font-medium">{t("page.location.detail.lng")}:</span>{" "}
-                            {lng.toFixed(6)}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-3 bg-muted/30 rounded-lg border border-dashed border-border">
-                        <MapPin size={32} />
-                        <p className="text-sm">{t("page.location.detail.noCoordinates")}</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(`/edit-location?id=${id}`)}>
-                          {t("page.location.detail.setLocation")}
-                        </Button>
-                      </div>
-                    )}
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      {isActive
+                        ? t("page.location.detail.active")
+                        : t("page.location.detail.nonActive")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("page.location.detail.operationalStatus")}
+                    </p>
                   </div>
                 </div>
+                <StatusBadge isActive={isActive} t={t} />
+              </div>
 
-                {/* ===== RIGHT COLUMN (1/3) ===== */}
-                <div className="lg:col-span-1 space-y-6">
-                  {/* Status */}
-                  <div className="flex items-center justify-between bg-muted/30 p-4 rounded-lg border border-border">
-                    <div className="flex items-center gap-3">
+              {/* Foto Toko */}
+              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+                    <Image size={18} />
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.location.detail.storePhoto")}
+                  </h3>
+                </div>
+                {location.image ? (
+                  <div className="rounded-lg overflow-hidden border border-border">
+                    <img
+                      src={location.image}
+                      alt={location.name}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center bg-muted/30 p-8 min-h-[200px]">
+                    <Image size={48} className="text-muted-foreground mb-3" />
+                    <span className="text-sm text-muted-foreground">
+                      {t("page.location.detail.noImage")}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Informasi Tambahan */}
+              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+                    <Hash size={18} />
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.location.detail.otherDetails")}
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("page.location.detail.mainBranch")}
+                    </span>
+                    <span
+                      className={`text-xs font-bold ${location.mainBranch ? "text-green-600" : "text-muted-foreground"}`}>
+                      {location.mainBranch ? t("common.yes") : t("common.no")}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("page.location.detail.dailyTarget")}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {location.dailyTarget
+                        ? `Rp ${Number(location.dailyTarget).toLocaleString("id-ID")}`
+                        : "-"}
+                    </span>
+                  </div>
+                  {location.managerName && (
+                    <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {t("page.location.detail.manager")}
+                      </span>
+                      <span className="text-xs font-semibold text-foreground">
+                        {location.managerName}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Social Media */}
+              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+                    <Globe size={18} />
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.location.detail.socialMedia")}
+                  </h3>
+                </div>
+                {location.socialMedia && location.socialMedia.length > 0 ? (
+                  <div className="space-y-2">
+                    {location.socialMedia.map((sm, i) => (
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          isActive
-                            ? "bg-green-600 dark:bg-green-700 text-white"
-                            : "bg-red-600 dark:bg-red-900 text-white"
-                        }`}>
-                        {isActive ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                        key={i}
+                        className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                        <span className="text-sm font-medium text-foreground">{sm.platform}</span>
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          {sm.account}
+                        </span>
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {isActive
-                            ? t("page.location.detail.active")
-                            : t("page.location.detail.nonActive")}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {t("page.location.detail.operationalStatus")}
-                        </p>
-                      </div>
-                    </div>
-                    <StatusBadge isActive={isActive} t={t} />
+                    ))}
                   </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">-</p>
+                )}
+              </div>
 
-                  {/* Foto Toko */}
-                  <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                        <Image size={18} />
-                      </div>
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.location.detail.storePhoto")}
-                      </h3>
-                    </div>
-                    {location.image ? (
-                      <div className="rounded-lg overflow-hidden border border-border">
-                        <img
-                          src={location.image}
-                          alt={location.name}
-                          className="w-full h-auto object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center bg-muted/30 p-8 min-h-[200px]">
-                        <Image size={48} className="text-muted-foreground mb-3" />
-                        <span className="text-sm text-muted-foreground">
-                          {t("page.location.detail.noImage")}
-                        </span>
-                      </div>
-                    )}
+              {/* Informasi Sistem */}
+              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+                    <Info size={18} className="text-base" />
                   </div>
-
-                  {/* Informasi Tambahan */}
-                  <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                        <Hash size={18} />
-                      </div>
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.location.detail.otherDetails")}
-                      </h3>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {t("page.location.detail.mainBranch")}
-                        </span>
-                        <span
-                          className={`text-xs font-bold ${location.mainBranch ? "text-green-600" : "text-muted-foreground"}`}>
-                          {location.mainBranch ? t("common.yes") : t("common.no")}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {t("page.location.detail.dailyTarget")}
-                        </span>
-                        <span className="text-xs font-semibold text-foreground">
-                          {location.dailyTarget
-                            ? `Rp ${Number(location.dailyTarget).toLocaleString("id-ID")}`
-                            : "-"}
-                        </span>
-                      </div>
-                      {location.managerName && (
-                        <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                          <span className="text-xs font-medium text-muted-foreground">
-                            {t("page.location.detail.manager")}
-                          </span>
-                          <span className="text-xs font-semibold text-foreground">
-                            {location.managerName}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.location.detail.systemInfo")}
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("page.location.detail.createdAt")}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {location.createdAt
+                        ? new Date(location.createdAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric"
+                          })
+                        : "-"}
+                    </span>
                   </div>
-
-                  {/* Social Media */}
-                  <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                        <Globe size={18} />
-                      </div>
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.location.detail.socialMedia")}
-                      </h3>
-                    </div>
-                    {location.socialMedia && location.socialMedia.length > 0 ? (
-                      <div className="space-y-2">
-                        {location.socialMedia.map((sm, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                            <span className="text-sm font-medium text-foreground">
-                              {sm.platform}
-                            </span>
-                            <span className="text-xs font-semibold text-muted-foreground">
-                              {sm.account}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground italic">-</p>
-                    )}
+                  <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("page.location.detail.updatedAt")}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {location.updatedAt
+                        ? new Date(location.updatedAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric"
+                          })
+                        : "-"}
+                    </span>
                   </div>
-
-                  {/* Informasi Sistem */}
-                  <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                        <Info size={18} className="text-base" />
-                      </div>
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.location.detail.systemInfo")}
-                      </h3>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {t("page.location.detail.createdAt")}
-                        </span>
-                        <span className="text-xs font-semibold text-foreground">
-                          {location.createdAt
-                            ? new Date(location.createdAt).toLocaleDateString("id-ID", {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric"
-                              })
-                            : "-"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {t("page.location.detail.updatedAt")}
-                        </span>
-                        <span className="text-xs font-semibold text-foreground">
-                          {location.updatedAt
-                            ? new Date(location.updatedAt).toLocaleDateString("id-ID", {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric"
-                              })
-                            : "-"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {t("page.location.detail.createdBy")}
-                        </span>
-                        <span className="text-xs font-semibold text-foreground">
-                          {location.createdByUser?.fullName ||
-                            location.createdByUser?.userName ||
-                            "-"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {t("page.location.detail.modifiedBy")}
-                        </span>
-                        <span className="text-xs font-semibold text-foreground">
-                          {location.modifiedByUser?.fullName ||
-                            location.modifiedByUser?.userName ||
-                            "-"}
-                        </span>
-                      </div>
-                    </div>
+                  <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("page.location.detail.createdBy")}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {location.createdByUser?.fullName || location.createdByUser?.userName || "-"}
+                    </span>
                   </div>
+                  <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("page.location.detail.modifiedBy")}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {location.modifiedByUser?.fullName ||
+                        location.modifiedByUser?.userName ||
+                        "-"}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-                  {/* Help Cards */}
-                  <div className="space-y-3">
-                    <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
-                      <Info size={18} className="text-primary shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                          Validasi Data
-                        </h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Pastikan data toko selalu diperbarui untuk akurasi operasional.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
-                      <ShieldCheck size={18} className="text-green-600 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                          Keamanan
-                        </h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Data hanya dapat diubah oleh pemilik atau super admin.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
-                      <History size={18} className="text-amber-600 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                          Audit Trail
-                        </h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Setiap perubahan akan tercatat dalam log sistem.
-                        </p>
-                      </div>
-                    </div>
+              {/* Help Cards */}
+              <div className="space-y-3">
+                <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
+                  <Info size={18} className="text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+                      Validasi Data
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Pastikan data toko selalu diperbarui untuk akurasi operasional.
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
+                  <ShieldCheck size={18} className="text-green-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+                      Keamanan
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Data hanya dapat diubah oleh pemilik atau super admin.
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
+                  <History size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+                      Audit Trail
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Setiap perubahan akan tercatat dalam log sistem.
+                    </p>
                   </div>
                 </div>
               </div>

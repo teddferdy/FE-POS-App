@@ -74,7 +74,7 @@ const RoleManagement = () => {
   };
 
   return (
-    <div data-tour="page-roles" className="space-y-8">
+    <div data-tour="page-roles" className="space-y-6">
       <PageHeader
         breadcrumbs={[
           {
