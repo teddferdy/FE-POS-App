@@ -509,7 +509,7 @@ const EditPurchaseOrder = () => {
     });
 
     // T-11 lifecycle: only draft->pending via update is allowed; all other status changes use dedicated endpoints
-    const isActivatingDraft = !saveAsDraft && po.status === 'draft'
+    const isActivatingDraft = !saveAsDraft && po.status === "draft";
     const payload = {
       store: selectedStore,
       notes,
@@ -530,8 +530,8 @@ const EditPurchaseOrder = () => {
         return d;
       })(),
       items: itemsPayload,
-      ...(isActivatingDraft ? { status: 'pending' } : {}),
-      ...(saveAsDraft && po.status === 'draft' ? { status: 'draft' } : {})
+      ...(isActivatingDraft ? { status: "pending" } : {}),
+      ...(saveAsDraft && po.status === "draft" ? { status: "draft" } : {})
     };
 
     updateMutation.mutate(normalizePayload(payload, { isFormData: false }));
@@ -1221,7 +1221,11 @@ const EditPurchaseOrder = () => {
                         onChange={(e) => setDiscount(parseIDR(e.target.value))}
                         className="h-9 text-sm w-32 sm:w-36 text-right"
                         disabled={hasFinancialLock}
-                        title={hasFinancialLock ? t("page.purchaseOrder.edit.lockedAfterReceipt") : undefined}
+                        title={
+                          hasFinancialLock
+                            ? t("page.purchaseOrder.edit.lockedAfterReceipt")
+                            : undefined
+                        }
                       />
                     </div>
                     <div className="flex items-center gap-3">
@@ -1238,7 +1242,11 @@ const EditPurchaseOrder = () => {
                         }
                         className="h-9 text-sm w-20 text-right"
                         disabled={hasFinancialLock}
-                        title={hasFinancialLock ? t("page.purchaseOrder.edit.lockedAfterReceipt") : undefined}
+                        title={
+                          hasFinancialLock
+                            ? t("page.purchaseOrder.edit.lockedAfterReceipt")
+                            : undefined
+                        }
                       />
                     </div>
                     <div className="flex items-center gap-3">
@@ -1251,7 +1259,11 @@ const EditPurchaseOrder = () => {
                         onChange={(e) => setAdditionalCost(parseIDR(e.target.value))}
                         className="h-9 text-sm w-32 sm:w-36 text-right"
                         disabled={hasFinancialLock}
-                        title={hasFinancialLock ? t("page.purchaseOrder.edit.lockedAfterReceipt") : undefined}
+                        title={
+                          hasFinancialLock
+                            ? t("page.purchaseOrder.edit.lockedAfterReceipt")
+                            : undefined
+                        }
                       />
                     </div>
                     {additionalCost > 0 && (
@@ -1283,7 +1295,11 @@ const EditPurchaseOrder = () => {
                         }
                         className="h-9 text-sm w-20 text-right"
                         disabled={hasFinancialLock}
-                        title={hasFinancialLock ? t("page.purchaseOrder.edit.lockedAfterReceipt") : undefined}
+                        title={
+                          hasFinancialLock
+                            ? t("page.purchaseOrder.edit.lockedAfterReceipt")
+                            : undefined
+                        }
                       />
                     </div>
                   </div>
