@@ -274,427 +274,425 @@ const MemberDetail = () => {
   ];
 
   return (
-    <div>
-      <div className="space-y-8">
-        <PageHeader
-          breadcrumbs={[
-            {
-              label: t("breadcrumb.home"),
-              href: "/dashboard-super-admin",
-              i18nKey: "breadcrumb.home"
-            },
-            { label: t("breadcrumb.member"), href: "/member-list", i18nKey: "breadcrumb.member" },
-            { label: t("breadcrumb.detail") }
-          ]}
-          title={isLoading ? t("common.loading") : name}
-          description="Detail informasi member"
-          backLink="/member-list"
-          dynamicInfo={false}>
-          {!isLoading && (
-            <Button variant="outline" onClick={() => navigate(`/edit-member?id=${id}`)}>
-              <Edit3 size={14} className="mr-1.5" />
-              {t("common.edit")}
-            </Button>
-          )}
-        </PageHeader>
+    <div className="space-y-8">
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("breadcrumb.member"), href: "/member-list", i18nKey: "breadcrumb.member" },
+          { label: t("breadcrumb.detail") }
+        ]}
+        title={isLoading ? t("common.loading") : name}
+        description="Detail informasi member"
+        backLink="/member-list"
+        dynamicInfo={false}>
+        {!isLoading && (
+          <Button variant="outline" onClick={() => navigate(`/edit-member?id=${id}`)}>
+            <Edit3 size={14} className="mr-1.5" />
+            {t("common.edit")}
+          </Button>
+        )}
+      </PageHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 flex flex-col items-center">
-              <div className="relative mb-4">
-                <div
-                  className={`w-24 h-24 rounded-full border-4 border-background shadow-md ${avatarBg(name)} flex items-center justify-center text-2xl font-bold`}>
-                  {getInitials(name)}
-                </div>
-                <div className="absolute bottom-1 right-1 bg-primary text-primary-foreground rounded-full p-1 border-2 border-card">
-                  <CheckCircle size={14} className="text-primary-foreground" />
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 flex flex-col items-center">
+            <div className="relative mb-4">
+              <div
+                className={`w-24 h-24 rounded-full border-4 border-background shadow-md ${avatarBg(name)} flex items-center justify-center text-2xl font-bold`}>
+                {getInitials(name)}
               </div>
-              <h3 className="text-lg font-semibold text-foreground text-center">{name}</h3>
-              <p className="text-sm font-mono text-muted-foreground mb-3">{memberId}</p>
-              <span className="px-3 py-1 bg-primary text-primary-foreground rounded-full text-xs font-bold mb-4">
-                {t("page.member.detail.memberActive")}
-              </span>
-              <div className="w-full space-y-4 border-t border-border pt-4">
-                <div className="flex items-center gap-3">
-                  <Calendar size={18} className="text-muted-foreground text-base" />
-                  <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground">
-                      {t("page.member.detail.joinedDate")}
-                    </span>
-                    <span className="text-sm font-medium">{formattedJoinDate}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Mail size={18} className="text-muted-foreground text-base" />
-                  <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground">
-                      {t("page.member.detail.emailAddress")}
-                    </span>
-                    <span className="text-sm font-medium">{email}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone size={18} className="text-muted-foreground text-base" />
-                  <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground">
-                      {t("page.member.detail.phoneNumber")}
-                    </span>
-                    <span className="text-sm font-medium">{phone}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MapPin size={18} className="text-muted-foreground text-base" />
-                  <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground">
-                      {t("page.member.detail.address")}
-                    </span>
-                    <span className="text-sm font-medium">{address}</span>
-                  </div>
-                </div>
+              <div className="absolute bottom-1 right-1 bg-primary text-primary-foreground rounded-full p-1 border-2 border-card">
+                <CheckCircle size={14} className="text-primary-foreground" />
               </div>
             </div>
-
-            <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-              <div className="bg-foreground text-background p-4 flex flex-wrap gap-2 items-center">
-                <div className="flex items-center gap-2">
-                  <Trophy size={18} className="text-background" />
-                  <span className="text-sm font-semibold">
-                    {t("page.member.detail.membershipStatus")}
+            <h3 className="text-lg font-semibold text-foreground text-center">{name}</h3>
+            <p className="text-sm font-mono text-muted-foreground mb-3">{memberId}</p>
+            <span className="px-3 py-1 bg-primary text-primary-foreground rounded-full text-xs font-bold mb-4">
+              {t("page.member.detail.memberActive")}
+            </span>
+            <div className="w-full space-y-4 border-t border-border pt-4">
+              <div className="flex items-center gap-3">
+                <Calendar size={18} className="text-muted-foreground text-base" />
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">
+                    {t("page.member.detail.joinedDate")}
                   </span>
+                  <span className="text-sm font-medium">{formattedJoinDate}</span>
                 </div>
-                <span
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold"
-                  style={{
-                    backgroundColor: level.color + "20",
-                    color: level.color,
-                    borderColor: level.color + "40",
-                    borderWidth: 1
-                  }}>
-                  <Star size={14} />
-                  {level.label}
-                </span>
               </div>
-              <div className="p-3 sm:p-4 space-y-4">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                      {t("page.member.detail.totalPoints")}
-                    </span>
-                    <span className="text-lg font-bold text-primary">
-                      {points.toLocaleString()} Pts
-                    </span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full"
-                      style={{
-                        width: `${Math.min(80, (points / (points + pointsRemaining)) * 100)}%`
-                      }}
-                    />
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    {t("page.member.detail.nextTier", {
-                      tier: nextTier,
-                      points: pointsRemaining.toLocaleString()
-                    })}
-                  </p>
+              <div className="flex items-center gap-3">
+                <Mail size={18} className="text-muted-foreground text-base" />
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">
+                    {t("page.member.detail.emailAddress")}
+                  </span>
+                  <span className="text-sm font-medium">{email}</span>
                 </div>
-                <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg flex items-center gap-3">
-                  <BellRing size={18} className="text-destructive text-base" />
-                  <div>
-                    <p className="text-xs font-bold text-destructive">
-                      {t("page.member.detail.pointsExpiringSoon")}
-                    </p>
-                    <p className="text-xs text-destructive">
-                      {t("page.member.detail.pointsExpireOn", {
-                        count: expiringPoints.toLocaleString(),
-                        date: expiringDate
-                      })}
-                    </p>
-                  </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Phone size={18} className="text-muted-foreground text-base" />
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">
+                    {t("page.member.detail.phoneNumber")}
+                  </span>
+                  <span className="text-sm font-medium">{phone}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <MapPin size={18} className="text-muted-foreground text-base" />
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">
+                    {t("page.member.detail.address")}
+                  </span>
+                  <span className="text-sm font-medium">{address}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="lg:col-span-8 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {stats.map((stat) => {
-                const StatIcon = stat.IconComponent;
-                const TrendIcon = stat.TrendIconComponent;
-                return (
+          <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+            <div className="bg-foreground text-background p-4 flex flex-wrap gap-2 items-center">
+              <div className="flex items-center gap-2">
+                <Trophy size={18} className="text-background" />
+                <span className="text-sm font-semibold">
+                  {t("page.member.detail.membershipStatus")}
+                </span>
+              </div>
+              <span
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold"
+                style={{
+                  backgroundColor: level.color + "20",
+                  color: level.color,
+                  borderColor: level.color + "40",
+                  borderWidth: 1
+                }}>
+                <Star size={14} />
+                {level.label}
+              </span>
+            </div>
+            <div className="p-3 sm:p-4 space-y-4">
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    {t("page.member.detail.totalPoints")}
+                  </span>
+                  <span className="text-lg font-bold text-primary">
+                    {points.toLocaleString()} Pts
+                  </span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
                   <div
-                    key={stat.label}
-                    className="bg-card p-4 rounded-xl border border-border shadow-sm">
-                    <span className="text-xs font-semibold text-muted-foreground block mb-3">
-                      {stat.label}
-                    </span>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xl font-bold text-foreground">{stat.value}</span>
-                      <div className={`${stat.iconBg} ${stat.iconColor} p-2 rounded-lg`}>
-                        {StatIcon && <StatIcon size={18} />}
-                      </div>
+                    className="bg-primary h-2 rounded-full"
+                    style={{
+                      width: `${Math.min(80, (points / (points + pointsRemaining)) * 100)}%`
+                    }}
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {t("page.member.detail.nextTier", {
+                    tier: nextTier,
+                    points: pointsRemaining.toLocaleString()
+                  })}
+                </p>
+              </div>
+              <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg flex items-center gap-3">
+                <BellRing size={18} className="text-destructive text-base" />
+                <div>
+                  <p className="text-xs font-bold text-destructive">
+                    {t("page.member.detail.pointsExpiringSoon")}
+                  </p>
+                  <p className="text-xs text-destructive">
+                    {t("page.member.detail.pointsExpireOn", {
+                      count: expiringPoints.toLocaleString(),
+                      date: expiringDate
+                    })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {stats.map((stat) => {
+              const StatIcon = stat.IconComponent;
+              const TrendIcon = stat.TrendIconComponent;
+              return (
+                <div
+                  key={stat.label}
+                  className="bg-card p-4 rounded-xl border border-border shadow-sm">
+                  <span className="text-xs font-semibold text-muted-foreground block mb-3">
+                    {stat.label}
+                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl font-bold text-foreground">{stat.value}</span>
+                    <div className={`${stat.iconBg} ${stat.iconColor} p-2 rounded-lg`}>
+                      {StatIcon && <StatIcon size={18} />}
                     </div>
-                    {stat.trend && (
-                      <div className="mt-3 flex items-center">
-                        {TrendIcon && <TrendIcon size={14} className={`mr-1 ${stat.trendColor}`} />}
-                        <span className={`text-xs font-semibold ${stat.trendColor}`}>
-                          {stat.trend}
-                        </span>
-                      </div>
-                    )}
                   </div>
-                );
-              })}
+                  {stat.trend && (
+                    <div className="mt-3 flex items-center">
+                      {TrendIcon && <TrendIcon size={14} className={`mr-1 ${stat.trendColor}`} />}
+                      <span className={`text-xs font-semibold ${stat.trendColor}`}>
+                        {stat.trend}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="bg-card rounded-xl border border-border shadow-sm">
+            <div className="flex border-b border-border overflow-x-auto">
+              <button
+                onClick={() => setActiveTab("transactions")}
+                className={`px-5 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === "transactions"
+                    ? "text-primary border-primary"
+                    : "text-muted-foreground border-transparent hover:text-foreground"
+                }`}>
+                Riwayat Transaksi
+              </button>
+              <button
+                onClick={() => setActiveTab("points")}
+                className={`px-5 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === "points"
+                    ? "text-primary border-primary"
+                    : "text-muted-foreground border-transparent hover:text-foreground"
+                }`}>
+                Aktivitas Poin
+              </button>
             </div>
 
-            <div className="bg-card rounded-xl border border-border shadow-sm">
-              <div className="flex border-b border-border overflow-x-auto">
-                <button
-                  onClick={() => setActiveTab("transactions")}
-                  className={`px-5 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                    activeTab === "transactions"
-                      ? "text-primary border-primary"
-                      : "text-muted-foreground border-transparent hover:text-foreground"
-                  }`}>
-                  Riwayat Transaksi
-                </button>
-                <button
-                  onClick={() => setActiveTab("points")}
-                  className={`px-5 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                    activeTab === "points"
-                      ? "text-primary border-primary"
-                      : "text-muted-foreground border-transparent hover:text-foreground"
-                  }`}>
-                  Aktivitas Poin
-                </button>
-              </div>
-
-              {activeTab === "transactions" && (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-muted/30 border-b border-border">
-                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.member.detail.tableTransactionId")}
-                        </th>
-                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.member.detail.tableDate")}
-                        </th>
-                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.member.detail.tableStore")}
-                        </th>
-                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                          {t("page.member.detail.tableTotalAmount")}
-                        </th>
-                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                          {t("page.member.detail.tableStatus")}
-                        </th>
-                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                          {t("page.member.detail.tableAction")}
-                        </th>
+            {activeTab === "transactions" && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-muted/30 border-b border-border">
+                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {t("page.member.detail.tableTransactionId")}
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {t("page.member.detail.tableDate")}
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {t("page.member.detail.tableStore")}
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                        {t("page.member.detail.tableTotalAmount")}
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+                        {t("page.member.detail.tableStatus")}
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+                        {t("page.member.detail.tableAction")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {transactions.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                          <ReceiptText size={36} className="text-4xl block mb-2" />
+                          Tidak ada transaksi ditemukan
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {transactions.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
-                            <ReceiptText size={36} className="text-4xl block mb-2" />
-                            Tidak ada transaksi ditemukan
+                    ) : (
+                      transactions.map((trx, idx) => (
+                        <tr key={trx.id || idx} className="hover:bg-muted/20 transition-colors">
+                          <td className="px-4 py-3 text-sm font-mono text-foreground">
+                            {trx.code || trx.invoice || `#TRX-${idx.toString().padStart(8, "0")}`}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground">
+                            {trx.date
+                              ? new Date(trx.date).toLocaleDateString("id-ID", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric"
+                                })
+                              : "-"}
+                            {trx.time && (
+                              <>
+                                , <span className="text-xs">{trx.time}</span>
+                              </>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground">
+                            {trx.store || trx.storeName || "-"}
+                          </td>
+                          <td className="px-4 py-3 text-sm font-bold text-foreground text-right">
+                            {formatCurrency(trx.amount || trx.total || 0)}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="px-2.5 py-1 bg-secondary/10 text-secondary text-xs font-bold rounded-full">
+                              {trx.status || t("common.completed")}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <button className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all">
+                              <Receipt size={20} className="text-lg" />
+                            </button>
                           </td>
                         </tr>
-                      ) : (
-                        transactions.map((trx, idx) => (
-                          <tr key={trx.id || idx} className="hover:bg-muted/20 transition-colors">
-                            <td className="px-4 py-3 text-sm font-mono text-foreground">
-                              {trx.code || trx.invoice || `#TRX-${idx.toString().padStart(8, "0")}`}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-muted-foreground">
-                              {trx.date
-                                ? new Date(trx.date).toLocaleDateString("id-ID", {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric"
-                                  })
-                                : "-"}
-                              {trx.time && (
-                                <>
-                                  , <span className="text-xs">{trx.time}</span>
-                                </>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-muted-foreground">
-                              {trx.store || trx.storeName || "-"}
-                            </td>
-                            <td className="px-4 py-3 text-sm font-bold text-foreground text-right">
-                              {formatCurrency(trx.amount || trx.total || 0)}
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <span className="px-2.5 py-1 bg-secondary/10 text-secondary text-xs font-bold rounded-full">
-                                {trx.status || t("common.completed")}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <button className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all">
-                                <Receipt size={20} className="text-lg" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
-              {activeTab === "points" && (
-                <>
-                  <div className="overflow-x-auto">
-                    {pointLoading ? (
+            {activeTab === "points" && (
+              <>
+                <div className="overflow-x-auto">
+                  {pointLoading ? (
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="bg-muted/30 border-b border-border">
+                          {[
+                            t("page.member.detail.pointHistoryTable.date"),
+                            t("page.member.detail.pointHistoryTable.description"),
+                            t("page.member.detail.pointHistoryTable.points"),
+                            t("page.member.detail.pointHistoryTable.balance")
+                          ].map((_, i) => (
+                            <th key={i} className="px-4 py-3">
+                              <Skeleton className="h-3 w-16" />
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {[...Array(4)].map((_, r) => (
+                          <tr key={r}>
+                            {[...Array(4)].map((_, c) => (
+                              <td key={c} className="px-4 py-3">
+                                <Skeleton className="h-4 w-full" />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="overflow-x-auto">
                       <table className="w-full text-left">
                         <thead>
                           <tr className="bg-muted/30 border-b border-border">
-                            {[
-                              t("page.member.detail.pointHistoryTable.date"),
-                              t("page.member.detail.pointHistoryTable.description"),
-                              t("page.member.detail.pointHistoryTable.points"),
-                              t("page.member.detail.pointHistoryTable.balance")
-                            ].map((_, i) => (
-                              <th key={i} className="px-4 py-3">
-                                <Skeleton className="h-3 w-16" />
-                              </th>
-                            ))}
+                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.member.detail.pointHistoryTable.date")}
+                            </th>
+                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.member.detail.pointHistoryTable.description")}
+                            </th>
+                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                              {t("page.member.detail.pointHistoryTable.points")}
+                            </th>
+                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                              {t("page.member.detail.pointHistoryTable.balance")}
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                          {[...Array(4)].map((_, r) => (
-                            <tr key={r}>
-                              {[...Array(4)].map((_, c) => (
-                                <td key={c} className="px-4 py-3">
-                                  <Skeleton className="h-4 w-full" />
+                          {(pointData?.data || []).length === 0 ? (
+                            <tr>
+                              <td
+                                colSpan={4}
+                                className="px-4 py-12 text-center text-muted-foreground">
+                                <Stars size={36} className="mx-auto mb-2 opacity-30" />
+                                <p className="text-sm">
+                                  {t("page.member.detail.pointHistoryTable.empty")}
+                                </p>
+                              </td>
+                            </tr>
+                          ) : (
+                            (pointData?.data || []).map((pt, idx) => (
+                              <tr
+                                key={pt.id || idx}
+                                className="hover:bg-muted/20 transition-colors">
+                                <td className="px-4 py-3 text-sm text-muted-foreground">
+                                  {pt.date || pt.createdAt
+                                    ? new Date(pt.date || pt.createdAt).toLocaleDateString(
+                                        "id-ID",
+                                        {
+                                          day: "numeric",
+                                          month: "short",
+                                          year: "numeric"
+                                        }
+                                      )
+                                    : "-"}
                                 </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                          <thead>
-                            <tr className="bg-muted/30 border-b border-border">
-                              <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.member.detail.pointHistoryTable.date")}
-                              </th>
-                              <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.member.detail.pointHistoryTable.description")}
-                              </th>
-                              <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                                {t("page.member.detail.pointHistoryTable.points")}
-                              </th>
-                              <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                                {t("page.member.detail.pointHistoryTable.balance")}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border">
-                            {(pointData?.data || []).length === 0 ? (
-                              <tr>
+                                <td className="px-4 py-3 text-sm text-foreground">
+                                  {pt.notes || pt.description || pt.reason || "-"}
+                                </td>
                                 <td
-                                  colSpan={4}
-                                  className="px-4 py-12 text-center text-muted-foreground">
-                                  <Stars size={36} className="mx-auto mb-2 opacity-30" />
-                                  <p className="text-sm">
-                                    {t("page.member.detail.pointHistoryTable.empty")}
-                                  </p>
+                                  className={`px-4 py-3 text-sm font-bold text-right ${(pt.pointsChange || pt.points) > 0 ? "text-green-600" : "text-red-600"}`}>
+                                  {(pt.pointsChange || pt.points) > 0 ? "+" : ""}
+                                  {(pt.pointsChange || pt.points)?.toLocaleString() || 0}
+                                </td>
+                                <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
+                                  {(pt.pointsAfter || pt.balance)?.toLocaleString() || "-"}
                                 </td>
                               </tr>
-                            ) : (
-                              (pointData?.data || []).map((pt, idx) => (
-                                <tr
-                                  key={pt.id || idx}
-                                  className="hover:bg-muted/20 transition-colors">
-                                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                                    {pt.date || pt.createdAt
-                                      ? new Date(pt.date || pt.createdAt).toLocaleDateString(
-                                          "id-ID",
-                                          {
-                                            day: "numeric",
-                                            month: "short",
-                                            year: "numeric"
-                                          }
-                                        )
-                                      : "-"}
-                                  </td>
-                                  <td className="px-4 py-3 text-sm text-foreground">
-                                    {pt.notes || pt.description || pt.reason || "-"}
-                                  </td>
-                                  <td
-                                    className={`px-4 py-3 text-sm font-bold text-right ${(pt.pointsChange || pt.points) > 0 ? "text-green-600" : "text-red-600"}`}>
-                                    {(pt.pointsChange || pt.points) > 0 ? "+" : ""}
-                                    {(pt.pointsChange || pt.points)?.toLocaleString() || 0}
-                                  </td>
-                                  <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
-                                    {(pt.pointsAfter || pt.balance)?.toLocaleString() || "-"}
-                                  </td>
-                                </tr>
-                              ))
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                  <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/10">
-                    <p className="text-xs text-muted-foreground">
-                      Menampilkan {(pointData?.data || []).length} dari{" "}
-                      {pointData?.pagination?.total || pointData?.total || 0} aktivitas poin
-                    </p>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => setPointPage(Math.max(1, pointPage - 1))}
-                        disabled={pointPage <= 1}
-                        className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
-                        <ChevronLeft size={20} className="text-lg" />
-                      </button>
-                      <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
-                        {pointPage}
-                      </button>
-                      <button
-                        onClick={() => setPointPage(pointPage + 1)}
-                        disabled={pointPage >= (pointData?.pagination?.totalPages || 1)}
-                        className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
-                        <ChevronRight size={20} className="text-lg" />
-                      </button>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
                     </div>
-                  </div>
-                </>
-              )}
-
-              {activeTab === "transactions" && (
+                  )}
+                </div>
                 <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/10">
                   <p className="text-xs text-muted-foreground">
-                    Menampilkan {transactions.length} dari{" "}
-                    {member?.transactionPagination?.total || 0} transaksi
+                    Menampilkan {(pointData?.data || []).length} dari{" "}
+                    {pointData?.pagination?.total || pointData?.total || 0} aktivitas poin
                   </p>
                   <div className="flex gap-1">
                     <button
-                      onClick={() => setTransactionPage(Math.max(1, transactionPage - 1))}
-                      disabled={transactionPage <= 1}
+                      onClick={() => setPointPage(Math.max(1, pointPage - 1))}
+                      disabled={pointPage <= 1}
                       className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
                       <ChevronLeft size={20} className="text-lg" />
                     </button>
+                    <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
+                      {pointPage}
+                    </button>
                     <button
-                      onClick={() => setTransactionPage(transactionPage + 1)}
-                      disabled={transactionPage >= (member?.transactionPagination?.totalPages || 1)}
+                      onClick={() => setPointPage(pointPage + 1)}
+                      disabled={pointPage >= (pointData?.pagination?.totalPages || 1)}
                       className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
                       <ChevronRight size={20} className="text-lg" />
                     </button>
                   </div>
                 </div>
-              )}
-            </div>
+              </>
+            )}
+
+            {activeTab === "transactions" && (
+              <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/10">
+                <p className="text-xs text-muted-foreground">
+                  Menampilkan {transactions.length} dari {member?.transactionPagination?.total || 0}{" "}
+                  transaksi
+                </p>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setTransactionPage(Math.max(1, transactionPage - 1))}
+                    disabled={transactionPage <= 1}
+                    className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
+                    <ChevronLeft size={20} className="text-lg" />
+                  </button>
+                  <button
+                    onClick={() => setTransactionPage(transactionPage + 1)}
+                    disabled={transactionPage >= (member?.transactionPagination?.totalPages || 1)}
+                    className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
+                    <ChevronRight size={20} className="text-lg" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

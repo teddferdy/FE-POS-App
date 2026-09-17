@@ -216,115 +216,110 @@ const NotificationPage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[
-              { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
-              { i18nKey: "page.notification.title" }
-            ]}
-            title={t("page.notification.title")}
-            description={t("page.notification.description")}>
-            {unreadCount > 0 && (
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => readAllMutate()}>
-                <CheckCheck size={16} />
-                {t("page.notification.markAllRead")}
-              </Button>
-            )}
-          </PageHeader>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
+          { i18nKey: "page.notification.title" }
+        ]}
+        title={t("page.notification.title")}
+        description={t("page.notification.description")}>
+        {unreadCount > 0 && (
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => readAllMutate()}>
+            <CheckCheck size={16} />
+            {t("page.notification.markAllRead")}
+          </Button>
+        )}
+      </PageHeader>
+
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
         <div>
-          <div>
-            {isLoading ? (
-              <Loading fullscreen size="lg" label={t("common.loading")} />
-            ) : (
-              <>
-                <div className="space-y-2">
-                  {items.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                      <Bell size={48} className="text-muted-foreground/40 mb-4" />
-                      <p className="text-lg font-medium text-foreground">
-                        {t("page.notification.empty")}
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {t("page.notification.emptyDesc")}
-                      </p>
-                    </div>
-                  ) : (
-                    items.map((notif) => {
-                      const iconConfig = typeIcons[notif.type] || defaultIcon;
-                      const Icon = iconConfig.icon;
-                      return (
-                        <div
-                          key={notif.id}
-                          onClick={() => handleViewDetail(notif)}
-                          className={`group relative flex items-start gap-4 p-4 rounded-xl border transition-colors cursor-pointer ${
-                            !notif.isRead
-                              ? "bg-primary/5 border-primary/20"
-                              : "bg-card border-border hover:bg-accent/50"
-                          }`}>
-                          <div
-                            className={`p-2.5 rounded-full shrink-0 ${iconConfig.bg} ${iconConfig.color}`}>
-                            <Icon size={18} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <p
-                                className={`text-sm ${!notif.isRead ? "font-semibold text-foreground" : "text-foreground"}`}>
-                                {notif.title}
-                              </p>
-                              <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">
-                                {formatTime(notif.createdAt)}
-                              </span>
-                            </div>
-                            <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
-                              {notif.description}
-                            </p>
-                          </div>
-                          {!notif.isRead && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                readMutate(notif.id);
-                              }}
-                              className="absolute top-3 right-3 p-1 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-accent transition-all">
-                              <X size={14} />
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-
-                {pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 pt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page <= 1}
-                      onClick={() => setPage((p) => p - 1)}>
-                      {t("page.notification.previous")}
-                    </Button>
-                    <span className="text-sm text-muted-foreground">
-                      {page} / {pagination.totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page >= pagination.totalPages}
-                      onClick={() => setPage((p) => p + 1)}>
-                      {t("page.notification.next")}
-                    </Button>
+          {isLoading ? (
+            <Loading fullscreen size="lg" label={t("common.loading")} />
+          ) : (
+            <>
+              <div className="space-y-2">
+                {items.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <Bell size={48} className="text-muted-foreground/40 mb-4" />
+                    <p className="text-lg font-medium text-foreground">
+                      {t("page.notification.empty")}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {t("page.notification.emptyDesc")}
+                    </p>
                   </div>
+                ) : (
+                  items.map((notif) => {
+                    const iconConfig = typeIcons[notif.type] || defaultIcon;
+                    const Icon = iconConfig.icon;
+                    return (
+                      <div
+                        key={notif.id}
+                        onClick={() => handleViewDetail(notif)}
+                        className={`group relative flex items-start gap-4 p-4 rounded-xl border transition-colors cursor-pointer ${
+                          !notif.isRead
+                            ? "bg-primary/5 border-primary/20"
+                            : "bg-card border-border hover:bg-accent/50"
+                        }`}>
+                        <div
+                          className={`p-2.5 rounded-full shrink-0 ${iconConfig.bg} ${iconConfig.color}`}>
+                          <Icon size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <p
+                              className={`text-sm ${!notif.isRead ? "font-semibold text-foreground" : "text-foreground"}`}>
+                              {notif.title}
+                            </p>
+                            <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">
+                              {formatTime(notif.createdAt)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
+                            {notif.description}
+                          </p>
+                        </div>
+                        {!notif.isRead && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              readMutate(notif.id);
+                            }}
+                            className="absolute top-3 right-3 p-1 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-accent transition-all">
+                            <X size={14} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })
                 )}
-              </>
-            )}
-          </div>
+              </div>
+
+              {pagination.totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => p - 1)}>
+                    {t("page.notification.previous")}
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    {page} / {pagination.totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page >= pagination.totalPages}
+                    onClick={() => setPage((p) => p + 1)}>
+                    {t("page.notification.next")}
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 

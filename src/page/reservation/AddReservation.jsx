@@ -204,302 +204,300 @@ const AddReservation = () => {
   };
 
   return (
-    <div>
-      <div className="space-y-6">
-        <PageHeader
-          breadcrumbs={[
-            {
-              label: t("breadcrumb.home"),
-              href: "/dashboard-super-admin",
-              i18nKey: "breadcrumb.home"
-            },
-            {
-              label: "Reservasi",
-              href: "/reservation",
-              i18nKey: "breadcrumb.reservation"
-            },
-            { label: "Tambah Reservasi" }
-          ]}
-          title="Tambah Reservasi"
-          description="Buat reservasi meja baru"
-          onBack={() => setCancelModal(true)}
-          dynamicInfo={false}
-        />
+    <div className="space-y-6">
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: "Reservasi",
+            href: "/reservation",
+            i18nKey: "breadcrumb.reservation"
+          },
+          { label: "Tambah Reservasi" }
+        ]}
+        title="Tambah Reservasi"
+        description="Buat reservasi meja baru"
+        onBack={() => setCancelModal(true)}
+        dynamicInfo={false}
+      />
 
-        <Card className="p-6">
-          <Form {...form}>
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="col-span-full">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                    Detail Reservasi
-                  </h3>
-                </div>
-                <FormField
-                  control={form.control}
-                  name="store"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Toko <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih toko" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {stores.map((s) => (
-                            <SelectItem key={s.id} value={String(s.id)}>
-                              {s.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="reservationDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Tanggal <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <DatePicker
-                        date={field.value}
-                        setDate={(d) => {
-                          if (d && offDays.includes(d.getDay())) return;
-                          field.onChange(d);
-                        }}
-                        disabledDates={(date) => offDays.includes(date.getDay())}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Jam Mulai <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <TimePicker
-                        {...field}
-                        placeholder="Pilih jam mulai"
-                        slots={timeSlots}
-                        disabled={detailLoading}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jam Selesai</FormLabel>
-                      <TimePicker
-                        {...field}
-                        placeholder="Pilih jam selesai"
-                        slots={timeSlots}
-                        disabled={detailLoading}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="col-span-full">
-                  <div className="border-t border-border my-2" />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="customerName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Nama Customer <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input placeholder="Nama customer" {...field} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customerPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>No. Telepon</FormLabel>
-                      <Input placeholder="08123456789" maxLength={16} {...field} />
-                      <FormMessage />
-                      <FormDescription>{t("common.phoneHint")}</FormDescription>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customerEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <Input type="email" placeholder="email@example.com" {...field} />
-                      <FormMessage />
-                      <FormDescription>{t("common.optionalField")}</FormDescription>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="guestCount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Jumlah Tamu <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input
-                        type="number"
-                        min="1"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                        }
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="col-span-full">
-                  <div className="border-t border-border my-2" />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="tableId"
-                  render={({ field }) => (
-                    <FormItem className="col-span-full">
-                      <FormLabel>Meja</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={loadingTables ? "Memuat meja..." : "Pilih meja (opsional)"}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Tidak pilih meja</SelectItem>
-                          {availableTables.map((t) => {
-                            const unavailable = t.status !== "available";
-                            return (
-                              <SelectItem
-                                key={t.id}
-                                value={String(t.id)}
-                                disabled={unavailable}
-                                className={unavailable ? "text-muted-foreground" : ""}>
-                                {t.name} (Kap. {t.capacity})
-                                {unavailable && (
-                                  <span className="text-destructive ml-1">- Not Available</span>
-                                )}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                      {!selectedStore ? (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Pilih toko terlebih dahulu
-                        </p>
-                      ) : loadingTables ? (
-                        <p className="text-xs text-muted-foreground mt-1">Memuat meja...</p>
-                      ) : availableTables.length === 0 ? (
-                        <p className="text-xs text-destructive mt-1">Meja tidak tersedia</p>
-                      ) : null}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+      <Card className="p-6">
+        <Form {...form}>
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="col-span-full">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                  Detail Reservasi
+                </h3>
               </div>
               <FormField
                 control={form.control}
-                name="notes"
+                name="store"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Catatan</FormLabel>
-                    <Textarea placeholder="Catatan reservasi" rows={3} {...field} />
+                    <FormLabel>
+                      Toko <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih toko" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {stores.map((s) => (
+                          <SelectItem key={s.id} value={String(s.id)}>
+                            {s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
-                <Button
-                  variant="danger"
-                  onClick={() => setCancelModal(true)}
-                  className="gap-2 w-full sm:w-auto justify-center">
-                  <X size={18} /> {t("breadcrumb.back")}
-                </Button>
-                <Button
-                  variant="success"
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const values = form.getValues();
-                    const missing = getMissingFields(values, formSchema, fieldLabels);
-                    if (missing.length > 0) {
-                      setMissingFieldsList(missing);
-                      setMissingFieldsModal(true);
-                      return;
-                    }
-                    setConfirmSaveModal(true);
-                  }}
-                  disabled={createMutation.isLoading}
-                  className="gap-2 w-full sm:w-auto justify-center">
-                  <Save size={18} />
-                  {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
-                </Button>
+              <FormField
+                control={form.control}
+                name="reservationDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Tanggal <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <DatePicker
+                      date={field.value}
+                      setDate={(d) => {
+                        if (d && offDays.includes(d.getDay())) return;
+                        field.onChange(d);
+                      }}
+                      disabledDates={(date) => offDays.includes(date.getDay())}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="startTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Jam Mulai <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <TimePicker
+                      {...field}
+                      placeholder="Pilih jam mulai"
+                      slots={timeSlots}
+                      disabled={detailLoading}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="endTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Jam Selesai</FormLabel>
+                    <TimePicker
+                      {...field}
+                      placeholder="Pilih jam selesai"
+                      slots={timeSlots}
+                      disabled={detailLoading}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="col-span-full">
+                <div className="border-t border-border my-2" />
               </div>
-            </form>
-          </Form>
-          <Modal
-            type="confirm"
-            open={confirmSaveModal}
-            onOpenChange={setConfirmSaveModal}
-            title="Konfirmasi Simpan"
-            description="Apakah Anda yakin ingin menyimpan data ini?"
-            confirmText="Ya, Simpan"
-            onConfirm={() => {
-              setConfirmSaveModal(false);
-              const values = form.getValues();
-              onSubmit(values);
-            }}
-          />
-        </Card>
-
+              <FormField
+                control={form.control}
+                name="customerName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Nama Customer <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <Input placeholder="Nama customer" {...field} />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="customerPhone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>No. Telepon</FormLabel>
+                    <Input placeholder="08123456789" maxLength={16} {...field} />
+                    <FormMessage />
+                    <FormDescription>{t("common.phoneHint")}</FormDescription>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="customerEmail"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <Input type="email" placeholder="email@example.com" {...field} />
+                    <FormMessage />
+                    <FormDescription>{t("common.optionalField")}</FormDescription>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="guestCount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Jumlah Tamu <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <Input
+                      type="number"
+                      min="1"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                      }
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="col-span-full">
+                <div className="border-t border-border my-2" />
+              </div>
+              <FormField
+                control={form.control}
+                name="tableId"
+                render={({ field }) => (
+                  <FormItem className="col-span-full">
+                    <FormLabel>Meja</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={loadingTables ? "Memuat meja..." : "Pilih meja (opsional)"}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Tidak pilih meja</SelectItem>
+                        {availableTables.map((t) => {
+                          const unavailable = t.status !== "available";
+                          return (
+                            <SelectItem
+                              key={t.id}
+                              value={String(t.id)}
+                              disabled={unavailable}
+                              className={unavailable ? "text-muted-foreground" : ""}>
+                              {t.name} (Kap. {t.capacity})
+                              {unavailable && (
+                                <span className="text-destructive ml-1">- Not Available</span>
+                              )}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    {!selectedStore ? (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Pilih toko terlebih dahulu
+                      </p>
+                    ) : loadingTables ? (
+                      <p className="text-xs text-muted-foreground mt-1">Memuat meja...</p>
+                    ) : availableTables.length === 0 ? (
+                      <p className="text-xs text-destructive mt-1">Meja tidak tersedia</p>
+                    ) : null}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Catatan</FormLabel>
+                  <Textarea placeholder="Catatan reservasi" rows={3} {...field} />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
+              <Button
+                variant="danger"
+                onClick={() => setCancelModal(true)}
+                className="gap-2 w-full sm:w-auto justify-center">
+                <X size={18} /> {t("breadcrumb.back")}
+              </Button>
+              <Button
+                variant="success"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const values = form.getValues();
+                  const missing = getMissingFields(values, formSchema, fieldLabels);
+                  if (missing.length > 0) {
+                    setMissingFieldsList(missing);
+                    setMissingFieldsModal(true);
+                    return;
+                  }
+                  setConfirmSaveModal(true);
+                }}
+                disabled={createMutation.isLoading}
+                className="gap-2 w-full sm:w-auto justify-center">
+                <Save size={18} />
+                {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
+              </Button>
+            </div>
+          </form>
+        </Form>
         <Modal
           type="confirm"
-          open={cancelModal}
-          onOpenChange={setCancelModal}
-          title="Batalkan?"
-          description="Perubahan yang belum disimpan akan hilang."
-          confirmText="Ya, Batalkan"
-          onConfirm={() => setTimeout(() => navigate("/reservation"), 150)}
+          open={confirmSaveModal}
+          onOpenChange={setConfirmSaveModal}
+          title="Konfirmasi Simpan"
+          description="Apakah Anda yakin ingin menyimpan data ini?"
+          confirmText="Ya, Simpan"
+          onConfirm={() => {
+            setConfirmSaveModal(false);
+            const values = form.getValues();
+            onSubmit(values);
+          }}
         />
-        <MissingFieldsModal
-          open={missingFieldsModal}
-          onOpenChange={setMissingFieldsModal}
-          fields={missingFieldsList}
-        />
-        <Modal
-          type="error"
-          open={errorModal}
-          onOpenChange={setErrorModal}
-          title={t("common.error")}
-          description={modalMessage}
-          onConfirm={() => setErrorModal(false)}
-        />
-        {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
-      </div>
+      </Card>
+
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title="Batalkan?"
+        description="Perubahan yang belum disimpan akan hilang."
+        confirmText="Ya, Batalkan"
+        onConfirm={() => setTimeout(() => navigate("/reservation"), 150)}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
+      />
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

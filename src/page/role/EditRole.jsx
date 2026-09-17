@@ -325,281 +325,275 @@ const EditRole = () => {
   }
 
   return (
-    <div>
-      <div>
-        <PageHeader
-          breadcrumbs={[
-            {
-              label: t("page.role.detail.breadcrumbParent"),
-              href: "/role-management",
-              i18nKey: "page.role.detail.breadcrumbParent"
-            },
-            { label: t("page.role.edit.title") }
-          ]}
-          title={`${t("page.role.edit.title")}: ${name}`}
-          description={t("page.role.edit.description")}
-          onBack={() => setCancelModal(true)}
-          dynamicInfo={false}
-        />
+    <div className="space-y-6">
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("page.role.detail.breadcrumbParent"),
+            href: "/role-management",
+            i18nKey: "page.role.detail.breadcrumbParent"
+          },
+          { label: t("page.role.edit.title") }
+        ]}
+        title={`${t("page.role.edit.title")}: ${name}`}
+        description={t("page.role.edit.description")}
+        onBack={() => setCancelModal(true)}
+        dynamicInfo={false}
+      />
 
-        <div className="grid grid-cols-12 gap-6">
-          <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-            <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-              <div className="flex items-center gap-2 mb-4">
-                <Info size={18} className="text-primary" />
-                <h3 className="text-base font-semibold text-foreground">
-                  {t("page.role.detail.infoTitle")}
-                </h3>
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+          <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+            <div className="flex items-center gap-2 mb-4">
+              <Info size={18} className="text-primary" />
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.role.detail.infoTitle")}
+              </h3>
+            </div>
+            <div className="space-y-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {t("page.role.detail.nameLabel")} <span className="text-destructive">*</span>
+                </label>
+                <input
+                  data-tour="role-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                  placeholder={t("page.role.edit.namePlaceholder")}
+                />
               </div>
-              <div className="space-y-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.role.detail.nameLabel")} <span className="text-destructive">*</span>
-                  </label>
-                  <input
-                    data-tour="role-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                    placeholder={t("page.role.edit.namePlaceholder")}
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.role.edit.descLabel")}
-                  </label>
-                  <textarea
-                    data-tour="role-description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
-                    placeholder={t("page.role.edit.descPlaceholder")}
-                    rows={5}
-                  />
-                </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {t("page.role.edit.descLabel")}
+                </label>
+                <textarea
+                  data-tour="role-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
+                  placeholder={t("page.role.edit.descPlaceholder")}
+                  rows={5}
+                />
               </div>
             </div>
+          </div>
 
-            <div className="bg-primary/5 p-6 rounded-xl border border-primary/20">
-              <h4 className="text-base font-semibold text-primary mb-2">
-                {t("page.role.edit.guideTitle")}
-              </h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {t("page.role.edit.guideDescription")}
+          <div className="bg-primary/5 p-6 rounded-xl border border-primary/20">
+            <h4 className="text-base font-semibold text-primary mb-2">
+              {t("page.role.edit.guideTitle")}
+            </h4>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t("page.role.edit.guideDescription")}
+            </p>
+          </div>
+        </div>
+
+        <div className="col-span-12 lg:col-span-8">
+          <div
+            data-tour="role-permissions-matrix"
+            className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
+              <div className="flex items-center gap-2">
+                <CheckSquare size={18} className="text-primary" />
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.role.detail.matrixTitle")}
+                </h3>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected()}
+                  onChange={(e) => selectAll(e.target.checked)}
+                  className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
+                />
+                <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                  {t("page.role.edit.selectAll")}
+                </span>
+              </label>
+            </div>
+
+            <div className="divide-y divide-border">
+              {groups.map((group, idx) => {
+                const visibleActions = getVisibleActions(
+                  group.items.reduce((acc, item) => {
+                    (item.actions || []).forEach((a) => {
+                      if (!acc.includes(a)) acc.push(a);
+                    });
+                    return acc;
+                  }, [])
+                );
+                const isCollapsed = safeGet(collapsedGroups, idx, false);
+
+                return (
+                  <div key={idx}>
+                    {group.parentTitle && (
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(idx)}
+                        className="w-full flex items-center gap-2 px-6 py-3 bg-muted/10 hover:bg-muted/20 transition-colors text-left">
+                        {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          {group.parentTitle}
+                        </span>
+                      </button>
+                    )}
+                    {!isCollapsed && (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-muted/10">
+                              <th className="px-6 py-3 text-xs font-bold text-foreground uppercase tracking-wider w-56 bg-slate-100 dark:bg-slate-800">
+                                {t("page.role.detail.menuColumn")}
+                              </th>
+                              {visibleActions.map((action) => (
+                                <th
+                                  key={action}
+                                  className={`px-2 py-3 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${safeGet(actionColors, action, "text-muted-foreground")}`}>
+                                  {t(safeGet(actionLabelKeys, action)) || action}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border">
+                            {group.items.map((item) => {
+                              const itemActions = getVisibleActions(item.actions || []);
+                              return (
+                                <tr key={item.href} className="hover:bg-muted/10 transition-colors">
+                                  <td className="px-6 py-3">
+                                    <div className="flex items-center gap-2">
+                                      {item.icon && (
+                                        <item.icon
+                                          size={16}
+                                          className="text-muted-foreground shrink-0"
+                                        />
+                                      )}
+                                      <span className="text-sm text-foreground">{item.title}</span>
+                                    </div>
+                                  </td>
+                                  {itemActions.map((action) => {
+                                    const val = safeGet(safeGet(permissions, item.href), action);
+                                    const isDisabled = val === null;
+                                    return (
+                                      <td key={action} className="px-2 py-3 text-center">
+                                        {isDisabled ? (
+                                          <span className="text-muted-foreground/30">—</span>
+                                        ) : (
+                                          <input
+                                            type="checkbox"
+                                            checked={!!val}
+                                            onChange={() => togglePermission(item.href, action)}
+                                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                                          />
+                                        )}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="p-4 bg-muted/20 text-right border-t border-border">
+              <p className="text-xs text-muted-foreground italic">
+                {t("page.role.edit.footerNote")}
               </p>
             </div>
           </div>
-
-          <div className="col-span-12 lg:col-span-8">
-            <div
-              data-tour="role-permissions-matrix"
-              className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-              <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
-                <div className="flex items-center gap-2">
-                  <CheckSquare size={18} className="text-primary" />
-                  <h3 className="text-base font-semibold text-foreground">
-                    {t("page.role.detail.matrixTitle")}
-                  </h3>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer select-none group">
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected()}
-                    onChange={(e) => selectAll(e.target.checked)}
-                    className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
-                  />
-                  <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                    {t("page.role.edit.selectAll")}
-                  </span>
-                </label>
-              </div>
-
-              <div className="divide-y divide-border">
-                {groups.map((group, idx) => {
-                  const visibleActions = getVisibleActions(
-                    group.items.reduce((acc, item) => {
-                      (item.actions || []).forEach((a) => {
-                        if (!acc.includes(a)) acc.push(a);
-                      });
-                      return acc;
-                    }, [])
-                  );
-                  const isCollapsed = safeGet(collapsedGroups, idx, false);
-
-                  return (
-                    <div key={idx}>
-                      {group.parentTitle && (
-                        <button
-                          type="button"
-                          onClick={() => toggleGroup(idx)}
-                          className="w-full flex items-center gap-2 px-6 py-3 bg-muted/10 hover:bg-muted/20 transition-colors text-left">
-                          {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
-                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                            {group.parentTitle}
-                          </span>
-                        </button>
-                      )}
-                      {!isCollapsed && (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left border-collapse">
-                            <thead>
-                              <tr className="bg-muted/10">
-                                <th className="px-6 py-3 text-xs font-bold text-foreground uppercase tracking-wider w-56 bg-slate-100 dark:bg-slate-800">
-                                  {t("page.role.detail.menuColumn")}
-                                </th>
-                                {visibleActions.map((action) => (
-                                  <th
-                                    key={action}
-                                    className={`px-2 py-3 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${safeGet(actionColors, action, "text-muted-foreground")}`}>
-                                    {t(safeGet(actionLabelKeys, action)) || action}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                              {group.items.map((item) => {
-                                const itemActions = getVisibleActions(item.actions || []);
-                                return (
-                                  <tr
-                                    key={item.href}
-                                    className="hover:bg-muted/10 transition-colors">
-                                    <td className="px-6 py-3">
-                                      <div className="flex items-center gap-2">
-                                        {item.icon && (
-                                          <item.icon
-                                            size={16}
-                                            className="text-muted-foreground shrink-0"
-                                          />
-                                        )}
-                                        <span className="text-sm text-foreground">
-                                          {item.title}
-                                        </span>
-                                      </div>
-                                    </td>
-                                    {itemActions.map((action) => {
-                                      const val = safeGet(safeGet(permissions, item.href), action);
-                                      const isDisabled = val === null;
-                                      return (
-                                        <td key={action} className="px-2 py-3 text-center">
-                                          {isDisabled ? (
-                                            <span className="text-muted-foreground/30">—</span>
-                                          ) : (
-                                            <input
-                                              type="checkbox"
-                                              checked={!!val}
-                                              onChange={() => togglePermission(item.href, action)}
-                                              className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-                                            />
-                                          )}
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="p-4 bg-muted/20 text-right border-t border-border">
-                <p className="text-xs text-muted-foreground italic">
-                  {t("page.role.edit.footerNote")}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
-          <Button
-            variant="danger"
-            onClick={() => setCancelModal(true)}
-            className="w-full sm:w-auto justify-center">
-            {t("common.cancel")}
-          </Button>
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-            <Button
-              variant="draft"
-              onClick={() => setDraftModal(true)}
-              disabled={isSubmitting}
-              className="w-full sm:w-auto justify-center">
-              {t("common.saveAsDraft")}
-            </Button>
-            <Button
-              variant="success"
-              data-tour="role-save"
-              onClick={() => {
-                const missing = getMissingFields(
-                  { name, description },
-                  roleFormSchema,
-                  roleFieldLabels
-                );
-                if (missing.length > 0) {
-                  setMissingFieldsList(missing);
-                  setMissingFieldsModal(true);
-                  return;
-                }
-                handleSubmit({ preventDefault: () => {} }, false);
-              }}
-              disabled={isSubmitting}
-              className="w-full sm:w-auto justify-center">
-              {t("page.role.edit.saveChanges")}
-            </Button>
-          </div>
-        </div>
-
-        {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
-
-        <Modal
-          type="success"
-          open={successModal}
-          onOpenChange={setSuccessModal}
-          title={t("page.role.edit.successTitle")}
-          onConfirm={() => {
-            setIsSubmitting(false);
-            setTimeout(() => navigate("/role-management"), 150);
-          }}
-        />
-        <Modal
-          type="error"
-          open={errorModal}
-          onOpenChange={setErrorModal}
-          title={t("common.error")}
-          description={modalMessage}
-          onConfirm={() => setErrorModal(false)}
-        />
-        <Modal
-          type="confirm"
-          open={cancelModal}
-          onOpenChange={setCancelModal}
-          title={t("modal.cancelTitle")}
-          confirmText={t("modal.yesCancel")}
-          onConfirm={() => setTimeout(() => navigate("/role-management"), 150)}
-        />
-
-        <Modal
-          type="confirm"
-          open={draftModal}
-          onOpenChange={setDraftModal}
-          title={t("common.saveAsDraftTitle")}
-          description={t("common.saveAsDraftDesc")}
-          confirmText={t("common.yesSaveDraft")}
-          onConfirm={() => {
-            setDraftModal(false);
-            handleSubmit(new Event("submit"), true);
-          }}
-        />
-        <MissingFieldsModal
-          open={missingFieldsModal}
-          onOpenChange={setMissingFieldsModal}
-          fields={missingFieldsList}
-        />
       </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
+        <Button
+          variant="danger"
+          onClick={() => setCancelModal(true)}
+          className="w-full sm:w-auto justify-center">
+          {t("common.cancel")}
+        </Button>
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <Button
+            variant="draft"
+            onClick={() => setDraftModal(true)}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto justify-center">
+            {t("common.saveAsDraft")}
+          </Button>
+          <Button
+            variant="success"
+            data-tour="role-save"
+            onClick={() => {
+              const missing = getMissingFields(
+                { name, description },
+                roleFormSchema,
+                roleFieldLabels
+              );
+              if (missing.length > 0) {
+                setMissingFieldsList(missing);
+                setMissingFieldsModal(true);
+                return;
+              }
+              handleSubmit({ preventDefault: () => {} }, false);
+            }}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto justify-center">
+            {t("page.role.edit.saveChanges")}
+          </Button>
+        </div>
+      </div>
+
+      {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
+
+      <Modal
+        type="success"
+        open={successModal}
+        onOpenChange={setSuccessModal}
+        title={t("page.role.edit.successTitle")}
+        onConfirm={() => {
+          setIsSubmitting(false);
+          setTimeout(() => navigate("/role-management"), 150);
+        }}
+      />
+      <Modal
+        type="error"
+        open={errorModal}
+        onOpenChange={setErrorModal}
+        title={t("common.error")}
+        description={modalMessage}
+        onConfirm={() => setErrorModal(false)}
+      />
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title={t("modal.cancelTitle")}
+        confirmText={t("modal.yesCancel")}
+        onConfirm={() => setTimeout(() => navigate("/role-management"), 150)}
+      />
+
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title={t("common.saveAsDraftTitle")}
+        description={t("common.saveAsDraftDesc")}
+        confirmText={t("common.yesSaveDraft")}
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit(new Event("submit"), true);
+        }}
+      />
+      <MissingFieldsModal
+        open={missingFieldsModal}
+        onOpenChange={setMissingFieldsModal}
+        fields={missingFieldsList}
+      />
     </div>
   );
 };
