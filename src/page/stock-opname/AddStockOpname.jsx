@@ -62,16 +62,73 @@ import UploadExcelModal from "./components/UploadExcelModal";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
 
-const toInt = (val) => {
+// BE persists these opname quantities as decimals (matching the product's
+// own DECIMAL(10,4) stock field, which is what auto-fills stokAwalJumlah) —
+// parseInt after stripping "." silently truncated any fractional count
+// (e.g. "12.5" -> 125) for fractional-unit products (kg, liter, ...).
+const toDecimal = (val) => {
   if (val === null || val === undefined || val === "") return 0;
-  const n = parseInt(String(val).replace(/\D/g, ""), 10);
+  const n = parseFloat(String(val));
   return isNaN(n) ? 0 : n;
 };
 
-const sanitizeNumberInput = (value) => value.replace(/\D/g, "");
+// Keep digits and a single decimal point while typing; cap the fractional
+// part at 4 digits to match the BE's DECIMAL(10,4) precision. A stray extra
+// "." is dropped rather than producing garbage.
+const sanitizeDecimalInput = (value) => {
+  const cleaned = value.replace(/[^0-9.]/g, "");
+  const dotIndex = cleaned.indexOf(".");
+  if (dotIndex === -1) return cleaned;
+  const intPart = cleaned.slice(0, dotIndex);
+  const fracPart = cleaned
+    .slice(dotIndex + 1)
+    .replace(/\./g, "")
+    .slice(0, 4);
+  return `${intPart}.${fracPart}`;
+};
+
+// BE contract: DECIMAL(10,4) — at most 4 fractional digits, magnitude at
+// most 999999.9999. Plain-shape check without regex-DoS patterns.
+export const DECIMAL_QTY_MAX = 999999.9999;
+export const hasValidDecimalPrecision = (val) => {
+  const s = String(val ?? "").trim();
+  if (s === "") return false;
+  const dot = s.indexOf(".");
+  if (dot !== -1) {
+    if (s.slice(dot + 1).length > 4) return false;
+    const head = s.slice(0, dot);
+    if (head !== "" && ![...head].every((ch) => ch >= "0" && ch <= "9")) return false;
+    const tail = s.slice(dot + 1);
+    if (tail !== "" && ![...tail].every((ch) => ch >= "0" && ch <= "9")) return false;
+    if (head === "" && tail === "") return false;
+  } else if (![...s].every((ch) => ch >= "0" && ch <= "9")) {
+    return false;
+  }
+  return Number.isFinite(Number(s));
+};
+export const isWithinDecimalMagnitude = (val) => {
+  const s = String(val ?? "").trim();
+  if (s === "") return false;
+  const n = Number(s);
+  return Number.isFinite(n) && n >= 0 && n <= DECIMAL_QTY_MAX;
+};
+
+// Normalize computed quantities to contract precision. Binary floating
+// point leaves dust on innocent arithmetic (10.1 + 0.2 - 0.3), which the
+// BE's >4dp guard would reject — this removes the dust without changing
+// any legitimate value (idempotent on exact decimals).
+export const roundTo4dp = (n) => {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return v;
+  return Math.round((v + Number.EPSILON) * 10000) / 10000;
+};
 
 const calculateStockAkhir = (row) =>
-  toInt(row.stokAwalJumlah) + toInt(row.barangMasukJumlah) - toInt(row.barangKeluarJumlah);
+  roundTo4dp(
+    toDecimal(row.stokAwalJumlah) +
+      toDecimal(row.barangMasukJumlah) -
+      toDecimal(row.barangKeluarJumlah)
+  );
 
 const calculateStockFisik = (row) => {
   if (
@@ -80,13 +137,13 @@ const calculateStockFisik = (row) => {
     row.stokFisikJumlah === ""
   )
     return null;
-  return toInt(row.stokFisikJumlah);
+  return toDecimal(row.stokFisikJumlah);
 };
 
 const calculateSelisih = (row) => {
   const fisik = calculateStockFisik(row);
   if (fisik === null) return null;
-  return fisik - calculateStockAkhir(row);
+  return roundTo4dp(fisik - calculateStockAkhir(row));
 };
 
 const getSelisihStyle = (value) => {
@@ -199,6 +256,22 @@ const AddStockOpname = () => {
   const [noLocationModal, setNoLocationModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
+  // Contract guard shared by the zod schema (complete path) and the
+  // draft confirm path below: at most 4 fractional digits, magnitude at
+  // most 999999.9999, finite numbers only. Typing already prevents most
+  // violations; this is the enforcement boundary for pasted/programmatic
+  // values so nothing invalid can be submitted.
+  const decimalQuantityField = (requiredMsg) =>
+    z
+      .string()
+      .min(1, requiredMsg)
+      .refine((v) => hasValidDecimalPrecision(v), {
+        message: t("page.stockOpname.validation.quantityPrecision")
+      })
+      .refine((v) => isWithinDecimalMagnitude(v), {
+        message: t("page.stockOpname.validation.quantityTooLarge")
+      });
+
   const stockOpnameSchema = z.object({
     tanggalAudit: z.date({ required_error: t("page.stockOpname.validation.auditDateRequired") }),
     auditor: z.string().trim().min(1, t("page.stockOpname.validation.auditorRequired")),
@@ -213,14 +286,14 @@ const AddStockOpname = () => {
           lokasiId: z.string().min(1, t("page.stockOpname.validation.lokasiRequired")),
           lokasiLabel: z.string().optional(),
           store: z.string().optional(),
-          stokAwalJumlah: z.string().min(1, t("page.stockOpname.validation.stokAwalRequired")),
-          barangMasukJumlah: z
-            .string()
-            .min(1, t("page.stockOpname.validation.barangMasukRequired")),
-          barangKeluarJumlah: z
-            .string()
-            .min(1, t("page.stockOpname.validation.barangKeluarRequired")),
-          stokFisikJumlah: z.string().min(1, t("page.stockOpname.validation.stokFisikRequired")),
+          stokAwalJumlah: decimalQuantityField(t("page.stockOpname.validation.stokAwalRequired")),
+          barangMasukJumlah: decimalQuantityField(
+            t("page.stockOpname.validation.barangMasukRequired")
+          ),
+          barangKeluarJumlah: decimalQuantityField(
+            t("page.stockOpname.validation.barangKeluarRequired")
+          ),
+          stokFisikJumlah: decimalQuantityField(t("page.stockOpname.validation.stokFisikRequired")),
           keterangan: z.string().trim().min(1, t("page.stockOpname.validation.keteranganRequired"))
         })
       )
@@ -343,7 +416,9 @@ const AddStockOpname = () => {
     return (watchedItems || []).reduce(
       (acc, row) => {
         const selisih = calculateSelisih(row);
-        return { selisihJumlah: acc.selisihJumlah + (selisih === null ? 0 : selisih) };
+        return {
+          selisihJumlah: roundTo4dp(acc.selisihJumlah + (selisih === null ? 0 : selisih))
+        };
       },
       { selisihJumlah: 0 }
     );
@@ -459,9 +534,9 @@ const AddStockOpname = () => {
           satuan: row.satuan,
           lokasiId: row.lokasiId,
           lokasi: row.store || row.lokasiId,
-          stokAwalJumlah: toInt(row.stokAwalJumlah),
-          barangMasukJumlah: toInt(row.barangMasukJumlah),
-          barangKeluarJumlah: toInt(row.barangKeluarJumlah),
+          stokAwalJumlah: toDecimal(row.stokAwalJumlah),
+          barangMasukJumlah: toDecimal(row.barangMasukJumlah),
+          barangKeluarJumlah: toDecimal(row.barangKeluarJumlah),
           stokAkhirJumlah: stokAkhir,
           stokFisikJumlah: fisik,
           selisihJumlah: selisih,
@@ -822,10 +897,10 @@ const AddStockOpname = () => {
                               <td key={fieldName} className="border-r border-muted/20 px-3 py-2">
                                 <input
                                   type="text"
-                                  inputMode="numeric"
+                                  inputMode="decimal"
                                   {...form.register(`items.${index}.${fieldName}`, {
                                     onChange: (e) => {
-                                      e.target.value = sanitizeNumberInput(e.target.value);
+                                      e.target.value = sanitizeDecimalInput(e.target.value);
                                     }
                                   })}
                                   placeholder="0"
@@ -987,6 +1062,30 @@ const AddStockOpname = () => {
         confirmText={t("common.yesSaveDraft")}
         onConfirm={() => {
           setDraftModal(false);
+          // Draft saves bypass the zod resolver, so enforce the same
+          // decimal contract here (non-empty inputs only — empty keeps its
+          // uncounted semantics). Violations surface through the existing
+          // error modal instead of being submitted.
+          const draftValues = getValues();
+          const draftQtyValues = (draftValues.items || []).flatMap((row) => [
+            row.stokAwalJumlah,
+            row.barangMasukJumlah,
+            row.barangKeluarJumlah,
+            row.stokFisikJumlah
+          ]);
+          const draftQtyPresent = draftQtyValues.filter(
+            (v) => v !== "" && v !== null && v !== undefined
+          );
+          const draftQtyMsg = !draftQtyPresent.every((v) => hasValidDecimalPrecision(v))
+            ? t("page.stockOpname.validation.quantityPrecision")
+            : !draftQtyPresent.every((v) => isWithinDecimalMagnitude(v))
+              ? t("page.stockOpname.validation.quantityTooLarge")
+              : null;
+          if (draftQtyMsg) {
+            setModalMessage(draftQtyMsg);
+            setErrorModal(true);
+            return;
+          }
           setIsSubmitting(true);
           const payload = buildPayload();
           const saveFn = id ? updateStockOpname(id, payload) : addStockOpname(payload);
