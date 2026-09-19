@@ -6939,6 +6939,8 @@
   "page.stockOpname.validation.barangMasukRequired": "Barang masuk wajib diisi",
   "page.stockOpname.validation.barangKeluarRequired": "Barang keluar wajib diisi",
   "page.stockOpname.validation.stokFisikRequired": "Stok fisik wajib diisi",
+  "page.stockOpname.validation.quantityPrecision": "Maksimal 4 angka di belakang koma",
+  "page.stockOpname.validation.quantityTooLarge": "Jumlah melebihi batas 999999.9999",
   "page.stockOpname.validation.keteranganRequired": "Keterangan wajib diisi",
   "page.stockOpname.validation.minOneProduct": "Tambahkan minimal satu produk",
   "page.stockOpname.form.selectLocationFirst": "Pilih lokasi terlebih dahulu",

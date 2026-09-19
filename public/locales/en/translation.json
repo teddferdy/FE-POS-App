@@ -6950,6 +6950,8 @@
   "page.stockOpname.validation.barangMasukRequired": "Stock in is required",
   "page.stockOpname.validation.barangKeluarRequired": "Stock out is required",
   "page.stockOpname.validation.stokFisikRequired": "Physical stock is required",
+  "page.stockOpname.validation.quantityPrecision": "Maximum 4 decimal places",
+  "page.stockOpname.validation.quantityTooLarge": "Quantity exceeds the maximum of 999999.9999",
   "page.stockOpname.validation.keteranganRequired": "Remarks is required",
   "page.stockOpname.validation.minOneProduct": "Add at least one product",
   "page.stockOpname.form.selectLocationFirst": "Select a location first",
