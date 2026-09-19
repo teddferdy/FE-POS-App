@@ -10,6 +10,7 @@ import { getAllLocation } from "@/services/location";
 import { Receipt, Wallet, Building2, CheckCircle, XCircle, FileEdit, Clock3 } from "lucide-react";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { getARList, getARAging, recordARPayment } from "@/services/accounts-receivable";
+import { newPurchasePaymentKey } from "@/utils/paymentIdempotency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
@@ -42,6 +43,11 @@ const AccountsReceivableList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [payModal, setPayModal] = useState(null);
   const [payAmount, setPayAmount] = useState("");
+  // F-IDEM-1-style dedup: one stable reference per payment attempt (opened
+  // when the modal opens, reused across retries within that attempt, never
+  // reused for a later, unrelated payment) — see recordARPayment's BE
+  // contract, which dedupes on (arId, reference).
+  const [payReference, setPayReference] = useState("");
 
   const { data: locData, isLoading: isLoadingLocations } = useQuery(
     ["locations-ar"],
@@ -76,6 +82,7 @@ const AccountsReceivableList = () => {
       toast.success(t("page.accountsReceivable.list.toast.paymentSuccess"));
       setPayModal(null);
       setPayAmount("");
+      setPayReference("");
       refetch();
     },
     onError: (err) =>
@@ -156,6 +163,7 @@ const AccountsReceivableList = () => {
             onClick={() => {
               setPayModal(ar);
               setPayAmount(String(ar.outstandingAmount || 0));
+              setPayReference(newPurchasePaymentKey());
             }}>
             <Wallet size={14} className="mr-1" /> {t("page.accountsReceivable.list.payButton")}
           </Button>
@@ -318,6 +326,7 @@ const AccountsReceivableList = () => {
               onOpenChange={() => {
                 setPayModal(null);
                 setPayAmount("");
+                setPayReference("");
               }}
               title={t("page.accountsReceivable.list.modal.title")}
               description={`${t("page.accountsReceivable.list.modal.invoice")}: ${payModal.invoiceNo} | ${t("page.accountsReceivable.list.modal.sisa")}: ${formatCurrencyRupiah(payModal.outstandingAmount)}`}
@@ -331,7 +340,10 @@ const AccountsReceivableList = () => {
                   toast.error(t("page.accountsReceivable.list.validation.exceedsAmount"));
                   return;
                 }
-                payMutation.mutate({ id: payModal.id, payload: { amount: payAmount } });
+                payMutation.mutate({
+                  id: payModal.id,
+                  payload: { amount: payAmount, reference: payReference }
+                });
               }}
               loading={payMutation.isLoading}>
               <div className="space-y-3">
