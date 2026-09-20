@@ -1,5 +1,5 @@
 import { safeGet } from "@/lib/safe-lookup";
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
 import { getOrdersByStore } from "@/services/order";
+import { getZReport } from "@/services/cash-register";
 const formatIDR = (num) => {
   if (!num && num !== 0) return "-";
   return "Rp " + Number(num).toLocaleString("id-ID");
@@ -80,6 +81,49 @@ const CashRegisterDetail = () => {
   );
 
   const orders = ordersData?.data || [];
+
+  // Batch B: the summary used to render ONLY the frozen close-time snapshot
+  // (item.totalSales / item.totalExpenses) next to a live store+date order
+  // list of ALL statuses with no stated inclusion rules — irreconcilable by
+  // construction. The Z-report now carries an additive `reconciliation`
+  // block (eligible sales + explicit exclusion buckets + cash expenses +
+  // movements) reusing the exact close-time membership semantics. Render
+  // the live breakdown when available; fall back to the stored snapshot
+  // when the report is unreachable so the page never renders empty.
+  const { data: zReportData } = useQuery(
+    ["cash-register-z-report", item?.id],
+    () => getZReport(item.id),
+    { enabled: !!item?.id }
+  );
+  const report = zReportData?.data || null;
+  const rec = report?.reconciliation || null;
+  const summary = report?.summary || null;
+  const live = !!rec;
+
+  const openingBalance = report?.register?.openingBalance ?? item?.openingBalance;
+  const totalSales = rec?.sales?.eligible?.total ?? summary?.totalSales ?? item?.totalSales;
+  const totalExpenses =
+    rec?.expenses?.includedCash?.total ?? summary?.totalExpenses ?? item?.totalExpenses;
+  const closingBalance = report?.register?.closingBalance ?? item?.closingBalance;
+
+  // Per-row eligibility comes from the backend reconciliation identity sets
+  // — never recomputed with duplicated FE rules.
+  const eligibleIds = useMemo(() => new Set(rec?.sales?.eligible?.orderIds || []), [rec]);
+  const reasonById = useMemo(() => {
+    const m = new Map();
+    (rec?.sales?.excluded || []).forEach((b) =>
+      (b.orderIds || []).forEach((id) => {
+        if (!m.has(id)) m.set(id, b.code);
+      })
+    );
+    return m;
+  }, [rec]);
+
+  const eligibilityOf = (order) => {
+    if (!rec) return null;
+    if (eligibleIds.has(order.id)) return "included";
+    return reasonById.get(order.id) || "notIncluded";
+  };
 
   if (!item) {
     return (
@@ -160,29 +204,77 @@ const CashRegisterDetail = () => {
     {
       icon: DollarSign,
       label: t("page.cashRegister.detail.openingBalance"),
-      value: formatIDR(item.openingBalance),
+      value: formatIDR(openingBalance),
       mono: true
     },
     {
       icon: ShoppingCart,
       label: t("page.cashRegister.detail.totalSales"),
-      value: formatIDR(item.totalSales),
+      value: formatIDR(totalSales),
       mono: true
     },
     {
       icon: Receipt,
       label: t("page.cashRegister.detail.totalExpenses"),
-      value: formatIDR(item.totalExpenses),
+      value: formatIDR(totalExpenses),
       mono: true
     },
     {
       icon: Coins,
       label: t("page.cashRegister.detail.closingBalance"),
-      value: formatIDR(item.closingBalance),
+      value: formatIDR(closingBalance),
       mono: true
     },
     { icon: FileText, label: t("page.cashRegister.detail.notes"), value: item.notes || "-" }
   ];
+
+  // Live breakdown rows — rendered only when the reconciliation contract is
+  // present; every number traces to a backend query, nothing is summed here.
+  const methodRows = (rec?.sales?.eligible?.byPaymentMethod || []).map((r) => ({
+    label: `${r.type} · ${r.orders}x`,
+    value: formatIDR(r.amount)
+  }));
+  const excludedSalesRows = (rec?.sales?.excluded || []).map((b) => ({
+    label: `${t(`page.cashRegister.detail.reason.${b.code}`)} · ${b.count}x`,
+    value: formatIDR(b.total)
+  }));
+  const expenseCategoryRows = (report?.expenses || []).map((r) => ({
+    label: `${r.category} · ${r.count}x`,
+    value: formatIDR(r.amount)
+  }));
+  const expenseRecords = rec?.expenses?.records || [];
+  const excludedExpenseRows = (rec?.expenses?.excluded || []).map((b) => ({
+    label: `${t(`page.cashRegister.detail.reason.${b.code}`)} · ${b.count}x`,
+    value: formatIDR(b.total)
+  }));
+  const cashRows = summary
+    ? [
+        {
+          label: t("page.cashRegister.detail.cashSalesReceived"),
+          value: formatIDR(summary.totalCashPayment)
+        },
+        {
+          label: t("page.cashRegister.detail.activeCashIn"),
+          value: formatIDR(summary.activeCashIn)
+        },
+        {
+          label: t("page.cashRegister.detail.activeCashOut"),
+          value: formatIDR(summary.activeCashOut)
+        },
+        {
+          label: t("page.cashRegister.detail.expectedCash"),
+          value: formatIDR(summary.expectedCash)
+        },
+        ...(summary.variance !== null && summary.variance !== undefined
+          ? [
+              {
+                label: t("page.cashRegister.detail.variance"),
+                value: formatIDR(summary.variance)
+              }
+            ]
+          : [])
+      ]
+    : [];
 
   return (
     <>
@@ -267,7 +359,120 @@ const CashRegisterDetail = () => {
                     ))}
                   </tbody>
                 </table>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {live
+                    ? t("page.cashRegister.detail.liveSummary")
+                    : t("page.cashRegister.detail.snapshotFallback")}
+                  {rec?.window?.openedAt
+                    ? ` · ${t("page.cashRegister.detail.registerWindow")}: ${new Date(
+                        rec.window.openedAt
+                      ).toLocaleString("id")}${
+                        rec.window.endAt
+                          ? ` → ${new Date(rec.window.endAt).toLocaleString("id")}`
+                          : ""
+                      }`
+                    : ""}
+                </p>
               </div>
+              {live && (
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {`${t("page.cashRegister.detail.salesBreakdown")} · ${t(
+                        "page.cashRegister.detail.salesIncluded"
+                      )} (${rec.sales.eligible.count}x)`}
+                    </h3>
+                    <table className="w-full text-sm mt-1">
+                      <tbody>
+                        {methodRows.map((r) => (
+                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                            <td className="py-1.5 text-right font-mono">{r.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {excludedSalesRows.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.cashRegister.detail.salesExcluded")}
+                      </h3>
+                      <table className="w-full text-sm mt-1">
+                        <tbody>
+                          {excludedSalesRows.map((r) => (
+                            <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                              <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                              <td className="py-1.5 text-right font-mono">{r.value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.cashRegister.detail.expenseBreakdown")}
+                    </h3>
+                    <table className="w-full text-sm mt-1">
+                      <tbody>
+                        {expenseCategoryRows.map((r) => (
+                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                            <td className="py-1.5 text-right font-mono">{r.value}</td>
+                          </tr>
+                        ))}
+                        {excludedExpenseRows.map((r) => (
+                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                            <td className="py-1.5 text-right font-mono">{r.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {expenseRecords.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.cashRegister.detail.expenseRecords")} ({expenseRecords.length}x)
+                      </h3>
+                      <table className="w-full text-sm mt-1">
+                        <tbody>
+                          {expenseRecords.map((e) => (
+                            <tr key={e.id} className="border-b border-muted/30 last:border-b-0">
+                              <td className="py-1.5 pr-4 text-muted-foreground">
+                                {e.category || "-"}
+                                {e.createdAt
+                                  ? ` · ${new Date(e.createdAt).toLocaleString("id")}`
+                                  : ""}
+                                {e.notes ? ` · ${e.notes}` : ""}
+                              </td>
+                              <td className="py-1.5 text-right font-mono">{formatIDR(e.amount)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {cashRows.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("page.cashRegister.detail.cashReconciliation")}
+                      </h3>
+                      <table className="w-full text-sm mt-1">
+                        <tbody>
+                          {cashRows.map((r) => (
+                            <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                              <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                              <td className="py-1.5 text-right font-mono">{r.value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -340,6 +545,23 @@ const CashRegisterDetail = () => {
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${orderStatusBadge(o.status)}`}>
                           {o.status}
                         </span>
+                        {(() => {
+                          const eligibility = eligibilityOf(o);
+                          if (!eligibility) return null;
+                          const included = eligibility === "included";
+                          return (
+                            <div
+                              className={`mt-1 text-[10px] font-semibold ${
+                                included ? "text-green-700" : "text-amber-700"
+                              }`}>
+                              {included
+                                ? t("page.cashRegister.detail.included")
+                                : eligibility === "notIncluded"
+                                  ? t("page.cashRegister.detail.notIncluded")
+                                  : t(`page.cashRegister.detail.reason.${eligibility}`)}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3 text-center">{o.paymentMethod || "-"}</td>
                     </tr>

@@ -25,6 +25,13 @@ jest.mock("@/services/order", () => ({
   getOrdersByStore: jest.fn(() => Promise.resolve({ data: [] }))
 }));
 
+// Batch B: CashRegisterDetail now also imports getZReport from
+// @/services/cash-register (live reconciliation breakdown). Mock it here so
+// this navigation-only test does not pull the real service dependency chain.
+jest.mock("@/services/cash-register", () => ({
+  getZReport: jest.fn(() => Promise.resolve({ data: null }))
+}));
+
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
