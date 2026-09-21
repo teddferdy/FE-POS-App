@@ -40,17 +40,6 @@ const orderStatusBadge = (status) => {
   return safeGet(map, status, "bg-muted text-muted-foreground");
 };
 
-const getDateOnly = (dateStr) => {
-  const d = new Date(dateStr);
-  return (
-    d.getFullYear() +
-    "-" +
-    String(d.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(d.getDate()).padStart(2, "0")
-  );
-};
-
 const CashRegisterDetail = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -66,18 +55,21 @@ const CashRegisterDetail = () => {
     }
   };
   const sc = statusCfg[item?.status] || statusCfg.closed;
-  const registerDate = item?.openedAt ? getDateOnly(item.openedAt) : null;
   const storeId = item?.store || cookie?.activeStore;
 
+  // Phase 39 Batch 4: the transaction list is scoped by the register
+  // lifecycle window server-side (cashRegisterId → openedAt..closedAt on
+  // order.createdAt). NEVER derive the window from the opening calendar
+  // date — multi-day registers would silently show the wrong day's orders.
   const {
     data: ordersData,
     isLoading: ordersLoading,
     isError,
     refetch
   } = useQuery(
-    ["daily-orders", storeId, registerDate],
-    () => getOrdersByStore({ location: storeId, date: registerDate, limit: 100 }),
-    { enabled: !!storeId && !!registerDate }
+    ["register-orders", storeId, item?.id],
+    () => getOrdersByStore({ location: storeId, cashRegisterId: item.id, limit: 100 }),
+    { enabled: !!storeId && !!item?.id }
   );
 
   const orders = ordersData?.data || [];

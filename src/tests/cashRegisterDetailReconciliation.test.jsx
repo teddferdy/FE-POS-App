@@ -160,4 +160,20 @@ describe("CashRegisterDetail reconciliation (Batch B)", () => {
       screen.queryByText("page.cashRegister.detail.salesBreakdown", { exact: false })
     ).not.toBeInTheDocument();
   });
+
+  test("requests history by register window id, never by opening calendar date (Batch 4)", async () => {
+    renderPage();
+    await waitFor(() => expect(getOrdersByStore).toHaveBeenCalled());
+    // Register lifecycle window is resolved server-side from the id —
+    // the opening calendar date must never be used as the order filter,
+    // or multi-day registers silently show the wrong day's orders.
+    expect(getOrdersByStore).toHaveBeenCalledWith({
+      location: 1,
+      cashRegisterId: 5001,
+      limit: 100
+    });
+    for (const call of getOrdersByStore.mock.calls) {
+      expect(call[0]).not.toHaveProperty("date");
+    }
+  });
 });

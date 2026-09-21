@@ -27,6 +27,10 @@ export const getOrdersByStore = async (payload) => {
   if (payload?.paymentStatus) params.set("paymentStatus", payload.paymentStatus);
   if (payload?.startDate) params.set("startDate", payload.startDate);
   if (payload?.endDate) params.set("endDate", payload.endDate);
+  // Phase 39 Batch 4: register-window querying — the backend resolves the
+  // register lifecycle timestamps (openedAt..closedAt) server-side. The
+  // Detail Register page must use this, never the opening calendar date.
+  if (payload?.cashRegisterId) params.set("cashRegisterId", payload.cashRegisterId);
   const { data, status } = await axiosInstance.get(`/order/get-orders?${params.toString()}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
