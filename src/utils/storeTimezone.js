@@ -69,3 +69,75 @@ export const formatStoreDateTime = (value, timezone) => {
   }).format(d);
   return `${datePart}, ${timePart}`;
 };
+
+// Phase 39 Batch 6F: register-hours informational banners need "now" as a
+// {dayName, minutes} pair in the STORE's timezone — never the browser's —
+// so a register opened/closed near midnight is compared against the
+// correct day's schedule and the correct wall-clock minute. dayName is
+// lowercase to match the openingHours `day` convention (EditLocation.jsx:
+// "monday".."sunday").
+export const getStoreNowParts = (timezone, now = new Date()) => {
+  const tz = resolveTimezone(timezone);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).formatToParts(now);
+  const get = (type) => parts.find((p) => p.type === type)?.value;
+  const hour = Number(get("hour"));
+  const minute = Number(get("minute"));
+  return {
+    dayName: get("weekday")?.toLowerCase() || null,
+    minutes: Number.isNaN(hour) || Number.isNaN(minute) ? null : hour * 60 + minute
+  };
+};
+
+// Formats a minutes-since-midnight integer back to "HH:MM" for display —
+// pairs with parseScheduleTimeToMinutes/getTodayScheduleMinutes below.
+export const formatMinutesAsTime = (minutes) => {
+  if (typeof minutes !== "number" || Number.isNaN(minutes)) return null;
+  const h = Math.floor(minutes / 60) % 24;
+  const m = minutes % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+};
+
+// Parses an "HH:MM" schedule string into minutes-since-midnight, or null
+// for anything missing/malformed. Callers must treat null as "no
+// scheduled time" (e.g. a closed day), never as midnight.
+export const parseScheduleTimeToMinutes = (value) => {
+  if (typeof value !== "string") return null;
+  const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  return hours * 60 + minutes;
+};
+
+// Phase 39 Batch 6F: resolves today's configured open/close minutes (in
+// the store's timezone) alongside the current minute, for a register-hours
+// informational banner to compare against. Returns null whenever there is
+// nothing safe to say — no openingHours array, no entry for today, or an
+// unreadable current time — so a caller's absence-of-signal always means
+// "show no banner," never a crash or a guessed rule. A closed day
+// (open/close both null) still returns a result, with openMinutes/
+// closeMinutes as null, so callers can distinguish "no schedule today"
+// from "unreadable input" while both correctly suppress any banner.
+export const getTodayScheduleMinutes = (openingHours, timezone, now = new Date()) => {
+  try {
+    if (!Array.isArray(openingHours)) return null;
+    const { dayName, minutes: nowMinutes } = getStoreNowParts(timezone, now);
+    if (!dayName || nowMinutes == null) return null;
+    const today = openingHours.find((entry) => entry?.day?.toLowerCase?.() === dayName);
+    if (!today) return null;
+    return {
+      nowMinutes,
+      openMinutes: parseScheduleTimeToMinutes(today.open),
+      closeMinutes: parseScheduleTimeToMinutes(today.close)
+    };
+  } catch {
+    return null;
+  }
+};

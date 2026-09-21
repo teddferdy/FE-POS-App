@@ -16,7 +16,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { openCashRegister, getOpenRegisters } from "@/services/cash-register";
-import { getAllLocation } from "@/services/location";
+import { getAllLocation, getLocationDetail } from "@/services/location";
 import { getWhatsAppStatus, restartWhatsApp } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
+import { getTodayScheduleMinutes, formatMinutesAsTime } from "@/utils/storeTimezone";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
@@ -76,6 +77,24 @@ const CashRegisterOpenClose = () => {
   const [cancelModal, setCancelModal] = useState(false);
 
   const selectedStoreIsOpen = openStoreIds.has(Number(selectedStore));
+
+  // Phase 39 Batch 6F: purely informational — never blocks/disables
+  // opening, and completely independent of `selectedStoreIsOpen` above
+  // (that guard is about a second register for the same store, not
+  // operating hours; the two conditions must never be merged).
+  const { data: locationDetailData } = useQuery(
+    ["cash-register-open-location-detail", selectedStore],
+    () => getLocationDetail({ id: selectedStore }),
+    { enabled: !!selectedStore }
+  );
+  const openLocationDetail = locationDetailData?.data;
+  const openSchedule = getTodayScheduleMinutes(
+    openLocationDetail?.openingHours,
+    openLocationDetail?.timezone
+  );
+  const isEarlyOpening =
+    openSchedule?.openMinutes != null && openSchedule.nowMinutes < openSchedule.openMinutes;
+  const scheduledOpenTime = formatMinutesAsTime(openSchedule?.openMinutes);
 
   const numericBalance = parseIDR(rawBalance);
 
@@ -261,6 +280,16 @@ const CashRegisterOpenClose = () => {
                     placeholder={t("page.cashRegister.openClose.notesPlaceholder")}
                   />
                 </div>
+                {isEarlyOpening && (
+                  <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 px-3 py-2 text-xs text-amber-800 dark:text-amber-400">
+                    <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                    <span>
+                      {t("page.cashRegister.openClose.earlyOpeningNotice", {
+                        time: scheduledOpenTime
+                      })}
+                    </span>
+                  </div>
+                )}
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
                   <Button
                     variant="danger"
