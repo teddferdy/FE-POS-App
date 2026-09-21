@@ -13,7 +13,9 @@ import { getOrdersByStore } from "@/services/order";
 // every history row as included/excluded with the backend reason code.
 
 jest.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (k) => k })
+  useTranslation: () => ({
+    t: (k, opts) => (opts?.count != null ? `${k}:${opts.count}` : k)
+  })
 }));
 
 jest.mock("react-cookie", () => ({
@@ -244,5 +246,50 @@ describe("CashRegisterDetail reconciliation (Batch B)", () => {
     const inBadges = await screen.findAllByText("page.cashRegister.detail.inPeriod");
     expect(inBadges.length).toBe(2);
     expect(await screen.findByText("page.cashRegister.detail.outsidePeriod")).toBeInTheDocument();
+  });
+
+  // Phase 39 Finding #3: "Jumlah Transaksi" previously used orders.length,
+  // the fetched page length, so a register with more in-window transactions
+  // than the page limit silently under-reported the badge. It must use
+  // pagination.total (the distinct in-window count) instead.
+  test("shows the authoritative pagination total, not the fetched page length, for Jumlah Transaksi (Finding #3)", async () => {
+    const page = Array.from({ length: 100 }, (_, i) => ({
+      id: i + 1,
+      orderNumber: `ORD-${i + 1}`,
+      status: "served",
+      paymentMethod: "cash",
+      totalPrice: 1000,
+      createdAt: "2026-09-12T10:02:00.000Z"
+    }));
+    getOrdersByStore.mockImplementation((payload) =>
+      payload?.window === "outside"
+        ? Promise.resolve({ data: [], pagination: { total: 0 } })
+        : Promise.resolve({
+            data: page,
+            pagination: { total: 101, page: 1, limit: 100, totalPages: 2 }
+          })
+    );
+    renderPage();
+    expect(
+      await screen.findByText("page.cashRegister.detail.transactionCount:101")
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("page.cashRegister.detail.transactionCount:100")
+    ).not.toBeInTheDocument();
+  });
+
+  test("shows 1 for a single-transaction register (Finding #3 normal case)", async () => {
+    getOrdersByStore.mockImplementation((payload) =>
+      payload?.window === "outside"
+        ? Promise.resolve({ data: [], pagination: { total: 0 } })
+        : Promise.resolve({
+            data: [ORDERS[0]],
+            pagination: { total: 1, page: 1, limit: 100, totalPages: 1 }
+          })
+    );
+    renderPage();
+    expect(
+      await screen.findByText("page.cashRegister.detail.transactionCount:1")
+    ).toBeInTheDocument();
   });
 });
