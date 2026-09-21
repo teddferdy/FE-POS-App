@@ -201,10 +201,13 @@ describe("CashRegisterDetail reconciliation (Batch B)", () => {
     // Register lifecycle window is resolved server-side from the id —
     // the opening calendar date must never be used as the order filter,
     // or multi-day registers silently show the wrong day's orders.
+    // Phase 39 Batch 6A: page/limit are now real pagination params (page 1,
+    // limit 50) instead of the old hardcoded limit:100 with no page state.
     expect(getOrdersByStore).toHaveBeenCalledWith({
       location: 1,
       cashRegisterId: 5001,
-      limit: 100
+      page: 1,
+      limit: 50
     });
     for (const call of getOrdersByStore.mock.calls) {
       expect(call[0]).not.toHaveProperty("date");
@@ -226,7 +229,8 @@ describe("CashRegisterDetail reconciliation (Batch B)", () => {
         location: 1,
         cashRegisterId: 5001,
         window: "outside",
-        limit: 100
+        page: 1,
+        limit: 50
       })
     );
     expect(await screen.findByText("page.cashRegister.detail.outsideHistory")).toBeInTheDocument();
