@@ -102,8 +102,34 @@ const REPORT = {
 };
 
 const ORDERS = [
-  { id: 101, orderNumber: "ORD-101", status: "served", paymentMethod: "cash", totalPrice: 27750 },
-  { id: 103, orderNumber: "ORD-103", status: "preparing", paymentMethod: "qris", totalPrice: 27750 }
+  {
+    id: 101,
+    orderNumber: "ORD-101",
+    status: "served",
+    paymentMethod: "cash",
+    totalPrice: 27750,
+    createdAt: "2026-09-12T10:02:00.000Z"
+  },
+  {
+    id: 103,
+    orderNumber: "ORD-103",
+    status: "preparing",
+    paymentMethod: "qris",
+    totalPrice: 27750,
+    createdAt: "2026-09-12T10:03:00.000Z"
+  }
+];
+
+// Batch 4: outside-window population behind the OUTSIDE_WINDOW bucket.
+const OUTSIDE_ORDERS = [
+  {
+    id: 201,
+    orderNumber: "ORD-201",
+    status: "served",
+    paymentMethod: "cash",
+    totalPrice: 10000,
+    createdAt: "2026-09-11T10:00:00.000Z"
+  }
 ];
 
 const renderPage = () => {
@@ -122,7 +148,13 @@ const renderPage = () => {
 describe("CashRegisterDetail reconciliation (Batch B)", () => {
   beforeEach(() => {
     getZReport.mockResolvedValue({ data: REPORT });
-    getOrdersByStore.mockResolvedValue({ data: ORDERS });
+    // Default: in-window orders for the main table, empty outside history.
+    // Batch 4 tests override the outside branch per-test below.
+    getOrdersByStore.mockImplementation((payload) =>
+      payload?.window === "outside"
+        ? Promise.resolve({ data: [], pagination: { total: 0 } })
+        : Promise.resolve({ data: ORDERS })
+    );
   });
 
   test("fetches the Z-report for the register and renders the live sales total", async () => {
@@ -175,5 +207,42 @@ describe("CashRegisterDetail reconciliation (Batch B)", () => {
     for (const call of getOrdersByStore.mock.calls) {
       expect(call[0]).not.toHaveProperty("date");
     }
+  });
+
+  test("fetches the outside-window history by register id (Batch 4)", async () => {
+    getOrdersByStore.mockImplementation((payload) =>
+      payload?.window === "outside"
+        ? Promise.resolve({
+            data: OUTSIDE_ORDERS,
+            pagination: { total: 1, page: 1, limit: 100, totalPages: 1 }
+          })
+        : Promise.resolve({ data: ORDERS })
+    );
+    renderPage();
+    await waitFor(() =>
+      expect(getOrdersByStore).toHaveBeenCalledWith({
+        location: 1,
+        cashRegisterId: 5001,
+        window: "outside",
+        limit: 100
+      })
+    );
+    expect(await screen.findByText("page.cashRegister.detail.outsideHistory")).toBeInTheDocument();
+    expect(screen.getByText("ORD-201")).toBeInTheDocument();
+  });
+
+  test("shows transaction dates and period badges (Batch 4)", async () => {
+    getOrdersByStore.mockImplementation((payload) =>
+      payload?.window === "outside"
+        ? Promise.resolve({ data: OUTSIDE_ORDERS, pagination: { total: 1 } })
+        : Promise.resolve({ data: ORDERS })
+    );
+    renderPage();
+    const dateHeaders = await screen.findAllByText("page.cashRegister.detail.tableDate");
+    expect(dateHeaders.length).toBe(2);
+    // Both in-window rows badge "in period"; the outside row badges "outside".
+    const inBadges = await screen.findAllByText("page.cashRegister.detail.inPeriod");
+    expect(inBadges.length).toBe(2);
+    expect(await screen.findByText("page.cashRegister.detail.outsidePeriod")).toBeInTheDocument();
   });
 });

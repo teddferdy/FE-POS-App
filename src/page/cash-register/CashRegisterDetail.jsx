@@ -74,6 +74,24 @@ const CashRegisterDetail = () => {
 
   const orders = ordersData?.data || [];
 
+  // Phase 39 Batch 4 follow-up: the outside-window population behind the
+  // reconciliation OUTSIDE_WINDOW bucket (same membership, listed 1:1) so
+  // users can audit exactly which transactions fell outside the register
+  // lifecycle window and why the closing balance ignores them.
+  const { data: outsideData } = useQuery(
+    ["register-orders-outside", storeId, item?.id],
+    () =>
+      getOrdersByStore({
+        location: storeId,
+        cashRegisterId: item.id,
+        window: "outside",
+        limit: 100
+      }),
+    { enabled: !!storeId && !!item?.id }
+  );
+  const outsideOrders = outsideData?.data || [];
+  const outsideTotal = outsideData?.pagination?.total ?? outsideOrders.length;
+
   // Batch B: the summary used to render ONLY the frozen close-time snapshot
   // (item.totalSales / item.totalExpenses) next to a live store+date order
   // list of ALL statuses with no stated inclusion rules — irreconcilable by
@@ -115,6 +133,109 @@ const CashRegisterDetail = () => {
     if (!rec) return null;
     if (eligibleIds.has(order.id)) return "included";
     return reasonById.get(order.id) || "notIncluded";
+  };
+
+  // Phase 39 Batch 4 follow-up: one table renderer for both the
+  // in-window history and the outside-window history. Every row shows the
+  // transaction date plus an explicit period badge so "Termasuk periode"
+  // vs "Di luar periode" is never ambiguous. Eligibility sub-badges still
+  // come from the backend reconciliation identity sets, never FE rules.
+  const renderOrderTable = (list, inPeriod, emptyKey) => {
+    if (list.length === 0) {
+      return (
+        <div className="p-6 text-center text-sm text-muted-foreground">
+          <Receipt size={32} className="mx-auto text-muted-foreground/40 mb-2" />
+          {t(emptyKey)}
+        </div>
+      );
+    }
+    return (
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-muted/50 text-muted-foreground">
+            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
+              {t("page.cashRegister.detail.tableNo")}
+            </th>
+            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
+              {t("page.cashRegister.detail.tableInvoice")}
+            </th>
+            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
+              {t("page.cashRegister.detail.tableCashier")}
+            </th>
+            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
+              {t("page.cashRegister.detail.tableDate")}
+            </th>
+            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
+              {t("page.cashRegister.detail.tableTime")}
+            </th>
+            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-right">
+              {t("page.cashRegister.detail.tableTotal")}
+            </th>
+            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
+              {t("page.cashRegister.detail.tableStatus")}
+            </th>
+            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
+              {t("page.cashRegister.detail.period")}
+            </th>
+            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
+              {t("page.cashRegister.detail.tablePayment")}
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {list.map((o, i) => (
+            <tr key={o.id} className="hover:bg-accent/30 transition-colors">
+              <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
+              <td className="px-4 py-3 font-medium">{o.orderNumber || "-"}</td>
+              <td className="px-4 py-3">
+                {o.cashierName || o.createdByUser?.fullName || o.createdByUser?.userName || "-"}
+              </td>
+              <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                {new Date(o.createdAt).toLocaleDateString("id")}
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {new Date(o.createdAt).toTimeString().slice(0, 5)}
+              </td>
+              <td className="px-4 py-3 text-right font-mono">{formatIDR(o.totalPrice)}</td>
+              <td className="px-4 py-3 text-center">
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${orderStatusBadge(o.status)}`}>
+                  {o.status}
+                </span>
+                {(() => {
+                  const eligibility = eligibilityOf(o);
+                  if (!eligibility) return null;
+                  const included = eligibility === "included";
+                  return (
+                    <div
+                      className={`mt-1 text-[10px] font-semibold ${
+                        included ? "text-green-700" : "text-amber-700"
+                      }`}>
+                      {included
+                        ? t("page.cashRegister.detail.included")
+                        : eligibility === "notIncluded"
+                          ? t("page.cashRegister.detail.notIncluded")
+                          : t(`page.cashRegister.detail.reason.${eligibility}`)}
+                    </div>
+                  );
+                })()}
+              </td>
+              <td className="px-4 py-3 text-center">
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                    inPeriod ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                  }`}>
+                  {inPeriod
+                    ? t("page.cashRegister.detail.inPeriod")
+                    : t("page.cashRegister.detail.outsidePeriod")}
+                </span>
+              </td>
+              <td className="px-4 py-3 text-center">{o.paymentMethod || "-"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
   };
 
   if (!item) {
@@ -491,81 +612,26 @@ const CashRegisterDetail = () => {
                   <Skeleton key={i} className="h-6 w-full" />
                 ))}
               </div>
-            ) : orders.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                <Receipt size={32} className="mx-auto text-muted-foreground/40 mb-2" />
-                {t("page.cashRegister.detail.noTransactions")}
-              </div>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/50 text-muted-foreground">
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
-                      {t("page.cashRegister.detail.tableNo")}
-                    </th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
-                      {t("page.cashRegister.detail.tableInvoice")}
-                    </th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
-                      {t("page.cashRegister.detail.tableCashier")}
-                    </th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
-                      {t("page.cashRegister.detail.tableTime")}
-                    </th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-right">
-                      {t("page.cashRegister.detail.tableTotal")}
-                    </th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
-                      {t("page.cashRegister.detail.tableStatus")}
-                    </th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
-                      {t("page.cashRegister.detail.tablePayment")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {orders.map((o, i) => (
-                    <tr key={o.id} className="hover:bg-accent/30 transition-colors">
-                      <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
-                      <td className="px-4 py-3 font-medium">{o.orderNumber || "-"}</td>
-                      <td className="px-4 py-3">
-                        {o.cashierName ||
-                          o.createdByUser?.fullName ||
-                          o.createdByUser?.userName ||
-                          "-"}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {new Date(o.createdAt).toTimeString().slice(0, 5)}
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono">{formatIDR(o.totalPrice)}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${orderStatusBadge(o.status)}`}>
-                          {o.status}
-                        </span>
-                        {(() => {
-                          const eligibility = eligibilityOf(o);
-                          if (!eligibility) return null;
-                          const included = eligibility === "included";
-                          return (
-                            <div
-                              className={`mt-1 text-[10px] font-semibold ${
-                                included ? "text-green-700" : "text-amber-700"
-                              }`}>
-                              {included
-                                ? t("page.cashRegister.detail.included")
-                                : eligibility === "notIncluded"
-                                  ? t("page.cashRegister.detail.notIncluded")
-                                  : t(`page.cashRegister.detail.reason.${eligibility}`)}
-                            </div>
-                          );
-                        })()}
-                      </td>
-                      <td className="px-4 py-3 text-center">{o.paymentMethod || "-"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              renderOrderTable(orders, true, "page.cashRegister.detail.noTransactions")
+            )}
+          </div>
+        </div>
+
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="bg-muted/30 px-6 py-3 border-b border-border flex items-center justify-between">
+            <h2 className="text-sm font-semibold">
+              {t("page.cashRegister.detail.outsideHistory")}
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              {t("page.cashRegister.detail.transactionCount")} · {outsideTotal}x
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            {renderOrderTable(
+              outsideOrders,
+              false,
+              "page.cashRegister.detail.noOutsideTransactions"
             )}
           </div>
         </div>

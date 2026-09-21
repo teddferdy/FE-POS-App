@@ -150,6 +150,11 @@ const ReportView = ({ data, reportType }) => {
   const summary = data.summary || {};
   const payments = data.payments || [];
   const expenses = data.expenses || [];
+  // Phase 39 Batch 4 follow-up: outside-window buckets already ride along
+  // on the Z-report reconciliation block — render them so the XZ page
+  // shows exactly which transactions fell outside the register period.
+  // Read-only display of the backend payload; nothing is recomputed here.
+  const excluded = data.reconciliation?.sales?.excluded || [];
 
   // ponytail: Map agregasi + fromEntries — O(N), bebas object injection
   const paymentMap = new Map();
@@ -344,13 +349,40 @@ const ReportView = ({ data, reportType }) => {
           )}
         </div>
 
+        {excluded.length > 0 && (
+          <>
+            <Dashed />
+            <div className="space-y-1.5 my-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 mb-2">
+                {t("page.cashRegister.xz.outsideTitle")}
+              </p>
+              <div className="space-y-1">
+                {excluded.map((b) => (
+                  <div key={b.code} className="flex items-center justify-between gap-4 py-0.5">
+                    <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500/70" />
+                      {t(`page.cashRegister.detail.reason.${b.code}`, b.code)}{" "}
+                      <span className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.2 rounded font-mono font-medium">
+                        ({b.count})
+                      </span>
+                    </span>
+                    <span className="font-mono text-xs font-semibold text-foreground">
+                      {formatIDR(b.total)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
         {expenses.length > 0 && (
           <>
             <Dashed />
             <div className="space-y-1.5 my-3">
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 mb-2">
                 {t("page.cashRegister.xz.expenseTitle")} ({formatIDR(summary.totalExpenses)})
-              </p>
+              </p>{" "}
               <div className="space-y-1">
                 {expenses.map((e, i) => (
                   <div key={i} className="flex items-center justify-between gap-4 py-0.5">

@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { getCashRegisterHistory, closeCashRegister } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
+import { isCashPayment } from "@/utils/payment";
 import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -175,9 +176,56 @@ const CashRegisterHistory = () => {
       render: (item) => <span className="font-mono text-sm">{formatIDR(item.totalExpenses)}</span>
     },
     {
+      // Phase 39 Batch 4 follow-up: outside-window population per
+      // register (BE `outsideWindow`, same membership as the
+      // reconciliation OUTSIDE_WINDOW bucket) so the list explains why a
+      // closing balance only reflects its own window.
+      header: t("page.cashRegister.history.outside"),
+      align: "right",
+      render: (item) => (
+        <div className="text-right">
+          <div className="font-mono text-sm">{item.outsideWindow?.count ?? 0}x</div>
+          <div className="text-[10px] text-muted-foreground font-mono">
+            {formatIDR(item.outsideWindow?.total)}
+          </div>
+        </div>
+      )
+    },
+    {
       header: t("page.cashRegister.history.closingBalance"),
       align: "right",
-      render: (item) => <span className="font-mono text-sm">{formatIDR(item.closingBalance)}</span>
+      render: (item) => {
+        // Why the closing differs: variance plus its two factual
+        // components already present on the row (non-cash sales counted
+        // in the close but not in the cash drawer, and expenses). No new
+        // financial meaning — purely an explanatory caption.
+        const variance = item.variance;
+        const payments = item.totalPayments || {};
+        const paymentKeys = Object.keys(payments);
+        let nonCash = 0;
+        if (paymentKeys.length > 0) {
+          nonCash = paymentKeys.reduce(
+            (s, k) => s + (!isCashPayment(k) ? Number(payments[k]) || 0 : 0),
+            0
+          );
+        } else if (item.cashSalesReceived != null) {
+          nonCash = (item.totalSales || 0) - (item.cashSalesReceived || 0);
+        }
+        return (
+          <div className="text-right">
+            <div className="font-mono text-sm">{formatIDR(item.closingBalance)}</div>
+            {variance != null && variance !== 0 && (
+              <div className="text-[10px] text-muted-foreground">
+                {t("page.cashRegister.history.variance")} {variance > 0 ? "+" : ""}
+                {formatIDR(variance)}
+                {nonCash > 0
+                  ? ` · ${t("page.cashRegister.history.nonCash")} ${formatIDR(nonCash)}`
+                  : ""}
+              </div>
+            )}
+          </div>
+        );
+      }
     },
     {
       header: t("page.cashRegister.history.status"),
