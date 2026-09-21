@@ -1,5 +1,5 @@
 import { safeGet } from "@/lib/safe-lookup";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
@@ -19,9 +19,27 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext
+} from "@/components/ui/pagination";
 import { getOrdersByStore } from "@/services/order";
 import { getZReport } from "@/services/cash-register";
 import { formatStoreDate, formatStoreTime, formatStoreDateTime } from "@/utils/storeTimezone";
+
+// Phase 39 Batch 6A: the transaction lists were hardcoded to `limit: 100`
+// with no page state, silently hiding any register session's transactions
+// beyond the first 100 even though pagination.total was always accurate.
+// 50 mirrors the backend's own default page size for this same endpoint
+// (getOrdersByStore) and the Order Queue's existing convention for order
+// lists specifically — CashRegisterHistory's page size of 10 is a
+// different list (registers, not transactions) and isn't the right
+// precedent to mirror here.
+const TRANSACTIONS_PAGE_SIZE = 50;
 const formatIDR = (num) => {
   if (!num && num !== 0) return "-";
   return "Rp " + Number(num).toLocaleString("id-ID");
@@ -58,6 +76,19 @@ const CashRegisterDetail = () => {
   const sc = statusCfg[item?.status] || statusCfg.closed;
   const storeId = item?.store || cookie?.activeStore;
 
+  // Phase 39 Batch 6A: in-window and outside-window are two independent
+  // lists (separate queries, separate tables below) — each needs its own
+  // page state so navigating one never affects the other.
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [outsidePage, setOutsidePage] = useState(1);
+
+  // A new register/context means both lists' queries change shape — reset
+  // both back to page 1 so neither can request a now-invalid stale page.
+  useEffect(() => {
+    setOrdersPage(1);
+    setOutsidePage(1);
+  }, [item?.id]);
+
   // Phase 39 Batch 4: the transaction list is scoped by the register
   // lifecycle window server-side (cashRegisterId → openedAt..closedAt on
   // order.createdAt). NEVER derive the window from the opening calendar
@@ -68,9 +99,15 @@ const CashRegisterDetail = () => {
     isError,
     refetch
   } = useQuery(
-    ["register-orders", storeId, item?.id],
-    () => getOrdersByStore({ location: storeId, cashRegisterId: item.id, limit: 100 }),
-    { enabled: !!storeId && !!item?.id }
+    ["register-orders", storeId, item?.id, ordersPage],
+    () =>
+      getOrdersByStore({
+        location: storeId,
+        cashRegisterId: item.id,
+        page: ordersPage,
+        limit: TRANSACTIONS_PAGE_SIZE
+      }),
+    { enabled: !!storeId && !!item?.id, keepPreviousData: true }
   );
 
   const orders = ordersData?.data || [];
@@ -80,26 +117,31 @@ const CashRegisterDetail = () => {
   // in-window population `orders` renders (all statuses, not just
   // reconciliation-eligible sales), so it's the correct source here, not
   // rec.sales.eligible.count (a narrower, different quantity). Mirrors the
-  // outsideTotal pattern below exactly.
+  // outsideTotal pattern below exactly. This must keep reading
+  // pagination.total on every page — never orders.length — or Finding #3
+  // regresses the moment pagination makes `orders` a partial page again.
   const ordersTotal = ordersData?.pagination?.total ?? orders.length;
+  const ordersTotalPages = ordersData?.pagination?.totalPages || 1;
 
   // Phase 39 Batch 4 follow-up: the outside-window population behind the
   // reconciliation OUTSIDE_WINDOW bucket (same membership, listed 1:1) so
   // users can audit exactly which transactions fell outside the register
   // lifecycle window and why the closing balance ignores them.
   const { data: outsideData } = useQuery(
-    ["register-orders-outside", storeId, item?.id],
+    ["register-orders-outside", storeId, item?.id, outsidePage],
     () =>
       getOrdersByStore({
         location: storeId,
         cashRegisterId: item.id,
         window: "outside",
-        limit: 100
+        page: outsidePage,
+        limit: TRANSACTIONS_PAGE_SIZE
       }),
-    { enabled: !!storeId && !!item?.id }
+    { enabled: !!storeId && !!item?.id, keepPreviousData: true }
   );
   const outsideOrders = outsideData?.data || [];
   const outsideTotal = outsideData?.pagination?.total ?? outsideOrders.length;
+  const outsideTotalPages = outsideData?.pagination?.totalPages || 1;
 
   // Batch B: the summary used to render ONLY the frozen close-time snapshot
   // (item.totalSales / item.totalExpenses) next to a live store+date order
@@ -250,6 +292,55 @@ const CashRegisterDetail = () => {
           ))}
         </tbody>
       </table>
+    );
+  };
+
+  // Phase 39 Batch 6A: mirrors the existing shadcn Pagination primitive
+  // usage pattern (src/components/ui/pagination.jsx, already used the same
+  // way for a raw <table> in DetailSupplier.jsx) rather than migrating this
+  // page's custom-rendered tables onto DataTable, which would be a much
+  // larger, riskier rewrite of the eligibility/period badge cell rendering
+  // above. Hidden entirely for a one-page result.
+  const renderTablePagination = (page, totalPages, onPageChange) => {
+    if (totalPages <= 1) return null;
+    const maxVisible = Math.min(totalPages, 5);
+    let start = 1;
+    if (totalPages > maxVisible) {
+      if (page <= 3) start = 1;
+      else if (page >= totalPages - 2) start = totalPages - maxVisible + 1;
+      else start = page - 2;
+    }
+    const pageNumbers = Array.from({ length: maxVisible }, (_, i) => start + i);
+
+    return (
+      <div className="px-4 py-3 border-t border-border flex justify-center sm:justify-end">
+        <Pagination className="sm:justify-end justify-center mx-0 w-auto">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => page > 1 && onPageChange(page - 1)}
+                className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+            {pageNumbers.map((pageNum) => (
+              <PaginationItem key={pageNum}>
+                <PaginationLink
+                  isActive={pageNum === page}
+                  onClick={() => onPageChange(pageNum)}
+                  className="cursor-pointer">
+                  {pageNum}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => page < totalPages && onPageChange(page + 1)}
+                className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     );
   };
 
@@ -633,6 +724,9 @@ const CashRegisterDetail = () => {
               renderOrderTable(orders, true, "page.cashRegister.detail.noTransactions")
             )}
           </div>
+          {!ordersLoading &&
+            orders.length > 0 &&
+            renderTablePagination(ordersPage, ordersTotalPages, setOrdersPage)}
         </div>
 
         <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -651,6 +745,8 @@ const CashRegisterDetail = () => {
               "page.cashRegister.detail.noOutsideTransactions"
             )}
           </div>
+          {outsideOrders.length > 0 &&
+            renderTablePagination(outsidePage, outsideTotalPages, setOutsidePage)}
         </div>
       </div>
     </>
