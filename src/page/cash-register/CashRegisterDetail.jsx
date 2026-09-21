@@ -351,123 +351,129 @@ const CashRegisterDetail = () => {
                     ))}
                   </tbody>
                 </table>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  {live
-                    ? t("page.cashRegister.detail.liveSummary")
-                    : t("page.cashRegister.detail.snapshotFallback")}
-                  {rec?.window?.openedAt
-                    ? ` · ${t("page.cashRegister.detail.registerWindow")}: ${new Date(
-                        rec.window.openedAt
-                      ).toLocaleString("id")}${
-                        rec.window.endAt
-                          ? ` → ${new Date(rec.window.endAt).toLocaleString("id")}`
-                          : ""
-                      }`
-                    : ""}
-                </p>
+                {!live && (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    {t("page.cashRegister.detail.snapshotFallback")}
+                  </p>
+                )}
               </div>
-              {live && (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {`${t("page.cashRegister.detail.salesBreakdown")} · ${t(
-                        "page.cashRegister.detail.salesIncluded"
-                      )} (${rec.sales.eligible.count}x)`}
-                    </h3>
-                    <table className="w-full text-sm mt-1">
-                      <tbody>
-                        {methodRows.map((r) => (
-                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
-                            <td className="py-1.5 text-right font-mono">{r.value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {excludedSalesRows.length > 0 && (
-                    <div>
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {t("page.cashRegister.detail.salesExcluded")}
-                      </h3>
-                      <table className="w-full text-sm mt-1">
-                        <tbody>
-                          {excludedSalesRows.map((r) => (
-                            <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                              <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
-                              <td className="py-1.5 text-right font-mono">{r.value}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("page.cashRegister.detail.expenseBreakdown")}
-                    </h3>
-                    <table className="w-full text-sm mt-1">
-                      <tbody>
-                        {expenseCategoryRows.map((r) => (
-                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
-                            <td className="py-1.5 text-right font-mono">{r.value}</td>
-                          </tr>
-                        ))}
-                        {excludedExpenseRows.map((r) => (
-                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
-                            <td className="py-1.5 text-right font-mono">{r.value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {expenseRecords.length > 0 && (
-                    <div>
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {t("page.cashRegister.detail.expenseRecords")} ({expenseRecords.length}x)
-                      </h3>
-                      <table className="w-full text-sm mt-1">
-                        <tbody>
-                          {expenseRecords.map((e) => (
-                            <tr key={e.id} className="border-b border-muted/30 last:border-b-0">
-                              <td className="py-1.5 pr-4 text-muted-foreground">
-                                {e.category || "-"}
-                                {e.createdAt
-                                  ? ` · ${new Date(e.createdAt).toLocaleString("id")}`
-                                  : ""}
-                                {e.notes ? ` · ${e.notes}` : ""}
-                              </td>
-                              <td className="py-1.5 text-right font-mono">{formatIDR(e.amount)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                  {cashRows.length > 0 && (
-                    <div>
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {t("page.cashRegister.detail.cashReconciliation")}
-                      </h3>
-                      <table className="w-full text-sm mt-1">
-                        <tbody>
-                          {cashRows.map((r) => (
-                            <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                              <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
-                              <td className="py-1.5 text-right font-mono">{r.value}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </div>
+
+        {live && (
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="bg-muted/30 px-6 py-3 border-b border-border flex items-center justify-between gap-4 flex-wrap">
+              <h2 className="text-sm font-semibold">{t("page.cashRegister.detail.liveSummary")}</h2>
+              {rec?.window?.openedAt && (
+                <span className="text-xs text-muted-foreground">
+                  {t("page.cashRegister.detail.registerWindow")}:{" "}
+                  {new Date(rec.window.openedAt).toLocaleString("id")}
+                  {rec.window.endAt ? ` → ${new Date(rec.window.endAt).toLocaleString("id")}` : ""}
+                </span>
+              )}
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {`${t("page.cashRegister.detail.salesBreakdown")} · ${t(
+                      "page.cashRegister.detail.salesIncluded"
+                    )} (${rec.sales.eligible.count}x)`}
+                  </h3>
+                  <table className="w-full text-sm mt-1">
+                    <tbody>
+                      {methodRows.map((r) => (
+                        <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                          <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                          <td className="py-1.5 text-right font-mono">{r.value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {excludedSalesRows.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.cashRegister.detail.salesExcluded")}
+                    </h3>
+                    <table className="w-full text-sm mt-1">
+                      <tbody>
+                        {excludedSalesRows.map((r) => (
+                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                            <td className="py-1.5 text-right font-mono">{r.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("page.cashRegister.detail.expenseBreakdown")}
+                  </h3>
+                  <table className="w-full text-sm mt-1">
+                    <tbody>
+                      {expenseCategoryRows.map((r) => (
+                        <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                          <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                          <td className="py-1.5 text-right font-mono">{r.value}</td>
+                        </tr>
+                      ))}
+                      {excludedExpenseRows.map((r) => (
+                        <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                          <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                          <td className="py-1.5 text-right font-mono">{r.value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {expenseRecords.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.cashRegister.detail.expenseRecords")} ({expenseRecords.length}x)
+                    </h3>
+                    <table className="w-full text-sm mt-1">
+                      <tbody>
+                        {expenseRecords.map((e) => (
+                          <tr key={e.id} className="border-b border-muted/30 last:border-b-0">
+                            <td className="py-1.5 pr-4 text-muted-foreground">
+                              {e.category || "-"}
+                              {e.createdAt
+                                ? ` · ${new Date(e.createdAt).toLocaleString("id")}`
+                                : ""}
+                              {e.notes ? ` · ${e.notes}` : ""}
+                            </td>
+                            <td className="py-1.5 text-right font-mono">{formatIDR(e.amount)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {cashRows.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.cashRegister.detail.cashReconciliation")}
+                    </h3>
+                    <table className="w-full text-sm mt-1">
+                      <tbody>
+                        {cashRows.map((r) => (
+                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                            <td className="py-1.5 text-right font-mono">{r.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="bg-card rounded-xl border border-border overflow-hidden">
           <div className="bg-muted/30 px-6 py-3 border-b border-border flex items-center justify-between">
