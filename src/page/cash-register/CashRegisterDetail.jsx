@@ -21,6 +21,7 @@ import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
 import { getOrdersByStore } from "@/services/order";
 import { getZReport } from "@/services/cash-register";
+import { formatStoreDate, formatStoreTime, formatStoreDateTime } from "@/utils/storeTimezone";
 const formatIDR = (num) => {
   if (!num && num !== 0) return "-";
   return "Rp " + Number(num).toLocaleString("id-ID");
@@ -117,6 +118,12 @@ const CashRegisterDetail = () => {
   const rec = report?.reconciliation || null;
   const summary = report?.summary || null;
   const live = !!rec;
+
+  // Phase 39 Batch 6-prereq: register-level timestamps (open/close date,
+  // register window caption) must render in the store's local time, not
+  // the viewer's browser timezone. Prefer the live z-report's store
+  // (freshest), falling back to the history row's storeData.
+  const storeTimezone = report?.store?.timezone ?? item?.storeData?.timezone;
 
   const openingBalance = report?.register?.openingBalance ?? item?.openingBalance;
   const totalSales = rec?.sales?.eligible?.total ?? summary?.totalSales ?? item?.totalSales;
@@ -302,22 +309,22 @@ const CashRegisterDetail = () => {
     {
       icon: Calendar,
       label: t("page.cashRegister.detail.openDate"),
-      value: new Date(item.openedAt).toLocaleDateString("id")
+      value: formatStoreDate(item.openedAt, storeTimezone)
     },
     {
       icon: Clock,
       label: t("page.cashRegister.detail.openTime"),
-      value: new Date(item.openedAt).toTimeString().slice(0, 8)
+      value: formatStoreTime(item.openedAt, storeTimezone)
     },
     {
       icon: Calendar,
       label: t("page.cashRegister.detail.closeDate"),
-      value: item.closedAt ? new Date(item.closedAt).toLocaleDateString("id") : "-"
+      value: item.closedAt ? formatStoreDate(item.closedAt, storeTimezone) : "-"
     },
     {
       icon: Clock,
       label: t("page.cashRegister.detail.closeTime"),
-      value: item.closedAt ? new Date(item.closedAt).toTimeString().slice(0, 8) : "-"
+      value: item.closedAt ? formatStoreTime(item.closedAt, storeTimezone) : "-"
     }
   ];
 
@@ -420,7 +427,7 @@ const CashRegisterDetail = () => {
             { label: t("page.cashRegister.detail.breadcrumb") }
           ]}
           title={t("page.cashRegister.detail.title")}
-          description={new Date(item.openedAt).toLocaleDateString("id")}
+          description={formatStoreDate(item.openedAt, storeTimezone)}
           backLink="/cash-register/history"
           dynamicInfo={false}>
           <span
@@ -497,8 +504,10 @@ const CashRegisterDetail = () => {
               {rec?.window?.openedAt && (
                 <span className="text-xs text-muted-foreground">
                   {t("page.cashRegister.detail.registerWindow")}:{" "}
-                  {new Date(rec.window.openedAt).toLocaleString("id")}
-                  {rec.window.endAt ? ` → ${new Date(rec.window.endAt).toLocaleString("id")}` : ""}
+                  {formatStoreDateTime(rec.window.openedAt, storeTimezone)}
+                  {rec.window.endAt
+                    ? ` → ${formatStoreDateTime(rec.window.endAt, storeTimezone)}`
+                    : ""}
                 </span>
               )}
             </div>

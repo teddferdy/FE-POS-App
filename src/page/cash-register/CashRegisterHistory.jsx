@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { getCashRegisterHistory, closeCashRegister } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
 import { isCashPayment } from "@/utils/payment";
+import { formatStoreDate, formatStoreTime } from "@/utils/storeTimezone";
 import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -135,10 +136,11 @@ const CashRegisterHistory = () => {
       render: (item) => {
         const d = item.openedAt ? new Date(item.openedAt) : null;
         const valid = d && !isNaN(d.getTime());
+        const tz = item.storeData?.timezone;
         return (
           <div className="text-xs">
-            <div>{valid ? d.toLocaleDateString("id") : "-"}</div>
-            <div className="text-muted-foreground">{valid ? d.toTimeString().slice(0, 8) : ""}</div>
+            <div>{valid ? formatStoreDate(d, tz) : "-"}</div>
+            <div className="text-muted-foreground">{valid ? formatStoreTime(d, tz) : ""}</div>
           </div>
         );
       }
@@ -149,9 +151,9 @@ const CashRegisterHistory = () => {
         <div className="text-xs">
           {item.closedAt && !isNaN(new Date(item.closedAt).getTime()) ? (
             <>
-              <div>{new Date(item.closedAt).toLocaleDateString("id")}</div>
+              <div>{formatStoreDate(item.closedAt, item.storeData?.timezone)}</div>
               <div className="text-muted-foreground">
-                {new Date(item.closedAt).toTimeString().slice(0, 8)}
+                {formatStoreTime(item.closedAt, item.storeData?.timezone)}
               </div>
             </>
           ) : (

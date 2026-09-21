@@ -292,4 +292,49 @@ describe("CashRegisterDetail reconciliation (Batch B)", () => {
       await screen.findByText("page.cashRegister.detail.transactionCount:1")
     ).toBeInTheDocument();
   });
+
+  // Phase 39 Batch 6-prereq: register timestamps must render in the
+  // store's timezone (report.store.timezone), not the viewer's/test
+  // process's local timezone (this suite runs with TZ=Asia/Jakarta).
+  test("renders the register window in the store's timezone, not the local/browser timezone (Batch 6-prereq)", async () => {
+    getZReport.mockResolvedValue({
+      data: {
+        ...REPORT,
+        store: { id: 1, name: "Store A", timezone: "America/New_York" },
+        reconciliation: {
+          ...REPORT.reconciliation,
+          window: {
+            openedAt: "2026-09-12T10:00:00.000Z",
+            endAt: "2026-09-12T12:00:00.000Z"
+          }
+        }
+      }
+    });
+    renderPage();
+    // 10:00 UTC in America/New_York (EDT, UTC-4 in September) is 06:00 —
+    // in the test process's own Asia/Jakarta (+7) local time it would
+    // instead render as 17:00, so this proves the store's timezone wins
+    // over the local/browser one.
+    expect(await screen.findByText(/06\.00\.00/)).toBeInTheDocument();
+    expect(screen.queryByText(/17\.00\.00/)).not.toBeInTheDocument();
+  });
+
+  test("falls back to the default timezone when store timezone is missing (Batch 6-prereq normal case)", async () => {
+    getZReport.mockResolvedValue({
+      data: {
+        ...REPORT,
+        reconciliation: {
+          ...REPORT.reconciliation,
+          window: {
+            openedAt: "2026-09-12T10:00:00.000Z",
+            endAt: "2026-09-12T12:00:00.000Z"
+          }
+        }
+      }
+    });
+    renderPage();
+    // No store.timezone on the payload → falls back to Asia/Jakarta
+    // (DEFAULT_TIMEZONE), matching this suite's existing fixtures/behavior.
+    expect(await screen.findByText(/17\.00\.00/)).toBeInTheDocument();
+  });
 });
