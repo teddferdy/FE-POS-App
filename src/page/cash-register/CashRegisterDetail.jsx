@@ -73,6 +73,14 @@ const CashRegisterDetail = () => {
   );
 
   const orders = ordersData?.data || [];
+  // Phase 39 Finding #3: the badge must reflect every in-window transaction,
+  // not just the current page — pagination.total is already the distinct
+  // count (fixed in Batch 5's `distinct: true`) over the SAME unfiltered
+  // in-window population `orders` renders (all statuses, not just
+  // reconciliation-eligible sales), so it's the correct source here, not
+  // rec.sales.eligible.count (a narrower, different quantity). Mirrors the
+  // outsideTotal pattern below exactly.
+  const ordersTotal = ordersData?.pagination?.total ?? orders.length;
 
   // Phase 39 Batch 4 follow-up: the outside-window population behind the
   // reconciliation OUTSIDE_WINDOW bucket (same membership, listed 1:1) so
@@ -602,7 +610,7 @@ const CashRegisterDetail = () => {
               {t("page.cashRegister.detail.transactionHistory")}
             </h2>
             <span className="text-xs text-muted-foreground">
-              {t("page.cashRegister.detail.transactionCount", { count: orders.length })}
+              {t("page.cashRegister.detail.transactionCount", { count: ordersTotal })}
             </span>
           </div>
           <div className="overflow-x-auto">
