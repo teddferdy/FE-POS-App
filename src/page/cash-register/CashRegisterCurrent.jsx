@@ -14,6 +14,7 @@ import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
+import { formatStoreDate, formatStoreTime } from "@/utils/storeTimezone";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
@@ -168,11 +169,11 @@ const CashRegisterCurrent = () => {
                       [t("page.cashRegister.current.openedBy"), reg.userData?.fullName || "-"],
                       [
                         t("page.cashRegister.current.openDate"),
-                        new Date(reg.openedAt).toLocaleDateString("id")
+                        formatStoreDate(reg.openedAt, reg.storeData?.timezone)
                       ],
                       [
                         t("page.cashRegister.current.openTime"),
-                        new Date(reg.openedAt).toTimeString().slice(0, 8)
+                        formatStoreTime(reg.openedAt, reg.storeData?.timezone)
                       ],
                       [
                         t("page.cashRegister.current.openingBalance"),
