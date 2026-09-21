@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { DollarSign, X, Wallet, Coins, Receipt, ArrowRightLeft } from "lucide-react";
+import { DollarSign, X, Wallet, Coins, Receipt, ArrowRightLeft, AlertCircle } from "lucide-react";
 import { getCurrentCashRegister, closeCashRegister } from "@/services/cash-register";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,12 @@ import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
-import { formatStoreDate, formatStoreTime } from "@/utils/storeTimezone";
+import {
+  formatStoreDate,
+  formatStoreTime,
+  getTodayScheduleMinutes,
+  formatMinutesAsTime
+} from "@/utils/storeTimezone";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
@@ -58,6 +63,16 @@ const CashRegisterCurrent = () => {
   const totalExpenses = data?.data?.totalExpenses || 0;
   const expectedCash = data?.data?.expectedCash || 0;
   const variance = closingBalance - expectedCash;
+
+  // Phase 39 Batch 6F: purely informational — never blocks/disables
+  // closing. Independent of everything else on this screen.
+  const closeSchedule = getTodayScheduleMinutes(
+    reg?.storeData?.openingHours,
+    reg?.storeData?.timezone
+  );
+  const isOvertimeClosing =
+    closeSchedule?.closeMinutes != null && closeSchedule.nowMinutes > closeSchedule.closeMinutes;
+  const scheduledCloseTime = formatMinutesAsTime(closeSchedule?.closeMinutes);
 
   if (!storeId) {
     return (
@@ -293,6 +308,15 @@ const CashRegisterCurrent = () => {
                         amount: formatIDR(Math.abs(variance))
                       })}
                 </p>
+              )}
+
+              {isOvertimeClosing && (
+                <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 px-3 py-2 text-xs text-amber-800 dark:text-amber-400">
+                  <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                  <span>
+                    {t("page.cashRegister.current.overtimeNotice", { time: scheduledCloseTime })}
+                  </span>
+                </div>
               )}
 
               <Button onClick={() => setCloseModal(true)} variant="destructive" className="w-full">
