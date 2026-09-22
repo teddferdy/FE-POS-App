@@ -3834,6 +3834,7 @@
   "page.cashRegister.history.expenses": "Expenses",
   "page.cashRegister.history.open": "Open",
   "page.cashRegister.history.openedBy": "Opened By",
+  "page.cashRegister.history.closedBy": "Closed By",
   "page.cashRegister.history.openingBalance": "Opening Balance",
   "page.cashRegister.history.sales": "Sales",
   "page.cashRegister.history.search": "Search...",

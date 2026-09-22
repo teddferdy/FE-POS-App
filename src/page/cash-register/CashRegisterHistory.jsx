@@ -129,7 +129,7 @@ const CashRegisterHistory = () => {
     },
     {
       header: t("page.cashRegister.history.openedBy"),
-      render: (item) => <span className="text-sm">{item.userData?.fullName || "-"}</span>
+      render: (item) => <span className="text-sm">{item.createdByUser?.fullName || "-"}</span>
     },
     {
       header: t("page.cashRegister.history.open"),
@@ -144,6 +144,10 @@ const CashRegisterHistory = () => {
           </div>
         );
       }
+    },
+    {
+      header: t("page.cashRegister.history.closedBy"),
+      render: (item) => <span className="text-sm">{item.modifiedByUser?.fullName || "-"}</span>
     },
     {
       header: t("page.cashRegister.history.closed"),
