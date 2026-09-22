@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from "lucide-react";
-import { openCashRegister, getOpenRegisters } from "@/services/cash-register";
+import { openCashRegister, getOpenRegisters, getTableResetPreview } from "@/services/cash-register";
 import { getAllLocation, getLocationDetail } from "@/services/location";
 import { getWhatsAppStatus, restartWhatsApp } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
@@ -75,6 +75,12 @@ const CashRegisterOpenClose = () => {
   const [rawBalance, setRawBalance] = useState("0");
   const [notes, setNotes] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
+  // Phase 39 Batch 6C: independent of cancelModal/selectedStoreIsOpen —
+  // this is purely "N stale occupied tables will be reset," never a
+  // second opinion on whether the store already has an open register.
+  const [tableResetModalOpen, setTableResetModalOpen] = useState(false);
+  const [tableResetEligibleCount, setTableResetEligibleCount] = useState(0);
+  const [checkingTableReset, setCheckingTableReset] = useState(false);
 
   const selectedStoreIsOpen = openStoreIds.has(Number(selectedStore));
 
@@ -121,27 +127,72 @@ const CashRegisterOpenClose = () => {
   });
 
   const openMut = useMutation(
-    () =>
+    (confirmTableReset = false) =>
       openCashRegister({
         storeId: parseInt(selectedStore),
         openedBy: user?.id,
         openingBalance: numericBalance,
-        notes
+        notes,
+        confirmTableReset
       }),
     {
-      onSuccess: () => {
+      onSuccess: (result) => {
         toast.success(t("page.cashRegister.openClose.success"), {
           description: t("page.cashRegister.openClose.openedDesc")
         });
+        // Phase 39 Batch 6C: cleanup is best-effort and never blocks a
+        // successful register open — a partial/full cleanup failure is
+        // surfaced as an additional warning toast, never as an error and
+        // never implying the register itself failed to open.
+        const cleanup = result?.tableCleanupResult;
+        if (cleanup?.attempted && cleanup.failed > 0) {
+          toast.warning(
+            t("page.cashRegister.openClose.tableResetWarning", { failed: cleanup.failed })
+          );
+        }
+        setTableResetModalOpen(false);
         queryClient.invalidateQueries(["cash-register"]);
         navigate("/cash-register/current");
       },
-      onError: (err) =>
+      onError: (err) => {
+        setTableResetModalOpen(false);
         toast.error(t("page.cashRegister.openClose.fail"), {
           description: err?.response?.data?.message || err.message
-        })
+        });
+      }
     }
   );
+
+  // Phase 39 Batch 6C: the eligibility preview is fetched fresh on every
+  // click, right after the (unchanged) selectedStoreIsOpen guard — never
+  // trusted from any earlier/cached read — so confirmation always reflects
+  // the current table population. If the preview call itself fails, that
+  // is a non-blocking convenience check: degrade to opening the register
+  // normally rather than letting a preview outage block the cashier.
+  const handleOpenClick = async () => {
+    if (selectedStoreIsOpen) {
+      toast.error(t("page.cashRegister.openClose.fail"), {
+        description: t("page.cashRegister.openClose.storeOpenError")
+      });
+      return;
+    }
+    setCheckingTableReset(true);
+    let eligibleCount = 0;
+    try {
+      const preview = await getTableResetPreview(selectedStore);
+      eligibleCount = preview?.data?.eligibleCount || 0;
+    } catch {
+      eligibleCount = 0;
+    }
+    setCheckingTableReset(false);
+
+    if (eligibleCount > 0) {
+      setTableResetEligibleCount(eligibleCount);
+      setTableResetModalOpen(true);
+    } else {
+      openMut.mutate(false);
+    }
+  };
 
   return (
     <>
@@ -299,16 +350,13 @@ const CashRegisterOpenClose = () => {
                   </Button>
                   <Button
                     variant="success"
-                    onClick={() => {
-                      if (selectedStoreIsOpen) {
-                        toast.error(t("page.cashRegister.openClose.fail"), {
-                          description: t("page.cashRegister.openClose.storeOpenError")
-                        });
-                        return;
-                      }
-                      openMut.mutate();
-                    }}
-                    disabled={openMut.isLoading || numericBalance <= 0 || !selectedStore}
+                    onClick={handleOpenClick}
+                    disabled={
+                      openMut.isLoading ||
+                      checkingTableReset ||
+                      numericBalance <= 0 ||
+                      !selectedStore
+                    }
                     className="w-full sm:w-auto gap-1.5">
                     <DollarSign size={16} />
                     {openMut.isLoading
@@ -405,6 +453,21 @@ const CashRegisterOpenClose = () => {
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
         onConfirm={() => setTimeout(() => navigate("/dashboard-super-admin"), 150)}
+      />
+      {/* Phase 39 Batch 6C: only ever shown when the preview reports at
+          least one eligible table — cancelling here mutates nothing and
+          opens nothing, exactly like the cancelModal above. */}
+      <Modal
+        type="confirm"
+        open={tableResetModalOpen}
+        onOpenChange={setTableResetModalOpen}
+        title={t("page.cashRegister.openClose.tableResetConfirmTitle")}
+        description={t("page.cashRegister.openClose.tableResetConfirmDesc", {
+          count: tableResetEligibleCount
+        })}
+        confirmText={t("page.cashRegister.openClose.tableResetConfirmButton")}
+        loading={openMut.isLoading}
+        onConfirm={() => openMut.mutate(true)}
       />
     </>
   );

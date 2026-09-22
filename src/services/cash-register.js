@@ -37,6 +37,17 @@ export const getOpenRegisters = async () => {
   return data;
 };
 
+// Phase 39 Batch 6C: authoritative count of OCCUPIED tables with no active
+// order, computed server-side — never derived client-side from separate
+// table/order lists.
+export const getTableResetPreview = async (storeId) => {
+  const { data, status } = await axiosInstance.get(
+    `/cash-register/table-reset-preview?store=${storeId}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const getXReport = async (storeId) => {
   const { data, status } = await axiosInstance.get(`/cash-register/x-report?store=${storeId}`);
   if (status !== 200) throw Error(`${data.message}`);
