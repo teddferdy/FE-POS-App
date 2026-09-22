@@ -17,9 +17,18 @@ import { getTodayScheduleMinutes } from "@/utils/storeTimezone";
 // Phase 39 Batch 6F: informational-only early-opening / overtime-closing
 // banners on the register Open and Close screens. Both must compare the
 // STORE's local time (never the browser/test-runner's), never block the
-// action, stay silent on a closed day (open/close both null), and never
-// interfere with the pre-existing "store already has an open register"
-// guard on the Open screen.
+// action, and never interfere with the pre-existing "store already has an
+// open register" guard on the Open screen.
+//
+// Phase 39 Batch 6E supersedes 6F's original "stay silent on a closed day"
+// decision: a day whose openingHours entry exists with open/close both
+// null (i.e. getTodayScheduleMinutes returns a non-null object with both
+// minutes null) now surfaces its own informational "closed today" notice
+// on both screens — still purely informational, never blocking. This is
+// distinct from a genuinely UNREADABLE schedule (missing openingHours
+// array, or no entry at all for today), where getTodayScheduleMinutes
+// returns null outright and every screen stays silent exactly as before,
+// since there is nothing to positively assert in that case.
 //
 // getTodayScheduleMinutes is mocked (not global timers — that would fight
 // React Query's internal polling, e.g. getWhatsAppStatus's 5s refetch, and
@@ -180,7 +189,7 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
       expect(openBtn.closest("button")).not.toBeDisabled();
     });
 
-    test("Test 4 — closed day (open/close both null): no notice, no crash, Open Register enabled", async () => {
+    test("Test 4 — closed day (open/close both null): shows closed-today notice, not early-opening, Open Register enabled (Batch 6E)", async () => {
       getTodayScheduleMinutes.mockReturnValue({
         nowMinutes: NOON,
         openMinutes: null,
@@ -191,8 +200,32 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
       });
       renderWithQuery(<CashRegisterOpenClose />);
       fireEvent.click(await screen.findByText("Rp 100.000"));
+
+      expect(
+        await screen.findByText(/page\.cashRegister\.openClose\.closedTodayNotice/)
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(/page\.cashRegister\.openClose\.earlyOpeningNotice/)
+      ).not.toBeInTheDocument();
+      const openBtn = screen.getByText(/page\.cashRegister\.openClose\.openWithAmount/);
+      expect(openBtn.closest("button")).not.toBeDisabled();
+    });
+
+    test("Test 4b — no schedule entry for today at all (unreadable, not positively closed): no closed-today notice, no crash (Batch 6E)", async () => {
+      // getTodayScheduleMinutes returns null outright when there's no entry
+      // for today (as opposed to an entry with open/close both null) — this
+      // must stay silent, since there's nothing to positively assert.
+      getTodayScheduleMinutes.mockReturnValue(null);
+      getLocationDetail.mockResolvedValue({
+        data: { id: 1, timezone: STORE_TZ, openingHours: FIXED_OPENING_HOURS }
+      });
+      renderWithQuery(<CashRegisterOpenClose />);
+      fireEvent.click(await screen.findByText("Rp 100.000"));
       await waitFor(() => expect(getLocationDetail).toHaveBeenCalled());
 
+      expect(
+        screen.queryByText(/page\.cashRegister\.openClose\.closedTodayNotice/)
+      ).not.toBeInTheDocument();
       expect(
         screen.queryByText(/page\.cashRegister\.openClose\.earlyOpeningNotice/)
       ).not.toBeInTheDocument();
@@ -285,6 +318,41 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
       renderWithQuery(<CashRegisterCurrent />);
       await screen.findByText("page.cashRegister.current.closeBtn");
 
+      expect(
+        screen.queryByText(/page\.cashRegister\.current\.overtimeNotice/)
+      ).not.toBeInTheDocument();
+      const closeBtn = screen.getByText("page.cashRegister.current.closeBtn");
+      expect(closeBtn.closest("button")).not.toBeDisabled();
+    });
+
+    test("Test 9 — closed day (open/close both null): shows closed-today notice, not overtime, Close Register enabled (Batch 6E)", async () => {
+      getTodayScheduleMinutes.mockReturnValue({
+        nowMinutes: NOON,
+        openMinutes: null,
+        closeMinutes: null
+      });
+      mockRegister(FIXED_OPENING_HOURS);
+      renderWithQuery(<CashRegisterCurrent />);
+
+      expect(
+        await screen.findByText(/page\.cashRegister\.current\.closedTodayNotice/)
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(/page\.cashRegister\.current\.overtimeNotice/)
+      ).not.toBeInTheDocument();
+      const closeBtn = screen.getByText("page.cashRegister.current.closeBtn");
+      expect(closeBtn.closest("button")).not.toBeDisabled();
+    });
+
+    test("Test 10 — no schedule entry for today at all (unreadable): no closed-today notice, no crash (Batch 6E)", async () => {
+      getTodayScheduleMinutes.mockReturnValue(null);
+      mockRegister(FIXED_OPENING_HOURS);
+      renderWithQuery(<CashRegisterCurrent />);
+      await screen.findByText("page.cashRegister.current.closeBtn");
+
+      expect(
+        screen.queryByText(/page\.cashRegister\.current\.closedTodayNotice/)
+      ).not.toBeInTheDocument();
       expect(
         screen.queryByText(/page\.cashRegister\.current\.overtimeNotice/)
       ).not.toBeInTheDocument();

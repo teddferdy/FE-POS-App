@@ -124,7 +124,10 @@ export const parseScheduleTimeToMinutes = (value) => {
 // "show no banner," never a crash or a guessed rule. A closed day
 // (open/close both null) still returns a result, with openMinutes/
 // closeMinutes as null, so callers can distinguish "no schedule today"
-// from "unreadable input" while both correctly suppress any banner.
+// (a real, non-null result with both minutes null) from "unreadable input"
+// (a null return). Phase 39 Batch 6E: callers now use that distinction to
+// surface their own "closed today" notice for the former case, while the
+// latter still means silence — see CashRegisterOpenClose/Current.jsx.
 export const getTodayScheduleMinutes = (openingHours, timezone, now = new Date()) => {
   try {
     if (!Array.isArray(openingHours)) return null;
