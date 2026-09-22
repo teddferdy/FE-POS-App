@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AlarmClock, CalendarDays, Clock, Inbox, Loader2, Send, Store, Timer } from "lucide-react";
 import { getShiftDropdown } from "@/services/shift";
 import { getAllLocation } from "@/services/location";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { getOvertimes, createOvertime, cancelOvertime } from "@/services/overtime";
 import { safeGet } from "@/lib/safe-lookup";
 import { useUserSession } from "@/hooks/useUserSession";
@@ -92,13 +93,13 @@ const MyOvertime = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const storeId = isSuperAdmin ? user?.defaultStoreId || user?.store || "" : user?.store || "";
 
-  const [storeFilter, setStoreFilter] = useState(isSuperAdmin ? "" : storeId);
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
   const { data: locData } = useQuery(["overtime-locations"], () => getAllLocation("active"), {
     enabled: isSuperAdmin
   });
   const locations = locData?.data || [];
-  const effectiveStore = isSuperAdmin ? storeFilter || storeId : storeId;
+  const effectiveStore = isSuperAdmin ? (storeFilter !== "all" ? storeFilter : "") : storeId;
   const locationName = (sid) => locations.find((l) => String(l.id) === String(sid))?.name || null;
 
   const [page, setPage] = useState(1);
@@ -113,7 +114,7 @@ const MyOvertime = () => {
   } = useQuery(
     ["my-overtime", effectiveStore, page],
     () => getOvertimes({ store: effectiveStore, page, pageSize, mine: 1 }),
-    { keepPreviousData: true, enabled: !!effectiveStore }
+    { keepPreviousData: true, enabled: isSuperAdmin ? true : !!effectiveStore }
   );
 
   const rows = myData?.data || [];
@@ -125,7 +126,7 @@ const MyOvertime = () => {
   const { data: shiftData } = useQuery(
     ["overtime-shift-options", effectiveStore],
     () => getShiftDropdown({ store: effectiveStore, statusShift: "active" }),
-    { enabled: !!effectiveStore }
+    { enabled: isSuperAdmin ? true : !!effectiveStore }
   );
   const allShifts = shiftData?.data || [];
   const myShifts = allShifts.filter((s) =>
@@ -226,10 +227,13 @@ const MyOvertime = () => {
             Toko
           </label>
           <Combobox
-            options={locations.map((l) => ({ value: String(l.id), label: l.name }))}
+            options={[
+              { value: "all", label: "Semua Toko" },
+              ...locations.map((l) => ({ value: String(l.id), label: l.name }))
+            ]}
             value={storeFilter}
             onChange={(v) => {
-              setStoreFilter(v);
+              setGlobalStoreFilter(v);
               setPage(1);
             }}
             placeholder="Pilih toko"

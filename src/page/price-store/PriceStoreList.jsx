@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useQuery, useMutation } from "react-query";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { useStore } from "@/contexts/StoreContext";
@@ -21,6 +21,7 @@ import PageHeader from "@/components/ui/PageHeader";
 const PriceStoreList = () => {
   const { t } = useTranslation();
   const cookie = useCookies();
+  const queryClient = useQueryClient();
   const { setActiveStore } = useStore();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -65,6 +66,7 @@ const PriceStoreList = () => {
     mutationFn: (payload) => updateProductPriceByStore(payload),
     onSuccess: () => {
       toast.success(t("page.priceStore.list.success"));
+      queryClient.invalidateQueries(["products-for-price"]);
       setEditModal(null);
       setEditPrice("");
     },

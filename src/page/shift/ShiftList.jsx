@@ -39,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
 import ExtendShiftModal from "./ExtendShiftModal";
@@ -63,15 +64,15 @@ const ShiftList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [extendTarget, setExtendTarget] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
-  const [storeFilter, setStoreFilter] = useState("");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [activeTab, setActiveTab] = useState("shifts");
 
-  const isFiltered = search !== "" || statusFilter !== "all" || storeFilter !== "";
+  const isFiltered = search !== "" || statusFilter !== "all" || storeFilter !== "all";
 
   const resetFilters = () => {
     setSearch("");
     setStatusFilter("all");
-    setStoreFilter("");
+    setGlobalStoreFilter("all");
     setPage(1);
   };
 
@@ -89,7 +90,7 @@ const ShiftList = () => {
     }
   );
 
-  const effectiveStore = isSuperAdmin ? storeFilter : locationParam;
+  const effectiveStore = isSuperAdmin ? (storeFilter !== "all" ? storeFilter : "") : locationParam;
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["shifts", page, limit, search, statusFilter, effectiveStore],
@@ -571,7 +572,7 @@ const ShiftList = () => {
                               </label>
                               <Combobox
                                 options={[
-                                  { value: "", label: t("page.employee.list.allStores") },
+                                  { value: "all", label: t("page.employee.list.allStores") },
                                   ...(locData?.data || []).map((loc) => ({
                                     value: loc.id,
                                     label: loc.name
@@ -579,7 +580,7 @@ const ShiftList = () => {
                                 ]}
                                 value={storeFilter}
                                 onChange={(v) => {
-                                  setStoreFilter(v);
+                                  setGlobalStoreFilter(v);
                                   setPage(1);
                                 }}
                                 placeholder={t("page.employee.list.allStores")}
