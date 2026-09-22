@@ -12,6 +12,12 @@ jest.mock("react-i18next", () => ({
 jest.mock("../services/order", () => ({
   getOrdersByStore: jest.fn()
 }));
+// Phase 39 Batch 6B: mocked so this suite never hits real network; every
+// fixture order below carries the same id so it lands in the Current
+// Register bucket, preserving this file's existing assertions untouched.
+jest.mock("../services/cash-register", () => ({
+  getCurrentCashRegister: jest.fn(() => Promise.resolve({ data: { register: { id: 999 } } }))
+}));
 jest.mock("../services/socket", () => ({
   useSocket: () => ({ socket: null, connected: false })
 }));
@@ -25,6 +31,7 @@ const servedOrder = {
   tableId: 4,
   totalQuantity: 3,
   createdAt: new Date().toISOString(),
+  cashRegisterId: 999,
   items: []
 };
 
@@ -86,7 +93,7 @@ describe("OrderQueue — P5-03 served order payment reachability", () => {
     getOrdersByStore.mockReset().mockImplementation(({ status }) =>
       Promise.resolve({
         data: ALL_STATUSES.includes(status)
-          ? [{ id: 100 + ALL_STATUSES.indexOf(status), status }]
+          ? [{ id: 100 + ALL_STATUSES.indexOf(status), status, cashRegisterId: 999 }]
           : []
       })
     );

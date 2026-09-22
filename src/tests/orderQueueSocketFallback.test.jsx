@@ -13,6 +13,12 @@ jest.mock("react-i18next", () => ({
 jest.mock("@/services/order", () => ({
   getOrdersByStore: jest.fn(() => Promise.resolve({ data: [] }))
 }));
+// Phase 39 Batch 6B: mocked so this suite never hits real network. This
+// file's fixtures are always empty order lists, so bucketing never comes
+// into play here regardless of what this resolves to.
+jest.mock("@/services/cash-register", () => ({
+  getCurrentCashRegister: jest.fn(() => Promise.resolve({ data: { register: null } }))
+}));
 jest.mock("@/services/socket", () => ({ useSocket: jest.fn() }));
 
 // Phase 20 Batch 2: OrderQueue's 5 status-based queries (pending, confirmed,

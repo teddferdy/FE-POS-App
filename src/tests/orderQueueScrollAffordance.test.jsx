@@ -20,6 +20,14 @@ jest.mock("@/services/order", () => ({
     Promise.resolve({ data: mockOrdersByStatus[status] || [] })
   )
 }));
+// Phase 39 Batch 6B: OrderQueue now also looks up the current register for
+// display bucketing — mocked here so this suite never hits real network,
+// and every fixture order below carries the SAME id so it lands in the
+// Current Register bucket, preserving this file's existing single-rail
+// (order-queue-rail) assumptions untouched.
+jest.mock("@/services/cash-register", () => ({
+  getCurrentCashRegister: jest.fn(() => Promise.resolve({ data: { register: { id: 999 } } }))
+}));
 jest.mock("@/services/socket", () => ({
   useSocket: () => ({ socket: null, connected: false })
 }));
@@ -34,7 +42,8 @@ const makeOrder = (n) => ({
   tableId: 211,
   source: "qr",
   totalQuantity: 1,
-  createdAt: "2026-09-01T00:00:00.000Z"
+  createdAt: "2026-09-01T00:00:00.000Z",
+  cashRegisterId: 999
 });
 
 const renderQueue = (orders) => {
