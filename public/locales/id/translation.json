@@ -3774,6 +3774,7 @@
   "page.cashRegister.history.expenses": "Pengeluaran",
   "page.cashRegister.history.open": "Buka",
   "page.cashRegister.history.openedBy": "Dibuka Oleh",
+  "page.cashRegister.history.closedBy": "Ditutup Oleh",
   "page.cashRegister.history.openingBalance": "Saldo Awal",
   "page.cashRegister.history.sales": "Penjualan",
   "page.cashRegister.history.search": "Cari...",

@@ -12,7 +12,7 @@ import {
 } from "@/services/cash-register";
 import { getAllLocation, getLocationDetail } from "@/services/location";
 import { toast } from "sonner";
-import { getStoreNowParts, getTodayScheduleMinutes } from "@/utils/storeTimezone";
+import { getTodayScheduleMinutes } from "@/utils/storeTimezone";
 
 // Phase 39 Batch 6F: informational-only early-opening / overtime-closing
 // banners on the register Open and Close screens. Both must compare the
@@ -21,12 +21,30 @@ import { getStoreNowParts, getTodayScheduleMinutes } from "@/utils/storeTimezone
 // interfere with the pre-existing "store already has an open register"
 // guard on the Open screen.
 //
-// Fixtures below anchor today's opening hours to the REAL current time in
-// a deliberately non-default timezone (America/New_York, never Asia/
-// Jakarta, this suite's own system timezone) with a safety margin, rather
-// than faking global timers — faking Date/setTimeout would fight React
-// Query's internal polling (getWhatsAppStatus refetches every 5s) and
-// testing-library's own async waitFor loop.
+// getTodayScheduleMinutes is mocked (not global timers — that would fight
+// React Query's internal polling, e.g. getWhatsAppStatus's 5s refetch, and
+// testing-library's own async waitFor loop) so every test's early/late/
+// overtime intent is expressed directly as {nowMinutes, openMinutes,
+// closeMinutes}, never as a real-wall-clock-relative offset. An earlier
+// version anchored fixtures to the REAL current time (getStoreNowParts(
+// STORE_TZ) + a safety-margin offset, folded back into a same-day HH:MM
+// string via modulo 1440) — that silently corrupted itself into a
+// same-day "just after midnight" time whenever the suite happened to run
+// within the offset's margin of actual midnight in America/New_York,
+// since a per-day schedule cannot represent "N minutes from now" once
+// that instant is genuinely tomorrow. Test 7 below still exercises the
+// REAL getStoreNowParts/getTodayScheduleMinutes implementation (via
+// jest.requireActual, bypassing this file's mock) with a fixed, explicit
+// instant — so the timezone-comparison logic itself stays proven
+// correct, just never against an uncontrolled live clock.
+
+jest.mock("@/utils/storeTimezone", () => {
+  const actual = jest.requireActual("@/utils/storeTimezone");
+  return {
+    ...actual,
+    getTodayScheduleMinutes: jest.fn()
+  };
+});
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -71,31 +89,14 @@ jest.mock("react-router-dom", () => ({
 }));
 
 const STORE_TZ = "America/New_York";
-const ALL_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
-const minutesToHHMM = (mins) => {
-  const wrapped = ((Math.round(mins) % 1440) + 1440) % 1440;
-  const h = Math.floor(wrapped / 60);
-  const m = wrapped % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-};
-
-// Anchors today's (in STORE_TZ) open/close to the real current moment,
-// offset by a safety-margin number of minutes, so the fixture is correct
-// no matter when the test actually runs.
-const buildTodayOpeningHours = ({ openOffsetMin, closeOffsetMin, closedToday = false }) => {
-  const { dayName, minutes: nowMinutes } = getStoreNowParts(STORE_TZ);
-  return ALL_DAYS.map((day) => {
-    if (day !== dayName) return { day, open: "09:00", close: "21:00", isOpen: true };
-    if (closedToday) return { day, open: null, close: null, isOpen: false };
-    return {
-      day,
-      open: minutesToHHMM(nowMinutes + openOffsetMin),
-      close: minutesToHHMM(nowMinutes + closeOffsetMin),
-      isOpen: true
-    };
-  });
-};
+// getTodayScheduleMinutes is mocked, so the actual `openingHours`/
+// `timezone` payload content is never read for its own sake — only that
+// it's present, so the components' queries resolve. Any fixed, valid-
+// looking array works; NOON is just a safe, readable anchor for the
+// numeric {nowMinutes, openMinutes, closeMinutes} results below.
+const FIXED_OPENING_HOURS = [{ day: "monday", open: "09:00", close: "21:00", isOpen: true }];
+const NOON = 12 * 60;
 
 const renderWithQuery = (ui) => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -121,12 +122,13 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
     });
 
     test("Test 1 — early opening: shows the notice, keeps Open Register enabled", async () => {
+      getTodayScheduleMinutes.mockReturnValue({
+        nowMinutes: NOON,
+        openMinutes: NOON + 30,
+        closeMinutes: NOON + 600
+      });
       getLocationDetail.mockResolvedValue({
-        data: {
-          id: 1,
-          timezone: STORE_TZ,
-          openingHours: buildTodayOpeningHours({ openOffsetMin: 30, closeOffsetMin: 600 })
-        }
+        data: { id: 1, timezone: STORE_TZ, openingHours: FIXED_OPENING_HOURS }
       });
       renderWithQuery(<CashRegisterOpenClose />);
       fireEvent.click(await screen.findByText("Rp 100.000"));
@@ -139,12 +141,13 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
     });
 
     test("Test 2 — opening at/after scheduled time: no notice, Open Register enabled", async () => {
+      getTodayScheduleMinutes.mockReturnValue({
+        nowMinutes: NOON,
+        openMinutes: NOON - 5,
+        closeMinutes: NOON + 600
+      });
       getLocationDetail.mockResolvedValue({
-        data: {
-          id: 1,
-          timezone: STORE_TZ,
-          openingHours: buildTodayOpeningHours({ openOffsetMin: -5, closeOffsetMin: 600 })
-        }
+        data: { id: 1, timezone: STORE_TZ, openingHours: FIXED_OPENING_HOURS }
       });
       renderWithQuery(<CashRegisterOpenClose />);
       fireEvent.click(await screen.findByText("Rp 100.000"));
@@ -158,12 +161,13 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
     });
 
     test("Test 3 — late opening: no warning, Open Register enabled", async () => {
+      getTodayScheduleMinutes.mockReturnValue({
+        nowMinutes: NOON,
+        openMinutes: NOON - 120,
+        closeMinutes: NOON + 600
+      });
       getLocationDetail.mockResolvedValue({
-        data: {
-          id: 1,
-          timezone: STORE_TZ,
-          openingHours: buildTodayOpeningHours({ openOffsetMin: -120, closeOffsetMin: 600 })
-        }
+        data: { id: 1, timezone: STORE_TZ, openingHours: FIXED_OPENING_HOURS }
       });
       renderWithQuery(<CashRegisterOpenClose />);
       fireEvent.click(await screen.findByText("Rp 100.000"));
@@ -177,12 +181,13 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
     });
 
     test("Test 4 — closed day (open/close both null): no notice, no crash, Open Register enabled", async () => {
+      getTodayScheduleMinutes.mockReturnValue({
+        nowMinutes: NOON,
+        openMinutes: null,
+        closeMinutes: null
+      });
       getLocationDetail.mockResolvedValue({
-        data: {
-          id: 1,
-          timezone: STORE_TZ,
-          openingHours: buildTodayOpeningHours({ closedToday: true })
-        }
+        data: { id: 1, timezone: STORE_TZ, openingHours: FIXED_OPENING_HOURS }
       });
       renderWithQuery(<CashRegisterOpenClose />);
       fireEvent.click(await screen.findByText("Rp 100.000"));
@@ -201,12 +206,13 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
       ];
       // Deliberately ALSO early-opening, to prove the two conditions
       // coexist independently rather than one masking the other.
+      getTodayScheduleMinutes.mockReturnValue({
+        nowMinutes: NOON,
+        openMinutes: NOON + 30,
+        closeMinutes: NOON + 600
+      });
       getLocationDetail.mockResolvedValue({
-        data: {
-          id: 1,
-          timezone: STORE_TZ,
-          openingHours: buildTodayOpeningHours({ openOffsetMin: 30, closeOffsetMin: 600 })
-        }
+        data: { id: 1, timezone: STORE_TZ, openingHours: FIXED_OPENING_HOURS }
       });
       getOpenRegisters.mockResolvedValue({ data: [{ store: 1 }] });
       renderWithQuery(<CashRegisterOpenClose />);
@@ -254,7 +260,12 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
     };
 
     test("Test 5 — overtime closing: shows the notice, Close Register remains enabled", async () => {
-      mockRegister(buildTodayOpeningHours({ openOffsetMin: -600, closeOffsetMin: -30 }));
+      getTodayScheduleMinutes.mockReturnValue({
+        nowMinutes: NOON,
+        openMinutes: NOON - 600,
+        closeMinutes: NOON - 30
+      });
+      mockRegister(FIXED_OPENING_HOURS);
       renderWithQuery(<CashRegisterCurrent />);
 
       expect(
@@ -265,7 +276,12 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
     });
 
     test("Test 6 — closing before/at scheduled time: no overtime notice, Close Register enabled", async () => {
-      mockRegister(buildTodayOpeningHours({ openOffsetMin: -600, closeOffsetMin: 5 }));
+      getTodayScheduleMinutes.mockReturnValue({
+        nowMinutes: NOON,
+        openMinutes: NOON - 600,
+        closeMinutes: NOON + 5
+      });
+      mockRegister(FIXED_OPENING_HOURS);
       renderWithQuery(<CashRegisterCurrent />);
       await screen.findByText("page.cashRegister.current.closeBtn");
 
@@ -281,6 +297,11 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
   // the STORE timezone, never the test runner's local one. Uses a fixed
   // instant and an explicit timezone (never relies on system/local TZ).
   describe("storeTimezone.js — schedule comparison uses the store timezone (Test 7)", () => {
+    // Uses jest.requireActual, bypassing this file's getTodayScheduleMinutes
+    // mock — this is the one test that must exercise the REAL timezone
+    // arithmetic, not a stand-in return value.
+    const real = jest.requireActual("@/utils/storeTimezone");
+
     test("a fixed UTC instant resolves to different day/time depending on the timezone passed in", () => {
       // 2026-09-12T22:30:00.000Z:
       //  - in America/New_York (EDT, UTC-4 in September): 18:30 the same day.
@@ -290,15 +311,15 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
       //    both which schedule entry applies and the early/late result.
       const now = new Date("2026-09-12T22:30:00.000Z");
 
-      const nyParts = getStoreNowParts("America/New_York", now);
-      const jakartaParts = getStoreNowParts("Asia/Jakarta", now);
+      const nyParts = real.getStoreNowParts("America/New_York", now);
+      const jakartaParts = real.getStoreNowParts("Asia/Jakarta", now);
 
       expect(nyParts.minutes).toBe(18 * 60 + 30);
       expect(jakartaParts.minutes).toBe(5 * 60 + 30);
       expect(nyParts.dayName).not.toBe(jakartaParts.dayName);
 
       const openingHours = [{ day: nyParts.dayName, open: "18:00", close: "23:00", isOpen: true }];
-      const result = getTodayScheduleMinutes(openingHours, "America/New_York", now);
+      const result = real.getTodayScheduleMinutes(openingHours, "America/New_York", now);
       expect(result).toEqual({
         nowMinutes: 18 * 60 + 30,
         openMinutes: 18 * 60,
@@ -308,7 +329,7 @@ describe("Phase 39 Batch 6F — operating-hours informational banners", () => {
       // The same openingHours array, read under Jakarta's day name, finds
       // no matching entry at all (proves it isn't silently falling back to
       // a hardcoded/default timezone that would happen to "work").
-      const wrongTzResult = getTodayScheduleMinutes(openingHours, "Asia/Jakarta", now);
+      const wrongTzResult = real.getTodayScheduleMinutes(openingHours, "Asia/Jakarta", now);
       expect(wrongTzResult).toBeNull();
     });
   });
