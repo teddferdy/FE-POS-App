@@ -14,6 +14,7 @@ import StoreFilter from "@/components/ui/StoreFilter";
 import PageHeader from "@/components/ui/PageHeader";
 import { DatePicker } from "@/components/ui/date-picker";
 import { getAllLocation } from "@/services/location";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -58,13 +59,13 @@ const StockHistory = () => {
   const [startDate, setStartDate] = useState(undefined);
   const [endDate, setEndDate] = useState(undefined);
   const [searchProduct] = useState("");
-  const [storeFilter, setStoreFilter] = useState("");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
   const { data: locData, isLoading: isLoadingLocations } = useQuery(
     ["locations-stock-history"],
     () => getAllLocation(),
     {
-      enabled: true
+      enabled: isSuperAdmin
     }
   );
 
@@ -79,14 +80,14 @@ const StockHistory = () => {
     referenceFilter !== "" ||
     !!startDate ||
     !!endDate ||
-    (storeFilter !== "" && storeFilter !== "all");
+    storeFilter !== "all";
 
   const resetFilters = () => {
     setProductFilter("");
     setReferenceFilter("");
     setStartDate(undefined);
     setEndDate(undefined);
-    setStoreFilter("");
+    setGlobalStoreFilter("all");
     setPage(1);
   };
 
@@ -271,7 +272,7 @@ const StockHistory = () => {
                               locations={locData?.data || []}
                               value={storeFilter}
                               onChange={(v) => {
-                                setStoreFilter(v);
+                                setGlobalStoreFilter(v);
                                 setPage(1);
                               }}
                               isSuperAdmin={isSuperAdmin}

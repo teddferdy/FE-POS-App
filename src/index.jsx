@@ -30,7 +30,10 @@ const queryClient = new QueryClient({
       retry: 2,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       refetchOnWindowFocus: false,
-      refetchOnReconnect: false
+      refetchOnReconnect: false,
+      // ponytail: masuk/ganti halaman langsung fetch ulang — cache fresh
+      // tidak lagi diserve tanpa refetch saat komponen list remount.
+      refetchOnMount: "always"
     }
   }
 });

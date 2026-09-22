@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { getOvertimes, updateOvertimeStatus, postOvertimePayroll } from "@/services/overtime";
 import { getAllLocation } from "@/services/location";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { safeGet } from "@/lib/safe-lookup";
 import { useUserSession } from "@/hooks/useUserSession";
 import { useTranslation } from "react-i18next";
@@ -112,7 +113,7 @@ const OvertimeApproval = () => {
   const user = useUserSession() || cookie?.user || {};
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const [storeFilter, setStoreFilter] = useState(isSuperAdmin ? "" : user?.store || "");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [status, setStatus] = useState("pending");
   const [page, setPage] = useState(1);
   const pageSize = 6;
@@ -129,13 +130,13 @@ const OvertimeApproval = () => {
     }
   );
   const locations = locData?.data || [];
-  const store = isSuperAdmin ? storeFilter || user?.store || "" : user?.store || "";
+  const store = isSuperAdmin ? (storeFilter !== "all" ? storeFilter : "") : user?.store || "";
   const locationName = (sid) => locations.find((l) => String(l.id) === String(sid))?.name || null;
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["overtime-approvals", store, page, status],
     () => getOvertimes({ store, page, pageSize, status }),
-    { keepPreviousData: true, enabled: !!store }
+    { keepPreviousData: true, enabled: isSuperAdmin ? true : !!store }
   );
 
   const rows = data?.data || [];
@@ -235,10 +236,13 @@ const OvertimeApproval = () => {
                 Toko
               </label>
               <Combobox
-                options={locations.map((l) => ({ value: String(l.id), label: l.name }))}
+                options={[
+                  { value: "all", label: "Semua Toko" },
+                  ...locations.map((l) => ({ value: String(l.id), label: l.name }))
+                ]}
                 value={storeFilter}
                 onChange={(v) => {
-                  setStoreFilter(v);
+                  setGlobalStoreFilter(v);
                   setPage(1);
                 }}
                 placeholder="Pilih toko"

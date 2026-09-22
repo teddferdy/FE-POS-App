@@ -37,6 +37,7 @@ import { DatePickerWithRange } from "@/components/ui/date-picker-range";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
 import { getAllLocation } from "@/services/location";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { isSuperAdminRole } from "@/utils/role";
 import {
   getAccounts,
@@ -1650,7 +1651,7 @@ const AccountingPage = () => {
   const cookieStoreId = cookie?.activeStore || user?.store;
   const isSuperAdmin = isSuperAdminRole(user);
 
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
   const { data: locationsData } = useQuery(["allLocations-accounting"], getAllLocation, {
     enabled: isSuperAdmin
@@ -1703,7 +1704,7 @@ const AccountingPage = () => {
           <StoreFilter
             locations={locations}
             value={storeFilter}
-            onChange={setStoreFilter}
+            onChange={setGlobalStoreFilter}
             isSuperAdmin={isSuperAdmin}
             t={t}
           />

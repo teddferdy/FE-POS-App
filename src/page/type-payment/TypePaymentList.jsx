@@ -41,6 +41,7 @@ import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 
 const TypePaymentList = () => {
   const { t, i18n } = useTranslation();
@@ -78,14 +79,14 @@ const TypePaymentList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
-  const [storeFilter, setStoreFilter] = useState("");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
-  const isFiltered = search !== "" || statusFilter !== "all" || storeFilter !== "";
+  const isFiltered = search !== "" || statusFilter !== "all" || storeFilter !== "all";
 
   const resetFilters = () => {
     setSearch("");
     setStatusFilter("all");
-    setStoreFilter("");
+    setGlobalStoreFilter("all");
     setPage(1);
   };
 
@@ -98,7 +99,7 @@ const TypePaymentList = () => {
     enabled: isSuperAdmin
   });
 
-  const effectiveStore = isSuperAdmin ? storeFilter : locationParam;
+  const effectiveStore = isSuperAdmin ? (storeFilter !== "all" ? storeFilter : "") : locationParam;
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["type-payments", page, limit, search, statusFilter, effectiveStore],
@@ -451,7 +452,7 @@ const TypePaymentList = () => {
                           </label>
                           <Combobox
                             options={[
-                              { value: "", label: t("page.employee.list.allStores") },
+                              { value: "all", label: t("page.employee.list.allStores") },
                               ...(locData?.data || []).map((loc) => ({
                                 value: loc.id,
                                 label: loc.name
@@ -459,7 +460,7 @@ const TypePaymentList = () => {
                             ]}
                             value={storeFilter}
                             onChange={(v) => {
-                              setStoreFilter(v);
+                              setGlobalStoreFilter(v);
                               setPage(1);
                             }}
                             placeholder={t("page.employee.list.allStores")}
