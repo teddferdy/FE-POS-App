@@ -102,7 +102,11 @@ const FormattedOpeningHours = ({ openingHours, t }) => {
           <span className="text-sm font-medium text-foreground w-24">
             {dayLabels[oh.day] || oh.day}
           </span>
-          {oh.open && oh.close ? (
+          {oh.is24Hours ? (
+            <span className="text-sm font-semibold text-foreground bg-muted px-3 py-1 rounded-lg">
+              {t("page.location.detail.is24Hours")}
+            </span>
+          ) : oh.open && oh.close ? (
             <span className="text-sm font-semibold text-foreground bg-muted px-3 py-1 rounded-lg">
               {oh.open} - {oh.close}
             </span>

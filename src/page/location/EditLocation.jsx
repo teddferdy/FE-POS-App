@@ -263,7 +263,8 @@ const EditLocation = () => {
           day: z.string(),
           open: z.string().nullable(),
           close: z.string().nullable(),
-          isOpen: z.boolean().default(true)
+          isOpen: z.boolean().default(true),
+          is24Hours: z.boolean().default(false)
         })
       )
     }),
@@ -308,7 +309,8 @@ const EditLocation = () => {
         day: day.id,
         open: "09:00",
         close: "21:00",
-        isOpen: true
+        isOpen: true,
+        is24Hours: false
       }))
     }
   });
@@ -449,13 +451,15 @@ const EditLocation = () => {
               day: oh.day,
               open: oh.open,
               close: oh.close,
-              isOpen: !!oh.open
+              isOpen: !!oh.open,
+              is24Hours: !!oh.is24Hours
             }))
           : days.map((day) => ({
               day: day.id,
               open: "09:00",
               close: "21:00",
-              isOpen: true
+              isOpen: true,
+              is24Hours: false
             }))
     });
 
@@ -522,8 +526,9 @@ const EditLocation = () => {
     setIsSubmitting(true);
     const openingHoursFormatted = (values.openingHours || []).map((h) => ({
       day: h.day,
-      open: h.isOpen ? h.open : null,
-      close: h.isOpen ? h.close : null
+      open: h.isOpen ? (h.is24Hours ? "00:00" : h.open) : null,
+      close: h.isOpen ? (h.is24Hours ? "23:59" : h.close) : null,
+      is24Hours: h.isOpen ? !!h.is24Hours : false
     }));
     const { latitude, longitude, category, ...rest } = values;
     const payload = {
@@ -595,7 +600,27 @@ const EditLocation = () => {
               ...h,
               isOpen: newIsOpen,
               open: newIsOpen ? "09:00" : null,
-              close: newIsOpen ? "21:00" : null
+              close: newIsOpen ? "21:00" : null,
+              is24Hours: newIsOpen ? h.is24Hours : false
+            }
+          : h
+      );
+      form.setValue("openingHours", updatedHours);
+    }
+  };
+
+  const toggle24Hours = (dayId) => {
+    const currentHours = form.getValues("openingHours") || [];
+    const day = currentHours.find((h) => h.day === dayId);
+    if (day) {
+      const new24Hours = !day.is24Hours;
+      const updatedHours = currentHours.map((h) =>
+        h.day === dayId
+          ? {
+              ...h,
+              is24Hours: new24Hours,
+              open: new24Hours ? "00:00" : "09:00",
+              close: new24Hours ? "23:59" : "21:00"
             }
           : h
       );
@@ -1425,7 +1450,8 @@ const EditLocation = () => {
                           day: day.id,
                           open: "09:00",
                           close: "21:00",
-                          isOpen: true
+                          isOpen: true,
+                          is24Hours: false
                         };
                         return (
                           <div key={day.id} className="grid grid-cols-12 gap-2 items-center py-2">
@@ -1439,7 +1465,7 @@ const EditLocation = () => {
                                 className="w-full pl-8 pr-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 type="time"
                                 value={dayData.open || ""}
-                                disabled={!dayData.isOpen}
+                                disabled={!dayData.isOpen || dayData.is24Hours}
                                 onChange={(e) => updateOpeningHours(day.id, "open", e.target.value)}
                               />
                             </div>
@@ -1455,11 +1481,25 @@ const EditLocation = () => {
                                 className="w-full pl-8 pr-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 type="time"
                                 value={dayData.close || ""}
-                                disabled={!dayData.isOpen}
+                                disabled={!dayData.isOpen || dayData.is24Hours}
                                 onChange={(e) =>
                                   updateOpeningHours(day.id, "close", e.target.value)
                                 }
                               />
+                            </div>
+                            <div className="col-span-1 flex justify-center items-center">
+                              <label
+                                className={`flex items-center gap-1 text-xs ${dayData.isOpen ? "cursor-pointer text-foreground" : "cursor-not-allowed text-muted-foreground/50"}`}>
+                                <input
+                                  type="checkbox"
+                                  className="h-3.5 w-3.5"
+                                  checked={!!dayData.is24Hours}
+                                  disabled={!dayData.isOpen}
+                                  onChange={() => toggle24Hours(day.id)}
+                                  aria-label={t("page.location.form.is24Hours")}
+                                />
+                                {t("page.location.form.is24Hours")}
+                              </label>
                             </div>
                             <div className="col-span-2 flex justify-end items-center gap-2">
                               <span
