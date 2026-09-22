@@ -73,6 +73,10 @@ const CashRegisterCurrent = () => {
   const isOvertimeClosing =
     closeSchedule?.closeMinutes != null && closeSchedule.nowMinutes > closeSchedule.closeMinutes;
   const scheduledCloseTime = formatMinutesAsTime(closeSchedule?.closeMinutes);
+  // Phase 39 Batch 6E: supersedes 6F's original "stay silent on a closed
+  // day" decision — see the matching comment in CashRegisterOpenClose.jsx.
+  const isClosedToday =
+    !!closeSchedule && closeSchedule.openMinutes == null && closeSchedule.closeMinutes == null;
 
   if (!storeId) {
     return (
@@ -316,6 +320,13 @@ const CashRegisterCurrent = () => {
                   <span>
                     {t("page.cashRegister.current.overtimeNotice", { time: scheduledCloseTime })}
                   </span>
+                </div>
+              )}
+
+              {isClosedToday && (
+                <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 px-3 py-2 text-xs text-amber-800 dark:text-amber-400">
+                  <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                  <span>{t("page.cashRegister.current.closedTodayNotice")}</span>
                 </div>
               )}
 

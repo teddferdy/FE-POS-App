@@ -101,6 +101,13 @@ const CashRegisterOpenClose = () => {
   const isEarlyOpening =
     openSchedule?.openMinutes != null && openSchedule.nowMinutes < openSchedule.openMinutes;
   const scheduledOpenTime = formatMinutesAsTime(openSchedule?.openMinutes);
+  // Phase 39 Batch 6E: supersedes 6F's original "stay silent on a closed
+  // day" decision. A non-null openSchedule with both minutes null means the
+  // day's openingHours entry positively exists and says closed — distinct
+  // from openSchedule being null outright (no entry for today at all),
+  // which stays silent since there's nothing to positively assert.
+  const isClosedToday =
+    !!openSchedule && openSchedule.openMinutes == null && openSchedule.closeMinutes == null;
 
   const numericBalance = parseIDR(rawBalance);
 
@@ -339,6 +346,12 @@ const CashRegisterOpenClose = () => {
                         time: scheduledOpenTime
                       })}
                     </span>
+                  </div>
+                )}
+                {isClosedToday && (
+                  <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 px-3 py-2 text-xs text-amber-800 dark:text-amber-400">
+                    <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                    <span>{t("page.cashRegister.openClose.closedTodayNotice")}</span>
                   </div>
                 )}
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
