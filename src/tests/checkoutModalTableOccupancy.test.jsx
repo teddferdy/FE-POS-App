@@ -277,3 +277,103 @@ describe("F4-02 CheckoutModal — table occupancy from order-aware availability"
     expect(createOrder.mock.calls[0][0].tableId).toBe(7);
   });
 });
+
+// Phase 39 — POS table occupancy: table.status is the source of truth for
+// physical occupancy (POS dine-in and QR both occupy on creation; a POS visit
+// ends only via "Set Available"). Active POS orders never block a table.
+describe("Phase 39 CheckoutModal — table.status is the occupancy source of truth", () => {
+  beforeEach(() => {
+    getAllCustomer.mockResolvedValue({ data: [] });
+    getAllDiscount.mockResolvedValue({ data: [] });
+    createOrder.mockClear();
+    getTableAvailability.mockClear();
+    getTablesWithActiveOrders.mockClear();
+  });
+
+  const optionFor = async (name) => {
+    const select = await selectDineInAndGetTableSelect();
+    await waitFor(() => expect(getTablesWithActiveOrders).toHaveBeenCalled());
+    await waitFor(() => expect(select).not.toBeDisabled());
+    return within(select).getByText(new RegExp(name)).closest("option");
+  };
+
+  test("a table whose status is occupied is disabled, with no active order needed", async () => {
+    getTableAvailability.mockResolvedValue({
+      data: { tables: [{ id: 3, name: "Meja 3", status: "occupied", capacity: 4 }] }
+    });
+    getTablesWithActiveOrders.mockResolvedValue({
+      data: [tableRow(3, "Meja 3", { status: "occupied" })]
+    });
+
+    renderModal();
+    const option = await optionFor("Meja 3");
+    expect(option).toBeDisabled();
+    expect(option.textContent).toContain("page.table.status.occupied");
+  });
+
+  test("an available table with only an active POS order stays selectable (released POS visit)", async () => {
+    getTableAvailability.mockResolvedValue({
+      data: { tables: [{ id: 4, name: "Meja 4", status: "available", capacity: 4 }] }
+    });
+    getTablesWithActiveOrders.mockResolvedValue({
+      data: [tableRow(4, "Meja 4", { orders: [{ id: 41, status: "served", source: "pos" }] })]
+    });
+
+    const { onTableChange } = renderModal();
+    const option = await optionFor("Meja 4");
+    expect(option).not.toBeDisabled();
+
+    fireEvent.change(screen.getByTestId("page.cashier.selectTable"), { target: { value: "4" } });
+    await waitFor(() =>
+      expect(onTableChange).toHaveBeenCalledWith(expect.objectContaining({ id: 4 }))
+    );
+    completeCashPayment();
+    fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    expect(createOrder.mock.calls[0][0].tableId).toBe(4);
+  });
+
+  test("an available table with an active QR order stays blocked", async () => {
+    getTableAvailability.mockResolvedValue({
+      data: { tables: [{ id: 6, name: "Meja 6", status: "available", capacity: 4 }] }
+    });
+    getTablesWithActiveOrders.mockResolvedValue({
+      data: [
+        tableRow(6, "Meja 6", {
+          orders: [
+            { id: 61, status: "served", source: "pos" },
+            { id: 62, status: "preparing", source: "qr" }
+          ]
+        })
+      ]
+    });
+
+    renderModal();
+    const option = await optionFor("Meja 6");
+    expect(option).toBeDisabled();
+  });
+
+  test("a backend rejection sent as { error } is shown to the cashier", async () => {
+    const { toast } = jest.requireMock("sonner");
+    toast.error.mockClear();
+    getTableAvailability.mockResolvedValue({
+      data: { tables: [{ id: 8, name: "Meja 8", status: "available", capacity: 4 }] }
+    });
+    getTablesWithActiveOrders.mockResolvedValue({ data: [tableRow(8, "Meja 8")] });
+    createOrder.mockRejectedValueOnce({
+      message: "Request failed with status code 400",
+      response: { data: { error: "Table is already occupied" } }
+    });
+
+    const { onTableChange } = renderModal();
+    await optionFor("Meja 8");
+    fireEvent.change(screen.getByTestId("page.cashier.selectTable"), { target: { value: "8" } });
+    await waitFor(() =>
+      expect(onTableChange).toHaveBeenCalledWith(expect.objectContaining({ id: 8 }))
+    );
+    completeCashPayment();
+    fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Table is already occupied"));
+  });
+});
