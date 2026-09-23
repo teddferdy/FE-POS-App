@@ -186,12 +186,13 @@ const CheckoutModal = ({
     () => getTableAvailability({ location: store }),
     { enabled: !!store, staleTime: 0, refetchOnMount: true }
   );
-  // The static availability snapshot (table.status above) is stale against
-  // QR/customer orders, which the backend creates without flipping the table
-  // to "occupied". An order-aware snapshot is the source of truth for which
-  // tables are genuinely free for a NEW pos order — every table carrying at
-  // least one active (pending/confirmed/preparing/ready/served) order is
-  // treated as occupied here regardless of what the cached status says.
+  // table.status (above) is the source of truth for physical occupancy: both
+  // POS dine-in and QR orders mark their table "occupied" when created, and a
+  // POS visit stays occupied until staff "Set Available" it. On top of that,
+  // a table with an active (pending..served) QR order is still treated as
+  // occupied even if its status says available (e.g. it was released by hand
+  // while that QR order was still open). POS orders are deliberately ignored
+  // here — their kitchen status says nothing about whether the diners left.
   const {
     data: activeOrdersData,
     isLoading: activeOrdersLoading,
@@ -205,7 +206,9 @@ const CheckoutModal = ({
   const tableIdsWithActiveOrders = useMemo(() => {
     const list = Array.isArray(activeOrdersData?.data) ? activeOrdersData.data : [];
     return new Set(
-      list.filter((t) => Array.isArray(t.orders) && t.orders.length > 0).map((t) => t.id)
+      list
+        .filter((t) => Array.isArray(t.orders) && t.orders.some((o) => o?.source === "qr"))
+        .map((t) => t.id)
     );
   }, [activeOrdersData]);
   const allTables = useMemo(() => tablesData?.data?.tables || [], [tablesData]);
@@ -485,7 +488,10 @@ const CheckoutModal = ({
     },
     onError: (err) => {
       toast.error(
-        err?.response?.data?.message || err?.message || t("page.cashier.transactionError")
+        err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          t("page.cashier.transactionError")
       );
     },
     onSettled: () => {
