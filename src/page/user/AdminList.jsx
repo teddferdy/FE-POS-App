@@ -10,12 +10,11 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import TableToolbar from "@/components/ui/TableToolbar";
 import TableActions from "@/components/ui/TableActions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Loading } from "@/components/ui/loading";
 import {
   Shield,
   CheckCircle,
   FileEdit,
-  Edit,
-  Trash2,
   XCircle,
   ShieldCheck,
   UserPlus,
@@ -46,6 +45,11 @@ const getStatus = (user, t) => {
       bg: "bg-muted text-muted-foreground border border-border",
       label: t("common.inactive")
     },
+    disabled: {
+      dot: "bg-red-500",
+      bg: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
+      label: t("common.disabled") || "Disabled"
+    },
     pending: {
       dot: "bg-amber-500",
       bg: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800",
@@ -53,8 +57,20 @@ const getStatus = (user, t) => {
     }
   };
 
-  if (user.status === "pending" || user.isActive === null) return statusConfig.pending;
-  if (user.isActive || user.status === "active") return statusConfig.active;
+  // AUTH-1: account enablement via disabledAt, presence via status
+  // disabled account must not be confused with logged-out (inactive) account
+  if (user.disabledAt) return statusConfig.disabled;
+  if (user.deletedAt) return statusConfig.inactive;
+  if (user.status === "pending" || user.status === "draft" || user.isActive === null) {
+    // draft/pending is incomplete record, not yet enabled; treat as pending
+    // if account not disabled, show pending
+    return statusConfig.pending;
+  }
+  // isActive derived = !disabledAt && !deletedAt for backwards compat
+  const isActive =
+    user.isActive !== undefined ? user.isActive : !user.disabledAt && !user.deletedAt;
+  if (user.status === "active" && isActive) return statusConfig.active;
+  if (user.status === "active") return statusConfig.active;
   return statusConfig.inactive;
 };
 
@@ -146,8 +162,8 @@ const AdminList = () => {
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
 
   return (
-    <div>
-      <div className="space-y-8">
+    <div data-tour="page-users" className="space-y-6">
+      <div className="space-y-6">
         <PageHeader
           breadcrumbs={[
             {
@@ -160,8 +176,12 @@ const AdminList = () => {
           title={t("page.user.adminList.pageTitle")}
           description={t("page.user.adminList.description")}>
           {canAccess(user, MENU_KEY, "add") && (
-            <Button variant="success" onClick={() => navigate("/add-user")}>
-              <UserPlus size={20} className="text-lg mr-1" />
+            <Button
+              variant="success"
+              data-tour="user-add"
+              onClick={() => navigate("/add-user")}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+              <UserPlus size={20} className="text-lg" />
               {t("page.user.button.add")}
             </Button>
           )}
@@ -172,7 +192,15 @@ const AdminList = () => {
         ) : (
           <>
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                <div className="col-span-1 md:col-span-3 lg:col-span-1 bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </div>
+                  <Skeleton className="h-8 w-28 mb-2" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="bg-card rounded-xl border border-border p-4">
                     <div className="flex items-start justify-between mb-3">
@@ -185,32 +213,41 @@ const AdminList = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 <StatCard
                   label={t("page.user.adminList.statsTotal")}
-                  value={data?.stats?.total || total || 0}
+                  value={(data?.stats?.total || total || 0).toLocaleString()}
                   icon={Shield}
                   variant="default"
                   subtitle={t("page.user.adminList.statsTotalBadge")}
+                  className="col-span-1 md:col-span-3 lg:col-span-1"
                 />
                 <StatCard
                   label={t("page.user.adminList.statsActive")}
-                  value={data?.stats?.active || 0}
+                  value={(data?.stats?.active || 0).toLocaleString()}
                   icon={CheckCircle}
                   variant="active"
                   subtitle={`${total > 0 ? Math.round(((data?.stats?.active || 0) / (data?.stats?.total || total || 1)) * 100) : 0}${t("page.user.adminList.statsActivePercent")}`}
                 />
                 <StatCard
                   label={t("page.user.adminList.statsPending")}
-                  value={data?.stats?.pending || 0}
+                  value={(data?.stats?.pending || 0).toLocaleString()}
                   icon={FileEdit}
                   variant="draft"
                   subtitle={t("page.user.adminList.statsPendingBadge")}
                 />
+                <StatCard
+                  label={t("common.inactive")}
+                  value={(data?.stats?.inactive || 0).toLocaleString()}
+                  icon={XCircle}
+                  variant="inactive"
+                />
               </div>
             )}
 
-            <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+            <div
+              data-tour="user-table"
+              className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
               <div className="px-6 py-5 border-b border-border bg-muted/30">
                 <div className="flex justify-between items-center gap-3">
                   <h4 className="text-base font-semibold text-foreground">
@@ -374,7 +411,7 @@ const AdminList = () => {
                               </td>
                               <td className="px-6 py-4 text-right">
                                 {user.status === "pending" || user.isActive === null ? (
-                                  <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="flex justify-end items-center gap-2">
                                     <Button
                                       variant="outline"
                                       size="sm"
@@ -399,21 +436,38 @@ const AdminList = () => {
                                     />
                                   </div>
                                 ) : (
-                                  <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="flex justify-end">
                                     <TableActions
                                       align="right"
                                       items={[
-                                        {
-                                          label: t("common.edit"),
-                                          iconName: "edit",
-                                          hidden: !canAccess(user, MENU_KEY, "edit")
-                                        },
-                                        {
-                                          label: t("common.delete"),
-                                          iconName: "delete",
-                                          danger: true,
-                                          hidden: !canAccess(user, MENU_KEY, "delete")
-                                        }
+                                        // Status-driven toggle via the existing
+                                        // status-confirmation flow (same modal +
+                                        // mutation as the pending branch above):
+                                        // active -> Nonaktifkan, otherwise -> Aktifkan.
+                                        // "active" also enables (BE treats it as
+                                        // enable), so disabled/inactive/draft rows
+                                        // all recover through Aktifkan.
+                                        ...(user.status === "active"
+                                          ? [
+                                              {
+                                                label: t("common.deactivate"),
+                                                iconName: "close",
+                                                danger: true,
+                                                onClick: () =>
+                                                  setStatusModal({
+                                                    id: user.id,
+                                                    status: "inactive"
+                                                  })
+                                              }
+                                            ]
+                                          : [
+                                              {
+                                                label: t("common.activate"),
+                                                iconName: "check",
+                                                onClick: () =>
+                                                  setStatusModal({ id: user.id, status: "active" })
+                                              }
+                                            ])
                                       ]}
                                     />
                                   </div>
@@ -477,8 +531,7 @@ const AdminList = () => {
             <TableActionLegend
               className="mt-4"
               items={[
-                { icon: Edit, label: t("common.edit") },
-                { icon: Trash2, label: t("common.delete") },
+                { icon: CheckCircle, label: t("common.activate") },
                 { icon: XCircle, label: t("common.deactivate") }
               ]}
             />
@@ -538,8 +591,10 @@ const AdminList = () => {
             : t("page.user.adminList.deactivateConfirmDesc")
         }
         confirmText={t("common.confirm")}
+        loading={statusMutation.isLoading}
         onConfirm={handleConfirmStatus}
       />
+      {statusMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
     </div>
   );
 };
