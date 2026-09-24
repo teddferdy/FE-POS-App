@@ -1169,6 +1169,11 @@ export const navCategories = {
               icon: Users
             },
             {
+              title: "Daftar Pengguna",
+              href: "/user-list",
+              icon: Shield
+            },
+            {
               title: "Perjalanan Dinas",
               i18nKey: "sidebar.businessTrip",
               href: "/business-trip",
