@@ -1,7 +1,8 @@
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, CanceledError } from "axios";
 import { ENDPOINT } from "@/utils/endpoints";
 import { hasOwn } from "@/lib/safe-lookup";
 import { getToken, getCookie } from "@/utils/cookies";
+import { endSession, isSessionEnding, isSessionExemptPath, SESSION_END_REASON } from "./session";
 
 const axiosInstance = axios.create({
   baseURL: ENDPOINT.BASE_URL
@@ -9,6 +10,12 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (req) => {
+    // Once the session is ending nothing but the logout revocation itself
+    // may leave the tab.
+    if (isSessionEnding() && !req.sessionRevocation) {
+      throw new CanceledError("Session ended");
+    }
+
     const token = getToken();
     if (token) {
       req.headers.Authorization = `Bearer ${token}`;
@@ -79,38 +86,29 @@ axiosInstance.interceptors.request.use(
   (err) => Promise.reject(err)
 );
 
-let sessionExpiredFired = false;
-let logoutInProgress = false;
+const PUBLIC_AUTH_URLS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/reset-password",
+  "/auth/reset-password/request"
+];
 
-export const setLogoutInProgress = (v) => {
-  logoutInProgress = !!v;
-};
-
+// A 401 from a protected request means the session is gone: end it once
+// (session.js ignores every later call). A 403 is an authorization denial and
+// stays with the page that made the request.
 axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err instanceof AxiosError) {
-      const isPublicAuth =
-        err.config?.url === "/auth/login" ||
-        err.config?.url === "/auth/register" ||
-        err.config?.url === "/auth/reset-password";
-      if (
-        err.response?.status === 401 &&
-        !sessionExpiredFired &&
-        !isPublicAuth &&
-        !logoutInProgress
-      ) {
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-        sessionExpiredFired = true;
-        window.dispatchEvent(new CustomEvent("auth:session-expired"));
-      }
-      return Promise.reject(err);
+    if (
+      err instanceof AxiosError &&
+      err.response?.status === 401 &&
+      !PUBLIC_AUTH_URLS.includes(err.config?.url) &&
+      !isSessionExemptPath(window.location.pathname)
+    ) {
+      endSession({ reason: SESSION_END_REASON.EXPIRED });
     }
     return Promise.reject(err);
   }
 );
 
-export const resetSessionExpired = () => {
-  sessionExpiredFired = false;
-};
 export { axiosInstance };

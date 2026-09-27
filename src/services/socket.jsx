@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { ENDPOINT } from "@/utils/endpoints";
 import { getToken } from "@/utils/cookies";
+import { isSessionEnding, registerSessionResource } from "@/services/session";
 import PropTypes from "prop-types";
 
 const SocketContext = createContext(null);
@@ -16,18 +17,22 @@ export const SocketProvider = ({ children }) => {
   const [connected, setConnected] = useState(false);
   const [newNotification, setNewNotification] = useState(null);
 
+  // The socket is bound to the token read at app boot. Every session boundary
+  // ends in a full page load and so does every login, so a socket opened for
+  // one user is never reused for the next.
   useEffect(() => {
     const token = getToken();
-    if (!token || ENDPOINT.BASE_URL.includes("vercel")) return;
+    if (!token || isSessionEnding() || ENDPOINT.BASE_URL.includes("vercel")) return;
 
     let cancelled = false;
     let s;
+    let unregister;
 
     // ponytail: socket.io-client (~40KB gz) di-dynamic-import supaya tidak
     // ikut critical path main entry — dipakai hanya oleh Header (notification
     // badge) di balik DashboardLayout, tidak relevan untuk /login maupun /cashier.
     import("socket.io-client").then(({ io }) => {
-      if (cancelled) return;
+      if (cancelled || isSessionEnding()) return;
 
       s = io(ENDPOINT.BASE_URL, {
         auth: { token },
@@ -35,6 +40,14 @@ export const SocketProvider = ({ children }) => {
         reconnection: true,
         reconnectionAttempts: 3,
         reconnectionDelay: 3000
+      });
+
+      // Ending the session disconnects immediately instead of leaving the
+      // server to notice the dropped polling transport.
+      const socketForSession = s;
+      unregister = registerSessionResource(() => {
+        socketForSession.removeAllListeners();
+        socketForSession.disconnect();
       });
 
       s.on("connect", () => {
@@ -63,6 +76,7 @@ export const SocketProvider = ({ children }) => {
 
     return () => {
       cancelled = true;
+      unregister?.();
       s?.removeAllListeners();
       s?.disconnect();
       setSocket(null);

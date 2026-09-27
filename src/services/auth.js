@@ -25,8 +25,8 @@ export const resetPassword = async (payload) => {
   return data;
 };
 
-export const logOut = async (payload) => {
-  const { data, status } = await axiosInstance.post("/auth/logout", payload);
+export const logOut = async (payload, config) => {
+  const { data, status } = await axiosInstance.post("/auth/logout", payload, config);
   if (status !== 200 && status !== 201) throw Error(data?.error);
   return data;
 };

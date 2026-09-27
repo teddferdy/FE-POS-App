@@ -12,7 +12,6 @@ import { setupAutoSync } from "@/services/offline";
 // Layout
 const DashboardLayout = React.lazy(() => import("./components/layout/DashboardLayout"));
 
-import Modal from "@/components/organism/modal";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Route groups — lazy-loaded per domain
@@ -70,7 +69,6 @@ const DeferredSentry = () => {
 function App() {
   const { i18n } = useTranslation();
   const { translation } = translationSelect();
-  const [authExpiredModalOpen, setAuthExpiredModalOpen] = useState(false);
 
   useEffect(() => {
     if (translation) {
@@ -81,12 +79,6 @@ function App() {
   useEffect(() => {
     const cleanup = setupAutoSync();
     return cleanup;
-  }, []);
-
-  useEffect(() => {
-    const handleSessionExpired = () => setAuthExpiredModalOpen(true);
-    window.addEventListener("auth:session-expired", handleSessionExpired);
-    return () => window.removeEventListener("auth:session-expired", handleSessionExpired);
   }, []);
 
   return (
@@ -127,19 +119,6 @@ function App() {
           </ErrorBoundary>
         </Suspense>
       </BrowserRouter>
-
-      <Modal
-        type="error"
-        open={authExpiredModalOpen}
-        onOpenChange={setAuthExpiredModalOpen}
-        title="Sesi Berakhir"
-        description="Sesi login Anda telah berakhir. Silakan login kembali untuk melanjutkan."
-        confirmText="Login Ulang"
-        onConfirm={() => {
-          setAuthExpiredModalOpen(false);
-          window.location.assign("/");
-        }}
-      />
     </React.Fragment>
   );
 }

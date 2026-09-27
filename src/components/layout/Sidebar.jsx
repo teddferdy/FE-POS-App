@@ -25,9 +25,7 @@ import {
 import { filterMenuByPermission, filterNavCategoriesByPermission } from "@/utils/permission";
 import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
-import { logOut } from "@/services/auth";
-import { setLogoutInProgress } from "@/services";
-import { orderList } from "@/state/order-list";
+import { endSession, SESSION_END_REASON } from "@/services/session";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import NavigationModal from "./NavigationModal";
@@ -106,11 +104,10 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const [cookie, , removeCookie] = useCookies();
+  const [cookie] = useCookies();
   const [isHovered, setIsHovered] = useState(false);
 
   const [logoutModal, setLogoutModal] = useState(false);
-  const [logoutSuccessModal, setLogoutSuccessModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [navModalOpen, setNavModalOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
@@ -250,35 +247,12 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
     navigate("/support");
   }, [navigate]);
 
+  // The session boundary revokes, clears (cart included — a shared POS
+  // terminal must not hand the next cashier an unpaid cart) and reloads to
+  // the login page, which shows the logout confirmation.
   const confirmLogout = async () => {
     setIsLoggingOut(true);
-    setLogoutInProgress(true);
-    let ok = true;
-    try {
-      await logOut();
-    } catch (_e) {
-      ok = false;
-    }
-    try {
-      sessionStorage.removeItem("user");
-    } catch (_e) {
-      /* ignore */
-    }
-    // The cashier cart is sessionStorage-backed (zustand persist), so it
-    // otherwise survives a logout within the same browser tab — a real risk
-    // on a shared POS terminal where the next cashier to log in on that tab
-    // would inherit whatever was left unpaid in the previous cashier's cart.
-    orderList.getState().resetOrder();
-    removeCookie("token");
-    removeCookie("user");
-    removeCookie("activeStore");
-    removeCookie("activeStoreName");
-    setIsLoggingOut(false);
-    if (ok) {
-      setLogoutSuccessModal(true);
-    } else {
-      navigate("/");
-    }
+    await endSession({ reason: SESSION_END_REASON.LOGOUT, revoke: true });
   };
 
   const handleLogout = () => setLogoutModal(true);
@@ -585,22 +559,6 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
           description={t("header.logoutConfirmDesc")}
           confirmText={t("header.logoutYes")}
           onConfirm={confirmLogout}
-        />
-
-        <Modal
-          open={logoutSuccessModal}
-          onOpenChange={setLogoutSuccessModal}
-          type="success"
-          title={t("header.logoutSuccessTitle") || "Berhasil Keluar"}
-          description={
-            t("header.logoutSuccessDesc") ||
-            "Kamu berhasil keluar dari akun. Mengalihkan ke halaman login..."
-          }
-          confirmText={t("header.logoutSuccessOk") || "OK"}
-          onConfirm={() => {
-            setLogoutSuccessModal(false);
-            navigate("/");
-          }}
         />
 
         {activeCategory && (

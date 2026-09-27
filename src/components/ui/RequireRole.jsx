@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ShieldAlert, ArrowLeft, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getRoleDashboard } from "@/utils/role";
+import { endSession, SESSION_END_REASON } from "@/services/session";
 
 const roleLabels = {
   super_admin: "Super Admin",
@@ -15,19 +16,11 @@ const roleLabels = {
 
 export const AccessDenied = () => {
   const navigate = useNavigate();
-  const [cookie, , removeCookie] = useCookies();
+  const [cookie] = useCookies();
   const user = cookie?.user;
 
   const handleLogout = () => {
-    removeCookie("token", { path: "/" });
-    removeCookie("user", { path: "/" });
-    removeCookie("activeStore", { path: "/" });
-    try {
-      sessionStorage.removeItem("user");
-    } catch {
-      /* ignore */
-    }
-    navigate("/");
+    endSession({ reason: SESSION_END_REASON.LOGOUT, revoke: true });
   };
 
   return (

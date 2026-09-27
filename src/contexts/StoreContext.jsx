@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useCookies } from "react-cookie";
 import { useQueryClient } from "react-query";
+import { isSessionEnding } from "@/services/session";
 
 const StoreContext = createContext(null);
 
@@ -32,6 +33,9 @@ export function StoreProvider({ children }) {
 
   const setActiveStore = useCallback(
     (id, name) => {
+      // A late caller (e.g. a locations response) must not write the ending
+      // session's user/store cookies back.
+      if (isSessionEnding()) return;
       // If super_admin, we use the passed ID (could be empty for global, or specific ID)
       // If not super_admin, we force the user's assigned store name so the UI never
       // shows a stale store from a previous session.

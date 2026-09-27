@@ -14,6 +14,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { editProfile } from "@/services/auth";
+import { isSessionEnding } from "@/services/session";
 
 export default function EditProfileModal({ open, onOpenChange, user, onSuccess }) {
   const { t } = useTranslation();
@@ -77,6 +78,10 @@ export default function EditProfileModal({ open, onOpenChange, user, onSuccess }
       // editUser returns a freshly-signed token + user, same shape as login,
       // so the session stays valid and the UI reflects the edit immediately
       // without forcing a re-login.
+      // A response landing after the session started ending must not write
+      // the old user's credentials back (they would survive the reload).
+      if (isSessionEnding()) return false;
+
       const updatedUser = { ...user, ...result.user };
       if (result.token) setCookie("token", result.token, { path: "/" });
       try {
