@@ -19,7 +19,12 @@ import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
 
 import { login } from "@/services/auth";
-import { resetSessionExpired } from "@/services";
+import {
+  consumeSessionNotice,
+  isSessionEnding,
+  sessionNavigation,
+  SESSION_END_REASON
+} from "@/services/session";
 import { translationSelect } from "@/state/translation";
 import { useThemeStore } from "@/state/theme";
 import { useThemeEffect } from "@/hooks/useThemeEffect";
@@ -27,7 +32,7 @@ import { getRoleDashboard } from "@/utils/role";
 import AuthGuideModal from "@/components/organism/AuthGuideModal";
 
 const LoginPage = () => {
-  const { t } = useTranslation();
+  const { t, ready } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
@@ -46,6 +51,26 @@ const LoginPage = () => {
       window.history.replaceState({}, document.title);
     }
   }, []);
+
+  // Why the previous session ended (logout / expired), left by the session
+  // boundary before its page reload. Read once, shown once translations load.
+  const [sessionNotice, setSessionNotice] = useState(null);
+  useEffect(() => {
+    const reason = consumeSessionNotice();
+    if (reason) setSessionNotice(reason);
+  }, []);
+  useEffect(() => {
+    if (!sessionNotice || !ready) return;
+    if (sessionNotice === SESSION_END_REASON.EXPIRED) {
+      toast.error("Sesi Berakhir", {
+        id: "session-end-notice",
+        description: "Sesi login Anda telah berakhir. Silakan login kembali untuk melanjutkan."
+      });
+    } else if (sessionNotice === SESSION_END_REASON.LOGOUT) {
+      toast.success(t("header.logoutSuccessTitle"), { id: "session-end-notice" });
+    }
+    setSessionNotice(null);
+  }, [sessionNotice, ready, t]);
 
   const translationMemo = useMemo(
     () => ({
@@ -89,7 +114,8 @@ const LoginPage = () => {
   const mutateLogin = useMutation(login, {
     onMutate: () => setIsLoading(true),
     onSuccess: (success) => {
-      resetSessionExpired();
+      // A response landing while a session is ending must not write credentials.
+      if (isSessionEnding()) return;
       setCookie("token", success.token, { path: "/" });
       const user = { ...success.user };
       if (typeof user.accessMenu === "string") {
@@ -111,10 +137,12 @@ const LoginPage = () => {
           description: t("page.login.toast.successDescription")
         });
       }, 1000);
+      // Full page load, not router navigation: the app boots fresh for the new
+      // user — StoreProvider and SocketProvider read the new cookies/token and
+      // the query cache starts empty.
       setTimeout(() => {
         const role = success.user?.roleType;
-        navigate(getRoleDashboard(role));
-        setIsLoading(false);
+        sessionNavigation.replace(getRoleDashboard(role));
       }, 2000);
     },
     onError: (err) => {

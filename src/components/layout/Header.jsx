@@ -25,12 +25,12 @@ import { translationSelect } from "@/state/translation";
 import { getAllLocation } from "@/services/location";
 import { useSocket } from "@/services/socket";
 import { useQueryClient } from "react-query";
-import { axiosInstance, setLogoutInProgress } from "@/services";
+import { axiosInstance } from "@/services";
+import { endSession, SESSION_END_REASON } from "@/services/session";
 import { getUnreadCount } from "@/services/notification";
 import { useTourStore } from "@/state/tour";
 import { useThemeStore } from "@/state/theme";
 import { useThemeEffect } from "@/hooks/useThemeEffect";
-import { logOut } from "@/services/auth";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -164,9 +164,8 @@ export const UserDropdown = () => {
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const ref = useRef(null);
-  const [cookie, , removeCookie] = useCookies();
+  const [cookie] = useCookies();
   const [logoutModal, setLogoutModal] = useState(false);
-  const [logoutSuccessModal, setLogoutSuccessModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const user = cookie?.user;
@@ -191,30 +190,11 @@ export const UserDropdown = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // The session boundary revokes, clears and reloads to the login page, which
+  // shows the logout confirmation.
   const confirmLogout = async () => {
     setIsLoggingOut(true);
-    setLogoutInProgress(true);
-    let ok = true;
-    try {
-      await logOut();
-    } catch (_e) {
-      ok = false;
-    }
-    try {
-      sessionStorage.removeItem("user");
-    } catch (_e) {
-      /* ignore */
-    }
-    removeCookie("token");
-    removeCookie("user");
-    removeCookie("activeStore");
-    removeCookie("activeStoreName");
-    setIsLoggingOut(false);
-    if (ok) {
-      setLogoutSuccessModal(true);
-    } else {
-      navigate("/");
-    }
+    await endSession({ reason: SESSION_END_REASON.LOGOUT, revoke: true });
   };
 
   const handleLogout = () => setLogoutModal(true);
@@ -379,21 +359,6 @@ export const UserDropdown = () => {
         description={t("header.logoutConfirmDesc")}
         confirmText={t("header.logoutYes")}
         onConfirm={confirmLogout}
-      />
-      <Modal
-        open={logoutSuccessModal}
-        onOpenChange={setLogoutSuccessModal}
-        type="success"
-        title={t("header.logoutSuccessTitle") || "Berhasil Keluar"}
-        description={
-          t("header.logoutSuccessDesc") ||
-          "Kamu berhasil keluar dari akun. Mengalihkan ke halaman login..."
-        }
-        confirmText={t("header.logoutSuccessOk") || "OK"}
-        onConfirm={() => {
-          setLogoutSuccessModal(false);
-          navigate("/");
-        }}
       />
     </>
   );
