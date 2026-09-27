@@ -95,7 +95,48 @@ const PUBLIC_AUTH_URLS = [
 
 // A 401 from a protected request means the session is gone: end it once
 // (session.js ignores every later call). A 403 is an authorization denial and
-// stays with the page that made the request.
+// stays with the page that made the request — EXCEPT that a disabled/deleted
+// account also surfaces as 403 (backend P1-4 generic denial), which no page
+// can distinguish alone. The first qualifying 403 therefore runs one shared
+// session-state probe (GET /auth/context: 200 for every valid caller,
+// 403 when the P1-4 account gate fires). Probe 403 ends the session via the
+// existing boundary; probe 200 or probe failure preserves everything.
+let sessionProbePromise = null;
+
+const PROBE_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
+
+const probeSessionState = () => {
+  if (sessionProbePromise) return sessionProbePromise;
+  sessionProbePromise = axiosInstance
+    .get("/auth/context", { sessionProbe: true })
+    .then(
+      () => {},
+      (probeErr) => {
+        if (probeErr?.response?.status === 403) {
+          endSession({ reason: SESSION_END_REASON.EXPIRED });
+        }
+      }
+    )
+    .finally(() => {
+      sessionProbePromise = null;
+    });
+  return sessionProbePromise;
+};
+
+const isProbeRequest = (config) => config?.sessionProbe === true;
+
+const isQualifyingProbeTrigger = (err) => {
+  if (!(err instanceof AxiosError)) return false;
+  if (err.response?.status !== 403) return false;
+  if (isProbeRequest(err.config)) return false;
+  if (isSessionEnding()) return false;
+  const method = err.config?.method?.toUpperCase();
+  if (!PROBE_METHODS.includes(method)) return false;
+  if (PUBLIC_AUTH_URLS.includes(err.config?.url)) return false;
+  if (isSessionExemptPath(window.location.pathname)) return false;
+  return true;
+};
+
 axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -106,6 +147,9 @@ axiosInstance.interceptors.response.use(
       !isSessionExemptPath(window.location.pathname)
     ) {
       endSession({ reason: SESSION_END_REASON.EXPIRED });
+    }
+    if (isQualifyingProbeTrigger(err)) {
+      probeSessionState();
     }
     return Promise.reject(err);
   }
