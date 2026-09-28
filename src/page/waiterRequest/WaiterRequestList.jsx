@@ -5,6 +5,7 @@ import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useSocket } from "@/services/socket";
+import { useRoomSubscription } from "@/hooks/useRoomSubscription";
 import { getAllLocation } from "@/services/location";
 import { Bell, Check, X, CheckCheck, Clock, HandPlatter, MapPin, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -82,15 +83,29 @@ const WaiterRequestList = () => {
     setPage(1);
   };
 
-  // Realtime updates normally come from the socket (below); when the socket is
-  // not *connected* (no deployment that enables it, or a client that exists
-  // but is not yet / no longer connected), these queries would otherwise never
-  // refresh on their own (refetchOnWindowFocus/refetchOnReconnect are off
-  // globally — see useSocket), so new/changed requests would only ever appear
-  // after a manual reload. Poll only in that fallback case — a live connection
-  // makes polling redundant. Branching on `connected` (not `socket !== null`)
-  // is what keeps the fallback alive during disconnected windows.
-  const pollFallback = connected ? false : 15000;
+  // F2: room-subscription awareness. `connected` alone must not disable
+  // polling — the `store-${storeId}` join can be rejected (or lost on
+  // reconnect) while the transport stays up. Polling stays on until the
+  // server confirms this exact room (see useRoomSubscription).
+  const { roomOk } = useRoomSubscription({
+    socket,
+    connected,
+    roomEvent: "join-store",
+    roomKey: storeId || null
+  });
+
+  // Realtime updates normally come from the socket (below); when realtime
+  // room membership is unconfirmed — no deployment that enables sockets, a
+  // client that exists but is not yet / no longer connected, or a connected
+  // client whose room join was rejected/is pending/was lost on reconnect —
+  // these queries would otherwise never refresh on their own
+  // (refetchOnWindowFocus/refetchOnReconnect are off globally — see
+  // useSocket), so new/changed requests would only ever appear after a
+  // manual reload. Poll only in that fallback case — a live, subscribed
+  // connection makes polling redundant. Branching on `connected && roomOk`
+  // (not `socket !== null`, and never `connected` alone) is what keeps the
+  // fallback alive during disconnected/rejected windows (F2).
+  const pollFallback = connected && roomOk ? false : 15000;
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["waiter-request-list", page, limit, storeId, statusFilter],
@@ -149,7 +164,9 @@ const WaiterRequestList = () => {
 
   useEffect(() => {
     if (socket && storeId) {
-      socket.emit("join-store", storeId);
+      // Domain listeners only — room membership (join-store with ack,
+      // join-rejected, leave-store, reconnect re-join) is owned by
+      // useRoomSubscription above.
       const onNew = (req) => {
         if (req?.status === "pending") {
           toast.success("Permintaan Pelayan Baru", {

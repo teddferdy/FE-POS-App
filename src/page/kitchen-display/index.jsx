@@ -5,6 +5,7 @@ import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useSocket } from "@/services/socket";
+import { useRoomSubscription } from "@/hooks/useRoomSubscription";
 import { getKitchenOrders, updateOrderItemStatus } from "@/services/kitchen";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
@@ -97,29 +98,32 @@ const KitchenDisplay = () => {
     }
   );
 
-  // Poll only as a fallback when no socket is *connected* — otherwise the
-  // socket listeners below (new-order/order-updated/item-status-updated)
-  // already invalidate this query in real time, so polling on top of that
-  // would just double the request rate for no benefit (same pattern as
-  // WaiterRequestList's pollFallback). Branch on `connected` (not on `socket`
-  // being non-null): a client that exists but is not connected delivers no
-  // events, so the screen must keep polling until it actually connects.
+  // F2: room-subscription awareness. `connected` alone must not disable
+  // polling — the kitchen room join can be rejected (or lost on reconnect)
+  // while the transport stays up. The super_admin global view joins the
+  // `kitchen-all` room; every other view joins its own `kitchen-${storeId}`.
+  const { roomOk } = useRoomSubscription({
+    socket,
+    connected,
+    roomEvent: "join-kitchen",
+    roomKey: storeId ? storeId : storeId === "" ? "all" : null
+  });
+
+  // Poll only as a fallback when realtime room membership is unconfirmed —
+  // otherwise the socket listeners below (new-order/order-updated/
+  // item-status-updated) already invalidate this query in real time, so
+  // polling on top of that would just double the request rate for no
+  // benefit (same pattern as WaiterRequestList's pollFallback). Branch on
+  // `connected && roomOk`: a client that exists but is not connected, or a
+  // connected client whose room join was rejected/is pending/was lost on
+  // reconnect, delivers no events — the screen must keep polling until the
+  // room join is confirmed (F2).
   const { data, isLoading, isError, refetch } = useQuery(
     ["kitchen-orders", storeId],
     () => getKitchenOrders(storeId ? { store: storeId } : {}),
-    { enabled: !!storeId || storeId === "", refetchInterval: connected ? false : 15000 }
+    { enabled: !!storeId || storeId === "", refetchInterval: connected && roomOk ? false : 15000 }
   );
   const orders = data?.data || [];
-
-  useEffect(() => {
-    if (socket && storeId) {
-      socket.emit("join-kitchen", storeId);
-      return () => socket.emit("leave-kitchen", storeId);
-    } else if (socket && storeId === "") {
-      socket.emit("join-kitchen", "all");
-      return () => socket.emit("leave-kitchen", "all");
-    }
-  }, [socket, storeId]);
 
   const playNotificationSound = useCallback(() => {
     try {

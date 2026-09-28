@@ -6,6 +6,7 @@ import { Clock, Utensils, ShoppingBag, Wallet } from "lucide-react";
 import { getOrdersByStore } from "@/services/order";
 import { getCurrentCashRegister } from "@/services/cash-register";
 import { useSocket } from "@/services/socket";
+import { useRoomSubscription } from "@/hooks/useRoomSubscription";
 import { Skeleton } from "@/components/ui/skeleton";
 import ScrollRail from "@/components/ui/ScrollRail";
 
@@ -189,6 +190,16 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
   // existing OrderQueue tests render this component with no SocketProvider
   // in the tree at all, so useSocket() legitimately returns null there.
   const { socket, connected } = useSocket() || {};
+  // F2: room-subscription awareness. `connected` alone must not disable
+  // polling — the `kitchen-${store}` join can be rejected (or lost on
+  // reconnect) while the transport stays up. Polling stays on until the
+  // server confirms this exact room (see useRoomSubscription).
+  const { roomOk } = useRoomSubscription({
+    socket,
+    connected,
+    roomEvent: "join-kitchen",
+    roomKey: store || null
+  });
   const fetchOrders = async (status) => {
     const res = await getOrdersByStore({ location: store, status, limit: 50 });
     return res?.data || [];
@@ -212,9 +223,11 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
 
   // Phase 20 Batch 2: realtime-first with polling fallback, mirroring the
   // exact pattern already established by kitchen-display/index.jsx and
-  // WaiterRequestList.jsx. Branch on `connected` (not `socket` truthiness) —
-  // a socket.io client object exists as soon as it's constructed, well
-  // before (or even if never) it actually connects.
+  // WaiterRequestList.jsx. Branch on `connected && roomOk` (not `connected`
+  // alone, and never on `socket` truthiness) — a connected transport whose
+  // room join was rejected, is still pending, or was lost on reconnect
+  // delivers no events, so the screen must keep polling until the room join
+  // is confirmed (F2 — see useRoomSubscription).
   //
   // Only 4 of the 5 statuses have a real backend event to react to (see the
   // socket effect below for exactly which ones and why) — 'confirmed' has no
@@ -223,7 +236,7 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
   // served), so its poll stays unconditionally on rather than silently going
   // stale forever once connected. This is a real, audited backend contract
   // gap, not an oversight — see the Phase 20 Batch 2 report.
-  const pollFallback = connected ? false : 30000;
+  const pollFallback = connected && roomOk ? false : 30000;
 
   const { data: pendingOrders, isLoading: pendingLoading } = useQuery(
     ["cashier-orders-pending", store],
@@ -275,12 +288,11 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
 
   useEffect(() => {
     if (!socket || !store) return;
-    // BE-POS-App's emitNewOrder/emitItemStatusUpdate (api/service/socket.js)
-    // broadcast to the `kitchen-${storeId}` room — the same room
-    // kitchen-display already joins. Room membership is verified
-    // server-side against the caller's own JWT `store` claim
-    // (canJoinStore), so this can never receive another store's events.
-    socket.emit("join-kitchen", store);
+    // Domain listeners only — room membership (join-kitchen with ack,
+    // join-rejected, leave-kitchen, reconnect re-join) is owned by
+    // useRoomSubscription above. Room membership is verified server-side
+    // against the caller's own JWT `store` claim (canJoinStore), so this
+    // can never receive another store's events.
 
     const handleNewOrder = () => invalidatePending();
     const handleItemStatusUpdate = () => invalidateKitchenCascade();
@@ -300,7 +312,6 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
       socket.off("new-order", handleNewOrder);
       socket.off("item-status-updated", handleItemStatusUpdate);
       socket.off("connect", handleReconnect);
-      socket.emit("leave-kitchen", store);
     };
   }, [socket, store, invalidatePending, invalidateKitchenCascade]);
 

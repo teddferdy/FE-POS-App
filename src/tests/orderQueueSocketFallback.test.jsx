@@ -62,8 +62,24 @@ const waitForAllQueries = async () => {
   await waitFor(() => expect(getOrdersByStore).toHaveBeenCalledTimes(5));
 };
 
+// F2: stubs simulate the backend join protocol — every join-* emit carries
+// an ack callback the server answers. Auto-ack `{ ok: true }` by default
+// (accepted join); pass another value (or null to never ack) for the
+// rejected/pending paths.
+const autoAckEmit = (ackResult = { ok: true }) =>
+  jest.fn((event, ...args) => {
+    const ack = args.find((a) => typeof a === "function");
+    if (typeof ack === "function" && String(event).startsWith("join-") && ackResult !== null) {
+      ack(ackResult);
+    }
+  });
+
 describe("OrderQueue — polling fallback keyed to socket connection state", () => {
-  const makeSocketStub = () => ({ on: jest.fn(), off: jest.fn(), emit: jest.fn() });
+  const makeSocketStub = (ackResult) => ({
+    on: jest.fn(),
+    off: jest.fn(),
+    emit: autoAckEmit(ackResult)
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -95,18 +111,54 @@ describe("OrderQueue — polling fallback keyed to socket connection state", () 
   });
 
   test("disables polling for realtime-covered statuses once connected, but keeps 'confirmed' polling (no BE event covers it)", async () => {
+    // F2: polling-off is a post-ack state (the join ack flips roomOk during
+    // the mount commit), so assert the render args via the useQuery spy —
+    // the query-cache options snapshot the first render's fallback.
+    const useQuerySpy = jest.spyOn(ReactQuery, "useQuery");
+    const lastOptionsFor = (key) => {
+      const calls = useQuerySpy.mock.calls.filter((call) => call?.[0]?.[0] === key);
+      return calls[calls.length - 1][2];
+    };
+
     useSocket.mockReturnValue({ socket: makeSocketStub(), connected: true });
-    const { queryClient } = renderQueue();
+    renderQueue();
     await waitForAllQueries();
 
-    expect(findQuery(queryClient, "cashier-orders-pending").options.refetchInterval).toBe(false);
-    expect(findQuery(queryClient, "cashier-orders-preparing").options.refetchInterval).toBe(false);
-    expect(findQuery(queryClient, "cashier-orders-ready").options.refetchInterval).toBe(false);
-    expect(findQuery(queryClient, "cashier-orders-served").options.refetchInterval).toBe(false);
+    await waitFor(() =>
+      expect(lastOptionsFor("cashier-orders-pending").refetchInterval).toBe(false)
+    );
+    expect(lastOptionsFor("cashier-orders-preparing").refetchInterval).toBe(false);
+    expect(lastOptionsFor("cashier-orders-ready").refetchInterval).toBe(false);
+    expect(lastOptionsFor("cashier-orders-served").refetchInterval).toBe(false);
     // 'confirmed' has no corresponding backend emit anywhere (audited:
     // updateOrderItemStatus's cascade never targets it) — it must never go
     // silently stale just because the socket happens to be connected.
-    expect(findQuery(queryClient, "cashier-orders-confirmed").options.refetchInterval).toBe(30000);
+    expect(lastOptionsFor("cashier-orders-confirmed").refetchInterval).toBe(30000);
+    useQuerySpy.mockRestore();
+  });
+
+  test("F2: keeps polling every 30s when the room join is rejected via ack", async () => {
+    useSocket.mockReturnValue({ socket: makeSocketStub({ ok: false }), connected: true });
+    const { queryClient } = renderQueue();
+    await waitForAllQueries();
+
+    for (const key of [
+      "cashier-orders-pending",
+      "cashier-orders-preparing",
+      "cashier-orders-ready",
+      "cashier-orders-served"
+    ]) {
+      expect(findQuery(queryClient, key).options.refetchInterval).toBe(30000);
+    }
+  });
+
+  test("F2: keeps polling every 30s while the join ack is still pending", async () => {
+    useSocket.mockReturnValue({ socket: makeSocketStub(null), connected: true });
+    const { queryClient } = renderQueue();
+    await waitForAllQueries();
+
+    expect(findQuery(queryClient, "cashier-orders-pending").options.refetchInterval).toBe(30000);
+    expect(findQuery(queryClient, "cashier-orders-ready").options.refetchInterval).toBe(30000);
   });
 
   test("turns polling back on after a disconnect and off again after reconnect", async () => {
@@ -157,7 +209,7 @@ describe("OrderQueue — realtime event -> targeted query invalidation", () => {
         handlers[event] = cb;
       }),
       off: jest.fn(),
-      emit: jest.fn()
+      emit: autoAckEmit()
     };
     useSocket.mockReturnValue({ socket: socketStub, connected: true });
     return { socketStub, handlers };
@@ -222,18 +274,20 @@ describe("OrderQueue — kitchen room join/leave and listener lifecycle", () => 
     getOrdersByStore.mockResolvedValue({ data: [] });
   });
 
-  test("joins kitchen-${store}'s room (never another store's) exactly once per mount", async () => {
-    const socketStub = { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+  test("joins kitchen-${store}'s room with an ack callback (never another store's) exactly once per mount", async () => {
+    const socketStub = { on: jest.fn(), off: jest.fn(), emit: autoAckEmit() };
     useSocket.mockReturnValue({ socket: socketStub, connected: true });
     renderQueue();
     await waitForAllQueries();
 
     const joinCalls = socketStub.emit.mock.calls.filter((c) => c[0] === "join-kitchen");
-    expect(joinCalls).toEqual([["join-kitchen", STORE]]);
+    expect(joinCalls.map((c) => [c[0], c[1]])).toEqual([["join-kitchen", STORE]]);
+    // F2: the join must carry the acknowledgement callback the backend answers.
+    expect(typeof joinCalls[0][2]).toBe("function");
   });
 
   test("registers each listener exactly once and removes all of them, plus leaves the room, on unmount", async () => {
-    const socketStub = { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+    const socketStub = { on: jest.fn(), off: jest.fn(), emit: autoAckEmit() };
     useSocket.mockReturnValue({ socket: socketStub, connected: true });
     const { unmount } = renderQueue();
     await waitForAllQueries();
@@ -253,7 +307,7 @@ describe("OrderQueue — kitchen room join/leave and listener lifecycle", () => 
   });
 
   test("repeated mount/unmount cycles never leak listeners (on/off counts stay balanced)", async () => {
-    const socketStub = { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+    const socketStub = { on: jest.fn(), off: jest.fn(), emit: autoAckEmit() };
     useSocket.mockReturnValue({ socket: socketStub, connected: true });
 
     for (let i = 0; i < 3; i++) {
@@ -268,7 +322,7 @@ describe("OrderQueue — kitchen room join/leave and listener lifecycle", () => 
     // proven by re-running the same assertions as the single mount/unmount
     // test above would; here we additionally confirm no exception/warning
     // path caused an uneven registration across repeated cycles.
-    const socketStub2 = { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+    const socketStub2 = { on: jest.fn(), off: jest.fn(), emit: autoAckEmit() };
     useSocket.mockReturnValue({ socket: socketStub2, connected: true });
     const { unmount } = renderQueue();
     await waitForAllQueries();
@@ -276,18 +330,19 @@ describe("OrderQueue — kitchen room join/leave and listener lifecycle", () => 
     expect(socketStub2.on.mock.calls.length).toBe(socketStub2.off.mock.calls.length);
   });
 
-  test("a connect/disconnect/connect/disconnect/connect cycle registers listeners exactly once (react effect dependencies stay stable)", async () => {
-    const socketStub = { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+  test("F2: a connect/disconnect cycle re-joins exactly once per reconnect with balanced room handlers", async () => {
+    const socketStub = { on: jest.fn(), off: jest.fn(), emit: autoAckEmit() };
     useSocket.mockReturnValue({ socket: socketStub, connected: false });
-    const { queryClient, rerender } = renderQueue();
+    const { queryClient, rerender, unmount } = renderQueue();
     await waitForAllQueries();
 
     // Reuse the SAME QueryClient across every rerender — a fresh instance
     // per iteration would itself change useQueryClient()'s identity, which
     // changes invalidatePending/invalidateKitchenCascade's identity (they
     // depend on [queryClient, store]), which would tear down and
-    // re-register the join-kitchen effect on every iteration regardless of
-    // `connected` — a test artifact, not the thing this test means to prove.
+    // re-register the domain-listener effect on every iteration regardless
+    // of `connected` — a test artifact, not the thing this test means to
+    // prove.
     const cycle = [true, false, true, false, true];
     for (const connected of cycle) {
       useSocket.mockReturnValue({ socket: socketStub, connected });
@@ -298,14 +353,27 @@ describe("OrderQueue — kitchen room join/leave and listener lifecycle", () => 
       );
     }
 
-    // The socket object identity never changed across the whole cycle (only
-    // `connected` did), so the join-kitchen effect (keyed on [socket, store])
-    // must not have torn down and re-registered on every render — exactly
-    // one join, never a growing pile of duplicate listeners.
+    // F2: the socket object identity never changed (only `connected` did),
+    // so the domain listeners register exactly once — but the room join must
+    // be re-attempted on every reconnect (one fresh join per connected=true
+    // run: the initial mount was disconnected, so 3 joins for 3 trues).
     const joinCalls = socketStub.emit.mock.calls.filter((c) => c[0] === "join-kitchen");
-    expect(joinCalls.length).toBe(1);
+    expect(joinCalls.length).toBe(3);
+    expect(joinCalls.map((c) => [c[0], c[1]])).toEqual([
+      ["join-kitchen", STORE],
+      ["join-kitchen", STORE],
+      ["join-kitchen", STORE]
+    ]);
     const newOrderOnCalls = socketStub.on.mock.calls.filter((c) => c[0] === "new-order");
     expect(newOrderOnCalls.length).toBe(1);
+    // Every room re-join registers exactly one join-rejected handler and
+    // removes it again — unmount the still-active subscription and the
+    // registrations must balance exactly, proving no accumulation.
+    unmount();
+    const roomOn = socketStub.on.mock.calls.filter((c) => c[0] === "join-rejected");
+    const roomOff = socketStub.off.mock.calls.filter((c) => c[0] === "join-rejected");
+    expect(roomOn.length).toBe(3);
+    expect(roomOff.length).toBe(roomOn.length);
   });
 });
 
@@ -316,7 +384,7 @@ describe("OrderQueue — store isolation via room scoping", () => {
   });
 
   test("changing the store prop leaves the old store's kitchen room and joins the new one", async () => {
-    const socketStub = { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+    const socketStub = { on: jest.fn(), off: jest.fn(), emit: autoAckEmit() };
     useSocket.mockReturnValue({ socket: socketStub, connected: true });
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const { rerender } = render(
@@ -336,7 +404,7 @@ describe("OrderQueue — store isolation via room scoping", () => {
     );
 
     expect(socketStub.emit).toHaveBeenCalledWith("leave-kitchen", STORE);
-    expect(socketStub.emit).toHaveBeenCalledWith("join-kitchen", 99);
+    expect(socketStub.emit).toHaveBeenCalledWith("join-kitchen", 99, expect.any(Function));
     // Never asked to join a room for a store it wasn't explicitly given —
     // the server independently re-verifies this against the caller's JWT
     // `store` claim regardless, but the client must not even attempt it.

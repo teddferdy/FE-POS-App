@@ -72,7 +72,23 @@ jest.mock(
 // `connected` flag from useSocket — not merely whether a socket client object
 // exists (it exists even while disconnected / never connected).
 describe("KitchenDisplay — polling fallback keyed to socket connection state", () => {
-  const socketStub = { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+  // F2: simulate the backend join protocol — every join-kitchen emit carries
+  // an ack callback the server answers. Auto-ack `{ ok: true }` by default
+  // (accepted join); pass another value (or null to never ack) for the
+  // rejected/pending paths.
+  const autoAckEmit = (ackResult = { ok: true }) =>
+    jest.fn((event, ...args) => {
+      const ack = args.find((a) => typeof a === "function");
+      if (typeof ack === "function" && String(event).startsWith("join-") && ackResult !== null) {
+        ack(ackResult);
+      }
+    });
+  const makeSocketStub = (ackResult) => ({
+    on: jest.fn(),
+    off: jest.fn(),
+    emit: autoAckEmit(ackResult)
+  });
+  const socketStub = makeSocketStub();
 
   const renderWithClient = () => {
     const queryClient = new QueryClient({
@@ -112,12 +128,38 @@ describe("KitchenDisplay — polling fallback keyed to socket connection state",
     expect(getKitchenQuery(queryClient).options.refetchInterval).toBe(15000);
   });
 
-  test("disables polling once the socket is connected (relies on socket events)", async () => {
+  test("disables polling once the socket is connected and the room join is accepted", async () => {
+    // F2: polling-off is a post-ack state, so assert the render args via
+    // the useQuery spy — the query-cache options snapshot the first render.
+    const useQuerySpy = jest.spyOn(ReactQuery, "useQuery");
+    const lastKitchenOptions = () => {
+      const calls = useQuerySpy.mock.calls.filter((call) => call?.[0]?.[0] === "kitchen-orders");
+      return calls[calls.length - 1][2];
+    };
+
     useSocket.mockReturnValue({ socket: socketStub, connected: true });
+    renderWithClient();
+
+    await waitFor(() => expect(getKitchenOrders).toHaveBeenCalled());
+    await waitFor(() => expect(lastKitchenOptions().refetchInterval).toBe(false));
+    expect(socketStub.emit).toHaveBeenCalledWith("join-kitchen", 7, expect.any(Function));
+    useQuerySpy.mockRestore();
+  });
+
+  test("F2: keeps polling (15000) when the room join is rejected via ack", async () => {
+    useSocket.mockReturnValue({ socket: makeSocketStub({ ok: false }), connected: true });
     const { queryClient } = renderWithClient();
 
     await waitFor(() => expect(getKitchenOrders).toHaveBeenCalled());
-    expect(getKitchenQuery(queryClient).options.refetchInterval).toBe(false);
+    expect(getKitchenQuery(queryClient).options.refetchInterval).toBe(15000);
+  });
+
+  test("F2: keeps polling (15000) while the join ack is still pending", async () => {
+    useSocket.mockReturnValue({ socket: makeSocketStub(null), connected: true });
+    const { queryClient } = renderWithClient();
+
+    await waitFor(() => expect(getKitchenOrders).toHaveBeenCalled());
+    expect(getKitchenQuery(queryClient).options.refetchInterval).toBe(15000);
   });
 
   test("turns polling back on after a disconnect and off again after reconnect", async () => {
