@@ -74,16 +74,16 @@ export default function EditProfileModal({ open, onOpenChange, user, onSuccess }
         ...(imageFile ? { image: imageFile } : {})
       });
 
-      // Mirrors login's cookie-setting exactly (src/page/auth/login/index.jsx) —
-      // editUser returns a freshly-signed token + user, same shape as login,
-      // so the session stays valid and the UI reflects the edit immediately
-      // without forcing a re-login.
+      // TP-13 / KF-NEW-11: a profile edit changes no authentication or
+      // authorization state, so the session token from login stays as-is.
+      // The `token` editUser returns carries only {id, sessionId}; adopting it
+      // would drop roleType/roleId/store and deny every role-gated request
+      // until re-login. Only the displayed user data is refreshed below.
       // A response landing after the session started ending must not write
-      // the old user's credentials back (they would survive the reload).
+      // the old user's data back (it would survive the reload).
       if (isSessionEnding()) return false;
 
       const updatedUser = { ...user, ...result.user };
-      if (result.token) setCookie("token", result.token, { path: "/" });
       try {
         sessionStorage.setItem("user", JSON.stringify(updatedUser));
       } catch {
