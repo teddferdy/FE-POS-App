@@ -98,7 +98,23 @@ jest.mock(
 // These assertions pin the connected-model semantics; reverting `pollFallback`
 // to `socket ? false : 15000` (or dropping `connected` anywhere) fails here.
 describe("WaiterRequestList — polling fallback keyed to socket connection state", () => {
-  const socketStub = { on: jest.fn(), off: jest.fn(), emit: jest.fn() };
+  // F2: simulate the backend join protocol — every join-store emit carries
+  // an ack callback the server answers. Auto-ack `{ ok: true }` by default
+  // (accepted join); pass another value (or null to never ack) for the
+  // rejected/pending paths.
+  const autoAckEmit = (ackResult = { ok: true }) =>
+    jest.fn((event, ...args) => {
+      const ack = args.find((a) => typeof a === "function");
+      if (typeof ack === "function" && String(event).startsWith("join-") && ackResult !== null) {
+        ack(ackResult);
+      }
+    });
+  const makeSocketStub = (ackResult) => ({
+    on: jest.fn(),
+    off: jest.fn(),
+    emit: autoAckEmit(ackResult)
+  });
+  const socketStub = makeSocketStub();
 
   const renderWithClient = () => {
     const queryClient = new QueryClient({
@@ -138,12 +154,24 @@ describe("WaiterRequestList — polling fallback keyed to socket connection stat
     expect(getMainListQuery(queryClient).options.refetchInterval).toBe(15000);
   });
 
-  test("disables polling once the socket is connected (relies on socket events)", async () => {
+  test("disables polling once the socket is connected and the room join is accepted", async () => {
+    // F2: polling-off is a post-ack state, so assert the render args via
+    // the useQuery spy — the query-cache options snapshot the first render.
+    const useQuerySpy = jest.spyOn(ReactQuery, "useQuery");
+    const lastListOptions = () => {
+      const calls = useQuerySpy.mock.calls.filter(
+        (call) => call?.[0]?.[0] === "waiter-request-list"
+      );
+      return calls[calls.length - 1][2];
+    };
+
     useSocket.mockReturnValue({ socket: socketStub, connected: true });
-    const { queryClient } = renderWithClient();
+    renderWithClient();
 
     await waitFor(() => expect(getWaiterRequestList).toHaveBeenCalled());
-    expect(getMainListQuery(queryClient).options.refetchInterval).toBe(false);
+    await waitFor(() => expect(lastListOptions().refetchInterval).toBe(false));
+    expect(socketStub.emit).toHaveBeenCalledWith("join-store", 7, expect.any(Function));
+    useQuerySpy.mockRestore();
   });
 
   test("turns polling back on after a disconnect and off again after reconnect", async () => {
@@ -176,5 +204,21 @@ describe("WaiterRequestList — polling fallback keyed to socket connection stat
       </QueryClientProvider>
     );
     await waitFor(() => expect(lastListOptions().refetchInterval).toBe(15000));
+  });
+
+  test("F2: keeps polling (15000) when the room join is rejected via ack", async () => {
+    useSocket.mockReturnValue({ socket: makeSocketStub({ ok: false }), connected: true });
+    const { queryClient } = renderWithClient();
+
+    await waitFor(() => expect(getWaiterRequestList).toHaveBeenCalled());
+    expect(getMainListQuery(queryClient).options.refetchInterval).toBe(15000);
+  });
+
+  test("F2: keeps polling (15000) while the join ack is still pending", async () => {
+    useSocket.mockReturnValue({ socket: makeSocketStub(null), connected: true });
+    const { queryClient } = renderWithClient();
+
+    await waitFor(() => expect(getWaiterRequestList).toHaveBeenCalled());
+    expect(getMainListQuery(queryClient).options.refetchInterval).toBe(15000);
   });
 });
