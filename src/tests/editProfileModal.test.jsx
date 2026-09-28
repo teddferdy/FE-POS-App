@@ -80,7 +80,7 @@ describe("EditProfileModal", () => {
     expect(payload.fullName).toBe("Jane Doe");
   });
 
-  test("on success, refreshes the token/user cookies and calls onSuccess with the merged user", async () => {
+  test("on success, refreshes the user cookie, keeps the session token and calls onSuccess with the merged user", async () => {
     const onSuccess = jest.fn();
     const onOpenChange = jest.fn();
     render(<EditProfileModal open user={user} onOpenChange={onOpenChange} onSuccess={onSuccess} />);
@@ -90,7 +90,7 @@ describe("EditProfileModal", () => {
     await waitFor(() => expect(editProfile).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(onSuccess).toHaveBeenCalled());
 
-    expect(mockSetCookie).toHaveBeenCalledWith("token", "new-token", { path: "/" });
+    expect(mockSetCookie.mock.calls.some((c) => c[0] === "token")).toBe(false);
     const userCookieCall = mockSetCookie.mock.calls.find((c) => c[0] === "user");
     expect(userCookieCall[1]).not.toHaveProperty("accessMenu");
     expect(userCookieCall[1].fullName).toBe("Jane D. Updated");

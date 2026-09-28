@@ -4,9 +4,9 @@ import "@testing-library/jest-dom";
 import EditProfileModal from "../components/organism/edit-profile-modal";
 import { editProfile } from "../services/auth";
 
-// A profile edit returns a freshly signed token. If that response lands after
-// the session boundary started, writing it would bring the old session back
-// after the reload — the success path must write nothing.
+// A profile edit refreshes the stored user. If that response lands after the
+// session boundary started, writing it would bring the old user back after
+// the reload — the success path must write nothing.
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
@@ -65,5 +65,6 @@ test("outside a boundary the success path is unchanged", async () => {
   fireEvent.click(screen.getByText("common.save"));
 
   await waitFor(() => expect(onSuccess).toHaveBeenCalled());
-  expect(mockSetCookie).toHaveBeenCalledWith("token", "fresh-token-A", { path: "/" });
+  expect(mockSetCookie).toHaveBeenCalledWith("user", expect.anything(), { path: "/" });
+  expect(mockSetCookie).not.toHaveBeenCalledWith("token", expect.anything(), expect.anything());
 });
