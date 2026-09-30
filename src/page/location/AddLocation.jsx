@@ -80,6 +80,7 @@ import { Button } from "@/components/ui/button";
 import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { resolveSubmitStatus } from "@/lib/store-lifecycle";
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -502,7 +503,7 @@ const AddLocation = () => {
       close: h.isOpen ? (h.is24Hours ? "23:59" : h.close) : null,
       is24Hours: h.isOpen ? !!h.is24Hours : false
     }));
-    const { latitude, longitude, category, ...rest } = values;
+    const { latitude, longitude, category, isActive: _lifecycleFlag, ...rest } = values;
     const payload = {
       ...rest,
       store: Number(String(values.storeId).replace(/^ST-/i, "")) || null,
@@ -511,7 +512,15 @@ const AddLocation = () => {
       category: category || null,
       latitude: latitude != null ? String(latitude) : null,
       longitude: longitude != null ? String(longitude) : null,
-      status: saveAsDraft ? "draft" : values.isActive === false ? "inactive" : "active",
+      // HB-2 R1: `status` is authoritative; `isActive` is never sent (FormData
+      // stringifies booleans). Creates always carry an explicit status; edits
+      // carry one only when the lifecycle control was touched, otherwise the
+      // edit is config-only and carries no lifecycle field.
+      status: resolveSubmitStatus({
+        saveAsDraft,
+        lifecycleTouched: !isEdit || form.getFieldState("isActive").isDirty,
+        isActive: values.isActive
+      }),
       openingHours: openingHoursFormatted,
       socialMedia: socialLinks.filter((s) => s.platform && s.account)
     };
