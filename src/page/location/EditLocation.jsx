@@ -67,6 +67,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { normalizePayload } from "@/lib/payload-normalizer";
+import { resolveSubmitStatus } from "@/lib/store-lifecycle";
 import { editLocation, getLocationById } from "@/services/location";
 import {
   getProvinces,
@@ -530,7 +531,7 @@ const EditLocation = () => {
       close: h.isOpen ? (h.is24Hours ? "23:59" : h.close) : null,
       is24Hours: h.isOpen ? !!h.is24Hours : false
     }));
-    const { latitude, longitude, category, ...rest } = values;
+    const { latitude, longitude, category, isActive: _lifecycleFlag, ...rest } = values;
     const payload = {
       ...rest,
       store: Number(String(values.storeId).replace(/^ST-/i, "")) || null,
@@ -539,7 +540,15 @@ const EditLocation = () => {
       category: category || null,
       latitude: latitude != null ? String(latitude) : null,
       longitude: longitude != null ? String(longitude) : null,
-      status: saveAsDraft ? "draft" : values.isActive === false ? "inactive" : "active",
+      // HB-2 R1: `status` is authoritative; `isActive` is never sent (FormData
+      // stringifies booleans). A status is sent only when saving as draft or
+      // when the lifecycle control was touched; otherwise the edit is
+      // config-only and carries no lifecycle field.
+      status: resolveSubmitStatus({
+        saveAsDraft,
+        lifecycleTouched: form.getFieldState("isActive").isDirty,
+        isActive: values.isActive
+      }),
       openingHours: openingHoursFormatted,
       socialMedia: socialLinks.filter((s) => s.platform && s.account),
       id: editId
