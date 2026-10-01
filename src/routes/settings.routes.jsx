@@ -10,6 +10,15 @@ const EditLocation = React.lazy(() => import("@/page/location/EditLocation"));
 const LocationDetail = React.lazy(() => import("@/page/location/LocationDetail"));
 const StoreGeospatial = React.lazy(() => import("@/page/location/StoreGeospatial"));
 
+// Store Configuration (W3) — gated in the pages by the canonical
+// store.manage permission, not by RequireRole.
+const StoreConfigurationList = React.lazy(
+  () => import("@/page/store-configuration/StoreConfigurationList")
+);
+const StoreConfigurationDetail = React.lazy(
+  () => import("@/page/store-configuration/StoreConfigurationDetail")
+);
+
 // Table
 const TableList = React.lazy(() => import("@/page/table/TableList"));
 const DetailTable = React.lazy(() => import("@/page/table/DetailTable"));
@@ -70,6 +79,9 @@ export const settingsRoutes = (
         </RequireRole>
       }
     />
+
+    <Route path="/store-configuration" element={<StoreConfigurationList />} />
+    <Route path="/store-configuration/:id" element={<StoreConfigurationDetail />} />
 
     <Route path="/table-list" element={<TableList />} />
     <Route path="/detail-table" element={<DetailTable />} />

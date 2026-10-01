@@ -13,6 +13,7 @@ import {
   DollarSign,
   FileText,
   QrCode,
+  SlidersHorizontal,
   X
 } from "lucide-react";
 import {
@@ -25,6 +26,7 @@ import {
 import { filterMenuByPermission, filterNavCategoriesByPermission } from "@/utils/permission";
 import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
+import { useStoreManagePermission } from "@/hooks/useStoreManagePermission";
 import { endSession, SESSION_END_REASON } from "@/services/session";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -100,6 +102,15 @@ const MENU_CONTROLLED_FALLBACK_GROUP = {
   title: "Lainnya"
 };
 
+// W3: shown by canonical permission (store.manage), independent of roleType
+// and accessMenu, in both sidebar branches.
+const STORE_CONFIGURATION_NAV_ITEM = {
+  title: "Store Configuration",
+  i18nKey: "page.storeConfiguration.title",
+  href: "/store-configuration",
+  activeRegex: /^\/store-configuration(\/|$)/
+};
+
 const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHoverChange }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -113,6 +124,7 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
   const [activeCategory, setActiveCategory] = useState(null);
 
   const user = useUserSession();
+  const { canManageStores } = useStoreManagePermission();
 
   const hasAccessMenu =
     user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
@@ -527,6 +539,8 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
               })}
             </>
           )}
+
+          {canManageStores && renderNavButton(STORE_CONFIGURATION_NAV_ITEM, SlidersHorizontal)}
         </nav>
 
         {/* Bottom */}
