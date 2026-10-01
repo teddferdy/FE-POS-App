@@ -20,6 +20,20 @@ export const isValidTimezone = (timezone) => {
 
 const resolveTimezone = (timezone) => (isValidTimezone(timezone) ? timezone : DEFAULT_TIMEZONE);
 
+// Options for a store timezone selector: the runtime's full IANA list when
+// Intl.supportedValuesOf is available (it is missing in older browsers the
+// build still targets), otherwise just the current value and the default.
+// The current value always stays selectable even when the generated list
+// omits it; every option passes isValidTimezone.
+export const buildTimezoneOptions = (current) => {
+  const source =
+    typeof Intl.supportedValuesOf === "function"
+      ? Intl.supportedValuesOf("timeZone")
+      : [DEFAULT_TIMEZONE];
+  const values = [...new Set([current, ...source])].filter(isValidTimezone);
+  return values.map((value) => ({ value, label: value }));
+};
+
 const toDate = (value) => {
   if (!value) return null;
   const d = value instanceof Date ? value : new Date(value);

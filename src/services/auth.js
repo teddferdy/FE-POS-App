@@ -42,3 +42,11 @@ export const editProfile = async (payload) => {
   if (status !== 200 && status !== 201) throw Error(data?.error || data?.message);
   return data;
 };
+
+// Canonical authorization context of the current session. Returns the
+// response body: { message, data: { session, context: { permissions, ... } } }.
+export const getAuthContext = async () => {
+  const { data, status } = await axiosInstance.get("/auth/context");
+  if (status !== 200) throw Error(data?.message || data?.error);
+  return data;
+};
