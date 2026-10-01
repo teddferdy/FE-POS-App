@@ -21,6 +21,15 @@ axiosInstance.interceptors.request.use(
       req.headers.Authorization = `Bearer ${token}`;
     }
 
+    // Per-request opt-out: a caller that owns its request scope (e.g. a
+    // strict-schema endpoint that rejects unknown keys) sets
+    // `skipStoreInjection: true` on the axios config and receives no injected
+    // store in params, body or FormData. Auth and session handling above still
+    // apply; every request without the flag keeps the injection below.
+    if (req.skipStoreInjection === true) {
+      return req;
+    }
+
     const userRaw = getCookie("user");
     const user = userRaw ? JSON.parse(decodeURIComponent(userRaw)) : null;
     const isSuperAdmin = user?.roleType === "super_admin";
