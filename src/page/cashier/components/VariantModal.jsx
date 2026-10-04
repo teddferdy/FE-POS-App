@@ -295,10 +295,17 @@ const VariantModal = ({ product, onSelect, onClose }) => {
           <Button
             variant="success"
             onClick={() => {
+              // W3-4 (K3): option and modifier are kept as separate selections
+              // so checkout sends them exactly as the server prices them
+              // (base + option markup + modifier markup = totalPrice).
               const choice = {
-                label: selectedOption?.label || selectedModifier?.label || null,
+                label:
+                  [selectedOption?.label, selectedModifier?.label].filter(Boolean).join(" + ") ||
+                  null,
                 price: totalPrice,
-                image: selectedOption?.image || null
+                image: selectedOption?.image || null,
+                options: selectedOption?.label ? [{ name: selectedOption.label }] : [],
+                modifiers: selectedModifier?.label ? [{ name: selectedModifier.label }] : []
               };
               onSelect(choice);
             }}

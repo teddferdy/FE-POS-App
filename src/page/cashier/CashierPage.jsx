@@ -23,6 +23,7 @@ import { getAllLocation } from "@/services/location";
 import { getCustomerTaxRate } from "@/services/order";
 import { storeIdsEqual } from "@/utils/storeId";
 import { isAdminRole } from "@/utils/role";
+import { normalizeCatalogProduct } from "@/utils/catalogPrice";
 import { orderList } from "@/state/order-list";
 import {
   CART_MIRROR_KEY,
@@ -211,17 +212,25 @@ const CashierPage = () => {
     }
   );
 
-  const products = productsData?.data || productsData || [];
+  // W3-4 (K1): the catalog's server-authoritative effectivePrice becomes the
+  // selling price of every product row (see utils/catalogPrice.js).
+  const products = useMemo(() => {
+    const rows = productsData?.data || productsData || [];
+    return Array.isArray(rows) ? rows.map(normalizeCatalogProduct) : [];
+  }, [productsData]);
   const bundles = useMemo(() => productsData?.bundles || [], [productsData]);
 
   const bundleProducts = useMemo(
     () =>
       bundles.map((b) => ({
         id: b.id,
+        bundleId: b.id,
         nameProduct: b.name,
         sku: b.sku,
         sellPrice: b.bundlePrice,
         price: b.bundlePrice,
+        // bundlePrice is the server's authoritative bundle price.
+        priceAuthoritative: true,
         stock: b.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
         isBundle: true,
         category: { id: "bundle", nameCategory: "Bundle" },
@@ -272,7 +281,7 @@ const CashierPage = () => {
     async (code) => {
       if (!store) return [];
       const res = await getProductByOutlet({ location: store, search: code });
-      return res?.data || [];
+      return (res?.data || []).map(normalizeCatalogProduct);
     },
     [store]
   );
@@ -759,6 +768,7 @@ const CashierPage = () => {
             cashierId={user?.id || user?.ID}
             onTableChange={setSelectedTable}
             onComplete={handleCheckoutComplete}
+            onApplyServerPrices={orderList.getState().applyServerPrices}
           />
         )}
 

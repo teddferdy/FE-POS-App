@@ -7,7 +7,24 @@ export const orderList = create(
       order: [],
       addOrder: (product) => {
         const id = product.id || product.ID || product.idProduct || product._id;
-        const cartKey = `${id}_${product.variantName || ""}`;
+        const isBundle = Boolean(product.isBundle);
+        // W3-4 (K3): selected options and modifiers are kept separately so
+        // checkout can send them as the server prices them. Lines with
+        // different selections are distinct; bundles get their own key space
+        // so a bundle never merges with a product that shares its id.
+        const selectedOptions = Array.isArray(product.selectedOptions)
+          ? product.selectedOptions
+          : [];
+        const selectedModifiers = Array.isArray(product.selectedModifiers)
+          ? product.selectedModifiers
+          : [];
+        const choiceKey = [...selectedOptions, ...selectedModifiers]
+          .map((entry) => entry?.name)
+          .filter(Boolean)
+          .join("|");
+        const cartKey = isBundle
+          ? `bundle:${id}`
+          : `${id}_${choiceKey || product.variantName || ""}`;
         const existing = get().order.find((item) => item.cartKey === cartKey);
         if (existing) {
           // F9-02: increment by this line's own current price, not the
@@ -40,6 +57,13 @@ export const orderList = create(
               count: 1,
               totalPrice: price,
               priceOverridden: false,
+              // W3-4 (K1): true only when `price` came from the server's
+              // effectivePrice/bundlePrice, so checkout may echo it as
+              // expectedPrice.
+              priceAuthoritative: product.priceAuthoritative === true,
+              ...(isBundle ? { isBundle: true, bundleId: id } : {}),
+              ...(selectedOptions.length ? { selectedOptions } : {}),
+              ...(selectedModifiers.length ? { selectedModifiers } : {}),
               image: product.image || product.imageProduct || product.photo || null,
               unit: product.unit || "",
               sku: product.sku || "",
@@ -47,6 +71,33 @@ export const orderList = create(
               redeemPoints: product.redeemPoints || 0
             }
           ]
+        }));
+      },
+
+      // W3-4 (W3-2 409 PRICE_CHANGED): applies server-confirmed unit prices
+      // only when the cashier explicitly chooses to — never silently. These
+      // are catalog prices, not overrides, so priceOverridden stays false.
+      applyServerPrices: (updates) => {
+        const byKey = new Map();
+        (updates || []).forEach((update) => {
+          const price = Number(update?.price);
+          if (update?.cartKey && Number.isInteger(price) && price >= 0) {
+            byKey.set(update.cartKey, price);
+          }
+        });
+        if (!byKey.size) return;
+        return set((state) => ({
+          order: state.order.map((item) => {
+            if (!byKey.has(item.cartKey)) return item;
+            const price = byKey.get(item.cartKey);
+            return {
+              ...item,
+              price,
+              totalPrice: price * (item.count || 1),
+              priceOverridden: false,
+              priceAuthoritative: true
+            };
+          })
         }));
       },
       addingProduct: (item) => {

@@ -34,6 +34,7 @@ import { getMemberById } from "@/services/member";
 import { getTableAvailability, getTablesWithActiveOrders } from "@/services/table";
 import { getPaymentIconKind } from "@/utils/payment";
 import { calculateCheckoutTotals } from "@/utils/checkoutTotals";
+import { buildOrderItemsPayload, parsePriceChangedError } from "@/utils/orderPayload";
 import { useDebounce } from "@/hooks/useDebounce";
 import MemberSearchModal from "@/components/MemberSearchModal";
 import { toast } from "sonner";
@@ -65,7 +66,8 @@ const CheckoutModal = ({
   cashierId,
   onClose,
   onTableChange,
-  onComplete
+  onComplete,
+  onApplyServerPrices
 }) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -111,6 +113,12 @@ const CheckoutModal = ({
   const [partySize, setPartySize] = useState("");
   const [qrisPending, setQrisPending] = useState(false);
   const [pendingPayload, setPendingPayload] = useState(null);
+  // W3-4 (W3-2 contract): a 409 PRICE_CHANGED rejection blocks payment until
+  // the cashier explicitly applies the server prices and reviews the total.
+  const [priceChange, setPriceChange] = useState(null);
+  // Checkout lines in the exact order they were last sent — the server's
+  // mismatch `index` addresses this order.
+  const submittedLinesRef = useRef([]);
   // F-SMOKE-02: mutation.isLoading flips a tick after mutate() runs, too
   // late to stop several fireEvent-speed clicks in the same turn — mirrors
   // CollectPaymentModal's synchronous guard (set on the click that starts
@@ -141,7 +149,16 @@ const CheckoutModal = ({
         count: item.count || item.qty || 0,
         image: item.image || item.imageProduct || null,
         discount: Number(item.discountItem) || 0,
-        totalPrice: Number(item.totalPrice) || 0
+        totalPrice: Number(item.totalPrice) || 0,
+        // W3-4 (K1/K3): carried through so the payload keeps overrides,
+        // bundles, separate options/modifiers and the authoritative flag.
+        cartKey: item.cartKey,
+        priceOverridden: item.priceOverridden === true,
+        priceAuthoritative: item.priceAuthoritative === true,
+        isBundle: item.isBundle === true,
+        bundleId: item.bundleId,
+        selectedOptions: item.selectedOptions,
+        selectedModifiers: item.selectedModifiers
       }));
     }
     return [];
@@ -487,6 +504,21 @@ const CheckoutModal = ({
       });
     },
     onError: (err) => {
+      // W3-4 (W3-2 contract): the server refused the order because prices
+      // changed. Nothing was written. Block payment until the cashier applies
+      // the server prices; never retry or touch the cart automatically.
+      const priceChanged = parsePriceChangedError(err, submittedLinesRef.current);
+      if (priceChanged) {
+        setPriceChange({ ...priceChanged, applied: false });
+        // A pending QR/e-wallet confirmation was built from the stale prices;
+        // drop it so the old expectedPrice can never be re-sent.
+        setQrisPending(false);
+        setPendingPayload(null);
+        // Refresh the catalog so items added afterwards use the new prices.
+        queryClient.invalidateQueries(["products-outlet", store]);
+        toast.error(t("page.cashier.priceChanged.title", "Prices changed"));
+        return;
+      }
       toast.error(
         err?.response?.data?.message ||
           err?.response?.data?.error ||
@@ -498,6 +530,18 @@ const CheckoutModal = ({
       isSubmittingRef.current = false;
     }
   });
+
+  const priceChangePending = Boolean(priceChange) && !priceChange.applied;
+
+  const handleApplyServerPrices = useCallback(() => {
+    if (!priceChange || priceChange.applied) return;
+    onApplyServerPrices?.(
+      priceChange.items
+        .filter((entry) => entry.cartKey)
+        .map((entry) => ({ cartKey: entry.cartKey, price: entry.currentPrice }))
+    );
+    setPriceChange((prev) => (prev ? { ...prev, applied: true } : prev));
+  }, [priceChange, onApplyServerPrices]);
 
   const addCustomerMutation = useMutation({
     mutationFn: (payload) => addCustomer(payload),
@@ -553,6 +597,8 @@ const CheckoutModal = ({
   );
 
   const handleSubmit = useCallback(() => {
+    // W3-4: never resubmit while a price change is unresolved.
+    if (priceChangePending) return;
     // F9-23: an empty cart must never reach the payment/order creation path.
     if (items.length === 0) {
       toast.error(t("page.cashier.emptyCart", "Keranjang kosong"));
@@ -610,18 +656,13 @@ const CheckoutModal = ({
       // before — so these keys must be entirely absent for non-cash
       // methods, not merely zeroed.
       ...(method === "cash" ? { cashAmount: cashAmountNum, changeAmount: change } : {}),
-      items: items.map((item) => ({
-        product: item.product || item.idProduct || item.id,
-        productName: item.nameProduct,
-        quantity: item.count,
-        ...(item.priceOverridden ? { priceOverride: item.price } : {}),
-        price: item.price,
-        basePrice: item.price,
-        subtotal: item.totalPrice,
-        options: item.variantName ? [{ name: item.variantName }] : [],
-        modifiers: []
-      }))
+      // W3-4: expectedPrice / bundleId / separate options & modifiers /
+      // priceOverride — see utils/orderPayload.js.
+      items: buildOrderItemsPayload(items)
     };
+    submittedLinesRef.current = items;
+    // A resolved (applied) price change is cleared once the cashier retries.
+    if (priceChange) setPriceChange(null);
 
     if (method === "e-wallet" || method === "qris") {
       startQrisPayment(payload, method);
@@ -654,7 +695,9 @@ const CheckoutModal = ({
     mutation,
     cookie,
     t,
-    startQrisPayment
+    startQrisPayment,
+    priceChange,
+    priceChangePending
   ]);
 
   const formatPrice = (value) => {
@@ -670,6 +713,7 @@ const CheckoutModal = ({
 
   const canSubmit =
     items.length > 0 &&
+    !priceChangePending &&
     (remainingTotal === 0 ||
       (paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal)));
 
@@ -1409,6 +1453,84 @@ const CheckoutModal = ({
         )}
 
         <div className="border-t border-border/50 p-4 shrink-0 space-y-2">
+          {priceChange && (
+            <div
+              data-testid="price-change-panel"
+              role={priceChange.applied ? "status" : "alert"}
+              aria-live={priceChange.applied ? "polite" : "assertive"}
+              className={`rounded-xl border p-3 space-y-2 ${
+                priceChange.applied
+                  ? "border-emerald-500/30 bg-emerald-500/5"
+                  : "border-amber-500/40 bg-amber-500/10"
+              }`}>
+              <div className="flex items-start gap-2">
+                {priceChange.applied ? (
+                  <Check
+                    size={16}
+                    className="mt-0.5 shrink-0 text-emerald-600"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <AlertCircle
+                    size={16}
+                    className="mt-0.5 shrink-0 text-amber-600"
+                    aria-hidden="true"
+                  />
+                )}
+                <div className="space-y-0.5">
+                  <p className="text-sm font-semibold text-foreground">
+                    {priceChange.applied
+                      ? t("page.cashier.priceChanged.appliedTitle", "Prices updated")
+                      : t("page.cashier.priceChanged.title", "Prices changed")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {priceChange.applied
+                      ? t(
+                          "page.cashier.priceChanged.appliedDesc",
+                          "Review the new total, then confirm payment again."
+                        )
+                      : t(
+                          "page.cashier.priceChanged.desc",
+                          "This order was not created. The prices below changed at this outlet. Apply the updated prices and review the total before confirming payment again."
+                        )}
+                  </p>
+                </div>
+              </div>
+              <ul className="space-y-1">
+                {priceChange.items.map((entry) => (
+                  <li key={entry.index} className="flex items-start justify-between gap-2 text-xs">
+                    <span className="min-w-0 break-words text-foreground">
+                      {entry.name ||
+                        t("page.cashier.priceChanged.unmatched", "Item no longer in cart")}
+                      {entry.variantName ? ` (${entry.variantName})` : ""}
+                    </span>
+                    <span className="shrink-0 tabular-nums">
+                      <span className="text-muted-foreground line-through">
+                        Rp {formatPrice(entry.expectedPrice)}
+                      </span>
+                      <span className="mx-1 text-muted-foreground" aria-hidden="true">
+                        →
+                      </span>
+                      <span className="sr-only">{t("page.cashier.priceChanged.now", "now")} </span>
+                      <span className="font-semibold text-foreground">
+                        Rp {formatPrice(entry.currentPrice)}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {!priceChange.applied && (
+                <Button
+                  type="button"
+                  variant="draft"
+                  onClick={handleApplyServerPrices}
+                  className="w-full h-11 rounded-xl font-semibold text-sm">
+                  <RotateCcw size={16} aria-hidden="true" />
+                  {t("page.cashier.priceChanged.apply", "Apply updated prices")}
+                </Button>
+              )}
+            </div>
+          )}
           {qrisPending && isQrisPayment ? (
             <>
               <div className="flex items-start gap-2 rounded-xl bg-primary/10 border border-primary/20 px-3 py-2.5 text-sm">
@@ -1491,7 +1613,8 @@ CheckoutModal.propTypes = {
   taxRate: PropTypes.number,
   onClose: PropTypes.func,
   onTableChange: PropTypes.func,
-  onComplete: PropTypes.func
+  onComplete: PropTypes.func,
+  onApplyServerPrices: PropTypes.func
 };
 
 export default CheckoutModal;
