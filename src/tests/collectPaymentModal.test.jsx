@@ -251,3 +251,131 @@ describe("CollectPaymentModal — accessible dialog semantics (F9-04)", () => {
     expect(onClose).toHaveBeenCalled();
   });
 });
+
+describe("CollectPaymentModal — DR-04 settlement tender", () => {
+  beforeEach(() => {
+    getOrderById.mockReset().mockResolvedValue({ data: qrOrder });
+    updateOrderStatus.mockReset();
+    createOrder.mockReset();
+  });
+
+  const openConfirm = async () => {
+    renderModal();
+    await waitFor(() => screen.getByText("page.cashier.collectPayment.payFull"));
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.payFull"));
+    await waitFor(() => screen.getByText("page.cashier.collectPayment.confirm"));
+  };
+
+  test("DR04-01: default cash exact-tender sends the method with no cash fields", async () => {
+    updateOrderStatus.mockResolvedValue({
+      data: { ...qrOrder, status: "paid", paymentStatus: "paid" }
+    });
+    await openConfirm();
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.confirm"));
+
+    await waitFor(() => expect(updateOrderStatus).toHaveBeenCalled());
+    const payload = updateOrderStatus.mock.calls[0][0];
+    expect(payload.paymentMethod).toBe("cash");
+    expect(payload).not.toHaveProperty("cashAmount");
+    expect(payload).not.toHaveProperty("changeAmount");
+  });
+
+  test("DR04-02: typed cash sends actual tender values and the receipt reflects them", async () => {
+    updateOrderStatus.mockResolvedValue({
+      data: { ...qrOrder, status: "paid", paymentStatus: "paid" }
+    });
+    const onOpenReceipt = jest.fn();
+    renderModal({ onOpenReceipt });
+    await waitFor(() => screen.getByText("page.cashier.collectPayment.payFull"));
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.payFull"));
+
+    fireEvent.change(screen.getByPlaceholderText("150000"), {
+      target: { value: "200000" }
+    });
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.confirm"));
+
+    await waitFor(() => expect(updateOrderStatus).toHaveBeenCalled());
+    const payload = updateOrderStatus.mock.calls[0][0];
+    expect(payload).toMatchObject({
+      paymentMethod: "cash",
+      cashAmount: 200000,
+      changeAmount: 50000
+    });
+    await waitFor(() => expect(onOpenReceipt).toHaveBeenCalled());
+    const receipt = onOpenReceipt.mock.calls[0][0];
+    expect(receipt.paymentMethod).toBe("cash");
+    expect(receipt.cashAmount).toBe(200000);
+    expect(receipt.changeAmount).toBe(50000);
+  });
+
+  test("DR04-03: non-cash sends the method with no fake cash fields", async () => {
+    updateOrderStatus.mockResolvedValue({
+      data: { ...qrOrder, status: "paid", paymentStatus: "paid" }
+    });
+    const onOpenReceipt = jest.fn();
+    renderModal({ onOpenReceipt });
+    await waitFor(() => screen.getByText("page.cashier.collectPayment.payFull"));
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.payFull"));
+
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "qris" } });
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.confirm"));
+
+    await waitFor(() => expect(updateOrderStatus).toHaveBeenCalled());
+    const payload = updateOrderStatus.mock.calls[0][0];
+    expect(payload.paymentMethod).toBe("qris");
+    expect(payload).not.toHaveProperty("cashAmount");
+    expect(payload).not.toHaveProperty("changeAmount");
+    await waitFor(() => expect(onOpenReceipt).toHaveBeenCalled());
+    const receipt = onOpenReceipt.mock.calls[0][0];
+    expect(receipt.paymentMethod).toBe("qris");
+    expect(receipt.cashAmount).toBeNull();
+  });
+
+  test("DR04-04: a QR order's stated intent is preselected as the method", async () => {
+    getOrderById.mockReset().mockResolvedValue({
+      data: { ...qrOrder, paymentMethod: "qris" }
+    });
+    updateOrderStatus.mockResolvedValue({
+      data: { ...qrOrder, status: "paid", paymentStatus: "paid" }
+    });
+    await openConfirm();
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.confirm"));
+
+    await waitFor(() => expect(updateOrderStatus).toHaveBeenCalled());
+    expect(updateOrderStatus.mock.calls[0][0].paymentMethod).toBe("qris");
+  });
+
+  test("DR04-05: a rejected tender (422) presents no false reconciliation", async () => {
+    updateOrderStatus.mockRejectedValue({
+      response: { data: { message: "No open cash register for this store" } }
+    });
+    const onOpenReceipt = jest.fn();
+    const onClose = jest.fn();
+    renderModal({ onOpenReceipt, onClose });
+    await waitFor(() => screen.getByText("page.cashier.collectPayment.payFull"));
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.payFull"));
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.confirm"));
+
+    await waitFor(() => expect(updateOrderStatus).toHaveBeenCalledTimes(1));
+    expect(onOpenReceipt).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  test("DR04-06: cash that cannot cover the bill blocks confirmation", async () => {
+    updateOrderStatus.mockResolvedValue({
+      data: { ...qrOrder, status: "paid", paymentStatus: "paid" }
+    });
+    await openConfirm();
+
+    fireEvent.change(screen.getByPlaceholderText("150000"), {
+      target: { value: "100000" }
+    });
+    expect(screen.getByText("page.cashier.collectPayment.confirm")).toBeDisabled();
+    expect(updateOrderStatus).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByPlaceholderText("150000"), {
+      target: { value: "150000" }
+    });
+    expect(screen.getByText("page.cashier.collectPayment.confirm")).not.toBeDisabled();
+  });
+});

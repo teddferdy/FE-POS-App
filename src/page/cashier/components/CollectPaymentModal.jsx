@@ -22,13 +22,19 @@ const CASHIER_ORDER_QUEUE_STATUSES = ["pending", "confirmed", "preparing", "read
 // item.quantity -> count) so ReceiptModal renders identically regardless of
 // whether it was opened after a fresh POS sale or after settling an existing
 // order here.
-const toReceiptData = (order) => ({
+//
+// DR-04: when the settlement tender is known (the just-validated payload),
+// the receipt reflects it instead of fabricating cash = total / change = 0.
+// A null tender keeps the legacy bill-view defaults (split-bill preview,
+// which is not a settlement).
+const toReceiptData = (order, tender = null) => ({
   ...order,
   subtotal: order.subTotal,
   total: order.totalPrice,
   grandTotal: order.totalPrice,
-  cashAmount: order.totalPrice,
-  changeAmount: 0,
+  paymentMethod: tender?.paymentMethod ?? order.paymentMethod,
+  cashAmount: tender ? tender.cashAmount : order.totalPrice,
+  changeAmount: tender ? tender.changeAmount : 0,
   items: (order.items || []).map((item) => ({
     ...item,
     nameProduct: item.productName,
@@ -36,12 +42,32 @@ const toReceiptData = (order) => ({
   }))
 });
 
+// DR-04: the canonical settlement methods (same set the BE validates).
+// The cashier must tender explicitly — the backend fails closed (422) when
+// a method-less order is settled without one.
+const SETTLEMENT_METHODS = [
+  "cash",
+  "qris",
+  "debit",
+  "credit",
+  "transfer",
+  "e-wallet",
+  "points",
+  "other"
+];
+
 const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const queryClient = useQueryClient();
   const [mode, setMode] = useState("choose"); // choose | confirmFull
+  // DR-04 tender state: null method means "not chosen yet" — the effective
+  // method falls back to the order's own stated intent (e.g. a QR order's
+  // paymentMethod), else cash. Cash input empty means exact tender (the
+  // server fills cashReceived = due, changeGiven = 0, same as order/create).
+  const [methodChoice, setMethodChoice] = useState(null);
+  const [cashReceivedInput, setCashReceivedInput] = useState("");
 
   // Always re-fetch the authoritative current state before offering a
   // payment action — the order queue this modal is opened from can be up to
@@ -59,6 +85,19 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const isAlreadySettled =
     freshOrder?.paymentStatus === "paid" || ["cancelled", "void"].includes(freshOrder?.status);
 
+  const amountDue = Number(freshOrder?.totalPrice) || 0;
+  const effectiveMethod =
+    methodChoice ??
+    (SETTLEMENT_METHODS.includes(freshOrder?.paymentMethod) ? freshOrder.paymentMethod : "cash");
+  const cashReceivedOrNull = cashReceivedInput === "" ? null : Number(cashReceivedInput);
+  const cashChange = cashReceivedOrNull === null ? 0 : Math.max(0, cashReceivedOrNull - amountDue);
+  // Block confirming cash that cannot cover the bill; the server revalidates
+  // everything (422) regardless — this is UX only, never the trust boundary.
+  const cashCovers =
+    effectiveMethod !== "cash" ||
+    cashReceivedOrNull === null ||
+    (Number.isInteger(cashReceivedOrNull) && cashReceivedOrNull >= amountDue);
+
   const invalidateOrderQueues = () => {
     CASHIER_ORDER_QUEUE_STATUSES.forEach((status) =>
       queryClient.invalidateQueries(["cashier-orders-" + status, store])
@@ -73,22 +112,40 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const isSubmittingRef = useRef(false);
 
   const settleMutation = useMutation({
-    mutationFn: () =>
+    // DR-04: the settlement carries the actual tender — method always, cash
+    // detail only for cash (never fabricated for other methods). The server
+    // validates (422) and resolves register attribution; this modal never
+    // sends a register id.
+    mutationFn: (tender) =>
       updateOrderStatus({
         id: freshOrder.id,
         store,
         status: "paid",
         changedBy: user?.id,
-        changedByName: user?.fullName || user?.userName
+        changedByName: user?.fullName || user?.userName,
+        paymentMethod: tender.paymentMethod,
+        ...(tender.paymentMethod === "cash" && tender.cashAmount !== null
+          ? { cashAmount: tender.cashAmount, changeAmount: tender.changeAmount }
+          : {})
       }),
-    onSuccess: async () => {
+    onSuccess: async (_data, tender) => {
       toast.success(t("page.cashier.collectPayment.toast.paidSuccess"));
       invalidateOrderQueues();
       // Re-fetch rather than trust the mutation response for the receipt —
       // updateOrderStatus's response order was loaded without its items
       // association, while the receipt view needs the full item list.
       const refreshed = await getOrderById(freshOrder.id);
-      onOpenReceipt(toReceiptData(refreshed?.data || freshOrder));
+      // DR-04: hand the receipt the just-settled tender (server-validated
+      // by the 200 above) instead of fabricating cash = total / change = 0.
+      const receiptTender =
+        tender.paymentMethod === "cash"
+          ? {
+              paymentMethod: "cash",
+              cashAmount: tender.cashAmount ?? amountDue,
+              changeAmount: tender.changeAmount ?? 0
+            }
+          : { paymentMethod: tender.paymentMethod, cashAmount: null, changeAmount: null };
+      onOpenReceipt(toReceiptData(refreshed?.data || freshOrder, receiptTender));
       onClose();
     },
     onError: (err) => {
@@ -105,15 +162,25 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
 
   const handleConfirmFullPayment = () => {
     if (isSubmittingRef.current || settleMutation.isLoading) return;
+    if (!cashCovers) return;
     isSubmittingRef.current = true;
-    settleMutation.mutate();
+    // DR-04 tender: method always; cash detail only when the cashier typed
+    // an amount (empty = exact tender, server fills received = due).
+    const tender =
+      effectiveMethod === "cash" && cashReceivedOrNull !== null
+        ? {
+            paymentMethod: "cash",
+            cashAmount: cashReceivedOrNull,
+            changeAmount: cashChange
+          }
+        : { paymentMethod: effectiveMethod, cashAmount: null, changeAmount: null };
+    settleMutation.mutate(tender);
   };
 
   const handleSplitBill = () => {
     onOpenReceipt(toReceiptData(freshOrder));
   };
 
-  const amountDue = Number(freshOrder?.totalPrice) || 0;
   const formatPrice = (value) => Number(value || 0).toLocaleString("id-ID");
 
   return (
@@ -168,6 +235,50 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                   <p className="text-sm text-muted-foreground">
                     {t("page.cashier.collectPayment.confirmFullDesc")}
                   </p>
+                  <div className="space-y-1">
+                    <label htmlFor="collect-payment-method" className="text-sm font-medium">
+                      {t("page.cashier.paymentMethod")}
+                    </label>
+                    <select
+                      id="collect-payment-method"
+                      value={effectiveMethod}
+                      onChange={(e) => setMethodChoice(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm">
+                      {SETTLEMENT_METHODS.map((m) => (
+                        <option key={m} value={m}>
+                          {t(`page.cashier.collectPayment.method.${m}`, m)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {effectiveMethod === "cash" && (
+                    <div className="space-y-1">
+                      <label htmlFor="collect-payment-cash" className="text-sm font-medium">
+                        {t("page.cashier.cashAmount")}
+                      </label>
+                      <input
+                        id="collect-payment-cash"
+                        inputMode="numeric"
+                        placeholder={String(amountDue)}
+                        value={cashReceivedInput}
+                        onChange={(e) =>
+                          setCashReceivedInput(e.target.value.replace(/[^0-9]/g, ""))
+                        }
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        {t("page.cashier.change")}: Rp {formatPrice(cashChange)}
+                      </p>
+                      {!cashCovers && (
+                        <p className="text-sm text-destructive">
+                          {t(
+                            "page.cashier.collectPayment.cashInsufficient",
+                            "Cash received must cover the amount due."
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
@@ -180,6 +291,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                       variant="success"
                       className="flex-1"
                       loading={settleMutation.isLoading}
+                      disabled={!cashCovers}
                       onClick={handleConfirmFullPayment}>
                       {t("page.cashier.collectPayment.confirm")}
                     </Button>
