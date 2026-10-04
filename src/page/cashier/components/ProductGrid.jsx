@@ -474,6 +474,10 @@ const ProductGrid = ({
           variantName: choice.label || choice.nameVariant || choice.name,
           price: choice.price || product.price,
           totalPrice: choice.price || product.price,
+          // W3-4 (K3): the selections the price was built from, kept apart
+          // from the product's own options/modifiers definitions.
+          selectedOptions: Array.isArray(choice.options) ? choice.options : [],
+          selectedModifiers: Array.isArray(choice.modifiers) ? choice.modifiers : [],
           image: choice.image || product.image || product.imageProduct,
           ID: product.ID || product.id,
           idProduct: product.idProduct || product.id

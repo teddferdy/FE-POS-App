@@ -406,12 +406,15 @@ const CartPanel = ({
             ) : (
               items.map((item, idx) => {
                 const key = itemKey(item);
+                // W3-4 (K3): the server rejects a price override on a bundle
+                // line, so bundles keep their authoritative bundlePrice.
+                const lineCanEditPrice = canEditPrice && !item.isBundle;
                 return (
                   <CartLineItem
                     key={key || idx}
                     item={item}
-                    canEditPrice={canEditPrice}
-                    isEditing={canEditPrice && editingKey === key}
+                    canEditPrice={lineCanEditPrice}
+                    isEditing={lineCanEditPrice && editingKey === key}
                     hasError={!!safeGet(priceErrors, key)}
                     onIncrement={onIncrement}
                     onDecrement={onDecrement}
