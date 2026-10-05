@@ -1,13 +1,15 @@
 import React, { useRef, useState } from "react";
 import PropTypes from "prop-types";
-import { X, CheckCircle2, Users, Banknote, Loader2 } from "lucide-react";
+import { X, CheckCircle2, Users, Banknote, Loader2, AlertCircle, Coins } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getOrderById, updateOrderStatus } from "@/services/order";
+import { getMemberById } from "@/services/member";
 
 // F4-01: settles an order that already exists (e.g. created through
 // BISA-MAKAN's QR ordering flow) instead of the previous workaround of
@@ -68,6 +70,9 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   // server fills cashReceived = due, changeGiven = 0, same as order/create).
   const [methodChoice, setMethodChoice] = useState(null);
   const [cashReceivedInput, setCashReceivedInput] = useState("");
+  // DR-04 P2-1: explicit cashier acknowledgement that the order total will
+  // be redeemed from the member's points; reset whenever the method changes.
+  const [pointsConfirmed, setPointsConfirmed] = useState(false);
 
   // Always re-fetch the authoritative current state before offering a
   // payment action — the order queue this modal is opened from can be up to
@@ -86,9 +91,18 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     freshOrder?.paymentStatus === "paid" || ["cancelled", "void"].includes(freshOrder?.status);
 
   const amountDue = Number(freshOrder?.totalPrice) || 0;
+  // DR-04 P2-1: points settle only against the member already attached to
+  // the order (the server derives it from the order; this modal never sends
+  // a member id). Guest orders cannot pick points at all.
+  const orderMemberId = freshOrder?.customerId || null;
+  const isMethodAvailable = (m) => m !== "points" || !!orderMemberId;
   const effectiveMethod =
     methodChoice ??
-    (SETTLEMENT_METHODS.includes(freshOrder?.paymentMethod) ? freshOrder.paymentMethod : "cash");
+    (SETTLEMENT_METHODS.includes(freshOrder?.paymentMethod) &&
+    isMethodAvailable(freshOrder.paymentMethod)
+      ? freshOrder.paymentMethod
+      : "cash");
+  const isPoints = effectiveMethod === "points";
   const cashReceivedOrNull = cashReceivedInput === "" ? null : Number(cashReceivedInput);
   const cashChange = cashReceivedOrNull === null ? 0 : Math.max(0, cashReceivedOrNull - amountDue);
   // Block confirming cash that cannot cover the bill; the server revalidates
@@ -97,6 +111,28 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     effectiveMethod !== "cash" ||
     cashReceivedOrNull === null ||
     (Number.isInteger(cashReceivedOrNull) && cashReceivedOrNull >= amountDue);
+
+  // Member balance is fetched only once points is the chosen method. UX
+  // only: the server re-checks the balance under a row lock (422).
+  const {
+    data: memberData,
+    isLoading: isMemberLoading,
+    isError: isMemberError
+  } = useQuery(
+    ["collect-payment-member", orderMemberId],
+    () => getMemberById({ id: orderMemberId }),
+    {
+      enabled: isPoints && !!orderMemberId,
+      retry: false
+    }
+  );
+  const member = memberData?.data || null;
+  const memberPoints = Number(member?.totalPoints) || 0;
+  const pointsRequired = amountDue;
+  const pointsToRedeem = Math.min(memberPoints, pointsRequired);
+  const pointsSufficient = !!member && memberPoints >= pointsRequired;
+  const pointsReady = !isPoints || (pointsSufficient && pointsConfirmed);
+  const canConfirm = cashCovers && pointsReady;
 
   const invalidateOrderQueues = () => {
     CASHIER_ORDER_QUEUE_STATUSES.forEach((status) =>
@@ -149,8 +185,10 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
       onClose();
     },
     onError: (err) => {
+      // update-status business failures (422) carry their text in `error`.
       toast.error(
         err?.response?.data?.message ||
+          err?.response?.data?.error ||
           err?.message ||
           t("page.cashier.collectPayment.toast.paidFailed")
       );
@@ -162,7 +200,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
 
   const handleConfirmFullPayment = () => {
     if (isSubmittingRef.current || settleMutation.isLoading) return;
-    if (!cashCovers) return;
+    if (!canConfirm) return;
     isSubmittingRef.current = true;
     // DR-04 tender: method always; cash detail only when the cashier typed
     // an amount (empty = exact tender, server fills received = due).
@@ -242,15 +280,121 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                     <select
                       id="collect-payment-method"
                       value={effectiveMethod}
-                      onChange={(e) => setMethodChoice(e.target.value)}
+                      onChange={(e) => {
+                        setMethodChoice(e.target.value);
+                        setPointsConfirmed(false);
+                      }}
+                      aria-describedby={
+                        !orderMemberId ? "collect-payment-points-unavailable" : undefined
+                      }
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm">
                       {SETTLEMENT_METHODS.map((m) => (
-                        <option key={m} value={m}>
+                        <option key={m} value={m} disabled={!isMethodAvailable(m)}>
                           {t(`page.cashier.collectPayment.method.${m}`, m)}
                         </option>
                       ))}
                     </select>
+                    {!orderMemberId && (
+                      <p
+                        id="collect-payment-points-unavailable"
+                        className="text-xs text-muted-foreground">
+                        {t("page.cashier.collectPayment.points.unavailableGuest")}
+                      </p>
+                    )}
                   </div>
+                  {isPoints && (
+                    <div
+                      className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-3 space-y-2"
+                      data-testid="collect-payment-points-panel">
+                      {isMemberLoading ? (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Loader2 size={16} className="animate-spin mr-2" aria-hidden="true" />
+                          {t("page.cashier.collectPayment.points.loadingMember")}
+                        </div>
+                      ) : isMemberError || !member ? (
+                        <p
+                          role="alert"
+                          className="flex items-start gap-1.5 text-sm text-destructive">
+                          <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                          {t("page.cashier.collectPayment.points.memberLoadFailed")}
+                        </p>
+                      ) : (
+                        <>
+                          <div className="flex items-start gap-2">
+                            <Coins
+                              size={16}
+                              className="mt-0.5 shrink-0 text-violet-500"
+                              aria-hidden="true"
+                            />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium break-words">
+                                {member.name || "-"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {member.phoneNumber || member.phone || "-"}
+                              </p>
+                            </div>
+                          </div>
+                          <dl className="space-y-1 text-sm tabular-nums">
+                            <div className="flex justify-between gap-2">
+                              <dt className="text-muted-foreground">
+                                {t("page.cashier.collectPayment.points.balance")}
+                              </dt>
+                              <dd
+                                className="font-medium"
+                                data-testid="collect-payment-points-balance">
+                                {formatPrice(memberPoints)} pts
+                              </dd>
+                            </div>
+                            <div className="flex justify-between gap-2">
+                              <dt className="text-muted-foreground">
+                                {t("page.cashier.collectPayment.points.required")}
+                              </dt>
+                              <dd
+                                className="font-medium"
+                                data-testid="collect-payment-points-required">
+                                {formatPrice(pointsRequired)} pts
+                              </dd>
+                            </div>
+                            <div className="flex justify-between gap-2">
+                              <dt className="text-muted-foreground">
+                                {t("page.cashier.collectPayment.points.toRedeem")}
+                              </dt>
+                              <dd
+                                className="font-semibold"
+                                data-testid="collect-payment-points-redeem">
+                                {formatPrice(pointsToRedeem)} pts
+                              </dd>
+                            </div>
+                          </dl>
+                          {pointsSufficient ? (
+                            <label
+                              htmlFor="collect-payment-points-confirm"
+                              className="flex items-start gap-2 pt-1 text-sm cursor-pointer">
+                              <Checkbox
+                                id="collect-payment-points-confirm"
+                                checked={pointsConfirmed}
+                                onCheckedChange={(v) => setPointsConfirmed(v === true)}
+                                className="mt-0.5"
+                              />
+                              <span>{t("page.cashier.collectPayment.points.confirmRedeem")}</span>
+                            </label>
+                          ) : (
+                            <p
+                              role="alert"
+                              className="flex items-start gap-1.5 text-sm text-destructive">
+                              <AlertCircle
+                                size={16}
+                                className="mt-0.5 shrink-0"
+                                aria-hidden="true"
+                              />
+                              {t("page.cashier.collectPayment.points.insufficient")}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
                   {effectiveMethod === "cash" && (
                     <div className="space-y-1">
                       <label htmlFor="collect-payment-cash" className="text-sm font-medium">
@@ -291,7 +435,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                       variant="success"
                       className="flex-1"
                       loading={settleMutation.isLoading}
-                      disabled={!cashCovers}
+                      disabled={!canConfirm}
                       onClick={handleConfirmFullPayment}>
                       {t("page.cashier.collectPayment.confirm")}
                     </Button>
