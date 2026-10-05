@@ -24,6 +24,12 @@ jest.mock("../services/order", () => ({
   getOrdersByStore: jest.fn()
 }));
 
+// DR-04 P2-1: the modal imports the member service for points settlement
+// (covered in collectPaymentModalPoints.test.jsx); never hit the network here.
+jest.mock("../services/member", () => ({
+  getMemberById: jest.fn()
+}));
+
 // ReceiptModal (with its existing, already-tested split-bill UI — see
 // receiptModalSplitBill.test.jsx) is owned and rendered by the parent
 // (CashierPage), exactly like the normal checkout-complete flow. This
