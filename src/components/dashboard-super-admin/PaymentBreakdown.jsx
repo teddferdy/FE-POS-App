@@ -3,23 +3,14 @@ import { CreditCard } from "lucide-react";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import SectionCard from "./SectionCard";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
-import { safeGet } from "@/lib/safe-lookup";
-
-const BUCKET_META = {
-  cash: { label: "Tunai", color: "#10b981" },
-  ewallet: { label: "E-Wallet / QRIS", color: "#6366f1" },
-  bank: { label: "Transfer / Bank", color: "#0ea5e9" },
-  card: { label: "Kartu", color: "#f59e0b" },
-  other: { label: "Lainnya", color: "#94a3b8" }
-};
-
-const bucketMeta = (type) => safeGet(BUCKET_META, type, BUCKET_META.other);
+import { paymentMethodMeta } from "@/utils/payment";
 
 const PaymentBreakdown = ({ paymentBreakdown }) => {
+  // Buckets are canonical tender codes (+ UNRECONCILED) from the API.
   const byType = (paymentBreakdown?.byType || []).map((r) => ({
     ...r,
-    label: bucketMeta(r.type).label,
-    color: bucketMeta(r.type).color
+    label: paymentMethodMeta(r.type).label,
+    color: paymentMethodMeta(r.type).color
   }));
   const byMethod = paymentBreakdown?.byMethod || [];
   const total = paymentBreakdown?.totalPayments || 0;
@@ -71,10 +62,14 @@ const PaymentBreakdown = ({ paymentBreakdown }) => {
             <div key={r.type} className="space-y-1">
               <div className="flex items-center justify-between text-sm">
                 <span className="inline-flex items-center gap-2 font-medium text-foreground">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: r.color }} />
+                  <span
+                    aria-hidden="true"
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: r.color }}
+                  />
                   {r.label}
                 </span>
-                <span className="font-mono text-xs font-semibold">
+                <span className="font-mono text-xs font-semibold tabular-nums">
                   {pct}% · {formatCurrencyRupiah(r.amount)}
                 </span>
               </div>
@@ -95,14 +90,31 @@ const PaymentBreakdown = ({ paymentBreakdown }) => {
             Rincian Metode
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {byMethod.map((m) => (
-              <span
-                key={m.method}
-                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted text-xs text-foreground">
-                {m.method}
-                <span className="font-mono font-semibold text-muted-foreground">{m.count}x</span>
-              </span>
-            ))}
+            {byMethod.map((m) => {
+              const meta = paymentMethodMeta(m.bucket ?? m.method);
+              // A stored value that is not itself canonical (legacy alias or
+              // unreconciled tender) is shown next to its label for tracing.
+              const showStoredValue = (m.bucket ?? m.method) !== m.method;
+              return (
+                <span
+                  key={m.method}
+                  title={m.method}
+                  className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted text-xs text-foreground">
+                  <span
+                    aria-hidden="true"
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: meta.color }}
+                  />
+                  {meta.label}
+                  {showStoredValue && (
+                    <span className="font-mono text-muted-foreground">{m.method}</span>
+                  )}
+                  <span className="font-mono font-semibold text-muted-foreground tabular-nums">
+                    {m.count}x
+                  </span>
+                </span>
+              );
+            })}
           </div>
         </div>
       )}

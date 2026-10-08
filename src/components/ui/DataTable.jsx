@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Combobox } from "@/components/ui/combobox";
@@ -227,7 +228,7 @@ const DataTable = ({
     }
 
     return (
-      <div ref={scrollRefCallback} className="overflow-x-auto">
+      <HorizontalScrollArea viewportRef={scrollRefCallback} contentKey={data}>
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-muted/50 text-muted-foreground">
@@ -344,7 +345,7 @@ const DataTable = ({
             })}
           </tbody>
         </table>
-      </div>
+      </HorizontalScrollArea>
     );
   };
 
