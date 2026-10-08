@@ -20,7 +20,7 @@ import PageHeader from "@/components/ui/PageHeader";
 
 const PriceStoreList = () => {
   const { t } = useTranslation();
-  const cookie = useCookies();
+  const [cookie] = useCookies();
   const queryClient = useQueryClient();
   const { setActiveStore } = useStore();
   const user = cookie?.user;

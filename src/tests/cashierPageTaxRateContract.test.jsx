@@ -22,7 +22,7 @@ jest.mock("sonner", () => ({
 }));
 
 jest.mock("react-cookie", () => ({
-  useCookies: () => ({ user: { id: 1, roleType: "admin", store: "1" }, activeStore: "1" })
+  useCookies: () => [{ user: { id: 1, roleType: "admin", store: "1" }, activeStore: "1" }]
 }));
 
 jest.mock("@/services/product", () => ({

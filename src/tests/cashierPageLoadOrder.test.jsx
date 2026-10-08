@@ -21,11 +21,11 @@ jest.mock("sonner", () => ({
   toast: { success: jest.fn(), error: jest.fn(), info: jest.fn() }
 }));
 
-// CashierPage reads `const cookie = useCookies();` without destructuring
-// (unlike most other cashier components, which do `const [cookie] =
-// useCookies();`) — this mock matches that actual, pre-existing usage.
+// react-cookie's useCookies() returns [cookies, setCookie, removeCookie];
+// CashierPage destructures `const [cookie] = useCookies();`, so the mock
+// must return that same array shape.
 jest.mock("react-cookie", () => ({
-  useCookies: () => ({ user: { id: 1, roleType: "admin", store: "1" }, activeStore: "1" })
+  useCookies: () => [{ user: { id: 1, roleType: "admin", store: "1" }, activeStore: "1" }]
 }));
 
 jest.mock("@/services/product", () => ({
