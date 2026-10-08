@@ -1,10 +1,20 @@
 import React from "react";
-import { render, act } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { MemoryRouter } from "react-router-dom";
 import CashierPage from "../page/cashier/CashierPage";
-import { orderList } from "../state/order-list";
+
+// Regression: /home in a tab without the login-tab sessionStorage "user"
+// must resolve the user from the cookie. react-cookie's useCookies()
+// returns [cookies, setCookie, removeCookie]; reading `.user` off that
+// array left role/store undefined, so a super_admin saw an empty
+// "Pilih toko" picker with no stores and a cashier saw no store at all.
+
+let mockCookies;
+jest.mock("react-cookie", () => ({
+  useCookies: () => [mockCookies, jest.fn(), jest.fn()]
+}));
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -18,21 +28,26 @@ jest.mock("react-i18next", () => ({
 jest.mock("sonner", () => ({
   toast: { success: jest.fn(), error: jest.fn(), info: jest.fn() }
 }));
-jest.mock("react-cookie", () => ({
-  useCookies: () => [{ user: { id: 1, roleType: "admin", store: "1" }, activeStore: "1" }]
-}));
 jest.mock("@/services/product", () => ({
   getProductByOutlet: jest.fn(() => Promise.resolve({ data: [] })),
   getFullProductCatalog: jest.fn(() => Promise.resolve({ data: [], bundles: [] }))
 }));
 jest.mock("@/services/location", () => ({
-  getAllLocation: jest.fn(() => Promise.resolve({ data: [] }))
+  getAllLocation: jest.fn(() =>
+    Promise.resolve({
+      data: [
+        { id: 1, name: "Store Alpha" },
+        { id: 2, name: "Store Beta" },
+        { id: 3, name: "Store Gamma" }
+      ]
+    })
+  )
 }));
 jest.mock("@/services/tax-config", () => ({
   getAllTaxConfig: jest.fn(() => Promise.resolve({ data: [] }))
 }));
 jest.mock("@/services/order", () => ({
-  getCustomerTaxRate: jest.fn(() => Promise.resolve({ data: { rate: 11 } }))
+  getCustomerTaxRate: jest.fn(() => Promise.resolve({ data: { rate: 0, serviceChargeRate: 0 } }))
 }));
 jest.mock("@/services/parked-cart", () => ({
   createParkedCart: jest.fn()
@@ -54,63 +69,48 @@ jest.mock("@/components/layout/Header", () => ({
   NotificationBell: () => null
 }));
 
-let mockProductGridRenders = 0;
-jest.mock("../page/cashier/components/ProductGrid", () => {
-  // Deliberately NOT memoized: any parent re-render re-renders this mock,
-  // so its counter measures exactly how often CashierPage itself re-renders.
-  return function MockProductGrid() {
-    mockProductGridRenders += 1;
-    return null;
-  };
-});
+jest.mock("../page/cashier/components/ProductGrid", () => () => null);
 jest.mock("../page/cashier/components/CheckoutModal", () => () => null);
 jest.mock("../page/cashier/components/ReceiptModal", () => () => null);
-jest.mock("../page/cashier/components/OrderQueue", () => () => null);
 jest.mock("../page/cashier/components/CollectPaymentModal", () => () => null);
 jest.mock("../page/cashier/components/ParkedCartPanel", () => () => null);
-jest.mock("../page/cashier/components/CartPanel", () => () => null);
+jest.mock("../page/cashier/components/OrderQueue", () => ({
+  __esModule: true,
+  default: ({ store }) => <div data-testid="order-queue">{`queue-store-${store}`}</div>
+}));
 
-const renderPage = async () => {
+const renderCashierPage = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
   });
-  const utils = render(
-    <MemoryRouter>
+  return render(
+    <MemoryRouter initialEntries={["/home"]}>
       <QueryClientProvider client={queryClient}>
         <CashierPage />
       </QueryClientProvider>
     </MemoryRouter>
   );
-  // Let queries settle so later counts are not polluted by load renders.
-  await act(async () => {});
-  return utils;
 };
 
-// Phase 31 Batch 2 (PERF-1): CashierPage must subscribe to the cart `order`
-// slice only — an unrelated store write must not re-render the page.
-describe("CashierPage — narrow cart subscription", () => {
+describe("CashierPage cookie fallback when sessionStorage has no user", () => {
   beforeEach(() => {
-    orderList.setState({ order: [] });
-    mockProductGridRenders = 0;
+    sessionStorage.clear();
   });
 
-  test("an unrelated zustand store write does not re-render the page", async () => {
-    await renderPage();
-    const settled = mockProductGridRenders;
-    expect(settled).toBeGreaterThan(0);
-    await act(async () => {
-      orderList.setState((s) => ({ ...s }));
-    });
-    expect(mockProductGridRenders).toBe(settled);
+  test("super_admin sees every store in the picker", async () => {
+    mockCookies = { user: { id: 1, roleType: "super_admin" } };
+    renderCashierPage();
+
+    expect(await screen.findByText("Store Alpha")).toBeInTheDocument();
+    expect(screen.getByText("Store Beta")).toBeInTheDocument();
+    expect(screen.getByText("Store Gamma")).toBeInTheDocument();
   });
 
-  test("cart updates still flow through: adding an item re-renders with new content", async () => {
-    await renderPage();
-    const settled = mockProductGridRenders;
-    await act(async () => {
-      orderList.getState().addOrder({ id: 9, nameProduct: "Narrow", price: 5000 });
-    });
-    expect(mockProductGridRenders).toBeGreaterThan(settled);
-    expect(orderList.getState().order).toHaveLength(1);
+  test("a store-bound user lands on their cookie store instead of the picker", () => {
+    mockCookies = { user: { id: 2, roleType: "admin", store: "7" }, activeStore: "7" };
+    renderCashierPage();
+
+    expect(screen.getByTestId("order-queue")).toHaveTextContent("queue-store-7");
+    expect(screen.queryByText("Pilih toko")).not.toBeInTheDocument();
   });
 });

@@ -57,7 +57,7 @@ import { useThemeEffect } from "@/hooks/useThemeEffect";
 
 const CashierPage = () => {
   const { t } = useTranslation();
-  const cookie = useCookies();
+  const [cookie] = useCookies();
   const user = useMemo(() => {
     const fromSession = () => {
       try {
