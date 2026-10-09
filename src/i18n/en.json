@@ -499,6 +499,7 @@
   "common.status": "Status",
   "common.all": "All",
   "common.active": "Active",
+  "common.disabled": "Disabled",
   "common.draft": "Draft",
   "common.inactive": "Inactive",
   "common.category": "Category",

@@ -508,6 +508,7 @@
   "common.status": "Status",
   "common.all": "Semua",
   "common.active": "Aktif",
+  "common.disabled": "Dinonaktifkan",
   "common.draft": "Draft",
   "common.inactive": "Tidak Aktif",
   "common.category": "Kategori",

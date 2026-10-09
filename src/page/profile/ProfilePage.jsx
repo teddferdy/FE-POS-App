@@ -44,7 +44,10 @@ const ProfilePage = () => {
     );
   }
 
-  const statusActive = user.status !== "inactive";
+  // AUTH-1: separate account enablement (disabledAt) from presence (status)
+  const isAccountEnabled = !user.disabledAt && !user.deletedAt;
+  const isPresenceActive = user.status === "active";
+  const statusActive = isPresenceActive;
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
     return new Date(dateStr).toLocaleDateString("id-ID", {
@@ -82,9 +85,17 @@ const ProfilePage = () => {
           </div>
           <div
             className={`absolute -bottom-2 -right-2 p-1 rounded-full border-2 border-background ${
-              statusActive ? "bg-green-500" : "bg-muted-foreground"
+              !isAccountEnabled
+                ? "bg-red-500"
+                : statusActive
+                  ? "bg-green-500"
+                  : "bg-muted-foreground"
             }`}>
-            <CheckCircle2 size={14} className="text-white" />
+            {isAccountEnabled && statusActive ? (
+              <CheckCircle2 size={14} className="text-white" />
+            ) : (
+              <XCircle size={14} className="text-white" />
+            )}
           </div>
         </div>
         <div className="flex-1 space-y-1 relative">
@@ -92,11 +103,17 @@ const ProfilePage = () => {
             <h3 className="text-2xl font-bold text-foreground">{user.fullName || user.userName}</h3>
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
-                statusActive
-                  ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                  : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+                !isAccountEnabled
+                  ? "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+                  : statusActive
+                    ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                    : "bg-muted text-muted-foreground border border-border"
               }`}>
-              {statusActive ? t("common.active") : t("common.inactive")}
+              {!isAccountEnabled
+                ? t("common.disabled") || "Disabled"
+                : statusActive
+                  ? t("common.active")
+                  : t("common.inactive")}
             </span>
           </div>
           <p className="text-muted-foreground">
@@ -283,10 +300,23 @@ const ProfilePage = () => {
                   {t("page.profile.status")}
                 </p>
                 <p
-                  className={`text-lg font-bold flex items-center gap-1 ${statusActive ? "text-green-600" : "text-red-600"}`}>
-                  {statusActive ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-                  {statusActive ? t("common.active") : t("common.inactive")}
+                  className={`text-lg font-bold flex items-center gap-1 ${!isAccountEnabled ? "text-red-600" : statusActive ? "text-green-600" : "text-red-600"}`}>
+                  {!isAccountEnabled ? (
+                    <XCircle size={18} />
+                  ) : statusActive ? (
+                    <CheckCircle2 size={18} />
+                  ) : (
+                    <XCircle size={18} />
+                  )}
+                  {!isAccountEnabled
+                    ? t("common.disabled") || "Disabled"
+                    : statusActive
+                      ? t("common.active")
+                      : t("common.inactive")}
                 </p>
+                {!isAccountEnabled && (
+                  <p className="text-xs text-red-600 mt-1">Akun dinonaktifkan</p>
+                )}
               </div>
               <Shield className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />
             </div>
