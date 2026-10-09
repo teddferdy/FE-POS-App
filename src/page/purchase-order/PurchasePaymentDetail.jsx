@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const methodBadge = {
   cash: {
@@ -154,7 +155,7 @@ const PurchasePaymentDetail = () => {
                 <Wallet size={16} className="text-muted-foreground" />
                 {t("page.purchasePayment.detail.paymentInfo")}
               </h3>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody className="divide-y divide-border">
                     <Row label={t("page.purchasePayment.detail.amount")}>
@@ -183,7 +184,7 @@ const PurchasePaymentDetail = () => {
                     <Row label={t("page.purchasePayment.detail.notes")}>{payment.notes || "-"}</Row>
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </Card>
 
             <Card className="p-6">
@@ -191,7 +192,7 @@ const PurchasePaymentDetail = () => {
                 <FileText size={16} className="text-muted-foreground" />
                 {t("page.purchasePayment.detail.poInfo")}
               </h3>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody className="divide-y divide-border">
                     <Row label={t("page.purchasePayment.detail.poNumber")}>
@@ -225,7 +226,7 @@ const PurchasePaymentDetail = () => {
                     </Row>
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </Card>
           </div>
 
@@ -235,7 +236,7 @@ const PurchasePaymentDetail = () => {
                 <User size={16} className="text-muted-foreground" />
                 {t("page.purchasePayment.detail.system")}
               </h3>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody className="divide-y divide-border">
                     <tr>
@@ -280,7 +281,7 @@ const PurchasePaymentDetail = () => {
                     </tr>
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </Card>
           </div>
         </div>

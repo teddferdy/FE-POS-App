@@ -473,7 +473,7 @@ const DataTable = ({
 
       <div className="relative">
         {isLoading ? (
-          <div className="overflow-x-auto">
+          <HorizontalScrollArea>
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
@@ -522,7 +522,7 @@ const DataTable = ({
                 ))}
               </tbody>
             </table>
-          </div>
+          </HorizontalScrollArea>
         ) : (
           renderTable()
         )}

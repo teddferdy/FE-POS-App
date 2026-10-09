@@ -15,6 +15,7 @@ import StoreFilter from "@/components/ui/StoreFilter";
 import ExportButtons from "@/components/organism/ExportButtons";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const DailyReport = () => {
   const { t } = useTranslation();
@@ -108,7 +109,7 @@ const DailyReport = () => {
             </div>
           ) : (
             <Card className="overflow-hidden">
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/60 border-b">
@@ -157,7 +158,7 @@ const DailyReport = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </Card>
           )}
         </>

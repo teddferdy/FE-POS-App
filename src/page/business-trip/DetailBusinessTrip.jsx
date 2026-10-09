@@ -29,6 +29,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const statusBadge = {
   draft: {
@@ -262,7 +263,7 @@ const DetailBusinessTrip = () => {
 
             <Card className="p-6">
               <CardTitle icon={Receipt}>{t("page.businessTrip.rab.breakdownTitle")}</CardTitle>
-              <div className="overflow-x-auto border border-border rounded-lg">
+              <HorizontalScrollArea className="border border-border rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
@@ -311,7 +312,7 @@ const DetailBusinessTrip = () => {
                     </tr>
                   </tfoot>
                 </table>
-              </div>
+              </HorizontalScrollArea>
               {budgetMismatch && (
                 <p className="mt-3 flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 dark:text-amber-400 dark:bg-amber-900/20 dark:border-amber-900/40">
                   <Wallet size={14} className="shrink-0 mt-0.5" />

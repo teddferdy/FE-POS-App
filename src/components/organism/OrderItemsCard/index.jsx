@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 import { safeGet } from "@/lib/safe-lookup";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const COMMON_CONVERSION = {
   "kg->gram": 1000,
@@ -258,7 +259,7 @@ export default function OrderItemsCard({
           <>
             {/* Desktop table view */}
             <div className="hidden lg:block">
-              <div className="rounded-xl border border-border/60 overflow-hidden">
+              <HorizontalScrollArea className="rounded-xl border border-border/60 overflow-hidden">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-muted/50 border-b border-border/60">
@@ -440,7 +441,7 @@ export default function OrderItemsCard({
                     })}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
 
               {/* Supplier price chips for desktop */}
               <div className="mt-3 space-y-2">

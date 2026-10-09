@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const getInitials = (name) => {
   if (!name) return "?";
@@ -167,7 +168,7 @@ const MemberDetail = () => {
                 <Skeleton className="h-8 w-32 rounded" />
                 <Skeleton className="h-8 w-28 rounded" />
               </div>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full">
                   <thead>
                     <tr className="bg-muted/30 border-b border-border">
@@ -190,7 +191,7 @@ const MemberDetail = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </div>
           </div>
         </div>
@@ -471,7 +472,7 @@ const MemberDetail = () => {
             </div>
 
             {activeTab === "transactions" && (
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-muted/30 border-b border-border">
@@ -544,12 +545,12 @@ const MemberDetail = () => {
                     )}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             )}
 
             {activeTab === "points" && (
               <>
-                <div className="overflow-x-auto">
+                <HorizontalScrollArea>
                   {pointLoading ? (
                     <table className="w-full text-left">
                       <thead>
@@ -579,72 +580,65 @@ const MemberDetail = () => {
                       </tbody>
                     </table>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left">
-                        <thead>
-                          <tr className="bg-muted/30 border-b border-border">
-                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.member.detail.pointHistoryTable.date")}
-                            </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.member.detail.pointHistoryTable.description")}
-                            </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                              {t("page.member.detail.pointHistoryTable.points")}
-                            </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                              {t("page.member.detail.pointHistoryTable.balance")}
-                            </th>
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="bg-muted/30 border-b border-border">
+                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.member.detail.pointHistoryTable.date")}
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.member.detail.pointHistoryTable.description")}
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                            {t("page.member.detail.pointHistoryTable.points")}
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                            {t("page.member.detail.pointHistoryTable.balance")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {(pointData?.data || []).length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="px-4 py-12 text-center text-muted-foreground">
+                              <Stars size={36} className="mx-auto mb-2 opacity-30" />
+                              <p className="text-sm">
+                                {t("page.member.detail.pointHistoryTable.empty")}
+                              </p>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                          {(pointData?.data || []).length === 0 ? (
-                            <tr>
+                        ) : (
+                          (pointData?.data || []).map((pt, idx) => (
+                            <tr key={pt.id || idx} className="hover:bg-muted/20 transition-colors">
+                              <td className="px-4 py-3 text-sm text-muted-foreground">
+                                {pt.date || pt.createdAt
+                                  ? new Date(pt.date || pt.createdAt).toLocaleDateString("id-ID", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric"
+                                    })
+                                  : "-"}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-foreground">
+                                {pt.notes || pt.description || pt.reason || "-"}
+                              </td>
                               <td
-                                colSpan={4}
-                                className="px-4 py-12 text-center text-muted-foreground">
-                                <Stars size={36} className="mx-auto mb-2 opacity-30" />
-                                <p className="text-sm">
-                                  {t("page.member.detail.pointHistoryTable.empty")}
-                                </p>
+                                className={`px-4 py-3 text-sm font-bold text-right ${(pt.pointsChange || pt.points) > 0 ? "text-green-600" : "text-red-600"}`}>
+                                {(pt.pointsChange || pt.points) > 0 ? "+" : ""}
+                                {(pt.pointsChange || pt.points)?.toLocaleString() || 0}
+                              </td>
+                              <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
+                                {(pt.pointsAfter || pt.balance)?.toLocaleString() || "-"}
                               </td>
                             </tr>
-                          ) : (
-                            (pointData?.data || []).map((pt, idx) => (
-                              <tr
-                                key={pt.id || idx}
-                                className="hover:bg-muted/20 transition-colors">
-                                <td className="px-4 py-3 text-sm text-muted-foreground">
-                                  {pt.date || pt.createdAt
-                                    ? new Date(pt.date || pt.createdAt).toLocaleDateString(
-                                        "id-ID",
-                                        {
-                                          day: "numeric",
-                                          month: "short",
-                                          year: "numeric"
-                                        }
-                                      )
-                                    : "-"}
-                                </td>
-                                <td className="px-4 py-3 text-sm text-foreground">
-                                  {pt.notes || pt.description || pt.reason || "-"}
-                                </td>
-                                <td
-                                  className={`px-4 py-3 text-sm font-bold text-right ${(pt.pointsChange || pt.points) > 0 ? "text-green-600" : "text-red-600"}`}>
-                                  {(pt.pointsChange || pt.points) > 0 ? "+" : ""}
-                                  {(pt.pointsChange || pt.points)?.toLocaleString() || 0}
-                                </td>
-                                <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
-                                  {(pt.pointsAfter || pt.balance)?.toLocaleString() || "-"}
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
                   )}
-                </div>
+                </HorizontalScrollArea>
                 <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/10">
                   <p className="text-xs text-muted-foreground">
                     Menampilkan {(pointData?.data || []).length} dari{" "}

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const DetailBom = () => {
   const { t, i18n } = useTranslation();
@@ -88,7 +89,7 @@ const DetailBom = () => {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-card p-6 rounded-xl border border-border">
               <h2 className="text-lg font-semibold mb-4">{t("page.bom.detail.bomInfo")}</h2>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody>
                     {[
@@ -112,7 +113,7 @@ const DetailBom = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </div>
 
             <div>
@@ -120,7 +121,7 @@ const DetailBom = () => {
                 <h2 className="text-lg font-semibold mb-4">
                   {t("page.bom.detail.ingredientList")}
                 </h2>
-                <div className="overflow-x-auto">
+                <HorizontalScrollArea>
                   <table className="w-full text-sm min-w-[520px]">
                     <thead>
                       <tr className="border-b text-left text-muted-foreground">
@@ -151,7 +152,7 @@ const DetailBom = () => {
                       )}
                     </tbody>
                   </table>
-                </div>
+                </HorizontalScrollArea>
               </div>
             </div>
           </div>

@@ -47,22 +47,37 @@
     scrollbar-width: none; /* Firefox */
   }
 
-  /* Opt-in visible horizontal scrollbar for scroll areas whose content
-     overflows (HorizontalScrollArea). Scrollbars are hidden app-wide above. */
+  /* Opt-in visible scrollbar for scroll areas whose content overflows
+     (HorizontalScrollArea). Scrollbars are hidden app-wide above. Sized for
+     a desktop mouse: a visible track and a thumb large enough to grab.
+     Chromium ignores ::-webkit-scrollbar styling (and falls back to the OS
+     scrollbar, an invisible overlay on macOS) as soon as scrollbar-color or a
+     non-auto scrollbar-width is set, so the standard properties are only
+     applied where ::-webkit-scrollbar is unsupported (Firefox). */
   .scrollbar-visible {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.4) transparent;
+    scrollbar-width: auto;
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    .scrollbar-visible {
+      scrollbar-color: hsl(var(--muted-foreground) / 0.5) hsl(var(--muted));
+    }
   }
   .scrollbar-visible::-webkit-scrollbar {
     display: block;
-    height: 6px;
+    height: 10px;
+    width: 10px;
   }
   .scrollbar-visible::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.4);
+    background-color: hsl(var(--muted-foreground) / 0.5);
+    border: 2px solid hsl(var(--muted));
     border-radius: 9999px;
   }
+  .scrollbar-visible::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.75);
+  }
   .scrollbar-visible::-webkit-scrollbar-track {
-    background: transparent;
+    background: hsl(var(--muted));
+    border-radius: 9999px;
   }
 
   .popover-content-width-full {

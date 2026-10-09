@@ -42,6 +42,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const conversionHints = {
   kg: { base: "gram", factor: 1000 },
@@ -488,7 +489,7 @@ const AddIngredient = () => {
                               Produk yang Disediakan
                             </p>
                           </div>
-                          <div className="overflow-x-auto">
+                          <HorizontalScrollArea>
                             <table className="w-full text-xs">
                               <thead>
                                 <tr className="border-b bg-muted/30">
@@ -574,7 +575,7 @@ const AddIngredient = () => {
                                 )}
                               </tbody>
                             </table>
-                          </div>
+                          </HorizontalScrollArea>
                         </div>
                       )}
                     </div>

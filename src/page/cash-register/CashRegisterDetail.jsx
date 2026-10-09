@@ -213,91 +213,93 @@ const CashRegisterDetail = () => {
       );
     }
     return (
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="bg-muted/50 text-muted-foreground">
-            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
-              {t("page.cashRegister.detail.tableNo")}
-            </th>
-            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
-              {t("page.cashRegister.detail.tableInvoice")}
-            </th>
-            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
-              {t("page.cashRegister.detail.tableCashier")}
-            </th>
-            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
-              {t("page.cashRegister.detail.tableDate")}
-            </th>
-            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
-              {t("page.cashRegister.detail.tableTime")}
-            </th>
-            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-right">
-              {t("page.cashRegister.detail.tableTotal")}
-            </th>
-            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
-              {t("page.cashRegister.detail.tableStatus")}
-            </th>
-            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
-              {t("page.cashRegister.detail.period")}
-            </th>
-            <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
-              {t("page.cashRegister.detail.tablePayment")}
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {list.map((o, i) => (
-            <tr key={o.id} className="hover:bg-accent/30 transition-colors">
-              <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
-              <td className="px-4 py-3 font-medium">{o.orderNumber || "-"}</td>
-              <td className="px-4 py-3">
-                {o.cashierName || o.createdByUser?.fullName || o.createdByUser?.userName || "-"}
-              </td>
-              <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                {new Date(o.createdAt).toLocaleDateString("id")}
-              </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {new Date(o.createdAt).toTimeString().slice(0, 5)}
-              </td>
-              <td className="px-4 py-3 text-right font-mono">{formatIDR(o.totalPrice)}</td>
-              <td className="px-4 py-3 text-center">
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${orderStatusBadge(o.status)}`}>
-                  {o.status}
-                </span>
-                {(() => {
-                  const eligibility = eligibilityOf(o);
-                  if (!eligibility) return null;
-                  const included = eligibility === "included";
-                  return (
-                    <div
-                      className={`mt-1 text-[10px] font-semibold ${
-                        included ? "text-green-700" : "text-amber-700"
-                      }`}>
-                      {included
-                        ? t("page.cashRegister.detail.included")
-                        : eligibility === "notIncluded"
-                          ? t("page.cashRegister.detail.notIncluded")
-                          : t(`page.cashRegister.detail.reason.${eligibility}`)}
-                    </div>
-                  );
-                })()}
-              </td>
-              <td className="px-4 py-3 text-center">
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                    inPeriod ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
-                  }`}>
-                  {inPeriod
-                    ? t("page.cashRegister.detail.inPeriod")
-                    : t("page.cashRegister.detail.outsidePeriod")}
-                </span>
-              </td>
-              <td className="px-4 py-3 text-center">{o.paymentMethod || "-"}</td>
+      <HorizontalScrollArea contentKey={list}>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-muted/50 text-muted-foreground">
+              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
+                {t("page.cashRegister.detail.tableNo")}
+              </th>
+              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
+                {t("page.cashRegister.detail.tableInvoice")}
+              </th>
+              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
+                {t("page.cashRegister.detail.tableCashier")}
+              </th>
+              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
+                {t("page.cashRegister.detail.tableDate")}
+              </th>
+              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left">
+                {t("page.cashRegister.detail.tableTime")}
+              </th>
+              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-right">
+                {t("page.cashRegister.detail.tableTotal")}
+              </th>
+              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
+                {t("page.cashRegister.detail.tableStatus")}
+              </th>
+              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
+                {t("page.cashRegister.detail.period")}
+              </th>
+              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">
+                {t("page.cashRegister.detail.tablePayment")}
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {list.map((o, i) => (
+              <tr key={o.id} className="hover:bg-accent/30 transition-colors">
+                <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
+                <td className="px-4 py-3 font-medium">{o.orderNumber || "-"}</td>
+                <td className="px-4 py-3">
+                  {o.cashierName || o.createdByUser?.fullName || o.createdByUser?.userName || "-"}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                  {new Date(o.createdAt).toLocaleDateString("id")}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {new Date(o.createdAt).toTimeString().slice(0, 5)}
+                </td>
+                <td className="px-4 py-3 text-right font-mono">{formatIDR(o.totalPrice)}</td>
+                <td className="px-4 py-3 text-center">
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${orderStatusBadge(o.status)}`}>
+                    {o.status}
+                  </span>
+                  {(() => {
+                    const eligibility = eligibilityOf(o);
+                    if (!eligibility) return null;
+                    const included = eligibility === "included";
+                    return (
+                      <div
+                        className={`mt-1 text-[10px] font-semibold ${
+                          included ? "text-green-700" : "text-amber-700"
+                        }`}>
+                        {included
+                          ? t("page.cashRegister.detail.included")
+                          : eligibility === "notIncluded"
+                            ? t("page.cashRegister.detail.notIncluded")
+                            : t(`page.cashRegister.detail.reason.${eligibility}`)}
+                      </div>
+                    );
+                  })()}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                      inPeriod ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                    }`}>
+                    {inPeriod
+                      ? t("page.cashRegister.detail.inPeriod")
+                      : t("page.cashRegister.detail.outsidePeriod")}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-center">{o.paymentMethod || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </HorizontalScrollArea>
     );
   };
 
@@ -539,7 +541,7 @@ const CashRegisterDetail = () => {
               <h2 className="text-sm font-semibold">{t("page.cashRegister.detail.infoTitle")}</h2>
             </div>
             <div className="p-6">
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody>
                     {leftCol.map((r) => (
@@ -555,7 +557,7 @@ const CashRegisterDetail = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </div>
           </div>
           <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -565,7 +567,7 @@ const CashRegisterDetail = () => {
               </h2>
             </div>
             <div className="p-6">
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody>
                     {rightCol.map((r) => (
@@ -589,7 +591,7 @@ const CashRegisterDetail = () => {
                     {t("page.cashRegister.detail.snapshotFallback")}
                   </p>
                 )}
-              </div>
+              </HorizontalScrollArea>
             </div>
           </div>
         </div>
@@ -616,25 +618,10 @@ const CashRegisterDetail = () => {
                       "page.cashRegister.detail.salesIncluded"
                     )} (${rec.sales.eligible.count}x)`}
                   </h3>
-                  <table className="w-full text-sm mt-1">
-                    <tbody>
-                      {methodRows.map((r) => (
-                        <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                          <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
-                          <td className="py-1.5 text-right font-mono">{r.value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {excludedSalesRows.length > 0 && (
-                  <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("page.cashRegister.detail.salesExcluded")}
-                    </h3>
+                  <HorizontalScrollArea>
                     <table className="w-full text-sm mt-1">
                       <tbody>
-                        {excludedSalesRows.map((r) => (
+                        {methodRows.map((r) => (
                           <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
                             <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
                             <td className="py-1.5 text-right font-mono">{r.value}</td>
@@ -642,50 +629,73 @@ const CashRegisterDetail = () => {
                         ))}
                       </tbody>
                     </table>
+                  </HorizontalScrollArea>
+                </div>
+                {excludedSalesRows.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.cashRegister.detail.salesExcluded")}
+                    </h3>
+                    <HorizontalScrollArea>
+                      <table className="w-full text-sm mt-1">
+                        <tbody>
+                          {excludedSalesRows.map((r) => (
+                            <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                              <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                              <td className="py-1.5 text-right font-mono">{r.value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </HorizontalScrollArea>
                   </div>
                 )}
                 <div>
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {t("page.cashRegister.detail.expenseBreakdown")}
                   </h3>
-                  <table className="w-full text-sm mt-1">
-                    <tbody>
-                      {expenseCategoryRows.map((r) => (
-                        <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                          <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
-                          <td className="py-1.5 text-right font-mono">{r.value}</td>
-                        </tr>
-                      ))}
-                      {excludedExpenseRows.map((r) => (
-                        <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                          <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
-                          <td className="py-1.5 text-right font-mono">{r.value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <HorizontalScrollArea>
+                    <table className="w-full text-sm mt-1">
+                      <tbody>
+                        {expenseCategoryRows.map((r) => (
+                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                            <td className="py-1.5 text-right font-mono">{r.value}</td>
+                          </tr>
+                        ))}
+                        {excludedExpenseRows.map((r) => (
+                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                            <td className="py-1.5 text-right font-mono">{r.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </HorizontalScrollArea>
                 </div>
                 {expenseRecords.length > 0 && (
                   <div>
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {t("page.cashRegister.detail.expenseRecords")} ({expenseRecords.length}x)
                     </h3>
-                    <table className="w-full text-sm mt-1">
-                      <tbody>
-                        {expenseRecords.map((e) => (
-                          <tr key={e.id} className="border-b border-muted/30 last:border-b-0">
-                            <td className="py-1.5 pr-4 text-muted-foreground">
-                              {e.category || "-"}
-                              {e.createdAt
-                                ? ` · ${new Date(e.createdAt).toLocaleString("id")}`
-                                : ""}
-                              {e.notes ? ` · ${e.notes}` : ""}
-                            </td>
-                            <td className="py-1.5 text-right font-mono">{formatIDR(e.amount)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <HorizontalScrollArea>
+                      <table className="w-full text-sm mt-1">
+                        <tbody>
+                          {expenseRecords.map((e) => (
+                            <tr key={e.id} className="border-b border-muted/30 last:border-b-0">
+                              <td className="py-1.5 pr-4 text-muted-foreground">
+                                {e.category || "-"}
+                                {e.createdAt
+                                  ? ` · ${new Date(e.createdAt).toLocaleString("id")}`
+                                  : ""}
+                                {e.notes ? ` · ${e.notes}` : ""}
+                              </td>
+                              <td className="py-1.5 text-right font-mono">{formatIDR(e.amount)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </HorizontalScrollArea>
                   </div>
                 )}
                 {cashRows.length > 0 && (
@@ -693,16 +703,18 @@ const CashRegisterDetail = () => {
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {t("page.cashRegister.detail.cashReconciliation")}
                     </h3>
-                    <table className="w-full text-sm mt-1">
-                      <tbody>
-                        {cashRows.map((r) => (
-                          <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
-                            <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
-                            <td className="py-1.5 text-right font-mono">{r.value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <HorizontalScrollArea>
+                      <table className="w-full text-sm mt-1">
+                        <tbody>
+                          {cashRows.map((r) => (
+                            <tr key={r.label} className="border-b border-muted/30 last:border-b-0">
+                              <td className="py-1.5 pr-4 text-muted-foreground">{r.label}</td>
+                              <td className="py-1.5 text-right font-mono">{r.value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </HorizontalScrollArea>
                   </div>
                 )}
               </div>
@@ -719,17 +731,15 @@ const CashRegisterDetail = () => {
               {t("page.cashRegister.detail.transactionCount", { count: ordersTotal })}
             </span>
           </div>
-          <HorizontalScrollArea contentKey={orders}>
-            {ordersLoading ? (
-              <div className="p-6 space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-6 w-full" />
-                ))}
-              </div>
-            ) : (
-              renderOrderTable(orders, true, "page.cashRegister.detail.noTransactions")
-            )}
-          </HorizontalScrollArea>
+          {ordersLoading ? (
+            <div className="p-6 space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-6 w-full" />
+              ))}
+            </div>
+          ) : (
+            renderOrderTable(orders, true, "page.cashRegister.detail.noTransactions")
+          )}
           {!ordersLoading &&
             orders.length > 0 &&
             renderTablePagination(ordersPage, ordersTotalPages, setOrdersPage)}
@@ -744,13 +754,7 @@ const CashRegisterDetail = () => {
               {t("page.cashRegister.detail.transactionCount")} · {outsideTotal}x
             </span>
           </div>
-          <HorizontalScrollArea contentKey={outsideOrders}>
-            {renderOrderTable(
-              outsideOrders,
-              false,
-              "page.cashRegister.detail.noOutsideTransactions"
-            )}
-          </HorizontalScrollArea>
+          {renderOrderTable(outsideOrders, false, "page.cashRegister.detail.noOutsideTransactions")}
           {outsideOrders.length > 0 &&
             renderTablePagination(outsidePage, outsideTotalPages, setOutsidePage)}
         </div>

@@ -20,6 +20,7 @@ import {
   getTodayScheduleMinutes,
   formatMinutesAsTime
 } from "@/utils/storeTimezone";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
@@ -166,7 +167,7 @@ const CashRegisterCurrent = () => {
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.cashRegister.current.infoTitle")}
               </h2>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody>
                     {[
@@ -230,7 +231,7 @@ const CashRegisterCurrent = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </div>
 
             <div className="bg-card p-6 rounded-xl border border-border space-y-4">

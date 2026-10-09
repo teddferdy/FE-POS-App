@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 // ponytail: action labels map to translation keys. Add new actions here and in id.json/en.json.
 const actionLabelKeys = {
@@ -317,7 +318,7 @@ const DetailRole = () => {
                       </button>
                     )}
                     {!isCollapsed && (
-                      <div className="overflow-x-auto">
+                      <HorizontalScrollArea>
                         <table className="w-full text-left border-collapse">
                           <thead>
                             <tr className="bg-muted/10">
@@ -379,7 +380,7 @@ const DetailRole = () => {
                             })}
                           </tbody>
                         </table>
-                      </div>
+                      </HorizontalScrollArea>
                     )}
                   </div>
                 );

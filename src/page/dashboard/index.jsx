@@ -36,6 +36,7 @@ import { useUserSession } from "@/hooks/useUserSession";
 import { hasMenuAccess } from "@/utils/permission";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import DashboardAlerts from "@/components/dashboard/DashboardAlerts";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const FILTERS = [
   { key: "daily", label: "Harian" },
@@ -763,7 +764,7 @@ const Dashboard = () => {
                   {t("page.dashboard.viewAll")}
                 </button>
               </div>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/50 text-muted-foreground">
@@ -852,7 +853,7 @@ const Dashboard = () => {
                     )}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
               {recentOrdersTotal > ORDER_PAGE_SIZE && (
                 <div className="flex items-center justify-between px-5 py-3 border-t border-border">
                   <span className="text-xs text-muted-foreground">{recentOrdersTotal} orders</span>
@@ -967,7 +968,7 @@ const Dashboard = () => {
                 </button>
               </div>
             </div>
-            <div className="overflow-x-auto">
+            <HorizontalScrollArea>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground">
@@ -1020,7 +1021,7 @@ const Dashboard = () => {
                   )}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           </div>
         </>
       )}

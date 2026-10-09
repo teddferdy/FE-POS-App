@@ -48,6 +48,7 @@ import { getMissingFields } from "@/lib/validation";
 import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const AddSupplier = () => {
   const { t } = useTranslation();
@@ -897,7 +898,7 @@ const AddSupplier = () => {
                       )}
 
                       {contacts.length > 0 ? (
-                        <div className="border rounded-lg overflow-x-auto">
+                        <HorizontalScrollArea className="border rounded-lg overflow-hidden">
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="bg-muted/50 border-b">
@@ -961,7 +962,7 @@ const AddSupplier = () => {
                               ))}
                             </tbody>
                           </table>
-                        </div>
+                        </HorizontalScrollArea>
                       ) : (
                         <div className="border border-dashed rounded-lg p-6 text-center">
                           <p className="text-sm text-muted-foreground">
@@ -1180,7 +1181,7 @@ const AddSupplier = () => {
                         )}
 
                         {bankAccounts.length > 0 ? (
-                          <div className="border rounded-lg overflow-x-auto">
+                          <HorizontalScrollArea className="border rounded-lg overflow-hidden">
                             <table className="w-full text-sm">
                               <thead>
                                 <tr className="bg-muted/50 border-b">
@@ -1248,7 +1249,7 @@ const AddSupplier = () => {
                                 ))}
                               </tbody>
                             </table>
-                          </div>
+                          </HorizontalScrollArea>
                         ) : (
                           <div className="border border-dashed rounded-lg p-4 text-center">
                             <p className="text-sm text-muted-foreground">
@@ -1649,7 +1650,7 @@ const AddSupplier = () => {
                 )}
 
                 {supplierProducts.length > 0 ? (
-                  <div className="border rounded-lg overflow-x-auto">
+                  <HorizontalScrollArea className="border rounded-lg overflow-hidden">
                     <table className="w-full text-sm min-w-[840px]">
                       <thead>
                         <tr className="bg-muted/50 border-b">
@@ -1725,7 +1726,7 @@ const AddSupplier = () => {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </HorizontalScrollArea>
                 ) : (
                   <div className="border border-dashed rounded-lg p-6 text-center">
                     <p className="text-sm text-muted-foreground">

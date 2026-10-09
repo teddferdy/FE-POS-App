@@ -182,56 +182,54 @@ const LowStock = () => {
                       <div className="p-4 border-b border-border bg-muted/30">
                         <Skeleton className="h-4 w-40" />
                       </div>
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>
-                                <Skeleton className="h-3 w-24" />
-                              </TableHead>
-                              <TableHead className="text-right">
-                                <Skeleton className="h-3 w-20 ml-auto" />
-                              </TableHead>
-                              <TableHead className="text-right">
-                                <Skeleton className="h-3 w-16 ml-auto" />
-                              </TableHead>
-                              <TableHead>
-                                <Skeleton className="h-3 w-12" />
-                              </TableHead>
-                              <TableHead>
-                                <Skeleton className="h-3 w-14" />
-                              </TableHead>
-                              <TableHead>
-                                <Skeleton className="h-3 w-14" />
-                              </TableHead>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>
+                              <Skeleton className="h-3 w-24" />
+                            </TableHead>
+                            <TableHead className="text-right">
+                              <Skeleton className="h-3 w-20 ml-auto" />
+                            </TableHead>
+                            <TableHead className="text-right">
+                              <Skeleton className="h-3 w-16 ml-auto" />
+                            </TableHead>
+                            <TableHead>
+                              <Skeleton className="h-3 w-12" />
+                            </TableHead>
+                            <TableHead>
+                              <Skeleton className="h-3 w-14" />
+                            </TableHead>
+                            <TableHead>
+                              <Skeleton className="h-3 w-14" />
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {[...Array(4)].map((_, i) => (
+                            <TableRow key={i}>
+                              <TableCell>
+                                <Skeleton className="h-4 w-36" />
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Skeleton className="h-4 w-12 ml-auto" />
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Skeleton className="h-4 w-12 ml-auto" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-4 w-10" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-4 w-14" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-5 w-20 rounded-full" />
+                              </TableCell>
                             </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {[...Array(4)].map((_, i) => (
-                              <TableRow key={i}>
-                                <TableCell>
-                                  <Skeleton className="h-4 w-36" />
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <Skeleton className="h-4 w-12 ml-auto" />
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <Skeleton className="h-4 w-12 ml-auto" />
-                                </TableCell>
-                                <TableCell>
-                                  <Skeleton className="h-4 w-10" />
-                                </TableCell>
-                                <TableCell>
-                                  <Skeleton className="h-4 w-14" />
-                                </TableCell>
-                                <TableCell>
-                                  <Skeleton className="h-5 w-20 rounded-full" />
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
+                          ))}
+                        </TableBody>
+                      </Table>
                     </Card>
                   </div>
                 ) : products.length === 0 && storeGroups.length === 0 ? (
@@ -250,55 +248,53 @@ const LowStock = () => {
                             {t("page.lowStock.product")} ({products.length})
                           </h3>
                         </div>
-                        <div className="overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>{t("page.lowStock.table.productName")}</TableHead>
-                                <TableHead className="text-right">
-                                  {t("page.lowStock.table.currentStock")}
-                                </TableHead>
-                                <TableHead className="text-right">
-                                  {t("page.lowStock.table.minStock")}
-                                </TableHead>
-                                <TableHead>{t("page.lowStock.table.unit")}</TableHead>
-                                <TableHead>{t("page.lowStock.table.store")}</TableHead>
-                                <TableHead>{t("common.status")}</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {products.map((p) => {
-                                const status = getStockStatus(p.stock, t);
-                                return (
-                                  <TableRow key={p.id}>
-                                    <TableCell className="font-medium">{p.nameProduct}</TableCell>
-                                    <TableCell className="text-right font-semibold">
-                                      {formatNumber(p.stock)}
-                                    </TableCell>
-                                    <TableCell className="text-right text-muted-foreground">
-                                      {formatNumber(p.minStock)}
-                                    </TableCell>
-                                    <TableCell>{p.unit || "pcs"}</TableCell>
-                                    <TableCell>
-                                      <span className="text-xs text-muted-foreground">
-                                        {p.stores?.length ? p.stores.join(", ") : "-"}
-                                      </span>
-                                    </TableCell>
-                                    <TableCell>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>{t("page.lowStock.table.productName")}</TableHead>
+                              <TableHead className="text-right">
+                                {t("page.lowStock.table.currentStock")}
+                              </TableHead>
+                              <TableHead className="text-right">
+                                {t("page.lowStock.table.minStock")}
+                              </TableHead>
+                              <TableHead>{t("page.lowStock.table.unit")}</TableHead>
+                              <TableHead>{t("page.lowStock.table.store")}</TableHead>
+                              <TableHead>{t("common.status")}</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {products.map((p) => {
+                              const status = getStockStatus(p.stock, t);
+                              return (
+                                <TableRow key={p.id}>
+                                  <TableCell className="font-medium">{p.nameProduct}</TableCell>
+                                  <TableCell className="text-right font-semibold">
+                                    {formatNumber(p.stock)}
+                                  </TableCell>
+                                  <TableCell className="text-right text-muted-foreground">
+                                    {formatNumber(p.minStock)}
+                                  </TableCell>
+                                  <TableCell>{p.unit || "pcs"}</TableCell>
+                                  <TableCell>
+                                    <span className="text-xs text-muted-foreground">
+                                      {p.stores?.length ? p.stores.join(", ") : "-"}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>
+                                    <span
+                                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
                                       <span
-                                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
-                                        <span
-                                          className={`w-1.5 h-1.5 rounded-full ${p.stock <= 0 ? "bg-red-500" : "bg-orange-500"}`}
-                                        />
-                                        {status.label}
-                                      </span>
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
-                            </TableBody>
-                          </Table>
-                        </div>
+                                        className={`w-1.5 h-1.5 rounded-full ${p.stock <= 0 ? "bg-red-500" : "bg-orange-500"}`}
+                                      />
+                                      {status.label}
+                                    </span>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
                       </Card>
                     )}
 
@@ -334,55 +330,53 @@ const LowStock = () => {
                             )}
                           </div>
                           {group.items.length > 0 ? (
-                            <div className="overflow-x-auto">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead>{t("page.lowStock.table.ingredientName")}</TableHead>
-                                    <TableHead className="text-right">
-                                      {t("page.lowStock.table.currentStock")}
-                                    </TableHead>
-                                    <TableHead className="text-right">
-                                      {t("page.lowStock.table.minStock")}
-                                    </TableHead>
-                                    <TableHead>{t("page.lowStock.table.unit")}</TableHead>
-                                    <TableHead>{t("page.lowStock.table.store")}</TableHead>
-                                    <TableHead>{t("common.status")}</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {group.items.map((i) => {
-                                    const status = getStockStatus(i.stock, t);
-                                    return (
-                                      <TableRow key={i.id}>
-                                        <TableCell className="font-medium">{i.name}</TableCell>
-                                        <TableCell className="text-right font-semibold">
-                                          {formatNumber(i.stock)}
-                                        </TableCell>
-                                        <TableCell className="text-right text-muted-foreground">
-                                          {formatNumber(i.minStock)}
-                                        </TableCell>
-                                        <TableCell>{i.unit || "pcs"}</TableCell>
-                                        <TableCell>
-                                          <span className="text-xs text-muted-foreground">
-                                            {i.storeData?.name || "-"}
-                                          </span>
-                                        </TableCell>
-                                        <TableCell>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>{t("page.lowStock.table.ingredientName")}</TableHead>
+                                  <TableHead className="text-right">
+                                    {t("page.lowStock.table.currentStock")}
+                                  </TableHead>
+                                  <TableHead className="text-right">
+                                    {t("page.lowStock.table.minStock")}
+                                  </TableHead>
+                                  <TableHead>{t("page.lowStock.table.unit")}</TableHead>
+                                  <TableHead>{t("page.lowStock.table.store")}</TableHead>
+                                  <TableHead>{t("common.status")}</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {group.items.map((i) => {
+                                  const status = getStockStatus(i.stock, t);
+                                  return (
+                                    <TableRow key={i.id}>
+                                      <TableCell className="font-medium">{i.name}</TableCell>
+                                      <TableCell className="text-right font-semibold">
+                                        {formatNumber(i.stock)}
+                                      </TableCell>
+                                      <TableCell className="text-right text-muted-foreground">
+                                        {formatNumber(i.minStock)}
+                                      </TableCell>
+                                      <TableCell>{i.unit || "pcs"}</TableCell>
+                                      <TableCell>
+                                        <span className="text-xs text-muted-foreground">
+                                          {i.storeData?.name || "-"}
+                                        </span>
+                                      </TableCell>
+                                      <TableCell>
+                                        <span
+                                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
                                           <span
-                                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
-                                            <span
-                                              className={`w-1.5 h-1.5 rounded-full ${i.stock <= 0 ? "bg-red-500" : "bg-orange-500"}`}
-                                            />
-                                            {status.label}
-                                          </span>
-                                        </TableCell>
-                                      </TableRow>
-                                    );
-                                  })}
-                                </TableBody>
-                              </Table>
-                            </div>
+                                            className={`w-1.5 h-1.5 rounded-full ${i.stock <= 0 ? "bg-red-500" : "bg-orange-500"}`}
+                                          />
+                                          {status.label}
+                                        </span>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
                           ) : (
                             <div className="p-4 text-sm text-muted-foreground flex items-center gap-2">
                               <Store size={14} />

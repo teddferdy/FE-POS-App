@@ -61,6 +61,7 @@ import {
 import UploadExcelModal from "./components/UploadExcelModal";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 // BE persists these opname quantities as decimals (matching the product's
 // own DECIMAL(10,4) stock field, which is what auto-fills stokAwalJumlah) —
@@ -668,7 +669,7 @@ const AddStockOpname = () => {
             </div>
 
             <Card className="overflow-hidden shadow-sm border-muted">
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/60 border-b">
@@ -953,7 +954,7 @@ const AddStockOpname = () => {
                     )}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
 
               <div className="flex items-center justify-between border-t px-4 py-3 bg-muted/10">
                 <button

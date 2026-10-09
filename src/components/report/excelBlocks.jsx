@@ -1,6 +1,7 @@
 import React from "react";
 import { Store, MapPin, Phone } from "lucide-react";
 import { excelColumnLabel } from "./excelHelpers";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const hexToRgba = (hex, alpha) => {
   if (!hex) return `rgba(15, 23, 42, ${alpha})`;
@@ -85,46 +86,48 @@ export function ExcelInfoBlock({ t }) {
 
 export function ExcelTable({ columns, rows, accent, alignRightKeys = [] }) {
   return (
-    <table className="w-full border-collapse overflow-hidden text-xs">
-      <thead>
-        <tr>
-          <th
-            className="w-9 border border-slate-200 px-1 py-2 text-center font-medium text-white"
-            style={{ backgroundColor: accent }}>
-            #
-          </th>
-          {columns.map((col, ci) => (
+    <HorizontalScrollArea>
+      <table className="w-full border-collapse overflow-hidden text-xs">
+        <thead>
+          <tr>
             <th
-              key={col.key}
-              className="border border-slate-200 px-3 py-2 text-left font-medium text-white"
+              className="w-9 border border-slate-200 px-1 py-2 text-center font-medium text-white"
               style={{ backgroundColor: accent }}>
-              <span className="mr-1.5 font-normal opacity-70">{excelColumnLabel(ci)}</span>
-              {col.label}
+              #
             </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, ri) => (
-          <tr key={ri} className={ri % 2 === 1 ? "bg-slate-50" : ""}>
-            <td className="border border-slate-200 px-1 py-1.5 text-center text-muted-foreground">
-              {ri + 1}
-            </td>
-            {columns.map((col) => (
-              <td
+            {columns.map((col, ci) => (
+              <th
                 key={col.key}
-                className={`border border-slate-200 px-3 py-1.5 ${
-                  col.type === "currency" || alignRightKeys.includes(col.key)
-                    ? "font-mono tabular-nums text-right"
-                    : "text-left"
-                }`}>
-                {row[col.key] ?? "-"}
-              </td>
+                className="border border-slate-200 px-3 py-2 text-left font-medium text-white"
+                style={{ backgroundColor: accent }}>
+                <span className="mr-1.5 font-normal opacity-70">{excelColumnLabel(ci)}</span>
+                {col.label}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri} className={ri % 2 === 1 ? "bg-slate-50" : ""}>
+              <td className="border border-slate-200 px-1 py-1.5 text-center text-muted-foreground">
+                {ri + 1}
+              </td>
+              {columns.map((col) => (
+                <td
+                  key={col.key}
+                  className={`border border-slate-200 px-3 py-1.5 ${
+                    col.type === "currency" || alignRightKeys.includes(col.key)
+                      ? "font-mono tabular-nums text-right"
+                      : "text-left"
+                  }`}>
+                  {row[col.key] ?? "-"}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </HorizontalScrollArea>
   );
 }
 

@@ -28,6 +28,7 @@ import {
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const AddStockTransfer = () => {
   const { t } = useTranslation();
@@ -265,7 +266,7 @@ const AddStockTransfer = () => {
             <Label className="text-base font-semibold">
               {t("page.stockTransfer.add.form.items")}
             </Label>
-            <div className="overflow-x-auto border rounded-xl shadow-sm">
+            <HorizontalScrollArea className="border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 border-b">
@@ -432,7 +433,7 @@ const AddStockTransfer = () => {
                   })}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
             {errors.items?.root && (
               <p className="text-xs text-destructive">{errors.items.root.message}</p>
             )}

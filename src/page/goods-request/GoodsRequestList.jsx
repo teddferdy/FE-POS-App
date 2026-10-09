@@ -41,6 +41,7 @@ import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import TableActions from "@/components/ui/TableActions";
 import { cn } from "@/lib/utils";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const statusMap = {
   pending: {
@@ -377,44 +378,46 @@ const GoodsRequestList = () => {
                   : t("page.goodsRequest.list.item")}
               </span>
             </div>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-blue-950/20">
-                  <th className="text-left px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t("page.goodsRequest.list.table.item")}
-                  </th>
-                  <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t("page.goodsRequest.list.table.qty")}
-                  </th>
-                  <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t("page.goodsRequest.list.table.unit")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {g.items.map((it, i) => (
-                  <tr
-                    key={it.id || i}
-                    className={cn(
-                      "transition-colors",
-                      i % 2 === 0
-                        ? "bg-white dark:bg-slate-950"
-                        : "bg-slate-50/50 dark:bg-slate-900/50",
-                      "hover:bg-blue-50/50 dark:hover:bg-blue-950/20"
-                    )}>
-                    <td className="px-4 py-2.5 font-medium text-foreground">
-                      {it.ingredientName || it.productName || "-"}
-                    </td>
-                    <td className="px-4 py-2.5 text-center font-medium text-foreground">
-                      {it.qty || 0}
-                    </td>
-                    <td className="px-4 py-2.5 text-center text-muted-foreground">
-                      {it.unit || "pcs"}
-                    </td>
+            <HorizontalScrollArea>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-blue-950/20">
+                    <th className="text-left px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.goodsRequest.list.table.item")}
+                    </th>
+                    <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.goodsRequest.list.table.qty")}
+                    </th>
+                    <th className="text-center px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.goodsRequest.list.table.unit")}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {g.items.map((it, i) => (
+                    <tr
+                      key={it.id || i}
+                      className={cn(
+                        "transition-colors",
+                        i % 2 === 0
+                          ? "bg-white dark:bg-slate-950"
+                          : "bg-slate-50/50 dark:bg-slate-900/50",
+                        "hover:bg-blue-50/50 dark:hover:bg-blue-950/20"
+                      )}>
+                      <td className="px-4 py-2.5 font-medium text-foreground">
+                        {it.ingredientName || it.productName || "-"}
+                      </td>
+                      <td className="px-4 py-2.5 text-center font-medium text-foreground">
+                        {it.qty || 0}
+                      </td>
+                      <td className="px-4 py-2.5 text-center text-muted-foreground">
+                        {it.unit || "pcs"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </HorizontalScrollArea>
           </div>
         ))}
       </div>

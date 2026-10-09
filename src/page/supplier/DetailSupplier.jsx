@@ -536,38 +536,36 @@ const DetailSupplier = () => {
               {t("page.supplier.detail.tabs.contacts", "Kontak")}
             </h3>
             {supplier.contacts && supplier.contacts.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="font-semibold">#</TableHead>
-                      <TableHead className="font-semibold">
-                        {t("page.supplier.detail.contacts.name", "Nama")}
-                      </TableHead>
-                      <TableHead className="font-semibold">
-                        {t("page.supplier.detail.contacts.phone", "Telepon")}
-                      </TableHead>
-                      <TableHead className="font-semibold">
-                        {t("page.supplier.detail.contacts.email", "Email")}
-                      </TableHead>
-                      <TableHead className="font-semibold">
-                        {t("page.supplier.detail.contacts.position", "Jabatan")}
-                      </TableHead>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-semibold">#</TableHead>
+                    <TableHead className="font-semibold">
+                      {t("page.supplier.detail.contacts.name", "Nama")}
+                    </TableHead>
+                    <TableHead className="font-semibold">
+                      {t("page.supplier.detail.contacts.phone", "Telepon")}
+                    </TableHead>
+                    <TableHead className="font-semibold">
+                      {t("page.supplier.detail.contacts.email", "Email")}
+                    </TableHead>
+                    <TableHead className="font-semibold">
+                      {t("page.supplier.detail.contacts.position", "Jabatan")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {supplier.contacts.map((contact, idx) => (
+                    <TableRow key={contact.id || idx}>
+                      <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
+                      <TableCell className="font-medium">{contact.fullName || "-"}</TableCell>
+                      <TableCell>{contact.phone || "-"}</TableCell>
+                      <TableCell>{contact.email || "-"}</TableCell>
+                      <TableCell>{contact.position || "-"}</TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {supplier.contacts.map((contact, idx) => (
-                      <TableRow key={contact.id || idx}>
-                        <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
-                        <TableCell className="font-medium">{contact.fullName || "-"}</TableCell>
-                        <TableCell>{contact.phone || "-"}</TableCell>
-                        <TableCell>{contact.email || "-"}</TableCell>
-                        <TableCell>{contact.position || "-"}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                  ))}
+                </TableBody>
+              </Table>
             ) : (
               <div className="flex flex-col items-center gap-3 py-8">
                 <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
@@ -605,7 +603,7 @@ const DetailSupplier = () => {
                 return (
                   <>
                     {/* Desktop table */}
-                    <div className="hidden md:block overflow-x-auto">
+                    <div className="hidden md:block">
                       <Table>
                         <TableHeader>
                           <TableRow>

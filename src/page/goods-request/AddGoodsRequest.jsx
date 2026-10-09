@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const emptyItem = {
   name: "",
@@ -198,7 +199,7 @@ const GoodsRequestGroup = ({
         </Button>
       </div>
 
-      <div className="overflow-x-auto">
+      <HorizontalScrollArea>
         <table className="w-full text-sm min-w-[760px]">
           <thead>
             <tr className="border-b">
@@ -291,7 +292,7 @@ const GoodsRequestGroup = ({
             })}
           </tbody>
         </table>
-      </div>
+      </HorizontalScrollArea>
 
       <div className="p-3 border-t">
         <Button
