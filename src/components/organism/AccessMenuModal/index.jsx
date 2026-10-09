@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 import { buildAccessMenuPayload, parseAccessMenuToPermissions } from "@/utils/permission";
 import { safeGet } from "@/lib/safe-lookup";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const allActions = [
   "view",
@@ -283,7 +284,7 @@ export default function AccessMenuModal({
                   </button>
                 )}
                 {!isCollapsed && (
-                  <div className="overflow-x-auto">
+                  <HorizontalScrollArea>
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="bg-muted/10">
@@ -351,7 +352,7 @@ export default function AccessMenuModal({
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </HorizontalScrollArea>
                 )}
               </div>
             );

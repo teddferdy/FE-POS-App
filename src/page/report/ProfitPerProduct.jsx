@@ -11,6 +11,7 @@ import { DateInput } from "@/components/ui/date-input";
 import ExportButtons from "@/components/organism/ExportButtons";
 import AbortController from "@/components/organism/abort-controller";
 import { formatCurrency } from "@/utils/reportUtils";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const ProfitPerProduct = () => {
   const { t } = useTranslation();
@@ -115,7 +116,7 @@ const ProfitPerProduct = () => {
             </Card>
           </div>
           <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
+            <HorizontalScrollArea>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/60 border-b">
@@ -161,7 +162,7 @@ const ProfitPerProduct = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           </Card>
         </>
       )}

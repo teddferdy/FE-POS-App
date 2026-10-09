@@ -31,6 +31,7 @@ import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const StockForecast = () => {
   const { t } = useTranslation();
@@ -184,7 +185,7 @@ const StockForecast = () => {
                 {forecastData.data.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">Tidak ada data forecast</p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <HorizontalScrollArea>
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
@@ -223,7 +224,7 @@ const StockForecast = () => {
                         })}
                       </tbody>
                     </table>
-                  </div>
+                  </HorizontalScrollArea>
                 )}
               </CardContent>
             </Card>
@@ -246,7 +247,7 @@ const StockForecast = () => {
                 {deadStockData.data.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">Tidak ada dead stock</p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <HorizontalScrollArea>
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
@@ -273,7 +274,7 @@ const StockForecast = () => {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </HorizontalScrollArea>
                 )}
               </CardContent>
             </Card>
@@ -308,7 +309,7 @@ const StockForecast = () => {
                     Tidak ada item mendekati expiry
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <HorizontalScrollArea>
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
@@ -339,7 +340,7 @@ const StockForecast = () => {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </HorizontalScrollArea>
                 )}
               </CardContent>
             </Card>
@@ -377,7 +378,7 @@ const StockForecast = () => {
                   />
                 </div>
                 {valuationData.data.products && (
-                  <div className="overflow-x-auto">
+                  <HorizontalScrollArea>
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
@@ -404,7 +405,7 @@ const StockForecast = () => {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </HorizontalScrollArea>
                 )}
               </CardContent>
             </Card>

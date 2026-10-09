@@ -305,39 +305,37 @@ const MemberLoyalty = () => {
                 {members.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">Tidak ada member</p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nama</TableHead>
-                          <TableHead>Phone</TableHead>
-                          <TableHead>Tier</TableHead>
-                          <TableHead>Poin</TableHead>
-                          <TableHead>Total Belanja</TableHead>
-                          <TableHead>Aksi</TableHead>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nama</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Tier</TableHead>
+                        <TableHead>Poin</TableHead>
+                        <TableHead>Total Belanja</TableHead>
+                        <TableHead>Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {members.map((member) => (
+                        <TableRow key={member.id}>
+                          <TableCell className="font-medium">{member.name}</TableCell>
+                          <TableCell>{member.phoneNumber}</TableCell>
+                          <TableCell>{getTierBadge(member.tierData)}</TableCell>
+                          <TableCell>{formatNumber(member.totalPoints || 0)}</TableCell>
+                          <TableCell>{formatCurrency(member.totalSpent || 0)}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(`/member/detail/${member.id}`)}>
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {members.map((member) => (
-                          <TableRow key={member.id}>
-                            <TableCell className="font-medium">{member.name}</TableCell>
-                            <TableCell>{member.phoneNumber}</TableCell>
-                            <TableCell>{getTierBadge(member.tierData)}</TableCell>
-                            <TableCell>{formatNumber(member.totalPoints || 0)}</TableCell>
-                            <TableCell>{formatCurrency(member.totalSpent || 0)}</TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate(`/member/detail/${member.id}`)}>
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                      ))}
+                    </TableBody>
+                  </Table>
                 )}
               </CardContent>
             </Card>

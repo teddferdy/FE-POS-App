@@ -29,6 +29,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const emptyItem = {
   name: "",
@@ -1035,7 +1036,7 @@ const EditPurchaseOrder = () => {
                     </div>
                   ) : (
                     <>
-                      <div className="overflow-x-auto">
+                      <HorizontalScrollArea>
                         <table className="w-full text-sm min-w-[820px]">
                           <thead>
                             <tr className="border-b">
@@ -1180,7 +1181,7 @@ const EditPurchaseOrder = () => {
                             ))}
                           </tbody>
                         </table>
-                      </div>
+                      </HorizontalScrollArea>
 
                       <div className="p-3 border-t">
                         <Button

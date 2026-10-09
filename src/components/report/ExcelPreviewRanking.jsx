@@ -8,6 +8,7 @@ import {
   ExcelFooter
 } from "./excelBlocks";
 import { excelColumnLabel } from "./excelHelpers";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const SAMPLE_ROWS = [
   { name: "Nasi Goreng Spesial", sold: "150", revenue: "Rp 5.250.000" },
@@ -28,7 +29,7 @@ export default function ExcelPreviewRanking({ accent, columns, branding }) {
       <ExcelBrandHeader accent={accent} branding={branding} t={t} />
       <ExcelTitleBlock accent={accent} title={t("page.reportSettings.archetype.ranking")} t={t} />
       <ExcelInfoBlock t={t} />
-      <div className="overflow-x-auto px-4">
+      <HorizontalScrollArea viewportClassName="px-4">
         <table className="w-full border-collapse overflow-hidden text-xs">
           <thead>
             <tr>
@@ -89,7 +90,7 @@ export default function ExcelPreviewRanking({ accent, columns, branding }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </HorizontalScrollArea>
       <div className="flex justify-between px-4 text-xs font-bold">
         <span>{t("page.reportSettings.previewTotal")}</span>
         <span className="text-muted-foreground">3 {t("page.reportSettings.previewItems")}</span>

@@ -21,6 +21,7 @@ import { FormalDocument, PrintButton } from "@/components/document/FormalDocumen
 import { getDocumentSpecForPurchaseReturn } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const statusBadge = {
   pending: {
@@ -160,7 +161,7 @@ const DetailPurchaseReturn = () => {
                 <FileText size={16} className="text-muted-foreground" />
                 {t("page.purchaseReturn.detail.section.informasiRetur")}
               </h3>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody className="divide-y divide-border">
                     <Row label={t("page.purchaseReturn.detail.field.returnNo")}>
@@ -194,7 +195,7 @@ const DetailPurchaseReturn = () => {
                     </Row>
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </Card>
 
             <Card className="p-6">
@@ -202,7 +203,7 @@ const DetailPurchaseReturn = () => {
                 <ShoppingBag size={16} className="text-muted-foreground" />
                 {t("page.purchaseReturn.detail.section.items")}
               </h3>
-              <div className="overflow-x-auto border border-border rounded-lg">
+              <HorizontalScrollArea className="border border-border rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/50 border-b border-border">
@@ -258,7 +259,7 @@ const DetailPurchaseReturn = () => {
                     )}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
 
               {ret.items?.length > 0 && (
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -319,7 +320,7 @@ const DetailPurchaseReturn = () => {
                 <Building2 size={16} className="text-muted-foreground" />
                 {t("page.purchaseReturn.detail.section.poInfo")}
               </h3>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody className="divide-y divide-border">
                     <tr>
@@ -336,7 +337,7 @@ const DetailPurchaseReturn = () => {
                     </tr>
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </Card>
           </div>
         </div>

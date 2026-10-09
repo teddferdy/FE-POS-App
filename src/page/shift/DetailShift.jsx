@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { safeGet } from "@/lib/safe-lookup";
 import { DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS, SHIFT_TYPES } from "@/constants/shiftTypes";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const statusBadge = (status, t) => {
   if (status === "active" || status === true || status === 1)
@@ -483,7 +484,7 @@ const DetailShift = () => {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <HorizontalScrollArea>
             <table className="w-full min-w-[1200px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/40 text-left">
@@ -612,7 +613,7 @@ const DetailShift = () => {
                 })}
               </tbody>
             </table>
-          </div>
+          </HorizontalScrollArea>
         )}
       </Card>
     </div>

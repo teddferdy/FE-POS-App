@@ -47,7 +47,7 @@ export default function ExcelPreviewRoster({ accent, columns, branding }) {
       <ExcelBrandHeader accent={accent} branding={branding} t={t} />
       <ExcelTitleBlock accent={accent} title={t("page.reportSettings.archetype.roster")} t={t} />
       <ExcelInfoBlock t={t} />
-      <div className="overflow-x-auto px-4">
+      <div className="px-4">
         <ExcelTable
           columns={columns}
           rows={SAMPLE_ROWS}

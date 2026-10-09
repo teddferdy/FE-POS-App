@@ -1,11 +1,14 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
+// Every table scrolls horizontally through HorizontalScrollArea, which shows
+// the left/right controls and a grabbable scrollbar while it overflows.
 const Table = React.forwardRef(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
+  <HorizontalScrollArea className="w-full">
     <table ref={ref} className={cn("w-full caption-bottom text-sm", className)} {...props} />
-  </div>
+  </HorizontalScrollArea>
 ));
 Table.displayName = "Table";
 

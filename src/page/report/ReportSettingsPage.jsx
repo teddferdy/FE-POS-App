@@ -36,6 +36,7 @@ import ExcelPreviewSummary from "@/components/report/ExcelPreviewSummary";
 import ExcelPreviewRanking from "@/components/report/ExcelPreviewRanking";
 import ExcelPreviewStatement from "@/components/report/ExcelPreviewStatement";
 import ExcelPreviewRoster from "@/components/report/ExcelPreviewRoster";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const ACCENTS = [
   { value: "#0f172a", name: "Slate" },
@@ -441,35 +442,37 @@ const ReportSettingsPage = () => {
                       {t("page.reportSettings.previewEmpty")}
                     </div>
                   ) : (
-                    <table className="w-full text-left text-sm">
-                      <thead>
-                        <tr>
-                          {orderedColumns.map((col) => (
-                            <th
-                              key={col.key}
-                              className="border-b-2 px-3 py-2 font-semibold text-muted-foreground"
-                              style={{ borderColor: accent }}>
-                              {col.label}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {SAMPLE_ROWS.map((row, ri) => (
-                          <tr key={ri}>
+                    <HorizontalScrollArea>
+                      <table className="w-full text-left text-sm">
+                        <thead>
+                          <tr>
                             {orderedColumns.map((col) => (
-                              <td
+                              <th
                                 key={col.key}
-                                className={`border-b border-border/60 px-3 py-2 ${
-                                  col.type === "currency" ? "font-mono" : ""
-                                }`}>
-                                {renderPreviewCell(col.type, row)}
-                              </td>
+                                className="border-b-2 px-3 py-2 font-semibold text-muted-foreground"
+                                style={{ borderColor: accent }}>
+                                {col.label}
+                              </th>
                             ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {SAMPLE_ROWS.map((row, ri) => (
+                            <tr key={ri}>
+                              {orderedColumns.map((col) => (
+                                <td
+                                  key={col.key}
+                                  className={`border-b border-border/60 px-3 py-2 ${
+                                    col.type === "currency" ? "font-mono" : ""
+                                  }`}>
+                                  {renderPreviewCell(col.type, row)}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </HorizontalScrollArea>
                   )}
                   <p className="mt-4 text-[11px] italic text-muted-foreground">
                     {t("page.reportSettings.previewPdfFooter")}

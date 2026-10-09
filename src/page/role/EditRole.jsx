@@ -24,6 +24,7 @@ import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 // ponytail: action labels map to translation keys. Add new actions here and in id.json/en.json.
 const actionLabelKeys = {
@@ -439,7 +440,7 @@ const EditRole = () => {
                       </button>
                     )}
                     {!isCollapsed && (
-                      <div className="overflow-x-auto">
+                      <HorizontalScrollArea>
                         <table className="w-full text-left border-collapse">
                           <thead>
                             <tr className="bg-muted/10">
@@ -494,7 +495,7 @@ const EditRole = () => {
                             })}
                           </tbody>
                         </table>
-                      </div>
+                      </HorizontalScrollArea>
                     )}
                   </div>
                 );

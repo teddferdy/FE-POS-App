@@ -11,6 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const STORE_COLORS = [
   "#3B82F6",
@@ -287,7 +288,7 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
               {t("page.report.sales.storePerformance")}
             </h3>
           </div>
-          <div className="overflow-x-auto">
+          <HorizontalScrollArea>
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-muted/30">
@@ -339,7 +340,7 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
                 )}
               </tbody>
             </table>
-          </div>
+          </HorizontalScrollArea>
         </div>
       </div>
     </div>

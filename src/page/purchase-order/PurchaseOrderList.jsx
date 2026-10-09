@@ -78,6 +78,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const SupplierExpandableRow = ({ supplier, renderSupplierItems }) => {
   const [open, setOpen] = useState(false);
@@ -408,7 +409,7 @@ const PurchaseOrderList = () => {
     const grandTotal = items.reduce((sum, it) => sum + (it.quantity || 0) * (it.price || 0), 0);
     return (
       <div className="rounded-xl border border-border">
-        <div className="overflow-x-auto">
+        <HorizontalScrollArea>
           <table className="w-full text-sm table-fixed">
             <colgroup>
               <col className="w-[44%]" />
@@ -483,7 +484,7 @@ const PurchaseOrderList = () => {
               </tr>
             </tfoot>
           </table>
-        </div>
+        </HorizontalScrollArea>
       </div>
     );
   };
@@ -1360,7 +1361,7 @@ const PurchaseOrderList = () => {
                         <p className="text-sm font-semibold text-foreground mb-2">
                           {t("page.purchaseOrder.list.returInfo.itemTitle")}
                         </p>
-                        <div className="overflow-x-auto border border-border rounded-lg">
+                        <HorizontalScrollArea className="border border-border rounded-lg overflow-hidden">
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="bg-muted/50 border-b border-border">
@@ -1481,7 +1482,7 @@ const PurchaseOrderList = () => {
                               ))}
                             </tbody>
                           </table>
-                        </div>
+                        </HorizontalScrollArea>
                       </div>
                     )}
 
@@ -1795,7 +1796,7 @@ const PurchaseOrderList = () => {
                         <p className="text-sm font-semibold text-foreground mb-2">
                           {t("page.purchaseOrder.list.returInfo.itemTitle")}
                         </p>
-                        <div className="overflow-x-auto border border-border rounded-lg">
+                        <HorizontalScrollArea className="border border-border rounded-lg overflow-hidden">
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="bg-muted/50 border-b border-border">
@@ -1846,7 +1847,7 @@ const PurchaseOrderList = () => {
                               ))}
                             </tbody>
                           </table>
-                        </div>
+                        </HorizontalScrollArea>
                       </div>
                     )}
 

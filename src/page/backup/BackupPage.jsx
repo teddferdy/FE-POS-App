@@ -30,6 +30,7 @@ import {
   getBackupSchedule,
   setBackupSchedule
 } from "@/services/backup";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const formatSize = (bytes) => {
   if (!bytes && bytes !== 0) return "-";
@@ -220,7 +221,7 @@ const BackupPage = () => {
               <p className="text-sm text-muted-foreground">{t("page.backup.empty")}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <HorizontalScrollArea>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left">
@@ -294,7 +295,7 @@ const BackupPage = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           )}
         </div>
       </div>

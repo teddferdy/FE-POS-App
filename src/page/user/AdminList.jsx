@@ -32,6 +32,7 @@ import Modal from "@/components/organism/modal";
 import StatCard from "@/components/ui/StatCard";
 import TableActionLegend from "@/components/ui/TableActionLegend";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const getStatus = (user, t) => {
   const statusConfig = {
@@ -283,7 +284,7 @@ const AdminList = () => {
               </div>
 
               {isLoading ? (
-                <div className="overflow-x-auto">
+                <HorizontalScrollArea>
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-muted/10">
@@ -335,9 +336,9 @@ const AdminList = () => {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </HorizontalScrollArea>
               ) : (
-                <div className="overflow-x-auto">
+                <HorizontalScrollArea>
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-muted/10">
@@ -479,7 +480,7 @@ const AdminList = () => {
                       )}
                     </tbody>
                   </table>
-                </div>
+                </HorizontalScrollArea>
               )}
 
               <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-muted/10">

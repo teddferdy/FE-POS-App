@@ -28,6 +28,7 @@ import {
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const SectionHeader = ({ icon: Icon, title, desc, from, to }) => (
   <div className={`bg-gradient-to-r ${from} ${to} px-6 py-4`}>
@@ -458,7 +459,7 @@ const AddBusinessTrip = () => {
                       </div>
 
                       {employeeFields.fields.length > 0 && (
-                        <div className="overflow-x-auto rounded-lg border border-border">
+                        <HorizontalScrollArea className="rounded-lg border border-border overflow-hidden">
                           <table className="w-full text-sm min-w-[520px]">
                             <thead>
                               <tr className="border-b bg-muted/40">
@@ -499,7 +500,7 @@ const AddBusinessTrip = () => {
                               ))}
                             </tbody>
                           </table>
-                        </div>
+                        </HorizontalScrollArea>
                       )}
                     </div>
                   )}
@@ -544,7 +545,7 @@ const AddBusinessTrip = () => {
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto rounded-lg border border-border">
+                  <HorizontalScrollArea className="rounded-lg border border-border overflow-hidden">
                     <table className="w-full text-sm min-w-[760px]">
                       <thead>
                         <tr className="border-b bg-muted/40">
@@ -646,7 +647,7 @@ const AddBusinessTrip = () => {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </HorizontalScrollArea>
 
                   {budgetFields.fields.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-8 text-center px-4 rounded-lg border border-dashed border-border">

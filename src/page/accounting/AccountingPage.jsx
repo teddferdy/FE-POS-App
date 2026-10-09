@@ -52,6 +52,7 @@ import {
   getBalanceSheet,
   getAccountingOverview
 } from "@/services/accounting";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const formatIDR = (num) => {
   if (num == null || isNaN(num)) return "Rp 0";
@@ -367,7 +368,7 @@ const AccountsTab = ({ storeId, isAll }) => {
           </div>
 
           <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="overflow-x-auto">
+            <HorizontalScrollArea>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -468,7 +469,7 @@ const AccountsTab = ({ storeId, isAll }) => {
                   )}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           </div>
         </>
       )}
@@ -811,7 +812,7 @@ const JournalTab = ({ storeId, isAll }) => {
                 {entry.description && (
                   <div className="px-4 py-2 text-xs text-muted-foreground">{entry.description}</div>
                 )}
-                <div className="overflow-x-auto">
+                <HorizontalScrollArea>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-t border-b border-border/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -850,7 +851,7 @@ const JournalTab = ({ storeId, isAll }) => {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </HorizontalScrollArea>
               </div>
             ))}
           </div>
@@ -1122,7 +1123,7 @@ const TrialBalanceTab = ({ storeId, isAll }) => {
             </div>
           ) : (
             <div className="bg-card rounded-xl border border-border overflow-hidden">
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -1188,7 +1189,7 @@ const TrialBalanceTab = ({ storeId, isAll }) => {
                     </tr>
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
               <div
                 className={`px-4 py-3 border-t border-border/60 flex items-center gap-2 text-xs font-semibold ${
                   balanced ? "text-emerald-600" : "text-destructive"

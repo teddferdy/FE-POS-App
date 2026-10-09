@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const statusStyles = {
   draft: "bg-amber-100 text-amber-800",
@@ -328,7 +329,7 @@ const DashboardUtang = () => {
                     <p className="text-sm">{t("page.apDashboard.emptyPOs")}</p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <HorizontalScrollArea>
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
@@ -439,7 +440,7 @@ const DashboardUtang = () => {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </HorizontalScrollArea>
                 )}
               </Card>
             </>

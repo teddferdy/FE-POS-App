@@ -62,6 +62,7 @@ import {
   CloudUpload,
   Eye
 } from "lucide-react";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 export default function DetailPurchaseOrder() {
   const { t } = useTranslation();
@@ -971,7 +972,7 @@ export default function DetailPurchaseOrder() {
               <ShoppingBag size={16} className="text-muted-foreground" />
               {t("page.purchaseOrder.detail.items")}
             </h2>
-            <div className="overflow-x-auto border border-border rounded-lg">
+            <HorizontalScrollArea className="border border-border rounded-lg overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
@@ -1080,7 +1081,7 @@ export default function DetailPurchaseOrder() {
                   })}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           </Card>
 
           {/* Payment Card */}
@@ -1108,7 +1109,9 @@ export default function DetailPurchaseOrder() {
                 {t("page.purchaseOrder.detail.noPayment")}
               </p>
             ) : (
-              <div className="overflow-x-auto max-h-64 overflow-y-auto border border-border rounded-lg">
+              <HorizontalScrollArea
+                className="border border-border rounded-lg overflow-hidden"
+                viewportClassName="max-h-64 overflow-y-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
@@ -1160,7 +1163,7 @@ export default function DetailPurchaseOrder() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             )}
           </Card>
 
@@ -1183,7 +1186,9 @@ export default function DetailPurchaseOrder() {
                 {t("page.purchaseOrder.detail.noReturn")}
               </p>
             ) : (
-              <div className="overflow-x-auto max-h-64 overflow-y-auto border border-border rounded-lg">
+              <HorizontalScrollArea
+                className="border border-border rounded-lg overflow-hidden"
+                viewportClassName="max-h-64 overflow-y-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
@@ -1242,7 +1247,7 @@ export default function DetailPurchaseOrder() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             )}
           </Card>
           <Card className="p-6">
@@ -1250,7 +1255,7 @@ export default function DetailPurchaseOrder() {
               <Clock size={16} className="text-muted-foreground" />
               {t("page.purchaseOrder.detail.system")}
             </h3>
-            <div className="overflow-x-auto">
+            <HorizontalScrollArea>
               <table className="w-full text-sm">
                 <tbody className="divide-y divide-border">
                   <tr>
@@ -1287,7 +1292,7 @@ export default function DetailPurchaseOrder() {
                   )}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           </Card>
         </>
       )}

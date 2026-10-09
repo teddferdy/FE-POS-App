@@ -53,6 +53,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const EditSupplier = () => {
   const { t } = useTranslation();
@@ -1004,7 +1005,7 @@ const EditSupplier = () => {
                       )}
 
                       {contacts.length > 0 ? (
-                        <div className="border rounded-lg overflow-x-auto">
+                        <HorizontalScrollArea className="border rounded-lg overflow-hidden">
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="bg-muted/50 border-b">
@@ -1068,7 +1069,7 @@ const EditSupplier = () => {
                               ))}
                             </tbody>
                           </table>
-                        </div>
+                        </HorizontalScrollArea>
                       ) : (
                         <div className="border border-dashed rounded-lg p-6 text-center">
                           <p className="text-sm text-muted-foreground">
@@ -1287,7 +1288,7 @@ const EditSupplier = () => {
                         )}
 
                         {bankAccounts.length > 0 ? (
-                          <div className="border rounded-lg overflow-x-auto">
+                          <HorizontalScrollArea className="border rounded-lg overflow-hidden">
                             <table className="w-full text-sm">
                               <thead>
                                 <tr className="bg-muted/50 border-b">
@@ -1355,7 +1356,7 @@ const EditSupplier = () => {
                                 ))}
                               </tbody>
                             </table>
-                          </div>
+                          </HorizontalScrollArea>
                         ) : (
                           <div className="border border-dashed rounded-lg p-4 text-center">
                             <p className="text-sm text-muted-foreground">
@@ -1760,7 +1761,7 @@ const EditSupplier = () => {
                     <p className="text-xs mt-1">{t("page.supplier.products.hint")}</p>
                   </div>
                 ) : (
-                  <div className="border rounded-lg overflow-hidden">
+                  <HorizontalScrollArea className="border rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-muted/50 border-b">
@@ -1844,7 +1845,7 @@ const EditSupplier = () => {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </HorizontalScrollArea>
                 )}
               </Card>
             )}

@@ -2,6 +2,7 @@ import { Sparkles, ShoppingBag, Banknote, Package, RotateCcw } from "lucide-reac
 import React from "react";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import { Skeleton } from "@/components/ui/skeleton";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const BestSellerTab = ({ t, data, isLoading }) => {
   const bestSellers = data?.bestSellers || [];
@@ -169,7 +170,7 @@ const BestSellerTab = ({ t, data, isLoading }) => {
               {t("page.report.bestSeller.productPerformanceTable")}
             </h3>
           </div>
-          <div className="overflow-x-auto">
+          <HorizontalScrollArea>
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-muted/50 border-b border-border">
@@ -225,7 +226,7 @@ const BestSellerTab = ({ t, data, isLoading }) => {
                 )}
               </tbody>
             </table>
-          </div>
+          </HorizontalScrollArea>
         </div>
       </div>
     </div>

@@ -22,6 +22,7 @@ import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const formSchema = z.object({
   productId: z.string().min(1, "Required"),
@@ -293,7 +294,7 @@ const AddBom = () => {
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto border rounded-lg">
+                <HorizontalScrollArea className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-muted/60 border-b">
@@ -402,7 +403,7 @@ const AddBom = () => {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </HorizontalScrollArea>
                 <Button
                   type="button"
                   variant="success"

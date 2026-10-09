@@ -43,6 +43,7 @@ import {
 } from "@/services/general";
 import { toast } from "sonner";
 import { printReceipt } from "@/utils/thermalPrint";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const { t } = useTranslation();
@@ -700,7 +701,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
 
             {/* Items table */}
             <div className={pd.section}>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full">
                   <thead>
                     <tr
@@ -746,7 +747,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                     )}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </div>
 
             {/* Summary card */}

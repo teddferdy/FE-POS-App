@@ -59,6 +59,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loading } from "@/components/ui/loading";
 import NoStore from "@/components/ui/NoStore";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const DEFAULT_INVOICE_TEMPLATE = {
   showStoreName: true,
@@ -321,7 +322,7 @@ const InvoicePreview = ({
       )}
 
       <div className={pd.section}>
-        <div className="overflow-x-auto">
+        <HorizontalScrollArea>
           <table className="w-full">
             <thead>
               <tr
@@ -352,7 +353,7 @@ const InvoicePreview = ({
               ))}
             </tbody>
           </table>
-        </div>
+        </HorizontalScrollArea>
       </div>
 
       <div className={pd.section}>

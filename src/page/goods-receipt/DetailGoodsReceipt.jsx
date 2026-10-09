@@ -23,6 +23,7 @@ import { FormalDocument, PrintButton } from "@/components/document/FormalDocumen
 import { getDocumentSpecForGoodsReceipt } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const DetailGoodsReceipt = () => {
   const { t } = useTranslation();
@@ -365,7 +366,7 @@ const DetailGoodsReceipt = () => {
                       <BarChart3 size={14} />
                       {t("page.goodsReceipt.detail.poItems")}
                     </div>
-                    <div className="overflow-x-auto">
+                    <HorizontalScrollArea>
                       <table className="w-full text-sm min-w-[500px]">
                         <thead>
                           <tr className="border-b text-left text-muted-foreground">
@@ -422,7 +423,7 @@ const DetailGoodsReceipt = () => {
                           })}
                         </tbody>
                       </table>
-                    </div>
+                    </HorizontalScrollArea>
                   </div>
                 )}
               </div>

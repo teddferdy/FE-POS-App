@@ -81,6 +81,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { resolveSubmitStatus } from "@/lib/store-lifecycle";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -1572,7 +1573,7 @@ const AddLocation = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-auto min-h-0">
+          <HorizontalScrollArea className="flex-1 min-h-0" fill>
             <table className="w-full text-left border-collapse">
               <thead className="sticky top-0 bg-background z-10">
                 <tr className="bg-muted/20">
@@ -1725,7 +1726,7 @@ const AddLocation = () => {
                 )}
               </tbody>
             </table>
-          </div>
+          </HorizontalScrollArea>
 
           <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/20">
             <div className="flex items-center gap-2">

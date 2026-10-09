@@ -41,6 +41,7 @@ import { useStore } from "@/contexts/StoreContext";
 import { getAllLocation } from "@/services/location";
 import { useCookies } from "react-cookie";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const EditGoodsReceipt = () => {
   const navigate = useNavigate();
@@ -833,7 +834,7 @@ const EditGoodsReceipt = () => {
                 {t("page.goodsReceipt.edit.loading.items")}
               </div>
             ) : poId ? (
-              <div className="overflow-x-auto border rounded-lg">
+              <HorizontalScrollArea className="border rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/60 border-b">
@@ -1085,7 +1086,7 @@ const EditGoodsReceipt = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             ) : (
               <div className="text-center py-8 text-sm text-muted-foreground">
                 {t("page.goodsReceipt.edit.form.noPO")}

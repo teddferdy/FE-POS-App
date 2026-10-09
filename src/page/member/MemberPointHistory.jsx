@@ -9,6 +9,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Receipt, Users, ReceiptText, Star } from "lucide-react";
 import TableActionLegend from "@/components/ui/TableActionLegend";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat("id-ID", {
@@ -123,7 +124,7 @@ const MemberPointHistory = () => {
         </div>
 
         {activeTab === "transactions" && (
-          <div className="overflow-x-auto">
+          <HorizontalScrollArea>
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-muted/30 border-b border-border">
@@ -216,11 +217,11 @@ const MemberPointHistory = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </HorizontalScrollArea>
         )}
 
         {activeTab === "points" && (
-          <div className="overflow-x-auto">
+          <HorizontalScrollArea>
             {pointLoading ? (
               <table className="w-full text-left">
                 <thead>
@@ -250,61 +251,59 @@ const MemberPointHistory = () => {
                 </tbody>
               </table>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-muted/30 border-b border-border">
-                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {t("page.member.pointHistory.date")}
-                      </th>
-                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {t("page.member.pointHistory.description")}
-                      </th>
-                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                        {t("page.member.pointHistory.points")}
-                      </th>
-                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                        {t("page.member.pointHistory.balance")}
-                      </th>
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-muted/30 border-b border-border">
+                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.member.pointHistory.date")}
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.member.pointHistory.description")}
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                      {t("page.member.pointHistory.points")}
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                      {t("page.member.pointHistory.balance")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {(pointData?.data || []).length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
+                        <Star size={36} className="text-4xl block mb-2" />
+                        <p className="text-sm">{t("page.member.pointHistory.noActivity")}</p>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {(pointData?.data || []).length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
-                          <Star size={36} className="text-4xl block mb-2" />
-                          <p className="text-sm">{t("page.member.pointHistory.noActivity")}</p>
+                  ) : (
+                    (pointData?.data || []).map((pt, idx) => (
+                      <tr key={pt.id || idx} className="hover:bg-muted/20 transition-colors">
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          {pt.date || pt.createdAt
+                            ? new Date(pt.date || pt.createdAt).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric"
+                              })
+                            : "-"}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-foreground">
+                          {pt.notes || pt.description || pt.reason || "-"}
+                        </td>
+                        <td
+                          className={`px-4 py-3 text-sm font-bold text-right ${(pt.pointsChange || pt.points) > 0 ? "text-green-600" : "text-red-600"}`}>
+                          {(pt.pointsChange || pt.points) > 0 ? "+" : ""}
+                          {(pt.pointsChange || pt.points)?.toLocaleString() || 0}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
+                          {(pt.pointsAfter || pt.balance)?.toLocaleString() || "-"}
                         </td>
                       </tr>
-                    ) : (
-                      (pointData?.data || []).map((pt, idx) => (
-                        <tr key={pt.id || idx} className="hover:bg-muted/20 transition-colors">
-                          <td className="px-4 py-3 text-sm text-muted-foreground">
-                            {pt.date || pt.createdAt
-                              ? new Date(pt.date || pt.createdAt).toLocaleDateString("id-ID", {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric"
-                                })
-                              : "-"}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-foreground">
-                            {pt.notes || pt.description || pt.reason || "-"}
-                          </td>
-                          <td
-                            className={`px-4 py-3 text-sm font-bold text-right ${(pt.pointsChange || pt.points) > 0 ? "text-green-600" : "text-red-600"}`}>
-                            {(pt.pointsChange || pt.points) > 0 ? "+" : ""}
-                            {(pt.pointsChange || pt.points)?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
-                            {(pt.pointsAfter || pt.balance)?.toLocaleString() || "-"}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  )}
+                </tbody>
+              </table>
             )}
             <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
               <p className="text-xs text-muted-foreground">
@@ -326,7 +325,7 @@ const MemberPointHistory = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </HorizontalScrollArea>
         )}
       </div>
 

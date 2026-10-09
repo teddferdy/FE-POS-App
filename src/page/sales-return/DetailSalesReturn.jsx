@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const statusDetail = {
   pending: { label: "Pending", class: "bg-yellow-100 text-yellow-800" },
@@ -118,7 +119,7 @@ const DetailSalesReturn = () => {
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.salesReturn.detail.section.informasiRetur")}
               </h2>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody>
                     {[
@@ -153,14 +154,14 @@ const DetailSalesReturn = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </div>
 
             <div className="bg-card p-6 rounded-xl border border-border">
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.salesReturn.detail.section.items")}
               </h2>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm min-w-[640px]">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">
@@ -199,7 +200,7 @@ const DetailSalesReturn = () => {
                     )}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </div>
           </div>
 

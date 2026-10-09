@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "react-query";
 import { getAllMember } from "@/services/member";
 import { useCookies } from "react-cookie";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 export default function MemberSearchModal({ open, onClose, onSelect }) {
   const [cookie] = useCookies();
@@ -93,7 +94,7 @@ export default function MemberSearchModal({ open, onClose, onSelect }) {
             </div>
           )}
           {members.length > 0 && (
-            <div className="border rounded-lg overflow-hidden">
+            <HorizontalScrollArea className="border rounded-lg overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
                   <tr>
@@ -135,7 +136,7 @@ export default function MemberSearchModal({ open, onClose, onSelect }) {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           )}
         </div>
       </DialogContent>

@@ -16,6 +16,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const actionLabels = {
   view: "Lihat",
@@ -326,7 +327,7 @@ const AddRole = () => {
                         </button>
                       )}
                       {!isCollapsed && (
-                        <div className="overflow-x-auto">
+                        <HorizontalScrollArea>
                           <table className="w-full text-left border-collapse">
                             <thead>
                               <tr className="bg-muted/10">
@@ -385,7 +386,7 @@ const AddRole = () => {
                               })}
                             </tbody>
                           </table>
-                        </div>
+                        </HorizontalScrollArea>
                       )}
                     </div>
                   );

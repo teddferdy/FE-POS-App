@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const statusDetail = {
   sent: { label: "Sent", class: "bg-blue-100 text-blue-800" },
@@ -148,7 +149,7 @@ const DetailStockTransfer = () => {
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.stockTransfer.detail.section.informasiTransfer")}
               </h2>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm">
                   <tbody>
                     {[
@@ -184,14 +185,14 @@ const DetailStockTransfer = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </div>
 
             <div className="bg-card p-6 rounded-xl border border-border">
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.stockTransfer.detail.section.items")}
               </h2>
-              <div className="overflow-x-auto">
+              <HorizontalScrollArea>
                 <table className="w-full text-sm min-w-[520px]">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">
@@ -226,7 +227,7 @@ const DetailStockTransfer = () => {
                     )}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             </div>
           </div>
 

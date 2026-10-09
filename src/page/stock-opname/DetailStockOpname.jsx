@@ -11,6 +11,7 @@ import { FormalDocument, PrintButton } from "@/components/document/FormalDocumen
 import { getDocumentSpecForStockOpname } from "@/components/document/documentMappers";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const statusColors = {
   draft:
@@ -188,7 +189,7 @@ const DetailStockOpname = () => {
               {t("page.stockOpname.detail.itemsTitle", { count: items.length })}
             </h3>
           </div>
-          <div className="overflow-x-auto">
+          <HorizontalScrollArea>
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/40 border-b">
@@ -300,7 +301,7 @@ const DetailStockOpname = () => {
                 )}
               </tbody>
             </table>
-          </div>
+          </HorizontalScrollArea>
         </Card>
 
         <div className="flex items-center justify-between pt-2">

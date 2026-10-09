@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FormalDocument, PrintButton } from "@/components/document/FormalDocument";
 import { getDocumentSpecForProductionOrder } from "@/components/document/documentMappers";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const DetailProductionOrder = () => {
   const { t } = useTranslation();
@@ -134,7 +135,7 @@ const DetailProductionOrder = () => {
                 <h2 className="text-lg font-semibold mb-4">
                   {t("page.productionOrder.detail.informasiProduksi")}
                 </h2>
-                <div className="overflow-x-auto">
+                <HorizontalScrollArea>
                   <table className="w-full text-sm">
                     <tbody>
                       {[
@@ -168,7 +169,7 @@ const DetailProductionOrder = () => {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </HorizontalScrollArea>
               </div>
             </div>
 
@@ -178,7 +179,7 @@ const DetailProductionOrder = () => {
                   <h2 className="text-lg font-semibold mb-4">
                     {t("page.productionOrder.detail.bomComponents")}
                   </h2>
-                  <div className="overflow-x-auto">
+                  <HorizontalScrollArea>
                     <table className="w-full text-sm min-w-[520px]">
                       <thead>
                         <tr className="border-b text-left text-muted-foreground">
@@ -201,7 +202,7 @@ const DetailProductionOrder = () => {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </HorizontalScrollArea>
                 </div>
               </div>
             )}

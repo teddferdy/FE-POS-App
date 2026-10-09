@@ -19,6 +19,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const unitOptions = [
   { value: "pcs", label: "pcs" },
@@ -470,7 +471,7 @@ const EditGoodsRequest = () => {
                   </Button>
                 </div>
 
-                <div className="overflow-x-auto">
+                <HorizontalScrollArea>
                   <table className="w-full text-sm min-w-[760px]">
                     <thead>
                       <tr className="border-b">
@@ -556,7 +557,7 @@ const EditGoodsRequest = () => {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </HorizontalScrollArea>
 
                 <div className="p-3 border-t">
                   <Button

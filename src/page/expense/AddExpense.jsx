@@ -49,6 +49,7 @@ import {
   createExpenses
 } from "@/lib/expense-payload";
 import { normalizePayload } from "@/lib/payload-normalizer";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const SectionHeader = ({ step, title, description }) => (
   <div className="flex items-center gap-3 pt-1">
@@ -569,7 +570,7 @@ const AddExpense = () => {
                     </div>
 
                     <div className="border rounded-lg overflow-hidden">
-                      <div className="overflow-x-auto">
+                      <HorizontalScrollArea>
                         <table className="w-full text-sm min-w-[640px]">
                           <thead>
                             <tr className="bg-muted/40 border-b">
@@ -682,7 +683,7 @@ const AddExpense = () => {
                             })}
                           </tbody>
                         </table>
-                      </div>
+                      </HorizontalScrollArea>
                       <div className="p-3 border-t flex items-center justify-between">
                         <Button
                           type="button"

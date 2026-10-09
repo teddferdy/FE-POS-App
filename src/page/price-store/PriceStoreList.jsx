@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import NoStore from "@/components/ui/NoStore";
 import TableActionLegend from "@/components/ui/TableActionLegend";
 import PageHeader from "@/components/ui/PageHeader";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const PriceStoreList = () => {
   const { t } = useTranslation();
@@ -215,7 +216,7 @@ const PriceStoreList = () => {
           )}
 
           <Card className="p-6">
-            <div className="overflow-x-auto">
+            <HorizontalScrollArea>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left text-muted-foreground">
@@ -307,7 +308,7 @@ const PriceStoreList = () => {
                   )}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           </Card>
         </div>
       )}

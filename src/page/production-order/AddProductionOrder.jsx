@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const AddProductionOrder = () => {
   const { t } = useTranslation();
@@ -223,7 +224,7 @@ const AddProductionOrder = () => {
             <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">
               {t("page.productionOrder.add.bomComponents")}
             </p>
-            <div className="overflow-x-auto">
+            <HorizontalScrollArea>
               <table className="w-full text-xs min-w-[420px]">
                 <thead>
                   <tr className="text-left text-blue-600 dark:text-blue-400">
@@ -242,7 +243,7 @@ const AddProductionOrder = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           </div>
         )}
 

@@ -7,6 +7,7 @@ import {
   ExcelSignatureBlock,
   ExcelFooter
 } from "./excelBlocks";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const incomeRows = [
   { keterangan: "Penjualan Tunai", nominal: "Rp 5.000.000" },
@@ -21,32 +22,34 @@ function SectionTable({ title, rows, accent, t, labelKey }) {
   return (
     <div className="space-y-1">
       <div className="text-xs font-bold uppercase tracking-wide text-slate-700">{labelKey}</div>
-      <table className="w-full border-collapse overflow-hidden text-xs">
-        <thead>
-          <tr>
-            <th
-              className="border border-slate-200 px-3 py-2 text-left font-medium text-white"
-              style={{ backgroundColor: accent }}>
-              {t("page.reportSettings.previewKeterangan")}
-            </th>
-            <th
-              className="border border-slate-200 px-3 py-2 text-right font-medium text-white"
-              style={{ backgroundColor: accent }}>
-              {t("page.reportSettings.previewNominal")}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, ri) => (
-            <tr key={ri} className={ri % 2 === 1 ? "bg-slate-50" : ""}>
-              <td className="border border-slate-200 px-3 py-1.5">{row.keterangan}</td>
-              <td className="border border-slate-200 px-3 py-1.5 text-right font-mono tabular-nums">
-                {row.nominal}
-              </td>
+      <HorizontalScrollArea>
+        <table className="w-full border-collapse overflow-hidden text-xs">
+          <thead>
+            <tr>
+              <th
+                className="border border-slate-200 px-3 py-2 text-left font-medium text-white"
+                style={{ backgroundColor: accent }}>
+                {t("page.reportSettings.previewKeterangan")}
+              </th>
+              <th
+                className="border border-slate-200 px-3 py-2 text-right font-medium text-white"
+                style={{ backgroundColor: accent }}>
+                {t("page.reportSettings.previewNominal")}
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row, ri) => (
+              <tr key={ri} className={ri % 2 === 1 ? "bg-slate-50" : ""}>
+                <td className="border border-slate-200 px-3 py-1.5">{row.keterangan}</td>
+                <td className="border border-slate-200 px-3 py-1.5 text-right font-mono tabular-nums">
+                  {row.nominal}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </HorizontalScrollArea>
       <div
         className="flex justify-between border-t-2 px-3 py-1.5 text-xs font-bold"
         style={{ borderColor: accent }}>
