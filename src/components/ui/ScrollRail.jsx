@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useHorizontalOverflow } from "@/hooks/useHorizontalOverflow";
 
 const RailButton = ({ direction, label, disabled, onClick }) => (
   <button
@@ -22,28 +23,7 @@ const ScrollRail = ({
   gutterClassName = "flex items-center gap-2 px-4 lg:px-6",
   railClassName = ""
 }) => {
-  const railRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const updateScrollState = useCallback(() => {
-    const el = railRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 1);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
-  }, []);
-
-  useEffect(() => {
-    const el = railRef.current;
-    if (!el) return;
-    updateScrollState();
-    el.addEventListener("scroll", updateScrollState, { passive: true });
-    window.addEventListener("resize", updateScrollState);
-    return () => {
-      el.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [updateScrollState, children]);
+  const { ref: railRef, canScrollLeft, canScrollRight } = useHorizontalOverflow(children);
 
   const scrollRail = (dir) => {
     const el = railRef.current;
@@ -78,7 +58,6 @@ const ScrollRail = ({
         <div
           ref={railRef}
           data-testid={railTestId}
-          onScroll={updateScrollState}
           className={`overflow-x-auto scrollbar-none ${railClassName}`}>
           {children}
         </div>

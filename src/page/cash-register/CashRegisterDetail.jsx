@@ -30,6 +30,8 @@ import {
 import { getOrdersByStore } from "@/services/order";
 import { getZReport } from "@/services/cash-register";
 import { formatStoreDate, formatStoreTime, formatStoreDateTime } from "@/utils/storeTimezone";
+import { finalClosingBalance } from "@/utils/registerBalance";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 // Phase 39 Batch 6A: the transaction lists were hardcoded to `limit: 100`
 // with no page state, silently hiding any register session's transactions
@@ -171,7 +173,11 @@ const CashRegisterDetail = () => {
   const totalSales = rec?.sales?.eligible?.total ?? summary?.totalSales ?? item?.totalSales;
   const totalExpenses =
     rec?.expenses?.includedCash?.total ?? summary?.totalExpenses ?? item?.totalExpenses;
-  const closingBalance = report?.register?.closingBalance ?? item?.closingBalance;
+  // Final only once CLOSED; an open register has no closing balance yet.
+  const closingBalance = finalClosingBalance({
+    status: report?.register?.status ?? item?.status,
+    closingBalance: report?.register?.closingBalance ?? item?.closingBalance
+  });
 
   // Per-row eligibility comes from the backend reconciliation identity sets
   // — never recomputed with duplicated FE rules.
@@ -441,7 +447,7 @@ const CashRegisterDetail = () => {
     {
       icon: Coins,
       label: t("page.cashRegister.detail.closingBalance"),
-      value: formatIDR(closingBalance),
+      value: closingBalance == null ? "-" : formatIDR(closingBalance),
       mono: true
     },
     { icon: FileText, label: t("page.cashRegister.detail.notes"), value: item.notes || "-" }
@@ -713,7 +719,7 @@ const CashRegisterDetail = () => {
               {t("page.cashRegister.detail.transactionCount", { count: ordersTotal })}
             </span>
           </div>
-          <div className="overflow-x-auto">
+          <HorizontalScrollArea contentKey={orders}>
             {ordersLoading ? (
               <div className="p-6 space-y-3">
                 {[1, 2, 3].map((i) => (
@@ -723,7 +729,7 @@ const CashRegisterDetail = () => {
             ) : (
               renderOrderTable(orders, true, "page.cashRegister.detail.noTransactions")
             )}
-          </div>
+          </HorizontalScrollArea>
           {!ordersLoading &&
             orders.length > 0 &&
             renderTablePagination(ordersPage, ordersTotalPages, setOrdersPage)}
@@ -738,13 +744,13 @@ const CashRegisterDetail = () => {
               {t("page.cashRegister.detail.transactionCount")} · {outsideTotal}x
             </span>
           </div>
-          <div className="overflow-x-auto">
+          <HorizontalScrollArea contentKey={outsideOrders}>
             {renderOrderTable(
               outsideOrders,
               false,
               "page.cashRegister.detail.noOutsideTransactions"
             )}
-          </div>
+          </HorizontalScrollArea>
           {outsideOrders.length > 0 &&
             renderTablePagination(outsidePage, outsideTotalPages, setOutsidePage)}
         </div>

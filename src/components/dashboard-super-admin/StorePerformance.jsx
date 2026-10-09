@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import SectionCard from "./SectionCard";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const COLORS = [
   "#6366f1",
@@ -81,7 +82,7 @@ const StorePerformance = ({ storePerformance, totalRevenue }) => {
             </ResponsiveContainer>
           </div>
 
-          <div className="overflow-x-auto -mx-5 px-5">
+          <HorizontalScrollArea className="-mx-5" viewportClassName="px-5">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
@@ -161,7 +162,7 @@ const StorePerformance = ({ storePerformance, totalRevenue }) => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </HorizontalScrollArea>
         </>
       )}
     </SectionCard>

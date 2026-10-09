@@ -11,6 +11,7 @@ import {
 import SectionCard from "./SectionCard";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { safeGet } from "@/lib/safe-lookup";
+import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
 const PROD_STATUS = {
   draft: { label: "Draft", color: "text-muted-foreground", bg: "bg-muted" },
@@ -132,7 +133,7 @@ const OperationsSection = ({ operations }) => {
             Semua stok aman
           </p>
         ) : (
-          <div className="overflow-x-auto -mx-5 px-5">
+          <HorizontalScrollArea className="-mx-5" viewportClassName="px-5">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
@@ -170,7 +171,7 @@ const OperationsSection = ({ operations }) => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </HorizontalScrollArea>
         )}
       </div>
     </SectionCard>

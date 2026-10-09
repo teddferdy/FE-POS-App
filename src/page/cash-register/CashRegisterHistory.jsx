@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { getCashRegisterHistory, closeCashRegister } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
 import { isCashPayment } from "@/utils/payment";
+import { finalClosingBalance } from "@/utils/registerBalance";
 import { formatStoreDate, formatStoreTime } from "@/utils/storeTimezone";
 import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
@@ -201,6 +202,20 @@ const CashRegisterHistory = () => {
       header: t("page.cashRegister.history.closingBalance"),
       align: "right",
       render: (item) => {
+        const closing = finalClosingBalance(item);
+        if (closing == null) {
+          // OPEN register: no closing balance exists yet (not Rp 0).
+          return (
+            <div className="text-right" data-testid={`closing-balance-${item.id}`}>
+              <span
+                className="font-mono text-sm text-muted-foreground"
+                title={t("page.cashRegister.history.notClosedYet")}
+                aria-label={t("page.cashRegister.history.notClosedYet")}>
+                -
+              </span>
+            </div>
+          );
+        }
         // Why the closing differs: variance plus its two factual
         // components already present on the row (non-cash sales counted
         // in the close but not in the cash drawer, and expenses). No new
@@ -218,8 +233,8 @@ const CashRegisterHistory = () => {
           nonCash = (item.totalSales || 0) - (item.cashSalesReceived || 0);
         }
         return (
-          <div className="text-right">
-            <div className="font-mono text-sm">{formatIDR(item.closingBalance)}</div>
+          <div className="text-right" data-testid={`closing-balance-${item.id}`}>
+            <div className="font-mono text-sm">{formatIDR(closing)}</div>
             {variance != null && variance !== 0 && (
               <div className="text-[10px] text-muted-foreground">
                 {t("page.cashRegister.history.variance")} {variance > 0 ? "+" : ""}
