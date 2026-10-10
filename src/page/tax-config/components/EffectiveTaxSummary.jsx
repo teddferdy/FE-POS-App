@@ -55,7 +55,14 @@ const SCOPE_GROUPS = [
 ];
 
 const Notice = ({ severity, children, testId }) => {
-  const s = SEVERITY[severity];
+  // Explicit selection (no dynamic key): callers only ever pass the three
+  // SEVERITY keys — literals or values constrained by severityOf().
+  const s =
+    severity === "warning"
+      ? SEVERITY.warning
+      : severity === "info"
+        ? SEVERITY.info
+        : SEVERITY.error;
   const Icon = s.icon;
   return (
     <div
