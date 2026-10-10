@@ -1,11 +1,11 @@
-/* global __dirname */
 import fs from "fs";
-import path from "path";
 
 // P1 effective-tax summary — every key the summary and the tax pages use for
 // effective tax and scope resolves in both runtime locales (public/locales)
 // and in the mirrored src/i18n copies, with real (non-key) text.
-const ROOT = path.resolve(__dirname, "../..");
+//
+// Paths below are repo-relative string literals: jest always runs from the
+// repository root (locally and in CI), so no path computation is needed.
 const LOCALE_FILES = [
   "public/locales/en/translation.json",
   "public/locales/id/translation.json",
@@ -38,24 +38,21 @@ const DYNAMIC_KEYS = [
 // must stay in sync with the LOCALE_TEXT keys (the key-count and per-locale
 // tests guard against drift).
 const COMPONENT_SOURCES = [
-  fs.readFileSync(
-    path.join(ROOT, "src/page/tax-config/components/EffectiveTaxSummary.jsx"),
-    "utf8"
-  ),
-  fs.readFileSync(path.join(ROOT, "src/page/tax-config/TaxConfigList.jsx"), "utf8"),
-  fs.readFileSync(path.join(ROOT, "src/page/tax-config/DetailTaxConfig.jsx"), "utf8")
+  fs.readFileSync("src/page/tax-config/components/EffectiveTaxSummary.jsx", "utf8"),
+  fs.readFileSync("src/page/tax-config/TaxConfigList.jsx", "utf8"),
+  fs.readFileSync("src/page/tax-config/DetailTaxConfig.jsx", "utf8")
 ];
 const LOCALE_TEXT = {
   "public/locales/en/translation.json": fs.readFileSync(
-    path.join(ROOT, "public/locales/en/translation.json"),
+    "public/locales/en/translation.json",
     "utf8"
   ),
   "public/locales/id/translation.json": fs.readFileSync(
-    path.join(ROOT, "public/locales/id/translation.json"),
+    "public/locales/id/translation.json",
     "utf8"
   ),
-  "src/i18n/en.json": fs.readFileSync(path.join(ROOT, "src/i18n/en.json"), "utf8"),
-  "src/i18n/id.json": fs.readFileSync(path.join(ROOT, "src/i18n/id.json"), "utf8")
+  "src/i18n/en.json": fs.readFileSync("src/i18n/en.json", "utf8"),
+  "src/i18n/id.json": fs.readFileSync("src/i18n/id.json", "utf8")
 };
 
 const collectStaticKeys = () => {
