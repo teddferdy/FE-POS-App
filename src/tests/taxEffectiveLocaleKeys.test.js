@@ -39,11 +39,13 @@ const DYNAMIC_KEYS = [
   "page.taxConfig.effective.channel.qr"
 ];
 
+// Reviewed: every path read below comes from the hardcoded COMPONENTS /
+// LOCALE_FILES arrays above — never from user input or test parameters.
 const collectStaticKeys = () => {
   const keys = new Set();
   const re = /t\(\s*"(page\.taxConfig\.(?:effective|scope)\.[^"]+)"/g;
   COMPONENTS.forEach((rel) => {
-    const src = fs.readFileSync(path.join(ROOT, rel), "utf8");
+    const src = fs.readFileSync(path.join(ROOT, rel), "utf8"); // codacy-ignore-line
     let m;
     while ((m = re.exec(src))) keys.add(m[1]);
   });
@@ -58,7 +60,7 @@ describe("effective-tax and scope locale keys", () => {
   });
 
   test.each(LOCALE_FILES)("%s resolves every key with real text", (rel) => {
-    const dict = JSON.parse(fs.readFileSync(path.join(ROOT, rel), "utf8"));
+    const dict = JSON.parse(fs.readFileSync(path.join(ROOT, rel), "utf8")); // codacy-ignore-line
     const missing = keys.filter((k) => typeof dict[k] !== "string" || !dict[k].trim());
     expect(missing).toEqual([]);
     const untranslated = keys.filter((k) => dict[k] === k);
@@ -66,8 +68,8 @@ describe("effective-tax and scope locale keys", () => {
   });
 
   test("Indonesian differs from English for user-facing sentences", () => {
-    const en = JSON.parse(fs.readFileSync(path.join(ROOT, LOCALE_FILES[0]), "utf8"));
-    const id = JSON.parse(fs.readFileSync(path.join(ROOT, LOCALE_FILES[1]), "utf8"));
+    const en = JSON.parse(fs.readFileSync(path.join(ROOT, LOCALE_FILES[0]), "utf8")); // codacy-ignore-line
+    const id = JSON.parse(fs.readFileSync(path.join(ROOT, LOCALE_FILES[1]), "utf8")); // codacy-ignore-line
     const sentences = keys.filter((k) => (en[k] || "").split(" ").length > 4);
     expect(sentences.length).toBeGreaterThan(5);
     expect(sentences.filter((k) => en[k] === id[k])).toEqual([]);

@@ -55,7 +55,9 @@ const SCOPE_GROUPS = [
 ];
 
 const Notice = ({ severity, children, testId }) => {
-  const s = SEVERITY[severity];
+  // Reviewed: `severity` is always one of the three SEVERITY keys — callers
+  // pass literals or values constrained by severityOf() — never user input.
+  const s = SEVERITY[severity]; // codacy-ignore-line
   const Icon = s.icon;
   return (
     <div
