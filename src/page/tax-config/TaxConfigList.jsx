@@ -19,7 +19,9 @@ import {
   XCircle,
   Table,
   Download,
-  Upload
+  Upload,
+  Globe,
+  Store
 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import {
@@ -44,6 +46,9 @@ import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import { useStore } from "@/contexts/StoreContext";
+import EffectiveTaxSummary from "@/page/tax-config/components/EffectiveTaxSummary";
+import { outletNameFor, resolveEffectiveTaxScope, taxRowScope } from "@/utils/taxEffective";
 
 const typeColors = {
   PPN: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
@@ -81,6 +86,13 @@ const TaxConfigList = () => {
   const { data: locData } = useQuery(["locations-tax"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
+
+  // P1: effective-tax summary for the active outlet context (global scope
+  // for a super admin with no outlet selected). Backend-owned and
+  // independent of this list's pagination and filters.
+  const { activeStoreId, activeStoreName } = useStore();
+  const outletLookup = { locations: locData?.data, activeStoreId, activeStoreName };
+  const summaryScope = resolveEffectiveTaxScope({ isSuperAdmin, storeId: activeStoreId });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["tax-configs", page, limit, search, statusFilter],
@@ -130,6 +142,21 @@ const TaxConfigList = () => {
           </span>
         );
       }
+    },
+    {
+      header: t("page.taxConfig.scope.column"),
+      render: (item) =>
+        taxRowScope(item.store) === "global" ? (
+          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
+            <Globe size={14} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+            {t("page.taxConfig.scope.global")}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-sm text-foreground">
+            <Store size={14} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+            {outletNameFor(item.store, outletLookup) || t("page.taxConfig.scope.outlet")}
+          </span>
+        )
     },
     {
       header: t("page.taxConfig.table.rate"),
@@ -331,6 +358,12 @@ const TaxConfigList = () => {
           </Button>
         )}
       </PageHeader>
+
+      <EffectiveTaxSummary
+        scope={summaryScope}
+        outletName={summaryScope.store ? outletNameFor(summaryScope.store, outletLookup) : null}
+        canViewDetail={canAccess(user, MENU_KEY, "detail")}
+      />
 
       {isError ? (
         <AbortController refetch={refetch} />
