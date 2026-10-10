@@ -10,6 +10,20 @@ export const getAllTaxConfig = async (payload) => {
   return data;
 };
 
+// P1: read-only effective-tax summary for one context. The caller resolves
+// the scope explicitly, so store injection is skipped: a global (no-store)
+// request must never receive an injected outlet.
+export const getEffectiveTax = async ({ store, channel } = {}) => {
+  const params = { channel: channel || "counter" };
+  if (store !== null && store !== undefined && store !== "") params.store = store;
+  const { data, status } = await axiosInstance.get("/tax-config/effective", {
+    params,
+    skipStoreInjection: true
+  });
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const addTaxConfig = async (payload) => {
   const { data, status } = await axiosInstance.post("/tax-config/add-new-tax-config", payload);
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);

@@ -3,13 +3,24 @@ import { getTaxType } from "@/utils/taxDisplay";
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Percent, Edit3, Calendar, Store, User } from "lucide-react";
+import { Percent, Edit3, Calendar, Store, User, Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTaxConfigById } from "@/services/tax-config";
 import PageHeader from "@/components/ui/PageHeader";
+import { getAllLocation } from "@/services/location";
+import { useStore } from "@/contexts/StoreContext";
+import { useUserSession } from "@/hooks/useUserSession";
+import { canAccess } from "@/utils/permission";
+import EffectiveTaxSummary from "@/page/tax-config/components/EffectiveTaxSummary";
+import {
+  outletNameFor,
+  resolveEffectiveTaxScope,
+  scopeForTaxRow,
+  taxRowScope
+} from "@/utils/taxEffective";
 
 const statusBadge = (status, t) => {
   if (status === "active")
@@ -64,6 +75,20 @@ const DetailTaxConfig = () => {
 
   const tax = data?.data || data;
 
+  // P1: evaluate the effective tax where this row applies — its own outlet,
+  // or the caller's current context for a global row.
+  const user = useUserSession();
+  const { activeStoreId, activeStoreName, isSuperAdmin } = useStore();
+  const { data: locData } = useQuery(["locations-tax"], () => getAllLocation(), {
+    enabled: !!isSuperAdmin
+  });
+  const outletLookup = { locations: locData?.data, activeStoreId, activeStoreName };
+  const summaryScope = scopeForTaxRow(
+    tax,
+    resolveEffectiveTaxScope({ isSuperAdmin, storeId: activeStoreId })
+  );
+  const isGlobalRow = taxRowScope(tax?.store) === "global";
+
   if (!id)
     return (
       <div className="flex items-center justify-center h-64">
@@ -95,14 +120,14 @@ const DetailTaxConfig = () => {
           },
           {
             label: t("page.taxConfig.list.title"),
-            href: "/tax-config-list",
+            href: "/tax-list",
             i18nKey: "page.taxConfig.list.title"
           },
           { label: t("breadcrumb.detail") }
         ]}
         title={isLoading ? t("common.loading") : tax?.name || "-"}
         description={t("page.taxConfig.detail.description")}
-        backLink="/tax-config-list"
+        backLink="/tax-list"
         dynamicInfo={false}>
         {!isLoading && (
           <Button variant="outline" onClick={() => navigate(`/edit-tax?id=${id}`)}>
@@ -186,17 +211,37 @@ const DetailTaxConfig = () => {
                 </p>
                 {statusBadge(tax?.status, t)}
               </div>
-              {tax?.store && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {t("page.taxConfig.detail.store")}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Store size={14} className="shrink-0 text-muted-foreground" />
-                    <span className="font-medium">{tax.store?.name || tax.store}</span>
+              <div data-testid="tax-detail-scope">
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.taxConfig.scope.column")}
+                </p>
+                {isGlobalRow ? (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Globe
+                        size={14}
+                        className="shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                      />
+                      <span className="font-medium">{t("page.taxConfig.scope.global")}</span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {t("page.taxConfig.scope.globalHint")}
+                    </p>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Store
+                      size={14}
+                      className="shrink-0 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                    <span className="font-medium">
+                      {outletNameFor(tax?.store, outletLookup) || t("page.taxConfig.scope.outlet")}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="border-t border-border/50 mt-5 pt-4 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
@@ -251,6 +296,15 @@ const DetailTaxConfig = () => {
             </Card>
           </div>
         </div>
+      )}
+
+      {!isLoading && tax && (
+        <EffectiveTaxSummary
+          scope={summaryScope}
+          outletName={summaryScope?.store ? outletNameFor(summaryScope.store, outletLookup) : null}
+          highlightRowId={tax.id}
+          canViewDetail={canAccess(user, "/tax-list", "detail")}
+        />
       )}
     </div>
   );
