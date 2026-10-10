@@ -1,4 +1,5 @@
 import { safeGet } from "@/lib/safe-lookup";
+import { getTaxType } from "@/utils/taxDisplay";
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -33,15 +34,8 @@ const statusBadge = (status, t) => {
   );
 };
 
-const getTaxType = (name) => {
-  if (!name) return "Non-Pajak";
-  if (name.startsWith("PPN")) return "PPN";
-  if (name.startsWith("PPh")) return "PPh";
-  return "Non-Pajak";
-};
-
-const typeBadge = (name) => {
-  const taxType = getTaxType(name);
+const typeBadge = (name, type) => {
+  const taxType = getTaxType(name, type);
   const colors = {
     PPN: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
     PPh: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800",
@@ -172,7 +166,7 @@ const DetailTaxConfig = () => {
                 <p className="text-xs text-muted-foreground mb-1">
                   {t("page.taxConfig.table.type")}
                 </p>
-                {typeBadge(tax?.name)}
+                {typeBadge(tax?.name, tax?.type)}
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">
