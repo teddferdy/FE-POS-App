@@ -2670,6 +2670,8 @@
   "page.cashier.receipt.splitAllPaid": "All splits are paid",
   "page.cashier.receipt.splitMergeSelected": "Merge {{count}} Selected",
   "page.cashier.receipt.splitSelectForMerge": "Select for merge",
+  "page.cashier.receipt.redeemPoints": "Redeem Points ({{points}} points)",
+  "page.cashier.receipt.totalBeforeRedeem": "Total before redemption",
   "page.cashier.receipt.toast.printSuccess": "Receipt printed successfully",
   "page.cashier.receipt.toast.printError": "Failed to print",
   "page.cashier.receipt.toast.orderNotFound": "Order ID not found",

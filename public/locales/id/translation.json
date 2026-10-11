@@ -2667,6 +2667,8 @@
   "page.cashier.receipt.splitAllPaid": "Semua pembagian sudah lunas",
   "page.cashier.receipt.splitMergeSelected": "Gabung {{count}} Terpilih",
   "page.cashier.receipt.splitSelectForMerge": "Pilih untuk digabung",
+  "page.cashier.receipt.redeemPoints": "Redeem Poin ({{points}} Poin)",
+  "page.cashier.receipt.totalBeforeRedeem": "Total sebelum redeem",
   "page.cashier.receipt.toast.printSuccess": "Struk berhasil dicetak",
   "page.cashier.receipt.toast.printError": "Gagal mencetak",
   "page.cashier.receipt.toast.orderNotFound": "ID pesanan tidak ditemukan",
