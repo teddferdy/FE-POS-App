@@ -32,6 +32,12 @@ import { getZReport } from "@/services/cash-register";
 import { formatStoreDate, formatStoreTime, formatStoreDateTime } from "@/utils/storeTimezone";
 import { finalClosingBalance } from "@/utils/registerBalance";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { VARIANCE_STATUS, canDecideVariance } from "@/utils/varianceApproval";
+import {
+  VarianceApprovalBadge,
+  VarianceDecisionControls,
+  varianceNoteKey
+} from "@/page/cash-register/components/VarianceApproval";
 
 // Phase 39 Batch 6A: the transaction lists were hardcoded to `limit: 100`
 // with no page state, silently hiding any register session's transactions
@@ -162,6 +168,43 @@ const CashRegisterDetail = () => {
   const rec = report?.reconciliation || null;
   const summary = report?.summary || null;
   const live = !!rec;
+
+  // DR-15 variance review. The navigation-state row can be stale (it
+  // survives reloads), so a decision is offered only from the freshly
+  // fetched Z-report: its snapshot summary carries varianceApprovalStatus.
+  // Legacy Z-reports (registers closed before close snapshots) carry no
+  // status; the row's status is then shown read-only.
+  const roleType = cookie?.user?.roleType;
+  const [decidedStatus, setDecidedStatus] = useState(null);
+  useEffect(() => {
+    setDecidedStatus(null);
+  }, [item?.id]);
+  const hasLiveApproval =
+    !!summary && Object.prototype.hasOwnProperty.call(summary, "varianceApprovalStatus");
+  const approvalStatus =
+    decidedStatus ??
+    (hasLiveApproval ? summary.varianceApprovalStatus : item?.varianceApprovalStatus) ??
+    null;
+  const reviewRegisterStatus = report?.register?.status ?? item?.status;
+  const canDecide =
+    !decidedStatus &&
+    hasLiveApproval &&
+    canDecideVariance({
+      roleType,
+      registerStatus: report?.register?.status,
+      approvalStatus: summary.varianceApprovalStatus
+    });
+  const showReviewFromHistory =
+    !!report &&
+    !hasLiveApproval &&
+    roleType === "super_admin" &&
+    approvalStatus === VARIANCE_STATUS.PENDING;
+  const reviewVariance = summary?.variance ?? item?.variance;
+  const reviewVarianceLabel =
+    reviewVariance == null
+      ? undefined
+      : `${reviewVariance > 0 ? "+" : ""}${formatIDR(reviewVariance)}`;
+  const reviewNoteKey = varianceNoteKey(approvalStatus);
 
   // Phase 39 Batch 6-prereq: register-level timestamps (open/close date,
   // register window caption) must render in the store's local time, not
@@ -534,6 +577,40 @@ const CashRegisterDetail = () => {
             {sc.label}
           </span>
         </PageHeader>
+
+        {reviewRegisterStatus === "closed" && approvalStatus && (
+          <section
+            aria-labelledby="variance-review-title"
+            className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="bg-muted/30 px-6 py-3 border-b border-border">
+              <h2 id="variance-review-title" className="text-sm font-semibold">
+                {t("page.cashRegister.variance.reviewTitle")}
+              </h2>
+            </div>
+            <div className="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-2">
+                <div>
+                  <VarianceApprovalBadge status={approvalStatus} />
+                </div>
+                {reviewNoteKey && (
+                  <p className="text-sm text-muted-foreground">{t(reviewNoteKey)}</p>
+                )}
+                {showReviewFromHistory && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("page.cashRegister.variance.note.reviewFromHistory")}
+                  </p>
+                )}
+              </div>
+              {canDecide && (
+                <VarianceDecisionControls
+                  registerId={item.id}
+                  varianceLabel={reviewVarianceLabel}
+                  onDecided={setDecidedStatus}
+                />
+              )}
+            </div>
+          </section>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-card rounded-xl border border-border overflow-hidden">
