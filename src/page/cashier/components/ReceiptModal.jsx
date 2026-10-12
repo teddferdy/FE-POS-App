@@ -783,18 +783,20 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                   <>
                     <div className="flex justify-between">
                       <span className={`text-violet-600 ${sz.totalsLabel}`}>
-                        Redeem Point (
-                        {(data.redeemedPoints || data.customer?.redeemedPoints || 0).toLocaleString(
-                          "id-ID"
-                        )}{" "}
-                        Poin)
+                        {t("page.cashier.receipt.redeemPoints", {
+                          points: (
+                            data.redeemedPoints ||
+                            data.customer?.redeemedPoints ||
+                            0
+                          ).toLocaleString("id-ID")
+                        })}
                       </span>
                       <span className={`text-violet-600 ${sz.totalsValue}`}>
                         -Rp{formatPrice(data.redeemedPoints || data.customer?.redeemedPoints || 0)}
                       </span>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Total sebelum redeem</span>
+                      <span>{t("page.cashier.receipt.totalBeforeRedeem")}</span>
                       <span>
                         Rp
                         {formatPrice(
