@@ -60,6 +60,12 @@ export const getZReport = async (registerId) => {
   return data;
 };
 
+export const listCashMovements = async (registerId) => {
+  const { data, status } = await axiosInstance.get(`/cash-register/${registerId}/movements`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const createCashMovement = async (registerId, payload) => {
   const { data, status } = await axiosInstance.post(
     `/cash-register/${registerId}/movement`,
