@@ -8102,5 +8102,5 @@
   "page.cashRegister.movements.rejectTitle": "Reject Cash Movement",
   "page.cashRegister.movements.rejectConfirm": "Are you sure you want to reject this cash movement?",
   "page.cashRegister.movements.reverseTitle": "Reverse Cash Movement",
-  "page.cashRegister.movements.reverseConfirm": "Are you sure you want to reverse this cash movement? A correction entry will be created.",
+  "page.cashRegister.movements.reverseConfirm": "Are you sure you want to reverse this cash movement? A correction entry will be created."
 }

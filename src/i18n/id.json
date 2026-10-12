@@ -8102,5 +8102,5 @@
   "page.cashRegister.movements.rejectTitle": "Tolak Mutasi Kas",
   "page.cashRegister.movements.rejectConfirm": "Yakin ingin menolak mutasi kas ini?",
   "page.cashRegister.movements.reverseTitle": "Balikkan Mutasi Kas",
-  "page.cashRegister.movements.reverseConfirm": "Yakin ingin membalikkan mutasi kas ini? Entri koreksi akan dibuat.",
+  "page.cashRegister.movements.reverseConfirm": "Yakin ingin membalikkan mutasi kas ini? Entri koreksi akan dibuat."
 }
