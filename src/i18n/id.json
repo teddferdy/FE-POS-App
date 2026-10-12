@@ -8102,5 +8102,12 @@
   "page.cashRegister.movements.rejectTitle": "Tolak Mutasi Kas",
   "page.cashRegister.movements.rejectConfirm": "Yakin ingin menolak mutasi kas ini?",
   "page.cashRegister.movements.reverseTitle": "Balikkan Mutasi Kas",
-  "page.cashRegister.movements.reverseConfirm": "Yakin ingin membalikkan mutasi kas ini? Entri koreksi akan dibuat."
+  "page.cashRegister.movements.reverseConfirm": "Yakin ingin membalikkan mutasi kas ini? Entri koreksi akan dibuat.",
+  "page.goodsReceipt.list.cancelReceipt": "Batalkan Penerimaan",
+  "page.goodsReceipt.list.cancelConfirm": "Ya, Batalkan",
+  "page.goodsReceipt.list.modal.cancelTitle": "Batalkan Penerimaan Barang",
+  "page.goodsReceipt.list.modal.cancelDescription": "Yakin ingin membatalkan penerimaan {{receiptNumber}}? Stok yang diterima akan dibalikkan.",
+  "page.goodsReceipt.list.toast.cancelSuccess": "Penerimaan barang dibatalkan",
+  "page.goodsReceipt.list.toast.cancelSuccessDesc": "Stok yang diterima berhasil dibalikkan",
+  "page.goodsReceipt.list.toast.cancelError": "Gagal membatalkan penerimaan barang"
 }
