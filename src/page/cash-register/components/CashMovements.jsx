@@ -31,10 +31,15 @@ const formatIDR = (num) => {
   return "Rp " + Number(num).toLocaleString("id-ID");
 };
 
-const newIdempotencyKey = () =>
-  typeof crypto !== "undefined" && crypto.randomUUID
-    ? crypto.randomUUID()
-    : `mv-${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
+export const newIdempotencyKey = () => {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  // CSPRNG fallback (no Math.random): 16 random bytes as hex. crypto is
+  // universally available in the supported browsers; this path exists only
+  // for non-standard runtimes without randomUUID.
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+};
 
 const StatusBadge = ({ status, t }) => (
   <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs font-medium">

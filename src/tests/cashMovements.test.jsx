@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { toast } from "sonner";
-import CashMovements from "../page/cash-register/components/CashMovements";
+import CashMovements, { newIdempotencyKey } from "../page/cash-register/components/CashMovements";
 import {
   listCashMovements,
   createCashMovement,
@@ -96,6 +96,29 @@ const activeMovement = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+});
+
+test("idempotency keys are unique and use strong randomness without Math.random", () => {
+  const randomSpy = jest.spyOn(Math, "random");
+  const seen = new Set(Array.from({ length: 20 }, () => newIdempotencyKey()));
+  expect(seen.size).toBe(20);
+  expect(randomSpy).not.toHaveBeenCalled();
+  randomSpy.mockRestore();
+});
+
+test("idempotency fallback without randomUUID yields unique hex without Math.random", () => {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis.crypto, "randomUUID");
+  Object.defineProperty(globalThis.crypto, "randomUUID", { value: undefined, configurable: true });
+  const randomSpy = jest.spyOn(Math, "random");
+  try {
+    const keys = Array.from({ length: 10 }, () => newIdempotencyKey());
+    expect(new Set(keys).size).toBe(10);
+    for (const k of keys) expect(k).toMatch(/^[0-9a-f]{32}$/);
+    expect(randomSpy).not.toHaveBeenCalled();
+  } finally {
+    if (descriptor) Object.defineProperty(globalThis.crypto, "randomUUID", descriptor);
+    randomSpy.mockRestore();
+  }
 });
 
 test("lists movements newest-first with status and approve/reject actions for pending rows", async () => {
