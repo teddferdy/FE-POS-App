@@ -8102,5 +8102,12 @@
   "page.cashRegister.movements.rejectTitle": "Reject Cash Movement",
   "page.cashRegister.movements.rejectConfirm": "Are you sure you want to reject this cash movement?",
   "page.cashRegister.movements.reverseTitle": "Reverse Cash Movement",
-  "page.cashRegister.movements.reverseConfirm": "Are you sure you want to reverse this cash movement? A correction entry will be created."
+  "page.cashRegister.movements.reverseConfirm": "Are you sure you want to reverse this cash movement? A correction entry will be created.",
+  "page.goodsReceipt.list.cancelReceipt": "Cancel Receipt",
+  "page.goodsReceipt.list.cancelConfirm": "Yes, Cancel Receipt",
+  "page.goodsReceipt.list.modal.cancelTitle": "Cancel Goods Receipt",
+  "page.goodsReceipt.list.modal.cancelDescription": "Are you sure you want to cancel receipt {{receiptNumber}}? Received stock will be reversed.",
+  "page.goodsReceipt.list.toast.cancelSuccess": "Goods receipt cancelled",
+  "page.goodsReceipt.list.toast.cancelSuccessDesc": "Received stock was reversed successfully",
+  "page.goodsReceipt.list.toast.cancelError": "Failed to cancel goods receipt"
 }
