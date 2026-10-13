@@ -21,7 +21,8 @@ import { canAccess } from "@/utils/permission";
 import {
   getAllGoodsReceipt,
   deleteGoodsReceipt,
-  exportGoodsReceipt
+  exportGoodsReceipt,
+  changeGoodsReceiptStatus
 } from "@/services/goods-receipt";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
@@ -63,6 +64,7 @@ const GoodsReceiptList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [cancelTarget, setCancelTarget] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
 
   const isFiltered = storeFilter !== "all" || statusFilter !== "all" || search !== "";
@@ -143,6 +145,20 @@ const GoodsReceiptList = () => {
     },
     onError: (err) =>
       toast.error(t("page.goodsReceipt.list.toast.deleteError"), {
+        description: err?.response?.data?.message || err.message
+      })
+  });
+
+  const cancelMutation = useMutation((id) => changeGoodsReceiptStatus(id, "cancelled"), {
+    onSuccess: () => {
+      toast.success(t("page.goodsReceipt.list.toast.cancelSuccess"), {
+        description: t("page.goodsReceipt.list.toast.cancelSuccessDesc")
+      });
+      queryClient.invalidateQueries(["goods-receipts"]);
+      setCancelTarget(null);
+    },
+    onError: (err) =>
+      toast.error(t("page.goodsReceipt.list.toast.cancelError"), {
         description: err?.response?.data?.message || err.message
       })
   });
@@ -271,6 +287,13 @@ const GoodsReceiptList = () => {
                     icon: Trash2,
                     danger: true,
                     onClick: () => setDeleteTarget(item.id),
+                    hidden: !canAccess(user, MENU_KEY, "delete")
+                  },
+                  {
+                    label: t("page.goodsReceipt.list.cancelReceipt"),
+                    icon: XCircle,
+                    danger: true,
+                    onClick: () => setCancelTarget(item),
                     hidden: !canAccess(user, MENU_KEY, "delete")
                   }
                 ]
@@ -469,6 +492,19 @@ const GoodsReceiptList = () => {
                 confirmText={t("page.goodsReceipt.list.modal.confirmDelete")}
                 loading={deleteMutation.isLoading}
                 onConfirm={() => deleteMutation.mutate(deleteTarget)}
+              />
+              <Modal
+                type="confirm"
+                open={!!cancelTarget}
+                onOpenChange={(o) => !o && setCancelTarget(null)}
+                confirmVariant="destructive"
+                title={t("page.goodsReceipt.list.modal.cancelTitle")}
+                description={t("page.goodsReceipt.list.modal.cancelDescription", {
+                  receiptNumber: cancelTarget?.receiptNumber || ""
+                })}
+                confirmText={t("page.goodsReceipt.list.cancelConfirm")}
+                loading={cancelMutation.isLoading}
+                onConfirm={() => cancelMutation.mutate(cancelTarget.id)}
               />
               {deleteMutation.isLoading && (
                 <Loading fullscreen size="lg" label={t("common.loadingData")} />
