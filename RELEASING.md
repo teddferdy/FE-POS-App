@@ -27,3 +27,33 @@ integration below.
   (e.g. `https://api-bisa-nota.vercel.app`).
 - Only merge to `master` after CI is green; the Vercel deployment is its own
   gate and can be rolled back from the Vercel dashboard if needed.
+
+## Fix workflow (routine fixes)
+
+1. Start in the main repository checkout with a verified, up-to-date `master`
+   baseline: `git fetch origin`, confirm `origin/master` is the intended
+   baseline, and fast-forward-only when appropriate. Never assume the tree
+   is clean.
+2. Create or use a dedicated feature branch for implementation. Never commit
+   directly to `master`.
+3. Do not use nested worktrees (`.worktrees/`, `.claude/worktrees/`) for
+   routine fixes. If a tool unexpectedly starts work in one, stop, return to
+   the main checkout, and preserve existing worktrees unless separately
+   authorized to modify them.
+4. Before editing, inspect `git status`, `git stash list`, untracked files,
+   and relevant local work. Never overwrite or delete unrelated work.
+5. Keep scope explicit, stage only intended paths with
+   `git add -- <path>`, and run `git diff --check`.
+6. Push only the intended feature branch and follow the PR process above.
+   Never force-push.
+7. Distinguish local test results from remote CI results. After a merge,
+   fetch and verify that `origin/master` contains the merged change.
+
+### Jest worktree notes
+
+- Keep `modulePathIgnorePatterns` coverage for `/node_modules/`,
+  `/.worktrees/`, and `.claude/worktrees/` so nested worktrees do not create
+  Jest haste-map collisions. `testPathIgnorePatterns` alone is not a
+  substitute for excluding these directories from module discovery.
+- Follow the project's UI/UX Pro Max skill/standards before implementing UI
+  changes.
