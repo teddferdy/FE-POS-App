@@ -92,6 +92,11 @@
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
     },
+    "modulePathIgnorePatterns": [
+      "/node_modules/",
+      "/.worktrees/",
+      ".claude/worktrees/"
+    ],
     "transform": {
       "^.+\\.[jt]sx?$": "<rootDir>/jest.transform.cjs"
     }
