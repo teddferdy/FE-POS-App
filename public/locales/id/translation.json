@@ -5334,6 +5334,7 @@
   "page.cashier.qris.onBoard": "QRIS ditampilkan di layar pelanggan",
   "page.cashier.qris.waiting": "Tunggu pembayaran pelanggan, lalu konfirmasi di bawah.",
   "page.cashier.qris.confirmReceived": "Konfirmasi Pembayaran Diterima",
+  "page.cashier.qris.invalidated": "QRIS dibatalkan karena checkout berubah. QR di layar pelanggan tidak berlaku — mulai QRIS lagi.",
   "page.member.add.cancelModalConfirm": "Cancel Modal Confirm",
   "page.member.add.cancelModalTitle": "Cancel Modal Title",
   "page.member.add.draftModalConfirm": "Ya, Simpan Draft",
