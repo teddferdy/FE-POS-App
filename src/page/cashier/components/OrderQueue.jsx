@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { Clock, Utensils, ShoppingBag, Wallet, Ban } from "lucide-react";
+import { Clock, Utensils, ShoppingBag, Wallet, Ban, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { getOrdersByStore, updateOrderStatus } from "@/services/order";
 import { getCurrentCashRegister } from "@/services/cash-register";
@@ -10,6 +10,7 @@ import { useSocket } from "@/services/socket";
 import { useRoomSubscription } from "@/hooks/useRoomSubscription";
 import { Skeleton } from "@/components/ui/skeleton";
 import ScrollRail from "@/components/ui/ScrollRail";
+import VoidOrderDialog from "@/components/organism/VoidOrderDialog";
 
 const statusConfig = {
   pending: {
@@ -78,6 +79,7 @@ const OrderCard = ({
   onClick,
   onCollectPayment,
   onCancelOrder,
+  onVoidOrder,
   readOnly = false,
   registerId = null
 }) => {
@@ -100,6 +102,13 @@ const OrderCard = ({
     !readOnly &&
     typeof onCancelOrder === "function" &&
     (!order.paymentStatus || order.paymentStatus === "unpaid");
+  // DR-23 §G: once anything was collected, cancel is refused
+  // (CANCEL_REQUIRES_VOID) and the order can only end by an elevated void
+  // with an immediate refund. Offered only when the caller wired it (i.e.
+  // the user holds order.void) and only for part-paid orders — fully paid
+  // orders are not in this queue.
+  const canVoid =
+    !readOnly && typeof onVoidOrder === "function" && order.paymentStatus === "partial";
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const cancelTimer = useRef(null);
   useEffect(
@@ -214,6 +223,18 @@ const OrderCard = ({
             : t("page.cashier.orderQueue.cancel")}
         </button>
       )}
+      {canVoid && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onVoidOrder(order);
+          }}
+          className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors">
+          <Undo2 size={12} aria-hidden="true" />
+          {t("page.voidOrder.action")}
+        </button>
+      )}
     </div>
   );
 };
@@ -238,7 +259,7 @@ const OrderQueueSkeleton = () => (
   </div>
 );
 
-const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
+const OrderQueue = ({ store, onLoadOrder, onCollectPayment, canVoid = false }) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   // Defensive fallback (`|| {}`): unlike KDS/WaiterRequestList, several
@@ -377,6 +398,8 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
       cancellingIds.current.delete(target?.id);
     }
   });
+  const [voidTarget, setVoidTarget] = useState(null);
+
   const handleCancelOrder = useCallback(
     (target) => {
       if (!target?.id || cancellingIds.current.has(target.id)) return;
@@ -524,6 +547,7 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
                 onClick={onLoadOrder}
                 onCollectPayment={onCollectPayment}
                 onCancelOrder={handleCancelOrder}
+                onVoidOrder={canVoid ? setVoidTarget : undefined}
                 readOnly={sectionReadOnly && isFinalized(order)}
                 registerId={bucketKey === "previous" ? order.cashRegisterId : null}
               />
@@ -554,6 +578,15 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
           renderSection("current", buckets.current, {})
         )
       ) : null}
+      {voidTarget && (
+        <VoidOrderDialog
+          open
+          onOpenChange={(next) => !next && setVoidTarget(null)}
+          order={voidTarget}
+          store={store}
+          onVoided={invalidateAllQueues}
+        />
+      )}
     </div>
   );
 };
@@ -561,7 +594,8 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
 OrderQueue.propTypes = {
   store: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onLoadOrder: PropTypes.func.isRequired,
-  onCollectPayment: PropTypes.func
+  onCollectPayment: PropTypes.func,
+  canVoid: PropTypes.bool
 };
 
 export default OrderQueue;

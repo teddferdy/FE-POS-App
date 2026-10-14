@@ -23,11 +23,13 @@ import { Separator } from "@/components/ui/separator";
 import { axiosInstance } from "@/services";
 import { useQuery, useQueryClient } from "react-query";
 import { useSocket } from "@/services/socket";
+import { useRoomSubscription } from "@/hooks/useRoomSubscription";
 import StoreFilter from "@/components/ui/StoreFilter";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import QrOrderFreshness from "./QrOrderFreshness";
 import Modal from "@/components/organism/modal";
 import {
   Dialog,
@@ -37,6 +39,11 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
+
+// Polling fallback interval while the store room is not confirmed. An
+// engineering default (DR-19: polling is engineering-owned); the numeric
+// realtime-awareness bound itself is an open DR-10 launch input.
+const QR_ORDER_POLL_MS = 30 * 1000;
 
 const CustomerOrderManagement = () => {
   const { t } = useTranslation();
@@ -58,14 +65,21 @@ const CustomerOrderManagement = () => {
   // the store whose pending orders are shown.
   const effectiveStore = isSuperAdmin ? (storeFilter === "all" ? "" : storeFilter || store) : store;
 
-  const { socket } = useSocket();
+  const { socket, connected } = useSocket() || {};
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!socket || !effectiveStore) return;
-    socket.emit("join-store", effectiveStore);
-    return () => socket.emit("leave-store", effectiveStore);
-  }, [socket, effectiveStore]);
+  // DR-10: realtime-first with a polling fallback — the established pattern
+  // of OrderQueue / kitchen-display / WaiterRequestList. Room membership is
+  // owned by useRoomSubscription (acked join, leave, reconnect); the list
+  // polls until the server confirms this exact store room, so a host
+  // without sockets (or a rejected/lost join) still surfaces new QR orders.
+  const { roomOk } = useRoomSubscription({
+    socket,
+    connected,
+    roomEvent: "join-store",
+    roomKey: effectiveStore || null
+  });
+  const pollFallback = connected && roomOk ? false : QR_ORDER_POLL_MS;
 
   useEffect(() => {
     if (!socket) return;
@@ -95,6 +109,8 @@ const CustomerOrderManagement = () => {
     data: ordersData,
     isLoading: ordersLoading,
     isError: ordersError,
+    isFetching: ordersFetching,
+    dataUpdatedAt: ordersUpdatedAt,
     refetch: refetchOrders
   } = useQuery(
     ["customer-orders", store, storeFilter, isSuperAdmin],
@@ -110,7 +126,8 @@ const CustomerOrderManagement = () => {
     },
     {
       enabled: isSuperAdmin || !!store,
-      staleTime: 30 * 1000
+      staleTime: 30 * 1000,
+      refetchInterval: pollFallback
     }
   );
 
@@ -276,7 +293,19 @@ const CustomerOrderManagement = () => {
             )}
           </div>
 
-          {ordersError ? (
+          {ordersData !== undefined && (
+            <QrOrderFreshness
+              updatedAt={ordersUpdatedAt}
+              isFetching={ordersFetching}
+              isError={ordersError}
+              onRetry={() => refetchOrders()}
+            />
+          )}
+
+          {/* A failed background refresh keeps the last list on screen,
+              flagged stale above; the full error state is only for "never
+              loaded". */}
+          {ordersError && ordersData === undefined ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Utensils size={40} className="text-muted-foreground mb-4" />
               <p className="text-muted-foreground text-sm mb-4">
