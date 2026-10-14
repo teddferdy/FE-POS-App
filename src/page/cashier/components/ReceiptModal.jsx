@@ -229,7 +229,10 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   // itself has no role restriction, so a kasir can still see the list).
   // Mirrored here purely so a kasir isn't offered an action that is
   // guaranteed to 403 — the BE remains the actual authority.
-  const canManageSplits = user?.roleType === "super_admin" || user?.roleType === "admin";
+  // DR-23 §J: split.manage is a kasir default grant (interim mapping);
+  // staff ("user") hold no sales/settlement rights. UX gate only — the
+  // server's capability check is the authority.
+  const canManageSplits = ["super_admin", "admin", "kasir"].includes(user?.roleType);
   const [payingId, setPayingId] = useState(null);
   const [payMethodChoice, setPayMethodChoice] = useState("");
   const [selectedMergeIds, setSelectedMergeIds] = useState([]);

@@ -181,7 +181,9 @@ describe("ReceiptModal split-bill management", () => {
     );
   });
 
-  test("kasir sees the split list but no pay/cancel/merge actions", async () => {
+  // DR-23 §J (BA §35.10) interim mapping: split.manage and payment.collect
+  // are kasir default grants; staff ("user") hold no sales rights.
+  test("kasir can pay and merge pending splits", async () => {
     mockCookieUser = { id: 2, roleType: "kasir", store: 7 };
     getSplitBillByOrder.mockResolvedValue({
       data: {
@@ -194,7 +196,25 @@ describe("ReceiptModal split-bill management", () => {
     fireEvent.click(screen.getByText("page.cashier.receipt.split"));
 
     await waitFor(() => expect(screen.getByText("SPL006")).toBeInTheDocument());
-    expect(screen.queryByText("page.cashier.receipt.splitPay")).not.toBeInTheDocument();
+    expect(screen.getByText("page.cashier.receipt.splitPay")).toBeInTheDocument();
+    expect(screen.getByLabelText("page.cashier.receipt.splitSelectForMerge")).toBeInTheDocument();
+  });
+
+  test("staff (user) sees no pay/merge split actions", async () => {
+    mockCookieUser = { id: 3, roleType: "user", store: 7 };
+    getSplitBillByOrder.mockResolvedValue({
+      data: {
+        splits: [{ id: 6, splitNumber: "SPL006", amount: 30000, status: "pending" }],
+        summary: { totalSplits: 1, totalPaid: 0, totalPending: 30000 }
+      }
+    });
+
+    renderModal();
+    fireEvent.click(screen.getByText("page.cashier.receipt.split"));
+
+    await waitFor(() =>
+      expect(screen.queryByText("page.cashier.receipt.splitPay")).not.toBeInTheDocument()
+    );
     expect(
       screen.queryByLabelText("page.cashier.receipt.splitSelectForMerge")
     ).not.toBeInTheDocument();

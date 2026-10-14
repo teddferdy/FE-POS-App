@@ -26,6 +26,8 @@ import { getAllTypePayment } from "@/services/type-payment";
 import { getBatches } from "@/services/inventory";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
+import VoidOrderDialog from "@/components/organism/VoidOrderDialog";
+import { isAdminRole } from "@/utils/role";
 
 const reasonKeys = [
   "damaged",
@@ -55,6 +57,7 @@ const CreateSalesReturn = () => {
   const [notes, setNotes] = useState("");
   const [refundMethod, setRefundMethod] = useState("cash");
   const [confirmModal, setConfirmModal] = useState(false);
+  const [voidOpen, setVoidOpen] = useState(false);
 
   const {
     data: orderData,
@@ -66,6 +69,13 @@ const CreateSalesReturn = () => {
   });
 
   const order = orderData?.data;
+  // DR-23 §G: a whole paid order is reversed by an elevated void (immediate
+  // refund + full reversal), not by returning every line. order.void is an
+  // admin capability (§J) — UX gate only; the server decides.
+  const canVoidOrder =
+    isAdminRole(cookie?.user) &&
+    order?.paymentStatus === "paid" &&
+    !["cancelled", "void"].includes(order?.status);
 
   const { data: batchData } = useQuery(
     ["sales-return-batches", order?.store],
@@ -319,8 +329,26 @@ const CreateSalesReturn = () => {
         title={t("page.salesReturn.create.title")}
         description={`${t("page.salesReturn.create.orderLabel")}: ${order?.orderNumber} | ${t("page.salesReturn.create.customerLabel")}: ${order?.customerName || t("page.salesReturn.create.guest")}${order?.customerPhone ? ` · ${order.customerPhone}` : ""}`}
         backLink="/sales-return"
-        dynamicInfo={false}
-      />
+        dynamicInfo={false}>
+        {canVoidOrder && (
+          <Button variant="danger" onClick={() => setVoidOpen(true)}>
+            {t("page.voidOrder.action")}
+          </Button>
+        )}
+      </PageHeader>
+
+      {order && (
+        <VoidOrderDialog
+          open={voidOpen}
+          onOpenChange={setVoidOpen}
+          order={order}
+          store={order.store}
+          onVoided={() => {
+            queryClient.invalidateQueries(["order-detail", orderId]);
+            navigate("/sales-return/create");
+          }}
+        />
+      )}
 
       {hasExpiredSelected && (
         <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg p-4 flex items-start gap-3">

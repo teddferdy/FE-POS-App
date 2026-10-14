@@ -82,6 +82,9 @@ describe("CustomerOrderManagement — P5-01 realtime new-order refresh", () => {
   let handlers;
   let socket;
 
+  // The room join is acknowledged by the server (useRoomSubscription);
+  // `joinAck` controls whether this store room is confirmed.
+  let joinAck;
   const makeSocket = () => {
     handlers = {};
     return {
@@ -89,8 +92,20 @@ describe("CustomerOrderManagement — P5-01 realtime new-order refresh", () => {
         handlers[event] = cb;
       }),
       off: jest.fn(),
-      emit: jest.fn()
+      emit: jest.fn((event, _key, ack) => {
+        if (event === "join-store" && typeof ack === "function") ack(joinAck);
+      })
     };
+  };
+
+  // The live observer carries the current refetchInterval; the cached
+  // query's own options only change on its next fetch.
+  const pendingQuery = (queryClient) => {
+    const query = queryClient
+      .getQueryCache()
+      .findAll()
+      .find((q) => q.queryKey[0] === "customer-orders");
+    return query.observers[0] || query;
   };
 
   const renderPage = () => {
@@ -108,8 +123,9 @@ describe("CustomerOrderManagement — P5-01 realtime new-order refresh", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     axiosInstance.get.mockResolvedValue({ data: { data: [] } });
+    joinAck = { ok: true };
     socket = makeSocket();
-    useSocket.mockReturnValue({ socket });
+    useSocket.mockReturnValue({ socket, connected: true });
   });
 
   test("registers a new-order listener and joins the store room scoped to the staff store", async () => {
@@ -121,7 +137,7 @@ describe("CustomerOrderManagement — P5-01 realtime new-order refresh", () => {
       )
     );
 
-    expect(socket.emit).toHaveBeenCalledWith("join-store", 7);
+    expect(socket.emit).toHaveBeenCalledWith("join-store", 7, expect.any(Function));
     expect(socket.on).toHaveBeenCalledWith("new-order", expect.any(Function));
     // The join must be scoped to the staff's own store only.
     expect(socket.emit.mock.calls.map((c) => c[0])).not.toContain("join-store=all");
@@ -177,19 +193,57 @@ describe("CustomerOrderManagement — P5-01 realtime new-order refresh", () => {
     await waitFor(() => expect(axiosInstance.get).toHaveBeenCalledTimes(2));
   });
 
-  test("falls back to manual refresh without breaking the query when no socket exists", async () => {
+  // DR-10 (BA §35.7): bounded awareness. Without a confirmed store room —
+  // no socket at all (e.g. a serverless host), a disconnected transport, or
+  // a rejected join — the pending list must poll instead of silently
+  // depending on a manual refresh.
+  test("polls the pending list when no socket exists", async () => {
     useSocket.mockReturnValue({ socket: null });
     const { queryClient } = renderPage();
 
     await waitFor(() => expect(axiosInstance.get).toHaveBeenCalled());
 
-    const query = queryClient
-      .getQueryCache()
-      .findAll()
-      .find((q) => q.queryKey[0] === "customer-orders");
-    expect(query.options.refetchInterval).toBeFalsy();
+    expect(pendingQuery(queryClient).options.refetchInterval).toBe(30000);
     expect(axiosInstance.get).toHaveBeenCalledWith(
       "/order/get-orders?source=qr&status=pending&limit=100&store=7"
     );
+  });
+
+  test("polls while the store room join is rejected", async () => {
+    joinAck = { ok: false };
+    const { queryClient } = renderPage();
+    await waitFor(() => expect(axiosInstance.get).toHaveBeenCalled());
+
+    await waitFor(() => expect(pendingQuery(queryClient).options.refetchInterval).toBe(30000));
+  });
+
+  test("a failed background refresh keeps the last list instead of the load-failure screen", async () => {
+    axiosInstance.get
+      .mockResolvedValueOnce({ data: { data: [] } })
+      .mockRejectedValueOnce(new Error("network down"));
+    const { getByText, queryByText, findByRole } = renderPage();
+    await waitFor(() => expect(axiosInstance.get).toHaveBeenCalledTimes(1));
+
+    const refreshBtn = getByText("page.customerOrder.refresh");
+    await waitFor(() => expect(refreshBtn).not.toBeDisabled());
+    fireEvent.click(refreshBtn);
+
+    const status = await findByRole("status");
+    expect(status).toHaveTextContent("page.customerOrder.freshness.stale");
+    expect(queryByText("page.customerOrder.loadOrdersFail")).not.toBeInTheDocument();
+  });
+
+  test("the load-failure screen is used only when nothing was ever loaded", async () => {
+    axiosInstance.get.mockRejectedValue(new Error("network down"));
+    const { findByText } = renderPage();
+
+    expect(await findByText("page.customerOrder.loadOrdersFail")).toBeInTheDocument();
+  });
+
+  test("stops polling once the store room is confirmed", async () => {
+    const { queryClient } = renderPage();
+    await waitFor(() => expect(axiosInstance.get).toHaveBeenCalled());
+
+    await waitFor(() => expect(pendingQuery(queryClient).options.refetchInterval).toBe(false));
   });
 });
