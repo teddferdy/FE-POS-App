@@ -85,6 +85,9 @@ const CashierPage = () => {
   // page. The backend remains the actual authority on whether an override
   // is ever accepted.
   const canOverridePrice = isAdminRole(user);
+  // DR-23 §J: void is elevated (order.void) — the legacy admin roles only.
+  // UX gate; the server's capability check is the authority.
+  const canVoidOrders = isAdminRole(user);
   const [searchParams, setSearchParams] = useSearchParams();
   const storeParam = searchParams.get("store");
   const [pickedStore, setPickedStore] = useState(null);
@@ -655,6 +658,7 @@ const CashierPage = () => {
                 store={store}
                 onLoadOrder={requestLoadOrder}
                 onCollectPayment={setCollectPaymentOrder}
+                canVoid={canVoidOrders}
               />
               <ParkedCartPanel
                 store={store}
