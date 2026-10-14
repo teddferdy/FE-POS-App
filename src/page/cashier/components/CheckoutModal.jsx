@@ -115,6 +115,9 @@ const CheckoutModal = ({
   // Checkout lines in the exact order they were last sent — the server's
   // mismatch `index` addresses this order.
   const submittedLinesRef = useRef([]);
+  // P1 quote-stage PRICE_CHANGED: signature of the quote mismatch already
+  // surfaced, so an identical 409 is never toasted or re-applied in a loop.
+  const surfacedQuoteMismatchRef = useRef(null);
   // F-SMOKE-02: mutation.isLoading flips a tick after mutate() runs, too
   // late to stop several fireEvent-speed clicks in the same turn — mirrors
   // CollectPaymentModal's synchronous guard (set on the click that starts
@@ -365,6 +368,34 @@ const CheckoutModal = ({
     quoteError?.response?.data?.error ||
     quoteError?.response?.data?.message ||
     t("page.cashier.quote.failed");
+  // P1 (quote-stage PRICE_CHANGED): POST /order/quote enforces the same
+  // W3-2 contract as create — a 409 PRICE_CHANGED carries the fresh catalog
+  // prices for the exact lines the quote sent. A generic retry would resend
+  // the same stale expectedPrice lines and fail again, so a strict-contract
+  // match is routed into the existing apply-prices flow (same state, panel
+  // and toast as the create stage). Anything else — network failure, other
+  // 409s, other quote errors — keeps the generic fail-closed alert below.
+  useEffect(() => {
+    if (!quoteFailed || !quoteError || priceChange?.applied) return;
+    const parsed = parsePriceChangedError(quoteError, items);
+    if (!parsed) return;
+    const signature = JSON.stringify(parsed.items);
+    if (surfacedQuoteMismatchRef.current === signature) return;
+    surfacedQuoteMismatchRef.current = signature;
+    setPriceChange({ ...parsed, applied: false });
+    // A pending QR/e-wallet confirmation was built from stale prices; drop
+    // it so the old expectedPrice can never be re-sent.
+    setQrisPending(false);
+    setPendingPayload(null);
+    // Refresh the catalog so items added afterwards use the new prices.
+    queryClient.invalidateQueries(["products-outlet", store]);
+    toast.error(t("page.cashier.priceChanged.title", "Prices changed"));
+  }, [quoteFailed, quoteError, items, priceChange, queryClient, store, t]);
+  // A fresh valid quote means the current inputs are priced — a later,
+  // different mismatch may surface again.
+  useEffect(() => {
+    if (quote && !quoteFetching) surfacedQuoteMismatchRef.current = null;
+  }, [quote, quoteFetching]);
   const quotedSubtotal = quote ? Number(quote.subTotal) || 0 : 0;
   const pointsDiscount = quote ? Number(quote.pointDiscountAmount) || 0 : 0;
   const orderDiscount = quote
@@ -690,6 +721,7 @@ const CheckoutModal = ({
     submittedLinesRef.current = items;
     // A resolved (applied) price change is cleared once the cashier retries.
     if (priceChange) setPriceChange(null);
+    surfacedQuoteMismatchRef.current = null;
 
     if (method === "e-wallet" || method === "qris") {
       startQrisPayment(payload, method);
@@ -840,13 +872,24 @@ const CheckoutModal = ({
                 <div
                   role="alert"
                   className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                  <span className="flex-1">{quoteErrorMessage}</span>
-                  <button
-                    type="button"
-                    onClick={() => refetchQuote()}
-                    className="font-semibold underline underline-offset-2">
-                    {t("page.cashier.quote.retry")}
-                  </button>
+                  {priceChangePending ? (
+                    // P1: the quote itself reported PRICE_CHANGED — resending
+                    // the same prices would fail again, so the apply-prices
+                    // panel below is the recovery path, not Recalculate.
+                    <span className="flex-1">
+                      {t("page.cashier.priceChanged.title", "Prices changed")}
+                    </span>
+                  ) : (
+                    <>
+                      <span className="flex-1">{quoteErrorMessage}</span>
+                      <button
+                        type="button"
+                        onClick={() => refetchQuote()}
+                        className="font-semibold underline underline-offset-2">
+                        {t("page.cashier.quote.retry")}
+                      </button>
+                    </>
+                  )}
                 </div>
               ) : (
                 !quoteCurrent &&
