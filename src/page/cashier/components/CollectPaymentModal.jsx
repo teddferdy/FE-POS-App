@@ -217,6 +217,23 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
         toast.error(t("page.cashier.collectPayment.member.mismatch"));
         return;
       }
+      // DR-23: the settlement must equal the CURRENT outstanding amount — a
+      // stale claim (split paid meanwhile, amount changed) is refused with
+      // the live outstanding. Refresh and stay open so the cashier retries
+      // against server-confirmed state instead of the stale total.
+      if (status === 409 && code === "OUTSTANDING_CHANGED") {
+        queryClient.invalidateQueries(["collect-payment-order", freshOrder.id]);
+        const outstanding = err?.response?.data?.outstanding;
+        toast.error(
+          t("page.cashier.collectPayment.outstandingChanged", {
+            amount:
+              outstanding === undefined || outstanding === null
+                ? amountDue.toLocaleString("id-ID")
+                : Number(outstanding).toLocaleString("id-ID")
+          })
+        );
+        return;
+      }
       // update-status business failures (422) carry their text in `error`.
       toast.error(
         err?.response?.data?.message ||
@@ -277,9 +294,17 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
               {t("common.loadingData")}
             </div>
           ) : isError ? (
-            <p className="text-sm text-destructive text-center py-4">
-              {t("page.cashier.collectPayment.loadFailed")}
-            </p>
+            <div className="text-center py-4 space-y-2">
+              <p className="text-sm text-destructive">
+                {t("page.cashier.collectPayment.loadFailed")}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => queryClient.invalidateQueries(["collect-payment-order", order?.id])}>
+                {t("common.retry", "Coba lagi")}
+              </Button>
+            </div>
           ) : (
             <>
               <div className="space-y-1">

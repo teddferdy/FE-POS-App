@@ -211,3 +211,30 @@ describe("CollectPaymentModal — DR-16 member attachment at settlement", () => 
     expect(screen.getByText(`${P}.member.change`)).toBeInTheDocument();
   });
 });
+
+describe("CollectPaymentModal — DR-23 stale settlement conflict", () => {
+  beforeEach(() => {
+    getOrderById.mockReset().mockResolvedValue({ data: guestOrder });
+    updateOrderStatus.mockReset();
+    getMemberById.mockReset().mockResolvedValue({ data: null });
+    toast.error.mockReset();
+  });
+
+  test("DR23-FE-01: 409 OUTSTANDING_CHANGED refreshes and stays retryable", async () => {
+    updateOrderStatus.mockRejectedValue({
+      response: { status: 409, data: { code: "OUTSTANDING_CHANGED", outstanding: 80000 } }
+    });
+    const onOpenReceipt = jest.fn();
+    const onClose = jest.fn();
+    await openConfirm({ onOpenReceipt, onClose });
+    fireEvent.click(screen.getByText(`${P}.confirm`));
+
+    await waitFor(() => expect(updateOrderStatus).toHaveBeenCalledTimes(1));
+    expect(toast.error).toHaveBeenCalledWith(`${P}.outstandingChanged`);
+    // Server-confirmed state is re-fetched; nothing is assumed settled.
+    await waitFor(() => expect(getOrderById.mock.calls.length).toBeGreaterThanOrEqual(2));
+    expect(onOpenReceipt).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByText(`${P}.confirm`)).not.toBeDisabled());
+  });
+});
