@@ -8109,5 +8109,12 @@
   "page.goodsReceipt.list.modal.cancelDescription": "Are you sure you want to cancel receipt {{receiptNumber}}? Received stock will be reversed.",
   "page.goodsReceipt.list.toast.cancelSuccess": "Goods receipt cancelled",
   "page.goodsReceipt.list.toast.cancelSuccessDesc": "Received stock was reversed successfully",
-  "page.goodsReceipt.list.toast.cancelError": "Failed to cancel goods receipt"
+  "page.goodsReceipt.list.toast.cancelError": "Failed to cancel goods receipt",
+  "page.cashier.quote.failed": "Couldn't calculate the total. Payment is unavailable until it is calculated.",
+  "page.cashier.quote.retry": "Recalculate",
+  "page.cashier.quote.updating": "Updating the total…",
+  "page.cashier.quote.notReady": "Wait until the total is up to date, then pay.",
+  "page.cashier.quote.tierDiscount": "Member tier discount",
+  "page.cashier.quote.campaignDiscount": "Promotion",
+  "page.cashier.quote.pointsDiscount": "Points redeemed"
 }

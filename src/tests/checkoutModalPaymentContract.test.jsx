@@ -7,6 +7,7 @@ import { createOrder } from "../services/order";
 import { getAllCustomer } from "../services/customer";
 import { getAllDiscount } from "../services/discount";
 import { getAllTypePayment } from "../services/type-payment";
+import { waitForCheckoutQuote } from "./helpers/checkoutQuote";
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
@@ -21,6 +22,10 @@ jest.mock("react-cookie", () => ({
 }));
 
 jest.mock("../services/order", () => ({
+  // DR-11 / DR-17: the checkout pays against the server quote.
+  quoteOrder: jest.fn((payload) =>
+    Promise.resolve(jest.requireActual("./helpers/checkoutQuote").serverQuote(payload))
+  ),
   createOrder: jest.fn()
 }));
 jest.mock("../services/customer", () => ({
@@ -100,6 +105,7 @@ describe("CheckoutModal payment payload contract (F-SMOKE-01)", () => {
 
     fireEvent.click(await screen.findByText("Cash"));
     fireEvent.change(screen.getByPlaceholderText("Rp 0"), { target: { value: "15000" } });
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalled());
@@ -112,6 +118,7 @@ describe("CheckoutModal payment payload contract (F-SMOKE-01)", () => {
     renderModal(jest.fn());
 
     fireEvent.click(await screen.findByText("Card"));
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalled());
@@ -124,6 +131,7 @@ describe("CheckoutModal payment payload contract (F-SMOKE-01)", () => {
     renderModal(jest.fn());
 
     fireEvent.click(await screen.findByText("QRIS"));
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
     fireEvent.click(await screen.findByText("page.cashier.qris.confirmReceived"));
 

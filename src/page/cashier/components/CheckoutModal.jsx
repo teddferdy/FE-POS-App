@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { createOrder } from "@/services/order";
+import { quoteOrder, createOrder } from "@/services/order";
 import { getAllCustomer, addCustomer } from "@/services/customer";
 import { getAllDiscount, lookupDiscountByCode } from "@/services/discount";
 import { getAllMemberTier } from "@/services/member-tier";
@@ -33,7 +33,6 @@ import { getAllTypePayment } from "@/services/type-payment";
 import { getMemberById } from "@/services/member";
 import { getTableAvailability, getTablesWithActiveOrders } from "@/services/table";
 import { getPaymentIconKind } from "@/utils/payment";
-import { calculateCheckoutTotals } from "@/utils/checkoutTotals";
 import { buildOrderItemsPayload, parsePriceChangedError } from "@/utils/orderPayload";
 import { useDebounce } from "@/hooks/useDebounce";
 import MemberSearchModal from "@/components/MemberSearchModal";
@@ -59,8 +58,6 @@ const computeDropdownPos = (rect) => {
 
 const CheckoutModal = ({
   items: propItems,
-  subtotal: propSubtotal,
-  taxRate: propTaxRate,
   store,
   cashierName,
   cashierId,
@@ -96,7 +93,6 @@ const CheckoutModal = ({
   const [showDiscountDropdown, setShowDiscountDropdown] = useState(false);
   const [discountSearch, setDiscountSearch] = useState("");
   const debouncedDiscountSearch = useDebounce(discountSearch, 300);
-  const [discountAmount, setDiscountAmount] = useState(0);
   const [fullPayment, setFullPayment] = useState(false);
   const [addCustomerOpen, setAddCustomerOpen] = useState(false);
   const [newCustomerName, setNewCustomerName] = useState("");
@@ -163,11 +159,6 @@ const CheckoutModal = ({
     }
     return [];
   }, [propItems]);
-
-  const subtotal = useMemo(
-    () => propSubtotal || items.reduce((sum, item) => sum + Number(item.totalPrice) || 0, 0),
-    [propSubtotal, items]
-  );
 
   const { data: customersData } = useQuery(
     ["customers", store, debouncedCustomerSearch],
@@ -321,7 +312,6 @@ const CheckoutModal = ({
       });
   }, [paymentMethodsData]);
 
-  const taxRate = Number.isFinite(propTaxRate) ? propTaxRate : 0.11;
   const matchedTier = useMemo(() => {
     if (!memberPoints || memberTiers.length === 0) return null;
     const active = memberTiers.filter((t) => t.status === "active");
@@ -334,26 +324,59 @@ const CheckoutModal = ({
         .sort((a, b) => b.minPoints - a.minPoints)[0] || null
     );
   }, [memberPoints, memberTiers]);
-  const tierDiscountValue =
-    matchedTier?.discountPercent > 0 ? subtotal * (matchedTier.discountPercent / 100) : 0;
-  const discountValue = selectedDiscount
-    ? selectedDiscount.type === "percent"
-      ? subtotal * (selectedDiscount.value / 100)
-      : selectedDiscount.value
-    : discountAmount;
-  const totalDiscount = discountValue + tierDiscountValue;
-  // Phase 31 Batch 2 (F-1): derive display tax/total with BE canonical
-  // semantics (discount clamped + rounded, tax rounded on post-discount
-  // base) so the cashier sees what the server will charge. BE stays
-  // authoritative — persisted totals always come from /order/create.
-  const { taxAmount, total } = calculateCheckoutTotals({
-    subtotal,
-    discount: totalDiscount,
-    taxRate,
-    useTax
-  });
-  const pointsDiscount = Number(redeemPoints) || 0;
-  const remainingTotal = Math.max(0, total - pointsDiscount);
+  // DR-11 / DR-17 (one backend resolver; displayed = charged): every total
+  // on this screen is the server's quote for the exact pricing inputs that
+  // /order/create will receive — discounts, tier, campaign, points and tax
+  // are never re-derived here. Payment is offered only against a quote for
+  // the CURRENT inputs, so cash change is reconciled with what is charged.
+  const quoteInputs = useMemo(
+    () => ({
+      store,
+      customerId: selectedCustomer?.id || selectedCustomer?._id || null,
+      discountId: selectedDiscount?.id || selectedDiscount?._id || null,
+      promoCode: promoCode.trim() || undefined,
+      redeemedPoints: Number(redeemPoints) || 0,
+      useTax,
+      items: buildOrderItemsPayload(items)
+    }),
+    [store, selectedCustomer, selectedDiscount, promoCode, redeemPoints, useTax, items]
+  );
+  const quoteKey = JSON.stringify(quoteInputs);
+  const debouncedQuoteKey = useDebounce(quoteKey, 300);
+  const {
+    data: quoteData,
+    isFetching: quoteFetching,
+    isError: quoteFailed,
+    error: quoteError,
+    refetch: refetchQuote
+  } = useQuery(
+    ["checkout-quote", debouncedQuoteKey],
+    () => quoteOrder(JSON.parse(debouncedQuoteKey)),
+    {
+      enabled: items.length > 0 && !!store,
+      keepPreviousData: true,
+      retry: false,
+      refetchOnWindowFocus: false
+    }
+  );
+  const quote = quoteFailed ? null : quoteData?.data || null;
+  const quoteCurrent = Boolean(quote) && !quoteFetching && debouncedQuoteKey === quoteKey;
+  const quoteErrorMessage =
+    quoteError?.response?.data?.error ||
+    quoteError?.response?.data?.message ||
+    t("page.cashier.quote.failed");
+  const quotedSubtotal = quote ? Number(quote.subTotal) || 0 : 0;
+  const pointsDiscount = quote ? Number(quote.pointDiscountAmount) || 0 : 0;
+  const orderDiscount = quote
+    ? Math.max(0, (Number(quote.discountAmount) || 0) - pointsDiscount)
+    : 0;
+  const taxAmount = quote ? Number(quote.taxAmount) || 0 : 0;
+  // Final payable after every discount and redeemed point (server total).
+  const total = quote ? Number(quote.totalPrice) || 0 : 0;
+  const remainingTotal = total;
+  // The server clamps the order discount to the subtotal; points beyond
+  // what is left after the order discount buy nothing.
+  const redeemCeiling = Math.max(0, quotedSubtotal - orderDiscount);
   const cashAmountNum = parseFloat(cashAmount) || 0;
   const change = Math.max(0, cashAmountNum - remainingTotal);
 
@@ -366,12 +389,10 @@ const CheckoutModal = ({
     setSelectedDiscount(disc);
     setDiscountSearch(disc.nameDiscount || disc.name || disc.discountName || "");
     setShowDiscountDropdown(false);
-    setDiscountAmount(0);
   }, []);
 
   const clearDiscount = useCallback(() => {
     setSelectedDiscount(null);
-    setDiscountAmount(0);
     setPromoCode("");
     setDiscountSearch("");
   }, []);
@@ -599,6 +620,12 @@ const CheckoutModal = ({
   const handleSubmit = useCallback(() => {
     // W3-4: never resubmit while a price change is unresolved.
     if (priceChangePending) return;
+    // DR-11 / DR-17: never pay against a total the server has not quoted
+    // for the current inputs.
+    if (!quoteCurrent) {
+      toast.error(t("page.cashier.quote.notReady"));
+      return;
+    }
     // F9-23: an empty cart must never reach the payment/order creation path.
     if (items.length === 0) {
       toast.error(t("page.cashier.emptyCart", "Keranjang kosong"));
@@ -697,7 +724,8 @@ const CheckoutModal = ({
     t,
     startQrisPayment,
     priceChange,
-    priceChangePending
+    priceChangePending,
+    quoteCurrent
   ]);
 
   const formatPrice = (value) => {
@@ -714,6 +742,7 @@ const CheckoutModal = ({
   const canSubmit =
     items.length > 0 &&
     !priceChangePending &&
+    quoteCurrent &&
     (remainingTotal === 0 ||
       (paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal)));
 
@@ -742,7 +771,9 @@ const CheckoutModal = ({
           <div className="bg-muted/40 rounded-xl p-4 border border-border/40 space-y-1.5">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t("page.cashier.subtotal")}</span>
-              <span className="font-medium">Rp {formatPrice(subtotal)}</span>
+              <span className="font-medium tabular-nums">
+                {quote ? `Rp ${formatPrice(quotedSubtotal)}` : "…"}
+              </span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground flex items-center gap-2">
@@ -764,46 +795,69 @@ const CheckoutModal = ({
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                {t("page.cashier.tax")} ({Math.round(taxRate * 100)}%)
+                {t("page.cashier.tax")}
+                {quote ? ` (${Math.round(Number(quote.taxRate) || 0)}%)` : ""}
               </span>
-              <span className="font-medium">Rp {formatPrice(taxAmount)}</span>
+              <span className="font-medium tabular-nums">
+                {quote ? `Rp ${formatPrice(taxAmount)}` : "…"}
+              </span>
             </div>
-            {totalDiscount > 0 && (
-              <>
-                {tierDiscountValue > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-emerald-500 flex items-center gap-1">
-                      <Percent size={12} />
-                      {matchedTier.name} ({matchedTier.discountPercent}%)
-                    </span>
-                    <span className="font-medium text-emerald-500">
-                      -Rp {formatPrice(tierDiscountValue)}
-                    </span>
-                  </div>
-                )}
-                {discountValue > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-emerald-500 flex items-center gap-1">
-                      <Percent size={12} />
-                      {selectedDiscount?.nameDiscount ||
+            {orderDiscount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <Percent size={12} aria-hidden="true" />
+                  {quote.discountSource === "tier"
+                    ? `${t("page.cashier.quote.tierDiscount")}${matchedTier?.name ? ` · ${matchedTier.name}` : ""}`
+                    : quote.discountSource === "campaign"
+                      ? t("page.cashier.quote.campaignDiscount")
+                      : selectedDiscount?.nameDiscount ||
                         selectedDiscount?.name ||
                         t("page.cashier.discount")}
-                      {selectedDiscount &&
-                        selectedDiscount.type === "percent" &&
-                        ` (${selectedDiscount.value}%)`}
-                    </span>
-                    <span className="font-medium text-emerald-500">
-                      -Rp {formatPrice(discountValue)}
-                    </span>
-                  </div>
-                )}
-              </>
+                </span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400 tabular-nums">
+                  -Rp {formatPrice(orderDiscount)}
+                </span>
+              </div>
+            )}
+            {pointsDiscount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-violet-600 dark:text-violet-400">
+                  {t("page.cashier.quote.pointsDiscount")}
+                </span>
+                <span className="font-medium text-violet-600 dark:text-violet-400 tabular-nums">
+                  -Rp {formatPrice(pointsDiscount)}
+                </span>
+              </div>
             )}
             <div className="border-t border-border/40 pt-1.5 mt-1.5">
               <div className="flex items-center justify-between">
                 <span className="font-bold">{t("page.cashier.total")}</span>
-                <span className="font-bold text-lg text-primary">Rp {formatPrice(total)}</span>
+                <span className="font-bold text-lg text-primary tabular-nums">
+                  {quote ? `Rp ${formatPrice(total)}` : "…"}
+                </span>
               </div>
+              {quoteFailed ? (
+                <div
+                  role="alert"
+                  className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                  <span className="flex-1">{quoteErrorMessage}</span>
+                  <button
+                    type="button"
+                    onClick={() => refetchQuote()}
+                    className="font-semibold underline underline-offset-2">
+                    {t("page.cashier.quote.retry")}
+                  </button>
+                </div>
+              ) : (
+                !quoteCurrent &&
+                items.length > 0 && (
+                  <p
+                    className="mt-1 text-xs text-muted-foreground"
+                    data-testid="checkout-quote-pending">
+                    {t("page.cashier.quote.updating")}
+                  </p>
+                )
+              )}
             </div>
           </div>
 
@@ -1293,7 +1347,7 @@ const CheckoutModal = ({
                   value={redeemPoints ? Number(redeemPoints).toLocaleString("id-ID") : ""}
                   onChange={(e) => {
                     const val = e.target.value.replace(/[^0-9]/g, "");
-                    const max = Math.min(memberPoints, total);
+                    const max = Math.min(memberPoints, redeemCeiling);
                     setRedeemPoints(val ? String(Math.min(Number(val), max)) : "");
                   }}
                   placeholder="0"
@@ -1302,7 +1356,7 @@ const CheckoutModal = ({
                 />
                 <button
                   onClick={() => {
-                    setRedeemPoints(String(Math.min(memberPoints, total)));
+                    setRedeemPoints(String(Math.min(memberPoints, redeemCeiling)));
                   }}
                   className="shrink-0 h-12 px-4 rounded-xl bg-violet-500/10 border border-violet-500/30 text-sm font-semibold text-violet-600 hover:bg-violet-500/20 transition-all">
                   Max
@@ -1606,11 +1660,9 @@ const CheckoutModal = ({
 
 CheckoutModal.propTypes = {
   items: PropTypes.array,
-  subtotal: PropTypes.number,
   store: PropTypes.any,
   cashierName: PropTypes.string,
   cashierId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  taxRate: PropTypes.number,
   onClose: PropTypes.func,
   onTableChange: PropTypes.func,
   onComplete: PropTypes.func,

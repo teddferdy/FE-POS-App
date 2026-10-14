@@ -8275,5 +8275,12 @@
   "page.businessTrip.detail.updatedBy": "Updated By",
   "page.businessTrip.rab.breakdownTitle": "Budget Breakdown (RAB)",
   "page.businessTrip.rab.declared": "Declared Budget",
-  "page.businessTrip.detail.systemTitle": "System Information"
+  "page.businessTrip.detail.systemTitle": "System Information",
+  "page.cashier.quote.failed": "Couldn't calculate the total. Payment is unavailable until it is calculated.",
+  "page.cashier.quote.retry": "Recalculate",
+  "page.cashier.quote.updating": "Updating the total…",
+  "page.cashier.quote.notReady": "Wait until the total is up to date, then pay.",
+  "page.cashier.quote.tierDiscount": "Member tier discount",
+  "page.cashier.quote.campaignDiscount": "Promotion",
+  "page.cashier.quote.pointsDiscount": "Points redeemed"
 }

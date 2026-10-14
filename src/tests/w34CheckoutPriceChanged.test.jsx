@@ -22,6 +22,10 @@ jest.mock("react-cookie", () => ({
 }));
 
 jest.mock("../services/order", () => ({
+  // DR-11 / DR-17: the checkout pays against the server quote.
+  quoteOrder: jest.fn((payload) =>
+    Promise.resolve(jest.requireActual("./helpers/checkoutQuote").serverQuote(payload))
+  ),
   createOrder: jest.fn()
 }));
 jest.mock("../services/customer", () => ({
@@ -256,7 +260,9 @@ describe("W3-4 CheckoutModal 409 PRICE_CHANGED", () => {
     );
     rerenderWith(updated);
 
-    expect(confirmButton()).not.toBeDisabled();
+    // DR-11: the applied prices are re-quoted by the server before payment
+    // is offered again (the updated total is shown before commitment).
+    await waitFor(() => expect(confirmButton()).not.toBeDisabled());
     fireEvent.click(confirmButton());
 
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(2));

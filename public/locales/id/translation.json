@@ -8275,5 +8275,12 @@
   "page.businessTrip.detail.updatedBy": "Diperbarui Oleh",
   "page.businessTrip.rab.breakdownTitle": "Rincian Anggaran (RAB)",
   "page.businessTrip.rab.declared": "Anggaran Dideklarasikan",
-  "page.businessTrip.detail.systemTitle": "Informasi Sistem"
+  "page.businessTrip.detail.systemTitle": "Informasi Sistem",
+  "page.cashier.quote.failed": "Total tidak dapat dihitung. Pembayaran tidak tersedia sampai total berhasil dihitung.",
+  "page.cashier.quote.retry": "Hitung ulang",
+  "page.cashier.quote.updating": "Memperbarui total…",
+  "page.cashier.quote.notReady": "Tunggu hingga total diperbarui, lalu lakukan pembayaran.",
+  "page.cashier.quote.tierDiscount": "Diskon tier member",
+  "page.cashier.quote.campaignDiscount": "Promo",
+  "page.cashier.quote.pointsDiscount": "Poin ditukar"
 }
