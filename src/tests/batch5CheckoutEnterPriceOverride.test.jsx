@@ -4,6 +4,7 @@ import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import CheckoutModal from "../page/cashier/components/CheckoutModal";
 import { createOrder } from "../services/order";
+import { waitForCheckoutQuote } from "./helpers/checkoutQuote";
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
@@ -15,6 +16,10 @@ jest.mock("react-cookie", () => ({
   useCookies: () => [{ user: { id: 1, roleType: "cashier" } }]
 }));
 jest.mock("../services/order", () => ({
+  // DR-11 / DR-17: the checkout pays against the server quote.
+  quoteOrder: jest.fn((payload) =>
+    Promise.resolve(jest.requireActual("./helpers/checkoutQuote").serverQuote(payload))
+  ),
   createOrder: jest.fn()
 }));
 jest.mock("../services/customer", () => ({
@@ -109,6 +114,7 @@ describe("Batch5 — Checkout Enter UX (P3) — RED before fix", () => {
     expect(screen.queryByPlaceholderText("Rp 0")).not.toBeInTheDocument();
     // Even if we try to fire Enter globally, it should not submit cash payload
     // This test ensures Enter only works for cash – we verify card still needs click
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
     const payload = createOrder.mock.calls[0][0];

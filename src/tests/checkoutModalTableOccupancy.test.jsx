@@ -7,6 +7,7 @@ import { getAllCustomer } from "../services/customer";
 import { getAllDiscount } from "../services/discount";
 import { createOrder } from "../services/order";
 import { getTableAvailability, getTablesWithActiveOrders } from "../services/table";
+import { waitForCheckoutQuote } from "./helpers/checkoutQuote";
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
@@ -21,6 +22,10 @@ jest.mock("react-cookie", () => ({
 }));
 
 jest.mock("../services/order", () => ({
+  // DR-11 / DR-17: the checkout pays against the server quote.
+  quoteOrder: jest.fn((payload) =>
+    Promise.resolve(jest.requireActual("./helpers/checkoutQuote").serverQuote(payload))
+  ),
   createOrder: jest.fn(() => Promise.resolve({ data: { id: 1 } }))
 }));
 jest.mock("../services/customer", () => ({
@@ -200,6 +205,7 @@ describe("F4-02 CheckoutModal — table occupancy from order-aware availability"
     await waitFor(() => expect(getTablesWithActiveOrders).toHaveBeenCalledTimes(2));
 
     completeCashPayment();
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 
     await waitFor(() => expect(createOrder).not.toHaveBeenCalled());
@@ -272,6 +278,7 @@ describe("F4-02 CheckoutModal — table occupancy from order-aware availability"
     );
 
     completeCashPayment();
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
     expect(createOrder.mock.calls[0][0].tableId).toBe(7);
@@ -328,6 +335,7 @@ describe("Phase 39 CheckoutModal — table.status is the occupancy source of tru
       expect(onTableChange).toHaveBeenCalledWith(expect.objectContaining({ id: 4 }))
     );
     completeCashPayment();
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
     expect(createOrder.mock.calls[0][0].tableId).toBe(4);
@@ -372,6 +380,7 @@ describe("Phase 39 CheckoutModal — table.status is the occupancy source of tru
       expect(onTableChange).toHaveBeenCalledWith(expect.objectContaining({ id: 8 }))
     );
     completeCashPayment();
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Table is already occupied"));
