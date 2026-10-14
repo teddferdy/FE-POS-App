@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getOrderById, updateOrderStatus } from "@/services/order";
 import { getMemberById } from "@/services/member";
+import MemberSearchModal from "@/components/MemberSearchModal";
 
 // F4-01: settles an order that already exists (e.g. created through
 // BISA-MAKAN's QR ordering flow) instead of the previous workaround of
@@ -73,6 +74,15 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   // DR-04 P2-1: explicit cashier acknowledgement that the order total will
   // be redeemed from the member's points; reset whenever the method changes.
   const [pointsConfirmed, setPointsConfirmed] = useState(false);
+  // DR-16: optional staff-verified member attachment at settlement. Null
+  // means "no selection" and the customerId key is omitted entirely, so an
+  // anonymous order settles anonymously and an already-attached order keeps
+  // its server-side member. The modal never fabricates an explicit null.
+  const [attachedMember, setAttachedMember] = useState(null);
+  const [memberSearchOpen, setMemberSearchOpen] = useState(false);
+  // Set when the server refuses a different member (409 MEMBER_MISMATCH).
+  const [attachConflict, setAttachConflict] = useState(false);
+  const attachedMemberId = attachedMember?.id ?? attachedMember?._id ?? null;
 
   // Always re-fetch the authoritative current state before offering a
   // payment action — the order queue this modal is opened from can be up to
@@ -112,8 +122,13 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     cashReceivedOrNull === null ||
     (Number.isInteger(cashReceivedOrNull) && cashReceivedOrNull >= amountDue);
 
-  // Member balance is fetched only once points is the chosen method. UX
-  // only: the server re-checks the balance under a row lock (422).
+  // Member record backs both the points panel and the DR-16 attach
+  // section below (existing attached member's name). Fetched whenever the
+  // server-confirmed order carries a member — points gating itself still
+  // requires the member to be on the order, never merely staged (the server
+  // redeems from the pre-settlement member, so a staged attach cannot
+  // redeem in the same settlement). UX only: the server re-checks the
+  // balance under a row lock (422).
   const {
     data: memberData,
     isLoading: isMemberLoading,
@@ -122,7 +137,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     ["collect-payment-member", orderMemberId],
     () => getMemberById({ id: orderMemberId }),
     {
-      enabled: isPoints && !!orderMemberId,
+      enabled: !!orderMemberId,
       retry: false
     }
   );
@@ -152,6 +167,10 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     // detail only for cash (never fabricated for other methods). The server
     // validates (422) and resolves register attribution; this modal never
     // sends a register id.
+    // DR-16: a staff-selected member rides along as customerId so the
+    // settlement attaches it and awards loyalty points. Omitted when nothing
+    // was selected — anonymous stays anonymous, an existing attachment is
+    // left to the server (sending the same id would be an idempotent no-op).
     mutationFn: (tender) =>
       updateOrderStatus({
         id: freshOrder.id,
@@ -160,6 +179,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
         changedBy: user?.id,
         changedByName: user?.fullName || user?.userName,
         paymentMethod: tender.paymentMethod,
+        ...(attachedMemberId != null ? { customerId: attachedMemberId } : {}),
         ...(tender.paymentMethod === "cash" && tender.cashAmount !== null
           ? { cashAmount: tender.cashAmount, changeAmount: tender.changeAmount }
           : {})
@@ -185,6 +205,18 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
       onClose();
     },
     onError: (err) => {
+      // DR-16: attaching a different member than the order's existing one is
+      // refused fail-closed (409 MEMBER_MISMATCH) — never silently replaced.
+      // Surface the conflict inline, refresh the server-confirmed order so
+      // the displayed member is authoritative again, and stay open for retry.
+      const status = err?.response?.status;
+      const code = err?.response?.data?.code;
+      if (status === 409 && code === "MEMBER_MISMATCH") {
+        setAttachConflict(true);
+        queryClient.invalidateQueries(["collect-payment-order", freshOrder.id]);
+        toast.error(t("page.cashier.collectPayment.member.mismatch"));
+        return;
+      }
       // update-status business failures (422) carry their text in `error`.
       toast.error(
         err?.response?.data?.message ||
@@ -270,6 +302,82 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                 </div>
               ) : mode === "confirmFull" ? (
                 <div className="space-y-3">
+                  {/* DR-16: optional staff-verified member attachment. The
+                      picker returns a server-looked-up member record (never a
+                      free-text name), and the id rides the settlement payload
+                      only when explicitly selected. */}
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">
+                      {t("page.cashier.collectPayment.member.title")}
+                    </p>
+                    {attachedMember ? (
+                      <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Users
+                            size={16}
+                            className="shrink-0 text-muted-foreground"
+                            aria-hidden="true"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium break-words">
+                              {attachedMember.name || attachedMember.nameMember || "-"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {attachedMember.phoneNumber || attachedMember.phone || ""}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAttachedMember(null);
+                            setAttachConflict(false);
+                          }}
+                          aria-label={t("page.cashier.collectPayment.member.clear")}
+                          className="p-2 rounded-lg hover:bg-accent shrink-0">
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : orderMemberId ? (
+                      <div className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Users
+                            size={16}
+                            className="shrink-0 text-muted-foreground"
+                            aria-hidden="true"
+                          />
+                          <p className="text-sm font-medium break-words">
+                            {member?.name ||
+                              `${t("page.cashier.collectPayment.member.attachedToOrder")} #${orderMemberId}`}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setMemberSearchOpen(true)}
+                          className="text-sm font-medium text-primary hover:underline shrink-0 px-2 py-2">
+                          {t("page.cashier.collectPayment.member.change")}
+                        </button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full h-11"
+                        onClick={() => setMemberSearchOpen(true)}>
+                        <Users size={16} className="mr-1.5" />
+                        {t("page.cashier.collectPayment.member.attach")}
+                      </Button>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {t("page.cashier.collectPayment.member.attachHint")}
+                    </p>
+                    {attachConflict && (
+                      <p role="alert" className="flex items-start gap-1.5 text-sm text-destructive">
+                        <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                        {t("page.cashier.collectPayment.member.mismatch")}
+                      </p>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     {t("page.cashier.collectPayment.confirmFullDesc")}
                   </p>
@@ -460,6 +568,15 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
           )}
         </div>
       </DialogContent>
+      <MemberSearchModal
+        open={memberSearchOpen}
+        onClose={() => setMemberSearchOpen(false)}
+        onSelect={(m) => {
+          setAttachedMember(m);
+          setAttachConflict(false);
+          setMemberSearchOpen(false);
+        }}
+      />
     </Dialog>
   );
 };
