@@ -5396,6 +5396,7 @@
   "page.cashier.qris.onBoard": "QRIS shown on customer display",
   "page.cashier.qris.waiting": "Wait for the customer to pay, then confirm below.",
   "page.cashier.qris.confirmReceived": "Confirm Payment Received",
+  "page.cashier.qris.invalidated": "QRIS cancelled because the checkout changed. The QR on the customer display is no longer valid — start QRIS again.",
   "page.member.add.cancelModalConfirm": "Yes, Cancel",
   "page.member.add.cancelModalTitle": "Cancel Registration?",
   "page.member.add.draftModalConfirm": "Yes, Save Draft",

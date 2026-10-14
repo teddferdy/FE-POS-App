@@ -109,6 +109,30 @@ const CheckoutModal = ({
   const [partySize, setPartySize] = useState("");
   const [qrisPending, setQrisPending] = useState(false);
   const [pendingPayload, setPendingPayload] = useState(null);
+  // D2: the checkout (quoted inputs + tender + table) a pending QRIS was
+  // issued for. Confirmation is only valid while the checkout is unchanged.
+  const [pendingCheckoutKey, setPendingCheckoutKey] = useState(null);
+  // D2: a pending QRIS was invalidated by a checkout change; its QR may still
+  // be on the customer display (no clear event exists) and is not payable.
+  const [qrisInvalidated, setQrisInvalidated] = useState(false);
+  const clearPendingQris = useCallback(() => {
+    setQrisPending(false);
+    setPendingPayload(null);
+    setPendingCheckoutKey(null);
+  }, []);
+  // The customer-display protocol has no "cancel QRIS" event, so the old QR
+  // stays visible there until replaced or auto-dismissed: tell the cashier
+  // it is void and that a new QRIS must be started.
+  const invalidatePendingQris = useCallback(() => {
+    clearPendingQris();
+    setQrisInvalidated(true);
+    toast.error(
+      t(
+        "page.cashier.qris.invalidated",
+        "QRIS dibatalkan karena checkout berubah. QR di layar pelanggan tidak berlaku — mulai QRIS lagi."
+      )
+    );
+  }, [clearPendingQris, t]);
   // W3-4 (W3-2 contract): a 409 PRICE_CHANGED rejection blocks payment until
   // the cashier explicitly applies the server prices and reviews the total.
   const [priceChange, setPriceChange] = useState(null);
@@ -345,6 +369,20 @@ const CheckoutModal = ({
     [store, selectedCustomer, selectedDiscount, promoCode, redeemPoints, useTax, items]
   );
   const quoteKey = JSON.stringify(quoteInputs);
+  // D2: everything a QRIS confirmation commits to besides the cashier — the
+  // quoted pricing inputs (tax, discount, promo, member, points, lines and
+  // prices) plus tender and table. Same fields handleSubmit puts in the order.
+  const checkoutKey = JSON.stringify({
+    quote: quoteKey,
+    paymentMethod: paymentMethod || null,
+    tableId: orderType === "dine-in" ? selectedTable?.id || null : null,
+    totalCovers: orderType === "dine-in" ? partySizeNum : 0
+  });
+  // D2: a pending QRIS is void as soon as its checkout changes — the stored
+  // payload must never be confirmed against a different quote.
+  useEffect(() => {
+    if (qrisPending && pendingCheckoutKey !== checkoutKey) invalidatePendingQris();
+  }, [qrisPending, pendingCheckoutKey, checkoutKey, invalidatePendingQris]);
   const debouncedQuoteKey = useDebounce(quoteKey, 300);
   const {
     data: quoteData,
@@ -375,22 +413,34 @@ const CheckoutModal = ({
   // match is routed into the existing apply-prices flow (same state, panel
   // and toast as the create stage). Anything else — network failure, other
   // 409s, other quote errors — keeps the generic fail-closed alert below.
+  // D1: the mismatch identity comes from the 409 contract only (line index,
+  // expected and current price) — not from the cart — so the same error seen
+  // again across re-renders is never re-surfaced, while a NEW mismatch (e.g.
+  // the price moved again after an applied change) always is.
   useEffect(() => {
-    if (!quoteFailed || !quoteError || priceChange?.applied) return;
+    if (!quoteFailed || !quoteError) return;
     const parsed = parsePriceChangedError(quoteError, items);
     if (!parsed) return;
-    const signature = JSON.stringify(parsed.items);
+    const signature = JSON.stringify(
+      parsed.items.map(({ index, expectedPrice, currentPrice }) => [
+        index,
+        expectedPrice,
+        currentPrice
+      ])
+    );
     if (surfacedQuoteMismatchRef.current === signature) return;
     surfacedQuoteMismatchRef.current = signature;
     setPriceChange({ ...parsed, applied: false });
     // A pending QR/e-wallet confirmation was built from stale prices; drop
     // it so the old expectedPrice can never be re-sent.
-    setQrisPending(false);
-    setPendingPayload(null);
+    // D2: its QR may still be on the customer display — flag it as void,
+    // as the create-stage PRICE_CHANGED does (one "Prices changed" toast).
+    if (qrisPending) setQrisInvalidated(true);
+    clearPendingQris();
     // Refresh the catalog so items added afterwards use the new prices.
     queryClient.invalidateQueries(["products-outlet", store]);
     toast.error(t("page.cashier.priceChanged.title", "Prices changed"));
-  }, [quoteFailed, quoteError, items, priceChange, queryClient, store, t]);
+  }, [quoteFailed, quoteError, items, qrisPending, clearPendingQris, queryClient, store, t]);
   // A fresh valid quote means the current inputs are priced — a later,
   // different mismatch may surface again.
   useEffect(() => {
@@ -555,7 +605,7 @@ const CheckoutModal = ({
           : null
       });
     },
-    onError: (err) => {
+    onError: (err, variables) => {
       // W3-4 (W3-2 contract): the server refused the order because prices
       // changed. Nothing was written. Block payment until the cashier applies
       // the server prices; never retry or touch the cart automatically.
@@ -564,8 +614,10 @@ const CheckoutModal = ({
         setPriceChange({ ...priceChanged, applied: false });
         // A pending QR/e-wallet confirmation was built from the stale prices;
         // drop it so the old expectedPrice can never be re-sent.
-        setQrisPending(false);
-        setPendingPayload(null);
+        clearPendingQris();
+        // D2: a refused QRIS confirmation leaves its QR on the customer
+        // display — flag it as void until a new QRIS is started.
+        if (["qris", "e-wallet"].includes(variables?.paymentMethod)) setQrisInvalidated(true);
         // Refresh the catalog so items added afterwards use the new prices.
         queryClient.invalidateQueries(["products-outlet", store]);
         toast.error(t("page.cashier.priceChanged.title", "Prices changed"));
@@ -629,13 +681,29 @@ const CheckoutModal = ({
   const handleQrisConfirm = useCallback(() => {
     if (!pendingPayload) return;
     if (isSubmittingRef.current) return;
+    // D2: confirm only the checkout the QR was issued for, and only while
+    // the server quote for it is current — never a stale stored payload.
+    if (pendingCheckoutKey !== checkoutKey || !quoteCurrent || priceChangePending) {
+      invalidatePendingQris();
+      return;
+    }
     isSubmittingRef.current = true;
     mutation.mutate(pendingPayload);
-  }, [pendingPayload, mutation]);
+  }, [
+    pendingPayload,
+    pendingCheckoutKey,
+    checkoutKey,
+    quoteCurrent,
+    priceChangePending,
+    invalidatePendingQris,
+    mutation
+  ]);
 
   const startQrisPayment = useCallback(
     (payload, method) => {
       setPendingPayload(payload);
+      setPendingCheckoutKey(checkoutKey);
+      setQrisInvalidated(false);
       setQrisPending(true);
       dispatchDisplayEvent({
         type: DISPLAY_EVENT_TYPES.QRIS_PAYMENT_REQUEST,
@@ -645,7 +713,7 @@ const CheckoutModal = ({
         paymentMethod: method
       });
     },
-    [store, remainingTotal, selectedTable]
+    [store, remainingTotal, selectedTable, checkoutKey]
   );
 
   const handleSubmit = useCallback(() => {
@@ -1027,7 +1095,7 @@ const CheckoutModal = ({
                       key={method.id}
                       onClick={() => {
                         setPaymentMethod(method.id);
-                        setQrisPending(false);
+                        clearPendingQris();
                       }}
                       className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all duration-200 ${
                         isSelected
@@ -1628,6 +1696,20 @@ const CheckoutModal = ({
               )}
             </div>
           )}
+          {qrisInvalidated && !qrisPending && (
+            <div
+              role="alert"
+              data-testid="qris-invalidated"
+              className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-xs text-destructive">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+              <span>
+                {t(
+                  "page.cashier.qris.invalidated",
+                  "QRIS dibatalkan karena checkout berubah. QR di layar pelanggan tidak berlaku — mulai QRIS lagi."
+                )}
+              </span>
+            </div>
+          )}
           {qrisPending && isQrisPayment ? (
             <>
               <div className="flex items-start gap-2 rounded-xl bg-primary/10 border border-primary/20 px-3 py-2.5 text-sm">
@@ -1647,7 +1729,7 @@ const CheckoutModal = ({
               <div className="flex gap-2">
                 <Button
                   variant="danger"
-                  onClick={() => setQrisPending(false)}
+                  onClick={clearPendingQris}
                   className="flex-1 h-12 rounded-xl">
                   {t("page.cashier.cancel", "Batal")}
                 </Button>

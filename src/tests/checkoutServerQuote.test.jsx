@@ -1,11 +1,12 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { act, render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import CheckoutModal from "../page/cashier/components/CheckoutModal";
 import { createOrder, quoteOrder } from "../services/order";
 import { toast } from "sonner";
 import { serverQuote } from "./helpers/checkoutQuote";
+import { dispatchDisplayEvent } from "../utils/customerDisplayBoard";
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
@@ -64,10 +65,13 @@ jest.mock("../utils/customerDisplayBoard", () => ({
 
 const confirmButton = () => screen.getByText("page.cashier.confirmPayment").closest("button");
 
-const renderModal = ({ items, onApplyServerPrices, onComplete } = {}) => {
-  const queryClient = new QueryClient({
+// `client` lets a test drive react-query itself (e.g. a same-key refetch).
+const newQueryClient = () =>
+  new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
   });
+const renderModal = ({ items, onApplyServerPrices, onComplete, client } = {}) => {
+  const queryClient = client || newQueryClient();
   const ui = (lines) => (
     <QueryClientProvider client={queryClient}>
       <CheckoutModal
@@ -330,5 +334,339 @@ describe("CheckoutModal — quote-stage PRICE_CHANGED", () => {
     expect(quoteOrder).toHaveBeenCalledTimes(1);
     expect(screen.getAllByTestId("price-change-panel")).toHaveLength(1);
     expect(confirmButton()).toBeDisabled();
+  });
+});
+
+// A cart line as the parent renders it after applying a server price.
+const kopiAt = (price, count = 1) => ({
+  id: "p1",
+  cartKey: "p1_",
+  nameProduct: "Kopi",
+  price,
+  count,
+  totalPrice: price * count,
+  priceAuthoritative: true,
+  priceOverridden: false
+});
+const mismatch = (expectedPrice, currentPrice) =>
+  priceChanged409([{ index: 0, productId: "p1", expectedPrice, currentPrice }]);
+
+describe("CheckoutModal — D1 repeated quote-stage PRICE_CHANGED", () => {
+  // Shared opening: 100k -> 110k surfaced and applied by the cashier.
+  const applyFirstMismatch = async () => {
+    quoteOrder.mockRejectedValueOnce(mismatch(100000, 110000));
+    const onApplyServerPrices = jest.fn();
+    const utils = renderModal({ onApplyServerPrices });
+    await screen.findByTestId("price-change-panel");
+    fireEvent.click(screen.getByText("page.cashier.priceChanged.apply"));
+    expect(onApplyServerPrices).toHaveBeenLastCalledWith([{ cartKey: "p1_", price: 110000 }]);
+    return { ...utils, onApplyServerPrices };
+  };
+
+  test("a second, different mismatch after an applied change re-opens the apply flow", async () => {
+    const { rerenderWith, onApplyServerPrices } = await applyFirstMismatch();
+
+    // the price moved again before the re-quote of the applied price
+    quoteOrder.mockRejectedValueOnce(mismatch(110000, 120000));
+    rerenderWith([kopiAt(110000)]);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("price-change-panel")).toHaveAttribute("role", "alert")
+    );
+    const panel = screen.getByTestId("price-change-panel");
+    expect(within(panel).getByText("Rp 110.000")).toBeInTheDocument();
+    expect(within(panel).getByText("Rp 120.000")).toBeInTheDocument();
+    expect(quoteOrder).toHaveBeenCalledTimes(2);
+    expect(quoteOrder.mock.calls[1][0].items[0].expectedPrice).toBe(110000);
+    expect(toast.error).toHaveBeenCalledTimes(2);
+    // no blind Retry of the stale 110k, and nothing payable
+    expect(screen.queryByText("page.cashier.quote.retry")).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByText("Card"));
+    expect(confirmButton()).toBeDisabled();
+    fireEvent.click(confirmButton());
+    expect(createOrder).not.toHaveBeenCalled();
+
+    // re-renders with the same 409 never re-surface it (no loop)
+    fireEvent.click(await screen.findByText("Cash"));
+    fireEvent.click(await screen.findByText("Card"));
+    expect(toast.error).toHaveBeenCalledTimes(2);
+    expect(quoteOrder).toHaveBeenCalledTimes(2);
+    expect(screen.getAllByTestId("price-change-panel")).toHaveLength(1);
+
+    // applying the new price re-quotes; only the fresh quote is payable
+    fireEvent.click(screen.getByText("page.cashier.priceChanged.apply"));
+    expect(onApplyServerPrices).toHaveBeenLastCalledWith([{ cartKey: "p1_", price: 120000 }]);
+    quoteOrder.mockImplementation((payload) => Promise.resolve(serverQuote(payload)));
+    rerenderWith([kopiAt(120000)]);
+    await waitFor(() => expect(confirmButton()).not.toBeDisabled());
+    fireEvent.click(confirmButton());
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    expect(createOrder.mock.calls[0][0].items[0].expectedPrice).toBe(120000);
+  });
+
+  test("an unrelated 409 after an applied change keeps the generic retry path", async () => {
+    const { rerenderWith } = await applyFirstMismatch();
+    const conflict = new Error("409");
+    conflict.response = {
+      status: 409,
+      data: { message: "idempotencyKey already used with a different payload" }
+    };
+    quoteOrder.mockRejectedValueOnce(conflict);
+    rerenderWith([kopiAt(110000)]);
+
+    const alert = await screen.findByText("idempotencyKey already used with a different payload");
+    expect(alert.closest("[role='alert']")).toBeInTheDocument();
+    expect(screen.getByTestId("price-change-panel")).toHaveAttribute("role", "status");
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    fireEvent.click(await screen.findByText("Card"));
+    expect(confirmButton()).toBeDisabled();
+
+    quoteOrder.mockImplementation((payload) => Promise.resolve(serverQuote(payload)));
+    fireEvent.click(screen.getByText("page.cashier.quote.retry"));
+    await waitFor(() => expect(confirmButton()).not.toBeDisabled());
+  });
+
+  test("a failed refresh after an applied change never falls back to the stale quote", async () => {
+    const { rerenderWith } = await applyFirstMismatch();
+    const failure = new Error("500");
+    failure.response = { status: 500, data: { error: "quote unavailable" } };
+    quoteOrder.mockRejectedValueOnce(failure);
+    rerenderWith([kopiAt(110000)]);
+
+    await screen.findByText("quote unavailable");
+    fireEvent.click(await screen.findByText("Card"));
+    expect(confirmButton()).toBeDisabled();
+    fireEvent.click(confirmButton());
+    expect(createOrder).not.toHaveBeenCalled();
+    // the old price survives only as the struck-through "was" price
+    expect(
+      screen.queryAllByText("Rp 100.000").every((el) => el.classList.contains("line-through"))
+    ).toBe(true);
+  });
+});
+
+describe("CheckoutModal — D2 pending QRIS is bound to its checkout", () => {
+  const taxAware = (payload) =>
+    Promise.resolve(
+      serverQuote(
+        payload,
+        payload.useTax ? { taxRate: 11, taxAmount: 11000, totalPrice: 111000 } : {}
+      )
+    );
+  const qrisConfirm = () => screen.queryByText("page.cashier.qris.confirmReceived");
+  const deferred = () => {
+    let resolve;
+    const promise = new Promise((r) => {
+      resolve = r;
+    });
+    return { promise, resolve };
+  };
+
+  // Selects QRIS, waits for a current quote and starts the pending flow.
+  const startQris = async () => {
+    fireEvent.click(await screen.findByText("QRIS"));
+    await waitFor(() => expect(confirmButton()).not.toBeDisabled());
+    fireEvent.click(confirmButton());
+    await screen.findByText("page.cashier.qris.confirmReceived");
+  };
+
+  beforeEach(() => {
+    dispatchDisplayEvent.mockClear();
+    quoteOrder.mockImplementation(taxAware);
+  });
+
+  test("unchanged checkout: QRIS confirms exactly the quoted payload", async () => {
+    renderModal();
+    await startQris();
+    expect(dispatchDisplayEvent).toHaveBeenCalledTimes(1);
+    expect(dispatchDisplayEvent.mock.calls[0][0]).toMatchObject({
+      type: "QRIS_PAYMENT_REQUEST",
+      total: 111000,
+      paymentMethod: "qris"
+    });
+
+    fireEvent.click(qrisConfirm());
+    fireEvent.click(qrisConfirm());
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    expect(createOrder.mock.calls[0][0]).toMatchObject({ useTax: true, paymentMethod: "qris" });
+    expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
+  });
+
+  test("a tax change while QRIS is pending voids it; the stale payload is never sent", async () => {
+    renderModal();
+    await startQris();
+
+    fireEvent.click(screen.getByLabelText("Gunakan Pajak"));
+    // the pending confirmation is gone at once and flagged as void
+    await waitFor(() => expect(qrisConfirm()).not.toBeInTheDocument());
+    expect(screen.getByTestId("qris-invalidated")).toHaveAttribute("role", "alert");
+    expect(toast.error).toHaveBeenCalledWith("page.cashier.qris.invalidated");
+    // the re-quote (tax off) is shown; nothing was created
+    await waitFor(() => expect(quoteOrder).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(confirmButton()).not.toBeDisabled());
+    expect(createOrder).not.toHaveBeenCalled();
+    // no clear/cancel event exists in the display protocol: none is invented
+    expect(dispatchDisplayEvent).toHaveBeenCalledTimes(1);
+
+    // the cashier must run a new QRIS flow for the current quote
+    fireEvent.click(confirmButton());
+    await screen.findByText("page.cashier.qris.confirmReceived");
+    expect(dispatchDisplayEvent).toHaveBeenCalledTimes(2);
+    expect(dispatchDisplayEvent.mock.calls[1][0].total).toBe(100000);
+    expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
+    fireEvent.click(qrisConfirm());
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    expect(createOrder.mock.calls[0][0].useTax).toBe(false);
+  });
+
+  test("a promo code change while QRIS is pending voids it", async () => {
+    renderModal();
+    await startQris();
+    fireEvent.change(screen.getByPlaceholderText("page.cashier.promoCodePlaceholder"), {
+      target: { value: "HEMAT" }
+    });
+    await waitFor(() => expect(qrisConfirm()).not.toBeInTheDocument());
+    expect(screen.getByTestId("qris-invalidated")).toBeInTheDocument();
+    expect(createOrder).not.toHaveBeenCalled();
+  });
+
+  test("a quantity or price change while QRIS is pending voids it", async () => {
+    const { rerenderWith } = renderModal();
+    await startQris();
+    rerenderWith([kopiAt(100000, 2)]);
+    await waitFor(() => expect(qrisConfirm()).not.toBeInTheDocument());
+    expect(screen.getByTestId("qris-invalidated")).toBeInTheDocument();
+
+    await waitFor(() => expect(confirmButton()).not.toBeDisabled());
+    fireEvent.click(confirmButton());
+    await screen.findByText("page.cashier.qris.confirmReceived");
+    rerenderWith([kopiAt(105000, 2)]);
+    await waitFor(() => expect(qrisConfirm()).not.toBeInTheDocument());
+    expect(createOrder).not.toHaveBeenCalled();
+  });
+
+  test("switching tender while QRIS is pending drops it without leaving a confirmable payload", async () => {
+    renderModal();
+    await startQris();
+    fireEvent.click(screen.getByText("Card"));
+    fireEvent.click(screen.getByText("QRIS"));
+    expect(qrisConfirm()).not.toBeInTheDocument();
+    expect(createOrder).not.toHaveBeenCalled();
+  });
+
+  test("a create-stage PRICE_CHANGED on QRIS confirm clears the pending flow and flags the QR", async () => {
+    createOrder.mockRejectedValueOnce(mismatch(100000, 110000));
+    renderModal();
+    await startQris();
+    fireEvent.click(qrisConfirm());
+    await screen.findByTestId("price-change-panel");
+    expect(qrisConfirm()).not.toBeInTheDocument();
+    expect(screen.getByTestId("qris-invalidated")).toBeInTheDocument();
+    expect(createOrder).toHaveBeenCalledTimes(1);
+  });
+
+  test("confirm-time guard: a QRIS whose quote is re-validating is refused, then a new flow proceeds", async () => {
+    const client = newQueryClient();
+    renderModal({ client });
+    await startQris();
+
+    // Same checkout, so the eager snapshot check has nothing to void — but
+    // react-query re-validates the same quote key (as on a network
+    // reconnect), so at confirmation the quote is not current.
+    const revalidation = deferred();
+    quoteOrder.mockImplementationOnce(() => revalidation.promise);
+    act(() => {
+      client.invalidateQueries(["checkout-quote"]);
+    });
+    await waitFor(() => expect(quoteOrder).toHaveBeenCalledTimes(2));
+    expect(quoteOrder.mock.calls[1][0]).toEqual(quoteOrder.mock.calls[0][0]);
+    expect(qrisConfirm()).toBeInTheDocument();
+    expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
+
+    fireEvent.click(qrisConfirm());
+    expect(createOrder).not.toHaveBeenCalled();
+    expect(qrisConfirm()).not.toBeInTheDocument();
+    expect(screen.getByTestId("qris-invalidated")).toHaveAttribute("role", "alert");
+    expect(toast.error).toHaveBeenCalledWith("page.cashier.qris.invalidated");
+
+    // once the quote is current again, a new QRIS flow confirms normally
+    await act(async () => {
+      revalidation.resolve(await taxAware(quoteOrder.mock.calls[1][0]));
+    });
+    await waitFor(() => expect(confirmButton()).not.toBeDisabled());
+    fireEvent.click(confirmButton());
+    await screen.findByText("page.cashier.qris.confirmReceived");
+    expect(dispatchDisplayEvent).toHaveBeenCalledTimes(2);
+    expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
+    fireEvent.click(qrisConfirm());
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    expect(createOrder.mock.calls[0][0]).toMatchObject({ useTax: true, paymentMethod: "qris" });
+  });
+
+  test("an equal checkout re-rendered with new cart objects keeps the pending QRIS valid", async () => {
+    const { rerenderWith } = renderModal();
+    await startQris();
+    // new array and line objects, same content: the snapshot compares
+    // values, not object identity
+    rerenderWith([kopiAt(100000)]);
+    expect(qrisConfirm()).toBeInTheDocument();
+    expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
+    fireEvent.click(qrisConfirm());
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    expect(quoteOrder).toHaveBeenCalledTimes(1);
+  });
+
+  test("a quote re-check PRICE_CHANGED while QRIS is pending voids the QR and opens the apply flow", async () => {
+    const client = newQueryClient();
+    const onApplyServerPrices = jest.fn();
+    const { rerenderWith } = renderModal({ client, onApplyServerPrices });
+    await startQris();
+
+    // same checkout re-checked by react-query; the server now reports a
+    // price change for the very lines the pending QRIS was issued for
+    quoteOrder.mockRejectedValueOnce(mismatch(100000, 110000));
+    act(() => {
+      client.invalidateQueries(["checkout-quote"]);
+    });
+    const panel = await screen.findByTestId("price-change-panel");
+    expect(panel).toHaveAttribute("role", "alert");
+    expect(within(panel).getByText("Rp 110.000")).toBeInTheDocument();
+    expect(qrisConfirm()).not.toBeInTheDocument();
+    expect(screen.getByTestId("qris-invalidated")).toHaveAttribute("role", "alert");
+    // one notification for the one event (the create-stage convention)
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith("page.cashier.priceChanged.title");
+    expect(createOrder).not.toHaveBeenCalled();
+
+    // re-renders neither re-notify nor re-query (no loop)
+    fireEvent.click(screen.getByText("Card"));
+    fireEvent.click(screen.getByText("QRIS"));
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(quoteOrder).toHaveBeenCalledTimes(2);
+    expect(screen.getAllByTestId("price-change-panel")).toHaveLength(1);
+    expect(screen.getAllByTestId("qris-invalidated")).toHaveLength(1);
+    expect(confirmButton()).toBeDisabled();
+
+    // apply -> fresh quote -> a NEW QRIS flow is the only way to pay
+    fireEvent.click(screen.getByText("page.cashier.priceChanged.apply"));
+    expect(onApplyServerPrices).toHaveBeenLastCalledWith([{ cartKey: "p1_", price: 110000 }]);
+    rerenderWith([kopiAt(110000)]);
+    await waitFor(() => expect(confirmButton()).not.toBeDisabled());
+    expect(createOrder).not.toHaveBeenCalled();
+    fireEvent.click(confirmButton());
+    await screen.findByText("page.cashier.qris.confirmReceived");
+    expect(dispatchDisplayEvent).toHaveBeenCalledTimes(2);
+    expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
+    fireEvent.click(qrisConfirm());
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    expect(createOrder.mock.calls[0][0].items[0].expectedPrice).toBe(110000);
+  });
+
+  test("a quote PRICE_CHANGED with no QRIS pending shows no QR-invalid alert", async () => {
+    quoteOrder.mockRejectedValueOnce(mismatch(100000, 110000));
+    renderModal();
+    await screen.findByTestId("price-change-panel");
+    expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
+    expect(toast.error).toHaveBeenCalledTimes(1);
   });
 });
