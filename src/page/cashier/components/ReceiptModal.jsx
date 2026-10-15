@@ -815,26 +815,30 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                   </span>
                   <span className={`text-gray-900 ${sz.totalsGrand}`}>Rp{formatPrice(total)}</span>
                 </div>
-                {(paymentMethod === "cash" || paymentMethod?.toLowerCase() === "cash") && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className={`text-gray-500 ${sz.totalsLabel}`}>
-                        {t("page.cashier.cashAmount")}
-                      </span>
-                      <span className={`text-gray-700 ${sz.totalsValue}`}>
-                        Rp{formatPrice(cashAmount)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className={`text-gray-500 ${sz.totalsLabel}`}>
-                        {t("page.cashier.change")}
-                      </span>
-                      <span className={`text-emerald-600 font-semibold ${sz.totalsValue}`}>
-                        Rp{formatPrice(changeAmount)}
-                      </span>
-                    </div>
-                  </>
-                )}
+                {/* A receipt recovered from an already-recorded order carries no
+                    tender detail (cash received / change are not part of the
+                    order read) — show none rather than invented amounts. */}
+                {!data?.tenderDetailUnknown &&
+                  (paymentMethod === "cash" || paymentMethod?.toLowerCase() === "cash") && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className={`text-gray-500 ${sz.totalsLabel}`}>
+                          {t("page.cashier.cashAmount")}
+                        </span>
+                        <span className={`text-gray-700 ${sz.totalsValue}`}>
+                          Rp{formatPrice(cashAmount)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className={`text-gray-500 ${sz.totalsLabel}`}>
+                          {t("page.cashier.change")}
+                        </span>
+                        <span className={`text-emerald-600 font-semibold ${sz.totalsValue}`}>
+                          Rp{formatPrice(changeAmount)}
+                        </span>
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
 
@@ -1180,6 +1184,7 @@ ReceiptModal.propTypes = {
     grandTotal: PropTypes.number,
     cashAmount: PropTypes.number,
     changeAmount: PropTypes.number,
+    tenderDetailUnknown: PropTypes.bool,
     storeName: PropTypes.string,
     storeAddress: PropTypes.string,
     storePhone: PropTypes.string,

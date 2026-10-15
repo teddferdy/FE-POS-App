@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import CheckoutModal from "../page/cashier/components/CheckoutModal";
 import { createOrder } from "../services/order";
 import { toast } from "sonner";
+import { checkoutAttempts } from "../state/checkout-attempt";
 
 // W3-4: CheckoutModal sends the W3-2/K3 item contract through the real cart
 // line mapping and handles 409 PRICE_CHANGED as an explicit cashier step.
@@ -152,6 +153,11 @@ const setup = ({ onComplete = jest.fn(), onApplyServerPrices = jest.fn() } = {})
 
 const confirmButton = () => screen.getByText("page.cashier.confirmPayment").closest("button");
 
+beforeEach(() => {
+  sessionStorage.clear();
+  checkoutAttempts.setState({ attempts: {} });
+});
+
 describe("W3-4 CheckoutModal item payload (W3-2 + K3)", () => {
   beforeEach(() => {
     createOrder.mockReset();
@@ -289,7 +295,7 @@ describe("W3-4 CheckoutModal 409 PRICE_CHANGED", () => {
     expect(createOrder).toHaveBeenCalledTimes(1);
   });
 
-  test("other 409 errors keep the existing toast and show no price panel", async () => {
+  test("a code-less 409 is shown neutrally (unconfirmed, never a recorded sale): no price panel, no new sale", async () => {
     createOrder.mockRejectedValueOnce({
       response: {
         status: 409,
@@ -302,11 +308,15 @@ describe("W3-4 CheckoutModal 409 PRICE_CHANGED", () => {
     fireEvent.click(confirmButton());
 
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith(
-        "idempotencyKey already used with a different payload"
-      )
+      expect(toast.error).toHaveBeenCalledWith("page.cashier.attempt.unconfirmedToast")
     );
     expect(screen.queryByTestId("price-change-panel")).not.toBeInTheDocument();
-    expect(confirmButton()).not.toBeDisabled();
+    expect(screen.getByTestId("checkout-attempt-panel")).toHaveAttribute(
+      "data-attempt-status",
+      "unknown"
+    );
+    expect(screen.getByText("page.cashier.attempt.unconfirmedTitle")).toBeInTheDocument();
+    expect(screen.queryByText("page.cashier.attempt.recordedTitle")).not.toBeInTheDocument();
+    expect(confirmButton()).toBeDisabled();
   });
 });

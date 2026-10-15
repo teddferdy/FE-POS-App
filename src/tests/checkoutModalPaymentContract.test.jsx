@@ -8,6 +8,7 @@ import { getAllCustomer } from "../services/customer";
 import { getAllDiscount } from "../services/discount";
 import { getAllTypePayment } from "../services/type-payment";
 import { waitForCheckoutQuote } from "./helpers/checkoutQuote";
+import { checkoutAttempts } from "../state/checkout-attempt";
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
@@ -82,6 +83,13 @@ const renderModal = (onComplete) => {
     </QueryClientProvider>
   );
 };
+
+// The checkout attempt (key + sent payload) lives in a sessionStorage-backed
+// store; each test starts from no attempt.
+beforeEach(() => {
+  sessionStorage.clear();
+  checkoutAttempts.setState({ attempts: {} });
+});
 
 describe("CheckoutModal payment payload contract (F-SMOKE-01)", () => {
   beforeEach(() => {
@@ -187,8 +195,11 @@ describe("CheckoutModal double-submit guard (F-SMOKE-02)", () => {
     });
   });
 
-  test("the guard resets after a failed submission so a legitimate retry proceeds", async () => {
-    createOrder.mockRejectedValueOnce(new Error("network error"));
+  test("the guard resets after a definitive refusal so a corrected retry proceeds", async () => {
+    // A 422 is answered after the server's key lookup: nothing was recorded.
+    createOrder.mockRejectedValueOnce({
+      response: { status: 422, data: { error: "REGISTER_REQUIRED", code: "REGISTER_REQUIRED" } }
+    });
     createOrder.mockResolvedValueOnce({
       data: { id: 2, totalPrice: 10000, subTotal: 10000, items: [] }
     });
@@ -200,10 +211,36 @@ describe("CheckoutModal double-submit guard (F-SMOKE-02)", () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(submitButton.closest("button")).not.toBeDisabled());
 
     fireEvent.click(submitButton);
 
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(onComplete).toHaveBeenCalled());
+  });
+
+  test("an ambiguous failure (no response) resends the SAME payload under the SAME key, once per click", async () => {
+    createOrder.mockRejectedValueOnce(new Error("network error"));
+    createOrder.mockResolvedValueOnce({
+      data: { id: 2, totalPrice: 10000, subTotal: 10000, items: [] }
+    });
+    const onComplete = jest.fn();
+    renderModal(onComplete);
+
+    fireEvent.click(await screen.findByText("Card"));
+    fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+
+    // outcome unknown: a new sale is blocked, only the same sale may be resent
+    const panel = await screen.findByTestId("checkout-attempt-panel");
+    expect(panel).toHaveAttribute("data-attempt-status", "unknown");
+    expect(screen.getByText("page.cashier.confirmPayment").closest("button")).toBeDisabled();
+
+    const retry = screen.getByText("page.cashier.attempt.retrySame");
+    fireEvent.click(retry);
+    fireEvent.click(retry);
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(2));
+    expect(createOrder.mock.calls[1][0]).toEqual(createOrder.mock.calls[0][0]);
+    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1));
   });
 });
