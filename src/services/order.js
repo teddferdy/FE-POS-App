@@ -6,6 +6,15 @@ export const createOrder = async (payload) => {
   return data;
 };
 
+// DR-11 / DR-17: the server's totals for the exact payload /order/create
+// would receive (same resolver; read-only). The checkout displays these
+// instead of re-deriving discounts or tax in the browser.
+export const quoteOrder = async (payload) => {
+  const { data, status } = await axiosInstance.post("/order/quote", payload);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 // F-SMOKE-01: reads the exact rate order/create will apply (same
 // getActiveTaxRate/getServiceChargeRate resolution, fallback included) so the
 // cashier UI can never show a percentage that diverges from what gets charged.

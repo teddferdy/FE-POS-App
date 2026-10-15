@@ -8,6 +8,7 @@ import { getAllCustomer } from "../services/customer";
 import { getAllDiscount } from "../services/discount";
 import { getAllTypePayment } from "../services/type-payment";
 import { getAllMember, getMemberById } from "../services/member";
+import { waitForCheckoutQuote } from "./helpers/checkoutQuote";
 
 // Phase 20 Batch 1: Member Search + Redeem Points payment flow. The search
 // modal (MemberSearchModal), the "Cari Pelanggan"/"Ganti Pelanggan" wiring,
@@ -30,6 +31,10 @@ jest.mock("react-cookie", () => ({
 }));
 
 jest.mock("../services/order", () => ({
+  // DR-11 / DR-17: the checkout pays against the server quote.
+  quoteOrder: jest.fn((payload) =>
+    Promise.resolve(jest.requireActual("./helpers/checkoutQuote").serverQuote(payload))
+  ),
   createOrder: jest.fn()
 }));
 jest.mock("../services/customer", () => ({
@@ -233,6 +238,7 @@ describe("CheckoutModal — payment payload carries member/redeem fields from th
     // arbitrary smaller amount, or the (correct) insufficient-cash guard
     // blocks submission before createOrder is ever called.
     fireEvent.change(screen.getByPlaceholderText("Rp 0"), { target: { value: "100000" } });
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalled());
@@ -249,6 +255,7 @@ describe("CheckoutModal — payment payload carries member/redeem fields from th
     renderModal();
     fireEvent.click(await screen.findByText("Cash"));
     fireEvent.change(screen.getByPlaceholderText("Rp 0"), { target: { value: "100000" } });
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalled());
@@ -266,6 +273,7 @@ describe("CheckoutModal — payment payload carries member/redeem fields from th
 
     fireEvent.click(await screen.findByText("Cash"));
     fireEvent.change(screen.getByPlaceholderText("Rp 0"), { target: { value: "100000" } });
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalled());

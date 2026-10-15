@@ -19,6 +19,10 @@ const StoreConfigurationDetail = React.lazy(
   () => import("@/page/store-configuration/StoreConfigurationDetail")
 );
 
+// Tenant administration — gated in the page by the canonical tenant.manage
+// permission (platform only), not by RequireRole.
+const TenantList = React.lazy(() => import("@/page/tenant/TenantList"));
+
 // Table
 const TableList = React.lazy(() => import("@/page/table/TableList"));
 const DetailTable = React.lazy(() => import("@/page/table/DetailTable"));
@@ -82,6 +86,8 @@ export const settingsRoutes = (
 
     <Route path="/store-configuration" element={<StoreConfigurationList />} />
     <Route path="/store-configuration/:id" element={<StoreConfigurationDetail />} />
+
+    <Route path="/tenant" element={<TenantList />} />
 
     <Route path="/table-list" element={<TableList />} />
     <Route path="/detail-table" element={<DetailTable />} />

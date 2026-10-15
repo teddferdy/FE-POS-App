@@ -324,11 +324,16 @@ describe("CollectPaymentModal — DR-04 settlement tender", () => {
     fireEvent.click(screen.getByText("page.cashier.collectPayment.payFull"));
 
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "qris" } });
+    // DR-23 §D: a non-cash settlement carries its reference.
+    fireEvent.change(screen.getByLabelText("page.cashier.collectPayment.reference.label"), {
+      target: { value: "QR-778899" }
+    });
     fireEvent.click(screen.getByText("page.cashier.collectPayment.confirm"));
 
     await waitFor(() => expect(updateOrderStatus).toHaveBeenCalled());
     const payload = updateOrderStatus.mock.calls[0][0];
     expect(payload.paymentMethod).toBe("qris");
+    expect(payload.referenceNumber).toBe("QR-778899");
     expect(payload).not.toHaveProperty("cashAmount");
     expect(payload).not.toHaveProperty("changeAmount");
     await waitFor(() => expect(onOpenReceipt).toHaveBeenCalled());
@@ -345,6 +350,9 @@ describe("CollectPaymentModal — DR-04 settlement tender", () => {
       data: { ...qrOrder, status: "paid", paymentStatus: "paid" }
     });
     await openConfirm();
+    fireEvent.change(screen.getByLabelText("page.cashier.collectPayment.reference.label"), {
+      target: { value: "QR-1" }
+    });
     fireEvent.click(screen.getByText("page.cashier.collectPayment.confirm"));
 
     await waitFor(() => expect(updateOrderStatus).toHaveBeenCalled());

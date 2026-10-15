@@ -59,6 +59,14 @@ const SETTLEMENT_METHODS = [
   "other"
 ];
 
+// DR-23 §D / §M: the methods whose manually confirmed settlement must carry
+// a reference — every method but cash and points (BE requiresTenderReference:
+// CARD = debit/credit, BANK_TRANSFER, E_WALLET, QRIS, OTHER). The server
+// refuses a missing or blank one (422 REFERENCE_REQUIRED); this list only
+// decides when the input is shown and confirm is enabled.
+const REFERENCE_REQUIRED_METHODS = ["qris", "debit", "credit", "transfer", "e-wallet", "other"];
+const MAX_REFERENCE_LENGTH = 255;
+
 const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
@@ -71,6 +79,12 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   // server fills cashReceived = due, changeGiven = 0, same as order/create).
   const [methodChoice, setMethodChoice] = useState(null);
   const [cashReceivedInput, setCashReceivedInput] = useState("");
+  // Non-cash reference as typed. Kept across a failed settlement and a
+  // method change so the cashier corrects it instead of retyping; sent
+  // trimmed, and only for a method that requires it.
+  const [referenceInput, setReferenceInput] = useState("");
+  // Set when the server refuses the settlement for a missing reference.
+  const [referenceRefused, setReferenceRefused] = useState(false);
   // DR-04 P2-1: explicit cashier acknowledgement that the order total will
   // be redeemed from the member's points; reset whenever the method changes.
   const [pointsConfirmed, setPointsConfirmed] = useState(false);
@@ -97,8 +111,16 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     retry: false
   });
   const freshOrder = orderData?.data || order;
+  // DR-23 §K/§M: a settlement retried after its response was lost is
+  // refused with OUTSTANDING_CHANGED; the ledger-derived financialState
+  // tells "already fully paid" apart from "amount stale".
+  const [confirmedPaid, setConfirmedPaid] = useState(false);
+  const [openingReceipt, setOpeningReceipt] = useState(false);
   const isAlreadySettled =
-    freshOrder?.paymentStatus === "paid" || ["cancelled", "void"].includes(freshOrder?.status);
+    confirmedPaid ||
+    freshOrder?.paymentStatus === "paid" ||
+    ["cancelled", "void"].includes(freshOrder?.status);
+  const isTerminal = ["cancelled", "void"].includes(freshOrder?.status);
 
   const amountDue = Number(freshOrder?.totalPrice) || 0;
   // DR-04 P2-1: points settle only against the member already attached to
@@ -147,7 +169,14 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const pointsToRedeem = Math.min(memberPoints, pointsRequired);
   const pointsSufficient = !!member && memberPoints >= pointsRequired;
   const pointsReady = !isPoints || (pointsSufficient && pointsConfirmed);
-  const canConfirm = cashCovers && pointsReady;
+  const needsReference = REFERENCE_REQUIRED_METHODS.includes(effectiveMethod);
+  // "Other" is a free-form description, not an external transaction
+  // reference, so it gets its own label/placeholder/hint wording.
+  const isOtherMethod = effectiveMethod === "other";
+  const referenceTrimmed = referenceInput.trim();
+  // UX only — the server re-checks (422 REFERENCE_REQUIRED).
+  const referenceReady = !needsReference || referenceTrimmed !== "";
+  const canConfirm = cashCovers && pointsReady && referenceReady;
 
   const invalidateOrderQueues = () => {
     CASHIER_ORDER_QUEUE_STATUSES.forEach((status) =>
@@ -182,7 +211,8 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
         ...(attachedMemberId != null ? { customerId: attachedMemberId } : {}),
         ...(tender.paymentMethod === "cash" && tender.cashAmount !== null
           ? { cashAmount: tender.cashAmount, changeAmount: tender.changeAmount }
-          : {})
+          : {}),
+        ...(tender.referenceNumber ? { referenceNumber: tender.referenceNumber } : {})
       }),
     onSuccess: async (_data, tender) => {
       toast.success(t("page.cashier.collectPayment.toast.paidSuccess"));
@@ -217,10 +247,31 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
         toast.error(t("page.cashier.collectPayment.member.mismatch"));
         return;
       }
+      // DR-23 §D: the server refused the settlement for a missing reference.
+      // Nothing was recorded; keep the typed values and point at the field.
+      if (status === 422 && code === "REFERENCE_REQUIRED") {
+        setReferenceRefused(true);
+        toast.error(t("page.cashier.collectPayment.reference.required"));
+        return;
+      }
       // DR-23: the settlement must equal the CURRENT outstanding amount — a
       // stale claim (split paid meanwhile, amount changed) is refused with
       // the live outstanding. Refresh and stay open so the cashier retries
       // against server-confirmed state instead of the stale total.
+      if (
+        status === 409 &&
+        code === "OUTSTANDING_CHANGED" &&
+        err?.response?.data?.financialState === "PAID" &&
+        Number(err?.response?.data?.outstanding) === 0
+      ) {
+        // Fully paid already (e.g. this settlement's earlier response was
+        // lost) — never imply money is still owed, never settle again.
+        setConfirmedPaid(true);
+        invalidateOrderQueues();
+        queryClient.invalidateQueries(["collect-payment-order", freshOrder.id]);
+        toast.info(t("page.cashier.collectPayment.alreadyPaid"));
+        return;
+      }
       if (status === 409 && code === "OUTSTANDING_CHANGED") {
         queryClient.invalidateQueries(["collect-payment-order", freshOrder.id]);
         const outstanding = err?.response?.data?.outstanding;
@@ -247,6 +298,33 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     }
   });
 
+  // Opens the receipt of the already-paid order from a fresh read — no
+  // settlement is sent. The read carries no ledger cash detail, so the
+  // receipt shows none (tenderDetailUnknown) instead of inventing it.
+  const handleOpenPaidReceipt = async () => {
+    if (openingReceipt) return;
+    setOpeningReceipt(true);
+    try {
+      const refreshed = await getOrderById(freshOrder.id);
+      const paid = refreshed?.data || refreshed || freshOrder;
+      onOpenReceipt({
+        ...toReceiptData(paid, {
+          paymentMethod: paid.paymentMethod,
+          cashAmount: null,
+          changeAmount: null
+        }),
+        tenderDetailUnknown: true
+      });
+      onClose();
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || t("page.cashier.collectPayment.toast.paidFailed")
+      );
+    } finally {
+      setOpeningReceipt(false);
+    }
+  };
+
   const handleConfirmFullPayment = () => {
     if (isSubmittingRef.current || settleMutation.isLoading) return;
     if (!canConfirm) return;
@@ -260,7 +338,13 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
             cashAmount: cashReceivedOrNull,
             changeAmount: cashChange
           }
-        : { paymentMethod: effectiveMethod, cashAmount: null, changeAmount: null };
+        : {
+            paymentMethod: effectiveMethod,
+            cashAmount: null,
+            changeAmount: null,
+            ...(needsReference ? { referenceNumber: referenceTrimmed } : {})
+          };
+    setReferenceRefused(false);
     settleMutation.mutate(tender);
   };
 
@@ -321,9 +405,20 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
               </div>
 
               {isAlreadySettled ? (
-                <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium justify-center py-2">
-                  <CheckCircle2 size={16} />
-                  {t("page.cashier.collectPayment.alreadyPaid")}
+                <div className="space-y-2 py-2" data-testid="collect-already-paid">
+                  <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium justify-center">
+                    <CheckCircle2 size={16} />
+                    {t("page.cashier.collectPayment.alreadyPaid")}
+                  </div>
+                  {!isTerminal && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      disabled={openingReceipt}
+                      onClick={handleOpenPaidReceipt}>
+                      {t("page.cashier.collectPayment.viewReceipt")}
+                    </Button>
+                  )}
                 </div>
               ) : mode === "confirmFull" ? (
                 <div className="space-y-3">
@@ -525,6 +620,54 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                             </p>
                           )}
                         </>
+                      )}
+                    </div>
+                  )}
+                  {needsReference && (
+                    <div className="space-y-1">
+                      <label htmlFor="collect-payment-reference" className="text-sm font-medium">
+                        {t(
+                          isOtherMethod
+                            ? "page.cashier.collectPayment.reference.otherLabel"
+                            : "page.cashier.collectPayment.reference.label"
+                        )}
+                      </label>
+                      <input
+                        id="collect-payment-reference"
+                        value={referenceInput}
+                        maxLength={MAX_REFERENCE_LENGTH}
+                        autoComplete="off"
+                        placeholder={t(
+                          isOtherMethod
+                            ? "page.cashier.collectPayment.reference.otherPlaceholder"
+                            : "page.cashier.collectPayment.reference.placeholder"
+                        )}
+                        onChange={(e) => {
+                          setReferenceInput(e.target.value);
+                          setReferenceRefused(false);
+                        }}
+                        aria-invalid={referenceRefused || undefined}
+                        aria-describedby="collect-payment-reference-hint"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      />
+                      {referenceRefused ? (
+                        <p
+                          id="collect-payment-reference-hint"
+                          role="alert"
+                          className="flex items-start gap-1.5 text-sm text-destructive">
+                          <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                          {t("page.cashier.collectPayment.reference.required")}
+                        </p>
+                      ) : (
+                        <p
+                          id="collect-payment-reference-hint"
+                          className="text-xs text-muted-foreground">
+                          {t(
+                            isOtherMethod
+                              ? "page.cashier.collectPayment.reference.otherHint"
+                              : "page.cashier.collectPayment.reference.hint"
+                          )}
+                        </p>
                       )}
                     </div>
                   )}

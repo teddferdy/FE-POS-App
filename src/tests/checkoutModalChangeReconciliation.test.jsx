@@ -6,6 +6,7 @@ import CheckoutModal from "../page/cashier/components/CheckoutModal";
 import { createOrder } from "../services/order";
 import { getAllCustomer } from "../services/customer";
 import { getAllDiscount } from "../services/discount";
+import { waitForCheckoutQuote } from "./helpers/checkoutQuote";
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
@@ -20,6 +21,10 @@ jest.mock("react-cookie", () => ({
 }));
 
 jest.mock("../services/order", () => ({
+  // DR-11 / DR-17: the checkout pays against the server quote.
+  quoteOrder: jest.fn((payload) =>
+    Promise.resolve(jest.requireActual("./helpers/checkoutQuote").serverQuote(payload))
+  ),
   createOrder: jest.fn()
 }));
 jest.mock("../services/customer", () => ({
@@ -75,6 +80,7 @@ const renderModal = (onComplete) => {
 const payCash = async (cashInput) => {
   fireEvent.click(await screen.findByText("Cash"));
   fireEvent.change(screen.getByPlaceholderText("Rp 0"), { target: { value: String(cashInput) } });
+  await waitForCheckoutQuote();
   fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 };
 
@@ -126,6 +132,7 @@ describe("CheckoutModal change-amount reconciliation (F9-01)", () => {
     renderModal(onComplete);
 
     fireEvent.click(await screen.findByText("Card"));
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 
     await waitFor(() => expect(onComplete).toHaveBeenCalled());

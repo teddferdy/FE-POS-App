@@ -13,7 +13,6 @@ import {
   DollarSign,
   FileText,
   QrCode,
-  SlidersHorizontal,
   X
 } from "lucide-react";
 import {
@@ -31,6 +30,8 @@ import {
 import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
 import { useStoreManagePermission } from "@/hooks/useStoreManagePermission";
+import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
+import { canonicalLocationNavItems, withCanonicalLocationItems } from "@/lib/canonical-nav";
 import { endSession, SESSION_END_REASON } from "@/services/session";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -42,15 +43,6 @@ import logoImg from "@/assets/logo-sidebar.png";
 // cabang kategori + popup yang sama dengan super_admin (difilter accessMenu,
 // lihat categories/menuItems di bawah). Daftar POS di bawah juga difilter
 // supaya item tanpa akses (mis. KDS, QR) tidak bocor ke user terbatas.
-
-// W3: shown by canonical permission (store.manage), independent of roleType
-// and accessMenu, in both sidebar branches.
-const STORE_CONFIGURATION_NAV_ITEM = {
-  title: "Store Configuration",
-  i18nKey: "page.storeConfiguration.title",
-  href: "/store-configuration",
-  activeRegex: /^\/store-configuration(\/|$)/
-};
 
 const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHoverChange }) => {
   const { t } = useTranslation();
@@ -66,6 +58,7 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const user = useUserSession();
   const { canManageStores } = useStoreManagePermission();
+  const { canManageTenants } = useTenantManagePermission();
 
   const hasAccessMenu =
     user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
@@ -84,11 +77,14 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const categories = useMemo(() => {
     const raw = hasAccessMenu || isSuperAdminRole(user) ? navCategories.super_admin || [] : [];
-    if (isMenuControlled) return filterNavCategoriesByPermission(raw, user);
-    if (isSuperAdminRole(user)) return raw;
-    if (isAdminRole(user)) return navCategories.admin || [];
-    return raw;
-  }, [hasAccessMenu, isMenuControlled, user]);
+    let base = raw;
+    if (isMenuControlled) base = filterNavCategoriesByPermission(raw, user);
+    else if (isSuperAdminRole(user)) base = raw;
+    else if (isAdminRole(user)) base = navCategories.admin || [];
+    // Tenant and Store Configuration sit in the Location category, gated by
+    // the canonical permissions (independent of roleType/accessMenu).
+    return withCanonicalLocationItems(base, { canManageTenants, canManageStores });
+  }, [hasAccessMenu, isMenuControlled, user, canManageTenants, canManageStores]);
 
   const directItems = useMemo(() => {
     const items = [];
@@ -402,20 +398,8 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
                   </span>
                 </button>
               );
-
-              if (isExpanded) return <div key={cat.id}>{btn}</div>;
-              return (
-                <Tooltip key={cat.id}>
-                  <TooltipTrigger asChild>{btn}</TooltipTrigger>
-                  <TooltipContent side="right" sideOffset={12} className="font-medium">
-                    {t(cat.i18nKey) || cat.title}
-                  </TooltipContent>
-                </Tooltip>
-              );
             })}
           </>
-
-          {canManageStores && renderNavButton(STORE_CONFIGURATION_NAV_ITEM, SlidersHorizontal)}
         </nav>
 
         {/* Bottom */}
@@ -454,7 +438,10 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
           <NavigationModal
             open={navModalOpen}
             onOpenChange={setNavModalOpen}
-            categories={[activeCategory]}
+            // Read the live category so items gated by a permission that
+            // resolves after the modal opened (Tenant, Store Configuration)
+            // still appear.
+            categories={[categories.find((c) => c.id === activeCategory.id) || activeCategory]}
             onNavigate={handleMouseLeave}
           />
         )}

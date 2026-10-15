@@ -25,7 +25,15 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { createOrder } from "@/services/order";
+import { quoteOrder, createOrder, getOrderById } from "@/services/order";
+import {
+  checkoutAttempts,
+  ATTEMPT_STATUS,
+  classifyCreateError,
+  beginLiveRequest,
+  endLiveRequest,
+  isRequestLive
+} from "@/state/checkout-attempt";
 import { getAllCustomer, addCustomer } from "@/services/customer";
 import { getAllDiscount, lookupDiscountByCode } from "@/services/discount";
 import { getAllMemberTier } from "@/services/member-tier";
@@ -33,7 +41,6 @@ import { getAllTypePayment } from "@/services/type-payment";
 import { getMemberById } from "@/services/member";
 import { getTableAvailability, getTablesWithActiveOrders } from "@/services/table";
 import { getPaymentIconKind } from "@/utils/payment";
-import { calculateCheckoutTotals } from "@/utils/checkoutTotals";
 import { buildOrderItemsPayload, parsePriceChangedError } from "@/utils/orderPayload";
 import { useDebounce } from "@/hooks/useDebounce";
 import MemberSearchModal from "@/components/MemberSearchModal";
@@ -59,8 +66,6 @@ const computeDropdownPos = (rect) => {
 
 const CheckoutModal = ({
   items: propItems,
-  subtotal: propSubtotal,
-  taxRate: propTaxRate,
   store,
   cashierName,
   cashierId,
@@ -72,17 +77,25 @@ const CheckoutModal = ({
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
-  // Generated once per modal mount (i.e. once per checkout attempt — the
-  // parent only mounts this modal via `{checkoutOpen && <CheckoutModal/>}`
-  // and unmounts it on success or close) and reused across every retry of
-  // that same attempt, so a double-click or a resubmit after a timeout
-  // hits the backend's idempotency-key unique constraint instead of
-  // creating a second order. A fresh checkout (new mount) gets a fresh key.
-  const [idempotencyKey] = useState(() =>
-    typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-  );
+  // DR-23 §K: the counter-sale attempt — its idempotency key and the exact
+  // payload it sent — lives in state/checkout-attempt.js, not in this
+  // modal, so closing/reopening the modal (or reloading the tab) never
+  // mints a new key while an earlier attempt's outcome is unknown. A new
+  // key exists only after the previous attempt was resolved.
+  const attempt = checkoutAttempts((s) => s.attempts[String(store ?? "")]) || null;
+  useEffect(() => {
+    if (store && !attempt) checkoutAttempts.getState().ensureAttempt(store);
+  }, [store, attempt]);
+  const idempotencyKey = attempt?.key;
+  // An `in_flight` attempt with no request running in this page (e.g. the
+  // tab was reloaded mid-request) has an unknown outcome — offer the
+  // same-payload retry instead of an endless "still processing". A request
+  // that IS running keeps `in_flight`, so no concurrent duplicate is sent.
+  const attemptStatus =
+    attempt?.status === ATTEMPT_STATUS.IN_FLIGHT && !isRequestLive(attempt.key)
+      ? ATTEMPT_STATUS.UNKNOWN
+      : attempt?.status || ATTEMPT_STATUS.DRAFT;
+  const recordedOrder = attempt?.existingOrder || null;
   const [paymentMethod, setPaymentMethod] = useState("");
   const [cashAmount, setCashAmount] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
@@ -96,7 +109,6 @@ const CheckoutModal = ({
   const [showDiscountDropdown, setShowDiscountDropdown] = useState(false);
   const [discountSearch, setDiscountSearch] = useState("");
   const debouncedDiscountSearch = useDebounce(discountSearch, 300);
-  const [discountAmount, setDiscountAmount] = useState(0);
   const [fullPayment, setFullPayment] = useState(false);
   const [addCustomerOpen, setAddCustomerOpen] = useState(false);
   const [newCustomerName, setNewCustomerName] = useState("");
@@ -113,12 +125,39 @@ const CheckoutModal = ({
   const [partySize, setPartySize] = useState("");
   const [qrisPending, setQrisPending] = useState(false);
   const [pendingPayload, setPendingPayload] = useState(null);
+  // D2: the checkout (quoted inputs + tender + table) a pending QRIS was
+  // issued for. Confirmation is only valid while the checkout is unchanged.
+  const [pendingCheckoutKey, setPendingCheckoutKey] = useState(null);
+  // D2: a pending QRIS was invalidated by a checkout change; its QR may still
+  // be on the customer display (no clear event exists) and is not payable.
+  const [qrisInvalidated, setQrisInvalidated] = useState(false);
+  const clearPendingQris = useCallback(() => {
+    setQrisPending(false);
+    setPendingPayload(null);
+    setPendingCheckoutKey(null);
+  }, []);
+  // The customer-display protocol has no "cancel QRIS" event, so the old QR
+  // stays visible there until replaced or auto-dismissed: tell the cashier
+  // it is void and that a new QRIS must be started.
+  const invalidatePendingQris = useCallback(() => {
+    clearPendingQris();
+    setQrisInvalidated(true);
+    toast.error(
+      t(
+        "page.cashier.qris.invalidated",
+        "QRIS dibatalkan karena checkout berubah. QR di layar pelanggan tidak berlaku — mulai QRIS lagi."
+      )
+    );
+  }, [clearPendingQris, t]);
   // W3-4 (W3-2 contract): a 409 PRICE_CHANGED rejection blocks payment until
   // the cashier explicitly applies the server prices and reviews the total.
   const [priceChange, setPriceChange] = useState(null);
   // Checkout lines in the exact order they were last sent — the server's
   // mismatch `index` addresses this order.
   const submittedLinesRef = useRef([]);
+  // P1 quote-stage PRICE_CHANGED: signature of the quote mismatch already
+  // surfaced, so an identical 409 is never toasted or re-applied in a loop.
+  const surfacedQuoteMismatchRef = useRef(null);
   // F-SMOKE-02: mutation.isLoading flips a tick after mutate() runs, too
   // late to stop several fireEvent-speed clicks in the same turn — mirrors
   // CollectPaymentModal's synchronous guard (set on the click that starts
@@ -163,11 +202,6 @@ const CheckoutModal = ({
     }
     return [];
   }, [propItems]);
-
-  const subtotal = useMemo(
-    () => propSubtotal || items.reduce((sum, item) => sum + Number(item.totalPrice) || 0, 0),
-    [propSubtotal, items]
-  );
 
   const { data: customersData } = useQuery(
     ["customers", store, debouncedCustomerSearch],
@@ -321,7 +355,6 @@ const CheckoutModal = ({
       });
   }, [paymentMethodsData]);
 
-  const taxRate = Number.isFinite(propTaxRate) ? propTaxRate : 0.11;
   const matchedTier = useMemo(() => {
     if (!memberPoints || memberTiers.length === 0) return null;
     const active = memberTiers.filter((t) => t.status === "active");
@@ -334,26 +367,113 @@ const CheckoutModal = ({
         .sort((a, b) => b.minPoints - a.minPoints)[0] || null
     );
   }, [memberPoints, memberTiers]);
-  const tierDiscountValue =
-    matchedTier?.discountPercent > 0 ? subtotal * (matchedTier.discountPercent / 100) : 0;
-  const discountValue = selectedDiscount
-    ? selectedDiscount.type === "percent"
-      ? subtotal * (selectedDiscount.value / 100)
-      : selectedDiscount.value
-    : discountAmount;
-  const totalDiscount = discountValue + tierDiscountValue;
-  // Phase 31 Batch 2 (F-1): derive display tax/total with BE canonical
-  // semantics (discount clamped + rounded, tax rounded on post-discount
-  // base) so the cashier sees what the server will charge. BE stays
-  // authoritative — persisted totals always come from /order/create.
-  const { taxAmount, total } = calculateCheckoutTotals({
-    subtotal,
-    discount: totalDiscount,
-    taxRate,
-    useTax
+  // DR-11 / DR-17 (one backend resolver; displayed = charged): every total
+  // on this screen is the server's quote for the exact pricing inputs that
+  // /order/create will receive — discounts, tier, campaign, points and tax
+  // are never re-derived here. Payment is offered only against a quote for
+  // the CURRENT inputs, so cash change is reconciled with what is charged.
+  const quoteInputs = useMemo(
+    () => ({
+      store,
+      customerId: selectedCustomer?.id || selectedCustomer?._id || null,
+      discountId: selectedDiscount?.id || selectedDiscount?._id || null,
+      promoCode: promoCode.trim() || undefined,
+      redeemedPoints: Number(redeemPoints) || 0,
+      useTax,
+      items: buildOrderItemsPayload(items)
+    }),
+    [store, selectedCustomer, selectedDiscount, promoCode, redeemPoints, useTax, items]
+  );
+  const quoteKey = JSON.stringify(quoteInputs);
+  // D2: everything a QRIS confirmation commits to besides the cashier — the
+  // quoted pricing inputs (tax, discount, promo, member, points, lines and
+  // prices) plus tender and table. Same fields handleSubmit puts in the order.
+  const checkoutKey = JSON.stringify({
+    quote: quoteKey,
+    paymentMethod: paymentMethod || null,
+    tableId: orderType === "dine-in" ? selectedTable?.id || null : null,
+    totalCovers: orderType === "dine-in" ? partySizeNum : 0
   });
-  const pointsDiscount = Number(redeemPoints) || 0;
-  const remainingTotal = Math.max(0, total - pointsDiscount);
+  // D2: a pending QRIS is void as soon as its checkout changes — the stored
+  // payload must never be confirmed against a different quote.
+  useEffect(() => {
+    if (qrisPending && pendingCheckoutKey !== checkoutKey) invalidatePendingQris();
+  }, [qrisPending, pendingCheckoutKey, checkoutKey, invalidatePendingQris]);
+  const debouncedQuoteKey = useDebounce(quoteKey, 300);
+  const {
+    data: quoteData,
+    isFetching: quoteFetching,
+    isError: quoteFailed,
+    error: quoteError,
+    refetch: refetchQuote
+  } = useQuery(
+    ["checkout-quote", debouncedQuoteKey],
+    () => quoteOrder(JSON.parse(debouncedQuoteKey)),
+    {
+      enabled: items.length > 0 && !!store,
+      keepPreviousData: true,
+      retry: false,
+      refetchOnWindowFocus: false
+    }
+  );
+  const quote = quoteFailed ? null : quoteData?.data || null;
+  const quoteCurrent = Boolean(quote) && !quoteFetching && debouncedQuoteKey === quoteKey;
+  const quoteErrorMessage =
+    quoteError?.response?.data?.error ||
+    quoteError?.response?.data?.message ||
+    t("page.cashier.quote.failed");
+  // P1 (quote-stage PRICE_CHANGED): POST /order/quote enforces the same
+  // W3-2 contract as create — a 409 PRICE_CHANGED carries the fresh catalog
+  // prices for the exact lines the quote sent. A generic retry would resend
+  // the same stale expectedPrice lines and fail again, so a strict-contract
+  // match is routed into the existing apply-prices flow (same state, panel
+  // and toast as the create stage). Anything else — network failure, other
+  // 409s, other quote errors — keeps the generic fail-closed alert below.
+  // D1: the mismatch identity comes from the 409 contract only (line index,
+  // expected and current price) — not from the cart — so the same error seen
+  // again across re-renders is never re-surfaced, while a NEW mismatch (e.g.
+  // the price moved again after an applied change) always is.
+  useEffect(() => {
+    if (!quoteFailed || !quoteError) return;
+    const parsed = parsePriceChangedError(quoteError, items);
+    if (!parsed) return;
+    const signature = JSON.stringify(
+      parsed.items.map(({ index, expectedPrice, currentPrice }) => [
+        index,
+        expectedPrice,
+        currentPrice
+      ])
+    );
+    if (surfacedQuoteMismatchRef.current === signature) return;
+    surfacedQuoteMismatchRef.current = signature;
+    setPriceChange({ ...parsed, applied: false });
+    // A pending QR/e-wallet confirmation was built from stale prices; drop
+    // it so the old expectedPrice can never be re-sent.
+    // D2: its QR may still be on the customer display — flag it as void,
+    // as the create-stage PRICE_CHANGED does (one "Prices changed" toast).
+    if (qrisPending) setQrisInvalidated(true);
+    clearPendingQris();
+    // Refresh the catalog so items added afterwards use the new prices.
+    queryClient.invalidateQueries(["products-outlet", store]);
+    toast.error(t("page.cashier.priceChanged.title", "Prices changed"));
+  }, [quoteFailed, quoteError, items, qrisPending, clearPendingQris, queryClient, store, t]);
+  // A fresh valid quote means the current inputs are priced — a later,
+  // different mismatch may surface again.
+  useEffect(() => {
+    if (quote && !quoteFetching) surfacedQuoteMismatchRef.current = null;
+  }, [quote, quoteFetching]);
+  const quotedSubtotal = quote ? Number(quote.subTotal) || 0 : 0;
+  const pointsDiscount = quote ? Number(quote.pointDiscountAmount) || 0 : 0;
+  const orderDiscount = quote
+    ? Math.max(0, (Number(quote.discountAmount) || 0) - pointsDiscount)
+    : 0;
+  const taxAmount = quote ? Number(quote.taxAmount) || 0 : 0;
+  // Final payable after every discount and redeemed point (server total).
+  const total = quote ? Number(quote.totalPrice) || 0 : 0;
+  const remainingTotal = total;
+  // The server clamps the order discount to the subtotal; points beyond
+  // what is left after the order discount buy nothing.
+  const redeemCeiling = Math.max(0, quotedSubtotal - orderDiscount);
   const cashAmountNum = parseFloat(cashAmount) || 0;
   const change = Math.max(0, cashAmountNum - remainingTotal);
 
@@ -366,12 +486,10 @@ const CheckoutModal = ({
     setSelectedDiscount(disc);
     setDiscountSearch(disc.nameDiscount || disc.name || disc.discountName || "");
     setShowDiscountDropdown(false);
-    setDiscountAmount(0);
   }, []);
 
   const clearDiscount = useCallback(() => {
     setSelectedDiscount(null);
-    setDiscountAmount(0);
     setPromoCode("");
     setDiscountSearch("");
   }, []);
@@ -460,11 +578,55 @@ const CheckoutModal = ({
     }
   }, [customerId, memberData]);
 
+  // The attempt's lifecycle is recorded here, around the request itself, so
+  // it is correct even when this modal unmounts before the response lands.
+  const sendAttempt = useCallback(
+    async (payload) => {
+      const attempts = checkoutAttempts.getState();
+      const before = attempts.attempts[String(store ?? "")]?.status;
+      attempts.markInFlight(store, payload);
+      beginLiveRequest(payload.idempotencyKey);
+      try {
+        const res = await createOrder(payload);
+        const order = res?.data || res;
+        attempts.markRecorded(store, {
+          id: order?.id,
+          orderNumber: order?.orderNumber || null,
+          totalPrice: Number(order?.totalPrice),
+          paymentStatus: order?.paymentStatus || null
+        });
+        return res;
+      } catch (err) {
+        const outcome = classifyCreateError(err);
+        if (outcome.kind === "unknown") attempts.markUnknown(store);
+        else if (outcome.kind === "unconfirmed") {
+          attempts.markUnknown(store, {
+            reason: "unconfirmed",
+            serverMessage: outcome.serverMessage
+          });
+        } else if (outcome.kind === "conflict") attempts.markConflict(store, outcome.existingOrder);
+        else if (
+          outcome.kind === "auth" &&
+          [ATTEMPT_STATUS.UNKNOWN, ATTEMPT_STATUS.CONFLICT].includes(before)
+        ) {
+          // 401/403 says nothing about the earlier request — keep it open.
+          attempts.update(store, { status: before });
+        } else attempts.markRefused(store);
+        err.attemptOutcome = outcome;
+        throw err;
+      } finally {
+        endLiveRequest(payload.idempotencyKey);
+      }
+    },
+    [store]
+  );
+
   const mutation = useMutation({
-    mutationFn: (payload) => createOrder(payload),
+    mutationFn: sendAttempt,
     onSuccess: (res, variables) => {
       toast.success(t("page.cashier.transactionSuccess"));
       const order = res?.data || res;
+      checkoutAttempts.getState().resolve(store);
       queryClient.invalidateQueries(["products-outlet", store]);
       queryClient.invalidateQueries(["categories-cashier", store]);
       queryClient.invalidateQueries(["products"]);
@@ -503,7 +665,37 @@ const CheckoutModal = ({
           : null
       });
     },
-    onError: (err) => {
+    onError: (err, variables) => {
+      const outcome = err?.attemptOutcome || classifyCreateError(err);
+      // DR-23 §K: the sale may already be recorded — never invite a fresh
+      // sale here; the attempt panel offers the same-payload retry.
+      if (outcome.kind === "unknown") {
+        clearPendingQris();
+        toast.error(t("page.cashier.attempt.unknownToast"));
+        return;
+      }
+      if (outcome.kind === "conflict") {
+        clearPendingQris();
+        toast.error(t("page.cashier.attempt.conflictToast"));
+        return;
+      }
+      // A 409 that neither proves a recorded sale nor guarantees no write:
+      // neutral wording, attempt kept (see classifyCreateError).
+      if (outcome.kind === "unconfirmed") {
+        clearPendingQris();
+        toast.error(t("page.cashier.attempt.unconfirmedToast"));
+        return;
+      }
+      // DR-23 §M TOTAL_CHANGED: nothing was written — the payable moved
+      // (e.g. a promo stopped applying). Re-quote and show the new total
+      // before the cashier pays again; never a sign of an existing sale.
+      if (outcome.code === "TOTAL_CHANGED") {
+        clearPendingQris();
+        if (["qris", "e-wallet"].includes(variables?.paymentMethod)) setQrisInvalidated(true);
+        queryClient.invalidateQueries(["checkout-quote"]);
+        toast.error(t("page.cashier.attempt.totalChanged"));
+        return;
+      }
       // W3-4 (W3-2 contract): the server refused the order because prices
       // changed. Nothing was written. Block payment until the cashier applies
       // the server prices; never retry or touch the cart automatically.
@@ -512,8 +704,10 @@ const CheckoutModal = ({
         setPriceChange({ ...priceChanged, applied: false });
         // A pending QR/e-wallet confirmation was built from the stale prices;
         // drop it so the old expectedPrice can never be re-sent.
-        setQrisPending(false);
-        setPendingPayload(null);
+        clearPendingQris();
+        // D2: a refused QRIS confirmation leaves its QR on the customer
+        // display — flag it as void until a new QRIS is started.
+        if (["qris", "e-wallet"].includes(variables?.paymentMethod)) setQrisInvalidated(true);
         // Refresh the catalog so items added afterwards use the new prices.
         queryClient.invalidateQueries(["products-outlet", store]);
         toast.error(t("page.cashier.priceChanged.title", "Prices changed"));
@@ -532,6 +726,70 @@ const CheckoutModal = ({
   });
 
   const priceChangePending = Boolean(priceChange) && !priceChange.applied;
+
+  // DR-23 §K: while the previous attempt's outcome is not settled, no new
+  // sale may be submitted — only the same payload may be resent (same key),
+  // or the recorded order recovered.
+  const attemptBlocking =
+    attemptStatus === ATTEMPT_STATUS.UNKNOWN ||
+    attemptStatus === ATTEMPT_STATUS.CONFLICT ||
+    (attemptStatus === ATTEMPT_STATUS.RECORDED && !mutation.isLoading && !mutation.isSuccess) ||
+    (attemptStatus === ATTEMPT_STATUS.IN_FLIGHT && !mutation.isLoading);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [recovering, setRecovering] = useState(false);
+
+  // Resend exactly what the unresolved attempt sent, under the same key:
+  // the server replays it if it was recorded, or records it once.
+  const handleRetryAttempt = useCallback(() => {
+    if (!attempt?.payload || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    mutation.mutate(attempt.payload);
+  }, [attempt, mutation]);
+
+  // Hand the already-recorded order to the receipt (as a completed sale).
+  // GET /order/get-order does not carry the ledger's cash received/change,
+  // so the receipt shows no tender detail rather than inventing it.
+  const handleOpenRecordedOrder = useCallback(async () => {
+    if (!recordedOrder?.id || recovering) return;
+    setRecovering(true);
+    try {
+      const res = await getOrderById(recordedOrder.id);
+      const order = res?.data || res;
+      checkoutAttempts.getState().resolve(store);
+      onComplete({
+        ...order,
+        subtotal: order.subTotal,
+        total: order.totalPrice,
+        grandTotal: order.totalPrice,
+        tenderDetailUnknown: true,
+        cashAmount: null,
+        changeAmount: null,
+        items: (order.items || []).map((item) => ({
+          ...item,
+          nameProduct: item.productName,
+          count: item.quantity
+        })),
+        customer: null
+      });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || t("page.cashier.attempt.recoverFailed"));
+    } finally {
+      setRecovering(false);
+    }
+  }, [recordedOrder, recovering, store, onComplete, t]);
+
+  // Explicit cashier decision after checking the order queue/history: the
+  // unresolved attempt is dropped and the next sale gets a new key.
+  // Two steps, never offered when the recorded order is identified.
+  const handleDiscardAttempt = useCallback(() => {
+    if (!confirmDiscard) {
+      setConfirmDiscard(true);
+      return;
+    }
+    checkoutAttempts.getState().resolve(store);
+    setConfirmDiscard(false);
+    toast.info(t("page.cashier.attempt.discarded"));
+  }, [confirmDiscard, store, t]);
 
   const handleApplyServerPrices = useCallback(() => {
     if (!priceChange || priceChange.applied) return;
@@ -576,14 +834,31 @@ const CheckoutModal = ({
 
   const handleQrisConfirm = useCallback(() => {
     if (!pendingPayload) return;
-    if (isSubmittingRef.current) return;
+    if (isSubmittingRef.current || attemptBlocking) return;
+    // D2: confirm only the checkout the QR was issued for, and only while
+    // the server quote for it is current — never a stale stored payload.
+    if (pendingCheckoutKey !== checkoutKey || !quoteCurrent || priceChangePending) {
+      invalidatePendingQris();
+      return;
+    }
     isSubmittingRef.current = true;
     mutation.mutate(pendingPayload);
-  }, [pendingPayload, mutation]);
+  }, [
+    pendingPayload,
+    pendingCheckoutKey,
+    checkoutKey,
+    quoteCurrent,
+    priceChangePending,
+    invalidatePendingQris,
+    attemptBlocking,
+    mutation
+  ]);
 
   const startQrisPayment = useCallback(
     (payload, method) => {
       setPendingPayload(payload);
+      setPendingCheckoutKey(checkoutKey);
+      setQrisInvalidated(false);
       setQrisPending(true);
       dispatchDisplayEvent({
         type: DISPLAY_EVENT_TYPES.QRIS_PAYMENT_REQUEST,
@@ -593,12 +868,20 @@ const CheckoutModal = ({
         paymentMethod: method
       });
     },
-    [store, remainingTotal, selectedTable]
+    [store, remainingTotal, selectedTable, checkoutKey]
   );
 
   const handleSubmit = useCallback(() => {
+    // DR-23 §K: an unresolved earlier attempt blocks a new sale.
+    if (attemptBlocking) return;
     // W3-4: never resubmit while a price change is unresolved.
     if (priceChangePending) return;
+    // DR-11 / DR-17: never pay against a total the server has not quoted
+    // for the current inputs.
+    if (!quoteCurrent) {
+      toast.error(t("page.cashier.quote.notReady"));
+      return;
+    }
     // F9-23: an empty cart must never reach the payment/order creation path.
     if (items.length === 0) {
       toast.error(t("page.cashier.emptyCart", "Keranjang kosong"));
@@ -637,7 +920,7 @@ const CheckoutModal = ({
     const method = paymentMethod || "points";
     const payload = {
       store: store,
-      idempotencyKey,
+      idempotencyKey: idempotencyKey || checkoutAttempts.getState().ensureAttempt(store).key,
       cashierId: cashierId || cookie?.user?.id || cookie?.user?.ID,
       cashierName: cashierName || cookie?.user?.userName || cookie?.user?.name,
       customerId: selectedCustomer?.id || selectedCustomer?._id || null,
@@ -656,6 +939,10 @@ const CheckoutModal = ({
       // before — so these keys must be entirely absent for non-cash
       // methods, not merely zeroed.
       ...(method === "cash" ? { cashAmount: cashAmountNum, changeAmount: change } : {}),
+      // DR-23 §M TOTAL_CHANGED: the payable the cashier was shown — the
+      // server quote for these exact inputs (quoteCurrent is required
+      // above). A differing server payable is refused before any write.
+      ...(Number.isInteger(total) ? { expectedTotal: total } : {}),
       // W3-4: expectedPrice / bundleId / separate options & modifiers /
       // priceOverride — see utils/orderPayload.js.
       items: buildOrderItemsPayload(items)
@@ -663,6 +950,7 @@ const CheckoutModal = ({
     submittedLinesRef.current = items;
     // A resolved (applied) price change is cleared once the cashier retries.
     if (priceChange) setPriceChange(null);
+    surfacedQuoteMismatchRef.current = null;
 
     if (method === "e-wallet" || method === "qris") {
       startQrisPayment(payload, method);
@@ -697,7 +985,9 @@ const CheckoutModal = ({
     t,
     startQrisPayment,
     priceChange,
-    priceChangePending
+    priceChangePending,
+    quoteCurrent,
+    attemptBlocking
   ]);
 
   const formatPrice = (value) => {
@@ -713,7 +1003,9 @@ const CheckoutModal = ({
 
   const canSubmit =
     items.length > 0 &&
+    !attemptBlocking &&
     !priceChangePending &&
+    quoteCurrent &&
     (remainingTotal === 0 ||
       (paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal)));
 
@@ -742,7 +1034,9 @@ const CheckoutModal = ({
           <div className="bg-muted/40 rounded-xl p-4 border border-border/40 space-y-1.5">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t("page.cashier.subtotal")}</span>
-              <span className="font-medium">Rp {formatPrice(subtotal)}</span>
+              <span className="font-medium tabular-nums">
+                {quote ? `Rp ${formatPrice(quotedSubtotal)}` : "…"}
+              </span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground flex items-center gap-2">
@@ -764,46 +1058,80 @@ const CheckoutModal = ({
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                {t("page.cashier.tax")} ({Math.round(taxRate * 100)}%)
+                {t("page.cashier.tax")}
+                {quote ? ` (${Math.round(Number(quote.taxRate) || 0)}%)` : ""}
               </span>
-              <span className="font-medium">Rp {formatPrice(taxAmount)}</span>
+              <span className="font-medium tabular-nums">
+                {quote ? `Rp ${formatPrice(taxAmount)}` : "…"}
+              </span>
             </div>
-            {totalDiscount > 0 && (
-              <>
-                {tierDiscountValue > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-emerald-500 flex items-center gap-1">
-                      <Percent size={12} />
-                      {matchedTier.name} ({matchedTier.discountPercent}%)
-                    </span>
-                    <span className="font-medium text-emerald-500">
-                      -Rp {formatPrice(tierDiscountValue)}
-                    </span>
-                  </div>
-                )}
-                {discountValue > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-emerald-500 flex items-center gap-1">
-                      <Percent size={12} />
-                      {selectedDiscount?.nameDiscount ||
+            {orderDiscount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <Percent size={12} aria-hidden="true" />
+                  {quote.discountSource === "tier"
+                    ? `${t("page.cashier.quote.tierDiscount")}${matchedTier?.name ? ` · ${matchedTier.name}` : ""}`
+                    : quote.discountSource === "campaign"
+                      ? t("page.cashier.quote.campaignDiscount")
+                      : selectedDiscount?.nameDiscount ||
                         selectedDiscount?.name ||
                         t("page.cashier.discount")}
-                      {selectedDiscount &&
-                        selectedDiscount.type === "percent" &&
-                        ` (${selectedDiscount.value}%)`}
-                    </span>
-                    <span className="font-medium text-emerald-500">
-                      -Rp {formatPrice(discountValue)}
-                    </span>
-                  </div>
-                )}
-              </>
+                </span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400 tabular-nums">
+                  -Rp {formatPrice(orderDiscount)}
+                </span>
+              </div>
+            )}
+            {pointsDiscount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-violet-600 dark:text-violet-400">
+                  {t("page.cashier.quote.pointsDiscount")}
+                </span>
+                <span className="font-medium text-violet-600 dark:text-violet-400 tabular-nums">
+                  -Rp {formatPrice(pointsDiscount)}
+                </span>
+              </div>
             )}
             <div className="border-t border-border/40 pt-1.5 mt-1.5">
               <div className="flex items-center justify-between">
                 <span className="font-bold">{t("page.cashier.total")}</span>
-                <span className="font-bold text-lg text-primary">Rp {formatPrice(total)}</span>
+                <span className="font-bold text-lg text-primary tabular-nums">
+                  {quote ? `Rp ${formatPrice(total)}` : "…"}
+                </span>
               </div>
+              {quoteFailed ? (
+                <div
+                  role="alert"
+                  className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                  {priceChangePending ? (
+                    // P1: the quote itself reported PRICE_CHANGED — resending
+                    // the same prices would fail again, so the apply-prices
+                    // panel below is the recovery path, not Recalculate.
+                    <span className="flex-1">
+                      {t("page.cashier.priceChanged.title", "Prices changed")}
+                    </span>
+                  ) : (
+                    <>
+                      <span className="flex-1">{quoteErrorMessage}</span>
+                      <button
+                        type="button"
+                        onClick={() => refetchQuote()}
+                        className="font-semibold underline underline-offset-2">
+                        {t("page.cashier.quote.retry")}
+                      </button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                !quoteCurrent &&
+                items.length > 0 && (
+                  <p
+                    className="mt-1 text-xs text-muted-foreground"
+                    data-testid="checkout-quote-pending">
+                    {t("page.cashier.quote.updating")}
+                  </p>
+                )
+              )}
             </div>
           </div>
 
@@ -930,7 +1258,7 @@ const CheckoutModal = ({
                       key={method.id}
                       onClick={() => {
                         setPaymentMethod(method.id);
-                        setQrisPending(false);
+                        clearPendingQris();
                       }}
                       className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all duration-200 ${
                         isSelected
@@ -1293,7 +1621,7 @@ const CheckoutModal = ({
                   value={redeemPoints ? Number(redeemPoints).toLocaleString("id-ID") : ""}
                   onChange={(e) => {
                     const val = e.target.value.replace(/[^0-9]/g, "");
-                    const max = Math.min(memberPoints, total);
+                    const max = Math.min(memberPoints, redeemCeiling);
                     setRedeemPoints(val ? String(Math.min(Number(val), max)) : "");
                   }}
                   placeholder="0"
@@ -1302,7 +1630,7 @@ const CheckoutModal = ({
                 />
                 <button
                   onClick={() => {
-                    setRedeemPoints(String(Math.min(memberPoints, total)));
+                    setRedeemPoints(String(Math.min(memberPoints, redeemCeiling)));
                   }}
                   className="shrink-0 h-12 px-4 rounded-xl bg-violet-500/10 border border-violet-500/30 text-sm font-semibold text-violet-600 hover:bg-violet-500/20 transition-all">
                   Max
@@ -1531,6 +1859,117 @@ const CheckoutModal = ({
               )}
             </div>
           )}
+          {attemptBlocking && (
+            <div
+              role="alert"
+              data-testid="checkout-attempt-panel"
+              data-attempt-status={attemptStatus}
+              className="flex flex-col gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
+              <div className="flex items-start gap-2">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                <div className="flex-1 space-y-1">
+                  {attemptStatus === ATTEMPT_STATUS.UNKNOWN && (
+                    <>
+                      {attempt?.reason === "unconfirmed" ? (
+                        <>
+                          <p className="font-semibold">
+                            {t("page.cashier.attempt.unconfirmedTitle")}
+                          </p>
+                          <p>{t("page.cashier.attempt.unconfirmedBody")}</p>
+                          {attempt?.serverMessage && (
+                            <p data-testid="checkout-attempt-server-message">
+                              {t("page.cashier.attempt.serverMessage")}: {attempt.serverMessage}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-semibold">{t("page.cashier.attempt.unknownTitle")}</p>
+                          <p>{t("page.cashier.attempt.unknownBody")}</p>
+                        </>
+                      )}
+                      {Number.isInteger(attempt?.payload?.expectedTotal) && (
+                        <p data-testid="checkout-attempt-total">
+                          {t("page.cashier.attempt.originalTotal")}: Rp{" "}
+                          {formatPrice(attempt.payload.expectedTotal)}
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {attemptStatus === ATTEMPT_STATUS.IN_FLIGHT && (
+                    <p className="font-semibold">{t("page.cashier.attempt.inFlight")}</p>
+                  )}
+                  {(attemptStatus === ATTEMPT_STATUS.CONFLICT ||
+                    attemptStatus === ATTEMPT_STATUS.RECORDED) &&
+                    (recordedOrder?.id ? (
+                      <>
+                        <p className="font-semibold">{t("page.cashier.attempt.recordedTitle")}</p>
+                        <p data-testid="checkout-attempt-order">
+                          {recordedOrder.orderNumber || `#${recordedOrder.id}`}
+                          {Number.isFinite(recordedOrder.totalPrice)
+                            ? ` · Rp ${formatPrice(recordedOrder.totalPrice)}`
+                            : ""}
+                        </p>
+                        <p>{t("page.cashier.attempt.recordedBody")}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold">{t("page.cashier.attempt.conflictTitle")}</p>
+                        <p>{t("page.cashier.attempt.conflictBody")}</p>
+                      </>
+                    ))}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {attemptStatus === ATTEMPT_STATUS.UNKNOWN && attempt?.payload && (
+                  <Button
+                    size="sm"
+                    variant="success"
+                    onClick={handleRetryAttempt}
+                    disabled={mutation.isLoading}>
+                    {t("page.cashier.attempt.retrySame")}
+                  </Button>
+                )}
+                {recordedOrder?.id &&
+                  (attemptStatus === ATTEMPT_STATUS.CONFLICT ||
+                    attemptStatus === ATTEMPT_STATUS.RECORDED) && (
+                    <Button
+                      size="sm"
+                      variant="success"
+                      onClick={handleOpenRecordedOrder}
+                      disabled={recovering}>
+                      {t("page.cashier.attempt.openRecorded")}
+                    </Button>
+                  )}
+                {(attemptStatus === ATTEMPT_STATUS.UNKNOWN ||
+                  (attemptStatus === ATTEMPT_STATUS.CONFLICT && !recordedOrder?.id)) && (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={handleDiscardAttempt}
+                    disabled={mutation.isLoading}>
+                    {confirmDiscard
+                      ? t("page.cashier.attempt.discardConfirm")
+                      : t("page.cashier.attempt.discard")}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+          {qrisInvalidated && !qrisPending && (
+            <div
+              role="alert"
+              data-testid="qris-invalidated"
+              className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-xs text-destructive">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+              <span>
+                {t(
+                  "page.cashier.qris.invalidated",
+                  "QRIS dibatalkan karena checkout berubah. QR di layar pelanggan tidak berlaku — mulai QRIS lagi."
+                )}
+              </span>
+            </div>
+          )}
           {qrisPending && isQrisPayment ? (
             <>
               <div className="flex items-start gap-2 rounded-xl bg-primary/10 border border-primary/20 px-3 py-2.5 text-sm">
@@ -1550,7 +1989,7 @@ const CheckoutModal = ({
               <div className="flex gap-2">
                 <Button
                   variant="danger"
-                  onClick={() => setQrisPending(false)}
+                  onClick={clearPendingQris}
                   className="flex-1 h-12 rounded-xl">
                   {t("page.cashier.cancel", "Batal")}
                 </Button>
@@ -1606,11 +2045,9 @@ const CheckoutModal = ({
 
 CheckoutModal.propTypes = {
   items: PropTypes.array,
-  subtotal: PropTypes.number,
   store: PropTypes.any,
   cashierName: PropTypes.string,
   cashierId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  taxRate: PropTypes.number,
   onClose: PropTypes.func,
   onTableChange: PropTypes.func,
   onComplete: PropTypes.func,
