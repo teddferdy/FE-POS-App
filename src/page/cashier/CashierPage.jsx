@@ -54,6 +54,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { UserDropdown, NotificationBell } from "@/components/layout/Header";
 import { useThemeStore } from "@/state/theme";
 import { useThemeEffect } from "@/hooks/useThemeEffect";
+import ScreenModeDialog from "./components/ScreenModeDialog";
 
 const CashierPage = () => {
   const { t } = useTranslation();
@@ -91,6 +92,8 @@ const CashierPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const storeParam = searchParams.get("store");
   const [pickedStore, setPickedStore] = useState(null);
+  // Store chosen on the picker, awaiting the one/two-screen choice.
+  const [screenModeStore, setScreenModeStore] = useState(null);
   const store = storeParam || (isSuperAdmin ? pickedStore : cookie?.activeStore || user?.store);
   const boardTabRef = useRef(0);
 
@@ -109,6 +112,18 @@ const CashierPage = () => {
       return;
     }
     setTimeout(() => setIsOpeningBoard(false), 800);
+  };
+
+  // One screen: the cashier only. Two screens: also the store's customer
+  // display board in a new tab (opened from this click, so it is not
+  // popup-blocked).
+  const handleScreenMode = (mode) => {
+    const loc = screenModeStore;
+    setScreenModeStore(null);
+    if (!loc) return;
+    setPickedStore(loc.id);
+    setSearchParams({ store: loc.id });
+    if (mode === "dual") openBoardTab(loc.id);
   };
 
   const { data: locsData, isLoading: locsLoading } = useQuery(
@@ -626,11 +641,7 @@ const CashierPage = () => {
                     : locationList.map((loc) => (
                         <button
                           key={loc.id}
-                          onClick={() => {
-                            setPickedStore(loc.id);
-                            setSearchParams({ store: loc.id });
-                            openBoardTab(loc.id);
-                          }}
+                          onClick={() => setScreenModeStore(loc)}
                           className="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg transition-all text-left group">
                           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15">
                             <Store size={24} className="text-primary" />
@@ -786,6 +797,11 @@ const CashierPage = () => {
 
         {/* F4-01: settles an EXISTING order (e.g. a QR order from the queue
             above) in place — never creates a new order via CheckoutModal. */}
+        <ScreenModeDialog
+          store={screenModeStore}
+          onClose={() => setScreenModeStore(null)}
+          onChoose={handleScreenMode}
+        />
         {collectPaymentOrder && (
           <CollectPaymentModal
             order={collectPaymentOrder}

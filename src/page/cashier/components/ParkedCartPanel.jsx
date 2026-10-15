@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { Clock, Utensils, ShoppingBag, PlayCircle, XCircle } from "lucide-react";
+import { Clock, Utensils, ShoppingBag, PlayCircle, XCircle, PauseCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getParkedCarts, resumeParkedCart, cancelParkedCart } from "@/services/parked-cart";
 import { Skeleton } from "@/components/ui/skeleton";
+import CollapsiblePanel from "@/components/ui/CollapsiblePanel";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -201,8 +202,13 @@ const ParkedCartPanel = ({ store, onResumed, hasCartItems }) => {
   return (
     <>
       {carts.length > 0 && (
-        <div className="shrink-0">
-          <div className="overflow-x-auto scrollbar-none mt-3">
+        <CollapsiblePanel
+          title={t("page.cashier.parkedCart.title")}
+          icon={PauseCircle}
+          count={carts.length}
+          storageKey="cashier.parkedCarts"
+          className="shrink-0 mt-3">
+          <div className="overflow-x-auto scrollbar-none mt-1">
             <div className="flex gap-3 px-4 lg:px-6 pb-1">
               {carts.map((cart) => (
                 <ParkedCartCard
@@ -215,7 +221,7 @@ const ParkedCartPanel = ({ store, onResumed, hasCartItems }) => {
               ))}
             </div>
           </div>
-        </div>
+        </CollapsiblePanel>
       )}
 
       <Dialog

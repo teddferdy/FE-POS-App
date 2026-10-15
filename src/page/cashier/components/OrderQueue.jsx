@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { Clock, Utensils, ShoppingBag, Wallet, Ban, Undo2 } from "lucide-react";
+import { Clock, Utensils, ShoppingBag, Wallet, Ban, Undo2, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { getOrdersByStore, updateOrderStatus } from "@/services/order";
 import { getCurrentCashRegister } from "@/services/cash-register";
@@ -10,6 +10,7 @@ import { useSocket } from "@/services/socket";
 import { useRoomSubscription } from "@/hooks/useRoomSubscription";
 import { Skeleton } from "@/components/ui/skeleton";
 import ScrollRail from "@/components/ui/ScrollRail";
+import CollapsiblePanel from "@/components/ui/CollapsiblePanel";
 import VoidOrderDialog from "@/components/organism/VoidOrderDialog";
 
 const statusConfig = {
@@ -563,20 +564,27 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment, canVoid = false }) =
       {isLoading ? (
         <OrderQueueSkeleton />
       ) : allOrders.length > 0 ? (
-        hasMultipleBuckets ? (
-          <div className="mt-6 space-y-4">
-            {renderSection("current", buckets.current, { showLabel: true })}
-            {renderSection("previous", buckets.previous, {
-              sectionReadOnly: true,
-              showLabel: true
-            })}
-            {renderSection("unassigned", buckets.unassigned, { showLabel: true })}
-          </div>
-        ) : (
-          // Common case: nothing outside the current-register bucket —
-          // render exactly as before Batch 6B, no section headers.
-          renderSection("current", buckets.current, {})
-        )
+        <CollapsiblePanel
+          title={t("page.cashier.orderQueue.title")}
+          icon={ClipboardList}
+          count={allOrders.length}
+          storageKey="cashier.orderQueue"
+          className="mt-3">
+          {hasMultipleBuckets ? (
+            <div className="mt-6 space-y-4">
+              {renderSection("current", buckets.current, { showLabel: true })}
+              {renderSection("previous", buckets.previous, {
+                sectionReadOnly: true,
+                showLabel: true
+              })}
+              {renderSection("unassigned", buckets.unassigned, { showLabel: true })}
+            </div>
+          ) : (
+            // Common case: nothing outside the current-register bucket —
+            // render exactly as before Batch 6B, no section headers.
+            renderSection("current", buckets.current, {})
+          )}
+        </CollapsiblePanel>
       ) : null}
       {voidTarget && (
         <VoidOrderDialog

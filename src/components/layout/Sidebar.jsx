@@ -13,8 +13,6 @@ import {
   DollarSign,
   FileText,
   QrCode,
-  SlidersHorizontal,
-  Building2,
   X
 } from "lucide-react";
 import {
@@ -29,6 +27,7 @@ import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
 import { useStoreManagePermission } from "@/hooks/useStoreManagePermission";
 import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
+import { canonicalLocationNavItems, withCanonicalLocationItems } from "@/lib/canonical-nav";
 import { endSession, SESSION_END_REASON } from "@/services/session";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -104,24 +103,6 @@ const MENU_CONTROLLED_FALLBACK_GROUP = {
   title: "Lainnya"
 };
 
-// W3: shown by canonical permission (store.manage), independent of roleType
-// and accessMenu, in both sidebar branches.
-const STORE_CONFIGURATION_NAV_ITEM = {
-  title: "Store Configuration",
-  i18nKey: "page.storeConfiguration.title",
-  href: "/store-configuration",
-  activeRegex: /^\/store-configuration(\/|$)/
-};
-
-// Platform tenant administration, shown by canonical permission
-// (tenant.manage — platform actors only), like Store Configuration.
-const TENANT_NAV_ITEM = {
-  title: "Tenants",
-  i18nKey: "page.tenant.title",
-  href: "/tenant",
-  activeRegex: /^\/tenant(\/|$)/
-};
-
 const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHoverChange }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -155,11 +136,14 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const categories = useMemo(() => {
     const raw = hasAccessMenu || isSuperAdminRole(user) ? navCategories.super_admin || [] : [];
-    if (isMenuControlled) return filterNavCategoriesByPermission(raw, user);
-    if (isSuperAdminRole(user)) return raw;
-    if (isAdminRole(user)) return navCategories.admin || [];
-    return raw;
-  }, [hasAccessMenu, isMenuControlled, user]);
+    let base = raw;
+    if (isMenuControlled) base = filterNavCategoriesByPermission(raw, user);
+    else if (isSuperAdminRole(user)) base = raw;
+    else if (isAdminRole(user)) base = navCategories.admin || [];
+    // Tenant and Store Configuration sit in the Location category, gated by
+    // the canonical permissions (independent of roleType/accessMenu).
+    return withCanonicalLocationItems(base, { canManageTenants, canManageStores });
+  }, [hasAccessMenu, isMenuControlled, user, canManageTenants, canManageStores]);
 
   const grantedLeaves = useMemo(() => {
     if (!isMenuControlled) return [];
@@ -213,12 +197,24 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
     );
     if (leftover.length > 0) groups.push({ ...MENU_CONTROLLED_FALLBACK_GROUP, items: leftover });
 
+    // Canonical-permission items (not part of accessMenu): same Location
+    // group as in the category modal.
+    const canonicalItems = canonicalLocationNavItems({ canManageTenants, canManageStores });
+    if (canonicalItems.length > 0) {
+      groups.push({
+        i18nKey: "sidebar.section.location",
+        title: "Lokasi",
+        hrefs: [],
+        items: canonicalItems
+      });
+    }
+
     if (dashboard.length > 0) {
       groups.unshift({ title: "Dashboard", hrefs: [], items: dashboard });
     }
 
     return groups;
-  }, [isMenuControlled, grantedLeaves, user]);
+  }, [isMenuControlled, grantedLeaves, user, canManageTenants, canManageStores]);
 
   const directItems = useMemo(() => {
     const items = [];
@@ -551,9 +547,6 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
               })}
             </>
           )}
-
-          {canManageTenants && renderNavButton(TENANT_NAV_ITEM, Building2)}
-          {canManageStores && renderNavButton(STORE_CONFIGURATION_NAV_ITEM, SlidersHorizontal)}
         </nav>
 
         {/* Bottom */}
@@ -592,7 +585,10 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
           <NavigationModal
             open={navModalOpen}
             onOpenChange={setNavModalOpen}
-            categories={[activeCategory]}
+            // Read the live category so items gated by a permission that
+            // resolves after the modal opened (Tenant, Store Configuration)
+            // still appear.
+            categories={[categories.find((c) => c.id === activeCategory.id) || activeCategory]}
             onNavigate={handleMouseLeave}
           />
         )}
