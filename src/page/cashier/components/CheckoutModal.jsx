@@ -25,7 +25,15 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { quoteOrder, createOrder } from "@/services/order";
+import { quoteOrder, createOrder, getOrderById } from "@/services/order";
+import {
+  checkoutAttempts,
+  ATTEMPT_STATUS,
+  classifyCreateError,
+  beginLiveRequest,
+  endLiveRequest,
+  isRequestLive
+} from "@/state/checkout-attempt";
 import { getAllCustomer, addCustomer } from "@/services/customer";
 import { getAllDiscount, lookupDiscountByCode } from "@/services/discount";
 import { getAllMemberTier } from "@/services/member-tier";
@@ -69,17 +77,25 @@ const CheckoutModal = ({
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
-  // Generated once per modal mount (i.e. once per checkout attempt — the
-  // parent only mounts this modal via `{checkoutOpen && <CheckoutModal/>}`
-  // and unmounts it on success or close) and reused across every retry of
-  // that same attempt, so a double-click or a resubmit after a timeout
-  // hits the backend's idempotency-key unique constraint instead of
-  // creating a second order. A fresh checkout (new mount) gets a fresh key.
-  const [idempotencyKey] = useState(() =>
-    typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-  );
+  // DR-23 §K: the counter-sale attempt — its idempotency key and the exact
+  // payload it sent — lives in state/checkout-attempt.js, not in this
+  // modal, so closing/reopening the modal (or reloading the tab) never
+  // mints a new key while an earlier attempt's outcome is unknown. A new
+  // key exists only after the previous attempt was resolved.
+  const attempt = checkoutAttempts((s) => s.attempts[String(store ?? "")]) || null;
+  useEffect(() => {
+    if (store && !attempt) checkoutAttempts.getState().ensureAttempt(store);
+  }, [store, attempt]);
+  const idempotencyKey = attempt?.key;
+  // An `in_flight` attempt with no request running in this page (e.g. the
+  // tab was reloaded mid-request) has an unknown outcome — offer the
+  // same-payload retry instead of an endless "still processing". A request
+  // that IS running keeps `in_flight`, so no concurrent duplicate is sent.
+  const attemptStatus =
+    attempt?.status === ATTEMPT_STATUS.IN_FLIGHT && !isRequestLive(attempt.key)
+      ? ATTEMPT_STATUS.UNKNOWN
+      : attempt?.status || ATTEMPT_STATUS.DRAFT;
+  const recordedOrder = attempt?.existingOrder || null;
   const [paymentMethod, setPaymentMethod] = useState("");
   const [cashAmount, setCashAmount] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
@@ -562,11 +578,55 @@ const CheckoutModal = ({
     }
   }, [customerId, memberData]);
 
+  // The attempt's lifecycle is recorded here, around the request itself, so
+  // it is correct even when this modal unmounts before the response lands.
+  const sendAttempt = useCallback(
+    async (payload) => {
+      const attempts = checkoutAttempts.getState();
+      const before = attempts.attempts[String(store ?? "")]?.status;
+      attempts.markInFlight(store, payload);
+      beginLiveRequest(payload.idempotencyKey);
+      try {
+        const res = await createOrder(payload);
+        const order = res?.data || res;
+        attempts.markRecorded(store, {
+          id: order?.id,
+          orderNumber: order?.orderNumber || null,
+          totalPrice: Number(order?.totalPrice),
+          paymentStatus: order?.paymentStatus || null
+        });
+        return res;
+      } catch (err) {
+        const outcome = classifyCreateError(err);
+        if (outcome.kind === "unknown") attempts.markUnknown(store);
+        else if (outcome.kind === "unconfirmed") {
+          attempts.markUnknown(store, {
+            reason: "unconfirmed",
+            serverMessage: outcome.serverMessage
+          });
+        } else if (outcome.kind === "conflict") attempts.markConflict(store, outcome.existingOrder);
+        else if (
+          outcome.kind === "auth" &&
+          [ATTEMPT_STATUS.UNKNOWN, ATTEMPT_STATUS.CONFLICT].includes(before)
+        ) {
+          // 401/403 says nothing about the earlier request — keep it open.
+          attempts.update(store, { status: before });
+        } else attempts.markRefused(store);
+        err.attemptOutcome = outcome;
+        throw err;
+      } finally {
+        endLiveRequest(payload.idempotencyKey);
+      }
+    },
+    [store]
+  );
+
   const mutation = useMutation({
-    mutationFn: (payload) => createOrder(payload),
+    mutationFn: sendAttempt,
     onSuccess: (res, variables) => {
       toast.success(t("page.cashier.transactionSuccess"));
       const order = res?.data || res;
+      checkoutAttempts.getState().resolve(store);
       queryClient.invalidateQueries(["products-outlet", store]);
       queryClient.invalidateQueries(["categories-cashier", store]);
       queryClient.invalidateQueries(["products"]);
@@ -606,6 +666,36 @@ const CheckoutModal = ({
       });
     },
     onError: (err, variables) => {
+      const outcome = err?.attemptOutcome || classifyCreateError(err);
+      // DR-23 §K: the sale may already be recorded — never invite a fresh
+      // sale here; the attempt panel offers the same-payload retry.
+      if (outcome.kind === "unknown") {
+        clearPendingQris();
+        toast.error(t("page.cashier.attempt.unknownToast"));
+        return;
+      }
+      if (outcome.kind === "conflict") {
+        clearPendingQris();
+        toast.error(t("page.cashier.attempt.conflictToast"));
+        return;
+      }
+      // A 409 that neither proves a recorded sale nor guarantees no write:
+      // neutral wording, attempt kept (see classifyCreateError).
+      if (outcome.kind === "unconfirmed") {
+        clearPendingQris();
+        toast.error(t("page.cashier.attempt.unconfirmedToast"));
+        return;
+      }
+      // DR-23 §M TOTAL_CHANGED: nothing was written — the payable moved
+      // (e.g. a promo stopped applying). Re-quote and show the new total
+      // before the cashier pays again; never a sign of an existing sale.
+      if (outcome.code === "TOTAL_CHANGED") {
+        clearPendingQris();
+        if (["qris", "e-wallet"].includes(variables?.paymentMethod)) setQrisInvalidated(true);
+        queryClient.invalidateQueries(["checkout-quote"]);
+        toast.error(t("page.cashier.attempt.totalChanged"));
+        return;
+      }
       // W3-4 (W3-2 contract): the server refused the order because prices
       // changed. Nothing was written. Block payment until the cashier applies
       // the server prices; never retry or touch the cart automatically.
@@ -636,6 +726,70 @@ const CheckoutModal = ({
   });
 
   const priceChangePending = Boolean(priceChange) && !priceChange.applied;
+
+  // DR-23 §K: while the previous attempt's outcome is not settled, no new
+  // sale may be submitted — only the same payload may be resent (same key),
+  // or the recorded order recovered.
+  const attemptBlocking =
+    attemptStatus === ATTEMPT_STATUS.UNKNOWN ||
+    attemptStatus === ATTEMPT_STATUS.CONFLICT ||
+    (attemptStatus === ATTEMPT_STATUS.RECORDED && !mutation.isLoading && !mutation.isSuccess) ||
+    (attemptStatus === ATTEMPT_STATUS.IN_FLIGHT && !mutation.isLoading);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [recovering, setRecovering] = useState(false);
+
+  // Resend exactly what the unresolved attempt sent, under the same key:
+  // the server replays it if it was recorded, or records it once.
+  const handleRetryAttempt = useCallback(() => {
+    if (!attempt?.payload || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    mutation.mutate(attempt.payload);
+  }, [attempt, mutation]);
+
+  // Hand the already-recorded order to the receipt (as a completed sale).
+  // GET /order/get-order does not carry the ledger's cash received/change,
+  // so the receipt shows no tender detail rather than inventing it.
+  const handleOpenRecordedOrder = useCallback(async () => {
+    if (!recordedOrder?.id || recovering) return;
+    setRecovering(true);
+    try {
+      const res = await getOrderById(recordedOrder.id);
+      const order = res?.data || res;
+      checkoutAttempts.getState().resolve(store);
+      onComplete({
+        ...order,
+        subtotal: order.subTotal,
+        total: order.totalPrice,
+        grandTotal: order.totalPrice,
+        tenderDetailUnknown: true,
+        cashAmount: null,
+        changeAmount: null,
+        items: (order.items || []).map((item) => ({
+          ...item,
+          nameProduct: item.productName,
+          count: item.quantity
+        })),
+        customer: null
+      });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || t("page.cashier.attempt.recoverFailed"));
+    } finally {
+      setRecovering(false);
+    }
+  }, [recordedOrder, recovering, store, onComplete, t]);
+
+  // Explicit cashier decision after checking the order queue/history: the
+  // unresolved attempt is dropped and the next sale gets a new key.
+  // Two steps, never offered when the recorded order is identified.
+  const handleDiscardAttempt = useCallback(() => {
+    if (!confirmDiscard) {
+      setConfirmDiscard(true);
+      return;
+    }
+    checkoutAttempts.getState().resolve(store);
+    setConfirmDiscard(false);
+    toast.info(t("page.cashier.attempt.discarded"));
+  }, [confirmDiscard, store, t]);
 
   const handleApplyServerPrices = useCallback(() => {
     if (!priceChange || priceChange.applied) return;
@@ -680,7 +834,7 @@ const CheckoutModal = ({
 
   const handleQrisConfirm = useCallback(() => {
     if (!pendingPayload) return;
-    if (isSubmittingRef.current) return;
+    if (isSubmittingRef.current || attemptBlocking) return;
     // D2: confirm only the checkout the QR was issued for, and only while
     // the server quote for it is current — never a stale stored payload.
     if (pendingCheckoutKey !== checkoutKey || !quoteCurrent || priceChangePending) {
@@ -696,6 +850,7 @@ const CheckoutModal = ({
     quoteCurrent,
     priceChangePending,
     invalidatePendingQris,
+    attemptBlocking,
     mutation
   ]);
 
@@ -717,6 +872,8 @@ const CheckoutModal = ({
   );
 
   const handleSubmit = useCallback(() => {
+    // DR-23 §K: an unresolved earlier attempt blocks a new sale.
+    if (attemptBlocking) return;
     // W3-4: never resubmit while a price change is unresolved.
     if (priceChangePending) return;
     // DR-11 / DR-17: never pay against a total the server has not quoted
@@ -763,7 +920,7 @@ const CheckoutModal = ({
     const method = paymentMethod || "points";
     const payload = {
       store: store,
-      idempotencyKey,
+      idempotencyKey: idempotencyKey || checkoutAttempts.getState().ensureAttempt(store).key,
       cashierId: cashierId || cookie?.user?.id || cookie?.user?.ID,
       cashierName: cashierName || cookie?.user?.userName || cookie?.user?.name,
       customerId: selectedCustomer?.id || selectedCustomer?._id || null,
@@ -782,6 +939,10 @@ const CheckoutModal = ({
       // before — so these keys must be entirely absent for non-cash
       // methods, not merely zeroed.
       ...(method === "cash" ? { cashAmount: cashAmountNum, changeAmount: change } : {}),
+      // DR-23 §M TOTAL_CHANGED: the payable the cashier was shown — the
+      // server quote for these exact inputs (quoteCurrent is required
+      // above). A differing server payable is refused before any write.
+      ...(Number.isInteger(total) ? { expectedTotal: total } : {}),
       // W3-4: expectedPrice / bundleId / separate options & modifiers /
       // priceOverride — see utils/orderPayload.js.
       items: buildOrderItemsPayload(items)
@@ -825,7 +986,8 @@ const CheckoutModal = ({
     startQrisPayment,
     priceChange,
     priceChangePending,
-    quoteCurrent
+    quoteCurrent,
+    attemptBlocking
   ]);
 
   const formatPrice = (value) => {
@@ -841,6 +1003,7 @@ const CheckoutModal = ({
 
   const canSubmit =
     items.length > 0 &&
+    !attemptBlocking &&
     !priceChangePending &&
     quoteCurrent &&
     (remainingTotal === 0 ||
@@ -1694,6 +1857,103 @@ const CheckoutModal = ({
                   {t("page.cashier.priceChanged.apply", "Apply updated prices")}
                 </Button>
               )}
+            </div>
+          )}
+          {attemptBlocking && (
+            <div
+              role="alert"
+              data-testid="checkout-attempt-panel"
+              data-attempt-status={attemptStatus}
+              className="flex flex-col gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
+              <div className="flex items-start gap-2">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                <div className="flex-1 space-y-1">
+                  {attemptStatus === ATTEMPT_STATUS.UNKNOWN && (
+                    <>
+                      {attempt?.reason === "unconfirmed" ? (
+                        <>
+                          <p className="font-semibold">
+                            {t("page.cashier.attempt.unconfirmedTitle")}
+                          </p>
+                          <p>{t("page.cashier.attempt.unconfirmedBody")}</p>
+                          {attempt?.serverMessage && (
+                            <p data-testid="checkout-attempt-server-message">
+                              {t("page.cashier.attempt.serverMessage")}: {attempt.serverMessage}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-semibold">{t("page.cashier.attempt.unknownTitle")}</p>
+                          <p>{t("page.cashier.attempt.unknownBody")}</p>
+                        </>
+                      )}
+                      {Number.isInteger(attempt?.payload?.expectedTotal) && (
+                        <p data-testid="checkout-attempt-total">
+                          {t("page.cashier.attempt.originalTotal")}: Rp{" "}
+                          {formatPrice(attempt.payload.expectedTotal)}
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {attemptStatus === ATTEMPT_STATUS.IN_FLIGHT && (
+                    <p className="font-semibold">{t("page.cashier.attempt.inFlight")}</p>
+                  )}
+                  {(attemptStatus === ATTEMPT_STATUS.CONFLICT ||
+                    attemptStatus === ATTEMPT_STATUS.RECORDED) &&
+                    (recordedOrder?.id ? (
+                      <>
+                        <p className="font-semibold">{t("page.cashier.attempt.recordedTitle")}</p>
+                        <p data-testid="checkout-attempt-order">
+                          {recordedOrder.orderNumber || `#${recordedOrder.id}`}
+                          {Number.isFinite(recordedOrder.totalPrice)
+                            ? ` · Rp ${formatPrice(recordedOrder.totalPrice)}`
+                            : ""}
+                        </p>
+                        <p>{t("page.cashier.attempt.recordedBody")}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold">{t("page.cashier.attempt.conflictTitle")}</p>
+                        <p>{t("page.cashier.attempt.conflictBody")}</p>
+                      </>
+                    ))}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {attemptStatus === ATTEMPT_STATUS.UNKNOWN && attempt?.payload && (
+                  <Button
+                    size="sm"
+                    variant="success"
+                    onClick={handleRetryAttempt}
+                    disabled={mutation.isLoading}>
+                    {t("page.cashier.attempt.retrySame")}
+                  </Button>
+                )}
+                {recordedOrder?.id &&
+                  (attemptStatus === ATTEMPT_STATUS.CONFLICT ||
+                    attemptStatus === ATTEMPT_STATUS.RECORDED) && (
+                    <Button
+                      size="sm"
+                      variant="success"
+                      onClick={handleOpenRecordedOrder}
+                      disabled={recovering}>
+                      {t("page.cashier.attempt.openRecorded")}
+                    </Button>
+                  )}
+                {(attemptStatus === ATTEMPT_STATUS.UNKNOWN ||
+                  (attemptStatus === ATTEMPT_STATUS.CONFLICT && !recordedOrder?.id)) && (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={handleDiscardAttempt}
+                    disabled={mutation.isLoading}>
+                    {confirmDiscard
+                      ? t("page.cashier.attempt.discardConfirm")
+                      : t("page.cashier.attempt.discard")}
+                  </Button>
+                )}
+              </div>
             </div>
           )}
           {qrisInvalidated && !qrisPending && (

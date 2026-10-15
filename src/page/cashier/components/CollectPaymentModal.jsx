@@ -97,8 +97,16 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     retry: false
   });
   const freshOrder = orderData?.data || order;
+  // DR-23 §K/§M: a settlement retried after its response was lost is
+  // refused with OUTSTANDING_CHANGED; the ledger-derived financialState
+  // tells "already fully paid" apart from "amount stale".
+  const [confirmedPaid, setConfirmedPaid] = useState(false);
+  const [openingReceipt, setOpeningReceipt] = useState(false);
   const isAlreadySettled =
-    freshOrder?.paymentStatus === "paid" || ["cancelled", "void"].includes(freshOrder?.status);
+    confirmedPaid ||
+    freshOrder?.paymentStatus === "paid" ||
+    ["cancelled", "void"].includes(freshOrder?.status);
+  const isTerminal = ["cancelled", "void"].includes(freshOrder?.status);
 
   const amountDue = Number(freshOrder?.totalPrice) || 0;
   // DR-04 P2-1: points settle only against the member already attached to
@@ -221,6 +229,20 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
       // stale claim (split paid meanwhile, amount changed) is refused with
       // the live outstanding. Refresh and stay open so the cashier retries
       // against server-confirmed state instead of the stale total.
+      if (
+        status === 409 &&
+        code === "OUTSTANDING_CHANGED" &&
+        err?.response?.data?.financialState === "PAID" &&
+        Number(err?.response?.data?.outstanding) === 0
+      ) {
+        // Fully paid already (e.g. this settlement's earlier response was
+        // lost) — never imply money is still owed, never settle again.
+        setConfirmedPaid(true);
+        invalidateOrderQueues();
+        queryClient.invalidateQueries(["collect-payment-order", freshOrder.id]);
+        toast.info(t("page.cashier.collectPayment.alreadyPaid"));
+        return;
+      }
       if (status === 409 && code === "OUTSTANDING_CHANGED") {
         queryClient.invalidateQueries(["collect-payment-order", freshOrder.id]);
         const outstanding = err?.response?.data?.outstanding;
@@ -246,6 +268,33 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
       isSubmittingRef.current = false;
     }
   });
+
+  // Opens the receipt of the already-paid order from a fresh read — no
+  // settlement is sent. The read carries no ledger cash detail, so the
+  // receipt shows none (tenderDetailUnknown) instead of inventing it.
+  const handleOpenPaidReceipt = async () => {
+    if (openingReceipt) return;
+    setOpeningReceipt(true);
+    try {
+      const refreshed = await getOrderById(freshOrder.id);
+      const paid = refreshed?.data || refreshed || freshOrder;
+      onOpenReceipt({
+        ...toReceiptData(paid, {
+          paymentMethod: paid.paymentMethod,
+          cashAmount: null,
+          changeAmount: null
+        }),
+        tenderDetailUnknown: true
+      });
+      onClose();
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || t("page.cashier.collectPayment.toast.paidFailed")
+      );
+    } finally {
+      setOpeningReceipt(false);
+    }
+  };
 
   const handleConfirmFullPayment = () => {
     if (isSubmittingRef.current || settleMutation.isLoading) return;
@@ -321,9 +370,20 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
               </div>
 
               {isAlreadySettled ? (
-                <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium justify-center py-2">
-                  <CheckCircle2 size={16} />
-                  {t("page.cashier.collectPayment.alreadyPaid")}
+                <div className="space-y-2 py-2" data-testid="collect-already-paid">
+                  <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium justify-center">
+                    <CheckCircle2 size={16} />
+                    {t("page.cashier.collectPayment.alreadyPaid")}
+                  </div>
+                  {!isTerminal && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      disabled={openingReceipt}
+                      onClick={handleOpenPaidReceipt}>
+                      {t("page.cashier.collectPayment.viewReceipt")}
+                    </Button>
+                  )}
                 </div>
               ) : mode === "confirmFull" ? (
                 <div className="space-y-3">
