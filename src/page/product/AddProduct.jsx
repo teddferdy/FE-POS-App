@@ -61,6 +61,8 @@ import { normalizePayload } from "@/lib/payload-normalizer";
 import ProductPreview from "./ProductPreview";
 import ProductImageGallery from "@/components/organism/ProductImageGallery";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import InventoryModeField from "@/page/product/InventoryModeField";
+import { INVENTORY_MODES } from "@/lib/inventory-mode";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -165,6 +167,7 @@ const AddProduct = () => {
       costPrice: z.coerce.number().min(0).optional().or(z.literal("")),
       stock: z.coerce.number().min(0).optional().or(z.literal("")),
       minStock: z.coerce.number().min(0).optional().or(z.literal("")),
+      inventoryMode: z.enum(INVENTORY_MODES).default("stocked"),
       unit: z.string().default("pcs"),
       baseUnit: z.string().default("pcs"),
       conversionFactor: z.coerce.number().min(1).default(1),
@@ -193,6 +196,7 @@ const AddProduct = () => {
       costPrice: "",
       stock: "",
       minStock: "",
+      inventoryMode: "stocked",
       unit: "pcs",
       baseUnit: "pcs",
       conversionFactor: 1,
@@ -472,6 +476,7 @@ const AddProduct = () => {
       costPrice: values.costPrice,
       stock: values.stock,
       minStock: values.minStock,
+      inventoryMode: values.inventoryMode || "stocked",
       unit: values.unit,
       baseUnit: values.baseUnit,
       conversionFactor: values.conversionFactor || 1,
@@ -1240,6 +1245,15 @@ const AddProduct = () => {
                       </h3>
                     </div>
 
+                    <div className="mb-5">
+                      <InventoryModeField
+                        value={form.watch("inventoryMode")}
+                        onChange={(mode) =>
+                          form.setValue("inventoryMode", mode, { shouldDirty: true })
+                        }
+                      />
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -1330,6 +1344,11 @@ const AddProduct = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{t("page.product.form.stock")}</FormLabel>
+                            {form.watch("inventoryMode") === "make_to_order" && (
+                              <p className="text-xs text-muted-foreground">
+                                {t("page.product.form.inventoryMode.stockUnused")}
+                              </p>
+                            )}
                             <Input
                               type="text"
                               inputMode="numeric"

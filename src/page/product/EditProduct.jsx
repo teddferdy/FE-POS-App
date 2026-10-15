@@ -63,6 +63,8 @@ import AbortController from "@/components/organism/abort-controller";
 import ProductPreview from "./ProductPreview";
 import ProductImageGallery from "@/components/organism/ProductImageGallery";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import InventoryModeField from "@/page/product/InventoryModeField";
+import { INVENTORY_MODES } from "@/lib/inventory-mode";
 
 const EditProduct = () => {
   const { t } = useTranslation();
@@ -209,6 +211,7 @@ const EditProduct = () => {
       costPrice: z.coerce.number().min(0).optional().or(z.literal("")),
       stock: z.coerce.number().min(0).optional().or(z.literal("")),
       minStock: z.coerce.number().min(0).optional().or(z.literal("")),
+      inventoryMode: z.enum(INVENTORY_MODES).default("stocked"),
       unit: z.string().default("pcs"),
       baseUnit: z.string().default("pcs"),
       conversionFactor: z.coerce.number().min(1).default(1),
@@ -238,6 +241,7 @@ const EditProduct = () => {
       costPrice: "",
       stock: "",
       minStock: "",
+      inventoryMode: "stocked",
       unit: "pcs",
       baseUnit: "pcs",
       conversionFactor: 1,
@@ -294,6 +298,9 @@ const EditProduct = () => {
         costPrice: product.costPrice || "",
         stock: product.stock ?? "",
         minStock: product.minStock ?? "",
+        inventoryMode: INVENTORY_MODES.includes(product.inventoryMode)
+          ? product.inventoryMode
+          : "stocked",
         unit: product.unit || "pcs",
         baseUnit: product.baseUnit || product.unit || "pcs",
         conversionFactor: product.conversionFactor ?? 1,
@@ -697,6 +704,7 @@ const EditProduct = () => {
       priceTiers: priceTiers.length > 0 ? priceTiers : [],
       stock: values.stock,
       minStock: values.minStock,
+      inventoryMode: values.inventoryMode || "stocked",
       unit: values.unit,
       baseUnit: values.baseUnit,
       conversionFactor: values.conversionFactor || 1,
@@ -1475,6 +1483,15 @@ const EditProduct = () => {
                         {t("page.product.step.price")}
                       </h3>
                     </div>
+                    <div className="mb-5">
+                      <InventoryModeField
+                        value={form.watch("inventoryMode")}
+                        productId={product.id}
+                        onChange={(mode) =>
+                          form.setValue("inventoryMode", mode, { shouldDirty: true })
+                        }
+                      />
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -1565,6 +1582,11 @@ const EditProduct = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{t("page.product.form.stock")}</FormLabel>
+                            {form.watch("inventoryMode") === "make_to_order" && (
+                              <p className="text-xs text-muted-foreground">
+                                {t("page.product.form.inventoryMode.stockUnused")}
+                              </p>
+                            )}
                             <Input
                               type="text"
                               inputMode="numeric"

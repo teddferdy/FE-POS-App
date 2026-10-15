@@ -14,6 +14,7 @@ import {
   FileText,
   QrCode,
   SlidersHorizontal,
+  Building2,
   X
 } from "lucide-react";
 import {
@@ -27,6 +28,7 @@ import { filterMenuByPermission, filterNavCategoriesByPermission } from "@/utils
 import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
 import { useStoreManagePermission } from "@/hooks/useStoreManagePermission";
+import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
 import { endSession, SESSION_END_REASON } from "@/services/session";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -111,6 +113,15 @@ const STORE_CONFIGURATION_NAV_ITEM = {
   activeRegex: /^\/store-configuration(\/|$)/
 };
 
+// Platform tenant administration, shown by canonical permission
+// (tenant.manage — platform actors only), like Store Configuration.
+const TENANT_NAV_ITEM = {
+  title: "Tenants",
+  i18nKey: "page.tenant.title",
+  href: "/tenant",
+  activeRegex: /^\/tenant(\/|$)/
+};
+
 const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHoverChange }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -125,6 +136,7 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const user = useUserSession();
   const { canManageStores } = useStoreManagePermission();
+  const { canManageTenants } = useTenantManagePermission();
 
   const hasAccessMenu =
     user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
@@ -540,6 +552,7 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
             </>
           )}
 
+          {canManageTenants && renderNavButton(TENANT_NAV_ITEM, Building2)}
           {canManageStores && renderNavButton(STORE_CONFIGURATION_NAV_ITEM, SlidersHorizontal)}
         </nav>
 
