@@ -109,25 +109,32 @@ describe("TenantList", () => {
     mockPermission = { ...mockPermission, canManageTenants: false };
     wrap(<TenantList />);
     expect(mockGetTenants).not.toHaveBeenCalled();
-    expect(screen.queryByText("page.tenant.action.create")).not.toBeInTheDocument();
+    expect(screen.queryByText("breadcrumb.add")).not.toBeInTheDocument();
   });
 
-  test("lists tenants with their counts and status", async () => {
+  test("lists tenants with their counts, status and stat cards", async () => {
     wrap(<TenantList />);
     expect(await screen.findByText("Warung 1")).toBeInTheDocument();
     expect(screen.getByText("warung-2")).toBeInTheDocument();
     expect(screen.getAllByText("page.tenant.status.suspended").length).toBeGreaterThan(0);
+    expect(screen.getByText("page.tenant.stats.total")).toBeInTheDocument();
+    // stat counts come from one-row pages per status
+    await waitFor(() =>
+      expect(mockGetTenants).toHaveBeenCalledWith(
+        expect.objectContaining({ limit: 1, status: "suspended" })
+      )
+    );
   });
 
   test("creates a tenant with a suggested code from its name", async () => {
     mockCreateTenant.mockResolvedValue({ success: true, data: tenant(3) });
     wrap(<TenantList />);
-    fireEvent.click(await screen.findByText("page.tenant.action.create"));
+    fireEvent.click(await screen.findByText("breadcrumb.add"));
 
-    fireEvent.change(screen.getByLabelText("page.tenant.form.name"), {
+    fireEvent.change(screen.getByLabelText(/page.tenant.form.name/), {
       target: { value: "Warung Bakso Pak Kumis" }
     });
-    expect(screen.getByLabelText("page.tenant.form.code")).toHaveValue("warung-bakso-pak-kumis");
+    expect(screen.getByLabelText(/page.tenant.form.code/)).toHaveValue("warung-bakso-pak-kumis");
 
     fireEvent.click(screen.getByText("page.tenant.form.save"));
     await waitFor(() =>
@@ -138,51 +145,67 @@ describe("TenantList", () => {
     );
   });
 
-  test("an invalid code disables saving; a taken code is shown on the field", async () => {
+  test("an invalid code is refused locally; a taken code is shown on the field", async () => {
     mockCreateTenant.mockRejectedValue(
       httpError(409, { code: "TENANT_CODE_TAKEN", field: "code" })
     );
     wrap(<TenantList />);
-    fireEvent.click(await screen.findByText("page.tenant.action.create"));
-    fireEvent.change(screen.getByLabelText("page.tenant.form.name"), {
+    fireEvent.click(await screen.findByText("breadcrumb.add"));
+    fireEvent.change(screen.getByLabelText(/page.tenant.form.name/), {
       target: { value: "Warung" }
     });
-    fireEvent.change(screen.getByLabelText("page.tenant.form.code"), {
+    fireEvent.change(screen.getByLabelText(/page.tenant.form.code/), {
       target: { value: "-bad-" }
     });
-    expect(screen.getByText("page.tenant.form.save").closest("button")).toBeDisabled();
+    fireEvent.click(screen.getByText("page.tenant.form.save"));
+    expect(await screen.findByRole("alert")).toHaveTextContent("page.tenant.error.invalidCode");
+    expect(mockCreateTenant).not.toHaveBeenCalled();
 
-    fireEvent.change(screen.getByLabelText("page.tenant.form.code"), {
+    fireEvent.change(screen.getByLabelText(/page.tenant.form.code/), {
       target: { value: "warung-1" }
     });
     fireEvent.click(screen.getByText("page.tenant.form.save"));
-    expect(await screen.findByRole("alert")).toHaveTextContent("page.tenant.error.codeTaken");
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent("page.tenant.error.codeTaken")
+    );
   });
 
-  test("editing suspends a tenant, warns first, and never sends the code", async () => {
+  test("editing renames only, with the code locked", async () => {
+    mockUpdateTenant.mockResolvedValue({ success: true, data: tenant(1, { name: "Baru" }) });
+    wrap(<TenantList />);
+    await screen.findByText("Warung 1");
+    fireEvent.click(screen.getAllByTitle("common.edit")[0]);
+
+    expect(screen.getByLabelText(/page.tenant.form.code/)).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/page.tenant.form.name/), {
+      target: { value: "Baru" }
+    });
+    fireEvent.click(screen.getByText("page.tenant.form.save"));
+    await waitFor(() => expect(mockUpdateTenant).toHaveBeenCalledWith(1, { name: "Baru" }));
+  });
+
+  test("suspending asks for confirmation and sends only the status", async () => {
     mockUpdateTenant.mockResolvedValue({ success: true, data: tenant(1, { status: "suspended" }) });
     wrap(<TenantList />);
-    fireEvent.click(await screen.findByLabelText("page.tenant.action.editNamed:Warung 1"));
+    await screen.findByText("Warung 1");
+    // only the active tenant offers Suspend; the suspended one offers Resume
+    expect(screen.getAllByTitle("page.tenant.action.suspend")).toHaveLength(1);
+    expect(screen.getAllByTitle("page.tenant.action.resume")).toHaveLength(1);
 
-    expect(screen.getByLabelText("page.tenant.form.code")).toBeDisabled();
-    fireEvent.change(screen.getByLabelText("page.tenant.form.status"), {
-      target: { value: "suspended" }
-    });
-    expect(screen.getByText("page.tenant.form.suspendWarning")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByText("page.tenant.form.save"));
+    fireEvent.click(screen.getByTitle("page.tenant.action.suspend"));
+    expect(await screen.findByText("page.tenant.modal.suspendTitle")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /page.tenant.action.suspend/ }));
     await waitFor(() => expect(mockUpdateTenant).toHaveBeenCalledWith(1, { status: "suspended" }));
   });
 
-  test("search and status filters are passed to the API", async () => {
+  test("the status filter is passed to the API", async () => {
     wrap(<TenantList />);
     await screen.findByText("Warung 1");
-    fireEvent.change(screen.getByLabelText("page.tenant.table.status"), {
-      target: { value: "active" }
-    });
+    const filter = screen.getByTestId("tenant-status-filter");
+    fireEvent.click(within(filter).getByText("page.tenant.status.active"));
     await waitFor(() =>
       expect(mockGetTenants).toHaveBeenLastCalledWith(
-        expect.objectContaining({ status: "active", page: 1 })
+        expect.objectContaining({ status: "active", page: 1, limit: 10 })
       )
     );
   });

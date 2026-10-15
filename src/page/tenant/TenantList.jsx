@@ -1,29 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Building2, Pencil, Plus } from "lucide-react";
+import { Building2, CheckCircle, Edit, PauseCircle, PlayCircle, Plus, XCircle } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
+import TableActions from "@/components/ui/TableActions";
+import StatCard from "@/components/ui/StatCard";
 import { AccessDenied } from "@/components/ui/RequireRole";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { Combobox } from "@/components/ui/combobox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog";
+import Modal from "@/components/organism/modal";
+import AbortController from "@/components/organism/abort-controller";
 import { createTenant, getTenants, updateTenant } from "@/services/tenant";
 import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
 
 export const TENANTS_QUERY_KEY = "tenants";
-const DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 10;
 const P = "page.tenant";
 
 // Mirrors the BE contract: 1-50 lowercase letters/digits, inner hyphens only.
@@ -41,22 +38,36 @@ export const suggestTenantCode = (name) =>
     .slice(0, 50)
     .replace(/-+$/g, "");
 
-const STATUS_TONES = {
-  active: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
-  suspended: "bg-destructive/10 text-destructive border-destructive/20"
+// Same pill styling as the store list (/location-list).
+const STATUS_STYLES = {
+  active:
+    "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
+  suspended:
+    "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
 };
 
 const TenantStatusPill = ({ status }) => {
   const { t } = useTranslation();
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
-        STATUS_TONES[status] || STATUS_TONES.suspended
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+        STATUS_STYLES[status] || STATUS_STYLES.suspended
       }`}>
       {t(`${P}.status.${status}`, { defaultValue: status })}
     </span>
   );
 };
+
+const formatDate = (value) =>
+  value
+    ? new Date(value).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    : "-";
 
 // BE error codes → field-level message keys.
 const errorMessage = (t, error) => {
@@ -68,32 +79,21 @@ const errorMessage = (t, error) => {
   return { field: null, message: t(`${P}.error.generic`) };
 };
 
-const TenantFormDialog = ({ open, tenant, onClose }) => {
+const fieldLabelClass = "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground";
+
+const TenantFormModal = ({ open, tenant, onClose }) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const isEdit = !!tenant;
-  const [name, setName] = useState("");
-  const [code, setCode] = useState("");
+  const [name, setName] = useState(tenant?.name || "");
+  const [code, setCode] = useState(tenant?.code || "");
   const [codeTouched, setCodeTouched] = useState(false);
-  const [status, setStatus] = useState("active");
-  const [fieldError, setFieldError] = useState({ field: null, message: null });
-
-  useEffect(() => {
-    if (!open) return;
-    setName(tenant?.name || "");
-    setCode(tenant?.code || "");
-    setCodeTouched(false);
-    setStatus(tenant?.status || "active");
-    setFieldError({ field: null, message: null });
-  }, [open, tenant]);
+  const [error, setError] = useState({ field: null, message: null });
 
   const mutation = useMutation(
     () =>
       isEdit
-        ? updateTenant(tenant.id, {
-            ...(name.trim() !== tenant.name ? { name: name.trim() } : {}),
-            ...(status !== tenant.status ? { status } : {})
-          })
+        ? updateTenant(tenant.id, { name: name.trim() })
         : createTenant({ code: code.trim(), name: name.trim() }),
     {
       onSuccess: () => {
@@ -101,138 +101,159 @@ const TenantFormDialog = ({ open, tenant, onClose }) => {
         queryClient.invalidateQueries(TENANTS_QUERY_KEY);
         onClose();
       },
-      onError: (error) => {
-        const mapped = errorMessage(t, error);
-        setFieldError(mapped);
+      onError: (err) => {
+        const mapped = errorMessage(t, err);
+        setError(mapped);
         if (!mapped.field) toast.error(mapped.message);
       }
     }
   );
 
-  const nameValid = name.trim().length > 0 && name.trim().length <= 100;
-  const codeValid = isEdit || CODE_PATTERN.test(code.trim());
-  const changed = !isEdit || name.trim() !== tenant.name || status !== tenant.status;
-  const canSubmit = nameValid && codeValid && changed && !mutation.isLoading;
-
-  const onNameChange = (value) => {
-    setName(value);
-    if (!isEdit && !codeTouched) setCode(suggestTenantCode(value));
-    if (fieldError.field === "name") setFieldError({ field: null, message: null });
-  };
-
-  const submit = (e) => {
-    e.preventDefault();
-    if (canSubmit) mutation.mutate();
+  // Modal convention: returning false keeps it open — on a validation error,
+  // and while the request runs (onSuccess closes it; a failure keeps the
+  // typed values on screen).
+  const submit = () => {
+    const trimmedName = name.trim();
+    if (!trimmedName || trimmedName.length > 100) {
+      setError({ field: "name", message: t(`${P}.error.invalidName`) });
+      return false;
+    }
+    if (!isEdit && !CODE_PATTERN.test(code.trim())) {
+      setError({ field: "code", message: t(`${P}.error.invalidCode`) });
+      return false;
+    }
+    if (isEdit && trimmedName === tenant.name) return undefined;
+    mutation.mutate();
+    return false;
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && !mutation.isLoading && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={submit} className="space-y-4">
-          <DialogHeader>
-            <DialogTitle>{t(isEdit ? `${P}.form.editTitle` : `${P}.form.createTitle`)}</DialogTitle>
-            <DialogDescription>
-              {t(isEdit ? `${P}.form.editDescription` : `${P}.form.createDescription`)}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="tenant-name">{t(`${P}.form.name`)}</Label>
-            <Input
-              id="tenant-name"
-              value={name}
-              maxLength={100}
-              autoComplete="off"
-              placeholder={t(`${P}.form.namePlaceholder`)}
-              aria-invalid={fieldError.field === "name" || undefined}
-              onChange={(e) => onNameChange(e.target.value)}
-            />
-            {fieldError.field === "name" && (
-              <p role="alert" className="text-sm text-destructive">
-                {fieldError.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="tenant-code">{t(`${P}.form.code`)}</Label>
-            <Input
-              id="tenant-code"
-              value={code}
-              maxLength={50}
-              autoComplete="off"
-              disabled={isEdit}
-              placeholder="warung-bakso"
-              aria-invalid={fieldError.field === "code" || (!codeValid && code !== "") || undefined}
-              aria-describedby="tenant-code-hint"
-              className="font-mono"
-              onChange={(e) => {
-                setCode(e.target.value.toLowerCase());
-                setCodeTouched(true);
-                if (fieldError.field === "code") setFieldError({ field: null, message: null });
-              }}
-            />
-            {fieldError.field === "code" ? (
-              <p id="tenant-code-hint" role="alert" className="text-sm text-destructive">
-                {fieldError.message}
-              </p>
-            ) : (
-              <p id="tenant-code-hint" className="text-xs text-muted-foreground">
-                {t(isEdit ? `${P}.form.codeImmutable` : `${P}.form.codeHint`)}
-              </p>
-            )}
-          </div>
-
-          {isEdit && (
-            <div className="space-y-1.5">
-              <Label htmlFor="tenant-status">{t(`${P}.form.status`)}</Label>
-              <select
-                id="tenant-status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm">
-                <option value="active">{t(`${P}.status.active`)}</option>
-                <option value="suspended">{t(`${P}.status.suspended`)}</option>
-              </select>
-              {status === "suspended" && tenant.status !== "suspended" && (
-                <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">
-                  {t(`${P}.form.suspendWarning`)}
-                </p>
-              )}
-            </div>
+    <Modal
+      type="form"
+      open={open}
+      onOpenChange={(next) => !next && !mutation.isLoading && onClose()}
+      title={t(isEdit ? `${P}.form.editTitle` : `${P}.form.createTitle`)}
+      description={t(isEdit ? `${P}.form.editDescription` : `${P}.form.createDescription`)}
+      confirmText={t(`${P}.form.save`)}
+      loading={mutation.isLoading}
+      onConfirm={submit}>
+      <div className="space-y-4 py-2">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="tenant-name" className={fieldLabelClass}>
+            {t(`${P}.form.name`)} <span className="text-destructive">*</span>
+          </label>
+          <Input
+            id="tenant-name"
+            value={name}
+            maxLength={100}
+            autoComplete="off"
+            placeholder={t(`${P}.form.namePlaceholder`)}
+            aria-invalid={error.field === "name" || undefined}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (!isEdit && !codeTouched) setCode(suggestTenantCode(e.target.value));
+              if (error.field === "name") setError({ field: null, message: null });
+            }}
+          />
+          {error.field === "name" && (
+            <p role="alert" className="text-sm text-destructive">
+              {error.message}
+            </p>
           )}
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={mutation.isLoading}>
-              {t("common.cancel")}
-            </Button>
-            <Button type="submit" disabled={!canSubmit}>
-              {mutation.isLoading ? t(`${P}.form.saving`) : t(`${P}.form.save`)}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="tenant-code" className={fieldLabelClass}>
+            {t(`${P}.form.code`)} <span className="text-destructive">*</span>
+          </label>
+          <Input
+            id="tenant-code"
+            value={code}
+            maxLength={50}
+            autoComplete="off"
+            disabled={isEdit}
+            placeholder="warung-bakso"
+            className="font-mono"
+            aria-invalid={error.field === "code" || undefined}
+            aria-describedby="tenant-code-hint"
+            onChange={(e) => {
+              setCode(e.target.value.toLowerCase());
+              setCodeTouched(true);
+              if (error.field === "code") setError({ field: null, message: null });
+            }}
+          />
+          {error.field === "code" ? (
+            <p id="tenant-code-hint" role="alert" className="text-sm text-destructive">
+              {error.message}
+            </p>
+          ) : (
+            <p id="tenant-code-hint" className="text-xs text-muted-foreground">
+              {t(isEdit ? `${P}.form.codeImmutable` : `${P}.form.codeHint`)}
+            </p>
+          )}
+        </div>
+      </div>
+    </Modal>
   );
 };
 
-const TenantTable = ({ onEdit }) => {
+// Stat-card counts: one-row pages per status, read from pagination.total.
+const useTenantCount = (status, enabled) =>
+  useQuery([TENANTS_QUERY_KEY, "count", status], () => getTenants({ page: 1, limit: 1, status }), {
+    enabled,
+    retry: false,
+    refetchOnWindowFocus: false
+  });
+
+const TenantList = () => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const permission = useTenantManagePermission();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_LIMIT);
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [formTarget, setFormTarget] = useState(null); // { tenant } | null
+  const [statusTarget, setStatusTarget] = useState(null);
 
+  const enabled = permission.canManageTenants;
   const { data, isLoading, isFetching, isError, error, refetch } = useQuery(
-    [TENANTS_QUERY_KEY, page, limit, search, status],
-    () => getTenants({ page, limit, search, status }),
-    { keepPreviousData: true, retry: false, refetchOnWindowFocus: false }
+    [TENANTS_QUERY_KEY, page, limit, search, statusFilter],
+    () => getTenants({ page, limit, search, status: statusFilter }),
+    { enabled, keepPreviousData: true, retry: false, refetchOnWindowFocus: false }
   );
+  const totalCount = useTenantCount("all", enabled);
+  const activeCount = useTenantCount("active", enabled);
+  const suspendedCount = useTenantCount("suspended", enabled);
 
-  if (error?.response?.status === 403) return <AccessDenied />;
+  const statusMutation = useMutation(({ id, status }) => updateTenant(id, { status }), {
+    onSuccess: () => {
+      toast.success(t(`${P}.toast.updated`));
+      queryClient.invalidateQueries(TENANTS_QUERY_KEY);
+      setStatusTarget(null);
+    },
+    onError: (err) => toast.error(errorMessage(t, err).message)
+  });
 
-  const rows = data?.data || [];
+  if (permission.isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+  if (permission.isError) return <AbortController refetch={permission.refetch} />;
+  if (!permission.canManageTenants || error?.response?.status === 403) return <AccessDenied />;
+
+  const tenants = data?.data || [];
   const pagination = data?.pagination || {};
+  const isFiltered = search !== "" || statusFilter !== "all";
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+  };
+  const countOf = (query) => (query.data?.pagination?.total ?? 0).toLocaleString();
 
   const columns = [
     {
@@ -249,137 +270,205 @@ const TenantTable = ({ onEdit }) => {
     },
     {
       header: t(`${P}.table.stores`),
-      render: (row) => <span className="text-sm tabular-nums">{row.storeCount}</span>
+      render: (row) => <span className="text-xs font-semibold tabular-nums">{row.storeCount}</span>
     },
     {
       header: t(`${P}.table.members`),
-      render: (row) => <span className="text-sm tabular-nums">{row.activeMemberCount}</span>
+      render: (row) => (
+        <span className="text-xs font-semibold tabular-nums">{row.activeMemberCount}</span>
+      )
     },
     {
       header: t(`${P}.table.status`),
       render: (row) => <TenantStatusPill status={row.status} />
     },
     {
-      header: t(`${P}.table.actions`),
+      header: t(`${P}.table.createdAt`),
       render: (row) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          aria-label={t(`${P}.action.editNamed`, { name: row.name })}
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(row);
-          }}>
-          <Pencil size={14} aria-hidden="true" />
-          <span className="ml-1.5">{t(`${P}.action.edit`)}</span>
-        </Button>
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {formatDate(row.createdAt)}
+        </span>
+      )
+    },
+    {
+      header: t(`${P}.table.updatedAt`),
+      render: (row) => (
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {formatDate(row.updatedAt)}
+        </span>
+      )
+    },
+    {
+      header: t("common.actions"),
+      align: "center",
+      stickyRight: true,
+      legend: [
+        { icon: Edit, label: t("common.edit") },
+        { icon: PauseCircle, label: t(`${P}.action.suspend`) },
+        { icon: PlayCircle, label: t(`${P}.action.resume`) }
+      ],
+      render: (row) => (
+        <TableActions
+          visible={2}
+          align="center"
+          items={[
+            {
+              label: t("common.edit"),
+              icon: Edit,
+              onClick: () => setFormTarget({ tenant: row })
+            },
+            {
+              label: t(`${P}.action.suspend`),
+              icon: PauseCircle,
+              danger: true,
+              onClick: () => setStatusTarget({ tenant: row, status: "suspended" }),
+              hidden: row.status !== "active"
+            },
+            {
+              label: t(`${P}.action.resume`),
+              icon: PlayCircle,
+              onClick: () => setStatusTarget({ tenant: row, status: "active" }),
+              hidden: row.status === "active"
+            }
+          ]}
+        />
       )
     }
   ];
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <SearchInput
-          value={search}
-          onChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
-          isLoading={isFetching && !isLoading}
-          placeholder={t(`${P}.searchPlaceholder`)}
-          className="sm:max-w-xs"
-        />
-        <select
-          aria-label={t(`${P}.table.status`)}
-          value={status}
-          onChange={(e) => {
-            setStatus(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-lg border border-border bg-background px-3 py-2 text-sm sm:w-44">
-          <option value="all">{t(`${P}.status.all`)}</option>
-          <option value="active">{t(`${P}.status.active`)}</option>
-          <option value="suspended">{t(`${P}.status.suspended`)}</option>
-        </select>
-      </div>
-      <DataTable
-        columns={columns}
-        data={rows}
-        rowKey={(row) => row.id}
-        isLoading={isLoading}
-        isError={isError}
-        onRetry={() => refetch()}
-        emptyMessage={t(`${P}.empty`)}
-        emptyIcon={Building2}
-        pagination={{
-          page: pagination.page || page,
-          totalPages: pagination.totalPages || 1,
-          total: pagination.total || 0,
-          pageSize: limit,
-          onPageChange: setPage,
-          onPageSizeChange: (value) => {
-            setLimit(Number(value) || DEFAULT_LIMIT);
-            setPage(1);
-          }
+    <div data-tour="page-tenant" className="space-y-6">
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t(`${P}.title`), i18nKey: `${P}.title` }
+        ]}
+        title={t(`${P}.title`)}
+        description={t(`${P}.description`)}>
+        <Button
+          variant="success"
+          onClick={() => setFormTarget({ tenant: null })}
+          className="shrink-0">
+          <Plus size={18} />
+          {t("breadcrumb.add")}
+        </Button>
+      </PageHeader>
+
+      {isError && error?.response?.status !== 403 ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <StatCard
+              label={t(`${P}.stats.total`)}
+              value={countOf(totalCount)}
+              icon={Building2}
+              variant="default"
+              subtitle={t(`${P}.stats.totalSub`)}
+            />
+            <StatCard
+              label={t(`${P}.stats.active`)}
+              value={countOf(activeCount)}
+              icon={CheckCircle}
+              variant="active"
+              subtitle={t(`${P}.stats.activeSub`)}
+            />
+            <StatCard
+              label={t(`${P}.stats.suspended`)}
+              value={countOf(suspendedCount)}
+              icon={XCircle}
+              variant="inactive"
+              subtitle={t(`${P}.stats.suspendedSub`)}
+            />
+          </div>
+
+          <DataTable
+            columns={columns}
+            data={tenants}
+            isLoading={isLoading || isFetching}
+            emptyMessage={t(`${P}.empty`)}
+            emptyIcon={Building2}
+            toolbar={
+              <TableToolbar title={t(`${P}.title`)} onReset={resetFilters} isFiltered={isFiltered}>
+                <div className="flex flex-col gap-1.5">
+                  <label className={fieldLabelClass}>{t("common.search")}</label>
+                  <SearchInput
+                    value={search}
+                    onChange={(value) => {
+                      setSearch(value);
+                      setPage(1);
+                    }}
+                    placeholder={t(`${P}.searchPlaceholder`)}
+                    isLoading={isFetching}
+                    className="w-full md:w-60"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className={fieldLabelClass}>{t("common.status")}</label>
+                  <Combobox
+                    id="tenant-status-filter"
+                    options={[
+                      { value: "all", label: t("common.all") },
+                      { value: "active", label: t(`${P}.status.active`) },
+                      { value: "suspended", label: t(`${P}.status.suspended`) }
+                    ]}
+                    value={statusFilter}
+                    onChange={(value) => {
+                      setStatusFilter(value || "all");
+                      setPage(1);
+                    }}
+                    placeholder={t("common.all")}
+                    searchPlaceholder={t("common.search")}
+                  />
+                </div>
+              </TableToolbar>
+            }
+            pagination={{
+              page: pagination.page || page,
+              totalPages: pagination.totalPages || 1,
+              total: pagination.total || 0,
+              onPageChange: setPage,
+              pageSize: limit,
+              onPageSizeChange: (value) => {
+                setLimit(Number(value) || DEFAULT_LIMIT);
+                setPage(1);
+              }
+            }}
+          />
+        </div>
+      )}
+
+      {formTarget && (
+        <TenantFormModal open tenant={formTarget.tenant} onClose={() => setFormTarget(null)} />
+      )}
+
+      <Modal
+        type="confirm"
+        open={!!statusTarget}
+        onOpenChange={(open) => !open && !statusMutation.isLoading && setStatusTarget(null)}
+        title={t(
+          statusTarget?.status === "suspended"
+            ? `${P}.modal.suspendTitle`
+            : `${P}.modal.resumeTitle`
+        )}
+        description={
+          statusTarget?.status === "suspended"
+            ? t(`${P}.form.suspendWarning`)
+            : t(`${P}.modal.resumeDesc`, { name: statusTarget?.tenant?.name || "" })
+        }
+        confirmText={t(
+          statusTarget?.status === "suspended" ? `${P}.action.suspend` : `${P}.action.resume`
+        )}
+        loading={statusMutation.isLoading}
+        onConfirm={() => {
+          if (!statusTarget) return undefined;
+          statusMutation.mutate({ id: statusTarget.tenant.id, status: statusTarget.status });
+          return false; // closed by onSuccess
         }}
-      />
-    </div>
-  );
-};
-
-const TenantList = () => {
-  const { t } = useTranslation();
-  const permission = useTenantManagePermission();
-  const [dialog, setDialog] = useState({ open: false, tenant: null });
-
-  if (permission.isLoading) {
-    return (
-      <div className="mx-auto w-full max-w-5xl space-y-4">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
-  }
-
-  if (permission.isError) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
-        <p className="text-sm text-muted-foreground">{t("common.loadError")}</p>
-        <Button variant="outline" size="sm" onClick={() => permission.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </div>
-    );
-  }
-
-  if (!permission.canManageTenants) return <AccessDenied />;
-
-  return (
-    <div className="mx-auto w-full max-w-5xl space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <PageHeader
-          breadcrumbs={[
-            {
-              label: t("breadcrumb.home"),
-              href: "/dashboard-super-admin",
-              i18nKey: "breadcrumb.home"
-            },
-            { label: t(`${P}.title`), i18nKey: `${P}.title` }
-          ]}
-          title={t(`${P}.title`)}
-          description={t(`${P}.description`)}
-        />
-        <Button onClick={() => setDialog({ open: true, tenant: null })} className="shrink-0">
-          <Plus size={16} aria-hidden="true" />
-          <span className="ml-1.5">{t(`${P}.action.create`)}</span>
-        </Button>
-      </div>
-      <TenantTable onEdit={(tenant) => setDialog({ open: true, tenant })} />
-      <TenantFormDialog
-        open={dialog.open}
-        tenant={dialog.tenant}
-        onClose={() => setDialog({ open: false, tenant: null })}
       />
     </div>
   );
