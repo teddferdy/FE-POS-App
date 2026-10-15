@@ -7280,8 +7280,8 @@
   "page.taxConfig.effective.severity.error": "Kesalahan",
   "page.taxConfig.effective.severity.warning": "Peringatan",
   "page.taxConfig.effective.severity.info": "Info",
-  "page.taxConfig.effective.finding.MULTIPLE_ACTIVE_SAME_SCOPE": "Lebih dari satu konfigurasi PPN aktif berlaku pada cakupan yang sama. Dengan perilaku checkout saat ini, tarifnya dijumlahkan sehingga menghasilkan PPN efektif di atas.",
-  "page.taxConfig.effective.finding.GLOBAL_AND_OUTLET_COMBINED": "Konfigurasi PPN global dan outlet sama-sama berlaku di sini. Dengan perilaku checkout saat ini, tarifnya dijumlahkan.",
+  "page.taxConfig.effective.finding.MULTIPLE_ACTIVE_SAME_SCOPE": "Ada lebih dari satu konfigurasi PPN aktif pada cakupan yang sama. Hanya satu yang dikenakan (yang ditandai dipakai di kasir & aplikasi QR) — tarifnya tidak pernah dijumlahkan. Gunakan \"Gunakan di Kasir & BISA\" agar tersisa satu.",
+  "page.taxConfig.effective.finding.GLOBAL_AND_OUTLET_COMBINED": "Outlet ini punya konfigurasi PPN sendiri yang menggantikan PPN global di sini; tarif global tidak dikenakan.",
   "page.taxConfig.effective.finding.PPN_ZERO_CONFIGURED": "PPN efektif 0% karena konfigurasi aktif secara eksplisit diatur 0%. Ini berbeda dengan PPN yang belum dikonfigurasi.",
   "page.taxConfig.effective.finding.PPN_MISSING": "Tidak ada konfigurasi PPN aktif yang berlaku untuk konteks ini.",
   "page.taxConfig.effective.finding.pendingDecision": "Cara konfigurasi ini seharusnya saling berinteraksi masih menunggu keputusan bisnis.",
@@ -8422,5 +8422,12 @@
   "page.cashier.screenMode.single": "1 layar",
   "page.cashier.screenMode.singleDesc": "Buka kasir saja di layar ini.",
   "page.cashier.screenMode.dual": "2 layar",
-  "page.cashier.screenMode.dualDesc": "Buka kasir di sini dan layar pesanan pelanggan di tab baru untuk layar kedua."
+  "page.cashier.screenMode.dualDesc": "Buka kasir di sini dan layar pesanan pelanggan di tab baru untuk layar kedua.",
+  "page.taxConfig.apply.column": "Kasir & BISA",
+  "page.taxConfig.apply.used": "Dipakai",
+  "page.taxConfig.apply.action": "Gunakan di Kasir & BISA",
+  "page.taxConfig.apply.modalTitle": "Gunakan PPN ini di kasir & aplikasi QR?",
+  "page.taxConfig.apply.modalDesc": "{{name}} ({{rate}}%) menjadi PPN yang dikenakan untuk cakupan ini. PPN aktif lain di cakupan yang sama akan dinonaktifkan.",
+  "page.taxConfig.apply.success": "PPN sekarang dipakai di kasir & aplikasi QR",
+  "page.taxConfig.apply.failed": "PPN gagal dipakai"
 }

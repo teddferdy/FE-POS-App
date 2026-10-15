@@ -7254,8 +7254,8 @@
   "page.taxConfig.effective.severity.error": "Error",
   "page.taxConfig.effective.severity.warning": "Warning",
   "page.taxConfig.effective.severity.info": "Info",
-  "page.taxConfig.effective.finding.MULTIPLE_ACTIVE_SAME_SCOPE": "More than one active PPN configuration applies at the same scope. Under current checkout behavior their rates are added together, which gives the effective PPN shown above.",
-  "page.taxConfig.effective.finding.GLOBAL_AND_OUTLET_COMBINED": "Global and outlet PPN configurations both apply here. Under current checkout behavior their rates are added together.",
+  "page.taxConfig.effective.finding.MULTIPLE_ACTIVE_SAME_SCOPE": "More than one active PPN configuration exists at the same scope. Only one is charged (the one marked as used at the cashier & QR app) — rates are never added together. Use \"Use at Cashier & QR\" to keep a single one.",
+  "page.taxConfig.effective.finding.GLOBAL_AND_OUTLET_COMBINED": "This outlet has its own PPN configuration, which replaces the global default here; the global rate is not charged.",
   "page.taxConfig.effective.finding.PPN_ZERO_CONFIGURED": "Effective PPN is 0% because the active configurations are explicitly set to 0%. This is different from missing PPN.",
   "page.taxConfig.effective.finding.PPN_MISSING": "No active PPN configuration applies to this context.",
   "page.taxConfig.effective.finding.pendingDecision": "How these configurations should interact is a pending business decision.",
@@ -8256,5 +8256,12 @@
   "page.cashier.screenMode.single": "1 screen",
   "page.cashier.screenMode.singleDesc": "Open only the cashier on this screen.",
   "page.cashier.screenMode.dual": "2 screens",
-  "page.cashier.screenMode.dualDesc": "Open the cashier here and the customer display board in a new tab for the second screen."
+  "page.cashier.screenMode.dualDesc": "Open the cashier here and the customer display board in a new tab for the second screen.",
+  "page.taxConfig.apply.column": "Cashier & QR",
+  "page.taxConfig.apply.used": "In use",
+  "page.taxConfig.apply.action": "Use at Cashier & QR",
+  "page.taxConfig.apply.modalTitle": "Use this PPN at the cashier & QR app?",
+  "page.taxConfig.apply.modalDesc": "{{name}} ({{rate}}%) becomes the PPN charged for this scope. Other active PPN rows in the same scope are set inactive.",
+  "page.taxConfig.apply.success": "PPN is now used at the cashier & QR app",
+  "page.taxConfig.apply.failed": "Could not apply this PPN"
 }
