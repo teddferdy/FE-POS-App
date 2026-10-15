@@ -157,11 +157,10 @@ describe("Sidebar Store Configuration entry", () => {
     mockUser = user;
     mockGetAuthContext.mockResolvedValue(contextBody(["store.manage"]));
     renderSidebar();
-    // Category sidebars list it inside the Location ("Lokasi") category
-    // modal; the accessMenu-controlled sidebar lists it in its Location group.
-    if (!user.accessMenu) {
-      fireEvent.click(await screen.findByText("sidebar.section.location"));
-    }
+    // All branches use the category sidebar: the entry lives inside the
+    // Location ("Lokasi") category modal (accessMenu-filtered for
+    // accessMenu-controlled users).
+    fireEvent.click(await screen.findByText("sidebar.section.location"));
     expect(await screen.findByText(ITEM)).toBeInTheDocument();
   });
 

@@ -398,6 +398,16 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
                   </span>
                 </button>
               );
+
+              if (isExpanded) return <div key={cat.id}>{btn}</div>;
+              return (
+                <Tooltip key={cat.id}>
+                  <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={12} className="font-medium">
+                    {t(cat.i18nKey) || cat.title}
+                  </TooltipContent>
+                </Tooltip>
+              );
             })}
           </>
         </nav>
