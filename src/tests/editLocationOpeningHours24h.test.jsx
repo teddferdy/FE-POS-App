@@ -13,6 +13,11 @@ jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
 }));
 jest.mock("sonner", () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
+// Platform tenant field (TenantSelectField): not exercised here — a non-platform actor.
+jest.mock("@/hooks/useTenantManagePermission", () => ({
+  useTenantManagePermission: () => ({ canManageTenants: false, isLoading: false, isError: false })
+}));
+jest.mock("@/services/tenant", () => ({ getTenants: jest.fn() }));
 
 jest.mock("@/services/location", () => ({
   getLocationById: jest.fn(),

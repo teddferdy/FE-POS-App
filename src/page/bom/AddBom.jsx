@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Save, X, Plus, Trash2 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
-import { addBom } from "@/services/bom";
+import { addBom, editBom, getBomById } from "@/services/bom";
 import { getAllProduct } from "@/services/product";
 import { getAllIngredients } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
@@ -24,6 +24,8 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
+const emptyLine = () => ({ supplierId: "", ingredientId: "", qty: "", unit: "pcs", notes: "" });
+
 const formSchema = z.object({
   productId: z.string().min(1, "Required"),
   firstIngredient: z.string().min(1, "Required")
@@ -37,18 +39,21 @@ const AddBom = () => {
   const [cookies] = useCookies();
   const user = cookies?.user;
   const preselectedId = searchParams.get("productId");
+  // BomList's Edit opens this page with ?id=<bom id>: the recipe is loaded,
+  // its product and store stay fixed, and saving updates it in place.
+  const editId = searchParams.get("id");
+  const isEdit = !!editId;
   const isSuperAdmin = user?.roleType === "super_admin";
 
   const [selectedStore, setSelectedStore] = useState(
     isSuperAdmin ? "" : normalizeStoreId(user?.store) || ""
   );
   const [productId, setProductId] = useState(preselectedId || "");
-  const [disabledProduct] = useState(!!preselectedId);
+  const [disabledProduct] = useState(!!preselectedId || isEdit);
+  const [loadedEditId, setLoadedEditId] = useState(null);
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
-  const [lines, setLines] = useState([
-    { supplierId: "", ingredientId: "", qty: "", unit: "pcs", notes: "" }
-  ]);
+  const [lines, setLines] = useState([emptyLine()]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -65,6 +70,37 @@ const AddBom = () => {
     }),
     [t]
   );
+
+  const {
+    data: bomData,
+    isLoading: bomLoading,
+    isError: bomError
+  } = useQuery(["bom-edit", editId], () => getBomById(editId), {
+    enabled: isEdit,
+    retry: false,
+    refetchOnWindowFocus: false
+  });
+
+  useEffect(() => {
+    const bom = bomData?.data;
+    if (!bom || loadedEditId === editId) return;
+    setLoadedEditId(editId);
+    if (bom.store != null) setSelectedStore(normalizeStoreId(bom.store) || "");
+    setProductId(String(bom.productId));
+    setName(bom.name || "");
+    setNotes(bom.notes || "");
+    setLines(
+      bom.lines?.length
+        ? bom.lines.map((l) => ({
+            supplierId: "",
+            ingredientId: String(l.ingredientId),
+            qty: String(l.qty),
+            unit: l.unit || "pcs",
+            notes: l.notes || ""
+          }))
+        : [emptyLine()]
+    );
+  }, [bomData, editId, loadedEditId]);
 
   const { data: prodData } = useQuery(
     ["products-for-bom", selectedStore],
@@ -128,14 +164,27 @@ const AddBom = () => {
     return map;
   }, [suppliers, ingredients]);
 
-  const itemsForLine = (line) =>
-    line.supplierId ? supplierItemsBySupplier[String(line.supplierId)] || [] : [];
+  // The stock unit a BOM line must use: BE requires bom_line.unit to equal the
+  // ingredient's baseUnit (deduction is base-unit-only, no conversion).
+  const baseUnitOf = (ingredientId) => {
+    const ing = ingredients.find((i) => String(i.id) === String(ingredientId));
+    return ing ? ing.baseUnit || ing.unit || "pcs" : "pcs";
+  };
 
-  const addLine = () =>
-    setLines((prev) => [
-      ...prev,
-      { supplierId: "", ingredientId: "", qty: "", unit: "pcs", notes: "" }
-    ]);
+  // Supplier is an optional filter: without one, every active ingredient of
+  // the store is offered directly (in-house items such as a bakso have no
+  // supplier at all).
+  const itemsForLine = (line) =>
+    line.supplierId
+      ? supplierItemsBySupplier[String(line.supplierId)] || []
+      : ingredients.map((ing) => ({
+          value: String(ing.id),
+          label: ing.name,
+          unit: ing.baseUnit || ing.unit || "pcs",
+          matched: true
+        }));
+
+  const addLine = () => setLines((prev) => [...prev, emptyLine()]);
   const removeLine = (idx) => {
     if (lines.length > 1) setLines((prev) => prev.filter((_, i) => i !== idx));
   };
@@ -144,6 +193,8 @@ const AddBom = () => {
       prev.map((it, i) => {
         if (i !== idx) return it;
         if (field === "supplierId") return { ...it, supplierId: value, ingredientId: "" };
+        if (field === "ingredientId")
+          return { ...it, ingredientId: value, unit: baseUnitOf(value) };
         return { ...it, [field]: value };
       })
     );
@@ -168,25 +219,35 @@ const AddBom = () => {
     if (e?.preventDefault) e.preventDefault();
     setIsSubmitting(true);
     try {
-      await addBom({
-        productId: parseInt(productId),
+      const body = {
+        // The BOM belongs to the store whose products/ingredients were picked
+        // here — sent explicitly so it never falls back to the header store
+        // (or to none, for a global super admin).
+        ...(selectedStore ? { store: Number(selectedStore) } : {}),
         name: name || undefined,
         notes,
         status: saveAsDraft ? "draft" : "active",
-        createdBy: user?.id,
         lines: lines
           .filter((l) => l.ingredientId && parseInt(l.qty) > 0)
           .map((l) => ({
             ingredientId: parseInt(l.ingredientId),
             qty: parseInt(l.qty),
-            unit: l.unit,
+            unit: baseUnitOf(l.ingredientId),
             notes: l.notes
           }))
-      });
-      toast.success(t("page.bom.add.toast.success"), {
-        description: t("page.bom.add.toast.successDesc")
+      };
+      if (isEdit) {
+        await editBom(editId, body);
+      } else {
+        await addBom({ ...body, productId: parseInt(productId), createdBy: user?.id });
+      }
+      toast.success(t(isEdit ? "page.bom.edit.toast.success" : "page.bom.add.toast.success"), {
+        description: t(
+          isEdit ? "page.bom.edit.toast.successDesc" : "page.bom.add.toast.successDesc"
+        )
       });
       queryClient.invalidateQueries(["bom-list"]);
+      queryClient.invalidateQueries(["bom-edit", editId]);
       navigate("/bom");
     } catch (err) {
       setModalMessage(err?.response?.data?.message || err.message);
@@ -195,6 +256,25 @@ const AddBom = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (isEdit && bomLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Loading />
+      </div>
+    );
+  }
+
+  if (isEdit && (bomError || (!bomLoading && !bomData?.data))) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+        <p className="text-sm text-muted-foreground">{t("page.bom.edit.notFound")}</p>
+        <Button variant="outline" size="sm" onClick={() => navigate("/bom")}>
+          {t("common.back")}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -210,10 +290,10 @@ const AddBom = () => {
             href: "/bom",
             i18nKey: "breadcrumb.bom"
           },
-          { label: t("breadcrumb.add") }
+          { label: t(isEdit ? "breadcrumb.edit" : "breadcrumb.add") }
         ]}
-        title={t("page.bom.add.title")}
-        description={t("page.bom.add.description")}
+        title={t(isEdit ? "page.bom.edit.title" : "page.bom.add.title")}
+        description={t(isEdit ? "page.bom.edit.description" : "page.bom.add.description")}
         onBack={() => setCancelModal(true)}
         dynamicInfo={false}
       />
@@ -236,10 +316,11 @@ const AddBom = () => {
                   }))
                 ]}
                 value={selectedStore}
+                disabled={isEdit}
                 onChange={(val) => {
                   setSelectedStore(val);
                   if (!disabledProduct) setProductId("");
-                  setLines([{ supplierId: "", ingredientId: "", qty: "", unit: "pcs", notes: "" }]);
+                  setLines([emptyLine()]);
                 }}
                 placeholder={t("page.bom.add.form.selectStore")}
                 searchPlaceholder={t("common.search")}
@@ -256,7 +337,7 @@ const AddBom = () => {
                 options={[
                   { value: "", label: t("page.bom.add.form.selectProduct") },
                   ...products.map((p) => ({
-                    value: p.id,
+                    value: String(p.id),
                     label: `${p.nameProduct} (${p.sku || "-"})`
                   }))
                 ]}
@@ -322,12 +403,12 @@ const AddBom = () => {
                           <td className="px-3 py-2 min-w-[200px]">
                             <Combobox
                               options={[
-                                { value: "", label: t("page.bom.add.form.selectSupplier") },
+                                { value: "", label: t("page.bom.add.form.supplierAny") },
                                 ...supplierOptions
                               ]}
                               value={line.supplierId}
                               onChange={(val) => updateLine(idx, "supplierId", val)}
-                              placeholder={t("page.bom.add.form.selectSupplier")}
+                              placeholder={t("page.bom.add.form.supplierAny")}
                               searchPlaceholder={t("common.search")}
                             />
                           </td>
@@ -344,17 +425,8 @@ const AddBom = () => {
                                 }))
                               ]}
                               value={line.ingredientId}
-                              onChange={(val) => {
-                                const picked = itemsForLine(line).find((o) => o.value === val);
-                                updateLine(idx, "ingredientId", val);
-                                if (picked?.unit) updateLine(idx, "unit", picked.unit);
-                              }}
-                              disabled={!line.supplierId}
-                              placeholder={
-                                line.supplierId
-                                  ? t("page.bom.add.form.selectIngredient")
-                                  : t("page.bom.add.form.selectSupplierFirst")
-                              }
+                              onChange={(val) => updateLine(idx, "ingredientId", val)}
+                              placeholder={t("page.bom.add.form.selectIngredient")}
                               searchPlaceholder={t("common.search")}
                             />
                           </td>
@@ -369,18 +441,12 @@ const AddBom = () => {
                             />
                           </td>
                           <td className="px-3 py-2">
-                            <Combobox
-                              options={[
-                                { value: "pcs", label: t("unit.pcs") },
-                                { value: "kg", label: t("unit.kg") },
-                                { value: "liter", label: t("unit.liter") },
-                                { value: "box", label: t("unit.box") }
-                              ]}
-                              value={line.unit}
-                              onChange={(val) => updateLine(idx, "unit", val)}
-                              placeholder={t("unit.pcs")}
-                              searchPlaceholder={t("common.search")}
-                            />
+                            {/* Fixed to the ingredient's base (stock) unit. */}
+                            <span
+                              className="inline-flex h-8 min-w-[64px] items-center rounded-md border border-border bg-muted/40 px-2 text-xs text-foreground"
+                              title={t("page.bom.add.form.baseUnitHint")}>
+                              {line.ingredientId ? baseUnitOf(line.ingredientId) : "-"}
+                            </span>
                           </td>
                           <td className="px-3 py-2">
                             <Input

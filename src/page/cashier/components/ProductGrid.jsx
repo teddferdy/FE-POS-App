@@ -13,6 +13,7 @@ import ScrollRail from "@/components/ui/ScrollRail";
 import VariantModal from "./VariantModal";
 import ProductDetailModal from "./ProductDetailModal";
 import DynamicIcon from "@/components/ui/DynamicIcon";
+import { usesProductStock } from "@/lib/inventory-mode";
 
 const renderCategoryIcon = (cat, className, imgClassName) => {
   const icon = cat?.image || cat?.icon;
@@ -138,7 +139,8 @@ const ProductGridTile = React.memo(function ProductGridTile({
             <p className="text-sm font-bold text-primary">
               Rp {formatPrice(product.price || product.sellPrice || 0)}
             </p>
-            {product.stock !== undefined &&
+            {usesProductStock(product) &&
+              product.stock !== undefined &&
               Number(product.stock) > 0 &&
               Number(product.stock) <= Number(product.minStock) && (
                 <span className="text-[9px] text-amber-500 font-semibold">
@@ -383,9 +385,15 @@ const ProductGrid = ({
     return false;
   }, []);
 
+  // A make_to_order (recipe) product is limited by its ingredients, not by
+  // its own product stock; the server refuses the sale if an ingredient is
+  // short (409 INGREDIENT_STOCK_CONFLICT).
   const isOutOfStock = useCallback((product) => {
     return (
-      product.stock !== undefined && Number(product.stock) <= 0 && product.isAvailable !== false
+      usesProductStock(product) &&
+      product.stock !== undefined &&
+      Number(product.stock) <= 0 &&
+      product.isAvailable !== false
     );
   }, []);
 

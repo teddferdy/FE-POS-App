@@ -82,6 +82,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import TenantSelectField, { tenantErrorMessage } from "@/components/organism/TenantSelectField";
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -209,6 +210,11 @@ const EditLocation = () => {
   const [showSocialMedia, setShowSocialMedia] = useState(false);
   const [socialLinks, setSocialLinks] = useState([]);
   const [activeTab, setActiveTab] = useState("informasi");
+  // Optional for an edit: a store that already belongs to a tenant keeps it
+  // (ownership is never reassigned); only a tenantless store being activated
+  // by a platform actor needs one chosen here.
+  const [tenantId, setTenantId] = useState("");
+  const [tenantError, setTenantError] = useState(null);
 
   const addSocialRow = () => setSocialLinks([...socialLinks, { platform: "", account: "" }]);
   const updateSocial = (idx, field, val) => {
@@ -515,7 +521,12 @@ const EditLocation = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      setModalMessage(err?.response?.data?.message || err.message);
+      const tenantMessage = tenantErrorMessage(t, err);
+      if (tenantMessage) {
+        setTenantError(tenantMessage);
+        setActiveTab("informasi");
+      }
+      setModalMessage(tenantMessage || err?.response?.data?.message || err.message);
       setErrorModal(true);
       setIsSubmitting(false);
     }
@@ -552,6 +563,7 @@ const EditLocation = () => {
       }),
       openingHours: openingHoursFormatted,
       socialMedia: socialLinks.filter((s) => s.platform && s.account),
+      ...(tenantId ? { tenantId: Number(tenantId) } : {}),
       id: editId
     };
 
@@ -917,6 +929,16 @@ const EditLocation = () => {
                       )}
                     />
                   </div>
+
+                  <TenantSelectField
+                    value={tenantId}
+                    optional
+                    error={tenantError}
+                    onChange={(next) => {
+                      setTenantId(next);
+                      setTenantError(null);
+                    }}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField

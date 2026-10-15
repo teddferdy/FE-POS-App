@@ -107,7 +107,7 @@ describe("AddBom — ingredient selection must auto-fill the authoritative baseU
   test("selecting an ingredient sets the BOM line unit to the ingredient's baseUnit", async () => {
     renderPage();
 
-    const supplierBox = await screen.findByTestId("page.bom.add.form.selectSupplier");
+    const supplierBox = await screen.findByTestId("page.bom.add.form.supplierAny");
     const supplierButton = await within(supplierBox).findByText("Supplier A");
     fireEvent.click(supplierButton);
 
@@ -115,7 +115,9 @@ describe("AddBom — ingredient selection must auto-fill the authoritative baseU
     await waitFor(() => expect(within(ingredientBox).getByText("Tepung")).toBeInTheDocument());
     fireEvent.click(within(ingredientBox).getByText("Tepung"));
 
-    const unitBox = await screen.findByTestId("unit.pcs");
-    await waitFor(() => expect(unitBox).toHaveAttribute("data-field-value", "liter"));
+    // The line unit is fixed to the ingredient's base unit (no free choice).
+    await waitFor(() =>
+      expect(screen.getByTitle("page.bom.add.form.baseUnitHint")).toHaveTextContent("liter")
+    );
   });
 });

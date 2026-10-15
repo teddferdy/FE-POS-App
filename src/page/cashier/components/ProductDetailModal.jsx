@@ -11,6 +11,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { usesProductStock } from "@/lib/inventory-mode";
 
 const formatPrice = (value) => {
   if (value == null || isNaN(value)) return "0";
@@ -27,7 +28,9 @@ const ProductDetailModal = ({ product, open, onOpenChange, onAddToCart }) => {
   const price = product.price || product.sellPrice || 0;
   const category =
     product.categoryName || product.category?.nameCategory || product.category?.name || "";
-  const stock = product.stock;
+  // A make_to_order (recipe) product has no meaningful own stock: its
+  // ingredients are what the server checks and deducts.
+  const stock = usesProductStock(product) ? product.stock : undefined;
   const minStock = product.minStock;
   const isAvailable = product.isAvailable !== false;
   const isOutOfStock = stock !== undefined && Number(stock) <= 0 && isAvailable;
