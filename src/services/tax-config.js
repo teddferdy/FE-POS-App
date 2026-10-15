@@ -90,3 +90,11 @@ export const uploadTaxConfigExcel = async (file) => {
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };
+
+// "Gunakan di Kasir & BISA": make this PPN row the applied rate of its scope
+// (BE deactivates the other active PPN rows of the same scope).
+export const applyTaxConfig = async (id) => {
+  const { data, status } = await axiosInstance.put(`/tax-config/apply/${id}`);
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
