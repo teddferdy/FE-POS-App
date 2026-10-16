@@ -8474,5 +8474,6 @@
   "page.salesReturn.list.modal.otherLabel": "Keterangan refund",
   "page.salesReturn.list.modal.referenceHint": "Mis. referensi transfer, kode approval EDC, atau nomor transaksi e-wallet/QRIS.",
   "page.salesReturn.list.modal.referenceRequired": "Isi referensi refund sebelum menyetujui. Retur belum disetujui.",
-  "page.salesReturn.list.modal.otherRequired": "Jelaskan cara refund ini dilakukan sebelum menyetujui. Retur belum disetujui."
+  "page.salesReturn.list.modal.otherRequired": "Jelaskan cara refund ini dilakukan sebelum menyetujui. Retur belum disetujui.",
+  "formError.input.register.passwordMin": "Kata sandi minimal 6 karakter"
 }
