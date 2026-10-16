@@ -1,21 +1,15 @@
 import React, { useState, useMemo } from "react";
-import { safeGet } from "@/lib/safe-lookup";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ChevronDown, ChevronRight, Info, CheckSquare } from "lucide-react";
-import { normalizePayload } from "@/lib/payload-normalizer";
+import { Info, ShieldAlert, ShieldCheck, Plus, Minus } from "lucide-react";
 import { editRole, getRoleById } from "@/services/role";
-import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
-import {
-  buildAccessMenuPayload,
-  parseAccessMenuToPermissions,
-  normalizePermissionActions,
-  findMenuPermission
-} from "@/utils/permission";
+import { getAllLocation } from "@/services/location";
+import { parseAccessMenuToPermissions } from "@/utils/permission";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,110 +18,27 @@ import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import PageHeader from "@/components/ui/PageHeader";
-import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import PermissionMatrix from "./components/PermissionMatrix";
+import {
+  actionLabelKeys,
+  buildInitialPermissions,
+  buildRoleEditPayload,
+  diffPermissions,
+  getLeafItemsGrouped,
+  roleTypeLabelKey,
+  setAllPermissions,
+  togglePermissionValue
+} from "./rolePermissions";
+import { safeGet } from "@/lib/safe-lookup";
 
-// ponytail: action labels map to translation keys. Add new actions here and in id.json/en.json.
-const actionLabelKeys = {
-  view: "page.role.action.view",
-  add: "page.role.action.add",
-  edit: "page.role.action.edit",
-  delete: "page.role.action.delete",
-  import: "page.role.action.import",
-  export: "page.role.action.export",
-  approve: "page.role.action.approve",
-  print: "page.role.action.print",
-  "edit-points": "page.role.action.editPoints",
-  "edit-access": "page.role.action.editAccess",
-  "reset-password": "page.role.action.resetPassword",
-  "update-status": "page.role.action.updateStatus"
-};
+const SUMMARY_LIMIT = 8;
 
-const actionColors = {
-  view: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30",
-  add: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30",
-  edit: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30",
-  delete: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30",
-  import: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30",
-  export: "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30",
-  approve: "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30",
-  print: "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30",
-  "edit-points": "text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/30",
-  "edit-access": "text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/30",
-  "reset-password": "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30",
-  "update-status": "text-lime-600 dark:text-lime-400 bg-lime-50 dark:bg-lime-950/30"
-};
-
-const collectLeaves = (items) => {
-  const leaves = [];
-  for (const item of items) {
-    if (item.href && !item.href.startsWith("#")) leaves.push(item);
-    if (item.children && item.children.length > 0) leaves.push(...collectLeaves(item.children));
-  }
-  return leaves;
-};
-
-const getLeafItemsGrouped = () => {
-  const groups = [];
-  sidebarMenuSuperAdmin.forEach((parent) => {
-    if (parent.href && (!parent.children || parent.children.length === 0)) {
-      groups.push({ parentTitle: "", parentIcon: null, items: [parent] });
-    } else if (parent.children && parent.children.length > 0) {
-      const leafChildren = collectLeaves(parent.children);
-      if (leafChildren.length > 0) {
-        groups.push({
-          parentTitle: parent.title,
-          parentIcon: parent.icon,
-          items: leafChildren
-        });
-      }
-    }
-  });
-  return groups;
-};
-
-const allActionTypes = [
-  "view",
-  "add",
-  "edit",
-  "delete",
-  "import",
-  "export",
-  "approve",
-  "print",
-  "edit-points",
-  "edit-access",
-  "reset-password",
-  "update-status"
-];
-
-const buildInitialPermissions = (groups, existingAccessMenu = {}, roleType = "") => {
-  // ponytail: rebuild literal + safeGet — bebas object injection (Codacy)
-  let perms = {};
-  groups.forEach((g) => {
-    g.items.forEach((item) => {
-      const key = item.href;
-      const existing =
-        normalizePermissionActions(findMenuPermission(existingAccessMenu, key)) || {};
-      const allGranted =
-        roleType === "super_admin" ||
-        (Object.values(existing).length > 0 && Object.values(existing).every(Boolean));
-      let actions = {};
-      allActionTypes.forEach((a) => {
-        if (!item.actions?.includes(a)) {
-          actions = { ...actions, [a]: null };
-        } else {
-          const prevVal = safeGet(existing, a);
-          actions = {
-            ...actions,
-            [a]: prevVal !== undefined ? !!prevVal : allGranted
-          };
-        }
-      });
-      perms = { ...perms, [key]: actions };
-    });
-  });
-  return perms;
-};
+const toStatusString = (status) =>
+  typeof status === "string"
+    ? status
+    : status === true || status === undefined
+      ? "active"
+      : "inactive";
 
 const EditRole = () => {
   const { t } = useTranslation();
@@ -135,18 +46,22 @@ const EditRole = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
+  const isSuperAdmin = cookie?.user?.roleType === "super_admin";
+  const isGlobalSuperAdmin =
+    isSuperAdmin && (cookie?.user?.store == null || cookie?.user?.store === "");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [permissions, setPermissions] = useState({});
+  const [initial, setInitial] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [summaryModal, setSummaryModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
-  const [collapsedGroups, setCollapsedGroups] = useState({});
 
   const roleFieldLabels = useMemo(
     () => ({
@@ -171,23 +86,74 @@ const EditRole = () => {
     data: roleData,
     isLoading: isLoadingRole,
     isError,
+    error,
     refetch
   } = useQuery(["role-by-id", id], () => getRoleById(id), {
     enabled: !!id,
+    retry: (count, err) => ![403, 404].includes(err?.response?.status) && count < 2,
     onSuccess: (res) => {
       const role = res?.data || res;
       if (role) {
+        const perms = buildInitialPermissions(
+          groups,
+          parseAccessMenuToPermissions(role.accessMenu),
+          role.roleType
+        );
         setName(role.name || "");
         setDescription(role.description || "");
-        const existingPerms = parseAccessMenuToPermissions(role.accessMenu);
-        setPermissions(buildInitialPermissions(groups, existingPerms, role.roleType));
+        setPermissions(perms);
+        setInitial({
+          name: role.name || "",
+          description: role.description || "",
+          status: toStatusString(role.status),
+          permissions: perms
+        });
       }
     }
   });
+  const role = roleData?.data || null;
+  // D2 (BA DR-12 Q14): only the global super admin changes a built-in role;
+  // the server refuses everyone else, so the editor is read-only for them.
+  const isLocked = !!role?.isSystem && !isGlobalSuperAdmin;
+
+  const { data: locData } = useQuery(["locations-role"], () => getAllLocation(), {
+    enabled: isSuperAdmin && role?.store != null
+  });
+  const storeName =
+    role?.store != null
+      ? (locData?.data || []).find((loc) => Number(loc.id) === Number(role.store))?.name ||
+        `#${role.store}`
+      : null;
+
+  const currentState = (saveAsDraft = false) => ({
+    name: name.trim(),
+    description: description.trim(),
+    status: saveAsDraft ? "draft" : initial?.status,
+    permissions
+  });
+
+  const buildPayload = (saveAsDraft = false) =>
+    buildRoleEditPayload({
+      id,
+      initial,
+      current: currentState(saveAsDraft),
+      storedAccessMenu: role?.accessMenu,
+      groups
+    });
+
+  const pendingPayload = initial ? buildPayload(false) : { id: Number(id) };
+  const isDirty = !!initial && Object.keys(pendingPayload).length > 1;
+  useUnsavedChanges(isDirty && !successModal);
+
+  const changes = useMemo(
+    () => (initial ? diffPermissions(groups, initial.permissions, permissions) : null),
+    [groups, initial, permissions]
+  );
 
   const editMutation = useMutation(editRole, {
     onSuccess: () => {
       queryClient.invalidateQueries(["roles-all"]);
+      queryClient.invalidateQueries(["roles"]);
       queryClient.invalidateQueries(["roles-table"]);
       queryClient.invalidateQueries(["role-by-id", id]);
       setSuccessModal(true);
@@ -199,45 +165,7 @@ const EditRole = () => {
     }
   });
 
-  const togglePermission = (href, action) => {
-    setPermissions((prev) => {
-      const current = safeGet(safeGet(prev, href), action);
-      if (current === null) return prev;
-      return {
-        ...prev,
-        [href]: { ...safeGet(prev, href), [action]: !current }
-      };
-    });
-  };
-
-  const isAllSelected = () => {
-    return Object.values(permissions).every((p) =>
-      Object.entries(p).every(([, val]) => val === null || val === true)
-    );
-  };
-
-  const selectAll = (checked) => {
-    // ponytail: rebuild literal via reduce — bebas object injection
-    const updated = Object.keys(permissions).reduce((acc, key) => {
-      const actions = safeGet(permissions, key) ?? {};
-      const nextActions = Object.keys(actions).reduce(
-        (inner, action) => ({
-          ...inner,
-          [action]: safeGet(actions, action) === null ? null : checked
-        }),
-        {}
-      );
-      return { ...acc, [key]: nextActions };
-    }, {});
-    setPermissions(updated);
-  };
-
-  const getVisibleActions = (itemActions) => {
-    return allActionTypes.filter((a) => itemActions?.includes(a));
-  };
-
-  const handleSubmit = (e, saveAsDraft = false) => {
-    e.preventDefault();
+  const submit = (saveAsDraft = false) => {
     if (!name.trim()) {
       toast.error(t("common.error"), {
         description: t("page.role.edit.nameRequired")
@@ -245,34 +173,50 @@ const EditRole = () => {
       return;
     }
     setIsSubmitting(true);
-
-    const accessMenu = buildAccessMenuPayload(permissions);
-    const user = cookie?.user;
-    const currentStatus = roleData?.data?.status;
-    const statusStr =
-      typeof currentStatus === "string"
-        ? currentStatus
-        : currentStatus === true || currentStatus === undefined
-          ? "active"
-          : "inactive";
-
-    const payload = {
-      id: Number(id),
-      name: name.trim(),
-      description: description.trim(),
-      status: saveAsDraft ? "draft" : statusStr,
-      modifiedBy: user?.id || user?.userId || null,
-      accessMenu
-    };
-
-    editMutation.mutate(normalizePayload(payload, { isFormData: false }));
+    editMutation.mutate(buildPayload(saveAsDraft));
   };
 
-  const toggleGroup = (idx) => {
-    setCollapsedGroups((prev) => ({ ...prev, [idx]: !safeGet(prev, idx, false) }));
+  const requestSave = () => {
+    const missing = getMissingFields({ name, description }, roleFormSchema, roleFieldLabels);
+    if (missing.length > 0) {
+      setMissingFieldsList(missing);
+      setMissingFieldsModal(true);
+      return;
+    }
+    if (!isDirty) {
+      toast.info(t("page.role.edit.noChanges"));
+      return;
+    }
+    setSummaryModal(true);
   };
 
-  if (isError) return <AbortController refetch={refetch} />;
+  const leave = () => {
+    if (isDirty) setCancelModal(true);
+    else navigate("/role-management");
+  };
+
+  if (isError) {
+    const status = error?.response?.status;
+    if (status === 403 || status === 404) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
+          <ShieldAlert size={40} className="text-muted-foreground" aria-hidden="true" />
+          <div className="space-y-1">
+            <p className="text-lg font-semibold text-foreground">
+              {t("page.role.detail.notFound")}
+            </p>
+            <p className="text-sm text-muted-foreground max-w-md">
+              {t("page.role.edit.unavailableHint")}
+            </p>
+          </div>
+          <Button variant="outline" onClick={() => navigate("/role-management")}>
+            {t("page.role.edit.backToList")}
+          </Button>
+        </div>
+      );
+    }
+    return <AbortController refetch={refetch} />;
+  }
 
   if (isLoadingRole) {
     return (
@@ -325,6 +269,25 @@ const EditRole = () => {
     );
   }
 
+  const actionLabel = (action) => t(safeGet(actionLabelKeys, action)) || action;
+  const renderChangeList = (items, Icon, tone) => (
+    <ul className="space-y-1">
+      {items.slice(0, SUMMARY_LIMIT).map((c) => (
+        <li key={`${c.href}:${c.action}`} className={`flex items-center gap-2 text-sm ${tone}`}>
+          <Icon size={14} aria-hidden="true" />
+          <span>
+            {c.title} — {actionLabel(c.action)}
+          </span>
+        </li>
+      ))}
+      {items.length > SUMMARY_LIMIT && (
+        <li className="text-xs text-muted-foreground">
+          {t("page.role.summary.more", { count: items.length - SUMMARY_LIMIT })}
+        </li>
+      )}
+    </ul>
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -336,27 +299,44 @@ const EditRole = () => {
           },
           { label: t("page.role.edit.title") }
         ]}
-        title={`${t("page.role.edit.title")}: ${name}`}
+        title={`${t("page.role.edit.title")}: ${initial?.name || name}`}
         description={t("page.role.edit.description")}
-        onBack={() => setCancelModal(true)}
+        onBack={leave}
         dynamicInfo={false}
       />
+
+      {role?.isSystem && (
+        <div
+          role="note"
+          className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+          <ShieldAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+          <div className="space-y-0.5">
+            <p className="text-sm font-semibold">{t("page.role.edit.systemTitle")}</p>
+            <p className="text-sm">
+              {isLocked ? t("page.role.edit.systemLocked") : t("page.role.edit.systemHint")}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
           <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
             <div className="flex items-center gap-2 mb-4">
-              <Info size={18} className="text-primary" />
+              <Info size={18} className="text-primary" aria-hidden="true" />
               <h3 className="text-base font-semibold text-foreground">
                 {t("page.role.detail.infoTitle")}
               </h3>
             </div>
             <div className="space-y-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <label
+                  htmlFor="role-name"
+                  className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("page.role.detail.nameLabel")} <span className="text-destructive">*</span>
                 </label>
                 <input
+                  id="role-name"
                   data-tour="role-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -365,10 +345,13 @@ const EditRole = () => {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <label
+                  htmlFor="role-description"
+                  className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("page.role.edit.descLabel")}
                 </label>
                 <textarea
+                  id="role-description"
                   data-tour="role-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -377,6 +360,27 @@ const EditRole = () => {
                   rows={5}
                 />
               </div>
+              <dl className="grid grid-cols-2 gap-3 border-t border-border pt-4">
+                <div className="space-y-1">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.role.detail.typeLabel")}
+                  </dt>
+                  <dd className="text-sm font-medium text-foreground">
+                    {t(roleTypeLabelKey(role?.roleType))}
+                  </dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.role.scope.label")}
+                  </dt>
+                  <dd className="text-sm font-medium text-foreground">
+                    {storeName
+                      ? t("page.role.scope.store", { name: storeName })
+                      : t("page.role.scope.global")}
+                  </dd>
+                </div>
+              </dl>
+              <p className="text-xs text-muted-foreground">{t("page.role.edit.typeLockedHint")}</p>
             </div>
           </div>
 
@@ -391,158 +395,40 @@ const EditRole = () => {
         </div>
 
         <div className="col-span-12 lg:col-span-8">
-          <div
-            data-tour="role-permissions-matrix"
-            className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
-              <div className="flex items-center gap-2">
-                <CheckSquare size={18} className="text-primary" />
-                <h3 className="text-base font-semibold text-foreground">
-                  {t("page.role.detail.matrixTitle")}
-                </h3>
-              </div>
-              <label className="flex items-center gap-2 cursor-pointer select-none group">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected()}
-                  onChange={(e) => selectAll(e.target.checked)}
-                  className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
-                />
-                <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                  {t("page.role.edit.selectAll")}
-                </span>
-              </label>
-            </div>
-
-            <div className="divide-y divide-border">
-              {groups.map((group, idx) => {
-                const visibleActions = getVisibleActions(
-                  group.items.reduce((acc, item) => {
-                    (item.actions || []).forEach((a) => {
-                      if (!acc.includes(a)) acc.push(a);
-                    });
-                    return acc;
-                  }, [])
-                );
-                const isCollapsed = safeGet(collapsedGroups, idx, false);
-
-                return (
-                  <div key={idx}>
-                    {group.parentTitle && (
-                      <button
-                        type="button"
-                        onClick={() => toggleGroup(idx)}
-                        className="w-full flex items-center gap-2 px-6 py-3 bg-muted/10 hover:bg-muted/20 transition-colors text-left">
-                        {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                          {group.parentTitle}
-                        </span>
-                      </button>
-                    )}
-                    {!isCollapsed && (
-                      <HorizontalScrollArea>
-                        <table className="w-full text-left border-collapse">
-                          <thead>
-                            <tr className="bg-muted/10">
-                              <th className="px-6 py-3 text-xs font-bold text-foreground uppercase tracking-wider w-56 bg-slate-100 dark:bg-slate-800">
-                                {t("page.role.detail.menuColumn")}
-                              </th>
-                              {visibleActions.map((action) => (
-                                <th
-                                  key={action}
-                                  className={`px-2 py-3 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${safeGet(actionColors, action, "text-muted-foreground")}`}>
-                                  {t(safeGet(actionLabelKeys, action)) || action}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border">
-                            {group.items.map((item) => {
-                              const itemActions = getVisibleActions(item.actions || []);
-                              return (
-                                <tr key={item.href} className="hover:bg-muted/10 transition-colors">
-                                  <td className="px-6 py-3">
-                                    <div className="flex items-center gap-2">
-                                      {item.icon && (
-                                        <item.icon
-                                          size={16}
-                                          className="text-muted-foreground shrink-0"
-                                        />
-                                      )}
-                                      <span className="text-sm text-foreground">{item.title}</span>
-                                    </div>
-                                  </td>
-                                  {itemActions.map((action) => {
-                                    const val = safeGet(safeGet(permissions, item.href), action);
-                                    const isDisabled = val === null;
-                                    return (
-                                      <td key={action} className="px-2 py-3 text-center">
-                                        {isDisabled ? (
-                                          <span className="text-muted-foreground/30">—</span>
-                                        ) : (
-                                          <input
-                                            type="checkbox"
-                                            checked={!!val}
-                                            onChange={() => togglePermission(item.href, action)}
-                                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-                                          />
-                                        )}
-                                      </td>
-                                    );
-                                  })}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </HorizontalScrollArea>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="p-4 bg-muted/20 text-right border-t border-border">
-              <p className="text-xs text-muted-foreground italic">
-                {t("page.role.edit.footerNote")}
-              </p>
-            </div>
-          </div>
+          <PermissionMatrix
+            groups={groups}
+            permissions={permissions}
+            onToggle={(href, action) =>
+              setPermissions((prev) => togglePermissionValue(prev, href, action))
+            }
+            onSelectAll={(checked) => setPermissions((prev) => setAllPermissions(prev, checked))}
+            footerNote={t("page.role.edit.footerNote")}
+          />
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
-        <Button
-          variant="danger"
-          onClick={() => setCancelModal(true)}
-          className="w-full sm:w-auto justify-center">
+        <Button variant="danger" onClick={leave} className="w-full sm:w-auto justify-center">
           {t("common.cancel")}
         </Button>
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          {isDirty && (
+            <span className="text-xs font-medium text-amber-700 dark:text-amber-300" role="status">
+              {t("page.role.edit.unsaved")}
+            </span>
+          )}
           <Button
             variant="draft"
             onClick={() => setDraftModal(true)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isLocked}
             className="w-full sm:w-auto justify-center">
             {t("common.saveAsDraft")}
           </Button>
           <Button
             variant="success"
             data-tour="role-save"
-            onClick={() => {
-              const missing = getMissingFields(
-                { name, description },
-                roleFormSchema,
-                roleFieldLabels
-              );
-              if (missing.length > 0) {
-                setMissingFieldsList(missing);
-                setMissingFieldsModal(true);
-                return;
-              }
-              handleSubmit({ preventDefault: () => {} }, false);
-            }}
-            disabled={isSubmitting}
+            onClick={requestSave}
+            disabled={isSubmitting || isLocked}
             className="w-full sm:w-auto justify-center">
             {t("page.role.edit.saveChanges")}
           </Button>
@@ -551,6 +437,46 @@ const EditRole = () => {
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
+      <Modal
+        type="form"
+        open={summaryModal}
+        onOpenChange={setSummaryModal}
+        title={t("page.role.summary.title")}
+        description={t("page.role.summary.description")}
+        confirmText={t("page.role.edit.saveChanges")}
+        loading={isSubmitting}
+        onConfirm={() => submit(false)}>
+        <div className="space-y-4">
+          {pendingPayload.name !== undefined && (
+            <p className="text-sm text-foreground">
+              {t("page.role.summary.rename", { from: initial?.name, to: pendingPayload.name })}
+            </p>
+          )}
+          {pendingPayload.description !== undefined && (
+            <p className="text-sm text-foreground">{t("page.role.summary.descriptionChanged")}</p>
+          )}
+          {changes && changes.added.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                {t("page.role.summary.added", { count: changes.added.length })}
+              </p>
+              {renderChangeList(changes.added, Plus, "text-emerald-700 dark:text-emerald-300")}
+            </div>
+          )}
+          {changes && changes.removed.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-red-700 dark:text-red-300">
+                {t("page.role.summary.removed", { count: changes.removed.length })}
+              </p>
+              {renderChangeList(changes.removed, Minus, "text-red-700 dark:text-red-300")}
+            </div>
+          )}
+          <p className="flex items-start gap-2 text-xs text-muted-foreground">
+            <ShieldCheck size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+            {t("page.role.summary.relogin")}
+          </p>
+        </div>
+      </Modal>
       <Modal
         type="success"
         open={successModal}
@@ -574,6 +500,7 @@ const EditRole = () => {
         open={cancelModal}
         onOpenChange={setCancelModal}
         title={t("modal.cancelTitle")}
+        description={t("page.role.edit.discardDesc")}
         confirmText={t("modal.yesCancel")}
         onConfirm={() => setTimeout(() => navigate("/role-management"), 150)}
       />
@@ -583,11 +510,15 @@ const EditRole = () => {
         open={draftModal}
         onOpenChange={setDraftModal}
         title={t("common.saveAsDraftTitle")}
-        description={t("common.saveAsDraftDesc")}
+        description={
+          role?.userCount > 0 && initial?.status === "active"
+            ? t("page.role.edit.draftInUse", { count: role.userCount })
+            : t("common.saveAsDraftDesc")
+        }
         confirmText={t("common.yesSaveDraft")}
         onConfirm={() => {
           setDraftModal(false);
-          handleSubmit(new Event("submit"), true);
+          submit(true);
         }}
       />
       <MissingFieldsModal
