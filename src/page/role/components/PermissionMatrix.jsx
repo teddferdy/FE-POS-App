@@ -63,7 +63,7 @@ const PermissionMatrix = ({ groups, permissions, onToggle, onSelectAll, footerNo
               type="checkbox"
               checked={isAllSelected(permissions)}
               onChange={(e) => onSelectAll(e.target.checked)}
-              className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
+              className="w-5 h-5 rounded border-2 border-muted-foreground/40 bg-white dark:bg-background accent-primary cursor-pointer"
             />
             <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
               {t("page.role.edit.selectAll")}
@@ -170,7 +170,7 @@ const PermissionMatrix = ({ groups, permissions, onToggle, onSelectAll, footerNo
                                         checked={!!val}
                                         onChange={() => onToggle(item.href, action)}
                                         aria-label={`${item.title} — ${actionLabel(action)}`}
-                                        className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                                        className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-white dark:bg-background accent-primary cursor-pointer"
                                       />
                                     )}
                                   </td>
