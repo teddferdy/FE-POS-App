@@ -251,7 +251,13 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
       // Nothing was recorded; keep the typed values and point at the field.
       if (status === 422 && code === "REFERENCE_REQUIRED") {
         setReferenceRefused(true);
-        toast.error(t("page.cashier.collectPayment.reference.required"));
+        toast.error(
+          t(
+            isOtherMethod
+              ? "page.cashier.collectPayment.reference.otherRequired"
+              : "page.cashier.collectPayment.reference.required"
+          )
+        );
         return;
       }
       // DR-23: the settlement must equal the CURRENT outstanding amount — a
@@ -656,7 +662,11 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                           role="alert"
                           className="flex items-start gap-1.5 text-sm text-destructive">
                           <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-                          {t("page.cashier.collectPayment.reference.required")}
+                          {t(
+                            isOtherMethod
+                              ? "page.cashier.collectPayment.reference.otherRequired"
+                              : "page.cashier.collectPayment.reference.required"
+                          )}
                         </p>
                       ) : (
                         <p

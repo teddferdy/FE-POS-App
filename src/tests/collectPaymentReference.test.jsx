@@ -171,6 +171,20 @@ describe("points", () => {
 });
 
 describe("failed settlement", () => {
+  test("422 REFERENCE_REQUIRED on OTHER asks for a description, not a reference (BA 003)", async () => {
+    updateOrderStatus.mockRejectedValueOnce({
+      response: { status: 422, data: { code: "REFERENCE_REQUIRED" } }
+    });
+    await renderModal();
+    chooseMethod("other");
+    typeReference("Voucher kantor");
+    fireEvent.click(confirmButton());
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(`${P}.reference.otherRequired`));
+    expect(screen.getByRole("alert")).toHaveTextContent(`${P}.reference.otherRequired`);
+    expect(toast.error).not.toHaveBeenCalledWith(`${P}.reference.required`);
+  });
+
   test("422 REFERENCE_REQUIRED shows the inline error, keeps the typed values and the modal open", async () => {
     updateOrderStatus.mockRejectedValueOnce({
       response: {

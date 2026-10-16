@@ -8465,5 +8465,6 @@
   "page.role.summary.relogin": "Users of this role see the new menus after signing in again.",
   "page.role.modal.inUseTitle": "Role Still In Use",
   "page.role.edit.systemLocked": "This is a built-in role; only a global Super Admin can change it.",
-  "page.role.edit.draftInUse": "This role is still held by {{count}} user(s). They keep it, but a draft role cannot be granted to new users until it is active again."
+  "page.role.edit.draftInUse": "This role is still held by {{count}} user(s). They keep it, but a draft role cannot be granted to new users until it is active again.",
+  "page.cashier.collectPayment.reference.otherRequired": "Describe how this \"Other\" payment was made before confirming. The payment was not recorded."
 }
