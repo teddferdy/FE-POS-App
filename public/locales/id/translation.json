@@ -8468,5 +8468,7 @@
   "page.role.edit.draftInUse": "Role ini masih dipakai {{count}} pengguna. Mereka tetap memegang role ini, tetapi role draft tidak dapat diberikan ke pengguna baru sampai diaktifkan kembali.",
   "page.cashier.collectPayment.reference.otherRequired": "Isi keterangan cara pembayaran \"Lainnya\" sebelum konfirmasi. Pembayaran belum tercatat.",
   "page.cashier.collectPayment.reference.duplicate": "Referensi ini sudah dipakai untuk pembayaran lain di toko ini. Periksa kembali bukti pembayarannya. Pembayaran belum tercatat.",
-  "page.cashier.receipt.splitPayConfirm": "Bayar split"
+  "page.cashier.receipt.splitPayConfirm": "Bayar split",
+  "page.cashier.stockShortage.title": "Pembayaran tercatat, tapi stok kurang",
+  "page.cashier.stockShortage.desc": "Stok tidak mencukupi untuk: {{items}}. Kekurangannya sudah dicatat di History Stok — periksa dan sesuaikan stok."
 }

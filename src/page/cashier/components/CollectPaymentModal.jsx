@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { warnStockShortages } from "@/lib/stock-shortage";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -217,8 +218,9 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
           : {}),
         ...(tender.referenceNumber ? { referenceNumber: tender.referenceNumber } : {})
       }),
-    onSuccess: async (_data, tender) => {
+    onSuccess: async (data, tender) => {
       toast.success(t("page.cashier.collectPayment.toast.paidSuccess"));
+      warnStockShortages(data?.stockShortages, t);
       invalidateOrderQueues();
       // Re-fetch rather than trust the mutation response for the receipt —
       // updateOrderStatus's response order was loaded without its items

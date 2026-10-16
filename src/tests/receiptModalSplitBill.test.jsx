@@ -16,7 +16,7 @@ jest.mock("react-i18next", () => ({
 }));
 
 jest.mock("sonner", () => ({
-  toast: { success: jest.fn(), error: jest.fn() }
+  toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn() }
 }));
 
 jest.mock("@/utils/thermalPrint", () => ({ printReceipt: jest.fn() }));

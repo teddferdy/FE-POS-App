@@ -8468,5 +8468,7 @@
   "page.role.edit.draftInUse": "This role is still held by {{count}} user(s). They keep it, but a draft role cannot be granted to new users until it is active again.",
   "page.cashier.collectPayment.reference.otherRequired": "Describe how this \"Other\" payment was made before confirming. The payment was not recorded.",
   "page.cashier.collectPayment.reference.duplicate": "This reference was already used for another payment at this store. Check the payment proof again. The payment was not recorded.",
-  "page.cashier.receipt.splitPayConfirm": "Pay split"
+  "page.cashier.receipt.splitPayConfirm": "Pay split",
+  "page.cashier.stockShortage.title": "Payment recorded, but stock was short",
+  "page.cashier.stockShortage.desc": "Not enough stock for: {{items}}. The shortage is recorded in Stock History — check and adjust the stock."
 }
