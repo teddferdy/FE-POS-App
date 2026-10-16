@@ -1,117 +1,37 @@
 import React, { useState, useMemo } from "react";
-import { safeGet } from "@/lib/safe-lookup";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ChevronDown, ChevronRight, Info, CheckSquare } from "lucide-react";
+import { Info } from "lucide-react";
 import { addRole } from "@/services/role";
-import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
-import { buildAccessMenuPayload } from "@/utils/permission";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import PageHeader from "@/components/ui/PageHeader";
-import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
-
-const actionLabels = {
-  view: "Lihat",
-  add: "Tambah",
-  edit: "Ubah",
-  delete: "Hapus",
-  import: "Impor",
-  export: "Ekspor",
-  approve: "Setujui",
-  print: "Cetak",
-  "edit-points": "Ubah Poin",
-  "edit-access": "Ubah Akses",
-  "reset-password": "Atur Ulang Sandi",
-  "update-status": "Perbarui Status"
-};
-
-const actionColors = {
-  view: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30",
-  add: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30",
-  edit: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30",
-  delete: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30",
-  import: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30",
-  export: "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30",
-  approve: "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30",
-  print: "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30",
-  "edit-points": "text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/30",
-  "edit-access": "text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/30",
-  "reset-password": "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30",
-  "update-status": "text-lime-600 dark:text-lime-400 bg-lime-50 dark:bg-lime-950/30"
-};
-
-const collectLeaves = (items) => {
-  const leaves = [];
-  for (const item of items) {
-    if (item.href && !item.href.startsWith("#")) leaves.push(item);
-    if (item.children && item.children.length > 0) leaves.push(...collectLeaves(item.children));
-  }
-  return leaves;
-};
-
-const getLeafItemsGrouped = () => {
-  const groups = [];
-  sidebarMenuSuperAdmin.forEach((parent) => {
-    if (parent.href && (!parent.children || parent.children.length === 0)) {
-      groups.push({ parentTitle: "", parentIcon: null, items: [parent] });
-    } else if (parent.children && parent.children.length > 0) {
-      const leafChildren = collectLeaves(parent.children);
-      if (leafChildren.length > 0) {
-        groups.push({
-          parentTitle: parent.title,
-          parentIcon: parent.icon,
-          items: leafChildren
-        });
-      }
-    }
-  });
-  return groups;
-};
-
-const allActionTypes = [
-  "view",
-  "add",
-  "edit",
-  "delete",
-  "import",
-  "export",
-  "approve",
-  "print",
-  "edit-points",
-  "edit-access",
-  "reset-password",
-  "update-status"
-];
-
-const buildInitialPermissions = (groups) => {
-  // ponytail: rebuild literal — bebas object injection (Codacy)
-  let perms = {};
-  groups.forEach((g) => {
-    g.items.forEach((item) => {
-      const key = item.href;
-      let actions = {};
-      allActionTypes.forEach((a) => {
-        actions = { ...actions, [a]: item.actions?.includes(a) ? false : null };
-      });
-      perms = { ...perms, [key]: actions };
-    });
-  });
-  return perms;
-};
+import PermissionMatrix from "@/page/role/components/PermissionMatrix";
+import {
+  buildInitialPermissions,
+  buildRoleAccessMenu,
+  countGranted,
+  getLeafItemsGrouped,
+  setAllPermissions,
+  togglePermissionValue
+} from "@/page/role/rolePermissions";
 
 const AddRole = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
+  // The server decides the role's store: a store-bound account creates
+  // roles for its own store, a global super admin creates global roles.
+  const isStoreBound = cookie?.user?.store != null && cookie?.user?.store !== "";
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -122,7 +42,6 @@ const AddRole = () => {
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [collapsedGroups, setCollapsedGroups] = useState({});
 
   const roleFieldLabels = useMemo(
     () => ({
@@ -144,9 +63,13 @@ const AddRole = () => {
   const groups = useMemo(() => getLeafItemsGrouped(), []);
   const [permissions, setPermissions] = useState(() => buildInitialPermissions(groups));
 
+  const isDirty = name.trim() !== "" || description.trim() !== "" || countGranted(permissions) > 0;
+  useUnsavedChanges(isDirty && !successModal);
+
   const createMutation = useMutation(addRole, {
     onSuccess: () => {
       queryClient.invalidateQueries(["roles-all"]);
+      queryClient.invalidateQueries(["roles"]);
       queryClient.invalidateQueries(["roles-table"]);
       setSuccessModal(true);
     },
@@ -157,45 +80,7 @@ const AddRole = () => {
     }
   });
 
-  const togglePermission = (href, action) => {
-    setPermissions((prev) => {
-      const current = safeGet(safeGet(prev, href), action);
-      if (current === null) return prev;
-      return {
-        ...prev,
-        [href]: { ...safeGet(prev, href), [action]: !current }
-      };
-    });
-  };
-
-  const isAllSelected = () => {
-    return Object.values(permissions).every((p) =>
-      Object.entries(p).every(([, val]) => val === null || val === true)
-    );
-  };
-
-  const selectAll = (checked) => {
-    // ponytail: rebuild literal via reduce — bebas object injection
-    const updated = Object.keys(permissions).reduce((acc, key) => {
-      const actions = safeGet(permissions, key) ?? {};
-      const nextActions = Object.keys(actions).reduce(
-        (inner, action) => ({
-          ...inner,
-          [action]: safeGet(actions, action) === null ? null : checked
-        }),
-        {}
-      );
-      return { ...acc, [key]: nextActions };
-    }, {});
-    setPermissions(updated);
-  };
-
-  const getVisibleActions = (itemActions) => {
-    return allActionTypes.filter((a) => itemActions?.includes(a));
-  };
-
-  const handleSubmit = (e, saveAsDraft = false) => {
-    e.preventDefault();
+  const submit = (saveAsDraft = false) => {
     if (!name.trim()) {
       toast.error(t("common.error"), {
         description: t("page.role.add.nameRequired")
@@ -203,20 +88,18 @@ const AddRole = () => {
       return;
     }
     setIsSubmitting(true);
-
-    const accessMenu = buildAccessMenuPayload(permissions);
-    const user = cookie?.user;
+    // createdBy, roleType and store are set by the server.
     createMutation.mutate({
       name: name.trim(),
       description: description.trim(),
       status: saveAsDraft ? "draft" : "active",
-      createdBy: user?.id || user?.userId || null,
-      accessMenu
+      accessMenu: buildRoleAccessMenu(permissions)
     });
   };
 
-  const toggleGroup = (idx) => {
-    setCollapsedGroups((prev) => ({ ...prev, [idx]: !safeGet(prev, idx, false) }));
+  const leave = () => {
+    if (isDirty) setCancelModal(true);
+    else navigate("/role-management");
   };
 
   return (
@@ -233,7 +116,7 @@ const AddRole = () => {
           ]}
           title={t("page.role.add.title")}
           description={t("page.role.add.description")}
-          onBack={() => setCancelModal(true)}
+          onBack={leave}
           dynamicInfo={false}
         />
 
@@ -241,15 +124,20 @@ const AddRole = () => {
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
             <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
               <div className="flex items-center gap-2 mb-4">
-                <Info size={18} className="text-primary" />
-                <h3 className="text-base font-semibold text-foreground">Informasi Role</h3>
+                <Info size={18} className="text-primary" aria-hidden="true" />
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.role.detail.infoTitle")}
+                </h3>
               </div>
               <div className="space-y-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Nama Role <span className="text-destructive">*</span>
+                  <label
+                    htmlFor="role-name"
+                    className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.role.detail.nameLabel")} <span className="text-destructive">*</span>
                   </label>
                   <input
+                    id="role-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
@@ -257,10 +145,13 @@ const AddRole = () => {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Deskripsi Role
+                  <label
+                    htmlFor="role-description"
+                    className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.role.edit.descLabel")}
                   </label>
                   <textarea
+                    id="role-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
@@ -268,145 +159,43 @@ const AddRole = () => {
                     rows={5}
                   />
                 </div>
+                <div className="space-y-1 border-t border-border pt-4">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.role.scope.label")}
+                  </p>
+                  <p className="text-sm font-medium text-foreground">
+                    {isStoreBound ? t("page.role.scope.ownStore") : t("page.role.scope.global")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{t("page.role.add.scopeHint")}</p>
+                </div>
               </div>
             </div>
 
             <div className="bg-primary/5 p-6 rounded-xl border border-primary/20">
-              <h4 className="text-base font-semibold text-primary mb-2">Panduan Izin Akses</h4>
+              <h4 className="text-base font-semibold text-primary mb-2">
+                {t("page.role.edit.guideTitle")}
+              </h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Setiap menu memiliki aksi yang bisa diizinkan atau tidak. Centang aksi yang ingin
-                diberikan untuk role ini. Menu yang tidak memiliki izin tertentu (strip) tidak dapat
-                diubah.
+                {t("page.role.edit.guideDescription")}
               </p>
             </div>
           </div>
 
           <div className="col-span-12 lg:col-span-8">
-            <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-              <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
-                <div className="flex items-center gap-2">
-                  <CheckSquare size={18} className="text-primary" />
-                  <h3 className="text-base font-semibold text-foreground">Matriks Akses Menu</h3>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer select-none group">
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected()}
-                    onChange={(e) => selectAll(e.target.checked)}
-                    className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
-                  />
-                  <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                    Pilih Semua
-                  </span>
-                </label>
-              </div>
-
-              <div className="divide-y divide-border">
-                {groups.map((group, idx) => {
-                  const visibleActions = getVisibleActions(
-                    group.items.reduce((acc, item) => {
-                      (item.actions || []).forEach((a) => {
-                        if (!acc.includes(a)) acc.push(a);
-                      });
-                      return acc;
-                    }, [])
-                  );
-                  const isCollapsed = safeGet(collapsedGroups, idx, false);
-
-                  return (
-                    <div key={idx}>
-                      {group.parentTitle && (
-                        <button
-                          type="button"
-                          onClick={() => toggleGroup(idx)}
-                          className="w-full flex items-center gap-2 px-6 py-3 bg-muted/10 hover:bg-muted/20 transition-colors text-left">
-                          {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
-                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                            {group.parentTitle}
-                          </span>
-                        </button>
-                      )}
-                      {!isCollapsed && (
-                        <HorizontalScrollArea>
-                          <table className="w-full text-left border-collapse">
-                            <thead>
-                              <tr className="bg-muted/10">
-                                <th className="px-6 py-3 text-xs font-bold text-foreground uppercase tracking-wider w-56 bg-slate-100 dark:bg-slate-800">
-                                  Menu
-                                </th>
-                                {visibleActions.map((action) => (
-                                  <th
-                                    key={action}
-                                    className={`px-2 py-3 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${safeGet(actionColors, action, "text-muted-foreground")}`}>
-                                    {safeGet(actionLabels, action) || action}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                              {group.items.map((item) => {
-                                const itemActions = getVisibleActions(item.actions || []);
-                                return (
-                                  <tr
-                                    key={item.href}
-                                    className="hover:bg-muted/10 transition-colors">
-                                    <td className="px-6 py-3">
-                                      <div className="flex items-center gap-2">
-                                        {item.icon && (
-                                          <item.icon
-                                            size={16}
-                                            className="text-muted-foreground shrink-0"
-                                          />
-                                        )}
-                                        <span className="text-sm text-foreground">
-                                          {item.title}
-                                        </span>
-                                      </div>
-                                    </td>
-                                    {itemActions.map((action) => {
-                                      const val = safeGet(safeGet(permissions, item.href), action);
-                                      const isDisabled = val === null;
-                                      return (
-                                        <td key={action} className="px-2 py-3 text-center">
-                                          {isDisabled ? (
-                                            <span className="text-muted-foreground/30">—</span>
-                                          ) : (
-                                            <input
-                                              type="checkbox"
-                                              checked={!!val}
-                                              onChange={() => togglePermission(item.href, action)}
-                                              className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-                                            />
-                                          )}
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </HorizontalScrollArea>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="p-4 bg-muted/20 text-right border-t border-border">
-                <p className="text-xs text-muted-foreground italic">
-                  Perubahan izin akses akan diterapkan setelah disimpan
-                </p>
-              </div>
-            </div>
+            <PermissionMatrix
+              groups={groups}
+              permissions={permissions}
+              onToggle={(href, action) =>
+                setPermissions((prev) => togglePermissionValue(prev, href, action))
+              }
+              onSelectAll={(checked) => setPermissions((prev) => setAllPermissions(prev, checked))}
+              footerNote={t("page.role.edit.footerNote")}
+            />
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
-          <Button
-            variant="danger"
-            onClick={() => setCancelModal(true)}
-            className="w-full sm:w-auto justify-center">
+          <Button variant="danger" onClick={leave} className="w-full sm:w-auto justify-center">
             {t("common.cancel")}
           </Button>
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -430,7 +219,7 @@ const AddRole = () => {
                   setMissingFieldsModal(true);
                   return;
                 }
-                handleSubmit({ preventDefault: () => {} }, false);
+                submit(false);
               }}
               disabled={isSubmitting}
               className="w-full sm:w-auto justify-center">
@@ -456,6 +245,7 @@ const AddRole = () => {
           open={cancelModal}
           onOpenChange={setCancelModal}
           title={t("modal.cancelTitle")}
+          description={t("page.role.edit.discardDesc")}
           confirmText={t("modal.yesCancel")}
           onConfirm={() => setTimeout(() => navigate("/role-management"), 150)}
         />
@@ -468,16 +258,7 @@ const AddRole = () => {
           confirmText={t("common.yesSaveDraft")}
           onConfirm={() => {
             setDraftModal(false);
-            setIsSubmitting(true);
-            const accessMenu = buildAccessMenuPayload(permissions);
-            const user = cookie?.user;
-            createMutation.mutate({
-              name: name.trim(),
-              description: description.trim(),
-              status: "draft",
-              createdBy: user?.id || user?.userId || null,
-              accessMenu
-            });
+            submit(true);
           }}
         />
         <MissingFieldsModal

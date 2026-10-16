@@ -3,13 +3,27 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Eye, Shield, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Shield,
+  CheckCircle,
+  FileEdit,
+  XCircle,
+  Lock,
+  Users
+} from "lucide-react";
 import { getAllRoleTable, deleteRole } from "@/services/role";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable from "@/components/ui/DataTable";
+import TableToolbar from "@/components/ui/TableToolbar";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { Combobox } from "@/components/ui/combobox";
 import TableActions from "@/components/ui/TableActions";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
@@ -18,6 +32,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import NoStore from "@/components/ui/NoStore";
+import { roleTypeLabelKey } from "./rolePermissions";
 
 const RoleManagement = () => {
   const { t } = useTranslation();
@@ -26,23 +41,53 @@ const RoleManagement = () => {
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
+  // D2 (BA DR-12 Q14): built-in roles are changed by the global super admin only.
+  const isGlobalSuperAdmin = isSuperAdmin && (user?.store == null || user?.store === "");
   const MENU_KEY = "/role-management";
 
   const { data: locData } = useQuery(["locations-role"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const PROTECTED_ROLE_NAMES = ["Super Admin", "Admin", "User", "Kasir"];
 
+  // isSystem is the server's flag (delete is refused for it); the legacy
+  // name list keeps the default roles marked on older data.
   const isProtected = (role) => {
-    return PROTECTED_ROLE_NAMES.includes(role.name || "");
+    return !!role.isSystem || PROTECTED_ROLE_NAMES.includes(role.name || "");
   };
 
-  const { data, isFetching, isError, refetch } = useQuery(["roles-table", page], () =>
-    getAllRoleTable({ page, limit: 10 })
+  const storeNameById = new Map((locData?.data || []).map((loc) => [Number(loc.id), loc.name]));
+  const scopeLabel = (role) =>
+    role.store == null
+      ? t("page.role.scope.global")
+      : t("page.role.scope.store", {
+          name: storeNameById.get(Number(role.store)) || `#${role.store}`
+        });
+
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
+    ["roles-table", page, limit, search, statusFilter],
+    () =>
+      getAllRoleTable({
+        page,
+        limit,
+        search: search || undefined,
+        statusRole: statusFilter
+      }),
+    { keepPreviousData: true }
   );
+
+  const isFiltered = search !== "" || statusFilter !== "all";
+  const resetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const roles = data?.data || [];
   const total = data?.pagination?.total || 0;
@@ -102,7 +147,7 @@ const RoleManagement = () => {
             <AbortController refetch={refetch} />
           ) : (
             <>
-              {isFetching ? (
+              {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -150,11 +195,12 @@ const RoleManagement = () => {
                       header: t("page.globalSetting.roleManagement.table.name"),
                       render: (row) => (
                         <div className="flex items-center gap-2">
-                          <Shield size={16} className="text-primary" />
+                          <Shield size={16} className="text-primary" aria-hidden="true" />
                           <span className="text-sm font-semibold text-foreground">{row.name}</span>
                           {isProtected(row) && (
-                            <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">
-                              {t("common.default")}
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">
+                              <Lock size={10} aria-hidden="true" />
+                              {row.isSystem ? t("page.role.badge.system") : t("common.default")}
                             </span>
                           )}
                         </div>
@@ -179,7 +225,23 @@ const RoleManagement = () => {
                                 ? "bg-blue-100 text-blue-700"
                                 : "bg-muted text-muted-foreground"
                           }`}>
-                          {row.roleType}
+                          {t(roleTypeLabelKey(row.roleType))}
+                        </span>
+                      )
+                    },
+                    {
+                      header: t("page.role.scope.label"),
+                      render: (row) => (
+                        <span className="text-sm text-muted-foreground">{scopeLabel(row)}</span>
+                      )
+                    },
+                    {
+                      header: t("page.globalSetting.roleManagement.table.users"),
+                      align: "right",
+                      render: (row) => (
+                        <span className="inline-flex items-center gap-1 text-sm tabular-nums text-foreground">
+                          <Users size={14} className="text-muted-foreground" aria-hidden="true" />
+                          {row.userCount ?? 0}
                         </span>
                       )
                     },
@@ -286,7 +348,9 @@ const RoleManagement = () => {
                               label: t("common.edit"),
                               icon: Edit,
                               onClick: () => navigate(`/edit-role/${row.id}`),
-                              hidden: !canAccess(user, MENU_KEY, "edit")
+                              hidden:
+                                !canAccess(user, MENU_KEY, "edit") ||
+                                (row.isSystem && !isGlobalSuperAdmin)
                             },
                             {
                               label: t("common.delete"),
@@ -303,17 +367,63 @@ const RoleManagement = () => {
                   data={roles}
                   isLoading={isFetching}
                   emptyIcon={Shield}
-                  emptyMessage={t("page.globalSetting.roleManagement.empty")}
+                  emptyMessage={
+                    isFiltered
+                      ? t("page.role.list.noMatch")
+                      : t("page.globalSetting.roleManagement.empty")
+                  }
                   toolbar={
-                    <h4 className="text-base font-semibold text-foreground">
-                      {t("page.globalSetting.roleManagement.table.title")}
-                    </h4>
+                    <TableToolbar
+                      title={t("page.globalSetting.roleManagement.table.title")}
+                      onReset={resetFilters}
+                      isFiltered={isFiltered}>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("common.search")}
+                        </label>
+                        <SearchInput
+                          value={search}
+                          onChange={(val) => {
+                            setSearch(val);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.globalSetting.roleManagement.search")}
+                          isLoading={isFetching}
+                          className="w-full md:w-60"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("common.status")}
+                        </label>
+                        <Combobox
+                          options={[
+                            { value: "all", label: t("common.all") },
+                            { value: "active", label: t("common.active") },
+                            { value: "inactive", label: t("common.inactive") },
+                            { value: "draft", label: t("common.draft") }
+                          ]}
+                          value={statusFilter}
+                          onChange={(val) => {
+                            setStatusFilter(val || "all");
+                            setPage(1);
+                          }}
+                          placeholder={t("common.all")}
+                          searchPlaceholder={t("common.all")}
+                        />
+                      </div>
+                    </TableToolbar>
                   }
                   pagination={{
                     page,
                     totalPages,
                     total,
                     onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    },
                     showingText: t("page.globalSetting.roleManagement.showing", {
                       count: roles.length,
                       total
@@ -325,9 +435,22 @@ const RoleManagement = () => {
           )}
         </>
       )}
+      {/* D4 (BA DR-12 Q5/Q6): a role still held by users is not deleted;
+          the server answers 409 ROLE_IN_USE, so the page says so up front. */}
+      <Modal
+        type="error"
+        open={!!deleteTarget && deleteTarget.userCount > 0}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={t("page.role.modal.inUseTitle")}
+        description={t("page.role.modal.deleteInUse", {
+          name: deleteTarget?.name || "",
+          count: deleteTarget?.userCount || 0
+        })}
+        onConfirm={() => setDeleteTarget(null)}
+      />
       <Modal
         type="confirm"
-        open={!!deleteTarget}
+        open={!!deleteTarget && !(deleteTarget.userCount > 0)}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title={t("page.role.modal.deleteTitle")}
         description={t("page.role.modal.deleteDesc", { name: deleteTarget?.name || "" })}
