@@ -85,6 +85,9 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const [referenceInput, setReferenceInput] = useState("");
   // Set when the server refuses the settlement for a missing reference.
   const [referenceRefused, setReferenceRefused] = useState(false);
+  // BA 004 (DR-23 §D): the server refused a reference already used for
+  // another payment at this store (409 DUPLICATE_REFERENCE).
+  const [referenceDuplicate, setReferenceDuplicate] = useState(false);
   // DR-04 P2-1: explicit cashier acknowledgement that the order total will
   // be redeemed from the member's points; reset whenever the method changes.
   const [pointsConfirmed, setPointsConfirmed] = useState(false);
@@ -249,8 +252,15 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
       }
       // DR-23 §D: the server refused the settlement for a missing reference.
       // Nothing was recorded; keep the typed values and point at the field.
+      if (status === 409 && code === "DUPLICATE_REFERENCE") {
+        setReferenceRefused(true);
+        setReferenceDuplicate(true);
+        toast.error(t("page.cashier.collectPayment.reference.duplicate"));
+        return;
+      }
       if (status === 422 && code === "REFERENCE_REQUIRED") {
         setReferenceRefused(true);
+        setReferenceDuplicate(false);
         toast.error(
           t(
             isOtherMethod
@@ -351,6 +361,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
             ...(needsReference ? { referenceNumber: referenceTrimmed } : {})
           };
     setReferenceRefused(false);
+    setReferenceDuplicate(false);
     settleMutation.mutate(tender);
   };
 
@@ -651,6 +662,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                         onChange={(e) => {
                           setReferenceInput(e.target.value);
                           setReferenceRefused(false);
+                          setReferenceDuplicate(false);
                         }}
                         aria-invalid={referenceRefused || undefined}
                         aria-describedby="collect-payment-reference-hint"
@@ -663,9 +675,11 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                           className="flex items-start gap-1.5 text-sm text-destructive">
                           <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
                           {t(
-                            isOtherMethod
-                              ? "page.cashier.collectPayment.reference.otherRequired"
-                              : "page.cashier.collectPayment.reference.required"
+                            referenceDuplicate
+                              ? "page.cashier.collectPayment.reference.duplicate"
+                              : isOtherMethod
+                                ? "page.cashier.collectPayment.reference.otherRequired"
+                                : "page.cashier.collectPayment.reference.required"
                           )}
                         </p>
                       ) : (
