@@ -8470,5 +8470,11 @@
   "page.cashier.collectPayment.reference.duplicate": "Referensi ini sudah dipakai untuk pembayaran lain di toko ini. Periksa kembali bukti pembayarannya. Pembayaran belum tercatat.",
   "page.cashier.receipt.splitPayConfirm": "Bayar split",
   "page.cashier.stockShortage.title": "Pembayaran tercatat, tapi stok kurang",
-  "page.cashier.stockShortage.desc": "Stok tidak mencukupi untuk: {{items}}. Kekurangannya sudah dicatat di History Stok — periksa dan sesuaikan stok."
+  "page.cashier.stockShortage.desc": "Stok tidak mencukupi untuk: {{items}}. Kekurangannya sudah dicatat di History Stok — periksa dan sesuaikan stok.",
+  "page.salesReturn.list.modal.referenceDesc": "Refund dibayar lewat {{method}}. Isi referensi refund agar tetap bisa ditelusuri.",
+  "page.salesReturn.list.modal.referenceLabel": "Referensi refund",
+  "page.salesReturn.list.modal.otherLabel": "Keterangan refund",
+  "page.salesReturn.list.modal.referenceHint": "Mis. referensi transfer, kode approval EDC, atau nomor transaksi e-wallet/QRIS.",
+  "page.salesReturn.list.modal.referenceRequired": "Isi referensi refund sebelum menyetujui. Retur belum disetujui.",
+  "page.salesReturn.list.modal.otherRequired": "Jelaskan cara refund ini dilakukan sebelum menyetujui. Retur belum disetujui."
 }
