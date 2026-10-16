@@ -8301,5 +8301,8 @@
   "page.role.edit.name": "Nama Role",
   "page.role.modal.inUseTitle": "Role Masih Dipakai",
   "page.role.edit.systemLocked": "Role ini bawaan sistem dan hanya dapat diubah oleh Super Admin global.",
-  "page.role.edit.draftInUse": "Role ini masih dipakai {{count}} pengguna. Mereka tetap memegang role ini, tetapi role draft tidak dapat diberikan ke pengguna baru sampai diaktifkan kembali."
+  "page.role.edit.draftInUse": "Role ini masih dipakai {{count}} pengguna. Mereka tetap memegang role ini, tetapi role draft tidak dapat diberikan ke pengguna baru sampai diaktifkan kembali.",
+  "page.cashier.collectPayment.reference.otherRequired": "Isi keterangan cara pembayaran \"Lainnya\" sebelum konfirmasi. Pembayaran belum tercatat.",
+  "page.cashier.collectPayment.reference.duplicate": "Referensi ini sudah dipakai untuk pembayaran lain di toko ini. Periksa kembali bukti pembayarannya. Pembayaran belum tercatat.",
+  "page.cashier.receipt.splitPayConfirm": "Bayar split"
 }

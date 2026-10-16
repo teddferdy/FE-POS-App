@@ -171,6 +171,39 @@ describe("points", () => {
 });
 
 describe("failed settlement", () => {
+  test("409 DUPLICATE_REFERENCE marks the reference field (BA 004)", async () => {
+    updateOrderStatus.mockRejectedValueOnce({
+      response: { status: 409, data: { code: "DUPLICATE_REFERENCE" } }
+    });
+    const { onClose } = await renderModal();
+    chooseMethod("qris");
+    typeReference("QR-DUP");
+    fireEvent.click(confirmButton());
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(`${P}.reference.duplicate`));
+    expect(screen.getByRole("alert")).toHaveTextContent(`${P}.reference.duplicate`);
+    expect(referenceInput()).toHaveAttribute("aria-invalid", "true");
+    expect(referenceInput()).toHaveValue("QR-DUP");
+    expect(onClose).not.toHaveBeenCalled();
+
+    typeReference("QR-NEW");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  test("422 REFERENCE_REQUIRED on OTHER asks for a description, not a reference (BA 003)", async () => {
+    updateOrderStatus.mockRejectedValueOnce({
+      response: { status: 422, data: { code: "REFERENCE_REQUIRED" } }
+    });
+    await renderModal();
+    chooseMethod("other");
+    typeReference("Voucher kantor");
+    fireEvent.click(confirmButton());
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(`${P}.reference.otherRequired`));
+    expect(screen.getByRole("alert")).toHaveTextContent(`${P}.reference.otherRequired`);
+    expect(toast.error).not.toHaveBeenCalledWith(`${P}.reference.required`);
+  });
+
   test("422 REFERENCE_REQUIRED shows the inline error, keeps the typed values and the modal open", async () => {
     updateOrderStatus.mockRejectedValueOnce({
       response: {
