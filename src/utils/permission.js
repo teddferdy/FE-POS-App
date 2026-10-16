@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 import { safeGet } from "@/lib/safe-lookup";
+import { bypassesMenuPermissions } from "@/utils/role";
 
 export const parseAccessMenu = (accessMenu) => {
   if (Array.isArray(accessMenu)) return accessMenu;
@@ -114,8 +115,7 @@ export const normalizePermissionActions = (perm) => {
 
 export const canAccess = (user, menuKey, action) => {
   if (!user) return false;
-  const role = user.roleType;
-  if (role === "super_admin") return true;
+  if (bypassesMenuPermissions(user)) return true;
   // ponytail: accessMenu stripped from cookie to fit 4KB limit, read from sessionStorage
   let accessMenu = parseAccessMenu(user.accessMenu);
   if (!accessMenu || accessMenu.length === 0) {
@@ -144,7 +144,7 @@ export const canAccess = (user, menuKey, action) => {
 
 export const hasMenuAccess = (user, href, actions) => {
   if (!user) return false;
-  if (user.roleType === "super_admin") return true;
+  if (bypassesMenuPermissions(user)) return true;
   // ponytail: accessMenu stripped from cookie to fit 4KB limit, read from sessionStorage
   let accessMenu = parseAccessMenu(user.accessMenu);
   if (!accessMenu || accessMenu.length === 0) {
@@ -168,7 +168,7 @@ export const hasMenuAccess = (user, href, actions) => {
 
 export const filterMenuByPermission = (menuItems, user) => {
   if (!user) return [];
-  if (user.roleType === "super_admin") return menuItems;
+  if (bypassesMenuPermissions(user)) return menuItems;
 
   const hasAccess = (href, actions) => hasMenuAccess(user, href, actions);
 
@@ -187,7 +187,7 @@ export const filterMenuByPermission = (menuItems, user) => {
 
 export const filterNavCategoriesByPermission = (categories, user) => {
   if (!user) return [];
-  if (user.roleType === "super_admin") return categories;
+  if (bypassesMenuPermissions(user)) return categories;
 
   const hasAccess = (href, actions) => hasMenuAccess(user, href, actions);
 

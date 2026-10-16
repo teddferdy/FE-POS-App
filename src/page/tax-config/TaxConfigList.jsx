@@ -38,7 +38,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
-import { uploadTaxConfigExcel } from "@/services/tax-config";
+import { applyTaxConfig, getEffectiveTax, uploadTaxConfigExcel } from "@/services/tax-config";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
 import TableActions from "@/components/ui/TableActions";
@@ -48,7 +48,12 @@ import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { useStore } from "@/contexts/StoreContext";
 import EffectiveTaxSummary from "@/page/tax-config/components/EffectiveTaxSummary";
-import { outletNameFor, resolveEffectiveTaxScope, taxRowScope } from "@/utils/taxEffective";
+import {
+  effectiveTaxQueryKey,
+  outletNameFor,
+  resolveEffectiveTaxScope,
+  taxRowScope
+} from "@/utils/taxEffective";
 
 const typeColors = {
   PPN: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
@@ -69,6 +74,7 @@ const TaxConfigList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [applyTarget, setApplyTarget] = useState(null);
 
   const isFiltered = search !== "" || statusFilter !== "all";
 
@@ -93,6 +99,34 @@ const TaxConfigList = () => {
   const { activeStoreId, activeStoreName } = useStore();
   const outletLookup = { locations: locData?.data, activeStoreId, activeStoreName };
   const summaryScope = resolveEffectiveTaxScope({ isSuperAdmin, storeId: activeStoreId });
+
+  // D3: the one PPN row checkout charges in this scope (counter and QR alike).
+  // Same query as EffectiveTaxSummary (shared cache).
+  const { data: effectiveData } = useQuery(
+    effectiveTaxQueryKey(summaryScope, "counter"),
+    () => getEffectiveTax({ store: summaryScope.store, channel: "counter" }),
+    {
+      enabled: summaryScope?.kind === "outlet" || summaryScope?.kind === "global",
+      retry: false
+    }
+  );
+  const appliedPpnId = effectiveData?.data?.ppn?.rows?.find((r) => r.applied)?.id ?? null;
+  const isGlobalSuperAdmin = isSuperAdmin && !user?.store;
+
+  const applyMutation = useMutation((item) => applyTaxConfig(item.id), {
+    onSuccess: () => {
+      toast.success(t("page.taxConfig.apply.success"));
+      queryClient.invalidateQueries(["tax-configs"]);
+      queryClient.invalidateQueries(effectiveTaxQueryKey(summaryScope, "counter"));
+      queryClient.invalidateQueries(effectiveTaxQueryKey(summaryScope, "qr"));
+      setApplyTarget(null);
+    },
+    onError: (err) => {
+      toast.error(t("page.taxConfig.apply.failed"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["tax-configs", page, limit, search, statusFilter],
@@ -171,6 +205,20 @@ const TaxConfigList = () => {
       )
     },
     {
+      header: t("page.taxConfig.apply.column"),
+      render: (item) =>
+        item.id === appliedPpnId ? (
+          <span
+            data-testid={`tax-applied-${item.id}`}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
+            <CheckCircle size={12} aria-hidden="true" />
+            {t("page.taxConfig.apply.used")}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">-</span>
+        )
+    },
+    {
       header: t("common.status"),
       render: (item) => (
         <span
@@ -238,6 +286,7 @@ const TaxConfigList = () => {
       align: "right",
       stickyRight: true,
       legend: [
+        { icon: CheckCircle, label: t("page.taxConfig.apply.action") },
         { icon: Eye, label: t("common.view") },
         { icon: Edit, label: t("common.edit") },
         { icon: Trash2, label: t("common.delete") }
@@ -247,6 +296,18 @@ const TaxConfigList = () => {
           align="right"
           visible={2}
           items={[
+            {
+              label: t("page.taxConfig.apply.action"),
+              icon: CheckCircle,
+              // Only PPN rows; a global row only for a global super admin
+              // (same rule as editing it); never the row already in use.
+              hidden:
+                !canAccess(user, MENU_KEY, "edit") ||
+                item.type !== "ppn" ||
+                item.id === appliedPpnId ||
+                (item.store == null && !isGlobalSuperAdmin),
+              onClick: () => setApplyTarget(item)
+            },
             {
               label: t("common.view"),
               icon: Eye,
@@ -494,6 +555,24 @@ const TaxConfigList = () => {
         onConfirm={confirmDelete}
       />
       {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+
+      <Modal
+        type="confirm"
+        open={!!applyTarget}
+        onOpenChange={(open) => !open && !applyMutation.isLoading && setApplyTarget(null)}
+        title={t("page.taxConfig.apply.modalTitle")}
+        description={t("page.taxConfig.apply.modalDesc", {
+          name: applyTarget?.name || "",
+          rate: applyTarget?.rate ?? ""
+        })}
+        confirmText={t("page.taxConfig.apply.action")}
+        loading={applyMutation.isLoading}
+        onConfirm={() => {
+          if (!applyTarget) return undefined;
+          applyMutation.mutate(applyTarget);
+          return false; // closed by onSuccess
+        }}
+      />
 
       <UploadExcelModal
         open={uploadModalOpen}

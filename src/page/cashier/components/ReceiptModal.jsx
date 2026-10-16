@@ -235,6 +235,8 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const canManageSplits = ["super_admin", "admin", "kasir"].includes(user?.roleType);
   const [payingId, setPayingId] = useState(null);
   const [payMethodChoice, setPayMethodChoice] = useState("");
+  const [payReference, setPayReference] = useState("");
+  const splitNeedsReference = !!payMethodChoice && !["cash", "points"].includes(payMethodChoice);
   const [selectedMergeIds, setSelectedMergeIds] = useState([]);
 
   const { data: existingSplitsData, refetch: refetchSplits } = useQuery(
@@ -293,11 +295,19 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   });
 
   const paySplitMutation = useMutation({
-    mutationFn: ({ id, paymentMethod }) => paySplitBill(id, { paymentMethod }),
+    // DR-23 §D: a non-cash split carries its reference (OTHER: a
+    // description); the server refuses it otherwise (422 REFERENCE_REQUIRED)
+    // and refuses a reused one (409 DUPLICATE_REFERENCE, BA 004).
+    mutationFn: ({ id, paymentMethod, referenceNumber }) =>
+      paySplitBill(id, {
+        paymentMethod,
+        ...(referenceNumber ? { referenceNumber } : {})
+      }),
     onSuccess: (result) => {
       toast.success(t("page.cashier.receipt.toast.splitPaySuccess"));
       setPayingId(null);
       setPayMethodChoice("");
+      setPayReference("");
       refetchSplits();
       if (result?.data?.orderComplete) {
         // Matches OrderQueue.jsx's actual query keys — each status tab is
@@ -309,6 +319,15 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
       }
     },
     onError: (err) => {
+      const code = err?.response?.data?.code;
+      if (code === "DUPLICATE_REFERENCE") {
+        toast.error(t("page.cashier.collectPayment.reference.duplicate"));
+        return;
+      }
+      if (code === "REFERENCE_REQUIRED") {
+        toast.error(t("page.cashier.collectPayment.reference.required"));
+        return;
+      }
       toast.error(
         err?.response?.data?.message ||
           err?.message ||
@@ -969,39 +988,66 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                         {isPending &&
                           canManageSplits &&
                           (isChoosingMethod ? (
-                            <div className="flex items-center gap-2">
-                              <Select value={payMethodChoice} onValueChange={setPayMethodChoice}>
-                                <SelectTrigger className="h-8 text-xs flex-1">
-                                  <SelectValue placeholder={t("page.cashier.paymentMethod")} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {splitPaymentMethods.map((m) => (
-                                    <SelectItem key={m.id} value={m.id}>
-                                      {m.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                size="sm"
-                                variant="success"
-                                className="h-8 w-8 p-0 shrink-0"
-                                disabled={!payMethodChoice || paySplitMutation.isLoading}
-                                onClick={() =>
-                                  paySplitMutation.mutate({
-                                    id: split.id,
-                                    paymentMethod: payMethodChoice
-                                  })
-                                }>
-                                <CheckCircle size={14} />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 w-8 p-0 shrink-0"
-                                onClick={() => setPayingId(null)}>
-                                <X size={14} />
-                              </Button>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Select value={payMethodChoice} onValueChange={setPayMethodChoice}>
+                                  <SelectTrigger className="h-8 text-xs flex-1">
+                                    <SelectValue placeholder={t("page.cashier.paymentMethod")} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {splitPaymentMethods.map((m) => (
+                                      <SelectItem key={m.id} value={m.id}>
+                                        {m.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button
+                                  size="sm"
+                                  variant="success"
+                                  className="h-8 w-8 p-0 shrink-0"
+                                  aria-label={t("page.cashier.receipt.splitPayConfirm")}
+                                  disabled={
+                                    !payMethodChoice ||
+                                    (splitNeedsReference && !payReference.trim()) ||
+                                    paySplitMutation.isLoading
+                                  }
+                                  onClick={() =>
+                                    paySplitMutation.mutate({
+                                      id: split.id,
+                                      paymentMethod: payMethodChoice,
+                                      referenceNumber: splitNeedsReference
+                                        ? payReference.trim()
+                                        : undefined
+                                    })
+                                  }>
+                                  <CheckCircle size={14} />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-8 w-8 p-0 shrink-0"
+                                  onClick={() => setPayingId(null)}>
+                                  <X size={14} />
+                                </Button>
+                              </div>
+                              {splitNeedsReference && (
+                                <input
+                                  value={payReference}
+                                  onChange={(e) => setPayReference(e.target.value)}
+                                  aria-label={t(
+                                    payMethodChoice === "other"
+                                      ? "page.cashier.collectPayment.reference.otherLabel"
+                                      : "page.cashier.collectPayment.reference.label"
+                                  )}
+                                  placeholder={t(
+                                    payMethodChoice === "other"
+                                      ? "page.cashier.collectPayment.reference.otherPlaceholder"
+                                      : "page.cashier.collectPayment.reference.placeholder"
+                                  )}
+                                  className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
+                                />
+                              )}
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
@@ -1012,6 +1058,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                                 onClick={() => {
                                   setPayingId(split.id);
                                   setPayMethodChoice("");
+                                  setPayReference("");
                                 }}>
                                 <Banknote size={14} className="mr-1" />
                                 {t("page.cashier.receipt.splitPay")}

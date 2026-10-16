@@ -27,7 +27,12 @@ import {
   filterNavCategoriesByPermission,
   hasMenuAccess
 } from "@/utils/permission";
-import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
+import {
+  bypassesMenuPermissions,
+  isAdminRole,
+  isCashierRole,
+  isSuperAdminRole
+} from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
 import { useStoreManagePermission } from "@/hooks/useStoreManagePermission";
 import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
@@ -63,8 +68,9 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
   const hasAccessMenu =
     user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
   // ponytail: user non-super_admin yang memiliki accessMenu wajib mengikuti
-  // daftar menu persis sesuai accessMenu (tanpa item/bagian tambahan)
-  const isMenuControlled = hasAccessMenu && !isSuperAdminRole(user);
+  // daftar menu persis sesuai accessMenu (tanpa item/bagian tambahan). A
+  // menu-scoped super_admin (own accessMenu, BE accessMenuScoped) is too.
+  const isMenuControlled = hasAccessMenu && !bypassesMenuPermissions(user);
 
   const baseMenu = useMemo(() => {
     if (hasAccessMenu || isSuperAdminRole(user)) return sidebarMenuSuperAdmin;
