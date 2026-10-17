@@ -44,6 +44,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { toQuantity } from "@/utils/quantity";
 
 const conversionHints = {
   kg: { base: "gram", factor: 1000 },
@@ -232,7 +233,9 @@ const EditIngredient = () => {
       unit: d.unit || "pcs",
       baseUnit: d.baseUnit || "pcs",
       conversionFactor: String(d.conversionFactor || "1"),
-      stock: d.stock || 0,
+      // DECIMAL string ("400.0000") → number, so the digit-only input below
+      // never reads the decimals as extra digits (400 → 4000000).
+      stock: toQuantity(d.stock),
       minStock: d.minStock || 0,
       costPrice: d.costPrice ? Number(d.costPrice) : 0,
       isActive: d.status === "active",

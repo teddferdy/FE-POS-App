@@ -41,6 +41,7 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadIngredientExcel } from "@/services/ingredient";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import { toQuantity, formatQuantity } from "@/utils/quantity";
 
 const statusBadge = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -176,8 +177,8 @@ const IngredientList = () => {
       align: "right",
       render: (item) => (
         <span
-          className={`font-mono ${item.stock <= item.minStock ? "text-destructive font-semibold" : ""}`}>
-          {item.stock}
+          className={`font-mono ${toQuantity(item.stock) <= toQuantity(item.minStock) ? "text-destructive font-semibold" : ""}`}>
+          {formatQuantity(item.stock)}
         </span>
       )
     },
