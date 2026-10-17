@@ -42,6 +42,7 @@ import {
   getPostalCode
 } from "@/services/general";
 import { toast } from "sonner";
+import { warnStockShortages } from "@/lib/stock-shortage";
 import { printReceipt } from "@/utils/thermalPrint";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
@@ -305,6 +306,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
       }),
     onSuccess: (result) => {
       toast.success(t("page.cashier.receipt.toast.splitPaySuccess"));
+      warnStockShortages(result?.data?.stockShortages, t);
       setPayingId(null);
       setPayMethodChoice("");
       setPayReference("");

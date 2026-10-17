@@ -8305,6 +8305,8 @@
   "page.cashier.collectPayment.reference.otherRequired": "Describe how this \"Other\" payment was made before confirming. The payment was not recorded.",
   "page.cashier.collectPayment.reference.duplicate": "This reference was already used for another payment at this store. Check the payment proof again. The payment was not recorded.",
   "page.cashier.receipt.splitPayConfirm": "Pay split",
+  "page.cashier.stockShortage.title": "Payment recorded, but stock was short",
+  "page.cashier.stockShortage.desc": "Not enough stock for: {{items}}. The shortage is recorded in Stock History — check and adjust the stock.",
   "page.salesReturn.list.modal.referenceDesc": "The refund is paid by {{method}}. Enter the refund reference so it stays traceable.",
   "page.salesReturn.list.modal.referenceLabel": "Refund reference",
   "page.salesReturn.list.modal.otherLabel": "Refund description",
