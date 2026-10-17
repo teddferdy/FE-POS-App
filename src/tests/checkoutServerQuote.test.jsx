@@ -468,6 +468,10 @@ describe("CheckoutModal — D2 pending QRIS is bound to its checkout", () => {
     await waitFor(() => expect(confirmButton()).not.toBeDisabled());
     fireEvent.click(confirmButton());
     await screen.findByText("page.cashier.qris.confirmReceived");
+    // DR-23 §D: the QRIS reference is entered once the customer has paid.
+    fireEvent.change(screen.getByLabelText("page.cashier.collectPayment.reference.label"), {
+      target: { value: "QR-REF-1" }
+    });
   };
 
   beforeEach(() => {
@@ -488,7 +492,11 @@ describe("CheckoutModal — D2 pending QRIS is bound to its checkout", () => {
     fireEvent.click(qrisConfirm());
     fireEvent.click(qrisConfirm());
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
-    expect(createOrder.mock.calls[0][0]).toMatchObject({ useTax: true, paymentMethod: "qris" });
+    expect(createOrder.mock.calls[0][0]).toMatchObject({
+      useTax: true,
+      paymentMethod: "qris",
+      referenceNumber: "QR-REF-1"
+    });
     expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
   });
 

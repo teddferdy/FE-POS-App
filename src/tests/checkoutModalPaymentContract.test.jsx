@@ -141,12 +141,17 @@ describe("CheckoutModal payment payload contract (F-SMOKE-01)", () => {
     fireEvent.click(await screen.findByText("QRIS"));
     await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
-    fireEvent.click(await screen.findByText("page.cashier.qris.confirmReceived"));
+    await screen.findByText("page.cashier.qris.confirmReceived");
+    fireEvent.change(screen.getByLabelText("page.cashier.collectPayment.reference.label"), {
+      target: { value: "QR-REF-1" }
+    });
+    fireEvent.click(screen.getByText("page.cashier.qris.confirmReceived"));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalled());
     const payload = createOrder.mock.calls[0][0];
     expect(payload).not.toHaveProperty("cashAmount");
     expect(payload).not.toHaveProperty("changeAmount");
+    expect(payload.referenceNumber).toBe("QR-REF-1");
   });
 });
 

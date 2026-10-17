@@ -188,7 +188,10 @@ const DEFINITIVE_409_CODES = Object.freeze([
   "PRICE_CHANGED",
   "TOTAL_CHANGED",
   "REGISTER_STATE_CHANGED",
-  "INGREDIENT_STOCK_CONFLICT"
+  "INGREDIENT_STOCK_CONFLICT",
+  // BA 004 (DR-23 §D): checked inside the sale's transaction before the
+  // payment row; the refusal rolls the whole order back.
+  "DUPLICATE_REFERENCE"
 ]);
 const MAX_SERVER_MESSAGE = 200;
 const serverMessageOf = (data) => {

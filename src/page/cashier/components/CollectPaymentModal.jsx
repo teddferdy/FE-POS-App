@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getOrderById, updateOrderStatus } from "@/services/order";
 import { getMemberById } from "@/services/member";
 import MemberSearchModal from "@/components/MemberSearchModal";
+import { REFERENCE_REQUIRED_METHODS, MAX_REFERENCE_LENGTH } from "@/utils/payment";
 
 // F4-01: settles an order that already exists (e.g. created through
 // BISA-MAKAN's QR ordering flow) instead of the previous workaround of
@@ -58,14 +59,6 @@ const SETTLEMENT_METHODS = [
   "points",
   "other"
 ];
-
-// DR-23 §D / §M: the methods whose manually confirmed settlement must carry
-// a reference — every method but cash and points (BE requiresTenderReference:
-// CARD = debit/credit, BANK_TRANSFER, E_WALLET, QRIS, OTHER). The server
-// refuses a missing or blank one (422 REFERENCE_REQUIRED); this list only
-// decides when the input is shown and confirm is enabled.
-const REFERENCE_REQUIRED_METHODS = ["qris", "debit", "credit", "transfer", "e-wallet", "other"];
-const MAX_REFERENCE_LENGTH = 255;
 
 const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const { t } = useTranslation();
