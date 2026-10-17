@@ -9,24 +9,38 @@ const STORE_SECTION_KEY = "sidebar.section.kelolaToko";
 // category's "Kelola Toko" section next to the store list. A role whose
 // categories have no Location category (e.g. a tenant admin on the admin
 // menu) gets one holding just these items.
-export const canonicalLocationNavItems = ({ canManageTenants, canManageStores }) => {
-  const items = [];
-  if (canManageTenants) {
-    items.push({ title: "Tenant", i18nKey: "page.tenant.title", href: "/tenant", icon: Building2 });
+// Display order inside the "Kelola Toko" section: Tenant first, then the
+// store list ("Kelola Toko"), then Store Configuration last.
+const splitCanonicalItems = (permissions) => {
+  const tenantItems = [];
+  const storeItems = [];
+  if (permissions.canManageTenants) {
+    tenantItems.push({
+      title: "Tenant",
+      i18nKey: "page.tenant.title",
+      href: "/tenant",
+      icon: Building2
+    });
   }
-  if (canManageStores) {
-    items.push({
+  if (permissions.canManageStores) {
+    storeItems.push({
       title: "Konfigurasi Toko",
       i18nKey: "page.storeConfiguration.title",
       href: "/store-configuration",
       icon: SlidersHorizontal
     });
   }
-  return items;
+  return { tenantItems, storeItems };
+};
+
+export const canonicalLocationNavItems = (permissions) => {
+  const { tenantItems, storeItems } = splitCanonicalItems(permissions);
+  return [...tenantItems, ...storeItems];
 };
 
 export const withCanonicalLocationItems = (categories, permissions) => {
-  const items = canonicalLocationNavItems(permissions);
+  const { tenantItems, storeItems } = splitCanonicalItems(permissions);
+  const items = [...tenantItems, ...storeItems];
   if (items.length === 0) return categories;
 
   const index = categories.findIndex((cat) => cat.id === LOCATION_CATEGORY_ID);
@@ -56,7 +70,9 @@ export const withCanonicalLocationItems = (categories, permissions) => {
     return {
       ...cat,
       sections: sections.map((s, j) =>
-        j === storeSection ? { ...s, items: [...(s.items || []), ...items] } : s
+        j === storeSection
+          ? { ...s, items: [...tenantItems, ...(s.items || []), ...storeItems] }
+          : s
       )
     };
   });

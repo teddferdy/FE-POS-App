@@ -8476,5 +8476,6 @@
   "page.salesReturn.list.modal.otherLabel": "Refund description",
   "page.salesReturn.list.modal.referenceHint": "E.g. transfer reference, EDC approval code, or e-wallet/QRIS transaction number.",
   "page.salesReturn.list.modal.referenceRequired": "Enter the refund reference before approving. The return was not approved.",
-  "page.salesReturn.list.modal.otherRequired": "Describe how this refund was made before approving. The return was not approved."
+  "page.salesReturn.list.modal.otherRequired": "Describe how this refund was made before approving. The return was not approved.",
+  "formError.input.register.passwordMin": "Password must be at least 6 characters"
 }
