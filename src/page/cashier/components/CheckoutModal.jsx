@@ -40,7 +40,11 @@ import { getAllMemberTier } from "@/services/member-tier";
 import { getAllTypePayment } from "@/services/type-payment";
 import { getMemberById } from "@/services/member";
 import { getTableAvailability, getTablesWithActiveOrders } from "@/services/table";
-import { getPaymentIconKind } from "@/utils/payment";
+import {
+  getPaymentIconKind,
+  REFERENCE_REQUIRED_METHODS,
+  MAX_REFERENCE_LENGTH
+} from "@/utils/payment";
 import { buildOrderItemsPayload, parsePriceChangedError } from "@/utils/orderPayload";
 import { useDebounce } from "@/hooks/useDebounce";
 import MemberSearchModal from "@/components/MemberSearchModal";
@@ -97,6 +101,15 @@ const CheckoutModal = ({
       : attempt?.status || ATTEMPT_STATUS.DRAFT;
   const recordedOrder = attempt?.existingOrder || null;
   const [paymentMethod, setPaymentMethod] = useState("");
+  // DR-23 §D (BA gap G-02): the reference of a non-cash payment (EDC
+  // approval code, QRIS/e-wallet confirmation, transfer reference) or the
+  // description of an "other" payment, as typed. Kept across a refusal and a
+  // method change so the cashier corrects it instead of retyping.
+  const [referenceInput, setReferenceInput] = useState("");
+  // Set when the server refuses the sale for a missing (422
+  // REFERENCE_REQUIRED) or reused (409 DUPLICATE_REFERENCE) reference.
+  const [referenceRefused, setReferenceRefused] = useState(false);
+  const [referenceDuplicate, setReferenceDuplicate] = useState(false);
   const [cashAmount, setCashAmount] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
   // Phase 31 Batch 2 (PERF-1): debounce the dropdown text into the
@@ -471,6 +484,12 @@ const CheckoutModal = ({
   // Final payable after every discount and redeemed point (server total).
   const total = quote ? Number(quote.totalPrice) || 0 : 0;
   const remainingTotal = total;
+  // A sale fully covered by points takes no tender, so no reference.
+  const needsReference = remainingTotal > 0 && REFERENCE_REQUIRED_METHODS.includes(paymentMethod);
+  const isOtherMethod = paymentMethod === "other";
+  const referenceTrimmed = referenceInput.trim();
+  // UX only — the server re-checks (422 REFERENCE_REQUIRED).
+  const referenceReady = !needsReference || referenceTrimmed !== "";
   // The server clamps the order discount to the subtotal; points beyond
   // what is left after the order discount buy nothing.
   const redeemCeiling = Math.max(0, quotedSubtotal - orderDiscount);
@@ -686,6 +705,24 @@ const CheckoutModal = ({
         toast.error(t("page.cashier.attempt.unconfirmedToast"));
         return;
       }
+      // DR-23 §D: refused for a missing or reused reference before anything
+      // was written. Keep the typed values (and a pending QRIS: the customer
+      // has paid, only the reference needs correcting) and point at the field.
+      if (outcome.code === "DUPLICATE_REFERENCE" || outcome.code === "REFERENCE_REQUIRED") {
+        const duplicate = outcome.code === "DUPLICATE_REFERENCE";
+        setReferenceRefused(true);
+        setReferenceDuplicate(duplicate);
+        toast.error(
+          t(
+            duplicate
+              ? "page.cashier.collectPayment.reference.duplicate"
+              : variables?.paymentMethod === "other"
+                ? "page.cashier.collectPayment.reference.otherRequired"
+                : "page.cashier.collectPayment.reference.required"
+          )
+        );
+        return;
+      }
       // DR-23 §M TOTAL_CHANGED: nothing was written — the payable moved
       // (e.g. a promo stopped applying). Re-quote and show the new total
       // before the cashier pays again; never a sign of an existing sale.
@@ -841,10 +878,18 @@ const CheckoutModal = ({
       invalidatePendingQris();
       return;
     }
+    // DR-23 §D: the QRIS/e-wallet reference exists only once the customer
+    // has paid, so it joins the stored payload at confirmation.
+    if (referenceTrimmed === "") {
+      setReferenceRefused(true);
+      setReferenceDuplicate(false);
+      return;
+    }
     isSubmittingRef.current = true;
-    mutation.mutate(pendingPayload);
+    mutation.mutate({ ...pendingPayload, referenceNumber: referenceTrimmed });
   }, [
     pendingPayload,
+    referenceTrimmed,
     pendingCheckoutKey,
     checkoutKey,
     quoteCurrent,
@@ -916,6 +961,11 @@ const CheckoutModal = ({
       toast.error(t("page.cashier.insufficientCash"));
       return;
     }
+    if (!isQrisPayment && !referenceReady) {
+      setReferenceRefused(true);
+      setReferenceDuplicate(false);
+      return;
+    }
 
     const method = paymentMethod || "points";
     const payload = {
@@ -939,6 +989,9 @@ const CheckoutModal = ({
       // before — so these keys must be entirely absent for non-cash
       // methods, not merely zeroed.
       ...(method === "cash" ? { cashAmount: cashAmountNum, changeAmount: change } : {}),
+      // DR-23 §D: card, transfer and "other" carry their reference or
+      // description now; QRIS/e-wallet add it at confirmation (above).
+      ...(needsReference && !isQrisPayment ? { referenceNumber: referenceTrimmed } : {}),
       // DR-23 §M TOTAL_CHANGED: the payable the cashier was shown — the
       // server quote for these exact inputs (quoteCurrent is required
       // above). A differing server payable is refused before any write.
@@ -987,8 +1040,70 @@ const CheckoutModal = ({
     priceChange,
     priceChangePending,
     quoteCurrent,
-    attemptBlocking
+    attemptBlocking,
+    needsReference,
+    isQrisPayment,
+    isOtherMethod,
+    referenceReady,
+    referenceTrimmed
   ]);
+
+  // DR-23 §D: reference (or "other" description) input — shown in the form
+  // for card/transfer/other and on the QRIS confirmation step for QRIS and
+  // e-wallet, whose reference exists only once the customer has paid.
+  const renderReferenceField = () => (
+    <div className="space-y-1">
+      <label htmlFor="checkout-payment-reference" className="text-sm font-medium">
+        {t(
+          isOtherMethod
+            ? "page.cashier.collectPayment.reference.otherLabel"
+            : "page.cashier.collectPayment.reference.label"
+        )}
+      </label>
+      <input
+        id="checkout-payment-reference"
+        value={referenceInput}
+        maxLength={MAX_REFERENCE_LENGTH}
+        autoComplete="off"
+        placeholder={t(
+          isOtherMethod
+            ? "page.cashier.collectPayment.reference.otherPlaceholder"
+            : "page.cashier.collectPayment.reference.placeholder"
+        )}
+        onChange={(e) => {
+          setReferenceInput(e.target.value);
+          setReferenceRefused(false);
+          setReferenceDuplicate(false);
+        }}
+        aria-invalid={referenceRefused || undefined}
+        aria-describedby="checkout-payment-reference-hint"
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+      />
+      {referenceRefused ? (
+        <p
+          id="checkout-payment-reference-hint"
+          role="alert"
+          className="flex items-start gap-1.5 text-sm text-destructive">
+          <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+          {t(
+            referenceDuplicate
+              ? "page.cashier.collectPayment.reference.duplicate"
+              : isOtherMethod
+                ? "page.cashier.collectPayment.reference.otherRequired"
+                : "page.cashier.collectPayment.reference.required"
+          )}
+        </p>
+      ) : (
+        <p id="checkout-payment-reference-hint" className="text-xs text-muted-foreground">
+          {t(
+            isOtherMethod
+              ? "page.cashier.collectPayment.reference.otherHint"
+              : "page.cashier.collectPayment.reference.hint"
+          )}
+        </p>
+      )}
+    </div>
+  );
 
   const formatPrice = (value) => {
     if (value == null || isNaN(value)) return "0";
@@ -1007,7 +1122,9 @@ const CheckoutModal = ({
     !priceChangePending &&
     quoteCurrent &&
     (remainingTotal === 0 ||
-      (paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal)));
+      (paymentMethod &&
+        (paymentMethod !== "cash" || cashAmountNum >= remainingTotal) &&
+        (isQrisPayment || referenceReady)));
 
   return (
     // F9-04: migrated onto the project's accessible Dialog primitive —
@@ -1258,6 +1375,8 @@ const CheckoutModal = ({
                       key={method.id}
                       onClick={() => {
                         setPaymentMethod(method.id);
+                        setReferenceRefused(false);
+                        setReferenceDuplicate(false);
                         clearPendingQris();
                       }}
                       className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all duration-200 ${
@@ -1286,6 +1405,8 @@ const CheckoutModal = ({
               )}
             </div>
           </div>
+
+          {needsReference && !isQrisPayment && renderReferenceField()}
 
           {paymentMethod === "cash" && (
             <div className="bg-muted/30 rounded-xl p-4 border border-border/40 space-y-3">
@@ -1986,6 +2107,7 @@ const CheckoutModal = ({
                   </p>
                 </div>
               </div>
+              {renderReferenceField()}
               <div className="flex gap-2">
                 <Button
                   variant="danger"
@@ -1996,7 +2118,7 @@ const CheckoutModal = ({
                 <Button
                   variant="success"
                   onClick={handleQrisConfirm}
-                  disabled={mutation.isLoading}
+                  disabled={mutation.isLoading || referenceTrimmed === ""}
                   className="flex-[2] h-12 rounded-xl font-semibold text-sm">
                   {mutation.isLoading ? (
                     <Loader2 size={16} className="animate-spin" />

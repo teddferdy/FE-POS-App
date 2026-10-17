@@ -287,7 +287,11 @@ describe("W3-4 CheckoutModal 409 PRICE_CHANGED", () => {
 
     fireEvent.click(await screen.findByText("QRIS"));
     fireEvent.click(confirmButton());
-    fireEvent.click(await screen.findByText("page.cashier.qris.confirmReceived"));
+    await screen.findByText("page.cashier.qris.confirmReceived");
+    fireEvent.change(screen.getByLabelText("page.cashier.collectPayment.reference.label"), {
+      target: { value: "QR-REF-1" }
+    });
+    fireEvent.click(screen.getByText("page.cashier.qris.confirmReceived"));
 
     await screen.findByTestId("price-change-panel");
     expect(screen.queryByText("page.cashier.qris.confirmReceived")).not.toBeInTheDocument();
