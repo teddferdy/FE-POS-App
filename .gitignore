@@ -46,3 +46,6 @@ build-out.txt
 
 # git worktrees
 .worktrees/
+
+# worktree node_modules symlink (the trailing-slash rule matches directories only)
+node_modules
