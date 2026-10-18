@@ -1656,6 +1656,7 @@
   "page.product.form.requiredPrice": "Selling price is required",
   "page.product.form.selectStoreError": "Select Store",
   "page.product.form.selectStoreErrorDesc": "Please select at least one store",
+  "page.product.form.stockRequiresStore": "An opening stock can only be stored in a specific store. Pick a specific store for a stocked product, or clear the Stock field.",
   "page.product.form.cancel": "Cancel",
   "page.product.form.back": "Back to List",
   "page.product.form.storePriceSection": "Store Prices",

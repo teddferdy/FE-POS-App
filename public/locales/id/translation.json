@@ -1654,6 +1654,7 @@
   "page.product.form.requiredPrice": "Harga jual wajib diisi",
   "page.product.form.selectStoreError": "Pilih Toko",
   "page.product.form.selectStoreErrorDesc": "Harap pilih minimal satu toko",
+  "page.product.form.stockRequiresStore": "Stok awal hanya bisa disimpan ke toko tertentu. Pilih toko spesifik untuk produk berstok, atau kosongkan kolom Stok.",
   "page.product.form.cancel": "Batal",
   "page.product.form.back": "Kembali ke Daftar",
   "page.product.form.storePriceSection": "Harga per Toko",
