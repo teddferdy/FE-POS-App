@@ -18,9 +18,20 @@ import {
   Clock,
   RotateCcw,
   CalendarRange,
+  Table,
+  Download,
+  Upload,
+  Loader2,
   X
 } from "lucide-react";
-import { getAllDiscount, deleteDiscount, editDiscount } from "@/services/discount";
+import {
+  getAllDiscount,
+  deleteDiscount,
+  editDiscount,
+  downloadDiscountTemplate,
+  downloadDiscountExcel,
+  uploadDiscountExcel
+} from "@/services/discount";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
@@ -30,6 +41,7 @@ import StatCard from "@/components/ui/StatCard";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
@@ -87,6 +99,9 @@ const DiscountList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
   const isFiltered = search !== "" || statusFilter !== "all" || storeFilter !== "all";
@@ -446,6 +461,77 @@ const DiscountList = () => {
         ]}
         title={t("page.discount.list.title")}
         description={t("page.discount.list.description")}>
+        {isSuperAdmin && (
+          <Button
+            variant="outline"
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadDiscountTemplate();
+                toast.success(t("common.success"), {
+                  description: t("page.discount.toast.templateSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.discount.toast.templateError")
+                });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
+            }}>
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <Table size={16} className="mr-1" />
+            )}
+            {isDownloadingTemplate
+              ? t("page.discount.button.downloading")
+              : t("page.discount.button.downloadTemplate")}
+          </Button>
+        )}
+        {isSuperAdmin && (
+          <Button
+            variant="general"
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadDiscountExcel();
+                toast.success(t("common.success"), {
+                  description: t("page.discount.toast.dataSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.discount.toast.dataError")
+                });
+              } finally {
+                setIsDownloadingData(false);
+              }
+            }}>
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <Download size={16} className="mr-1" />
+            )}
+            {isDownloadingData
+              ? t("page.discount.button.downloading")
+              : t("page.discount.button.downloadData")}
+          </Button>
+        )}
+        {isSuperAdmin && <span className="w-px h-7 bg-border mx-1" />}
+        {isSuperAdmin && (
+          <Button variant="import" onClick={() => setImportModalOpen(true)}>
+            <Upload size={16} className="mr-1" />
+            {t("page.discount.button.uploadExcel")}
+          </Button>
+        )}
         {canAccess(user, MENU_KEY, "add") && (
           <Button variant="success" onClick={() => navigate("/add-discount")} className="gap-2">
             <Plus size={18} />
@@ -740,6 +826,14 @@ const DiscountList = () => {
         onConfirm={confirmExtend}
       />
       {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+      <UploadExcelModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        uploadService={uploadDiscountExcel}
+        queryKey={["discounts"]}
+        title={t("page.discount.upload.title")}
+        subtitle={t("page.discount.upload.subtitle")}
+      />
     </div>
   );
 };
