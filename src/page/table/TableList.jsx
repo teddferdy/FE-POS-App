@@ -29,6 +29,7 @@ import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { SearchInput } from "@/components/ui/SearchInput";
 import {
   Select,
@@ -46,6 +47,7 @@ import Modal from "@/components/organism/modal";
 import TableQRModal from "@/components/organism/TableQRModal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
+import { isAdminRole } from "@/utils/role";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import TableActions from "@/components/ui/TableActions";
@@ -114,17 +116,26 @@ const TableList = () => {
   });
 
   const [statusTarget, setStatusTarget] = useState(null);
+  const [releaseReason, setReleaseReason] = useState("");
 
-  const statusMutation = useMutation(({ id }) => updateTableStatus(id, { status: "available" }), {
-    onSuccess: () => {
-      toast.success(t("common.success"));
-      setStatusTarget(null);
-      queryClient.invalidateQueries(["tables"]);
-    },
-    onError: (err) => {
-      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
+  // DR-24 C-16 / D-03: releasing a table is an elevated action — the reason
+  // is mandatory and the server audits it (admin-only).
+  const statusMutation = useMutation(
+    ({ id, reason }) => updateTableStatus(id, { status: "available", reason }),
+    {
+      onSuccess: () => {
+        toast.success(t("common.success"));
+        setStatusTarget(null);
+        setReleaseReason("");
+        queryClient.invalidateQueries(["tables"]);
+      },
+      onError: (err) => {
+        toast.error(t("common.error"), {
+          description: err?.response?.data?.message || err.message
+        });
+      }
     }
-  });
+  );
 
   const saveMutation = useMutation(editTarget ? editTable : addTable, {
     onSuccess: () => {
@@ -305,7 +316,10 @@ const TableList = () => {
                   {
                     label: t("page.table.setAvailable"),
                     icon: RotateCcw,
-                    onClick: () => setStatusTarget(row)
+                    onClick: () => setStatusTarget(row),
+                    // DR-24 C-16: staff release is admin-only; the server
+                    // enforces it regardless of this visibility gate.
+                    hidden: !isAdminRole(user)
                   }
                 ]
               : []),
@@ -587,17 +601,36 @@ const TableList = () => {
           {saveMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
           <Modal
-            type="confirm"
+            type="form"
             open={!!statusTarget}
-            onOpenChange={(o) => !o && setStatusTarget(null)}
+            onOpenChange={(o) => {
+              if (!o) {
+                setStatusTarget(null);
+                setReleaseReason("");
+              }
+            }}
             title={t("page.table.setAvailableTitle")}
             description={t("page.table.setAvailableDesc", { name: statusTarget?.name || "" })}
             confirmText={t("common.yes")}
             loading={statusMutation.isLoading}
             onConfirm={() => {
-              statusMutation.mutate({ id: statusTarget.id });
-            }}
-          />
+              const reason = releaseReason.trim();
+              if (!reason) {
+                toast.error(t("page.table.releaseReasonRequired"));
+                return;
+              }
+              statusMutation.mutate({ id: statusTarget.id, reason });
+            }}>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              {t("page.table.releaseReason")}
+            </label>
+            <Textarea
+              value={releaseReason}
+              onChange={(e) => setReleaseReason(e.target.value)}
+              placeholder={t("page.table.releaseReasonPlaceholder")}
+              maxLength={500}
+            />
+          </Modal>
 
           <TableQRModal
             open={!!qrTarget}
