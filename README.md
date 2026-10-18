@@ -278,4 +278,6 @@ Deployed on **Vercel** with SPA rewrites configured in `vercel.json`.
 ## Related
 
 - [Backend API](../BE-POS-APP/README.md)
+- [API Response Contracts — ERP/Akuntansi](./docs/api-response-contracts.md) (envelope, error codes, response shapes BE → FE)
 - [Super Admin Guide](./PANDUAN-SUPER-ADMIN.md)
+- [Layout Design System](./layout.md)
