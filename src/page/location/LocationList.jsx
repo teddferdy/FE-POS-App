@@ -15,11 +15,20 @@ import {
   Building2,
   CheckCircle,
   XCircle,
-  FileEdit
+  FileEdit,
+  Archive,
+  ArchiveRestore
 } from "lucide-react";
 import { toast } from "sonner";
-import { getAllLocationTable, deleteLocation, editLocation } from "@/services/location";
+import {
+  getAllLocationTable,
+  deleteLocation,
+  editLocation,
+  archiveLocation,
+  reactivateLocation
+} from "@/services/location";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
@@ -27,6 +36,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
+import { isAdminRole } from "@/utils/role";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import { Loading } from "@/components/ui/loading";
@@ -45,6 +55,12 @@ const LocationList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [archiveModal, setArchiveModal] = useState({
+    open: false,
+    location: null,
+    mode: "archive"
+  });
+  const [archiveReason, setArchiveReason] = useState("");
   const [targetModal, setTargetModal] = useState({ open: false, location: null, value: 0 });
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery(
@@ -71,6 +87,27 @@ const LocationList = () => {
       setDeleteTarget(null);
     }
   });
+
+  // DR-24 C-04: archive/reactivate is an elevated action (D-03) — the reason
+  // is mandatory and the server audits it and enforces the preconditions.
+  const archiveMutation = useMutation(
+    ({ mode, id, reason }) =>
+      mode === "archive" ? archiveLocation({ id, reason }) : reactivateLocation({ id, reason }),
+    {
+      onSuccess: () => {
+        toast.success(t("common.success"));
+        setArchiveModal({ open: false, location: null, mode: "archive" });
+        setArchiveReason("");
+        queryClient.invalidateQueries(["locations"]);
+        queryClient.invalidateQueries(["allLocations"]);
+      },
+      onError: (err) => {
+        toast.error(t("common.error"), {
+          description: err?.response?.data?.message || err.message
+        });
+      }
+    }
+  );
 
   const isFiltered = search !== "" || statusFilter !== "all";
 
@@ -293,6 +330,7 @@ const LocationList = () => {
         { icon: Eye, label: t("common.view") },
         { icon: Target, label: t("page.location.setTarget") },
         { icon: Edit, label: t("common.edit") },
+        { icon: Archive, label: t("page.location.archive") },
         { icon: Trash2, label: t("common.delete") }
       ],
       render: (loc) => (
@@ -318,6 +356,24 @@ const LocationList = () => {
               icon: Edit,
               onClick: () => navigate(`/edit-location?id=${loc.id || loc._id}`),
               hidden: !canAccess(user, MENU_KEY, "edit")
+            },
+            {
+              label: t("page.location.archive"),
+              icon: Archive,
+              onClick: () => setArchiveModal({ open: true, location: loc, mode: "archive" }),
+              hidden:
+                loc.status === "archived" ||
+                !isAdminRole(user) ||
+                !canAccess(user, MENU_KEY, "delete")
+            },
+            {
+              label: t("page.location.reactivate"),
+              icon: ArchiveRestore,
+              onClick: () => setArchiveModal({ open: true, location: loc, mode: "reactivate" }),
+              hidden:
+                loc.status !== "archived" ||
+                !isAdminRole(user) ||
+                !canAccess(user, MENU_KEY, "delete")
             },
             {
               label: t("common.delete"),
@@ -546,6 +602,52 @@ const LocationList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
+
+      <Modal
+        type="form"
+        open={archiveModal.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setArchiveModal({ open: false, location: null, mode: "archive" });
+            setArchiveReason("");
+          }
+        }}
+        title={
+          archiveModal.mode === "archive"
+            ? t("page.location.archiveTitle")
+            : t("page.location.reactivateTitle")
+        }
+        description={archiveModal.location?.name || ""}
+        confirmText={
+          archiveModal.mode === "archive"
+            ? t("page.location.archive")
+            : t("page.location.reactivate")
+        }
+        loading={archiveMutation.isLoading}
+        onConfirm={() => {
+          const reason = archiveReason.trim();
+          if (!reason) {
+            toast.error(t("page.location.archiveReasonRequired"));
+            return;
+          }
+          archiveMutation.mutate({
+            mode: archiveModal.mode,
+            id: archiveModal.location?.id || archiveModal.location?._id,
+            reason
+          });
+        }}>
+        <div className="py-2">
+          <label className="text-sm font-medium text-foreground mb-1.5 block">
+            {t("page.location.archiveReason")}
+          </label>
+          <Textarea
+            value={archiveReason}
+            onChange={(e) => setArchiveReason(e.target.value)}
+            placeholder={t("page.location.archiveReasonPlaceholder")}
+            maxLength={500}
+          />
+        </div>
+      </Modal>
 
       <Modal
         type="form"

@@ -48,6 +48,20 @@ export const deleteLocation = async (payload) => {
   return data;
 };
 
+// DR-24 C-04: closure by archive — reversible and audited; the backend
+// enforces the admin scope and the live-operation preconditions.
+export const archiveLocation = async (payload) => {
+  const { data, status } = await axiosInstance.post("/location/archive-location", payload);
+  if (status !== 200) throw Error(data?.message || data?.error);
+  return data;
+};
+
+export const reactivateLocation = async (payload) => {
+  const { data, status } = await axiosInstance.post("/location/reactivate-location", payload);
+  if (status !== 200) throw Error(data?.message || data?.error);
+  return data;
+};
+
 const _getLocationDetail = async ({ id }) => {
   const { data, status } = await axiosInstance.get(`/location/get-location-detail/${id}`);
   if (status !== 200) throw Error(`${data.message}`);
