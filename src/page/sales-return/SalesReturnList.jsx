@@ -39,6 +39,10 @@ const SalesReturnList = () => {
     const known = ["cash", "debit", "credit", "e-wallet", "other"];
     return known.includes(m) ? t(`page.salesReturn.method.${m}`) : m || "-";
   };
+  const needsRefundReference = (item) =>
+    Number(item?.refundAmount) > 0 &&
+    !["cash", "tunai", "points"].includes(String(item?.refundMethod || "cash").toLowerCase());
+  const isOtherRefund = (item) => String(item?.refundMethod || "").toLowerCase() === "other";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -52,6 +56,11 @@ const SalesReturnList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
+  // BA 009 (DR-23 §D/§G): approving a non-cash refund needs its reference
+  // (OTHER: a description); the server refuses it otherwise.
+  const [actionItem, setActionItem] = useState(null);
+  const [refundReference, setRefundReference] = useState("");
+  const [referenceError, setReferenceError] = useState(false);
 
   const { data: locData } = useQuery(["locations-sales-return"], () => getAllLocation(), {
     enabled: isSuperAdmin
@@ -109,6 +118,9 @@ const SalesReturnList = () => {
       setActionTarget(null);
     },
     onError: (err) => {
+      if (err?.response?.status === 422 && err?.response?.data?.code === "REFERENCE_REQUIRED") {
+        setReferenceError(true);
+      }
       const { title, description } = describeMutationError(err);
       toast.error(title, { description });
       queryClient.invalidateQueries(["sales-returns"]);
@@ -258,6 +270,9 @@ const SalesReturnList = () => {
                     icon: CheckCircle,
                     onClick: () => {
                       setActionTarget(item.id);
+                      setActionItem(item);
+                      setRefundReference("");
+                      setReferenceError(false);
                       setActionType("approve");
                     }
                   },
@@ -387,8 +402,64 @@ const SalesReturnList = () => {
           )}
 
           <Modal
+            type="form"
+            open={!!actionTarget && actionType === "approve" && needsRefundReference(actionItem)}
+            onOpenChange={(o) => !o && setActionTarget(null)}
+            title={t("page.salesReturn.list.modal.approveTitle")}
+            description={t("page.salesReturn.list.modal.referenceDesc", {
+              method: refundMethodLabel(actionItem?.refundMethod)
+            })}
+            confirmText={t("page.salesReturn.list.modal.approveConfirm")}
+            loading={approveMut.isLoading}
+            onConfirm={() => {
+              if (!refundReference.trim()) {
+                setReferenceError(true);
+                return false;
+              }
+              approveMut.mutate({ id: actionTarget, refundReference });
+              return false;
+            }}>
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="sales-return-refund-reference"
+                className="text-sm font-medium text-foreground">
+                {t(
+                  isOtherRefund(actionItem)
+                    ? "page.salesReturn.list.modal.otherLabel"
+                    : "page.salesReturn.list.modal.referenceLabel"
+                )}{" "}
+                <span className="text-destructive">*</span>
+              </label>
+              <input
+                id="sales-return-refund-reference"
+                value={refundReference}
+                onChange={(e) => {
+                  setRefundReference(e.target.value);
+                  if (e.target.value.trim()) setReferenceError(false);
+                }}
+                aria-invalid={referenceError}
+                aria-describedby="sales-return-refund-reference-hint"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              />
+              <p
+                id="sales-return-refund-reference-hint"
+                role={referenceError ? "alert" : undefined}
+                className={
+                  referenceError ? "text-sm text-destructive" : "text-xs text-muted-foreground"
+                }>
+                {t(
+                  referenceError
+                    ? isOtherRefund(actionItem)
+                      ? "page.salesReturn.list.modal.otherRequired"
+                      : "page.salesReturn.list.modal.referenceRequired"
+                    : "page.salesReturn.list.modal.referenceHint"
+                )}
+              </p>
+            </div>
+          </Modal>
+          <Modal
             type="confirm"
-            open={!!actionTarget}
+            open={!!actionTarget && !(actionType === "approve" && needsRefundReference(actionItem))}
             onOpenChange={(o) => !o && setActionTarget(null)}
             title={
               actionType === "approve"

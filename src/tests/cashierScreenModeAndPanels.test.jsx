@@ -177,9 +177,10 @@ describe("Location navigation category", () => {
       canManageStores: true
     });
     const storeSection = result[0].sections[0];
+    // Display order: Tenant, store list, Store Configuration.
     expect(storeSection.items.map((i) => i.href)).toEqual([
-      "/location-list",
       "/tenant",
+      "/location-list",
       "/store-configuration"
     ]);
     expect(result).toHaveLength(2);

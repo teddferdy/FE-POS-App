@@ -1,7 +1,7 @@
 import React from "react";
 import { Route } from "react-router-dom";
 
-import { RequireRole } from "@/components/ui/RequireRole";
+import { RequireRole, RequireMenuAccess } from "@/components/ui/RequireRole";
 
 // Location
 const LocationList = React.lazy(() => import("@/page/location/LocationList"));
@@ -46,9 +46,9 @@ export const settingsRoutes = (
     <Route
       path="/location-list"
       element={
-        <RequireRole roles={["super_admin"]}>
+        <RequireMenuAccess href="/location-list">
           <LocationList />
-        </RequireRole>
+        </RequireMenuAccess>
       }
     />
     <Route

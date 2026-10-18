@@ -152,7 +152,6 @@ describe("CheckoutModal — server quote", () => {
     const quoted = quoteOrder.mock.calls[0][0];
     expect(quoted).toMatchObject({
       store: "1",
-      useTax: true,
       redeemedPoints: 0,
       discountId: null,
       customerId: null
@@ -204,11 +203,13 @@ describe("CheckoutModal — server quote", () => {
           release = () => resolve(serverQuote(payload, { taxAmount: 0 }));
         })
     );
-    fireEvent.click(screen.getByLabelText("Gunakan Pajak"));
+    fireEvent.change(screen.getByPlaceholderText("page.cashier.promoCodePlaceholder"), {
+      target: { value: "HEMAT" }
+    });
 
     await waitFor(() => expect(screen.getByTestId("checkout-quote-pending")).toBeInTheDocument());
     expect(confirmButton()).toBeDisabled();
-    await waitFor(() => expect(quoteOrder.mock.calls.at(-1)[0].useTax).toBe(false));
+    await waitFor(() => expect(quoteOrder.mock.calls.at(-1)[0].promoCode).toBe("HEMAT"));
 
     release();
     await waitFor(() => expect(confirmButton()).not.toBeDisabled());
@@ -446,13 +447,10 @@ describe("CheckoutModal — D1 repeated quote-stage PRICE_CHANGED", () => {
 });
 
 describe("CheckoutModal — D2 pending QRIS is bound to its checkout", () => {
+  // DR-24 D-01: the cashier tax toggle is removed, so every quote carries
+  // the resolved outlet rate (11 % here) — no payload can switch it off.
   const taxAware = (payload) =>
-    Promise.resolve(
-      serverQuote(
-        payload,
-        payload.useTax ? { taxRate: 11, taxAmount: 11000, totalPrice: 111000 } : {}
-      )
-    );
+    Promise.resolve(serverQuote(payload, { taxRate: 11, taxAmount: 11000, totalPrice: 111000 }));
   const qrisConfirm = () => screen.queryByText("page.cashier.qris.confirmReceived");
   const deferred = () => {
     let resolve;
@@ -468,6 +466,10 @@ describe("CheckoutModal — D2 pending QRIS is bound to its checkout", () => {
     await waitFor(() => expect(confirmButton()).not.toBeDisabled());
     fireEvent.click(confirmButton());
     await screen.findByText("page.cashier.qris.confirmReceived");
+    // DR-23 §D: the QRIS reference is entered once the customer has paid.
+    fireEvent.change(screen.getByLabelText("page.cashier.collectPayment.reference.label"), {
+      target: { value: "QR-REF-1" }
+    });
   };
 
   beforeEach(() => {
@@ -488,35 +490,11 @@ describe("CheckoutModal — D2 pending QRIS is bound to its checkout", () => {
     fireEvent.click(qrisConfirm());
     fireEvent.click(qrisConfirm());
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
-    expect(createOrder.mock.calls[0][0]).toMatchObject({ useTax: true, paymentMethod: "qris" });
+    expect(createOrder.mock.calls[0][0]).toMatchObject({
+      paymentMethod: "qris",
+      referenceNumber: "QR-REF-1"
+    });
     expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
-  });
-
-  test("a tax change while QRIS is pending voids it; the stale payload is never sent", async () => {
-    renderModal();
-    await startQris();
-
-    fireEvent.click(screen.getByLabelText("Gunakan Pajak"));
-    // the pending confirmation is gone at once and flagged as void
-    await waitFor(() => expect(qrisConfirm()).not.toBeInTheDocument());
-    expect(screen.getByTestId("qris-invalidated")).toHaveAttribute("role", "alert");
-    expect(toast.error).toHaveBeenCalledWith("page.cashier.qris.invalidated");
-    // the re-quote (tax off) is shown; nothing was created
-    await waitFor(() => expect(quoteOrder).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(confirmButton()).not.toBeDisabled());
-    expect(createOrder).not.toHaveBeenCalled();
-    // no clear/cancel event exists in the display protocol: none is invented
-    expect(dispatchDisplayEvent).toHaveBeenCalledTimes(1);
-
-    // the cashier must run a new QRIS flow for the current quote
-    fireEvent.click(confirmButton());
-    await screen.findByText("page.cashier.qris.confirmReceived");
-    expect(dispatchDisplayEvent).toHaveBeenCalledTimes(2);
-    expect(dispatchDisplayEvent.mock.calls[1][0].total).toBe(100000);
-    expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
-    fireEvent.click(qrisConfirm());
-    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
-    expect(createOrder.mock.calls[0][0].useTax).toBe(false);
   });
 
   test("a promo code change while QRIS is pending voids it", async () => {
@@ -600,7 +578,7 @@ describe("CheckoutModal — D2 pending QRIS is bound to its checkout", () => {
     expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
     fireEvent.click(qrisConfirm());
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
-    expect(createOrder.mock.calls[0][0]).toMatchObject({ useTax: true, paymentMethod: "qris" });
+    expect(createOrder.mock.calls[0][0]).toMatchObject({ paymentMethod: "qris" });
   });
 
   test("an equal checkout re-rendered with new cart objects keeps the pending QRIS valid", async () => {

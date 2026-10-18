@@ -245,6 +245,31 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
     return posItems.filter((item) => hasMenuAccess(user, item.href, ["view"]));
   }, [isMenuControlled, posItems, user]);
 
+  // ponytail: tombol kategori ikut "hidup" saat halaman aktif berada di
+  // dalamnya — cek href, activePaths, dan activeRegex tiap item.
+  const isCategoryActive = useCallback(
+    (cat) => {
+      const items = [];
+      (cat.sections || []).forEach((section) => {
+        (section.items || []).forEach((item) => items.push(item));
+      });
+      return items.some((item) => {
+        if (!item.href) return false;
+        if (isActive(item.href)) return true;
+        if (
+          Array.isArray(item.activePaths) &&
+          item.activePaths.some(
+            (p) => location.pathname === p || location.pathname.startsWith(p + "/")
+          )
+        )
+          return true;
+        if (item.activeRegex instanceof RegExp) return item.activeRegex.test(location.pathname);
+        return false;
+      });
+    },
+    [location.pathname]
+  );
+
   const renderNavButton = (item, icon, extraClass = "") => {
     const Icon = icon;
     // ponytail: activeRegex adalah literal statis dari config posItems,
@@ -387,12 +412,17 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
             {/* Category buttons - open modal */}
             {categories.map((cat) => {
+              const active = isCategoryActive(cat);
               const btn = (
                 <button
                   onClick={() => handleOpenCategory(cat.id)}
-                  className="nav-btn group relative flex items-center gap-3 rounded-xl overflow-hidden
+                  className={`nav-btn group relative flex items-center gap-3 rounded-xl overflow-hidden
                       h-10 px-3
-                      text-muted-foreground hover:bg-accent hover:text-foreground hover:shadow-sm">
+                      ${
+                        active
+                          ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground hover:shadow-sm"
+                      }`}>
                   <cat.icon
                     size={20}
                     className="shrink-0 transition-transform duration-150 group-hover:scale-110"

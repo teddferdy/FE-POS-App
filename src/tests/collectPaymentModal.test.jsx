@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { toast } from "sonner";
 import { QueryClient, QueryClientProvider } from "react-query";
 import CollectPaymentModal from "../page/cashier/components/CollectPaymentModal";
 import { getOrderById, updateOrderStatus, createOrder } from "../services/order";
@@ -10,7 +11,7 @@ jest.mock("react-i18next", () => ({
 }));
 
 jest.mock("sonner", () => ({
-  toast: { success: jest.fn(), error: jest.fn() }
+  toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn() }
 }));
 
 jest.mock("react-cookie", () => ({
@@ -130,6 +131,32 @@ describe("CollectPaymentModal — F4-01 QR order settlement", () => {
     );
     expect(onClose).toHaveBeenCalled();
     expect(getOrderById).toHaveBeenCalledTimes(2);
+  });
+
+  test("DR-18 (BA 028): a settlement with a stock shortage still succeeds and warns the cashier", async () => {
+    const paidOrder = { ...qrOrder, status: "paid", paymentStatus: "paid" };
+    updateOrderStatus.mockResolvedValue({
+      data: paidOrder,
+      stockShortages: [
+        { type: "ingredient", id: 9, name: "Bakso Halus", required: 5, deducted: 2, shortfall: 3 }
+      ]
+    });
+    getOrderById.mockReset();
+    getOrderById
+      .mockResolvedValueOnce({ data: qrOrder })
+      .mockResolvedValueOnce({ data: paidOrder });
+    const onOpenReceipt = jest.fn();
+    renderModal({ onOpenReceipt, onClose: jest.fn() });
+
+    await waitFor(() => screen.getByText("page.cashier.collectPayment.payFull"));
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.payFull"));
+    fireEvent.click(screen.getByText("page.cashier.collectPayment.confirm"));
+
+    await waitFor(() => expect(onOpenReceipt).toHaveBeenCalled());
+    expect(toast.warning).toHaveBeenCalledWith(
+      "page.cashier.stockShortage.title",
+      expect.objectContaining({ duration: 10000 })
+    );
   });
 
   test("F4-01-04: split payment hands the SAME existing order id to the split-bill flow, without creating a new order", async () => {

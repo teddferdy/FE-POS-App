@@ -5,12 +5,14 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { warnStockShortages } from "@/lib/stock-shortage";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getOrderById, updateOrderStatus } from "@/services/order";
 import { getMemberById } from "@/services/member";
 import MemberSearchModal from "@/components/MemberSearchModal";
+import { REFERENCE_REQUIRED_METHODS, MAX_REFERENCE_LENGTH } from "@/utils/payment";
 
 // F4-01: settles an order that already exists (e.g. created through
 // BISA-MAKAN's QR ordering flow) instead of the previous workaround of
@@ -59,14 +61,6 @@ const SETTLEMENT_METHODS = [
   "other"
 ];
 
-// DR-23 §D / §M: the methods whose manually confirmed settlement must carry
-// a reference — every method but cash and points (BE requiresTenderReference:
-// CARD = debit/credit, BANK_TRANSFER, E_WALLET, QRIS, OTHER). The server
-// refuses a missing or blank one (422 REFERENCE_REQUIRED); this list only
-// decides when the input is shown and confirm is enabled.
-const REFERENCE_REQUIRED_METHODS = ["qris", "debit", "credit", "transfer", "e-wallet", "other"];
-const MAX_REFERENCE_LENGTH = 255;
-
 const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
@@ -85,6 +79,9 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const [referenceInput, setReferenceInput] = useState("");
   // Set when the server refuses the settlement for a missing reference.
   const [referenceRefused, setReferenceRefused] = useState(false);
+  // BA 004 (DR-23 §D): the server refused a reference already used for
+  // another payment at this store (409 DUPLICATE_REFERENCE).
+  const [referenceDuplicate, setReferenceDuplicate] = useState(false);
   // DR-04 P2-1: explicit cashier acknowledgement that the order total will
   // be redeemed from the member's points; reset whenever the method changes.
   const [pointsConfirmed, setPointsConfirmed] = useState(false);
@@ -214,8 +211,9 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
           : {}),
         ...(tender.referenceNumber ? { referenceNumber: tender.referenceNumber } : {})
       }),
-    onSuccess: async (_data, tender) => {
+    onSuccess: async (data, tender) => {
       toast.success(t("page.cashier.collectPayment.toast.paidSuccess"));
+      warnStockShortages(data?.stockShortages, t);
       invalidateOrderQueues();
       // Re-fetch rather than trust the mutation response for the receipt —
       // updateOrderStatus's response order was loaded without its items
@@ -249,9 +247,22 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
       }
       // DR-23 §D: the server refused the settlement for a missing reference.
       // Nothing was recorded; keep the typed values and point at the field.
+      if (status === 409 && code === "DUPLICATE_REFERENCE") {
+        setReferenceRefused(true);
+        setReferenceDuplicate(true);
+        toast.error(t("page.cashier.collectPayment.reference.duplicate"));
+        return;
+      }
       if (status === 422 && code === "REFERENCE_REQUIRED") {
         setReferenceRefused(true);
-        toast.error(t("page.cashier.collectPayment.reference.required"));
+        setReferenceDuplicate(false);
+        toast.error(
+          t(
+            isOtherMethod
+              ? "page.cashier.collectPayment.reference.otherRequired"
+              : "page.cashier.collectPayment.reference.required"
+          )
+        );
         return;
       }
       // DR-23: the settlement must equal the CURRENT outstanding amount — a
@@ -345,6 +356,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
             ...(needsReference ? { referenceNumber: referenceTrimmed } : {})
           };
     setReferenceRefused(false);
+    setReferenceDuplicate(false);
     settleMutation.mutate(tender);
   };
 
@@ -645,6 +657,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                         onChange={(e) => {
                           setReferenceInput(e.target.value);
                           setReferenceRefused(false);
+                          setReferenceDuplicate(false);
                         }}
                         aria-invalid={referenceRefused || undefined}
                         aria-describedby="collect-payment-reference-hint"
@@ -656,7 +669,13 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                           role="alert"
                           className="flex items-start gap-1.5 text-sm text-destructive">
                           <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-                          {t("page.cashier.collectPayment.reference.required")}
+                          {t(
+                            referenceDuplicate
+                              ? "page.cashier.collectPayment.reference.duplicate"
+                              : isOtherMethod
+                                ? "page.cashier.collectPayment.reference.otherRequired"
+                                : "page.cashier.collectPayment.reference.required"
+                          )}
                         </p>
                       ) : (
                         <p

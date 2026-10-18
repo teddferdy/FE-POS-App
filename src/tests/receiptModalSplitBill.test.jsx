@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { toast } from "sonner";
 import { QueryClient, QueryClientProvider } from "react-query";
 import ReceiptModal from "../page/cashier/components/ReceiptModal";
 import {
@@ -15,7 +16,7 @@ jest.mock("react-i18next", () => ({
 }));
 
 jest.mock("sonner", () => ({
-  toast: { success: jest.fn(), error: jest.fn() }
+  toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn() }
 }));
 
 jest.mock("@/utils/thermalPrint", () => ({ printReceipt: jest.fn() }));
@@ -35,7 +36,12 @@ jest.mock("@/services/general", () => ({
 }));
 jest.mock("@/services/type-payment", () => ({
   getAllTypePayment: jest.fn(() =>
-    Promise.resolve({ data: [{ type: "cash", name: "Cash", status: "active" }] })
+    Promise.resolve({
+      data: [
+        { type: "cash", name: "Cash", status: "active" },
+        { type: "qris", name: "QRIS", status: "active" }
+      ]
+    })
   )
 }));
 
@@ -131,6 +137,61 @@ describe("ReceiptModal split-bill management", () => {
     fireEvent.click(confirmBtn);
 
     await waitFor(() => expect(paySplitBill).toHaveBeenCalledWith(1, { paymentMethod: "cash" }));
+  });
+
+  test("a non-cash split needs its reference and sends it (DR-23 §D)", async () => {
+    getSplitBillByOrder.mockResolvedValue({
+      data: {
+        splits: [{ id: 1, splitNumber: "SPL001", amount: 50000, status: "pending" }],
+        summary: { totalSplits: 1, totalPaid: 0, totalPending: 50000 }
+      }
+    });
+    paySplitBill.mockResolvedValue({ data: { orderComplete: false } });
+
+    renderModal();
+    fireEvent.click(screen.getByText("page.cashier.receipt.split"));
+    await waitFor(() => expect(screen.getByText("SPL001")).toBeInTheDocument());
+    fireEvent.click(screen.getByText("page.cashier.receipt.splitPay"));
+    fireEvent.change(screen.getByLabelText("split-pay-method"), { target: { value: "qris" } });
+
+    const confirm = screen.getByLabelText("page.cashier.receipt.splitPayConfirm");
+    expect(confirm).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("page.cashier.collectPayment.reference.label"), {
+      target: { value: "  QR-77 " }
+    });
+    expect(confirm).not.toBeDisabled();
+    fireEvent.click(confirm);
+    await waitFor(() =>
+      expect(paySplitBill).toHaveBeenCalledWith(1, {
+        paymentMethod: "qris",
+        referenceNumber: "QR-77"
+      })
+    );
+  });
+
+  test("a reused split reference shows the duplicate message (BA 004)", async () => {
+    getSplitBillByOrder.mockResolvedValue({
+      data: {
+        splits: [{ id: 1, splitNumber: "SPL001", amount: 50000, status: "pending" }],
+        summary: { totalSplits: 1, totalPaid: 0, totalPending: 50000 }
+      }
+    });
+    paySplitBill.mockRejectedValue({
+      response: { status: 409, data: { code: "DUPLICATE_REFERENCE" } }
+    });
+
+    renderModal();
+    fireEvent.click(screen.getByText("page.cashier.receipt.split"));
+    await waitFor(() => expect(screen.getByText("SPL001")).toBeInTheDocument());
+    fireEvent.click(screen.getByText("page.cashier.receipt.splitPay"));
+    fireEvent.change(screen.getByLabelText("split-pay-method"), { target: { value: "qris" } });
+    fireEvent.change(screen.getByLabelText("page.cashier.collectPayment.reference.label"), {
+      target: { value: "QR-77" }
+    });
+    fireEvent.click(screen.getByLabelText("page.cashier.receipt.splitPayConfirm"));
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith("page.cashier.collectPayment.reference.duplicate")
+    );
   });
 
   test("cancels a pending split", async () => {
