@@ -25,8 +25,16 @@ export const returnOrder = async (orderId, payload) => {
   return data;
 };
 
-export const approveSalesReturn = async (id) => {
-  const { data, status } = await axiosInstance.patch(`/sales-return/approve/${id}`);
+// Accepts the return id, or { id, refundReference } when the refund is
+// non-cash (BA 009: the server requires its reference).
+export const approveSalesReturn = async (arg) => {
+  const id = typeof arg === "object" && arg !== null ? arg.id : arg;
+  const refundReference =
+    typeof arg === "object" && arg !== null ? arg.refundReference?.trim() : undefined;
+  const { data, status } = await axiosInstance.patch(
+    `/sales-return/approve/${id}`,
+    refundReference ? { refundReference } : undefined
+  );
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };

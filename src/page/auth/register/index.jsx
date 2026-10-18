@@ -110,6 +110,7 @@ const RegisterPage = () => {
       errorValidationEmail: t("translation:formError.input.register.validationEmail"),
       errorLocation: t("translation:formError.input.register.location"),
       errorPassword: t("translation:formError.input.register.password"),
+      errorPasswordMin: t("translation:formError.input.register.passwordMin"),
       errorConfirmation: t("translation:formError.input.register.confirmationPassword"),
       errorPasswordMatch: t("translation:formError.input.register.validationConfirmationPassword")
     }),
@@ -126,7 +127,11 @@ const RegisterPage = () => {
             .min(1, { message: translationMemo.errorEmail })
             .email({ message: translationMemo.errorValidationEmail }),
           store: z.string().min(1, { message: translationMemo.errorLocation }),
-          password: z.string().min(4, { message: translationMemo.errorPassword }),
+          // Same minimum as the server (registerSchema: 6 characters).
+          password: z
+            .string()
+            .min(1, { message: translationMemo.errorPassword })
+            .min(6, { message: translationMemo.errorPasswordMin }),
           confirmPassword: z.string().min(1, { message: translationMemo.errorConfirmation })
         })
         .refine((data) => data.password === data.confirmPassword, {
@@ -363,7 +368,7 @@ const RegisterPage = () => {
                           {form?.formState?.errors?.password && (
                             <FormMessage>{form?.formState?.errors?.password}</FormMessage>
                           )}
-                          <FormDescription>{t("common.passwordMin4")}</FormDescription>
+                          <FormDescription>{t("common.passwordMin6")}</FormDescription>
                         </FormItem>
                       )}
                     />

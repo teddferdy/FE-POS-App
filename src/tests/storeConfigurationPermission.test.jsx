@@ -1,5 +1,5 @@
 import React from "react";
-import { render, renderHook, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -157,6 +157,10 @@ describe("Sidebar Store Configuration entry", () => {
     mockUser = user;
     mockGetAuthContext.mockResolvedValue(contextBody(["store.manage"]));
     renderSidebar();
+    // All branches use the category sidebar: the entry lives inside the
+    // Location ("Lokasi") category modal (accessMenu-filtered for
+    // accessMenu-controlled users).
+    fireEvent.click(await screen.findByText("sidebar.section.location"));
     expect(await screen.findByText(ITEM)).toBeInTheDocument();
   });
 

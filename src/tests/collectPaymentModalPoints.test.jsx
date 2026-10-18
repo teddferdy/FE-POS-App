@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { toast } from "sonner";
@@ -92,9 +92,12 @@ describe("CollectPaymentModal — DR-04 P2-1 points settlement", () => {
     await openConfirm();
     choosePoints();
 
-    await waitFor(() => expect(screen.getByText("Budi Member")).toBeInTheDocument());
+    // Identity assertions are scoped to the points panel: since DR-16 the
+    // same member is also shown in the settlement's attach section above.
+    const panel = await screen.findByTestId("collect-payment-points-panel");
     expect(getMemberById).toHaveBeenCalledWith({ id: 55 });
-    expect(screen.getByText("0812000111")).toBeInTheDocument();
+    expect(within(panel).getByText("Budi Member")).toBeInTheDocument();
+    expect(within(panel).getByText("0812000111")).toBeInTheDocument();
     expect(screen.getByTestId("collect-payment-points-balance")).toHaveTextContent("200.000 pts");
     expect(screen.getByTestId("collect-payment-points-required")).toHaveTextContent("150.000 pts");
     expect(screen.getByTestId("collect-payment-points-redeem")).toHaveTextContent("150.000 pts");

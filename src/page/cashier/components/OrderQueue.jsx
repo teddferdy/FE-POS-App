@@ -1,14 +1,17 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
-import { useQuery, useQueryClient } from "react-query";
-import { Clock, Utensils, ShoppingBag, Wallet } from "lucide-react";
-import { getOrdersByStore } from "@/services/order";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { Clock, Utensils, ShoppingBag, Wallet, Ban, Undo2, ClipboardList } from "lucide-react";
+import { toast } from "sonner";
+import { getOrdersByStore, updateOrderStatus } from "@/services/order";
 import { getCurrentCashRegister } from "@/services/cash-register";
 import { useSocket } from "@/services/socket";
 import { useRoomSubscription } from "@/hooks/useRoomSubscription";
 import { Skeleton } from "@/components/ui/skeleton";
 import ScrollRail from "@/components/ui/ScrollRail";
+import CollapsiblePanel from "@/components/ui/CollapsiblePanel";
+import VoidOrderDialog from "@/components/organism/VoidOrderDialog";
 
 const statusConfig = {
   pending: {
@@ -72,7 +75,15 @@ function timeAgo(dateStr) {
 // self-orders, which stay fully actionable regardless of payment state,
 // per spec. `registerId` is purely a display label (order.cashRegisterId,
 // nothing invented) shown only outside the current-register bucket.
-const OrderCard = ({ order, onClick, onCollectPayment, readOnly = false, registerId = null }) => {
+const OrderCard = ({
+  order,
+  onClick,
+  onCollectPayment,
+  onCancelOrder,
+  onVoidOrder,
+  readOnly = false,
+  registerId = null
+}) => {
   const { t } = useTranslation();
   const status = statusConfig[order.status] || statusConfig.pending;
   const payCfg = paymentStatusConfig[order.paymentStatus] || paymentStatusConfig.unpaid;
@@ -84,6 +95,40 @@ const OrderCard = ({ order, onClick, onCollectPayment, readOnly = false, registe
   // regardless of the order's kitchen-progress status.
   const canCollectPayment =
     !readOnly && typeof onCollectPayment === "function" && order.paymentStatus !== "paid";
+  // DR-08: cancel ends an order only before payment (server enforces
+  // CANCEL_REQUIRES_VOID once anything was collected — void itself needs an
+  // elevated capability and lives outside this queue). Offered for unpaid
+  // orders only; cancelling is terminal, so the button arms on first tap.
+  const canCancel =
+    !readOnly &&
+    typeof onCancelOrder === "function" &&
+    (!order.paymentStatus || order.paymentStatus === "unpaid");
+  // DR-23 §G: once anything was collected, cancel is refused
+  // (CANCEL_REQUIRES_VOID) and the order can only end by an elevated void
+  // with an immediate refund. Offered only when the caller wired it (i.e.
+  // the user holds order.void) and only for part-paid orders — fully paid
+  // orders are not in this queue.
+  const canVoid =
+    !readOnly && typeof onVoidOrder === "function" && order.paymentStatus === "partial";
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const cancelTimer = useRef(null);
+  useEffect(
+    () => () => {
+      if (cancelTimer.current) clearTimeout(cancelTimer.current);
+    },
+    []
+  );
+  const handleCancelTap = (e) => {
+    e.stopPropagation();
+    if (!confirmingCancel) {
+      setConfirmingCancel(true);
+      cancelTimer.current = setTimeout(() => setConfirmingCancel(false), 5000);
+      return;
+    }
+    if (cancelTimer.current) clearTimeout(cancelTimer.current);
+    setConfirmingCancel(false);
+    onCancelOrder(order);
+  };
 
   const cardBody = (
     <>
@@ -159,6 +204,38 @@ const OrderCard = ({ order, onClick, onCollectPayment, readOnly = false, registe
           {t("page.cashier.orderQueue.collectPayment")}
         </button>
       )}
+      {canCancel && (
+        <button
+          type="button"
+          aria-label={
+            confirmingCancel
+              ? t("page.cashier.orderQueue.confirmCancel")
+              : t("page.cashier.orderQueue.cancel")
+          }
+          onClick={handleCancelTap}
+          className={`w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 rounded-lg transition-colors ${
+            confirmingCancel
+              ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              : "text-muted-foreground hover:bg-accent hover:text-destructive"
+          }`}>
+          <Ban size={12} />
+          {confirmingCancel
+            ? t("page.cashier.orderQueue.confirmCancel")
+            : t("page.cashier.orderQueue.cancel")}
+        </button>
+      )}
+      {canVoid && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onVoidOrder(order);
+          }}
+          className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors">
+          <Undo2 size={12} aria-hidden="true" />
+          {t("page.voidOrder.action")}
+        </button>
+      )}
     </div>
   );
 };
@@ -183,7 +260,7 @@ const OrderQueueSkeleton = () => (
   </div>
 );
 
-const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
+const OrderQueue = ({ store, onLoadOrder, onCollectPayment, canVoid = false }) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   // Defensive fallback (`|| {}`): unlike KDS/WaiterRequestList, several
@@ -285,6 +362,53 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
     queryClient.invalidateQueries(["cashier-orders-ready", store]);
     queryClient.invalidateQueries(["cashier-orders-served", store]);
   }, [queryClient, store]);
+
+  const invalidateAllQueues = useCallback(() => {
+    invalidatePending();
+    invalidateKitchenCascade();
+    queryClient.invalidateQueries(["cashier-orders-confirmed", store]);
+  }, [queryClient, store, invalidatePending, invalidateKitchenCascade]);
+
+  // DR-08: cancel ends an order before payment. The server owns the guard —
+  // anything net-collected is refused with CANCEL_REQUIRES_VOID (void needs
+  // an elevated capability and is out of this queue's scope). React to the
+  // confirmed result only: toast + queue refresh, never optimistic removal.
+  // Duplicate taps are blocked per order id while its request is in flight.
+  const cancellingIds = useRef(new Set());
+  const cancelMutation = useMutation({
+    mutationFn: (target) => updateOrderStatus({ id: target.id, store, status: "cancelled" }),
+    onSuccess: () => {
+      toast.success(t("page.cashier.orderQueue.cancelled"));
+      invalidateAllQueues();
+    },
+    onError: (err) => {
+      const code = err?.response?.data?.code;
+      if (code === "CANCEL_REQUIRES_VOID") {
+        toast.error(t("page.cashier.orderQueue.cancelRequiresVoid"));
+      } else {
+        toast.error(
+          err?.response?.data?.message ||
+            err?.response?.data?.error ||
+            err?.message ||
+            t("page.cashier.orderQueue.cancelFailed")
+        );
+      }
+      invalidateAllQueues();
+    },
+    onSettled: (_data, _err, target) => {
+      cancellingIds.current.delete(target?.id);
+    }
+  });
+  const [voidTarget, setVoidTarget] = useState(null);
+
+  const handleCancelOrder = useCallback(
+    (target) => {
+      if (!target?.id || cancellingIds.current.has(target.id)) return;
+      cancellingIds.current.add(target.id);
+      cancelMutation.mutate(target);
+    },
+    [cancelMutation]
+  );
 
   useEffect(() => {
     if (!socket || !store) return;
@@ -423,6 +547,8 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
                 order={order}
                 onClick={onLoadOrder}
                 onCollectPayment={onCollectPayment}
+                onCancelOrder={handleCancelOrder}
+                onVoidOrder={canVoid ? setVoidTarget : undefined}
                 readOnly={sectionReadOnly && isFinalized(order)}
                 registerId={bucketKey === "previous" ? order.cashRegisterId : null}
               />
@@ -438,21 +564,37 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
       {isLoading ? (
         <OrderQueueSkeleton />
       ) : allOrders.length > 0 ? (
-        hasMultipleBuckets ? (
-          <div className="mt-6 space-y-4">
-            {renderSection("current", buckets.current, { showLabel: true })}
-            {renderSection("previous", buckets.previous, {
-              sectionReadOnly: true,
-              showLabel: true
-            })}
-            {renderSection("unassigned", buckets.unassigned, { showLabel: true })}
-          </div>
-        ) : (
-          // Common case: nothing outside the current-register bucket —
-          // render exactly as before Batch 6B, no section headers.
-          renderSection("current", buckets.current, {})
-        )
+        <CollapsiblePanel
+          title={t("page.cashier.orderQueue.title")}
+          icon={ClipboardList}
+          count={allOrders.length}
+          storageKey="cashier.orderQueue"
+          className="mt-3">
+          {hasMultipleBuckets ? (
+            <div className="mt-6 space-y-4">
+              {renderSection("current", buckets.current, { showLabel: true })}
+              {renderSection("previous", buckets.previous, {
+                sectionReadOnly: true,
+                showLabel: true
+              })}
+              {renderSection("unassigned", buckets.unassigned, { showLabel: true })}
+            </div>
+          ) : (
+            // Common case: nothing outside the current-register bucket —
+            // render exactly as before Batch 6B, no section headers.
+            renderSection("current", buckets.current, {})
+          )}
+        </CollapsiblePanel>
       ) : null}
+      {voidTarget && (
+        <VoidOrderDialog
+          open
+          onOpenChange={(next) => !next && setVoidTarget(null)}
+          order={voidTarget}
+          store={store}
+          onVoided={invalidateAllQueues}
+        />
+      )}
     </div>
   );
 };
@@ -460,7 +602,8 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment }) => {
 OrderQueue.propTypes = {
   store: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onLoadOrder: PropTypes.func.isRequired,
-  onCollectPayment: PropTypes.func
+  onCollectPayment: PropTypes.func,
+  canVoid: PropTypes.bool
 };
 
 export default OrderQueue;

@@ -13,7 +13,6 @@ import {
   DollarSign,
   FileText,
   QrCode,
-  SlidersHorizontal,
   X
 } from "lucide-react";
 import {
@@ -23,10 +22,21 @@ import {
   sidebarMenuUser,
   navCategories
 } from "@/utils/sidebar-menu";
-import { filterMenuByPermission, filterNavCategoriesByPermission } from "@/utils/permission";
-import { isAdminRole, isCashierRole, isSuperAdminRole } from "@/utils/role";
+import {
+  filterMenuByPermission,
+  filterNavCategoriesByPermission,
+  hasMenuAccess
+} from "@/utils/permission";
+import {
+  bypassesMenuPermissions,
+  isAdminRole,
+  isCashierRole,
+  isSuperAdminRole
+} from "@/utils/role";
 import { useUserSession } from "@/hooks/useUserSession";
 import { useStoreManagePermission } from "@/hooks/useStoreManagePermission";
+import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
+import { canonicalLocationNavItems, withCanonicalLocationItems } from "@/lib/canonical-nav";
 import { endSession, SESSION_END_REASON } from "@/services/session";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -34,82 +44,10 @@ import NavigationModal from "./NavigationModal";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import logoImg from "@/assets/logo-sidebar.png";
 
-// ponytail: untuk user yang menu-nya dikontrol accessMenu, item flat
-// dikelompokkan ulang per bagian (label memakai key sidebar.section.* yang
-// sudah ada). Item yang href-nya tidak terpetakan masuk grup fallback.
-const MENU_CONTROLLED_GROUPS = [
-  {
-    i18nKey: "sidebar.section.produkPromo",
-    title: "Produk & Promo",
-    hrefs: ["/category-list", "/product-list"]
-  },
-  {
-    i18nKey: "sidebar.section.bahanBaku",
-    title: "Bahan Baku",
-    hrefs: ["/supplier-category", "/supplier", "/ingredient-category", "/ingredient"]
-  },
-  {
-    i18nKey: "sidebar.section.pembelian",
-    title: "Pembelian",
-    hrefs: [
-      "/purchase-order",
-      "/goods-request",
-      "/goods-receipt",
-      "/purchase-return",
-      "/ap-dashboard",
-      "/purchase-payment"
-    ]
-  },
-  {
-    i18nKey: "sidebar.section.gudangOperasional",
-    title: "Gudang, Produksi & Delivery",
-    hrefs: [
-      "/stock-opname",
-      "/stock-adjustment",
-      "/stock-transfer",
-      "/stock-history",
-      "/low-stock",
-      "/production-order",
-      "/bom",
-      "/delivery-orders",
-      "/driver-list"
-    ]
-  },
-  {
-    i18nKey: "sidebar.section.keuanganLaporan",
-    title: "Keuangan & Laporan",
-    hrefs: [
-      "/expense-category",
-      "/expense",
-      "/accounting",
-      "/report/sales",
-      "/best-selling",
-      "/report/daily",
-      "/report/cash-flow",
-      "/report/settings",
-      "/advanced-reporting"
-    ]
-  },
-  {
-    i18nKey: "sidebar.shift",
-    title: "Shift",
-    hrefs: ["/my-shift", "/shift-list", "/shift-template-list"]
-  }
-];
-
-const MENU_CONTROLLED_FALLBACK_GROUP = {
-  i18nKey: "sidebar.lainnya",
-  title: "Lainnya"
-};
-
-// W3: shown by canonical permission (store.manage), independent of roleType
-// and accessMenu, in both sidebar branches.
-const STORE_CONFIGURATION_NAV_ITEM = {
-  title: "Store Configuration",
-  i18nKey: "page.storeConfiguration.title",
-  href: "/store-configuration",
-  activeRegex: /^\/store-configuration(\/|$)/
-};
+// ponytail: untuk user yang menu-nya dikontrol accessMenu, navigasi memakai
+// cabang kategori + popup yang sama dengan super_admin (difilter accessMenu,
+// lihat categories/menuItems di bawah). Daftar POS di bawah juga difilter
+// supaya item tanpa akses (mis. KDS, QR) tidak bocor ke user terbatas.
 
 const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHoverChange }) => {
   const { t } = useTranslation();
@@ -125,12 +63,14 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const user = useUserSession();
   const { canManageStores } = useStoreManagePermission();
+  const { canManageTenants } = useTenantManagePermission();
 
   const hasAccessMenu =
     user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
   // ponytail: user non-super_admin yang memiliki accessMenu wajib mengikuti
-  // daftar menu persis sesuai accessMenu (tanpa item/bagian tambahan)
-  const isMenuControlled = hasAccessMenu && !isSuperAdminRole(user);
+  // daftar menu persis sesuai accessMenu (tanpa item/bagian tambahan). A
+  // menu-scoped super_admin (own accessMenu, BE accessMenuScoped) is too.
+  const isMenuControlled = hasAccessMenu && !bypassesMenuPermissions(user);
 
   const baseMenu = useMemo(() => {
     if (hasAccessMenu || isSuperAdminRole(user)) return sidebarMenuSuperAdmin;
@@ -143,70 +83,14 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const categories = useMemo(() => {
     const raw = hasAccessMenu || isSuperAdminRole(user) ? navCategories.super_admin || [] : [];
-    if (isMenuControlled) return filterNavCategoriesByPermission(raw, user);
-    if (isSuperAdminRole(user)) return raw;
-    if (isAdminRole(user)) return navCategories.admin || [];
-    return raw;
-  }, [hasAccessMenu, isMenuControlled, user]);
-
-  const grantedLeaves = useMemo(() => {
-    if (!isMenuControlled) return [];
-    const leaves = [];
-    const walk = (items) => {
-      items.forEach((item) => {
-        if (item.section) {
-          if (item.children?.length) walk(item.children);
-          return;
-        }
-        if (item.children && item.children.length > 0) {
-          item.children.forEach((child) => {
-            if (child.href) leaves.push(child);
-            else if (child.children?.length) walk([child]);
-          });
-        } else if (item.href) {
-          leaves.push(item);
-        }
-      });
-    };
-    walk(menuItems);
-    return leaves;
-  }, [isMenuControlled, menuItems]);
-
-  const controlledGroups = useMemo(() => {
-    if (!isMenuControlled) return [];
-
-    // ponytail: dashboard diseragamkan per role sebelum dikelompokkan
-    const mapped = grantedLeaves.map((item) => ({
-      ...item,
-      href: item.href?.startsWith("/dashboard")
-        ? isSuperAdminRole(user)
-          ? "/dashboard-super-admin"
-          : isAdminRole(user)
-            ? "/dashboard-admin"
-            : "/dashboard-user"
-        : item.href
-    }));
-
-    const dashboard = mapped.filter((item) => item.href?.startsWith("/dashboard"));
-    const others = mapped.filter((item) => !item.href?.startsWith("/dashboard"));
-
-    const groups = [];
-    MENU_CONTROLLED_GROUPS.forEach((group) => {
-      const items = others.filter((item) => group.hrefs.includes(item.href));
-      if (items.length > 0) groups.push({ ...group, items });
-    });
-
-    const leftover = others.filter(
-      (item) => !MENU_CONTROLLED_GROUPS.some((group) => group.hrefs.includes(item.href))
-    );
-    if (leftover.length > 0) groups.push({ ...MENU_CONTROLLED_FALLBACK_GROUP, items: leftover });
-
-    if (dashboard.length > 0) {
-      groups.unshift({ title: "Dashboard", hrefs: [], items: dashboard });
-    }
-
-    return groups;
-  }, [isMenuControlled, grantedLeaves, user]);
+    let base = raw;
+    if (isMenuControlled) base = filterNavCategoriesByPermission(raw, user);
+    else if (isSuperAdminRole(user)) base = raw;
+    else if (isAdminRole(user)) base = navCategories.admin || [];
+    // Tenant and Store Configuration sit in the Location category, gated by
+    // the canonical permissions (independent of roleType/accessMenu).
+    return withCanonicalLocationItems(base, { canManageTenants, canManageStores });
+  }, [hasAccessMenu, isMenuControlled, user, canManageTenants, canManageStores]);
 
   const directItems = useMemo(() => {
     const items = [];
@@ -354,6 +238,38 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
     []
   );
 
+  // ponytail: posItems hardcoded — untuk user menu-controlled wajib difilter
+  // accessMenu supaya item tanpa akses (mis. KDS, QR Orders) tidak bocor.
+  const visiblePosItems = useMemo(() => {
+    if (!isMenuControlled) return posItems;
+    return posItems.filter((item) => hasMenuAccess(user, item.href, ["view"]));
+  }, [isMenuControlled, posItems, user]);
+
+  // ponytail: tombol kategori ikut "hidup" saat halaman aktif berada di
+  // dalamnya — cek href, activePaths, dan activeRegex tiap item.
+  const isCategoryActive = useCallback(
+    (cat) => {
+      const items = [];
+      (cat.sections || []).forEach((section) => {
+        (section.items || []).forEach((item) => items.push(item));
+      });
+      return items.some((item) => {
+        if (!item.href) return false;
+        if (isActive(item.href)) return true;
+        if (
+          Array.isArray(item.activePaths) &&
+          item.activePaths.some(
+            (p) => location.pathname === p || location.pathname.startsWith(p + "/")
+          )
+        )
+          return true;
+        if (item.activeRegex instanceof RegExp) return item.activeRegex.test(location.pathname);
+        return false;
+      });
+    },
+    [location.pathname]
+  );
+
   const renderNavButton = (item, icon, extraClass = "") => {
     const Icon = icon;
     // ponytail: activeRegex adalah literal statis dari config posItems,
@@ -446,101 +362,90 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
         {/* Navigation */}
         <nav className="flex-1 flex flex-col gap-0.5 w-full overflow-y-auto overflow-x-hidden">
-          {/* Menu-controlled: render persis sesuai accessMenu, dikelompokkan */}
-          {isMenuControlled &&
-            (isExpanded
-              ? controlledGroups.map(({ i18nKey, title, items }) => (
-                  <div key={i18nKey || title} className="flex flex-col">
-                    <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 truncate">
-                      {t(i18nKey) || title}
-                    </p>
-                    <div className="flex flex-col gap-0.5">
-                      {items.map((item) => renderNavButton(item, item.icon || MoreHorizontal))}
-                    </div>
-                  </div>
-                ))
-              : controlledGroups
-                  .flatMap((group) => group.items)
-                  .map((item) => renderNavButton(item, item.icon || MoreHorizontal)))}
+          {/* ponytail: satu cabang navigasi untuk semua role — user
+              menu-controlled memakai tombol kategori + popup yang sama,
+              hanya isinya yang difilter accessMenu (categories/menuItems/
+              visiblePosItems di atas). */}
+          <>
+            {/* Dashboard - always direct navigate */}
+            {directItems
+              .filter((item) => item.href?.startsWith("/dashboard"))
+              .map((item) => renderNavButton(item, DashboardIcon))}
 
-          {!isMenuControlled && (
-            <>
-              {/* Dashboard - always direct navigate */}
-              {directItems
-                .filter((item) => item.href?.startsWith("/dashboard"))
-                .map((item) => renderNavButton(item, DashboardIcon))}
+            {/* Kasir - for non-cashier roles */}
+            {!isCashierRole(user) &&
+              directItems
+                .filter((item) => item.href === "/home")
+                .map((item) => renderNavButton(item, Calculator))}
 
-              {/* Kasir - for non-cashier roles */}
-              {!isCashierRole(user) &&
-                directItems
-                  .filter((item) => item.href === "/home")
-                  .map((item) => renderNavButton(item, Calculator))}
-
-              {/* Cashier role: render ALL directItems (termasuk Dashboard karyawan) */}
-              {isCashierRole(user) &&
-                directItems.map((item) => {
-                  const iconMap = { "/home": Calculator, "/kitchen-display": ChefHat };
-                  const Icon = iconMap[item.href] || item.icon || MoreHorizontal;
-                  return renderNavButton(item, Icon);
-                })}
-
-              {/* Divider before POS */}
-              {!isCashierRole(user) && (
-                <div className="overflow-hidden my-2 mx-auto">
-                  <div
-                    className={`border-t border-border/40 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-                      ${isExpanded ? "w-full" : "w-6"}`}
-                  />
-                </div>
-              )}
-
-              {/* POS & Penjualan - direct buttons for admin/super_admin */}
-              {!isCashierRole(user) && posItems.map((item) => renderNavButton(item, item.icon))}
-
-              {/* Divider before categories */}
-              {categories.length > 0 && (
-                <div className="overflow-hidden my-2 mx-auto">
-                  <div
-                    className={`border-t border-border/40 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-                      ${isExpanded ? "w-full" : "w-6"}`}
-                  />
-                </div>
-              )}
-
-              {/* Category buttons - open modal */}
-              {categories.map((cat) => {
-                const btn = (
-                  <button
-                    onClick={() => handleOpenCategory(cat.id)}
-                    className="nav-btn group relative flex items-center gap-3 rounded-xl overflow-hidden
-                      h-10 px-3
-                      text-muted-foreground hover:bg-accent hover:text-foreground hover:shadow-sm">
-                    <cat.icon
-                      size={20}
-                      className="shrink-0 transition-transform duration-150 group-hover:scale-110"
-                    />
-                    <span
-                      className={`nav-label text-sm font-medium whitespace-nowrap transition-[opacity,transform] duration-200 ease-out
-                        ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"}`}>
-                      {t(cat.i18nKey) || cat.title}
-                    </span>
-                  </button>
-                );
-
-                if (isExpanded) return <div key={cat.id}>{btn}</div>;
-                return (
-                  <Tooltip key={cat.id}>
-                    <TooltipTrigger asChild>{btn}</TooltipTrigger>
-                    <TooltipContent side="right" sideOffset={12} className="font-medium">
-                      {t(cat.i18nKey) || cat.title}
-                    </TooltipContent>
-                  </Tooltip>
-                );
+            {/* Cashier role: render ALL directItems (termasuk Dashboard karyawan) */}
+            {isCashierRole(user) &&
+              directItems.map((item) => {
+                const iconMap = { "/home": Calculator, "/kitchen-display": ChefHat };
+                const Icon = iconMap[item.href] || item.icon || MoreHorizontal;
+                return renderNavButton(item, Icon);
               })}
-            </>
-          )}
 
-          {canManageStores && renderNavButton(STORE_CONFIGURATION_NAV_ITEM, SlidersHorizontal)}
+            {/* Divider before POS */}
+            {!isCashierRole(user) && (
+              <div className="overflow-hidden my-2 mx-auto">
+                <div
+                  className={`border-t border-border/40 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+                      ${isExpanded ? "w-full" : "w-6"}`}
+                />
+              </div>
+            )}
+
+            {/* POS & Penjualan - direct buttons for admin/super_admin */}
+            {!isCashierRole(user) &&
+              visiblePosItems.map((item) => renderNavButton(item, item.icon))}
+
+            {/* Divider before categories */}
+            {categories.length > 0 && (
+              <div className="overflow-hidden my-2 mx-auto">
+                <div
+                  className={`border-t border-border/40 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+                      ${isExpanded ? "w-full" : "w-6"}`}
+                />
+              </div>
+            )}
+
+            {/* Category buttons - open modal */}
+            {categories.map((cat) => {
+              const active = isCategoryActive(cat);
+              const btn = (
+                <button
+                  onClick={() => handleOpenCategory(cat.id)}
+                  className={`nav-btn group relative flex items-center gap-3 rounded-xl overflow-hidden
+                      h-10 px-3
+                      ${
+                        active
+                          ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground hover:shadow-sm"
+                      }`}>
+                  <cat.icon
+                    size={20}
+                    className="shrink-0 transition-transform duration-150 group-hover:scale-110"
+                  />
+                  <span
+                    className={`nav-label text-sm font-medium whitespace-nowrap transition-[opacity,transform] duration-200 ease-out
+                        ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"}`}>
+                    {t(cat.i18nKey) || cat.title}
+                  </span>
+                </button>
+              );
+
+              if (isExpanded) return <div key={cat.id}>{btn}</div>;
+              return (
+                <Tooltip key={cat.id}>
+                  <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={12} className="font-medium">
+                    {t(cat.i18nKey) || cat.title}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </>
         </nav>
 
         {/* Bottom */}
@@ -579,7 +484,10 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
           <NavigationModal
             open={navModalOpen}
             onOpenChange={setNavModalOpen}
-            categories={[activeCategory]}
+            // Read the live category so items gated by a permission that
+            // resolves after the modal opened (Tenant, Store Configuration)
+            // still appear.
+            categories={[categories.find((c) => c.id === activeCategory.id) || activeCategory]}
             onNavigate={handleMouseLeave}
           />
         )}

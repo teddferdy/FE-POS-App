@@ -42,6 +42,7 @@ import {
   getPostalCode
 } from "@/services/general";
 import { toast } from "sonner";
+import { warnStockShortages } from "@/lib/stock-shortage";
 import { printReceipt } from "@/utils/thermalPrint";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 
@@ -229,9 +230,14 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   // itself has no role restriction, so a kasir can still see the list).
   // Mirrored here purely so a kasir isn't offered an action that is
   // guaranteed to 403 — the BE remains the actual authority.
-  const canManageSplits = user?.roleType === "super_admin" || user?.roleType === "admin";
+  // DR-23 §J: split.manage is a kasir default grant (interim mapping);
+  // staff ("user") hold no sales/settlement rights. UX gate only — the
+  // server's capability check is the authority.
+  const canManageSplits = ["super_admin", "admin", "kasir"].includes(user?.roleType);
   const [payingId, setPayingId] = useState(null);
   const [payMethodChoice, setPayMethodChoice] = useState("");
+  const [payReference, setPayReference] = useState("");
+  const splitNeedsReference = !!payMethodChoice && !["cash", "points"].includes(payMethodChoice);
   const [selectedMergeIds, setSelectedMergeIds] = useState([]);
 
   const { data: existingSplitsData, refetch: refetchSplits } = useQuery(
@@ -290,11 +296,20 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   });
 
   const paySplitMutation = useMutation({
-    mutationFn: ({ id, paymentMethod }) => paySplitBill(id, { paymentMethod }),
+    // DR-23 §D: a non-cash split carries its reference (OTHER: a
+    // description); the server refuses it otherwise (422 REFERENCE_REQUIRED)
+    // and refuses a reused one (409 DUPLICATE_REFERENCE, BA 004).
+    mutationFn: ({ id, paymentMethod, referenceNumber }) =>
+      paySplitBill(id, {
+        paymentMethod,
+        ...(referenceNumber ? { referenceNumber } : {})
+      }),
     onSuccess: (result) => {
       toast.success(t("page.cashier.receipt.toast.splitPaySuccess"));
+      warnStockShortages(result?.data?.stockShortages, t);
       setPayingId(null);
       setPayMethodChoice("");
+      setPayReference("");
       refetchSplits();
       if (result?.data?.orderComplete) {
         // Matches OrderQueue.jsx's actual query keys — each status tab is
@@ -306,6 +321,15 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
       }
     },
     onError: (err) => {
+      const code = err?.response?.data?.code;
+      if (code === "DUPLICATE_REFERENCE") {
+        toast.error(t("page.cashier.collectPayment.reference.duplicate"));
+        return;
+      }
+      if (code === "REFERENCE_REQUIRED") {
+        toast.error(t("page.cashier.collectPayment.reference.required"));
+        return;
+      }
       toast.error(
         err?.response?.data?.message ||
           err?.message ||
@@ -783,18 +807,20 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                   <>
                     <div className="flex justify-between">
                       <span className={`text-violet-600 ${sz.totalsLabel}`}>
-                        Redeem Point (
-                        {(data.redeemedPoints || data.customer?.redeemedPoints || 0).toLocaleString(
-                          "id-ID"
-                        )}{" "}
-                        Poin)
+                        {t("page.cashier.receipt.redeemPoints", {
+                          points: (
+                            data.redeemedPoints ||
+                            data.customer?.redeemedPoints ||
+                            0
+                          ).toLocaleString("id-ID")
+                        })}
                       </span>
                       <span className={`text-violet-600 ${sz.totalsValue}`}>
                         -Rp{formatPrice(data.redeemedPoints || data.customer?.redeemedPoints || 0)}
                       </span>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Total sebelum redeem</span>
+                      <span>{t("page.cashier.receipt.totalBeforeRedeem")}</span>
                       <span>
                         Rp
                         {formatPrice(
@@ -810,26 +836,30 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                   </span>
                   <span className={`text-gray-900 ${sz.totalsGrand}`}>Rp{formatPrice(total)}</span>
                 </div>
-                {(paymentMethod === "cash" || paymentMethod?.toLowerCase() === "cash") && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className={`text-gray-500 ${sz.totalsLabel}`}>
-                        {t("page.cashier.cashAmount")}
-                      </span>
-                      <span className={`text-gray-700 ${sz.totalsValue}`}>
-                        Rp{formatPrice(cashAmount)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className={`text-gray-500 ${sz.totalsLabel}`}>
-                        {t("page.cashier.change")}
-                      </span>
-                      <span className={`text-emerald-600 font-semibold ${sz.totalsValue}`}>
-                        Rp{formatPrice(changeAmount)}
-                      </span>
-                    </div>
-                  </>
-                )}
+                {/* A receipt recovered from an already-recorded order carries no
+                    tender detail (cash received / change are not part of the
+                    order read) — show none rather than invented amounts. */}
+                {!data?.tenderDetailUnknown &&
+                  (paymentMethod === "cash" || paymentMethod?.toLowerCase() === "cash") && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className={`text-gray-500 ${sz.totalsLabel}`}>
+                          {t("page.cashier.cashAmount")}
+                        </span>
+                        <span className={`text-gray-700 ${sz.totalsValue}`}>
+                          Rp{formatPrice(cashAmount)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className={`text-gray-500 ${sz.totalsLabel}`}>
+                          {t("page.cashier.change")}
+                        </span>
+                        <span className={`text-emerald-600 font-semibold ${sz.totalsValue}`}>
+                          Rp{formatPrice(changeAmount)}
+                        </span>
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
 
@@ -960,39 +990,66 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                         {isPending &&
                           canManageSplits &&
                           (isChoosingMethod ? (
-                            <div className="flex items-center gap-2">
-                              <Select value={payMethodChoice} onValueChange={setPayMethodChoice}>
-                                <SelectTrigger className="h-8 text-xs flex-1">
-                                  <SelectValue placeholder={t("page.cashier.paymentMethod")} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {splitPaymentMethods.map((m) => (
-                                    <SelectItem key={m.id} value={m.id}>
-                                      {m.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                size="sm"
-                                variant="success"
-                                className="h-8 w-8 p-0 shrink-0"
-                                disabled={!payMethodChoice || paySplitMutation.isLoading}
-                                onClick={() =>
-                                  paySplitMutation.mutate({
-                                    id: split.id,
-                                    paymentMethod: payMethodChoice
-                                  })
-                                }>
-                                <CheckCircle size={14} />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 w-8 p-0 shrink-0"
-                                onClick={() => setPayingId(null)}>
-                                <X size={14} />
-                              </Button>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Select value={payMethodChoice} onValueChange={setPayMethodChoice}>
+                                  <SelectTrigger className="h-8 text-xs flex-1">
+                                    <SelectValue placeholder={t("page.cashier.paymentMethod")} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {splitPaymentMethods.map((m) => (
+                                      <SelectItem key={m.id} value={m.id}>
+                                        {m.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button
+                                  size="sm"
+                                  variant="success"
+                                  className="h-8 w-8 p-0 shrink-0"
+                                  aria-label={t("page.cashier.receipt.splitPayConfirm")}
+                                  disabled={
+                                    !payMethodChoice ||
+                                    (splitNeedsReference && !payReference.trim()) ||
+                                    paySplitMutation.isLoading
+                                  }
+                                  onClick={() =>
+                                    paySplitMutation.mutate({
+                                      id: split.id,
+                                      paymentMethod: payMethodChoice,
+                                      referenceNumber: splitNeedsReference
+                                        ? payReference.trim()
+                                        : undefined
+                                    })
+                                  }>
+                                  <CheckCircle size={14} />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-8 w-8 p-0 shrink-0"
+                                  onClick={() => setPayingId(null)}>
+                                  <X size={14} />
+                                </Button>
+                              </div>
+                              {splitNeedsReference && (
+                                <input
+                                  value={payReference}
+                                  onChange={(e) => setPayReference(e.target.value)}
+                                  aria-label={t(
+                                    payMethodChoice === "other"
+                                      ? "page.cashier.collectPayment.reference.otherLabel"
+                                      : "page.cashier.collectPayment.reference.label"
+                                  )}
+                                  placeholder={t(
+                                    payMethodChoice === "other"
+                                      ? "page.cashier.collectPayment.reference.otherPlaceholder"
+                                      : "page.cashier.collectPayment.reference.placeholder"
+                                  )}
+                                  className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
+                                />
+                              )}
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
@@ -1003,6 +1060,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                                 onClick={() => {
                                   setPayingId(split.id);
                                   setPayMethodChoice("");
+                                  setPayReference("");
                                 }}>
                                 <Banknote size={14} className="mr-1" />
                                 {t("page.cashier.receipt.splitPay")}
@@ -1175,6 +1233,7 @@ ReceiptModal.propTypes = {
     grandTotal: PropTypes.number,
     cashAmount: PropTypes.number,
     changeAmount: PropTypes.number,
+    tenderDetailUnknown: PropTypes.bool,
     storeName: PropTypes.string,
     storeAddress: PropTypes.string,
     storePhone: PropTypes.string,

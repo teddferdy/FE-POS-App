@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import PropTypes from "prop-types";
+import { formatQuantity } from "@/utils/quantity";
 
 const DetailRow = ({ icon: Icon, label, value }) => (
   <div className="flex items-start gap-3 py-3 border-b border-border last:border-b-0">
@@ -224,7 +225,7 @@ const DetailIngredient = () => {
                     <DetailRow
                       icon={Package}
                       label={t("page.ingredient.detail.stokSaatIni")}
-                      value={ingredient.stock}
+                      value={formatQuantity(ingredient.stock)}
                     />
                     <DetailRow
                       icon={AlertTriangle}

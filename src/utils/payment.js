@@ -51,3 +51,19 @@ export const PAYMENT_METHOD_META = Object.freeze({
 // Unknown (or prototype-like) codes never borrow a real tender's label.
 export const paymentMethodMeta = (code) =>
   safeGet(PAYMENT_METHOD_META, code, PAYMENT_METHOD_META.UNRECONCILED);
+
+// DR-23 §D / §M: the configured payment types whose payment must carry a
+// reference — every method but cash and points (BE requiresTenderReference:
+// CARD = debit/credit, BANK_TRANSFER, E_WALLET, QRIS, OTHER, where OTHER's
+// "reference" is its description). The server refuses a missing or blank
+// one (422 REFERENCE_REQUIRED) and a reused one (409 DUPLICATE_REFERENCE);
+// this list only decides when the input is shown and confirm is enabled.
+export const REFERENCE_REQUIRED_METHODS = Object.freeze([
+  "qris",
+  "debit",
+  "credit",
+  "transfer",
+  "e-wallet",
+  "other"
+]);
+export const MAX_REFERENCE_LENGTH = 255;

@@ -7,6 +7,8 @@ import { createOrder } from "../services/order";
 import { getAllCustomer } from "../services/customer";
 import { getAllDiscount } from "../services/discount";
 import { getAllTypePayment } from "../services/type-payment";
+import { waitForCheckoutQuote } from "./helpers/checkoutQuote";
+import { checkoutAttempts } from "../state/checkout-attempt";
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
@@ -21,6 +23,10 @@ jest.mock("react-cookie", () => ({
 }));
 
 jest.mock("../services/order", () => ({
+  // DR-11 / DR-17: the checkout pays against the server quote.
+  quoteOrder: jest.fn((payload) =>
+    Promise.resolve(jest.requireActual("./helpers/checkoutQuote").serverQuote(payload))
+  ),
   createOrder: jest.fn()
 }));
 jest.mock("../services/customer", () => ({
@@ -78,6 +84,13 @@ const renderModal = (onComplete) => {
   );
 };
 
+// The checkout attempt (key + sent payload) lives in a sessionStorage-backed
+// store; each test starts from no attempt.
+beforeEach(() => {
+  sessionStorage.clear();
+  checkoutAttempts.setState({ attempts: {} });
+});
+
 describe("CheckoutModal payment payload contract (F-SMOKE-01)", () => {
   beforeEach(() => {
     getAllCustomer.mockResolvedValue({ data: [] });
@@ -100,6 +113,7 @@ describe("CheckoutModal payment payload contract (F-SMOKE-01)", () => {
 
     fireEvent.click(await screen.findByText("Cash"));
     fireEvent.change(screen.getByPlaceholderText("Rp 0"), { target: { value: "15000" } });
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalled());
@@ -112,6 +126,7 @@ describe("CheckoutModal payment payload contract (F-SMOKE-01)", () => {
     renderModal(jest.fn());
 
     fireEvent.click(await screen.findByText("Card"));
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalled());
@@ -124,13 +139,19 @@ describe("CheckoutModal payment payload contract (F-SMOKE-01)", () => {
     renderModal(jest.fn());
 
     fireEvent.click(await screen.findByText("QRIS"));
+    await waitForCheckoutQuote();
     fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
-    fireEvent.click(await screen.findByText("page.cashier.qris.confirmReceived"));
+    await screen.findByText("page.cashier.qris.confirmReceived");
+    fireEvent.change(screen.getByLabelText("page.cashier.collectPayment.reference.label"), {
+      target: { value: "QR-REF-1" }
+    });
+    fireEvent.click(screen.getByText("page.cashier.qris.confirmReceived"));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalled());
     const payload = createOrder.mock.calls[0][0];
     expect(payload).not.toHaveProperty("cashAmount");
     expect(payload).not.toHaveProperty("changeAmount");
+    expect(payload.referenceNumber).toBe("QR-REF-1");
   });
 });
 
@@ -179,8 +200,11 @@ describe("CheckoutModal double-submit guard (F-SMOKE-02)", () => {
     });
   });
 
-  test("the guard resets after a failed submission so a legitimate retry proceeds", async () => {
-    createOrder.mockRejectedValueOnce(new Error("network error"));
+  test("the guard resets after a definitive refusal so a corrected retry proceeds", async () => {
+    // A 422 is answered after the server's key lookup: nothing was recorded.
+    createOrder.mockRejectedValueOnce({
+      response: { status: 422, data: { error: "REGISTER_REQUIRED", code: "REGISTER_REQUIRED" } }
+    });
     createOrder.mockResolvedValueOnce({
       data: { id: 2, totalPrice: 10000, subTotal: 10000, items: [] }
     });
@@ -192,10 +216,36 @@ describe("CheckoutModal double-submit guard (F-SMOKE-02)", () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(submitButton.closest("button")).not.toBeDisabled());
 
     fireEvent.click(submitButton);
 
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(onComplete).toHaveBeenCalled());
+  });
+
+  test("an ambiguous failure (no response) resends the SAME payload under the SAME key, once per click", async () => {
+    createOrder.mockRejectedValueOnce(new Error("network error"));
+    createOrder.mockResolvedValueOnce({
+      data: { id: 2, totalPrice: 10000, subTotal: 10000, items: [] }
+    });
+    const onComplete = jest.fn();
+    renderModal(onComplete);
+
+    fireEvent.click(await screen.findByText("Card"));
+    fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+
+    // outcome unknown: a new sale is blocked, only the same sale may be resent
+    const panel = await screen.findByTestId("checkout-attempt-panel");
+    expect(panel).toHaveAttribute("data-attempt-status", "unknown");
+    expect(screen.getByText("page.cashier.confirmPayment").closest("button")).toBeDisabled();
+
+    const retry = screen.getByText("page.cashier.attempt.retrySame");
+    fireEvent.click(retry);
+    fireEvent.click(retry);
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(2));
+    expect(createOrder.mock.calls[1][0]).toEqual(createOrder.mock.calls[0][0]);
+    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1));
   });
 });

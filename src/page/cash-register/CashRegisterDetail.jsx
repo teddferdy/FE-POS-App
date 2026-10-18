@@ -13,7 +13,9 @@ import {
   ShoppingCart,
   Receipt,
   FileText,
-  Coins
+  Coins,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,6 +34,12 @@ import { getZReport } from "@/services/cash-register";
 import { formatStoreDate, formatStoreTime, formatStoreDateTime } from "@/utils/storeTimezone";
 import { finalClosingBalance } from "@/utils/registerBalance";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { VARIANCE_STATUS, canDecideVariance } from "@/utils/varianceApproval";
+import {
+  VarianceApprovalBadge,
+  VarianceDecisionControls,
+  varianceNoteKey
+} from "@/page/cash-register/components/VarianceApproval";
 
 // Phase 39 Batch 6A: the transaction lists were hardcoded to `limit: 100`
 // with no page state, silently hiding any register session's transactions
@@ -84,11 +92,17 @@ const CashRegisterDetail = () => {
   const [ordersPage, setOrdersPage] = useState(1);
   const [outsidePage, setOutsidePage] = useState(1);
 
+  // BA finding #1: the API already returns each order's `items` (order_item
+  // rows) — the tables used to discard them, so "rincian per invoice" was
+  // impossible on this page. A row expands to reveal its line items.
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
+
   // A new register/context means both lists' queries change shape — reset
   // both back to page 1 so neither can request a now-invalid stale page.
   useEffect(() => {
     setOrdersPage(1);
     setOutsidePage(1);
+    setExpandedOrderId(null);
   }, [item?.id]);
 
   // Phase 39 Batch 4: the transaction list is scoped by the register
@@ -162,6 +176,43 @@ const CashRegisterDetail = () => {
   const rec = report?.reconciliation || null;
   const summary = report?.summary || null;
   const live = !!rec;
+
+  // DR-15 variance review. The navigation-state row can be stale (it
+  // survives reloads), so a decision is offered only from the freshly
+  // fetched Z-report: its snapshot summary carries varianceApprovalStatus.
+  // Legacy Z-reports (registers closed before close snapshots) carry no
+  // status; the row's status is then shown read-only.
+  const roleType = cookie?.user?.roleType;
+  const [decidedStatus, setDecidedStatus] = useState(null);
+  useEffect(() => {
+    setDecidedStatus(null);
+  }, [item?.id]);
+  const hasLiveApproval =
+    !!summary && Object.prototype.hasOwnProperty.call(summary, "varianceApprovalStatus");
+  const approvalStatus =
+    decidedStatus ??
+    (hasLiveApproval ? summary.varianceApprovalStatus : item?.varianceApprovalStatus) ??
+    null;
+  const reviewRegisterStatus = report?.register?.status ?? item?.status;
+  const canDecide =
+    !decidedStatus &&
+    hasLiveApproval &&
+    canDecideVariance({
+      roleType,
+      registerStatus: report?.register?.status,
+      approvalStatus: summary.varianceApprovalStatus
+    });
+  const showReviewFromHistory =
+    !!report &&
+    !hasLiveApproval &&
+    roleType === "super_admin" &&
+    approvalStatus === VARIANCE_STATUS.PENDING;
+  const reviewVariance = summary?.variance ?? item?.variance;
+  const reviewVarianceLabel =
+    reviewVariance == null
+      ? undefined
+      : `${reviewVariance > 0 ? "+" : ""}${formatIDR(reviewVariance)}`;
+  const reviewNoteKey = varianceNoteKey(approvalStatus);
 
   // Phase 39 Batch 6-prereq: register-level timestamps (open/close date,
   // register window caption) must render in the store's local time, not
@@ -248,54 +299,129 @@ const CashRegisterDetail = () => {
           </thead>
           <tbody className="divide-y divide-border">
             {list.map((o, i) => (
-              <tr key={o.id} className="hover:bg-accent/30 transition-colors">
-                <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
-                <td className="px-4 py-3 font-medium">{o.orderNumber || "-"}</td>
-                <td className="px-4 py-3">
-                  {o.cashierName || o.createdByUser?.fullName || o.createdByUser?.userName || "-"}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                  {new Date(o.createdAt).toLocaleDateString("id")}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {new Date(o.createdAt).toTimeString().slice(0, 5)}
-                </td>
-                <td className="px-4 py-3 text-right font-mono">{formatIDR(o.totalPrice)}</td>
-                <td className="px-4 py-3 text-center">
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${orderStatusBadge(o.status)}`}>
-                    {o.status}
-                  </span>
-                  {(() => {
-                    const eligibility = eligibilityOf(o);
-                    if (!eligibility) return null;
-                    const included = eligibility === "included";
-                    return (
-                      <div
-                        className={`mt-1 text-[10px] font-semibold ${
-                          included ? "text-green-700" : "text-amber-700"
-                        }`}>
-                        {included
-                          ? t("page.cashRegister.detail.included")
-                          : eligibility === "notIncluded"
-                            ? t("page.cashRegister.detail.notIncluded")
-                            : t(`page.cashRegister.detail.reason.${eligibility}`)}
-                      </div>
-                    );
-                  })()}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                      inPeriod ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
-                    }`}>
-                    {inPeriod
-                      ? t("page.cashRegister.detail.inPeriod")
-                      : t("page.cashRegister.detail.outsidePeriod")}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center">{o.paymentMethod || "-"}</td>
-              </tr>
+              <React.Fragment key={o.id}>
+                <tr className="hover:bg-accent/30 transition-colors">
+                  <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
+                  <td className="px-4 py-3 font-medium">
+                    {/* BA finding #1: every transaction row is expandable so
+                        the invoice's line items (product, qty, price, total)
+                        are visible without leaving the shift report. Items
+                        ride on the same payload — no extra request. */}
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1.5 text-left hover:underline"
+                      aria-expanded={expandedOrderId === o.id}
+                      aria-label={t("page.cashRegister.detail.toggleItems")}
+                      onClick={() => setExpandedOrderId(expandedOrderId === o.id ? null : o.id)}>
+                      {expandedOrderId === o.id ? (
+                        <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
+                      )}
+                      {o.orderNumber || "-"}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    {o.cashierName || o.createdByUser?.fullName || o.createdByUser?.userName || "-"}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                    {new Date(o.createdAt).toLocaleDateString("id")}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {new Date(o.createdAt).toTimeString().slice(0, 5)}
+                  </td>
+                  <td className="px-4 py-3 text-right font-mono">{formatIDR(o.totalPrice)}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${orderStatusBadge(o.status)}`}>
+                      {o.status}
+                    </span>
+                    {(() => {
+                      const eligibility = eligibilityOf(o);
+                      if (!eligibility) return null;
+                      const included = eligibility === "included";
+                      return (
+                        <div
+                          className={`mt-1 text-[10px] font-semibold ${
+                            included ? "text-green-700" : "text-amber-700"
+                          }`}>
+                          {included
+                            ? t("page.cashRegister.detail.included")
+                            : eligibility === "notIncluded"
+                              ? t("page.cashRegister.detail.notIncluded")
+                              : t(`page.cashRegister.detail.reason.${eligibility}`)}
+                        </div>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                        inPeriod ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                      }`}>
+                      {inPeriod
+                        ? t("page.cashRegister.detail.inPeriod")
+                        : t("page.cashRegister.detail.outsidePeriod")}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">{o.paymentMethod || "-"}</td>
+                </tr>
+                {expandedOrderId === o.id && (
+                  <tr className="bg-muted/30">
+                    <td colSpan={9} className="px-4 py-3">
+                      {(o.items || []).length > 0 ? (
+                        <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="bg-muted/50 text-muted-foreground">
+                                <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider">
+                                  {t("page.cashRegister.detail.itemProduct")}
+                                </th>
+                                <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider">
+                                  {t("page.cashRegister.detail.itemQty")}
+                                </th>
+                                <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider">
+                                  {t("page.cashRegister.detail.itemPrice")}
+                                </th>
+                                <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider">
+                                  {t("page.cashRegister.detail.itemTotal")}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border/40">
+                              {(o.items || []).map((it) => (
+                                <tr key={it.id}>
+                                  <td className="px-3 py-1.5">
+                                    {it.productName || "-"}
+                                    {it.notes && (
+                                      <span className="block text-[10px] text-muted-foreground">
+                                        {it.notes}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="px-3 py-1.5 text-right font-mono">
+                                    {it.quantity}
+                                  </td>
+                                  <td className="px-3 py-1.5 text-right font-mono">
+                                    {formatIDR(it.price)}
+                                  </td>
+                                  <td className="px-3 py-1.5 text-right font-mono">
+                                    {formatIDR(it.totalPrice)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic">
+                          {t("page.cashRegister.detail.noItems")}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
@@ -534,6 +660,40 @@ const CashRegisterDetail = () => {
             {sc.label}
           </span>
         </PageHeader>
+
+        {reviewRegisterStatus === "closed" && approvalStatus && (
+          <section
+            aria-labelledby="variance-review-title"
+            className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="bg-muted/30 px-6 py-3 border-b border-border">
+              <h2 id="variance-review-title" className="text-sm font-semibold">
+                {t("page.cashRegister.variance.reviewTitle")}
+              </h2>
+            </div>
+            <div className="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-2">
+                <div>
+                  <VarianceApprovalBadge status={approvalStatus} />
+                </div>
+                {reviewNoteKey && (
+                  <p className="text-sm text-muted-foreground">{t(reviewNoteKey)}</p>
+                )}
+                {showReviewFromHistory && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("page.cashRegister.variance.note.reviewFromHistory")}
+                  </p>
+                )}
+              </div>
+              {canDecide && (
+                <VarianceDecisionControls
+                  registerId={item.id}
+                  varianceLabel={reviewVarianceLabel}
+                  onDecided={setDecidedStatus}
+                />
+              )}
+            </div>
+          </section>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-card rounded-xl border border-border overflow-hidden">

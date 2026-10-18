@@ -11,7 +11,6 @@ import {
   X,
   Plus,
   Package,
-  PackagePlus,
   Tag,
   Layers,
   DollarSign,
@@ -46,7 +45,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
-import { getProductById, editProduct, getIngredients } from "@/services/product";
+import { getProductById, editProduct } from "@/services/product";
 import { normalizePayload } from "@/lib/payload-normalizer";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllTaxConfig } from "@/services/tax-config";
@@ -63,6 +62,8 @@ import AbortController from "@/components/organism/abort-controller";
 import ProductPreview from "./ProductPreview";
 import ProductImageGallery from "@/components/organism/ProductImageGallery";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import InventoryModeField from "@/page/product/InventoryModeField";
+import { INVENTORY_MODES } from "@/lib/inventory-mode";
 
 const EditProduct = () => {
   const { t } = useTranslation();
@@ -121,8 +122,8 @@ const EditProduct = () => {
   const [selectedStores, setSelectedStores] = useState([]);
   const [allStores, setAllStores] = useState(false);
   const [noStockOpname, setNoStockOpname] = useState(false);
+  // BA finding #3: read-only recipe snapshot written by the BOM.
   const [composition, setComposition] = useState([]);
-  const [compositionOptions, setCompositionOptions] = useState([]);
   const [productImages, setProductImages] = useState([]);
   const [optionalOpen, setOptionalOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -209,6 +210,7 @@ const EditProduct = () => {
       costPrice: z.coerce.number().min(0).optional().or(z.literal("")),
       stock: z.coerce.number().min(0).optional().or(z.literal("")),
       minStock: z.coerce.number().min(0).optional().or(z.literal("")),
+      inventoryMode: z.enum(INVENTORY_MODES).default("stocked"),
       unit: z.string().default("pcs"),
       baseUnit: z.string().default("pcs"),
       conversionFactor: z.coerce.number().min(1).default(1),
@@ -238,6 +240,7 @@ const EditProduct = () => {
       costPrice: "",
       stock: "",
       minStock: "",
+      inventoryMode: "stocked",
       unit: "pcs",
       baseUnit: "pcs",
       conversionFactor: 1,
@@ -267,10 +270,9 @@ const EditProduct = () => {
     return String(t?.id ?? t);
   };
 
-  // `categories` and `compositionOptions` are both refetched per-store
-  // (keyed on `productStore`), but the already-loaded `category` field value
-  // and `composition` list were never cleared when the store changes on an
-  // existing product — so a category/ingredient id valid only for the old
+  // `categories` are refetched per-store (keyed on `productStore`), but the
+  // already-loaded `category` field value was never cleared when the store
+  // changes on an existing product — so a category id valid only for the old
   // store could silently survive a store switch and get submitted against
   // the new store (the same class of bug fixed in AddProduct via
   // prevFirstStoreRef). Track the store this product hydrated with, and only
@@ -294,6 +296,9 @@ const EditProduct = () => {
         costPrice: product.costPrice || "",
         stock: product.stock ?? "",
         minStock: product.minStock ?? "",
+        inventoryMode: INVENTORY_MODES.includes(product.inventoryMode)
+          ? product.inventoryMode
+          : "stocked",
         unit: product.unit || "pcs",
         baseUnit: product.baseUnit || product.unit || "pcs",
         conversionFactor: product.conversionFactor ?? 1,
@@ -369,7 +374,6 @@ const EditProduct = () => {
     if (!hydratedRef.current) return;
     if (prevStoreRef.current !== productStore) {
       form.setValue("category", "");
-      setComposition([]);
       prevStoreRef.current = productStore;
     }
   }, [productStore, form]);
@@ -407,25 +411,6 @@ const EditProduct = () => {
       setNoStockOpname(false);
     }
   }, [tipeProduk, selectedStores]);
-
-  useEffect(() => {
-    const storeId = selectedStores[0] || null;
-    if (storeId) {
-      getIngredients({ store: storeId })
-        .then((res) => {
-          const items = res?.data || [];
-          const ingredients = items
-            .filter((i) => i.status === "active")
-            .map((i) => ({
-              id: i.id,
-              name: i.name,
-              unit: i.unit || "pcs"
-            }));
-          setCompositionOptions(ingredients);
-        })
-        .catch(() => setCompositionOptions([]));
-    }
-  }, [selectedStores]);
 
   useEffect(() => {
     if (product.id && product.composition) {
@@ -627,25 +612,6 @@ const EditProduct = () => {
     setPriceTiers((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const addComposition = () => {
-    setComposition((prev) => [...prev, { id: Date.now(), name: "", qty: 1, unit: "" }]);
-  };
-
-  const updateComposition = (id, field, value) => {
-    setComposition((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)));
-  };
-
-  const removeComposition = (id) => {
-    setComposition((prev) => prev.filter((c) => c.id !== id));
-  };
-
-  const handleCompositionSelect = (id, selectedName) => {
-    const opt = compositionOptions.find((o) => o.name === selectedName);
-    setComposition((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, name: selectedName, unit: opt?.unit || c.unit } : c))
-    );
-  };
-
   const handleSave = async (values, saveAsDraft = false) => {
     // F9-25: per-store prices are only persisted via each row's own Save
     // button; the main product save must not silently discard pending edits.
@@ -697,6 +663,7 @@ const EditProduct = () => {
       priceTiers: priceTiers.length > 0 ? priceTiers : [],
       stock: values.stock,
       minStock: values.minStock,
+      inventoryMode: values.inventoryMode || "stocked",
       unit: values.unit,
       baseUnit: values.baseUnit,
       conversionFactor: values.conversionFactor || 1,
@@ -726,7 +693,6 @@ const EditProduct = () => {
               .filter((m) => m.name && m.name.trim())
               .map((m) => ({ ...m, name: m.name.trim(), price: Number(m.price) || 0 }))
           : [],
-      composition: composition.length > 0 ? composition : [],
       stores: selectedStores,
       createdBy: user?.id,
       modifiedBy: user?.id
@@ -750,7 +716,7 @@ const EditProduct = () => {
 
     const payload = normalizePayload(data, {
       isFormData: true,
-      jsonFields: ["stores", "options", "modifiers", "priceTiers", "composition"]
+      jsonFields: ["stores", "options", "modifiers", "priceTiers"]
     });
 
     editMutation.mutate(payload);
@@ -1336,131 +1302,31 @@ const EditProduct = () => {
                             : t("page.product.form.createBom")}
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground -mt-2 mb-1">
-                        {t("page.product.form.compositionInfo")}
-                      </p>
-                      <p className="text-[11px] text-amber-600 dark:text-amber-500 mb-4">
-                        {t("page.product.form.compositionBomNotice")}
-                      </p>
-                      <div className="space-y-3">
-                        {selectedStores.length === 0 ? (
-                          <div className="flex items-start gap-2.5 rounded-xl border border-dashed border-border bg-muted/20 p-4">
-                            <Store size={16} className="text-muted-foreground shrink-0 mt-0.5" />
-                            <p className="text-xs text-muted-foreground">
-                              {t("page.product.form.compositionSelectStore")}
-                            </p>
-                          </div>
-                        ) : compositionOptions.length === 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => navigate("/add-product")}
-                            className="w-full rounded-xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/40 hover:border-primary/50 p-8 flex flex-col items-center justify-center text-center gap-2 transition-colors cursor-pointer group">
-                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                              <PackagePlus size={22} className="text-primary" />
-                            </div>
-                            <p className="text-sm font-medium text-foreground">
-                              {t("page.product.form.noIngredientOptions")}
-                            </p>
-                            <p className="text-xs text-muted-foreground max-w-md">
-                              {t("page.product.form.noIngredientOptionsHint")}
-                            </p>
-                            <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
-                              <Plus size={14} /> {t("page.product.form.addIngredientProduct")}
-                            </span>
-                          </button>
-                        ) : composition.length > 0 ? (
-                          <>
-                            <div className="grid grid-cols-[1fr_5.5rem_8rem_2rem] gap-2 px-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-                              <span>{t("page.product.form.ingredientName")}</span>
-                              <span>{t("page.product.form.qty")}</span>
-                              <span>{t("page.product.form.unitLabel")}</span>
-                              <span />
-                            </div>
-                            {composition.map((c) => (
-                              <div key={c.id} className="bg-muted/30 rounded-lg p-4">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex-1">
-                                    <Combobox
-                                      options={[
-                                        {
-                                          value: "",
-                                          label: t("page.product.form.selectIngredient")
-                                        },
-                                        ...compositionOptions.map((opt) => ({
-                                          value: opt.name,
-                                          label: `${opt.name} ${opt.unit ? `(${opt.unit})` : ""}`
-                                        }))
-                                      ]}
-                                      value={c.name}
-                                      onChange={(v) => handleCompositionSelect(c.id, v)}
-                                      placeholder={t("page.product.form.selectIngredient")}
-                                      searchPlaceholder="Cari bahan..."
-                                    />
-                                  </div>
-                                  <div className="w-24 shrink-0">
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      step="0.01"
-                                      placeholder={t("page.product.form.qty")}
-                                      value={c.qty}
-                                      onChange={(e) =>
-                                        updateComposition(c.id, "qty", e.target.value)
-                                      }
-                                      className="h-9 text-sm"
-                                    />
-                                  </div>
-                                  <div className="w-32 shrink-0">
-                                    <Combobox
-                                      options={unitOptions}
-                                      value={c.unit}
-                                      onChange={(v) => updateComposition(c.id, "unit", v)}
-                                      placeholder={t("page.product.form.unitPlaceholder")}
-                                      searchPlaceholder={
-                                        t("page.product.form.unitPlaceholder") + "..."
-                                      }
-                                    />
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive shrink-0"
-                                    onClick={() =>
-                                      confirmRemove(
-                                        () => removeComposition(c.id),
-                                        composition.length
-                                      )
-                                    }>
-                                    <Trash2 size={18} />
-                                  </Button>
-                                </div>
-                              </div>
+                      {/* BA finding #3: the recipe is owned by the BOM (single source)
+                          and shown here read-only; it is changed on the BOM page. */}
+                      {existingBom && composition.length > 0 ? (
+                        <>
+                          <p className="text-xs text-muted-foreground -mt-2 mb-3">
+                            {t("page.product.form.recipeFromBom")}
+                          </p>
+                          <ul className="divide-y divide-border rounded-lg border border-border">
+                            {composition.map((c, i) => (
+                              <li
+                                key={c.ingredientId ?? c.id ?? i}
+                                className="flex items-center justify-between px-4 py-2.5 text-sm">
+                                <span className="text-foreground">{c.name}</span>
+                                <span className="font-mono text-muted-foreground">
+                                  {c.qty} {c.unit}
+                                </span>
+                              </li>
                             ))}
-                            <Button
-                              type="button"
-                              variant="success"
-                              size="sm"
-                              className="gap-1"
-                              onClick={addComposition}>
-                              <Plus size={18} /> {t("page.product.form.addIngredient")}
-                            </Button>
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={addComposition}
-                            className="w-full rounded-xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/40 hover:border-primary/50 p-6 flex flex-col items-center justify-center gap-1.5 text-center transition-colors cursor-pointer group">
-                            <Plus
-                              size={20}
-                              className="text-muted-foreground group-hover:text-primary transition-colors"
-                            />
-                            <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
-                              {t("page.product.form.addIngredient")}
-                            </span>
-                          </button>
-                        )}
-                      </div>
+                          </ul>
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          {t("page.product.form.noBomYet")}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1474,6 +1340,15 @@ const EditProduct = () => {
                       <h3 className="text-base font-semibold text-foreground">
                         {t("page.product.step.price")}
                       </h3>
+                    </div>
+                    <div className="mb-5">
+                      <InventoryModeField
+                        value={form.watch("inventoryMode")}
+                        productId={product.id}
+                        onChange={(mode) =>
+                          form.setValue("inventoryMode", mode, { shouldDirty: true })
+                        }
+                      />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
@@ -1565,6 +1440,11 @@ const EditProduct = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{t("page.product.form.stock")}</FormLabel>
+                            {form.watch("inventoryMode") === "make_to_order" && (
+                              <p className="text-xs text-muted-foreground">
+                                {t("page.product.form.inventoryMode.stockUnused")}
+                              </p>
+                            )}
                             <Input
                               type="text"
                               inputMode="numeric"

@@ -5,11 +5,14 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { warnStockShortages } from "@/lib/stock-shortage";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getOrderById, updateOrderStatus } from "@/services/order";
 import { getMemberById } from "@/services/member";
+import MemberSearchModal from "@/components/MemberSearchModal";
+import { REFERENCE_REQUIRED_METHODS, MAX_REFERENCE_LENGTH } from "@/utils/payment";
 
 // F4-01: settles an order that already exists (e.g. created through
 // BISA-MAKAN's QR ordering flow) instead of the previous workaround of
@@ -70,9 +73,27 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   // server fills cashReceived = due, changeGiven = 0, same as order/create).
   const [methodChoice, setMethodChoice] = useState(null);
   const [cashReceivedInput, setCashReceivedInput] = useState("");
+  // Non-cash reference as typed. Kept across a failed settlement and a
+  // method change so the cashier corrects it instead of retyping; sent
+  // trimmed, and only for a method that requires it.
+  const [referenceInput, setReferenceInput] = useState("");
+  // Set when the server refuses the settlement for a missing reference.
+  const [referenceRefused, setReferenceRefused] = useState(false);
+  // BA 004 (DR-23 §D): the server refused a reference already used for
+  // another payment at this store (409 DUPLICATE_REFERENCE).
+  const [referenceDuplicate, setReferenceDuplicate] = useState(false);
   // DR-04 P2-1: explicit cashier acknowledgement that the order total will
   // be redeemed from the member's points; reset whenever the method changes.
   const [pointsConfirmed, setPointsConfirmed] = useState(false);
+  // DR-16: optional staff-verified member attachment at settlement. Null
+  // means "no selection" and the customerId key is omitted entirely, so an
+  // anonymous order settles anonymously and an already-attached order keeps
+  // its server-side member. The modal never fabricates an explicit null.
+  const [attachedMember, setAttachedMember] = useState(null);
+  const [memberSearchOpen, setMemberSearchOpen] = useState(false);
+  // Set when the server refuses a different member (409 MEMBER_MISMATCH).
+  const [attachConflict, setAttachConflict] = useState(false);
+  const attachedMemberId = attachedMember?.id ?? attachedMember?._id ?? null;
 
   // Always re-fetch the authoritative current state before offering a
   // payment action — the order queue this modal is opened from can be up to
@@ -87,8 +108,16 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     retry: false
   });
   const freshOrder = orderData?.data || order;
+  // DR-23 §K/§M: a settlement retried after its response was lost is
+  // refused with OUTSTANDING_CHANGED; the ledger-derived financialState
+  // tells "already fully paid" apart from "amount stale".
+  const [confirmedPaid, setConfirmedPaid] = useState(false);
+  const [openingReceipt, setOpeningReceipt] = useState(false);
   const isAlreadySettled =
-    freshOrder?.paymentStatus === "paid" || ["cancelled", "void"].includes(freshOrder?.status);
+    confirmedPaid ||
+    freshOrder?.paymentStatus === "paid" ||
+    ["cancelled", "void"].includes(freshOrder?.status);
+  const isTerminal = ["cancelled", "void"].includes(freshOrder?.status);
 
   const amountDue = Number(freshOrder?.totalPrice) || 0;
   // DR-04 P2-1: points settle only against the member already attached to
@@ -112,8 +141,13 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     cashReceivedOrNull === null ||
     (Number.isInteger(cashReceivedOrNull) && cashReceivedOrNull >= amountDue);
 
-  // Member balance is fetched only once points is the chosen method. UX
-  // only: the server re-checks the balance under a row lock (422).
+  // Member record backs both the points panel and the DR-16 attach
+  // section below (existing attached member's name). Fetched whenever the
+  // server-confirmed order carries a member — points gating itself still
+  // requires the member to be on the order, never merely staged (the server
+  // redeems from the pre-settlement member, so a staged attach cannot
+  // redeem in the same settlement). UX only: the server re-checks the
+  // balance under a row lock (422).
   const {
     data: memberData,
     isLoading: isMemberLoading,
@@ -122,7 +156,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     ["collect-payment-member", orderMemberId],
     () => getMemberById({ id: orderMemberId }),
     {
-      enabled: isPoints && !!orderMemberId,
+      enabled: !!orderMemberId,
       retry: false
     }
   );
@@ -132,7 +166,14 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
   const pointsToRedeem = Math.min(memberPoints, pointsRequired);
   const pointsSufficient = !!member && memberPoints >= pointsRequired;
   const pointsReady = !isPoints || (pointsSufficient && pointsConfirmed);
-  const canConfirm = cashCovers && pointsReady;
+  const needsReference = REFERENCE_REQUIRED_METHODS.includes(effectiveMethod);
+  // "Other" is a free-form description, not an external transaction
+  // reference, so it gets its own label/placeholder/hint wording.
+  const isOtherMethod = effectiveMethod === "other";
+  const referenceTrimmed = referenceInput.trim();
+  // UX only — the server re-checks (422 REFERENCE_REQUIRED).
+  const referenceReady = !needsReference || referenceTrimmed !== "";
+  const canConfirm = cashCovers && pointsReady && referenceReady;
 
   const invalidateOrderQueues = () => {
     CASHIER_ORDER_QUEUE_STATUSES.forEach((status) =>
@@ -152,6 +193,10 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     // detail only for cash (never fabricated for other methods). The server
     // validates (422) and resolves register attribution; this modal never
     // sends a register id.
+    // DR-16: a staff-selected member rides along as customerId so the
+    // settlement attaches it and awards loyalty points. Omitted when nothing
+    // was selected — anonymous stays anonymous, an existing attachment is
+    // left to the server (sending the same id would be an idempotent no-op).
     mutationFn: (tender) =>
       updateOrderStatus({
         id: freshOrder.id,
@@ -160,12 +205,15 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
         changedBy: user?.id,
         changedByName: user?.fullName || user?.userName,
         paymentMethod: tender.paymentMethod,
+        ...(attachedMemberId != null ? { customerId: attachedMemberId } : {}),
         ...(tender.paymentMethod === "cash" && tender.cashAmount !== null
           ? { cashAmount: tender.cashAmount, changeAmount: tender.changeAmount }
-          : {})
+          : {}),
+        ...(tender.referenceNumber ? { referenceNumber: tender.referenceNumber } : {})
       }),
-    onSuccess: async (_data, tender) => {
+    onSuccess: async (data, tender) => {
       toast.success(t("page.cashier.collectPayment.toast.paidSuccess"));
+      warnStockShortages(data?.stockShortages, t);
       invalidateOrderQueues();
       // Re-fetch rather than trust the mutation response for the receipt —
       // updateOrderStatus's response order was loaded without its items
@@ -185,6 +233,69 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
       onClose();
     },
     onError: (err) => {
+      // DR-16: attaching a different member than the order's existing one is
+      // refused fail-closed (409 MEMBER_MISMATCH) — never silently replaced.
+      // Surface the conflict inline, refresh the server-confirmed order so
+      // the displayed member is authoritative again, and stay open for retry.
+      const status = err?.response?.status;
+      const code = err?.response?.data?.code;
+      if (status === 409 && code === "MEMBER_MISMATCH") {
+        setAttachConflict(true);
+        queryClient.invalidateQueries(["collect-payment-order", freshOrder.id]);
+        toast.error(t("page.cashier.collectPayment.member.mismatch"));
+        return;
+      }
+      // DR-23 §D: the server refused the settlement for a missing reference.
+      // Nothing was recorded; keep the typed values and point at the field.
+      if (status === 409 && code === "DUPLICATE_REFERENCE") {
+        setReferenceRefused(true);
+        setReferenceDuplicate(true);
+        toast.error(t("page.cashier.collectPayment.reference.duplicate"));
+        return;
+      }
+      if (status === 422 && code === "REFERENCE_REQUIRED") {
+        setReferenceRefused(true);
+        setReferenceDuplicate(false);
+        toast.error(
+          t(
+            isOtherMethod
+              ? "page.cashier.collectPayment.reference.otherRequired"
+              : "page.cashier.collectPayment.reference.required"
+          )
+        );
+        return;
+      }
+      // DR-23: the settlement must equal the CURRENT outstanding amount — a
+      // stale claim (split paid meanwhile, amount changed) is refused with
+      // the live outstanding. Refresh and stay open so the cashier retries
+      // against server-confirmed state instead of the stale total.
+      if (
+        status === 409 &&
+        code === "OUTSTANDING_CHANGED" &&
+        err?.response?.data?.financialState === "PAID" &&
+        Number(err?.response?.data?.outstanding) === 0
+      ) {
+        // Fully paid already (e.g. this settlement's earlier response was
+        // lost) — never imply money is still owed, never settle again.
+        setConfirmedPaid(true);
+        invalidateOrderQueues();
+        queryClient.invalidateQueries(["collect-payment-order", freshOrder.id]);
+        toast.info(t("page.cashier.collectPayment.alreadyPaid"));
+        return;
+      }
+      if (status === 409 && code === "OUTSTANDING_CHANGED") {
+        queryClient.invalidateQueries(["collect-payment-order", freshOrder.id]);
+        const outstanding = err?.response?.data?.outstanding;
+        toast.error(
+          t("page.cashier.collectPayment.outstandingChanged", {
+            amount:
+              outstanding === undefined || outstanding === null
+                ? amountDue.toLocaleString("id-ID")
+                : Number(outstanding).toLocaleString("id-ID")
+          })
+        );
+        return;
+      }
       // update-status business failures (422) carry their text in `error`.
       toast.error(
         err?.response?.data?.message ||
@@ -197,6 +308,33 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
       isSubmittingRef.current = false;
     }
   });
+
+  // Opens the receipt of the already-paid order from a fresh read — no
+  // settlement is sent. The read carries no ledger cash detail, so the
+  // receipt shows none (tenderDetailUnknown) instead of inventing it.
+  const handleOpenPaidReceipt = async () => {
+    if (openingReceipt) return;
+    setOpeningReceipt(true);
+    try {
+      const refreshed = await getOrderById(freshOrder.id);
+      const paid = refreshed?.data || refreshed || freshOrder;
+      onOpenReceipt({
+        ...toReceiptData(paid, {
+          paymentMethod: paid.paymentMethod,
+          cashAmount: null,
+          changeAmount: null
+        }),
+        tenderDetailUnknown: true
+      });
+      onClose();
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || t("page.cashier.collectPayment.toast.paidFailed")
+      );
+    } finally {
+      setOpeningReceipt(false);
+    }
+  };
 
   const handleConfirmFullPayment = () => {
     if (isSubmittingRef.current || settleMutation.isLoading) return;
@@ -211,7 +349,14 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
             cashAmount: cashReceivedOrNull,
             changeAmount: cashChange
           }
-        : { paymentMethod: effectiveMethod, cashAmount: null, changeAmount: null };
+        : {
+            paymentMethod: effectiveMethod,
+            cashAmount: null,
+            changeAmount: null,
+            ...(needsReference ? { referenceNumber: referenceTrimmed } : {})
+          };
+    setReferenceRefused(false);
+    setReferenceDuplicate(false);
     settleMutation.mutate(tender);
   };
 
@@ -245,9 +390,17 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
               {t("common.loadingData")}
             </div>
           ) : isError ? (
-            <p className="text-sm text-destructive text-center py-4">
-              {t("page.cashier.collectPayment.loadFailed")}
-            </p>
+            <div className="text-center py-4 space-y-2">
+              <p className="text-sm text-destructive">
+                {t("page.cashier.collectPayment.loadFailed")}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => queryClient.invalidateQueries(["collect-payment-order", order?.id])}>
+                {t("common.retry", "Coba lagi")}
+              </Button>
+            </div>
           ) : (
             <>
               <div className="space-y-1">
@@ -264,12 +417,99 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
               </div>
 
               {isAlreadySettled ? (
-                <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium justify-center py-2">
-                  <CheckCircle2 size={16} />
-                  {t("page.cashier.collectPayment.alreadyPaid")}
+                <div className="space-y-2 py-2" data-testid="collect-already-paid">
+                  <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium justify-center">
+                    <CheckCircle2 size={16} />
+                    {t("page.cashier.collectPayment.alreadyPaid")}
+                  </div>
+                  {!isTerminal && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      disabled={openingReceipt}
+                      onClick={handleOpenPaidReceipt}>
+                      {t("page.cashier.collectPayment.viewReceipt")}
+                    </Button>
+                  )}
                 </div>
               ) : mode === "confirmFull" ? (
                 <div className="space-y-3">
+                  {/* DR-16: optional staff-verified member attachment. The
+                      picker returns a server-looked-up member record (never a
+                      free-text name), and the id rides the settlement payload
+                      only when explicitly selected. */}
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">
+                      {t("page.cashier.collectPayment.member.title")}
+                    </p>
+                    {attachedMember ? (
+                      <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Users
+                            size={16}
+                            className="shrink-0 text-muted-foreground"
+                            aria-hidden="true"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium break-words">
+                              {attachedMember.name || attachedMember.nameMember || "-"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {attachedMember.phoneNumber || attachedMember.phone || ""}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAttachedMember(null);
+                            setAttachConflict(false);
+                          }}
+                          aria-label={t("page.cashier.collectPayment.member.clear")}
+                          className="p-2 rounded-lg hover:bg-accent shrink-0">
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : orderMemberId ? (
+                      <div className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Users
+                            size={16}
+                            className="shrink-0 text-muted-foreground"
+                            aria-hidden="true"
+                          />
+                          <p className="text-sm font-medium break-words">
+                            {member?.name ||
+                              `${t("page.cashier.collectPayment.member.attachedToOrder")} #${orderMemberId}`}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setMemberSearchOpen(true)}
+                          className="text-sm font-medium text-primary hover:underline shrink-0 px-2 py-2">
+                          {t("page.cashier.collectPayment.member.change")}
+                        </button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full h-11"
+                        onClick={() => setMemberSearchOpen(true)}>
+                        <Users size={16} className="mr-1.5" />
+                        {t("page.cashier.collectPayment.member.attach")}
+                      </Button>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {t("page.cashier.collectPayment.member.attachHint")}
+                    </p>
+                    {attachConflict && (
+                      <p role="alert" className="flex items-start gap-1.5 text-sm text-destructive">
+                        <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                        {t("page.cashier.collectPayment.member.mismatch")}
+                      </p>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     {t("page.cashier.collectPayment.confirmFullDesc")}
                   </p>
@@ -395,6 +635,61 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
                       )}
                     </div>
                   )}
+                  {needsReference && (
+                    <div className="space-y-1">
+                      <label htmlFor="collect-payment-reference" className="text-sm font-medium">
+                        {t(
+                          isOtherMethod
+                            ? "page.cashier.collectPayment.reference.otherLabel"
+                            : "page.cashier.collectPayment.reference.label"
+                        )}
+                      </label>
+                      <input
+                        id="collect-payment-reference"
+                        value={referenceInput}
+                        maxLength={MAX_REFERENCE_LENGTH}
+                        autoComplete="off"
+                        placeholder={t(
+                          isOtherMethod
+                            ? "page.cashier.collectPayment.reference.otherPlaceholder"
+                            : "page.cashier.collectPayment.reference.placeholder"
+                        )}
+                        onChange={(e) => {
+                          setReferenceInput(e.target.value);
+                          setReferenceRefused(false);
+                          setReferenceDuplicate(false);
+                        }}
+                        aria-invalid={referenceRefused || undefined}
+                        aria-describedby="collect-payment-reference-hint"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      />
+                      {referenceRefused ? (
+                        <p
+                          id="collect-payment-reference-hint"
+                          role="alert"
+                          className="flex items-start gap-1.5 text-sm text-destructive">
+                          <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                          {t(
+                            referenceDuplicate
+                              ? "page.cashier.collectPayment.reference.duplicate"
+                              : isOtherMethod
+                                ? "page.cashier.collectPayment.reference.otherRequired"
+                                : "page.cashier.collectPayment.reference.required"
+                          )}
+                        </p>
+                      ) : (
+                        <p
+                          id="collect-payment-reference-hint"
+                          className="text-xs text-muted-foreground">
+                          {t(
+                            isOtherMethod
+                              ? "page.cashier.collectPayment.reference.otherHint"
+                              : "page.cashier.collectPayment.reference.hint"
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   {effectiveMethod === "cash" && (
                     <div className="space-y-1">
                       <label htmlFor="collect-payment-cash" className="text-sm font-medium">
@@ -460,6 +755,15 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
           )}
         </div>
       </DialogContent>
+      <MemberSearchModal
+        open={memberSearchOpen}
+        onClose={() => setMemberSearchOpen(false)}
+        onSelect={(m) => {
+          setAttachedMember(m);
+          setAttachConflict(false);
+          setMemberSearchOpen(false);
+        }}
+      />
     </Dialog>
   );
 };

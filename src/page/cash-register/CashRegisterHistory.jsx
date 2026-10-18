@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -21,6 +21,11 @@ import StoreFilter from "@/components/ui/StoreFilter";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
+import { canDecideVariance } from "@/utils/varianceApproval";
+import {
+  VarianceApprovalBadge,
+  VarianceDecisionControls
+} from "@/page/cash-register/components/VarianceApproval";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "-";
@@ -77,6 +82,13 @@ const CashRegisterHistory = () => {
   );
 
   const items = data?.data || [];
+
+  // DR-15: a decision's server-confirmed status shows immediately for that
+  // row; the next authoritative page load replaces every override.
+  const [decidedById, setDecidedById] = useState(() => new Map());
+  useEffect(() => {
+    setDecidedById(new Map());
+  }, [data]);
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
 
@@ -258,6 +270,36 @@ const CashRegisterHistory = () => {
             className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${sc.class}`}>
             {sc.label}
           </span>
+        );
+      }
+    },
+    {
+      header: t("page.cashRegister.variance.column"),
+      align: "center",
+      render: (item) => {
+        if (item.status !== "closed") {
+          return <span className="text-muted-foreground">-</span>;
+        }
+        const approval = decidedById.get(item.id) ?? item.varianceApprovalStatus;
+        if (!approval) return <span className="text-muted-foreground">-</span>;
+        const variance = item.variance;
+        return (
+          <div className="flex flex-col items-center gap-2">
+            <VarianceApprovalBadge status={approval} />
+            {canDecideVariance({
+              roleType: user?.roleType,
+              registerStatus: item.status,
+              approvalStatus: approval
+            }) && (
+              <VarianceDecisionControls
+                registerId={item.id}
+                varianceLabel={
+                  variance == null ? undefined : `${variance > 0 ? "+" : ""}${formatIDR(variance)}`
+                }
+                onDecided={(status) => setDecidedById((prev) => new Map(prev).set(item.id, status))}
+              />
+            )}
+          </div>
         );
       }
     },

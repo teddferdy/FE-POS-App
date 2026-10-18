@@ -21,6 +21,7 @@ import {
   formatMinutesAsTime
 } from "@/utils/storeTimezone";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import CashMovements from "./components/CashMovements";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
@@ -336,6 +337,13 @@ const CashRegisterCurrent = () => {
               </Button>
             </div>
           </div>
+
+          {reg?.status === "open" && (
+            <CashMovements
+              registerId={reg.id}
+              canManage={user?.roleType === "super_admin" || user?.roleType === "admin"}
+            />
+          )}
 
           {/* ponytail: expenses breakdown for settlement transparency */}
           {(data?.data?.expenses || []).length > 0 && (

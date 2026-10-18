@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import CheckoutModal from "../page/cashier/components/CheckoutModal";
 import { createOrder } from "../services/order";
 import { toast } from "sonner";
+import { checkoutAttempts } from "../state/checkout-attempt";
 
 // W3-4: CheckoutModal sends the W3-2/K3 item contract through the real cart
 // line mapping and handles 409 PRICE_CHANGED as an explicit cashier step.
@@ -22,6 +23,10 @@ jest.mock("react-cookie", () => ({
 }));
 
 jest.mock("../services/order", () => ({
+  // DR-11 / DR-17: the checkout pays against the server quote.
+  quoteOrder: jest.fn((payload) =>
+    Promise.resolve(jest.requireActual("./helpers/checkoutQuote").serverQuote(payload))
+  ),
   createOrder: jest.fn()
 }));
 jest.mock("../services/customer", () => ({
@@ -148,6 +153,11 @@ const setup = ({ onComplete = jest.fn(), onApplyServerPrices = jest.fn() } = {})
 
 const confirmButton = () => screen.getByText("page.cashier.confirmPayment").closest("button");
 
+beforeEach(() => {
+  sessionStorage.clear();
+  checkoutAttempts.setState({ attempts: {} });
+});
+
 describe("W3-4 CheckoutModal item payload (W3-2 + K3)", () => {
   beforeEach(() => {
     createOrder.mockReset();
@@ -256,7 +266,9 @@ describe("W3-4 CheckoutModal 409 PRICE_CHANGED", () => {
     );
     rerenderWith(updated);
 
-    expect(confirmButton()).not.toBeDisabled();
+    // DR-11: the applied prices are re-quoted by the server before payment
+    // is offered again (the updated total is shown before commitment).
+    await waitFor(() => expect(confirmButton()).not.toBeDisabled());
     fireEvent.click(confirmButton());
 
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(2));
@@ -275,7 +287,11 @@ describe("W3-4 CheckoutModal 409 PRICE_CHANGED", () => {
 
     fireEvent.click(await screen.findByText("QRIS"));
     fireEvent.click(confirmButton());
-    fireEvent.click(await screen.findByText("page.cashier.qris.confirmReceived"));
+    await screen.findByText("page.cashier.qris.confirmReceived");
+    fireEvent.change(screen.getByLabelText("page.cashier.collectPayment.reference.label"), {
+      target: { value: "QR-REF-1" }
+    });
+    fireEvent.click(screen.getByText("page.cashier.qris.confirmReceived"));
 
     await screen.findByTestId("price-change-panel");
     expect(screen.queryByText("page.cashier.qris.confirmReceived")).not.toBeInTheDocument();
@@ -283,7 +299,7 @@ describe("W3-4 CheckoutModal 409 PRICE_CHANGED", () => {
     expect(createOrder).toHaveBeenCalledTimes(1);
   });
 
-  test("other 409 errors keep the existing toast and show no price panel", async () => {
+  test("a code-less 409 is shown neutrally (unconfirmed, never a recorded sale): no price panel, no new sale", async () => {
     createOrder.mockRejectedValueOnce({
       response: {
         status: 409,
@@ -296,11 +312,15 @@ describe("W3-4 CheckoutModal 409 PRICE_CHANGED", () => {
     fireEvent.click(confirmButton());
 
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith(
-        "idempotencyKey already used with a different payload"
-      )
+      expect(toast.error).toHaveBeenCalledWith("page.cashier.attempt.unconfirmedToast")
     );
     expect(screen.queryByTestId("price-change-panel")).not.toBeInTheDocument();
-    expect(confirmButton()).not.toBeDisabled();
+    expect(screen.getByTestId("checkout-attempt-panel")).toHaveAttribute(
+      "data-attempt-status",
+      "unknown"
+    );
+    expect(screen.getByText("page.cashier.attempt.unconfirmedTitle")).toBeInTheDocument();
+    expect(screen.queryByText("page.cashier.attempt.recordedTitle")).not.toBeInTheDocument();
+    expect(confirmButton()).toBeDisabled();
   });
 });

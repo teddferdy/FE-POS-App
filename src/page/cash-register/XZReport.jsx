@@ -155,6 +155,8 @@ const ReportView = ({ data, reportType }) => {
   // shows exactly which transactions fell outside the register period.
   // Read-only display of the backend payload; nothing is recomputed here.
   const excluded = data.reconciliation?.sales?.excluded || [];
+  // BA finding #1: per-product breakdown frozen/live on the report payload.
+  const salesByProduct = data.salesByProduct || [];
 
   // ponytail: Map agregasi + fromEntries — O(N), bebas object injection
   const paymentMap = new Map();
@@ -317,6 +319,41 @@ const ReportView = ({ data, reportType }) => {
         </div>
 
         <Dashed />
+
+        {/* Sales by product (BA finding #1): which items sold this shift —
+            name, SKU, qty × average unit price, line total. Rendered only
+            when the backend serves rows (legacy frozen Z snapshots carry
+            none and simply omit the section). */}
+        {salesByProduct.length > 0 && (
+          <>
+            <div className="space-y-1.5 my-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 mb-2">
+                {t("page.cashRegister.xz.salesByProductTitle")}
+              </p>
+              <div className="space-y-1">
+                {salesByProduct.map((p, i) => (
+                  <div
+                    key={`${p.sku || p.productName || "p"}-${i}`}
+                    className="flex items-end justify-between gap-3 py-0.5">
+                    <span className="text-xs text-muted-foreground font-medium min-w-0">
+                      <span className="block text-foreground font-semibold truncate">
+                        {p.productName || "-"}
+                      </span>
+                      <span className="block text-[10px] font-mono text-muted-foreground">
+                        {p.sku ? `${p.sku} · ` : ""}
+                        {p.quantity} × {formatIDR(p.unitPrice)}
+                      </span>
+                    </span>
+                    <span className="font-mono text-xs font-semibold text-foreground whitespace-nowrap">
+                      {formatIDR(p.totalSales)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <Dashed />
+          </>
+        )}
 
         {/* Payments breakdown */}
         <div className="space-y-1.5 my-3">
@@ -526,6 +563,15 @@ ReportView.propTypes = {
         type: PropTypes.string,
         amount: PropTypes.number,
         count: PropTypes.number
+      })
+    ),
+    salesByProduct: PropTypes.arrayOf(
+      PropTypes.shape({
+        productName: PropTypes.string,
+        sku: PropTypes.string,
+        quantity: PropTypes.number,
+        unitPrice: PropTypes.number,
+        totalSales: PropTypes.number
       })
     ),
     expenses: PropTypes.arrayOf(

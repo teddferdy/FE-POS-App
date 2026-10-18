@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { ShieldAlert, ArrowLeft, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getRoleDashboard } from "@/utils/role";
+import { hasMenuAccess } from "@/utils/permission";
+import { useUserSession } from "@/hooks/useUserSession";
 import { endSession, SESSION_END_REASON } from "@/services/session";
 
 const roleLabels = {
@@ -75,3 +77,20 @@ export const RequireRole = ({ roles = [], children, excludeSuperAdmin = false })
 };
 
 export default RequireRole;
+
+/**
+ * Menu-based route guard (accessMenu-aware).
+ *
+ * Unlike RequireRole (pure roleType), this allows any user whose accessMenu
+ * grants `actions` on `href` — e.g. an admin whose role was given
+ * /location-list view rights. super_admin still bypasses via hasMenuAccess.
+ * Users without access get the same AccessDenied screen.
+ */
+export const RequireMenuAccess = ({ href, actions = ["view"], children }) => {
+  const user = useUserSession();
+
+  if (!hasMenuAccess(user, href, actions)) {
+    return <AccessDenied />;
+  }
+  return children;
+};

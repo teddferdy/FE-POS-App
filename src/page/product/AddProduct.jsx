@@ -16,9 +16,7 @@ import {
   Trash2,
   GripVertical,
   Package,
-  PackagePlus,
   TrendingUp,
-  Store,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -46,7 +44,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { addProduct, getIngredients } from "@/services/product";
+import { addProduct } from "@/services/product";
 import { checkStockOpnameExists } from "@/services/stock";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
@@ -61,6 +59,8 @@ import { normalizePayload } from "@/lib/payload-normalizer";
 import ProductPreview from "./ProductPreview";
 import ProductImageGallery from "@/components/organism/ProductImageGallery";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import InventoryModeField from "@/page/product/InventoryModeField";
+import { INVENTORY_MODES, initialStockNeedsStore } from "@/lib/inventory-mode";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -117,8 +117,6 @@ const AddProduct = () => {
   const [modifierItems, setModifierItems] = useState([]);
   const [priceTiers, setPriceTiers] = useState([]);
   const [noStockOpname, setNoStockOpname] = useState(false);
-  const [composition, setComposition] = useState([]);
-  const [compositionOptions, setCompositionOptions] = useState([]);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [missingFieldsByStep, setMissingFieldsByStep] = useState([]);
@@ -165,6 +163,7 @@ const AddProduct = () => {
       costPrice: z.coerce.number().min(0).optional().or(z.literal("")),
       stock: z.coerce.number().min(0).optional().or(z.literal("")),
       minStock: z.coerce.number().min(0).optional().or(z.literal("")),
+      inventoryMode: z.enum(INVENTORY_MODES).default("stocked"),
       unit: z.string().default("pcs"),
       baseUnit: z.string().default("pcs"),
       conversionFactor: z.coerce.number().min(1).default(1),
@@ -193,6 +192,7 @@ const AddProduct = () => {
       costPrice: "",
       stock: "",
       minStock: "",
+      inventoryMode: "stocked",
       unit: "pcs",
       baseUnit: "pcs",
       conversionFactor: 1,
@@ -224,39 +224,16 @@ const AddProduct = () => {
     }
   }, [tipeProduk, selectedStores]);
 
-  useEffect(() => {
-    const store = selectedStores.length > 0 ? selectedStores[0] : null;
-    if (store) {
-      getIngredients({ store })
-        .then((res) => {
-          const items = res?.data || [];
-          const ingredients = items
-            .filter((i) => i.status === "active")
-            .map((i) => ({
-              id: i.id,
-              name: i.name,
-              unit: i.unit || "pcs"
-            }));
-          setCompositionOptions(ingredients);
-        })
-        .catch(() => setCompositionOptions([]));
-    } else {
-      setCompositionOptions([]);
-    }
-  }, [selectedStores]);
-
-  // `categories` and `compositionOptions` are both refetched per-store (keyed
-  // on `firstStore` above), but the already-picked `category` field value and
-  // `composition` list were never cleared when the store changes — so a
-  // category/ingredient id valid for the old store could silently survive
-  // and get submitted against the new store. Only reset on an actual store
-  // change, not on first mount (prevFirstStoreRef starts equal to the
+  // `categories` are refetched per-store (keyed on `firstStore` above), but
+  // the already-picked `category` field value was never cleared when the
+  // store changes — so a category id valid for the old store could silently
+  // survive and get submitted against the new store. Only reset on an actual
+  // store change, not on first mount (prevFirstStoreRef starts equal to the
   // initial firstStore).
   const prevFirstStoreRef = useRef(firstStore);
   useEffect(() => {
     if (prevFirstStoreRef.current !== firstStore) {
       form.setValue("category", "");
-      setComposition([]);
       prevFirstStoreRef.current = firstStore;
     }
   }, [firstStore, form]);
@@ -359,25 +336,6 @@ const AddProduct = () => {
     setPriceTiers((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const addComposition = () => {
-    setComposition((prev) => [...prev, { id: Date.now(), name: "", qty: 1, unit: "" }]);
-  };
-
-  const updateComposition = (id, field, value) => {
-    setComposition((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)));
-  };
-
-  const removeComposition = (id) => {
-    setComposition((prev) => prev.filter((c) => c.id !== id));
-  };
-
-  const handleCompositionSelect = (id, selectedName) => {
-    const opt = compositionOptions.find((o) => o.name === selectedName);
-    setComposition((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, name: selectedName, unit: opt?.unit || c.unit } : c))
-    );
-  };
-
   const canGoNext = () => {
     if (currentStep === 1) {
       const values = form.getValues();
@@ -456,6 +414,18 @@ const AddProduct = () => {
       form.setError("store", { message: t("page.product.form.selectStoreError") });
       return;
     }
+    // BA finding #2: per-outlet stock is authoritative — an opening stock on
+    // "Semua Toko" would be stranded (every outlet shows 0). Require a
+    // specific store, or an empty stock. The API rejects this too.
+    if (
+      initialStockNeedsStore(
+        { stock: values.stock, inventoryMode: values.inventoryMode },
+        selectedStores
+      )
+    ) {
+      form.setError("store", { message: t("page.product.form.stockRequiresStore") });
+      return;
+    }
     form.clearErrors("store");
 
     setIsSubmitting(true);
@@ -472,6 +442,7 @@ const AddProduct = () => {
       costPrice: values.costPrice,
       stock: values.stock,
       minStock: values.minStock,
+      inventoryMode: values.inventoryMode || "stocked",
       unit: values.unit,
       baseUnit: values.baseUnit,
       conversionFactor: values.conversionFactor || 1,
@@ -501,7 +472,6 @@ const AddProduct = () => {
               .filter((m) => m.name && m.name.trim())
               .map((m) => ({ ...m, name: m.name.trim(), price: Number(m.price) || 0 }))
           : [],
-      composition: composition.length > 0 ? composition : [],
       priceTiers: priceTiers.length > 0 ? priceTiers : [],
       createdBy: user?.id
     };
@@ -524,7 +494,7 @@ const AddProduct = () => {
 
     const payload = normalizePayload(data, {
       isFormData: true,
-      jsonFields: ["stores", "options", "modifiers", "composition", "priceTiers"]
+      jsonFields: ["stores", "options", "modifiers", "priceTiers"]
     });
 
     createMutation.mutate(payload);
@@ -623,9 +593,8 @@ const AddProduct = () => {
     hasModifiers: !!hasModifiers,
     isAvailable: previewValues.isAvailable !== false,
     isPromo: false,
-    ingredients: composition
-      .map((c) => (typeof c.name === "string" && c.name.trim() ? c.name.trim() : ""))
-      .filter(Boolean),
+    // BA finding #3: the recipe comes from the BOM, made after saving.
+    ingredients: [],
     variantGroups,
     modifierItems
   };
@@ -1100,132 +1069,11 @@ const AddProduct = () => {
                           {t("page.product.form.composition")}
                         </h3>
                       </div>
-                      <p className="text-xs text-muted-foreground -mt-2 mb-1">
-                        {t("page.product.form.compositionInfo")}
-                      </p>
-                      <p className="text-[11px] text-amber-600 dark:text-amber-500 mb-4">
-                        {t("page.product.form.compositionBomNotice")}{" "}
+                      {/* BA finding #3: the recipe is owned by the BOM (single source);
+                          it is set up there once the product exists. */}
+                      <p className="text-sm text-muted-foreground">
                         {t("page.product.form.bomHintAddProduct")}
                       </p>
-                      <div className="space-y-3">
-                        {selectedStores.length === 0 ? (
-                          <div className="flex items-start gap-2.5 rounded-xl border border-dashed border-border bg-muted/20 p-4">
-                            <Store size={16} className="text-muted-foreground shrink-0 mt-0.5" />
-                            <p className="text-xs text-muted-foreground">
-                              {t("page.product.form.compositionSelectStore")}
-                            </p>
-                          </div>
-                        ) : compositionOptions.length === 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => navigate("/add-product")}
-                            className="w-full rounded-xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/40 hover:border-primary/50 p-8 flex flex-col items-center justify-center text-center gap-2 transition-colors cursor-pointer group">
-                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                              <PackagePlus size={22} className="text-primary" />
-                            </div>
-                            <p className="text-sm font-medium text-foreground">
-                              {t("page.product.form.noIngredientOptions")}
-                            </p>
-                            <p className="text-xs text-muted-foreground max-w-md">
-                              {t("page.product.form.noIngredientOptionsHint")}
-                            </p>
-                            <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
-                              <Plus size={14} /> {t("page.product.form.addIngredientProduct")}
-                            </span>
-                          </button>
-                        ) : composition.length > 0 ? (
-                          <>
-                            <div className="grid grid-cols-[1fr_5.5rem_8rem_2rem] gap-2 px-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-                              <span>{t("page.product.form.ingredientName")}</span>
-                              <span>{t("page.product.form.qty")}</span>
-                              <span>{t("page.product.form.unitLabel")}</span>
-                              <span />
-                            </div>
-                            {composition.map((c) => (
-                              <div key={c.id} className="bg-muted/30 rounded-lg p-4">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex-1">
-                                    <Combobox
-                                      options={[
-                                        {
-                                          value: "",
-                                          label: t("page.product.form.selectIngredient")
-                                        },
-                                        ...compositionOptions.map((opt) => ({
-                                          value: opt.name,
-                                          label: `${opt.name} ${opt.unit ? `(${opt.unit})` : ""}`
-                                        }))
-                                      ]}
-                                      value={c.name}
-                                      onChange={(v) => handleCompositionSelect(c.id, v)}
-                                      placeholder={t("page.product.form.selectIngredient")}
-                                      searchPlaceholder="Cari bahan..."
-                                    />
-                                  </div>
-                                  <div className="w-24 shrink-0">
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      step="0.01"
-                                      placeholder={t("page.product.form.qty")}
-                                      value={c.qty}
-                                      onChange={(e) =>
-                                        updateComposition(c.id, "qty", e.target.value)
-                                      }
-                                      className="h-9 text-sm"
-                                    />
-                                  </div>
-                                  <div className="w-32 shrink-0">
-                                    <Combobox
-                                      options={unitOptions}
-                                      value={c.unit}
-                                      onChange={(v) => updateComposition(c.id, "unit", v)}
-                                      placeholder={t("page.product.form.unitPlaceholder")}
-                                      searchPlaceholder={
-                                        t("page.product.form.unitPlaceholder") + "..."
-                                      }
-                                    />
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive shrink-0"
-                                    onClick={() =>
-                                      confirmRemove(
-                                        () => removeComposition(c.id),
-                                        composition.length
-                                      )
-                                    }>
-                                    <Trash2 size={18} />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                            <Button
-                              type="button"
-                              variant="success"
-                              size="sm"
-                              className="gap-1"
-                              onClick={addComposition}>
-                              <Plus size={18} /> {t("page.product.form.addIngredient")}
-                            </Button>
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={addComposition}
-                            className="w-full rounded-xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/40 hover:border-primary/50 p-6 flex flex-col items-center justify-center gap-1.5 text-center transition-colors cursor-pointer group">
-                            <Plus
-                              size={20}
-                              className="text-muted-foreground group-hover:text-primary transition-colors"
-                            />
-                            <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
-                              {t("page.product.form.addIngredient")}
-                            </span>
-                          </button>
-                        )}
-                      </div>
                     </div>
                   )}
                 </div>
@@ -1238,6 +1086,15 @@ const AddProduct = () => {
                       <h3 className="text-base font-semibold text-foreground">
                         {t("page.product.form.priceSection")}
                       </h3>
+                    </div>
+
+                    <div className="mb-5">
+                      <InventoryModeField
+                        value={form.watch("inventoryMode")}
+                        onChange={(mode) =>
+                          form.setValue("inventoryMode", mode, { shouldDirty: true })
+                        }
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1330,6 +1187,11 @@ const AddProduct = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{t("page.product.form.stock")}</FormLabel>
+                            {form.watch("inventoryMode") === "make_to_order" && (
+                              <p className="text-xs text-muted-foreground">
+                                {t("page.product.form.inventoryMode.stockUnused")}
+                              </p>
+                            )}
                             <Input
                               type="text"
                               inputMode="numeric"

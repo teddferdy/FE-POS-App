@@ -82,6 +82,8 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { resolveSubmitStatus } from "@/lib/store-lifecycle";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import TenantSelectField, { tenantErrorMessage } from "@/components/organism/TenantSelectField";
+import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -412,6 +414,11 @@ const AddLocation = () => {
   const [showSocialMedia, setShowSocialMedia] = useState(false);
   const [socialLinks, setSocialLinks] = useState([]);
   const [activeTab, setActiveTab] = useState("informasi");
+  // Platform actors pick the store's target tenant (TARGET_TENANT_REQUIRED);
+  // empty for tenant/store admins, whose tenant comes from their context.
+  const [tenantId, setTenantId] = useState("");
+  const [tenantError, setTenantError] = useState(null);
+  const { canManageTenants } = useTenantManagePermission();
 
   const addSocialRow = () => setSocialLinks([...socialLinks, { platform: "", account: "" }]);
   const updateSocial = (idx, field, val) => {
@@ -474,7 +481,9 @@ const AddLocation = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      setModalMessage(err?.response?.data?.message || err.message);
+      const tenantMessage = tenantErrorMessage(t, err);
+      if (tenantMessage) setTenantError(tenantMessage);
+      setModalMessage(tenantMessage || err?.response?.data?.message || err.message);
       setErrorModal(true);
       setIsSubmitting(false);
     }
@@ -487,7 +496,9 @@ const AddLocation = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      setModalMessage(err?.response?.data?.message || err.message);
+      const tenantMessage = tenantErrorMessage(t, err);
+      if (tenantMessage) setTenantError(tenantMessage);
+      setModalMessage(tenantMessage || err?.response?.data?.message || err.message);
       setErrorModal(true);
       setIsSubmitting(false);
     }
@@ -523,7 +534,8 @@ const AddLocation = () => {
         isActive: values.isActive
       }),
       openingHours: openingHoursFormatted,
-      socialMedia: socialLinks.filter((s) => s.platform && s.account)
+      socialMedia: socialLinks.filter((s) => s.platform && s.account),
+      ...(tenantId ? { tenantId: Number(tenantId) } : {})
     };
 
     if (isEdit) {
@@ -559,6 +571,13 @@ const AddLocation = () => {
       });
     }
     setValidationErrors(!imageFile ? { photo: "Foto Toko harus diupload" } : {});
+
+    // A platform actor creating an active store must name its tenant.
+    if (canManageTenants && !isEdit && values.isActive && !tenantId) {
+      setTenantError(t("page.location.tenant.error.required"));
+      setActiveTab("informasi");
+      return;
+    }
 
     if (missing.length > 0) {
       setMissingFields(missing);
@@ -776,6 +795,16 @@ const AddLocation = () => {
                         )}
                       />
                     </div>
+
+                    <TenantSelectField
+                      value={tenantId}
+                      optional={isEdit}
+                      error={tenantError}
+                      onChange={(next) => {
+                        setTenantId(next);
+                        setTenantError(null);
+                      }}
+                    />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
