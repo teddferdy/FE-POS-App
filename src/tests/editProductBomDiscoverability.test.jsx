@@ -164,13 +164,34 @@ describe("EditProduct — BOM discoverability from the Komposisi section", () =>
     expect(mockNavigate).toHaveBeenCalledWith("/bom/detail?id=42");
   });
 
-  test("the legacy composition notice is shown alongside the BOM action", async () => {
+  // BA finding #3: the recipe is owned by the BOM — no manual editor here.
+  test("no BOM yet: says so and offers no manual composition editor", async () => {
     getBomByProduct.mockResolvedValue(null);
     renderPage();
 
     await screen.findByDisplayValue("Kopi");
-    await waitFor(() =>
-      expect(screen.getByText("page.product.form.compositionBomNotice")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText("page.product.form.noBomYet")).toBeInTheDocument());
+    expect(screen.queryByText("page.product.form.compositionBomNotice")).not.toBeInTheDocument();
+    expect(screen.queryByText("page.product.form.addIngredient")).not.toBeInTheDocument();
+  });
+
+  test("existing BOM: shows the BOM recipe read-only, in base units", async () => {
+    getProductById.mockResolvedValue({
+      data: {
+        ...seededProduct,
+        composition: [
+          { ingredientId: 7, name: "Bakso Halus", qty: 5, unit: "butir" },
+          { ingredientId: 8, name: "Mie Kuning", qty: 1, unit: "porsi" }
+        ]
+      }
+    });
+    getBomByProduct.mockResolvedValue({ data: { id: 42, productId: 1 } });
+    renderPage();
+
+    await screen.findByDisplayValue("Kopi");
+    expect(await screen.findByText("Bakso Halus")).toBeInTheDocument();
+    expect(screen.getByText("5 butir")).toBeInTheDocument();
+    expect(screen.getByText("1 porsi")).toBeInTheDocument();
+    expect(screen.getByText("page.product.form.recipeFromBom")).toBeInTheDocument();
   });
 });
