@@ -1,6 +1,4 @@
-/* global __dirname */
 import fs from "fs";
-import path from "path";
 import runtimeEn from "../../public/locales/en/translation.json";
 import runtimeId from "../../public/locales/id/translation.json";
 import mirrorEn from "../i18n/en.json";
@@ -8,12 +6,15 @@ import mirrorId from "../i18n/id.json";
 
 // Every static role-management key the pages use resolves in both runtime
 // locale files and their src/i18n mirrors.
+//
+// Paths below are repo-relative string literals: jest always runs from the
+// repository root (locally and in CI), so no path computation is needed.
 const SOURCES = [
-  fs.readFileSync(path.join(__dirname, "../page/role/EditRole.jsx"), "utf8"),
-  fs.readFileSync(path.join(__dirname, "../page/role/RoleManagement.jsx"), "utf8"),
-  fs.readFileSync(path.join(__dirname, "../page/role/rolePermissions.js"), "utf8"),
-  fs.readFileSync(path.join(__dirname, "../page/role/components/PermissionMatrix.jsx"), "utf8"),
-  fs.readFileSync(path.join(__dirname, "../page/user/AddRole.jsx"), "utf8")
+  fs.readFileSync("src/page/role/EditRole.jsx", "utf8"),
+  fs.readFileSync("src/page/role/RoleManagement.jsx", "utf8"),
+  fs.readFileSync("src/page/role/rolePermissions.js", "utf8"),
+  fs.readFileSync("src/page/role/components/PermissionMatrix.jsx", "utf8"),
+  fs.readFileSync("src/page/user/AddRole.jsx", "utf8")
 ];
 
 const LOCALES = [
