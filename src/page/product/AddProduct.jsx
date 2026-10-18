@@ -60,7 +60,7 @@ import ProductPreview from "./ProductPreview";
 import ProductImageGallery from "@/components/organism/ProductImageGallery";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import InventoryModeField from "@/page/product/InventoryModeField";
-import { INVENTORY_MODES } from "@/lib/inventory-mode";
+import { INVENTORY_MODES, initialStockNeedsStore } from "@/lib/inventory-mode";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -412,6 +412,18 @@ const AddProduct = () => {
   const handleSave = async (values, saveAsDraft = false) => {
     if (!allStores && selectedStores.length === 0 && !saveAsDraft) {
       form.setError("store", { message: t("page.product.form.selectStoreError") });
+      return;
+    }
+    // BA finding #2: per-outlet stock is authoritative — an opening stock on
+    // "Semua Toko" would be stranded (every outlet shows 0). Require a
+    // specific store, or an empty stock. The API rejects this too.
+    if (
+      initialStockNeedsStore(
+        { stock: values.stock, inventoryMode: values.inventoryMode },
+        selectedStores
+      )
+    ) {
+      form.setError("store", { message: t("page.product.form.stockRequiresStore") });
       return;
     }
     form.clearErrors("store");
