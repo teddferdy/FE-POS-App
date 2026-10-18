@@ -99,6 +99,10 @@ export const downloadPurchaseOrderExcel = async () => {
   return downloadBlob("/purchase-order/download", `${Date.now()}-purchase-orders.xlsx`);
 };
 
+export const downloadPurchaseOrderTemplate = async () => {
+  return downloadBlob("/purchase-order/template", "template-purchase-order.xlsx");
+};
+
 export const uploadPurchaseOrderExcel = async (file) => {
   const formData = new FormData();
   formData.append("file", file);

@@ -17,6 +17,7 @@ import {
   Wallet,
   Upload,
   Download,
+  Table,
   ShoppingCart,
   CheckCircle,
   ClipboardList,
@@ -45,7 +46,8 @@ import {
   resolveReturnedBy,
   sendToSupplierPurchaseOrder,
   uploadPurchaseOrderExcel,
-  downloadPurchaseOrderExcel
+  downloadPurchaseOrderExcel,
+  downloadPurchaseOrderTemplate
 } from "@/services/purchase-order";
 import { getAllLocation } from "@/services/location";
 import { getBatches } from "@/services/inventory";
@@ -500,6 +502,17 @@ const PurchaseOrderList = () => {
     }
   };
 
+  const handleDownloadTemplate = async () => {
+    try {
+      await downloadPurchaseOrderTemplate();
+      toast.success(t("page.purchaseOrder.detail.toast.templateDownloaded"));
+    } catch (err) {
+      toast.error(t("page.purchaseOrder.detail.toast.templateDownloadFailed"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  };
+
   const total = pagination?.total || pagination?.totalItems || data?.total || 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
 
@@ -917,18 +930,32 @@ const PurchaseOrderList = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleDownloadExcel}>
-            <Download size={14} />
-            {t("page.purchaseOrder.list.export")}
-          </Button>
-          <Button
-            variant="import"
-            size="sm"
-            className="gap-1.5"
-            onClick={() => setImportModal(true)}>
-            <Upload size={14} />
-            {t("page.purchaseOrder.list.import")}
-          </Button>
+          {isSuperAdmin && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={handleDownloadTemplate}>
+              <Table size={14} />
+              {t("page.purchaseOrder.list.downloadTemplate")}
+            </Button>
+          )}
+          {isSuperAdmin && (
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={handleDownloadExcel}>
+              <Download size={14} />
+              {t("page.purchaseOrder.list.export")}
+            </Button>
+          )}
+          {isSuperAdmin && (
+            <Button
+              variant="import"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setImportModal(true)}>
+              <Upload size={14} />
+              {t("page.purchaseOrder.list.import")}
+            </Button>
+          )}
           {canAccess(user, MENU_KEY, "add") && (
             <Button
               variant="success"
@@ -1670,6 +1697,7 @@ const PurchaseOrderList = () => {
         uploadService={uploadPurchaseOrderExcel}
         queryKey={["purchase-orders"]}
         title={t("page.purchaseOrder.list.importModalTitle")}
+        subtitle={t("page.purchaseOrder.list.importModalSubtitle")}
       />
 
       {payModal &&
