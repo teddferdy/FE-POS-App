@@ -93,16 +93,18 @@ const EditBundle = () => {
   const [missingFields, setMissingFields] = useState([]);
 
   const saveSchema = z.object({
-    name: z.string().min(1, "Nama Bundle harus diisi"),
-    bundlePrice: z.coerce.number().min(1, "Harga Bundle harus diisi"),
-    store: z.string().min(1, "Toko harus dipilih")
+    name: z.string().min(1, t("page.bundle.nama_bundle_harus_diisi", "Nama Bundle harus diisi")),
+    bundlePrice: z.coerce
+      .number()
+      .min(1, t("page.bundle.harga_bundle_harus_diisi", "Harga Bundle harus diisi")),
+    store: z.string().min(1, t("page.bundle.toko_harus_dipilih", "Toko harus dipilih"))
   });
 
   const bundleFieldLabels = {
-    name: "Nama Bundle",
-    bundlePrice: "Harga Bundle",
+    name: t("page.bundle.nama_bundle", "Nama Bundle"),
+    bundlePrice: t("page.bundle.harga_bundle", "Harga Bundle"),
     store: "Toko",
-    items: "Item Bundle"
+    items: t("page.bundle.item_bundle", "Item Bundle")
   };
 
   const {
@@ -576,7 +578,7 @@ const EditBundle = () => {
                                 onChange={(e) =>
                                   updateBundleItem(index, "unitPrice", parseIDR(e.target.value))
                                 }
-                                placeholder="Rp 0"
+                                placeholder={t("page.bundle.rp_0", "Rp 0")}
                                 className="h-9 text-right"
                               />
                             </div>
@@ -667,7 +669,7 @@ const EditBundle = () => {
                       inputMode="numeric"
                       value={formData.bundlePrice ? formatIDR(formData.bundlePrice) : ""}
                       onChange={(e) => updateFormData("bundlePrice", parseIDR(e.target.value))}
-                      placeholder="Rp 0"
+                      placeholder={t("page.bundle.rp_0", "Rp 0")}
                     />
                   </div>
                   <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20">

@@ -8816,5 +8816,13 @@
   "page.stockOpname.semua_toko": "Semua Toko",
   "page.stockOpname.stok_awal": "Stok Awal",
   "page.stockOpname.stok_fisik": "Stok Fisik",
-  "page.department.cari_status": "Cari status..."
+  "page.department.cari_status": "Cari status...",
+  "page.bundle.harga_bundle": "Harga Bundle",
+  "page.bundle.harga_bundle_harus_diisi": "Harga Bundle harus diisi",
+  "page.bundle.item_bundle": "Item Bundle",
+  "page.bundle.minimal_harus_ada_1_item_bundle": "Minimal harus ada 1 item bundle",
+  "page.bundle.nama_bundle": "Nama Bundle",
+  "page.bundle.nama_bundle_harus_diisi": "Nama Bundle harus diisi",
+  "page.bundle.rp_0": "Rp 0",
+  "page.bundle.toko_harus_dipilih": "Toko harus dipilih"
 }
