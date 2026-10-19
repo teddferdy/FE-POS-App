@@ -13,7 +13,6 @@ import { addPurchaseOrder } from "@/services/purchase-order";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllIngredients } from "@/services/ingredient";
 import { getAllEmployee } from "@/services/employee";
-import { getAllLocation } from "@/services/location";
 import { normalizeStoreId, storeIdsEqual } from "@/utils/storeId";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +30,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const emptyItem = {
   name: "",
@@ -241,11 +241,9 @@ const AddPurchaseOrder = () => {
     (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
   );
 
-  const { data: locationsData, isLoading: locationsLoading } = useQuery(
-    ["locations-for-po"],
-    () => getAllLocation(),
-    { staleTime: 30000 }
-  );
+  const { data: locationsData, isLoading: locationsLoading } = useLocations("active", {
+    staleTime: 30000
+  });
   const locations = locationsData?.data || [];
 
   useEffect(() => {

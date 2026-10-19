@@ -7,7 +7,6 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { getCategoryById, editCategory, getAllCategory } from "@/services/category";
-import { getAllLocation } from "@/services/location";
 import { Info, ImagePlus, BookOpen, LayoutGrid, X, Search, SearchX } from "lucide-react";
 import DynamicIcon from "@/components/ui/DynamicIcon";
 import { Button } from "@/components/ui/button";
@@ -34,6 +33,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import CategoryPreviewModal from "./CategoryPreviewModal";
+import { useLocations } from "@/queries/useLocations";
 
 const iconSections = [
   {
@@ -395,7 +395,7 @@ const EditCategory = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["allLocations"], () => getAllLocation(), {
+  } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || locationsData?.locations || [];

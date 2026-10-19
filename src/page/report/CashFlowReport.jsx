@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { getCashFlow } from "@/services/report";
-import { getAllLocation } from "@/services/location";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
@@ -13,6 +12,7 @@ import { formatCurrency } from "@/utils/reportUtils";
 import ExportButtons from "@/components/organism/ExportButtons";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
+import { useLocations } from "@/queries/useLocations";
 
 const CashFlowReport = () => {
   const { t } = useTranslation();
@@ -23,7 +23,7 @@ const CashFlowReport = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
-  const { data: locData } = useQuery(["locations-cash-flow"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

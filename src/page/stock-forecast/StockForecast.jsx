@@ -12,7 +12,6 @@ import {
   getValuation,
   postWriteOffExpired
 } from "@/services/inventory";
-import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +31,7 @@ import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
 import PageHeader from "@/components/ui/PageHeader";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const StockForecast = () => {
   const { t } = useTranslation();
@@ -42,7 +42,7 @@ const StockForecast = () => {
   const [store, setStore] = useState("");
   const [activeTab, setActiveTab] = useState("forecast");
 
-  const { data: locData } = useQuery(["locations-forecast"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locData?.data || [];

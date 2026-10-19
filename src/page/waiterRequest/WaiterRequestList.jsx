@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useSocket } from "@/services/socket";
 import { useRoomSubscription } from "@/hooks/useRoomSubscription";
-import { getAllLocation } from "@/services/location";
 import { Bell, Check, X, CheckCheck, Clock, HandPlatter, MapPin, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { getWaiterRequestList, updateWaiterRequestStatus } from "@/services/waiterRequest";
@@ -19,6 +18,7 @@ import TableToolbar from "@/components/ui/TableToolbar";
 import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
+import { useLocations } from "@/queries/useLocations";
 
 const statusOptions = [
   { value: "all", label: "Semua" },
@@ -70,7 +70,7 @@ const WaiterRequestList = () => {
       : ""
     : cookie?.activeStore || cookie?.user?.store;
 
-  const { data: locData } = useQuery(["locations-waiter-request"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin,
     retry: 1
   });

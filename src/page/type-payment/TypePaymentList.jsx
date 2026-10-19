@@ -24,7 +24,6 @@ import {
   downloadTypePaymentTemplate,
   downloadTypePaymentExcel
 } from "@/services/type-payment";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -42,6 +41,7 @@ import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
+import { useLocations } from "@/queries/useLocations";
 
 const TypePaymentList = () => {
   const { t, i18n } = useTranslation();
@@ -95,7 +95,7 @@ const TypePaymentList = () => {
   const MENU_KEY = "/type-payment-list";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations-type-payment"], () => getAllLocation("active"), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

@@ -47,12 +47,12 @@ import TableActions from "@/components/ui/TableActions";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { safeGet } from "@/lib/safe-lookup";
+import { useLocations } from "@/queries/useLocations";
 
 const ExpenseList = () => {
   const { t } = useTranslation();
@@ -96,13 +96,9 @@ const ExpenseList = () => {
     setPage(1);
   };
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-expense"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
 
   const { data: categoriesData } = useQuery(["expense-categories"], () => getExpenseCategories(), {
     staleTime: 300000

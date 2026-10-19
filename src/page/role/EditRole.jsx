@@ -7,7 +7,6 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Info, ShieldAlert, ShieldCheck, Plus, Minus } from "lucide-react";
 import { editRole, getRoleById } from "@/services/role";
-import { getAllLocation } from "@/services/location";
 import { parseAccessMenuToPermissions } from "@/utils/permission";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { Button } from "@/components/ui/button";
@@ -30,6 +29,7 @@ import {
   togglePermissionValue
 } from "./rolePermissions";
 import { safeGet } from "@/lib/safe-lookup";
+import { useLocations } from "@/queries/useLocations";
 
 const SUMMARY_LIMIT = 8;
 
@@ -116,7 +116,7 @@ const EditRole = () => {
   // the server refuses everyone else, so the editor is read-only for them.
   const isLocked = !!role?.isSystem && !isGlobalSuperAdmin;
 
-  const { data: locData } = useQuery(["locations-role"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin && role?.store != null
   });
   const storeName =

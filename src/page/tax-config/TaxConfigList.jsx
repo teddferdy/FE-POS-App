@@ -44,7 +44,6 @@ import TableToolbar from "@/components/ui/TableToolbar";
 import TableActions from "@/components/ui/TableActions";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { useStore } from "@/contexts/StoreContext";
 import EffectiveTaxSummary from "@/page/tax-config/components/EffectiveTaxSummary";
@@ -54,6 +53,7 @@ import {
   resolveEffectiveTaxScope,
   taxRowScope
 } from "@/utils/taxEffective";
+import { useLocations } from "@/queries/useLocations";
 
 const typeColors = {
   PPN: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
@@ -89,7 +89,7 @@ const TaxConfigList = () => {
   const MENU_KEY = "/tax-list";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations-tax"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

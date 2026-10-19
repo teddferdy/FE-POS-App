@@ -50,6 +50,7 @@ import {
   toStoreConfigurationFormValues
 } from "@/lib/store-configuration";
 import { StoreConfigurationSkeleton, StoreStatusPill, useCategoryLabel } from "./shared";
+import { qk } from "@/queries/keys";
 
 const LIST_PATH = "/store-configuration";
 
@@ -246,7 +247,7 @@ const StoreConfigurationEditor = ({ routeId }) => {
         queryClient.invalidateQueries(detailKey),
         queryClient.invalidateQueries([STORE_CONFIGURATIONS_QUERY_KEY]),
         queryClient.invalidateQueries(["locations"]),
-        queryClient.invalidateQueries(["allLocations"])
+        queryClient.invalidateQueries(qk.locations.all())
       ]);
     },
     onError: (error) => {

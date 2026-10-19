@@ -29,7 +29,6 @@ import {
   getAllSupplierCategories
 } from "@/services/supplier";
 import { Combobox } from "@/components/ui/combobox";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,6 +53,7 @@ import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const EditSupplier = () => {
   const { t } = useTranslation();
@@ -148,7 +148,7 @@ const EditSupplier = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["allLocations"], () => getAllLocation(), { enabled: isSuperAdmin });
+  } = useLocations("active", { enabled: isSuperAdmin });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: categoriesData } = useQuery(["supplierCategories"], () =>

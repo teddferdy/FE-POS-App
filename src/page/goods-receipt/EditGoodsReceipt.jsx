@@ -38,10 +38,10 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { Loading } from "@/components/ui/loading";
 import { useStore } from "@/contexts/StoreContext";
-import { getAllLocation } from "@/services/location";
 import { useCookies } from "react-cookie";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const EditGoodsReceipt = () => {
   const navigate = useNavigate();
@@ -81,11 +81,9 @@ const EditGoodsReceipt = () => {
   const [selectedStores, setSelectedStores] = useState([]);
   const [allStores, setAllStores] = useState(true);
 
-  const { data: locationsData, isLoading: locationsLoading } = useQuery(
-    ["allLocations"],
-    getAllLocation,
-    { enabled: isSuperAdmin }
-  );
+  const { data: locationsData, isLoading: locationsLoading } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || [];
 
   const docFiles = docs.filter((d) => d.isNew).map((d) => d.file);

@@ -20,7 +20,6 @@ import {
 import { getIngredientById, editIngredient, getProductNamesByFilters } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllIngredientCategory } from "@/services/ingredientCategory";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -45,6 +44,7 @@ import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { toQuantity } from "@/utils/quantity";
+import { useLocations } from "@/queries/useLocations";
 
 const conversionHints = {
   kg: { base: "gram", factor: 1000 },
@@ -180,11 +180,9 @@ const EditIngredient = () => {
   );
   const categories = categoriesData?.data || [];
 
-  const { data: locationsData, isLoading: locationsLoading } = useQuery(
-    ["locations-all"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  const { data: locationsData, isLoading: locationsLoading } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || [];
 
   const { data: productNamesData, isLoading: productNamesLoading } = useQuery(

@@ -40,10 +40,10 @@ import { Loading } from "@/components/ui/loading";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import PageHeader from "@/components/ui/PageHeader";
 import { useStore } from "@/contexts/StoreContext";
-import { getAllLocation } from "@/services/location";
 import { Lock } from "lucide-react";
 import { useCookies } from "react-cookie";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
+import { useLocations } from "@/queries/useLocations";
 
 const AddGoodsReceipt = () => {
   const navigate = useNavigate();
@@ -81,11 +81,9 @@ const AddGoodsReceipt = () => {
   // T-10 idempotency: one key per intentional submission, reused on retry
   const grIdempotencyRef = useRef("");
 
-  const { data: locationsData, isLoading: locationsLoading } = useQuery(
-    ["allLocations"],
-    getAllLocation,
-    { enabled: isSuperAdmin }
-  );
+  const { data: locationsData, isLoading: locationsLoading } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || [];
 
   const docFiles = docs.filter((d) => d.isNew).map((d) => d.file);

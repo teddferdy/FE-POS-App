@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
 import { ShoppingBag, Maximize, Minimize, Sun, Moon, Store, UtensilsCrossed } from "lucide-react";
 import { useThemeStore } from "@/state/theme";
 import { useThemeEffect } from "@/hooks/useThemeEffect";
-import { getAllLocation } from "@/services/location";
 import { storeIdsEqual } from "@/utils/storeId";
 import {
   CART_MIRROR_KEY,
@@ -16,6 +14,7 @@ import {
 } from "@/utils/customerDisplayBoard";
 import ThankYouModal from "./ThankYouModal";
 import QrisPaymentModal from "./QrisPaymentModal";
+import { useLocations } from "@/queries/useLocations";
 
 const EVENT_RECENCY_MS = 30000;
 
@@ -69,11 +68,7 @@ const CustomerDisplayBoard = () => {
   const [thankYouEvent, setThankYouEvent] = useState(null);
   const [qrisEvent, setQrisEvent] = useState(null);
 
-  const { data: locsData } = useQuery(
-    ["customer-display-board-locations", storeId],
-    getAllLocation,
-    { enabled: !!storeId, retry: 1 }
-  );
+  const { data: locsData } = useLocations("active", { enabled: !!storeId, retry: 1 });
   const locationList = locsData?.data || locsData || [];
   const storeName = locationList.find((l) => storeIdsEqual(l.id, storeId))?.name || "";
 

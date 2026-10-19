@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import { getSalesSummary } from "@/services/report";
-import { getAllLocation } from "@/services/location";
 import ExportButtons from "@/components/organism/ExportButtons";
 import GlobalSalesTab from "./GlobalSalesTab";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
+import { useLocations } from "@/queries/useLocations";
 
 const SalesReportPage = () => {
   const { t } = useTranslation();
@@ -18,7 +18,7 @@ const SalesReportPage = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const [salesPeriod, setSalesPeriod] = useState("Today");
 
-  const { data: locData } = useQuery(["locations-sales-report"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

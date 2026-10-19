@@ -21,7 +21,6 @@ import PageHeader from "@/components/ui/PageHeader";
 import { addIngredient, getProductNamesByFilters } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllIngredientCategory } from "@/services/ingredientCategory";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -43,6 +42,7 @@ import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const conversionHints = {
   kg: { base: "gram", factor: 1000 },
@@ -167,11 +167,9 @@ const AddIngredient = () => {
   );
   const categories = categoriesData?.data || [];
 
-  const { data: locationsData, isLoading: locationsLoading } = useQuery(
-    ["locations-all"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  const { data: locationsData, isLoading: locationsLoading } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || [];
 
   const { data: productNamesData, isLoading: productNamesLoading } = useQuery(

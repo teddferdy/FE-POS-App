@@ -11,7 +11,6 @@ import { addBom, editBom, getBomById } from "@/services/bom";
 import { getAllProduct } from "@/services/product";
 import { getAllIngredients } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
-import { getAllLocation } from "@/services/location";
 import { normalizeStoreId } from "@/utils/storeId";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +22,7 @@ import { Loading } from "@/components/ui/loading";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const emptyLine = () => ({ supplierId: "", ingredientId: "", qty: "", unit: "pcs", notes: "" });
 
@@ -109,7 +109,7 @@ const AddBom = () => {
   );
   const products = prodData?.data || [];
 
-  const { data: locationsData } = useQuery(["locations-for-bom"], () => getAllLocation(), {
+  const { data: locationsData } = useLocations("active", {
     enabled: isSuperAdmin,
     staleTime: 30000
   });

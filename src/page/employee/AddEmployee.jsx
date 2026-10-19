@@ -32,7 +32,6 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { addEmployee, generateEmployeeId } from "@/services/employee";
 import { getShiftDropdown } from "@/services/shift";
-import { getAllLocation } from "@/services/location";
 import { getAllPosition } from "@/services/position";
 import { getAllDepartment } from "@/services/department";
 import { getAllRole, getRoleById } from "@/services/role";
@@ -66,6 +65,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useLocations } from "@/queries/useLocations";
 
 const AddEmployee = () => {
   const navigate = useNavigate();
@@ -318,7 +318,7 @@ const AddEmployee = () => {
     data: locationsData,
     isLoading: locLoading,
     isFetching: locFetching
-  } = useQuery(["allLocations"], () => getAllLocation(), { retry: 0 });
+  } = useLocations("active", { retry: 0 });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const {

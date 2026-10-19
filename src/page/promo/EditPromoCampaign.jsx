@@ -25,7 +25,6 @@ import { getCampaignById, updateCampaign, getCampaigns } from "@/services/promo"
 import { getAllProduct } from "@/services/product";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllMemberTier } from "@/services/member-tier";
-import { getAllLocation } from "@/services/location";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,6 +47,7 @@ import {
 import { DateInput } from "@/components/ui/date-input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { useLocations } from "@/queries/useLocations";
 
 const SectionHeader = ({ icon: Icon, title, description, gradient }) => (
   <div className={`bg-gradient-to-r ${gradient} px-6 py-4`}>
@@ -126,7 +126,7 @@ const EditPromoCampaign = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["locations-promo-edit"], () => getAllLocation("active"), { enabled: isSuperAdmin });
+  } = useLocations("active", { enabled: isSuperAdmin });
   const locations = locationsData?.data || [];
 
   const handleStoreChange = (stores) => {

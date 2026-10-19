@@ -41,7 +41,7 @@ import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import NoStore from "@/components/ui/NoStore";
-import { getAllLocation } from "@/services/location";
+import { useLocations } from "@/queries/useLocations";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -75,7 +75,7 @@ const CategoryList = () => {
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const { data: locData } = useQuery(["locations-ingredient-categories"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

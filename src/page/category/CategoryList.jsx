@@ -45,8 +45,8 @@ import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
 import StatCard from "@/components/ui/StatCard";
 import StoreFilter from "@/components/ui/StoreFilter";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import { useLocations } from "@/queries/useLocations";
 
 const categoryIcon = {
   "makanan utama": "restaurant",
@@ -111,7 +111,7 @@ const CategoryList = () => {
     setPage(1);
   };
 
-  const { data: locData } = useQuery(["locations-cat"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

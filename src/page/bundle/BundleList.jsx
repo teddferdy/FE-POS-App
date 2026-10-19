@@ -19,7 +19,6 @@ import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import PageHeader from "@/components/ui/PageHeader";
@@ -31,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { useLocations } from "@/queries/useLocations";
 
 const BundleList = () => {
   const { t } = useTranslation();
@@ -86,7 +86,7 @@ const BundleList = () => {
     setPage(1);
   };
 
-  const { data: locData } = useQuery(["locations-bundle"], () => getAllLocation("active"), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

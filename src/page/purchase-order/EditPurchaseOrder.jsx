@@ -12,7 +12,6 @@ import { normalizePayload } from "@/lib/payload-normalizer";
 import { editPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllEmployee } from "@/services/employee";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +29,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const emptyItem = {
   name: "",
@@ -216,7 +216,7 @@ const EditPurchaseOrder = () => {
     (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
   );
 
-  const { data: locationsData } = useQuery(["locations-for-po"], () => getAllLocation(), {
+  const { data: locationsData } = useLocations("active", {
     staleTime: 30000
   });
   const locations = locationsData?.data || [];

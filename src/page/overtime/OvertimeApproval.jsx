@@ -19,7 +19,6 @@ import {
   XCircle
 } from "lucide-react";
 import { getOvertimes, updateOvertimeStatus, postOvertimePayroll } from "@/services/overtime";
-import { getAllLocation } from "@/services/location";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { safeGet } from "@/lib/safe-lookup";
 import { useUserSession } from "@/hooks/useUserSession";
@@ -32,6 +31,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useLocations } from "@/queries/useLocations";
 
 const fmt = (d) => {
   if (!d) return "-";
@@ -122,13 +122,9 @@ const OvertimeApproval = () => {
   const [payrollTarget, setPayrollTarget] = useState(null);
   const [payrollMonth, setPayrollMonth] = useState(() => new Date().toISOString().slice(0, 7));
 
-  const { data: locData } = useQuery(
-    ["overtime-approval-locations"],
-    () => getAllLocation("active"),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
   const locations = locData?.data || [];
   const store = isSuperAdmin ? (storeFilter !== "all" ? storeFilter : "") : user?.store || "";
   const locationName = (sid) => locations.find((l) => String(l.id) === String(sid))?.name || null;

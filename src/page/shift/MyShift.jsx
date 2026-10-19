@@ -19,7 +19,6 @@ import {
   Loader2
 } from "lucide-react";
 import { getAllShift } from "@/services/shift";
-import { getAllLocation } from "@/services/location";
 import { getMyAttendance } from "@/services/attendance";
 import { getShiftSwaps } from "@/services/shiftSwap";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,6 +31,7 @@ import AttendanceModal from "@/components/organism/AttendanceModal";
 import { safeGet } from "@/lib/safe-lookup";
 import PageHeader from "@/components/ui/PageHeader";
 import { DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS, SHIFT_TYPES } from "@/constants/shiftTypes";
+import { useLocations } from "@/queries/useLocations";
 
 const DAY_MS = 86400000;
 
@@ -166,11 +166,7 @@ const MyShift = () => {
     });
   }, [mySwaps, currentUserId]);
 
-  const { data: locData } = useQuery(
-    ["my-shift-locations", storeId],
-    () => getAllLocation("active"),
-    { enabled: !!storeId }
-  );
+  const { data: locData } = useLocations("active", { enabled: !!storeId });
 
   const locName = (sid) => {
     if (sid == null || sid === "") return "";

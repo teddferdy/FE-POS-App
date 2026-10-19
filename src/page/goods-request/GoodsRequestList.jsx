@@ -27,7 +27,6 @@ import {
   deleteGoodsRequest,
   changeGoodsRequestStatus
 } from "@/services/goods-request";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -42,6 +41,7 @@ import StatCard from "@/components/ui/StatCard";
 import TableActions from "@/components/ui/TableActions";
 import { cn } from "@/lib/utils";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const statusMap = {
   pending: {
@@ -86,7 +86,7 @@ const GoodsRequestList = () => {
   };
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locData } = useQuery(["locations-goods-request"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

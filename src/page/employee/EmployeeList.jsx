@@ -27,7 +27,6 @@ import {
   UserPlus,
   Lightbulb
 } from "lucide-react";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
@@ -35,6 +34,7 @@ import TableActions from "@/components/ui/TableActions";
 import TableToolbar from "@/components/ui/TableToolbar";
 import StatCard from "@/components/ui/StatCard";
 import { canAccess } from "@/utils/permission";
+import { useLocations } from "@/queries/useLocations";
 
 const positionColors = {
   manager: "bg-primary text-primary-foreground",
@@ -83,7 +83,7 @@ const EmployeeList = () => {
     { keepPreviousData: true }
   );
 
-  const { data: locData } = useQuery(["locations-employees"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

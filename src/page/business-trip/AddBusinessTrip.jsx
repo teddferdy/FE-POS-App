@@ -8,7 +8,6 @@ import { z } from "zod";
 import { Save, X, Plus, Trash2, Building2, User, Wallet, Plane, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { addBusinessTrip } from "@/services/business-trip";
-import { getAllLocation } from "@/services/location";
 import { getAllEmployee } from "@/services/employee";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +28,7 @@ import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const SectionHeader = ({ icon: Icon, title, desc, from, to }) => (
   <div className={`bg-gradient-to-r ${from} ${to} px-6 py-4`}>
@@ -128,11 +128,9 @@ const AddBusinessTrip = () => {
   const budgetVal = watch("budget");
   const items = watch("budgetItems");
 
-  const { data: locationsData, isLoading: locationsLoading } = useQuery(
-    ["locations-for-business-trip"],
-    () => getAllLocation("active"),
-    { staleTime: 30000 }
-  );
+  const { data: locationsData, isLoading: locationsLoading } = useLocations("active", {
+    staleTime: 30000
+  });
   const locations = locationsData?.data || [];
 
   const { data: employeesData, isLoading: employeesLoading } = useQuery(

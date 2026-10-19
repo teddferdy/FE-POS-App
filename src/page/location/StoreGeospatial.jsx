@@ -13,11 +13,12 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { ArrowLeft, Store, MapPin, Navigation, Building2 } from "lucide-react";
 import { Combobox } from "@/components/ui/combobox";
-import { getAllLocation, getAllLocationTable } from "@/services/location";
+import { getAllLocationTable } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
+import { useLocations } from "@/queries/useLocations";
 
 // const item = {
 //   hidden: { opacity: 0, y: 20 },
@@ -81,12 +82,7 @@ const StoreGeospatial = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
-  const {
-    data: detailData,
-    isLoading: detailLoading,
-    isError,
-    refetch
-  } = useQuery(["all-locations-detail"], () => getAllLocation("all"));
+  const { data: detailData, isLoading: detailLoading, isError, refetch } = useLocations("all");
   const { data: tableData, isLoading: tableLoading } = useQuery(["all-locations-table"], () =>
     getAllLocationTable({ page: 1, limit: 1000 })
   );

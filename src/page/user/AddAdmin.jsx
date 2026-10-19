@@ -17,7 +17,6 @@ import { z } from "zod";
 import { toast } from "sonner";
 
 import { addEmployee } from "@/services/employee";
-import { getAllLocation } from "@/services/location";
 import { getAllRole } from "@/services/role";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
@@ -27,6 +26,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { normalizePayload } from "@/lib/payload-normalizer";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLocations } from "@/queries/useLocations";
 
 const AddAdmin = () => {
   const { t } = useTranslation();
@@ -76,7 +76,7 @@ const AddAdmin = () => {
     []
   );
 
-  const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
+  const { data: locationsData } = useLocations();
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: rolesData } = useQuery(["roles-all"], () => getAllRole(), {});

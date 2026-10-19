@@ -5,11 +5,11 @@ import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getBestSellerReport } from "@/services/report";
-import { getAllLocation } from "@/services/location";
 import ExportButtons from "@/components/organism/ExportButtons";
 import BestSellerTab from "./BestSellerTab";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
+import { useLocations } from "@/queries/useLocations";
 
 const BestSellingReportPage = () => {
   const { t } = useTranslation();
@@ -18,7 +18,7 @@ const BestSellingReportPage = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locData } = useQuery(["locations-best-selling"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

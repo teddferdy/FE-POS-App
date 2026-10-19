@@ -46,7 +46,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { getInvoiceSetting, updateInvoiceSetting, resetInvoiceSetting } from "@/services/invoice";
-import { getLocationById, getAllLocation } from "@/services/location";
+import { getLocationById } from "@/services/location";
 import {
   getProvinces,
   getCities,
@@ -60,6 +60,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loading } from "@/components/ui/loading";
 import NoStore from "@/components/ui/NoStore";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const DEFAULT_INVOICE_TEMPLATE = {
   showStoreName: true,
@@ -414,13 +415,9 @@ const InvoicePage = () => {
   const [selectedStore, setSelectedStore] = useState(isSuperAdmin ? "" : String(user?.store || ""));
   const cashierName = user?.userName || user?.name || user?.fullName || "";
 
-  const { data: locData, isLoading: locLoading } = useQuery(
-    ["active-locations"],
-    () => getAllLocation("active"),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData, isLoading: locLoading } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
   const locationList = locData?.data || locData || [];
 
   const {

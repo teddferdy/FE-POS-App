@@ -32,11 +32,11 @@ import { useTranslation } from "react-i18next";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StatCard from "@/components/ui/StatCard";
 import StoreFilter from "@/components/ui/StoreFilter";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLocations } from "@/queries/useLocations";
 
 const ReservationList = () => {
   const { t } = useTranslation();
@@ -85,13 +85,9 @@ const ReservationList = () => {
     setPage(1);
   };
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-reservations"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
   const storeMap = Object.fromEntries((locData?.data || []).map((s) => [String(s.id), s.name]));
 
   const statusMutation = useMutation(({ id, status }) => updateReservation({ id, status }), {

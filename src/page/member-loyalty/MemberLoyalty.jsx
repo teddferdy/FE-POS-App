@@ -12,7 +12,6 @@ import {
   updateAllMemberTiers
 } from "@/services/member-tier";
 import { getAllMember, addMemberPoints } from "@/services/member";
-import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import Modal from "@/components/organism/modal";
 import { Button } from "@/components/ui/button";
@@ -49,6 +48,7 @@ import { useNavigate } from "react-router-dom";
 import AbortController from "@/components/organism/abort-controller";
 import TableActionLegend from "@/components/ui/TableActionLegend";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLocations } from "@/queries/useLocations";
 
 const MemberLoyalty = () => {
   const { t } = useTranslation();
@@ -64,7 +64,7 @@ const MemberLoyalty = () => {
   const [redeemPoints, setRedeemPoints] = useState("");
   const [deleteTierTarget, setDeleteTierTarget] = useState(null);
 
-  const { data: locData } = useQuery(["locations-loyalty"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locData?.data || [];

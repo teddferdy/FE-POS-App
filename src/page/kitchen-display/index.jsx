@@ -7,7 +7,6 @@ import { useCookies } from "react-cookie";
 import { useSocket } from "@/services/socket";
 import { useRoomSubscription } from "@/hooks/useRoomSubscription";
 import { getKitchenOrders, updateOrderItemStatus } from "@/services/kitchen";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +24,7 @@ import {
 } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import StoreFilter from "@/components/ui/StoreFilter";
+import { useLocations } from "@/queries/useLocations";
 
 const statusConfig = {
   pending: {
@@ -90,13 +90,9 @@ const KitchenDisplay = () => {
       : ""
     : cookie?.activeStore || cookie?.user?.store;
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-kitchen"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
 
   // F2: room-subscription awareness. `connected` alone must not disable
   // polling — the kitchen room join can be rejected (or lost on reconnect)

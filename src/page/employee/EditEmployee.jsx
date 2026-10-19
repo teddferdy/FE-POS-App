@@ -33,7 +33,6 @@ import { addMonths, format } from "date-fns";
 import { toast } from "sonner";
 import { editEmployee, getEmployeeById } from "@/services/employee";
 import { getShiftDropdown } from "@/services/shift";
-import { getAllLocation } from "@/services/location";
 import { getAllPosition } from "@/services/position";
 import { getAllDepartment } from "@/services/department";
 import { getAllRole, getRoleById } from "@/services/role";
@@ -68,6 +67,7 @@ import {
 import PageHeader from "@/components/ui/PageHeader";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { useLocations } from "@/queries/useLocations";
 
 const EditEmployee = () => {
   const { t } = useTranslation();
@@ -398,7 +398,7 @@ const EditEmployee = () => {
     }
   }, [startDate, contractDuration, employmentType, form]);
 
-  const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
+  const { data: locationsData } = useLocations();
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: positionsData } = useQuery(["positions-all"], () => getAllPosition(), {});

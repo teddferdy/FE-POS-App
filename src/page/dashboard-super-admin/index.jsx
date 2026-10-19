@@ -13,7 +13,6 @@ import {
   Calendar
 } from "lucide-react";
 import { getSuperAdminDashboard } from "@/services/dashboard";
-import { getAllLocation } from "@/services/location";
 import { getUpcomingPayments } from "@/services/expense";
 import { useTranslation } from "react-i18next";
 import {
@@ -36,6 +35,7 @@ import CustomersSection from "@/components/dashboard-super-admin/CustomersSectio
 import ActivitySection from "@/components/dashboard-super-admin/ActivitySection";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { buildDashboardQueryParams } from "@/lib/dashboard-query";
+import { useLocations } from "@/queries/useLocations";
 
 const PRESETS = [
   { key: "7d", label: "7 Hari" },
@@ -88,11 +88,7 @@ const DashboardSuperAdmin = () => {
 
   const storeFilter = activeStoreId ? String(activeStoreId) : null;
 
-  const { data: locationsData } = useQuery(
-    ["location-all-active"],
-    () => getAllLocation("active"),
-    { staleTime: 5 * 60 * 1000 }
-  );
+  const { data: locationsData } = useLocations("active", { staleTime: 5 * 60 * 1000 });
   const locations = locationsData?.data || [];
 
   const { data: upcomingData } = useQuery(

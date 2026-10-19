@@ -9,7 +9,6 @@ import { format } from "date-fns";
 import { useCookies } from "react-cookie";
 import { X, Save, Check, PackageOpen, Plus, ChevronsUpDown } from "lucide-react";
 import { addDiscount } from "@/services/discount";
-import { getAllLocation } from "@/services/location";
 import { getAllProduct } from "@/services/product";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Loading } from "@/components/ui/loading";
@@ -52,6 +51,7 @@ import { useTranslation } from "react-i18next";
 import PageHeader from "@/components/ui/PageHeader";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { useLocations } from "@/queries/useLocations";
 const PROMO_TYPES = {
   standard: "page.discount.form.promoType.standard",
   bogo: "page.discount.form.promoType.bogo",
@@ -82,7 +82,7 @@ const AddDiscount = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["allLocations"], () => getAllLocation(), {
+  } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || locationsData?.locations || [];

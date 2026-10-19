@@ -31,11 +31,11 @@ import TableToolbar from "@/components/ui/TableToolbar";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import PageHeader from "@/components/ui/PageHeader";
 import { Combobox } from "@/components/ui/combobox";
+import { useLocations } from "@/queries/useLocations";
 
 const StockOpnameList = () => {
   const { t } = useTranslation();
@@ -81,7 +81,7 @@ const StockOpnameList = () => {
     setPage(1);
   };
 
-  const { data: locData } = useQuery(["locations-stock-opname"], () => getAllLocation("active"), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

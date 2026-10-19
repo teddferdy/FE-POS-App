@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getDiscountById } from "@/services/discount";
-import { getAllLocation } from "@/services/location";
+import { useLocations } from "@/queries/useLocations";
 
 const statusBadge = (status, t) => {
   if (status === "active")
@@ -47,7 +47,7 @@ const DetailDiscount = () => {
 
   const discount = data?.data || data;
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {});
+  const { data: locData } = useLocations();
   const locations = locData?.data || [];
 
   const storeName = discount?.store

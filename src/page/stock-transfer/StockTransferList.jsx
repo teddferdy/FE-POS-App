@@ -19,11 +19,11 @@ import TableToolbar from "@/components/ui/TableToolbar";
 import TableActions from "@/components/ui/TableActions";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { Combobox } from "@/components/ui/combobox";
 import StoreFilter from "@/components/ui/StoreFilter";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLocations } from "@/queries/useLocations";
 
 const statusCfg = {
   sent: {
@@ -77,7 +77,7 @@ const StockTransferList = () => {
     setPage(1);
   };
 
-  const { data: locData } = useQuery(["locations-stock-transfer"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

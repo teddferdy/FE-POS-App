@@ -11,7 +11,6 @@ import {
   downloadPositionExcel
 } from "@/services/position";
 import { getAllDepartmentTable } from "@/services/department";
-import { getAllLocation } from "@/services/location";
 import {
   Loader2,
   Briefcase,
@@ -42,6 +41,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { Combobox } from "@/components/ui/combobox";
 import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
+import { useLocations } from "@/queries/useLocations";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -93,7 +93,7 @@ const PositionList = () => {
     setPage(1);
   };
 
-  const { data: locData } = useQuery(["locations-positions"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

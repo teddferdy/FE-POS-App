@@ -42,6 +42,7 @@ import StatCard from "@/components/ui/StatCard";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import TableActions from "@/components/ui/TableActions";
+import { qk } from "@/queries/keys";
 
 const LocationList = () => {
   const { t } = useTranslation();
@@ -79,7 +80,7 @@ const LocationList = () => {
     onSuccess: () => {
       toast.success(t("common.success"), { description: t("page.location.toast.success") });
       queryClient.invalidateQueries(["locations"]);
-      queryClient.invalidateQueries(["allLocations"]);
+      queryClient.invalidateQueries(qk.locations.all());
       setDeleteTarget(null);
     },
     onError: (err) => {
@@ -99,7 +100,7 @@ const LocationList = () => {
         setArchiveModal({ open: false, location: null, mode: "archive" });
         setArchiveReason("");
         queryClient.invalidateQueries(["locations"]);
-        queryClient.invalidateQueries(["allLocations"]);
+        queryClient.invalidateQueries(qk.locations.all());
       },
       onError: (err) => {
         toast.error(t("common.error"), {
@@ -122,6 +123,7 @@ const LocationList = () => {
       toast.success(t("common.success"), { description: "Target updated" });
       setTargetModal({ open: false, location: null, value: 0 });
       queryClient.invalidateQueries(["locations"]);
+      queryClient.invalidateQueries(qk.locations.all());
     },
     onError: (err) => toast.error(t("common.error"), { description: err.message })
   });

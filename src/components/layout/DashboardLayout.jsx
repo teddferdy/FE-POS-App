@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from "react";
 import { useCookies } from "react-cookie";
-import { useQuery } from "react-query";
 import { useLocation, Outlet } from "react-router-dom";
 export const SidebarContext = createContext(false);
 export const useSidebar = () => useContext(SidebarContext);
 import { useTranslation } from "react-i18next";
-import { getAllLocation } from "@/services/location";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import CommandPalette from "./CommandPalette";
@@ -14,6 +12,7 @@ import FloatingTourButton from "@/components/organism/FloatingTourButton";
 import { OfflineIndicator, OfflineBanner } from "@/components/ui/OfflineIndicator";
 import { useStore } from "@/contexts/StoreContext";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { useLocations } from "@/queries/useLocations";
 
 const tipsKeys = {
   "/product-list": ["tips.product", "tips.product2", "tips.product3"],
@@ -230,7 +229,7 @@ const DashboardLayout = () => {
   const user = cookie?.user;
   const role = user?.roleType || "";
 
-  const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
+  const { data: locationsData } = useLocations("active", {
     enabled: role !== "super_admin" && !activeStoreId
   });
   const locations = locationsData?.data || [];

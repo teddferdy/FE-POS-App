@@ -24,7 +24,6 @@ import {
   exportGoodsReceipt,
   changeGoodsReceiptStatus
 } from "@/services/goods-receipt";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -38,6 +37,7 @@ import { Combobox } from "@/components/ui/combobox";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import TableActions from "@/components/ui/TableActions";
+import { useLocations } from "@/queries/useLocations";
 
 const statusMap = {
   draft: {
@@ -77,7 +77,7 @@ const GoodsReceiptList = () => {
   };
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locData } = useQuery(["locations-goods-receipt"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

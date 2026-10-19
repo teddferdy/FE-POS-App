@@ -1,14 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCookies } from "react-cookie";
 import { X, Save, Check } from "lucide-react";
 import { addTaxConfig } from "@/services/tax-config";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
@@ -30,6 +29,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { useLocations } from "@/queries/useLocations";
 
 const taxTypes = [
   { value: "ppn", label: "PPN" },
@@ -44,7 +44,7 @@ const AddTaxConfig = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
+  const { data: locationsData } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || [];

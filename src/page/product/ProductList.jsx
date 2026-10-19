@@ -26,7 +26,6 @@ import {
   downloadProductExcel
 } from "@/services/product";
 import { getAllCategoryActive } from "@/services/category";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -44,6 +43,7 @@ import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { canAccess } from "@/utils/permission";
 import { Combobox } from "@/components/ui/combobox";
 import TableActions from "@/components/ui/TableActions";
+import { useLocations } from "@/queries/useLocations";
 
 const ProductList = () => {
   const { t } = useTranslation();
@@ -90,11 +90,9 @@ const ProductList = () => {
       : ""
     : locationParam || "";
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-products"],
-    () => getAllLocation(),
-    { enabled: role === "super_admin" }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("active", {
+    enabled: role === "super_admin"
+  });
 
   useEffect(() => {
     if (role !== "super_admin" || isLoadingLocations) return;

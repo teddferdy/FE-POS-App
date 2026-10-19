@@ -83,6 +83,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import TenantSelectField, { tenantErrorMessage } from "@/components/organism/TenantSelectField";
+import { qk } from "@/queries/keys";
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -516,7 +517,7 @@ const EditLocation = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(["locations"]);
       queryClient.invalidateQueries(["location-edit"]);
-      queryClient.invalidateQueries(["allLocations"]);
+      queryClient.invalidateQueries(qk.locations.all());
       setIsSubmitting(false);
       setSuccessModal(true);
     },

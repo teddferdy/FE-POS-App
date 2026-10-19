@@ -7,7 +7,6 @@ import { Save, Plus, Trash2, X, Package, ShoppingCart, Store, CloudUpload } from
 import { toast } from "sonner";
 import { getBundleById, updateBundle } from "@/services/productBundle";
 import { getAllProduct } from "@/services/product";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,6 +30,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { Switch } from "@/components/ui/switch";
+import { useLocations } from "@/queries/useLocations";
 
 const emptyItem = { product: "", quantity: 1, unitPrice: 0, isOptional: false };
 
@@ -105,11 +105,7 @@ const EditBundle = () => {
     items: "Item Bundle"
   };
 
-  const {
-    data: locationsData,
-    isLoading: locsLoading,
-    isFetching: locsFetching
-  } = useQuery(["allLocations"], () => getAllLocation());
+  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useLocations();
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const {

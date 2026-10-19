@@ -16,7 +16,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { openCashRegister, getOpenRegisters, getTableResetPreview } from "@/services/cash-register";
-import { getAllLocation, getLocationDetail } from "@/services/location";
+import { getLocationDetail } from "@/services/location";
 import { getWhatsAppStatus, restartWhatsApp } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
@@ -26,6 +26,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { getTodayScheduleMinutes, formatMinutesAsTime } from "@/utils/storeTimezone";
+import { useLocations } from "@/queries/useLocations";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
@@ -47,11 +48,9 @@ const CashRegisterOpenClose = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locationsData, isLoading: locationsLoading } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  const { data: locationsData, isLoading: locationsLoading } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || [];
 
   const { data: openRegistersData, isLoading: openRegistersLoading } = useQuery(

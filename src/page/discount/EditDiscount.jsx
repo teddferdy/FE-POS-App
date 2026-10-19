@@ -9,7 +9,6 @@ import { format } from "date-fns";
 import { useCookies } from "react-cookie";
 import { X, Save, Check } from "lucide-react";
 import { getDiscountById, editDiscount } from "@/services/discount";
-import { getAllLocation } from "@/services/location";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +41,7 @@ import { useTranslation } from "react-i18next";
 import PageHeader from "@/components/ui/PageHeader";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { useLocations } from "@/queries/useLocations";
 const PROMO_TYPES = {
   standard: "page.discount.form.promoType.standard",
   bogo: "page.discount.form.promoType.bogo",
@@ -95,11 +95,7 @@ const EditDiscount = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const {
-    data: locData,
-    isLoading: locsLoading,
-    isFetching: locsFetching
-  } = useQuery(["locations"], () => getAllLocation(), {});
+  const { data: locData, isLoading: locsLoading, isFetching: locsFetching } = useLocations();
   const locations = locData?.data || [];
 
   const [selectedStores, setSelectedStores] = useState([]);

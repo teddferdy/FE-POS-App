@@ -32,7 +32,6 @@ import {
   downloadDiscountExcel,
   uploadDiscountExcel
 } from "@/services/discount";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -57,6 +56,7 @@ import {
   DialogTitle,
   DialogFooter
 } from "@/components/ui/dialog";
+import { useLocations } from "@/queries/useLocations";
 
 const PROMO_TYPE_LABELS = {
   bogo: "BOGO",
@@ -122,7 +122,7 @@ const DiscountList = () => {
       : ""
     : user?.store;
 
-  const { data: locData } = useQuery(["locations-discounts"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
