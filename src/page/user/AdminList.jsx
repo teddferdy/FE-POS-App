@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { getAllUsers, changeUserStatus } from "@/services/user";
+import { getAllLocation } from "@/services/location";
+import ChangeUserStoreModal from "./ChangeUserStoreModal";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
 import TableToolbar from "@/components/ui/TableToolbar";
@@ -157,6 +159,29 @@ const AdminList = () => {
     () => getAllUsers({ page, limit, search }),
     {}
   );
+
+  // ponytail: GET /auth/get-all-user mengembalikan kolom model mentah
+  // (fullName, userName, store = id) — nama toko di-resolve dari daftar lokasi.
+  const { data: locData } = useQuery(["locations-user-list"], () => getAllLocation("all"));
+  const storeNameById = new Map((locData?.data || []).map((loc) => [Number(loc.id), loc.name]));
+  const storeNameOf = (u) =>
+    (u.store != null && storeNameById.get(Number(u.store))) || u.storeName || u.locationName || "";
+
+  // Same "global" test as RoleManagement: only a super_admin without a store
+  // may move users between stores (the BE refuses everyone else with 403).
+  const isGlobalSuperAdmin =
+    user?.roleType === "super_admin" && (user?.store == null || user?.store === "");
+  const [storeTarget, setStoreTarget] = useState(null);
+  const storeActions = (u) =>
+    isGlobalSuperAdmin && u.roleType !== "super_admin"
+      ? [
+          {
+            label: t("page.user.changeStore.action"),
+            iconName: "store",
+            onClick: () => setStoreTarget(u)
+          }
+        ]
+      : [];
 
   const users = data?.data || data?.users || [];
   const total = data?.total || data?.pagination?.total || 0;
@@ -378,12 +403,12 @@ const AdminList = () => {
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                   <div
-                                    className={`w-10 h-10 rounded-full ${avatarBg(user.name || user.username)} flex items-center justify-center text-sm font-bold`}>
-                                    {getInitials(user.name || user.username)}
+                                    className={`w-10 h-10 rounded-full ${avatarBg(user.fullName || user.userName)} flex items-center justify-center text-sm font-bold`}>
+                                    {getInitials(user.fullName || user.userName)}
                                   </div>
                                   <div>
                                     <p className="text-sm font-semibold text-foreground">
-                                      {user.name || user.username}
+                                      {user.fullName || user.userName}
                                     </p>
                                     <p className="text-xs text-muted-foreground">{user.email}</p>
                                   </div>
@@ -393,7 +418,7 @@ const AdminList = () => {
                                 <div className="flex items-center gap-2">
                                   <MapPin size={18} className="text-muted-foreground text-base" />
                                   <span className="text-sm text-muted-foreground">
-                                    {user.storeName || user.locationName || "-"}
+                                    {storeNameOf(user) || "-"}
                                   </span>
                                 </div>
                               </td>
@@ -432,7 +457,8 @@ const AdminList = () => {
                                           danger: true,
                                           onClick: () =>
                                             setStatusModal({ id: user.id, status: "inactive" })
-                                        }
+                                        },
+                                        ...storeActions(user)
                                       ]}
                                     />
                                   </div>
@@ -468,7 +494,8 @@ const AdminList = () => {
                                                 onClick: () =>
                                                   setStatusModal({ id: user.id, status: "active" })
                                               }
-                                            ])
+                                            ]),
+                                        ...storeActions(user)
                                       ]}
                                     />
                                   </div>
@@ -595,6 +622,15 @@ const AdminList = () => {
         loading={statusMutation.isLoading}
         onConfirm={handleConfirmStatus}
       />
+      {storeTarget && (
+        <ChangeUserStoreModal
+          key={storeTarget.id}
+          target={storeTarget}
+          currentStoreName={storeNameOf(storeTarget)}
+          onClose={() => setStoreTarget(null)}
+          onChanged={refetch}
+        />
+      )}
       {statusMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
     </div>
   );
