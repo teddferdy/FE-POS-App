@@ -24,7 +24,7 @@ const faqItems = [
     id: "how-to-add-product",
     Icon: Package,
     en: {
-      q: "How do I add a new product?",
+      q: t("page.support.how_do_i_add_a_new_product", "How do I add a new product?"),
       a: "Go to the Product List page, click the + Tambah button in the top right. Fill in SKU, name, category, price, stock, and image. Click Save."
     },
     idText: {
@@ -97,15 +97,15 @@ const faqItems = [
 const resources = [
   {
     icon: BookOpen,
-    en: "User Guide",
-    id: "Panduan Pengguna",
+    en: t("page.support.user_guide", "User Guide"),
+    id: t("page.support.panduan_pengguna", "Panduan Pengguna"),
     href: "https://docs.example.com/user-guide",
     color: "text-blue-600 bg-blue-100 dark:bg-blue-900/30"
   },
   {
     icon: Video,
-    en: "Video Tutorials",
-    id: "Video Tutorial",
+    en: t("page.support.video_tutorials", "Video Tutorials"),
+    id: t("page.support.video_tutorial", "Video Tutorial"),
     href: "https://docs.example.com/videos",
     color: "text-purple-600 bg-purple-100 dark:bg-purple-900/30"
   },

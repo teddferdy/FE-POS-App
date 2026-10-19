@@ -8756,5 +8756,10 @@
   "page.member.detail_informasi_member": "Detail informasi member",
   "page.member.max_16_characters": "Max 16 characters",
   "page.member.member_berhasil_dihapus": "Member berhasil dihapus",
-  "page.member.rp_0": "Rp 0"
+  "page.member.rp_0": "Rp 0",
+  "page.support.how_do_i_add_a_new_product": "How do I add a new product?",
+  "page.support.panduan_pengguna": "Panduan Pengguna",
+  "page.support.user_guide": "User Guide",
+  "page.support.video_tutorial": "Video Tutorial",
+  "page.support.video_tutorials": "Video Tutorials"
 }
