@@ -93,6 +93,9 @@ describe("Edit ingredient stock (BA finding #5)", () => {
     );
     const label = await screen.findByText("page.ingredient.form.stockLabel");
     const input = label.closest("div").querySelector("input");
-    await waitFor(() => expect(input).toHaveValue("400"));
+    // read-only since stock changes go through the audited "Atur Stok" action;
+    // shown in the base unit the recipes deduct
+    await waitFor(() => expect(input).toHaveValue("400 butir"));
+    expect(input).toHaveAttribute("readonly");
   });
 });

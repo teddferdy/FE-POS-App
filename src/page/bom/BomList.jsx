@@ -20,6 +20,19 @@ import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
 import { useLocations } from "@/queries/useLocations";
 
+// Only an active recipe deducts ingredients at sale; draft/inactive ones
+// refuse the sale of a recipe-driven menu instead of consuming a guess.
+const statusBadge = {
+  active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  draft: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  inactive: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+};
+
+// An owner question still open on the recipe (written into its notes by
+// whoever configured it). Shown as a badge so an active-but-unconfirmed
+// recipe never reads as final.
+const PENDING_MARKER = /PENDING (KONFIRMASI|CONFIRMATION)/i;
+
 const BomList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -87,19 +100,50 @@ const BomList = () => {
       )
     },
     {
-      header: t("page.bom.list.table.totalItems"),
-      align: "center",
-      render: (item) => <span className="font-mono text-sm">{item.lines?.length || 0}</span>
+      header: t("page.bom.list.table.status"),
+      render: (item) => (
+        <div className="min-w-[140px]">
+          <span
+            className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[item.status] || statusBadge.draft}`}>
+            {item.status === "active"
+              ? t("common.active")
+              : item.status === "inactive"
+                ? t("common.inactive")
+                : t("common.draft")}
+          </span>
+          {PENDING_MARKER.test(item.notes || "") && (
+            <span className="ml-1 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              {t("page.bom.list.pendingConfirmation")}
+            </span>
+          )}
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {item.status === "active"
+              ? t("page.bom.list.deductsStock")
+              : t("page.bom.list.notDeductingStock")}
+          </p>
+        </div>
+      )
     },
     {
-      header: t("page.bom.list.table.totalQty"),
-      align: "center",
-      render: (item) => <span className="font-mono text-sm">{item.totalQty || 0}</span>
+      header: t("page.bom.list.table.composition"),
+      className: "min-w-[220px]",
+      render: (item) => (
+        <ul className="text-xs space-y-0.5">
+          {(item.lines || []).map((line) => (
+            <li key={line.id}>
+              <span className="font-mono">{line.qty}</span>{" "}
+              <span className="text-muted-foreground">{line.unit}</span>{" "}
+              {line.ingredientData?.name || `#${line.ingredientId}`}
+            </li>
+          ))}
+        </ul>
+      )
     },
     {
       header: t("page.bom.list.table.notes"),
+      className: "min-w-[220px]",
       render: (item) => (
-        <span className="text-xs text-muted-foreground max-w-[150px] truncate block">
+        <span className="text-xs text-muted-foreground whitespace-pre-line block max-w-[320px]">
           {item.notes || "-"}
         </span>
       )

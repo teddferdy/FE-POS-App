@@ -16,7 +16,8 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
-  FileEdit
+  FileEdit,
+  SlidersHorizontal
 } from "lucide-react";
 import {
   getAllIngredients,
@@ -41,7 +42,11 @@ import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadIngredientExcel } from "@/services/ingredient";
 import NoStore from "@/components/ui/NoStore";
 import { toQuantity, formatQuantity } from "@/utils/quantity";
+import { getIngredientStockState } from "@/utils/ingredientStockState";
 import { useLocations } from "@/queries/useLocations";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import AdjustIngredientStockModal from "./components/AdjustIngredientStockModal";
+import IngredientStockSummary from "./components/IngredientStockSummary";
 
 const statusBadge = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -62,6 +67,8 @@ const IngredientList = () => {
   const [downloadingData, setDownloadingData] = useState(false);
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
+  const [adjustTarget, setAdjustTarget] = useState(null);
+  const [view, setView] = useState("list");
   const pageSize = 10;
 
   const isFiltered = storeFilter !== "all" || search !== "" || statusFilter !== "all";
@@ -175,12 +182,35 @@ const IngredientList = () => {
     {
       header: t("page.ingredient.list.tableStok"),
       align: "right",
-      render: (item) => (
-        <span
-          className={`font-mono ${toQuantity(item.stock) <= toQuantity(item.minStock) ? "text-destructive font-semibold" : ""}`}>
-          {formatQuantity(item.stock)}
-        </span>
-      )
+      // Stock is held in the base unit (what recipes deduct). Never entered
+      // = unknown, shown as such instead of a 0 that reads as "counted empty".
+      // A legacy non-zero value stays visible but is flagged unverified.
+      render: (item) => {
+        const stockState = getIngredientStockState(item);
+        if (stockState === "uninitialized") {
+          return (
+            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              {t("page.ingredient.stockState.uninitialized")}
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex flex-col items-end gap-1">
+            <span
+              className={`font-mono ${toQuantity(item.stock) <= toQuantity(item.minStock) ? "text-destructive font-semibold" : ""}`}>
+              {formatQuantity(item.stock)}{" "}
+              <span className="text-xs text-muted-foreground">
+                {item.baseUnit || item.unit || "pcs"}
+              </span>
+            </span>
+            {stockState === "unrecorded" && (
+              <span className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                {t("page.ingredient.stockState.unrecorded")}
+              </span>
+            )}
+          </span>
+        );
+      }
     },
     {
       header: t("page.ingredient.list.tableMinStok"),
@@ -247,6 +277,7 @@ const IngredientList = () => {
       stickyRight: true,
       legend: [
         { icon: Eye, label: t("common.view") },
+        { icon: SlidersHorizontal, label: t("page.ingredient.adjust.action") },
         { icon: Edit, label: t("common.edit") },
         { icon: Trash2, label: t("common.delete") }
       ],
@@ -258,6 +289,12 @@ const IngredientList = () => {
               label: t("common.view"),
               icon: Eye,
               onClick: () => navigate(`/detail-ingredient?id=${item.id}`)
+            },
+            {
+              label: t("page.ingredient.adjust.action"),
+              icon: SlidersHorizontal,
+              onClick: () => setAdjustTarget(item),
+              hidden: !canAccess(user, MENU_KEY, "edit")
             },
             {
               label: t("common.edit"),
@@ -388,137 +425,158 @@ const IngredientList = () => {
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />
       ) : (
-        <>
-          {isFetching || isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-card rounded-xl border border-border p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <Skeleton className="h-3 w-24" />
-                    <Skeleton className="h-4 w-4 rounded" />
+        <Tabs value={view} onValueChange={setView}>
+          <TabsList>
+            <TabsTrigger value="list">{t("page.ingredient.tabs.list")}</TabsTrigger>
+            <TabsTrigger value="summary">{t("page.ingredient.tabs.summary")}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="summary" className="mt-6">
+            {view === "summary" && (
+              <IngredientStockSummary
+                store={isSuperAdmin ? storeFilter : user?.store}
+                needsStore={isSuperAdmin && (!storeFilter || storeFilter === "all")}
+              />
+            )}
+          </TabsContent>
+          <TabsContent value="list" className="mt-6">
+            {isFetching || isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
                   </div>
-                  <Skeleton className="h-8 w-28 mb-2" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              <StatCard
-                label={t("page.ingredient.list.statTotal")}
-                value={totalItems}
-                icon={Package}
-                variant="default"
-              />
-              <StatCard
-                label={t("common.active")}
-                value={activeCount}
-                icon={CheckCircle}
-                variant="active"
-              />
-              <StatCard
-                label={t("common.draft")}
-                value={draftCount}
-                icon={FileEdit}
-                variant="draft"
-              />
-              <StatCard
-                label={t("common.inactive")}
-                value={inactiveCount}
-                icon={XCircle}
-                variant="inactive"
-              />
-            </div>
-          )}
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <StatCard
+                  label={t("page.ingredient.list.statTotal")}
+                  value={totalItems}
+                  icon={Package}
+                  variant="default"
+                />
+                <StatCard
+                  label={t("common.active")}
+                  value={activeCount}
+                  icon={CheckCircle}
+                  variant="active"
+                />
+                <StatCard
+                  label={t("common.draft")}
+                  value={draftCount}
+                  icon={FileEdit}
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("common.inactive")}
+                  value={inactiveCount}
+                  icon={XCircle}
+                  variant="inactive"
+                />
+              </div>
+            )}
 
-          <div data-tour="ingredient-table" className="mt-6">
-            <DataTable
-              columns={columns}
-              data={ingredients}
-              isLoading={isLoading || isFetching}
-              isError={isError}
-              onRetry={refetch}
-              emptyMessage={t("page.ingredient.list.emptyMessage")}
-              emptyIcon={Package}
-              pagination={{
-                page,
-                totalPages,
-                total: totalItems,
-                pageSize,
-                onPageChange: setPage
-              }}
-              toolbar={
-                <TableToolbar
-                  title={t("page.ingredient.list.title")}
-                  onReset={resetFilters}
-                  isFiltered={isFiltered}>
-                  {isSuperAdmin && (
+            <div data-tour="ingredient-table" className="mt-6">
+              <DataTable
+                columns={columns}
+                data={ingredients}
+                isLoading={isLoading || isFetching}
+                isError={isError}
+                onRetry={refetch}
+                emptyMessage={t("page.ingredient.list.emptyMessage")}
+                emptyIcon={Package}
+                pagination={{
+                  page,
+                  totalPages,
+                  total: totalItems,
+                  pageSize,
+                  onPageChange: setPage
+                }}
+                toolbar={
+                  <TableToolbar
+                    title={t("page.ingredient.list.title")}
+                    onReset={resetFilters}
+                    isFiltered={isFiltered}>
+                    {isSuperAdmin && (
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Store
+                        </label>
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => {
+                            setGlobalStoreFilter(v);
+                            setPage(1);
+                          }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                      </div>
+                    )}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        Store
+                        {t("common.status")}
                       </label>
-                      <StoreFilter
-                        locations={locData?.data || []}
-                        value={storeFilter}
+                      <Combobox
+                        options={[
+                          { value: "all", label: t("common.all") },
+                          { value: "active", label: t("common.active") },
+                          { value: "inactive", label: t("common.inactive") },
+                          { value: "draft", label: t("common.draft") }
+                        ]}
+                        value={statusFilter}
                         onChange={(v) => {
-                          setGlobalStoreFilter(v);
+                          setStatusFilter(v);
                           setPage(1);
                         }}
-                        isSuperAdmin={isSuperAdmin}
-                        t={t}
+                        placeholder={t("common.all")}
+                        searchPlaceholder="Cari..."
                       />
                     </div>
-                  )}
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("common.status")}
-                    </label>
-                    <Combobox
-                      options={[
-                        { value: "all", label: t("common.all") },
-                        { value: "active", label: t("common.active") },
-                        { value: "inactive", label: t("common.inactive") },
-                        { value: "draft", label: t("common.draft") }
-                      ]}
-                      value={statusFilter}
-                      onChange={(v) => {
-                        setStatusFilter(v);
-                        setPage(1);
-                      }}
-                      placeholder={t("common.all")}
-                      searchPlaceholder="Cari..."
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Cari
-                    </label>
-                    <SearchInput
-                      value={search}
-                      onChange={(val) => {
-                        setSearch(val);
-                        setPage(1);
-                      }}
-                      placeholder={t("page.ingredient.list.searchPlaceholder")}
-                      isLoading={isFetching}
-                    />
-                  </div>
-                </TableToolbar>
-              }
-            />
-          </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Cari
+                      </label>
+                      <SearchInput
+                        value={search}
+                        onChange={(val) => {
+                          setSearch(val);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.ingredient.list.searchPlaceholder")}
+                        isLoading={isFetching}
+                      />
+                    </div>
+                  </TableToolbar>
+                }
+              />
+            </div>
 
-          <div>
-            <TipsCard
-              tips={[
-                t("page.ingredient.list.tips.1"),
-                t("page.ingredient.list.tips.2"),
-                t("page.ingredient.list.tips.3"),
-                t("page.ingredient.list.tips.4")
-              ]}
-            />
-          </div>
-        </>
+            <div>
+              <TipsCard
+                tips={[
+                  t("page.ingredient.list.tips.1"),
+                  t("page.ingredient.list.tips.2"),
+                  t("page.ingredient.list.tips.3"),
+                  t("page.ingredient.list.tips.4")
+                ]}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      )}
+
+      {adjustTarget && (
+        <AdjustIngredientStockModal
+          ingredient={adjustTarget}
+          onClose={() => setAdjustTarget(null)}
+        />
       )}
 
       <Modal
