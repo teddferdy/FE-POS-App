@@ -2638,6 +2638,7 @@
   "page.cashier.modal.notesPlaceholder": "Transaction notes (optional)",
   "page.cashier.modal.processing": "Processing payment...",
   "page.cashier.modal.table": "Table",
+  "page.cashier.noTable": "No table",
   "page.cashier.modal.totalShopping": "Total Shopping",
   "page.cashier.payment": "Payment",
   "page.cashier.product.defaultName": "Product",
