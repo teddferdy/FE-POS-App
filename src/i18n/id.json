@@ -8779,5 +8779,11 @@
   "page.accountsReceivable.belum_dibayar": "Belum Dibayar",
   "page.accountsReceivable.jatuh_tempo": "Jatuh Tempo",
   "page.accountsReceivable.sebagian_dibayar": "Sebagian Dibayar",
-  "page.accountsReceivable.tidak_ada_piutang_yang_perlu_dibayar": "Tidak ada piutang yang perlu dibayar"
+  "page.accountsReceivable.tidak_ada_piutang_yang_perlu_dibayar": "Tidak ada piutang yang perlu dibayar",
+  "page.cashRegister.cari_toko": "Cari toko...",
+  "page.cashRegister.di_luar_periode": "Di luar periode",
+  "page.cashRegister.rp_0": "Rp 0",
+  "page.cashRegister.termasuk_periode": "Termasuk periode",
+  "page.cashRegister.whatsapp_qr_code": "WhatsApp QR Code",
+  "page.cashRegister.rincian_per_invoice": "rincian per invoice"
 }

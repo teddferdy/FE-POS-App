@@ -256,7 +256,7 @@ const CashRegisterOpenClose = () => {
                         value={selectedStore}
                         onChange={setSelectedStore}
                         placeholder={t("page.cashRegister.openClose.selectStore")}
-                        searchPlaceholder="Cari toko..."
+                        searchPlaceholder={t("page.cashRegister.cari_toko", "Cari toko...")}
                         className="mt-1.5"
                       />
                       {selectedStoreIsOpen && (
@@ -431,7 +431,7 @@ const CashRegisterOpenClose = () => {
               <div className="flex flex-col items-center gap-3">
                 <img
                   src={waQR}
-                  alt="WhatsApp QR Code"
+                  alt={t("page.cashRegister.whatsapp_qr_code", "WhatsApp QR Code")}
                   className="w-40 h-40 sm:w-48 sm:h-48 border border-border rounded-lg"
                 />
                 <p className="text-sm text-muted-foreground text-center max-w-md">

@@ -8779,5 +8779,11 @@
   "page.accountsReceivable.belum_dibayar": "Unpaid",
   "page.accountsReceivable.jatuh_tempo": "Overdue",
   "page.accountsReceivable.sebagian_dibayar": "Partially Paid",
-  "page.accountsReceivable.tidak_ada_piutang_yang_perlu_dibayar": "No receivables to pay"
+  "page.accountsReceivable.tidak_ada_piutang_yang_perlu_dibayar": "No receivables to pay",
+  "page.cashRegister.cari_toko": "Search store...",
+  "page.cashRegister.di_luar_periode": "Outside period",
+  "page.cashRegister.rp_0": "Rp 0",
+  "page.cashRegister.termasuk_periode": "Include period",
+  "page.cashRegister.whatsapp_qr_code": "WhatsApp QR Code",
+  "page.cashRegister.rincian_per_invoice": "details per invoice"
 }

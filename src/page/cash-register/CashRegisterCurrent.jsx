@@ -274,7 +274,9 @@ const CashRegisterCurrent = () => {
                           : "text-destructive"
                         : "text-muted-foreground"
                     }>
-                    {variance === 0 ? "Rp 0" : `${variance > 0 ? "+" : ""}${formatIDR(variance)}`}
+                    {variance === 0
+                      ? t("page.cashRegister.rp_0", "Rp 0")
+                      : `${variance > 0 ? "+" : ""}${formatIDR(variance)}`}
                   </span>
                 </div>
               </div>

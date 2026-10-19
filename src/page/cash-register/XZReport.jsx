@@ -28,7 +28,7 @@ import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 
 const formatIDR = (num) => {
-  if (num == null || isNaN(num)) return "Rp 0";
+  if (num == null || isNaN(num)) return t("page.cashRegister.rp_0", "Rp 0");
   return "Rp " + Number(num).toLocaleString("id-ID");
 };
 

@@ -93,7 +93,7 @@ const CashRegisterDetail = () => {
   const [outsidePage, setOutsidePage] = useState(1);
 
   // BA finding #1: the API already returns each order's `items` (order_item
-  // rows) — the tables used to discard them, so "rincian per invoice" was
+  // rows) — the tables used to discard them, so t("page.cashRegister.rincian_per_invoice", "rincian per invoice") was
   // impossible on this page. A row expands to reveal its line items.
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
@@ -251,8 +251,8 @@ const CashRegisterDetail = () => {
 
   // Phase 39 Batch 4 follow-up: one table renderer for both the
   // in-window history and the outside-window history. Every row shows the
-  // transaction date plus an explicit period badge so "Termasuk periode"
-  // vs "Di luar periode" is never ambiguous. Eligibility sub-badges still
+  // transaction date plus an explicit period badge so t("page.cashRegister.termasuk_periode", "Termasuk periode")
+  // vs t("page.cashRegister.di_luar_periode", "Di luar periode") is never ambiguous. Eligibility sub-badges still
   // come from the backend reconciliation identity sets, never FE rules.
   const renderOrderTable = (list, inPeriod, emptyKey) => {
     if (list.length === 0) {
