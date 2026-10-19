@@ -51,7 +51,6 @@ import { getAllCategoryActive } from "@/services/category";
 import { getAllTaxConfig } from "@/services/tax-config";
 import { getBomByProduct } from "@/services/bom";
 
-import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
 import { checkStockOpnameExists } from "@/services/stock";
 import { getUnsavedStorePriceRows, buildSavedStorePriceMap } from "@/lib/store-price-guard";
@@ -64,6 +63,7 @@ import ProductImageGallery from "@/components/organism/ProductImageGallery";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import InventoryModeField from "@/page/product/InventoryModeField";
 import { INVENTORY_MODES } from "@/lib/inventory-mode";
+import { useLocations } from "@/queries/useLocations";
 
 const EditProduct = () => {
   const { t } = useTranslation();
@@ -175,7 +175,7 @@ const EditProduct = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["allLocations"], getAllLocation, {
+  } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || locationsData?.locations || [];

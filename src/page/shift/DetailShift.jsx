@@ -22,7 +22,6 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getShiftById } from "@/services/shift";
 import { getAllEmployee } from "@/services/employee";
-import { getAllLocation } from "@/services/location";
 import { getAttendanceByShift } from "@/services/attendance";
 import { resolveKaryawan, splitKaryawanByStore } from "./shiftMembers";
 import { cn } from "@/lib/utils";
@@ -30,6 +29,7 @@ import { safeGet } from "@/lib/safe-lookup";
 import { DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS, SHIFT_TYPES } from "@/constants/shiftTypes";
 import PageHeader from "@/components/ui/PageHeader";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const statusBadge = (status, t) => {
   if (status === "active" || status === true || status === 1)
@@ -136,7 +136,7 @@ const DetailShift = () => {
   }, [mismatch]);
   const resolvedCount = matching.filter((r) => r.emp).length;
 
-  const { data: locQuery } = useQuery(["locations-shift-detail"], () => getAllLocation("active"));
+  const { data: locQuery } = useLocations();
   const locationName = useMemo(
     () => locQuery?.data?.find((l) => String(l.id) === String(shift?.store))?.name || null,
     [locQuery?.data, shift?.store]

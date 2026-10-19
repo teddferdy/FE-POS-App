@@ -10,7 +10,6 @@ import { X, Save, Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 import { editTaxConfig, getTaxConfigById } from "@/services/tax-config";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
@@ -30,6 +29,7 @@ import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { useLocations } from "@/queries/useLocations";
 
 const taxTypes = [
   { value: "ppn", label: "PPN" },
@@ -88,7 +88,7 @@ const EditTaxConfig = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
+  const { data: locationsData } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || [];

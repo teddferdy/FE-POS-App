@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { getAllUsers, changeUserStatus } from "@/services/user";
-import { getAllLocation } from "@/services/location";
 import ChangeUserStoreModal from "./ChangeUserStoreModal";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -35,6 +34,7 @@ import StatCard from "@/components/ui/StatCard";
 import TableActionLegend from "@/components/ui/TableActionLegend";
 import PageHeader from "@/components/ui/PageHeader";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const getStatus = (user, t) => {
   const statusConfig = {
@@ -162,7 +162,7 @@ const AdminList = () => {
 
   // ponytail: GET /auth/get-all-user mengembalikan kolom model mentah
   // (fullName, userName, store = id) — nama toko di-resolve dari daftar lokasi.
-  const { data: locData } = useQuery(["locations-user-list"], () => getAllLocation("all"));
+  const { data: locData } = useLocations("all");
   const storeNameById = new Map((locData?.data || []).map((loc) => [Number(loc.id), loc.name]));
   const storeNameOf = (u) =>
     (u.store != null && storeNameById.get(Number(u.store))) || u.storeName || u.locationName || "";

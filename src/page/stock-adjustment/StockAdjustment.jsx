@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { adjustStock } from "@/services/stock";
 import { getAllProduct } from "@/services/product";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +35,7 @@ import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
+import { useLocations } from "@/queries/useLocations";
 
 const StockAdjustment = () => {
   const { t } = useTranslation();
@@ -46,7 +46,7 @@ const StockAdjustment = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locData } = useQuery(["locations-stock-adjustment"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

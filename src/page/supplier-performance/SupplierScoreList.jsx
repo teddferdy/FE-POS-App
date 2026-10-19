@@ -13,7 +13,6 @@ import {
   calculateSupplierScore
 } from "@/services/supplierPerformance";
 import { getAllSupplier } from "@/services/supplier";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -22,6 +21,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import TableToolbar from "@/components/ui/TableToolbar";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
+import { useLocations } from "@/queries/useLocations";
 
 const periodOptions = [
   { value: "all", label: "All Periods" },
@@ -104,7 +104,7 @@ const SupplierScoreList = () => {
     { retry: 1 }
   );
 
-  const { data: locData } = useQuery(["locations-supplier-score"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin,
     retry: 1
   });

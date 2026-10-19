@@ -39,9 +39,9 @@ import { canAccess } from "@/utils/permission";
 import StoreFilter from "@/components/ui/StoreFilter";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadIngredientExcel } from "@/services/ingredient";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { toQuantity, formatQuantity } from "@/utils/quantity";
+import { useLocations } from "@/queries/useLocations";
 
 const statusBadge = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -77,7 +77,7 @@ const IngredientList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/ingredient";
 
-  const { data: locData } = useQuery(["locations-ingredients"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

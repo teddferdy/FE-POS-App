@@ -4,7 +4,6 @@ import StatCard from "@/components/ui/StatCard";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { getAllMemberTier, deleteMemberTier } from "@/services/member-tier";
-import { getAllLocation } from "@/services/location";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
@@ -21,6 +20,7 @@ import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import { useLocations } from "@/queries/useLocations";
 
 const MemberTier = () => {
   const { t } = useTranslation();
@@ -44,7 +44,7 @@ const MemberTier = () => {
     setCurrentPage(1);
   };
 
-  const { data: locData } = useQuery(["locations-member-tier"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

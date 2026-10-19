@@ -14,7 +14,6 @@ import {
   ChevronRight
 } from "lucide-react";
 import { getAPDashboard } from "@/services/purchase-payment";
-import { getAllLocation } from "@/services/location";
 import { Card } from "@/components/ui/card";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
@@ -30,6 +29,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const statusStyles = {
   draft: "bg-amber-100 text-amber-800",
@@ -59,7 +59,7 @@ const DashboardUtang = () => {
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
-  const { data: locData } = useQuery(["locations-ap-dashboard"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

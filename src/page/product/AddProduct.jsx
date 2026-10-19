@@ -47,7 +47,6 @@ import Modal from "@/components/organism/modal";
 import { addProduct } from "@/services/product";
 import { checkStockOpnameExists } from "@/services/stock";
 import { getAllCategoryActive } from "@/services/category";
-import { getAllLocation } from "@/services/location";
 import { getAllTaxConfig } from "@/services/tax-config";
 
 import UserGuide from "@/components/organism/UserGuide";
@@ -61,6 +60,7 @@ import ProductImageGallery from "@/components/organism/ProductImageGallery";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import InventoryModeField from "@/page/product/InventoryModeField";
 import { INVENTORY_MODES, initialStockNeedsStore } from "@/lib/inventory-mode";
+import { useLocations } from "@/queries/useLocations";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -130,7 +130,7 @@ const AddProduct = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["allLocations"], getAllLocation, {
+  } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || locationsData?.locations || [];

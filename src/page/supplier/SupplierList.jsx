@@ -42,7 +42,7 @@ import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Combobox } from "@/components/ui/combobox";
-import { getAllLocation } from "@/services/location";
+import { useLocations } from "@/queries/useLocations";
 
 const SupplierList = () => {
   const { t } = useTranslation();
@@ -63,7 +63,7 @@ const SupplierList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/supplier";
 
-  const { data: locData } = useQuery(["locations-suppliers"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

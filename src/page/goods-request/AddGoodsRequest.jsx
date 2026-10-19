@@ -11,7 +11,6 @@ import { Save, X, Plus, Trash2, User } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { format } from "date-fns";
 import { addGoodsRequest } from "@/services/goods-request";
-import { getAllLocation } from "@/services/location";
 import { getAllSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +21,7 @@ import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const emptyItem = {
   name: "",
@@ -416,7 +416,7 @@ const AddGoodsRequest = () => {
     });
   }, [allGroups]);
 
-  const { data: locData } = useQuery(["locations-goods-request-add"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locData?.data || [];

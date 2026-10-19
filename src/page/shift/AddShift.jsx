@@ -21,7 +21,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { addShift, getAllShift } from "@/services/shift";
 import { getAllEmployee } from "@/services/employee";
-import { getAllLocation } from "@/services/location";
 import { getAllShiftTemplate } from "@/services/shiftTemplate";
 import { useStore } from "@/contexts/StoreContext";
 import { Button } from "@/components/ui/button";
@@ -40,6 +39,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { SHIFT_TYPES, DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS } from "@/constants/shiftTypes";
 import { safeGet } from "@/lib/safe-lookup";
+import { useLocations } from "@/queries/useLocations";
 
 const AddShift = () => {
   const { t } = useTranslation();
@@ -106,7 +106,7 @@ const AddShift = () => {
     }
   });
 
-  const { data: locationsData, isLoading: locLoading } = useQuery(["allLocations"], getAllLocation);
+  const { data: locationsData, isLoading: locLoading } = useLocations();
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: templatesData } = useQuery(["shift-templates-dropdown"], () =>

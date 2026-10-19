@@ -38,13 +38,13 @@ import TableToolbar from "@/components/ui/TableToolbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
-import { getAllLocation } from "@/services/location";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
 import ExtendShiftModal from "./ExtendShiftModal";
 import SwapApproval from "./SwapApproval";
 import TableActions from "@/components/ui/TableActions";
+import { useLocations } from "@/queries/useLocations";
 
 const fmtShort = (d) => {
   if (!d) return "-";
@@ -82,13 +82,9 @@ const ShiftList = () => {
   const MENU_KEY = "/shift-list";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(
-    ["locations-shift", activeTab],
-    () => getAllLocation("active"),
-    {
-      enabled: isSuperAdmin || activeTab === "approval"
-    }
-  );
+  const { data: locData } = useLocations("active", {
+    enabled: isSuperAdmin || activeTab === "approval"
+  });
 
   const effectiveStore = isSuperAdmin ? (storeFilter !== "all" ? storeFilter : "") : locationParam;
 

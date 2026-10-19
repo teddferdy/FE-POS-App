@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { getDailyReport } from "@/services/report";
-import { getAllLocation } from "@/services/location";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
@@ -16,6 +15,7 @@ import ExportButtons from "@/components/organism/ExportButtons";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const DailyReport = () => {
   const { t } = useTranslation();
@@ -29,7 +29,7 @@ const DailyReport = () => {
   const storeId = isSuperAdmin && storeFilter && storeFilter !== "all" ? storeFilter : "";
   const storeParams = storeId ? { store: storeId } : {};
 
-  const { data: locData } = useQuery(["locations-daily-report"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

@@ -9,7 +9,6 @@ import {
   getReportingCategorySales,
   getReportingKasirPerformance
 } from "@/services/report";
-import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import {
   Select,
@@ -26,6 +25,7 @@ import ExportButtons from "@/components/organism/ExportButtons";
 import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLocations } from "@/queries/useLocations";
 
 const FILTERS = [
   { key: "daily", labelKey: "page.advancedReporting.period.daily" },
@@ -63,7 +63,7 @@ const AdvancedReporting = () => {
     kasirPerformance: PAGE_SIZE
   });
 
-  const { data: locData } = useQuery(["locations-report"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

@@ -27,7 +27,6 @@ import {
   downloadStockOpnameTemplate,
   getStockOpnameById
 } from "@/services/stock";
-import { getAllLocation } from "@/services/location";
 import { getAllProduct } from "@/services/product";
 
 import { Button } from "@/components/ui/button";
@@ -62,6 +61,7 @@ import UploadExcelModal from "./components/UploadExcelModal";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 // BE persists these opname quantities as decimals (matching the product's
 // own DECIMAL(10,4) stock field, which is what auto-fills stokAwalJumlah) —
@@ -329,10 +329,7 @@ const AddStockOpname = () => {
 
   const watchedItems = watch("items");
 
-  const { data: locationData, isLoading: locationLoading } = useQuery(
-    ["locations-all"],
-    getAllLocation
-  );
+  const { data: locationData, isLoading: locationLoading } = useLocations();
   const locations = locationData?.data || locationData?.locations || locationData || [];
 
   const activeLocationId = useMemo(

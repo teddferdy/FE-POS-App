@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { Wallet, Eye } from "lucide-react";
 import { getAllPayments } from "@/services/purchase-payment";
-import { getAllLocation } from "@/services/location";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import { TipsCard } from "@/components/ui/tips-card";
 import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
 import AbortController from "@/components/organism/abort-controller";
+import { useLocations } from "@/queries/useLocations";
 
 const PurchasePaymentList = () => {
   const { t } = useTranslation();
@@ -25,7 +25,7 @@ const PurchasePaymentList = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
-  const { data: locData } = useQuery(["locations-purchase-payments"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

@@ -12,9 +12,9 @@ import { useQuery } from "react-query";
 import StoreFilter from "@/components/ui/StoreFilter";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { getAuditLogs } from "@/services/auditLog";
+import { useLocations } from "@/queries/useLocations";
 
 const AuditLogList = () => {
   const { t } = useTranslation();
@@ -42,11 +42,9 @@ const AuditLogList = () => {
     setPage(1);
   };
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-audit-log"],
-    () => getAllLocation("all"),
-    { enabled: isSuperAdmin }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("all", {
+    enabled: isSuperAdmin
+  });
 
   const fetchParams = {
     page,

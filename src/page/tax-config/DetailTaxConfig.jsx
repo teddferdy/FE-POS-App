@@ -10,7 +10,6 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTaxConfigById } from "@/services/tax-config";
 import PageHeader from "@/components/ui/PageHeader";
-import { getAllLocation } from "@/services/location";
 import { useStore } from "@/contexts/StoreContext";
 import { useUserSession } from "@/hooks/useUserSession";
 import { canAccess } from "@/utils/permission";
@@ -21,6 +20,7 @@ import {
   scopeForTaxRow,
   taxRowScope
 } from "@/utils/taxEffective";
+import { useLocations } from "@/queries/useLocations";
 
 const statusBadge = (status, t) => {
   if (status === "active")
@@ -79,7 +79,7 @@ const DetailTaxConfig = () => {
   // or the caller's current context for a global row.
   const user = useUserSession();
   const { activeStoreId, activeStoreName, isSuperAdmin } = useStore();
-  const { data: locData } = useQuery(["locations-tax"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: !!isSuperAdmin
   });
   const outletLookup = { locations: locData?.data, activeStoreId, activeStoreName };

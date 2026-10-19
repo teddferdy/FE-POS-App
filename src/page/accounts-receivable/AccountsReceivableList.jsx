@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import NoStore from "@/components/ui/NoStore";
-import { getAllLocation } from "@/services/location";
 import { Receipt, Wallet, Building2, CheckCircle, XCircle, FileEdit, Clock3 } from "lucide-react";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { getARList, getARAging, recordARPayment } from "@/services/accounts-receivable";
@@ -21,6 +20,7 @@ import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLocations } from "@/queries/useLocations";
 
 const STATUS_LABELS = {
   UNPAID: { label: "Belum Dibayar", color: "bg-yellow-100 text-yellow-800" },
@@ -49,13 +49,9 @@ const AccountsReceivableList = () => {
   // contract, which dedupes on (arId, reference).
   const [payReference, setPayReference] = useState("");
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-ar"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["ar-list", page, limit, statusFilter, storeFilter],

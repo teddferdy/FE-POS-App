@@ -19,7 +19,6 @@ import AbortController from "@/components/organism/abort-controller";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslation } from "react-i18next";
 import { getFullProductCatalog, getProductByOutlet } from "@/services/product";
-import { getAllLocation } from "@/services/location";
 import { getCustomerTaxRate } from "@/services/order";
 import { storeIdsEqual } from "@/utils/storeId";
 import { isAdminRole } from "@/utils/role";
@@ -55,6 +54,7 @@ import { UserDropdown, NotificationBell } from "@/components/layout/Header";
 import { useThemeStore } from "@/state/theme";
 import { useThemeEffect } from "@/hooks/useThemeEffect";
 import ScreenModeDialog from "./components/ScreenModeDialog";
+import { useLocations } from "@/queries/useLocations";
 
 const CashierPage = () => {
   const { t } = useTranslation();
@@ -126,13 +126,9 @@ const CashierPage = () => {
     if (mode === "dual") openBoardTab(loc.id);
   };
 
-  const { data: locsData, isLoading: locsLoading } = useQuery(
-    ["cashier-locations"],
-    getAllLocation,
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locsData, isLoading: locsLoading } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
   const locationList = locsData?.data || locsData || [];
 
   const storeName = store

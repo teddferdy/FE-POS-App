@@ -9,7 +9,6 @@ import { X, Save, Check } from "lucide-react";
 import { useCookies } from "react-cookie";
 import PageHeader from "@/components/ui/PageHeader";
 import { getTypePaymentById, editTypePayment } from "@/services/type-payment";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -29,6 +28,7 @@ import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { useLocations } from "@/queries/useLocations";
 
 const EditTypePayment = () => {
   const { t } = useTranslation();
@@ -41,7 +41,7 @@ const EditTypePayment = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["allLocations-type-payment-edit"], () => getAllLocation(), {
+  } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || [];

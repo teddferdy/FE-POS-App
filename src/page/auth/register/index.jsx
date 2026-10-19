@@ -18,7 +18,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation } from "react-query";
 import { toast } from "sonner";
 
 import {
@@ -36,7 +36,7 @@ import { Loading } from "@/components/ui/loading";
 import PolicyDialog from "@/components/organism/policy-dialog";
 
 import { register } from "@/services/auth";
-import { getAllLocation } from "@/services/location";
+import { useLocations } from "@/queries/useLocations";
 import { translationSelect } from "@/state/translation";
 import { useThemeStore } from "@/state/theme";
 import { useThemeEffect } from "@/hooks/useThemeEffect";
@@ -64,14 +64,7 @@ const RegisterPage = () => {
     }
   }, []);
 
-  const {
-    data: locationsData,
-    isLoading,
-    isError
-  } = useQuery({
-    queryKey: ["allLocations"],
-    queryFn: getAllLocation
-  });
+  const { data: locationsData, isLoading, isError } = useLocations();
 
   const locations = useMemo(() => {
     if (!locationsData) return [];

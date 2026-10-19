@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import { getAllBom, deleteBom } from "@/services/bom";
-import { getAllLocation } from "@/services/location";
 import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -19,6 +18,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLocations } from "@/queries/useLocations";
 
 const BomList = () => {
   const { t } = useTranslation();
@@ -42,7 +42,7 @@ const BomList = () => {
     setPage(1);
   };
 
-  const { data: locData } = useQuery(["locations-bom"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

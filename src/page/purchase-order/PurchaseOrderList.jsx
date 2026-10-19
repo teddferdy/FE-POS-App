@@ -49,7 +49,6 @@ import {
   downloadPurchaseOrderExcel,
   downloadPurchaseOrderTemplate
 } from "@/services/purchase-order";
-import { getAllLocation } from "@/services/location";
 import { getBatches } from "@/services/inventory";
 import NoStore from "@/components/ui/NoStore";
 import { recordPayment } from "@/services/purchase-payment";
@@ -81,6 +80,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const SupplierExpandableRow = ({ supplier, renderSupplierItems }) => {
   const [open, setOpen] = useState(false);
@@ -279,7 +279,7 @@ const PurchaseOrderList = () => {
     setPage(1);
   };
 
-  const { data: locData } = useQuery(["locations-purchase-orders"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

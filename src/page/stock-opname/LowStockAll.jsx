@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import NoStore from "@/components/ui/NoStore";
 import { AlertTriangle, Package, ShoppingBasket, Store, Zap } from "lucide-react";
 import { getLowStockAll, autoGeneratePOFromLowStock } from "@/services/stock";
-import { getAllLocation } from "@/services/location";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -27,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLocations } from "@/queries/useLocations";
 
 const LowStockAll = () => {
   const { t } = useTranslation();
@@ -43,13 +43,9 @@ const LowStockAll = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [typeFilter, setTypeFilter] = useState("all");
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-low-stock-all"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
   const locations = locData?.data || [];
 
   const isFiltered = search !== "" || storeFilter !== "all" || typeFilter !== "all";

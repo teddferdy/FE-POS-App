@@ -19,10 +19,10 @@ import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
 import AbortController from "@/components/organism/abort-controller";
 import { useNavigate } from "react-router-dom";
-import { getAllLocation } from "@/services/location";
 import { normalizeStoreId, storeIdsEqual } from "@/utils/storeId";
 import { toast } from "sonner";
 import Modal from "@/components/organism/modal";
+import { useLocations } from "@/queries/useLocations";
 
 const formatNumber = (num) => {
   if (num === null || num === undefined) return "0";
@@ -38,7 +38,7 @@ const LowStock = () => {
   const queryClient = useQueryClient();
   const [confirmModal, setConfirmModal] = useState(false);
 
-  const { data: locData } = useQuery(["locations-low-stock"], () => getAllLocation(), {});
+  const { data: locData } = useLocations();
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["low-stock"],

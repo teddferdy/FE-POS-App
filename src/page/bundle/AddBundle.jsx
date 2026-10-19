@@ -6,7 +6,6 @@ import { Save, Plus, Trash2, X, Package, ShoppingCart, Store, CloudUpload } from
 import { toast } from "sonner";
 import { createBundle } from "@/services/productBundle";
 import { getAllProduct } from "@/services/product";
-import { getAllLocation } from "@/services/location";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import Modal from "@/components/organism/modal";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
@@ -28,6 +27,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { Switch } from "@/components/ui/switch";
+import { useLocations } from "@/queries/useLocations";
 
 const emptyItem = { product: "", quantity: 1, unitPrice: 0, isOptional: false };
 
@@ -92,11 +92,7 @@ const AddBundle = () => {
     store: z.string().min(1, "Toko harus dipilih")
   });
 
-  const {
-    data: locationsData,
-    isLoading: locsLoading,
-    isFetching: locsFetching
-  } = useQuery(["allLocations"], () => getAllLocation());
+  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useLocations();
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const selectedStoreId = allStores ? null : selectedStores[0] || null;

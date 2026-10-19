@@ -15,11 +15,11 @@ import NoStore from "@/components/ui/NoStore";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
 import TableActions from "@/components/ui/TableActions";
-import { getAllLocation } from "@/services/location";
 import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLocations } from "@/queries/useLocations";
 
 const statusCfg = {
   pending: {
@@ -62,7 +62,7 @@ const SalesReturnList = () => {
   const [refundReference, setRefundReference] = useState("");
   const [referenceError, setReferenceError] = useState(false);
 
-  const { data: locData } = useQuery(["locations-sales-return"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

@@ -22,7 +22,6 @@ import {
 import StatCard from "@/components/ui/StatCard";
 import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -39,6 +38,7 @@ import StoreFilter from "@/components/ui/StoreFilter";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import TableActions from "@/components/ui/TableActions";
+import { useLocations } from "@/queries/useLocations";
 
 const defaultLevel = {
   bg: "bg-muted/30 text-muted-foreground border border-border",
@@ -105,13 +105,9 @@ const MemberList = () => {
     setPage(1);
   };
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-members"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
 
   const container = {
     hidden: {},

@@ -24,7 +24,6 @@ import {
   deleteTable,
   updateTableStatus
 } from "@/services/table";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Button } from "@/components/ui/button";
@@ -51,6 +50,7 @@ import { isAdminRole } from "@/utils/role";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import TableActions from "@/components/ui/TableActions";
+import { useLocations } from "@/queries/useLocations";
 
 const statusColors = {
   available: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
@@ -87,7 +87,7 @@ const TableList = () => {
   const [formTableType, setFormTableType] = useState("regular");
   const [formStore, setFormStore] = useState("");
 
-  const { data: locData } = useQuery(["locations-table"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

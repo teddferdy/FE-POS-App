@@ -10,7 +10,6 @@ import PageHeader from "@/components/ui/PageHeader";
 import { parseSalary } from "@/lib/utils";
 import { addExpense, bulkAddExpenses, getExpenseCategories } from "@/services/expense";
 import { getAllEmployee } from "@/services/employee";
-import { getAllLocation } from "@/services/location";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -50,6 +49,7 @@ import {
 } from "@/lib/expense-payload";
 import { normalizePayload } from "@/lib/payload-normalizer";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const SectionHeader = ({ step, title, description }) => (
   <div className="flex items-center gap-3 pt-1">
@@ -102,7 +102,7 @@ const AddExpense = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["allLocations"], () => getAllLocation(), { enabled: isSuperAdmin });
+  } = useLocations("active", { enabled: isSuperAdmin });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const {

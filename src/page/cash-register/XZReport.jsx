@@ -17,7 +17,6 @@ import {
   ChevronDown
 } from "lucide-react";
 import { getXReport, getZReport, getCashRegisterHistory } from "@/services/cash-register";
-import { getAllLocation } from "@/services/location";
 import { isCashPayment } from "@/utils/payment";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import PageHeader from "@/components/ui/PageHeader";
@@ -26,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
+import { useLocations } from "@/queries/useLocations";
 
 const formatIDR = (num) => {
   if (num == null || isNaN(num)) return "Rp 0";
@@ -596,7 +596,7 @@ const XZReport = () => {
   const [storeFilter, setStoreFilter] = useGlobalStoreFilter();
   const [selectedRegister, setSelectedRegister] = useState(null);
 
-  const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
+  const { data: locationsData } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || [];

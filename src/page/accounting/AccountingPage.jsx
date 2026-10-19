@@ -36,7 +36,6 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { DatePickerWithRange } from "@/components/ui/date-picker-range";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
-import { getAllLocation } from "@/services/location";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { isSuperAdminRole } from "@/utils/role";
 import {
@@ -53,6 +52,7 @@ import {
   getAccountingOverview
 } from "@/services/accounting";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const formatIDR = (num) => {
   if (num == null || isNaN(num)) return "Rp 0";
@@ -1654,7 +1654,7 @@ const AccountingPage = () => {
 
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
-  const { data: locationsData } = useQuery(["allLocations-accounting"], getAllLocation, {
+  const { data: locationsData } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || [];

@@ -7,7 +7,6 @@ import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { getCashRegisterHistory, closeCashRegister } from "@/services/cash-register";
-import { getAllLocation } from "@/services/location";
 import { isCashPayment } from "@/utils/payment";
 import { finalClosingBalance } from "@/utils/registerBalance";
 import { formatStoreDate, formatStoreTime } from "@/utils/storeTimezone";
@@ -26,6 +25,7 @@ import {
   VarianceApprovalBadge,
   VarianceDecisionControls
 } from "@/page/cash-register/components/VarianceApproval";
+import { useLocations } from "@/queries/useLocations";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "-";
@@ -61,13 +61,9 @@ const CashRegisterHistory = () => {
     setPage(1);
   };
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-cat"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["cash-register-history", page, limit, search, storeFilter],

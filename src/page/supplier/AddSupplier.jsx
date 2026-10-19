@@ -25,7 +25,6 @@ import { Switch } from "@/components/ui/switch";
 import { addSupplier } from "@/services/supplier";
 import { getAllSupplierCategories } from "@/services/supplier";
 import { downloadSupplierProductTemplate, importSupplierProducts } from "@/services/supplier";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,6 +48,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Loading } from "@/components/ui/loading";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const AddSupplier = () => {
   const { t } = useTranslation();
@@ -144,7 +144,7 @@ const AddSupplier = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["allLocations"], () => getAllLocation(), { enabled: isSuperAdmin });
+  } = useLocations("active", { enabled: isSuperAdmin });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: categoriesData } = useQuery(["supplierCategoryOptions"], () =>

@@ -16,7 +16,6 @@ import {
 import { SearchInput } from "@/components/ui/SearchInput";
 import NoStore from "@/components/ui/NoStore";
 import StatCard from "@/components/ui/StatCard";
-import { getAllLocation } from "@/services/location";
 import StoreFilter from "@/components/ui/StoreFilter";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
@@ -26,6 +25,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Combobox } from "@/components/ui/combobox";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useLocations } from "@/queries/useLocations";
 
 const statusCfg = {
   pending: {
@@ -57,7 +57,7 @@ const PurchaseReturnList = () => {
   const [actionType, setActionType] = useState(null);
   const [resolution, setResolution] = useState("credit");
 
-  const { data: locData } = useQuery(["locations-purchase-return"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

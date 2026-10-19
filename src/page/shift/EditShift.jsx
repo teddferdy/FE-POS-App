@@ -19,7 +19,6 @@ import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
 import { getAllShift, editShift } from "@/services/shift";
 import { getAllEmployee } from "@/services/employee";
-import { getAllLocation } from "@/services/location";
 import { getAllShiftTemplate } from "@/services/shiftTemplate";
 import { useStore } from "@/contexts/StoreContext";
 import { Button } from "@/components/ui/button";
@@ -34,6 +33,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
+import { useLocations } from "@/queries/useLocations";
 
 const EditShift = () => {
   const { t } = useTranslation();
@@ -84,7 +84,7 @@ const EditShift = () => {
     enabled: !!shiftId
   });
 
-  const { data: locationsData, isLoading: locLoading } = useQuery(["allLocations"], getAllLocation);
+  const { data: locationsData, isLoading: locLoading } = useLocations();
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const shifts = shiftsData?.data || [];

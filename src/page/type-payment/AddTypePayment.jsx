@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient, useQuery } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,7 +10,6 @@ import { useCookies } from "react-cookie";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import { addTypePayment } from "@/services/type-payment";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -28,6 +27,7 @@ import Modal from "@/components/organism/modal";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { useLocations } from "@/queries/useLocations";
 
 const AddTypePayment = () => {
   const { t } = useTranslation();
@@ -39,7 +39,7 @@ const AddTypePayment = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["allLocations-type-payment"], () => getAllLocation(), {
+  } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || [];

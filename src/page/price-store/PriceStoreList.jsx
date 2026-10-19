@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { useStore } from "@/contexts/StoreContext";
 import { Store, ArrowLeft, Pencil, Boxes, ChevronRight } from "lucide-react";
-import { getAllLocation } from "@/services/location";
 import { getProductByOutlet } from "@/services/product";
 import { updateProductPriceByStore } from "@/services/price-store";
 import { Card } from "@/components/ui/card";
@@ -18,6 +17,7 @@ import NoStore from "@/components/ui/NoStore";
 import TableActionLegend from "@/components/ui/TableActionLegend";
 import PageHeader from "@/components/ui/PageHeader";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const PriceStoreList = () => {
   const { t } = useTranslation();
@@ -37,7 +37,7 @@ const PriceStoreList = () => {
     data: locData,
     isLoading,
     isFetching
-  } = useQuery(["locations-price-store"], () => getAllLocation(), {
+  } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const stores = useMemo(() => locData?.data || locData || [], [locData]);

@@ -270,7 +270,7 @@ describe("save", () => {
         ["store-configuration", "1"],
         ["store-configurations"],
         ["locations"],
-        ["allLocations"]
+        ["location-options"]
       ])
     );
     await waitFor(() => expect(mockGetStoreConfigurationById).toHaveBeenCalledTimes(2));

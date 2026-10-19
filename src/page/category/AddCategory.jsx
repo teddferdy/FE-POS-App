@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import DynamicIcon from "@/components/ui/DynamicIcon";
 import { addCategory, getAllCategory } from "@/services/category";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Input } from "@/components/ui/input";
@@ -43,6 +42,7 @@ import { normalizePayload } from "@/lib/payload-normalizer";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import CategoryPreviewModal from "./CategoryPreviewModal";
+import { useLocations } from "@/queries/useLocations";
 
 const iconSections = [
   {
@@ -400,7 +400,7 @@ const AddCategory = () => {
     data: locationsData,
     isLoading: locsLoading,
     isFetching: locsFetching
-  } = useQuery(["allLocations"], () => getAllLocation(), {
+  } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || locationsData?.locations || [];

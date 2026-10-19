@@ -9,7 +9,6 @@ import { Save, X, Plus, Trash2, Package, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { transferStock } from "@/services/stock-transfer";
-import { getAllLocation } from "@/services/location";
 import { getAllProduct } from "@/services/product";
 import { Combobox } from "@/components/ui/combobox";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -29,6 +28,7 @@ import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { useLocations } from "@/queries/useLocations";
 
 const AddStockTransfer = () => {
   const { t } = useTranslation();
@@ -105,7 +105,7 @@ const AddStockTransfer = () => {
   const watchedItems = watch("items");
   const fromStore = watch("fromStore");
 
-  const { data: locData } = useQuery(["locations-for-transfer"], getAllLocation, {});
+  const { data: locData } = useLocations();
   const locations = locData?.data || locData?.locations || locData || [];
   const storeOptions = locations.map((l) => ({ value: String(l.id), label: l.name }));
 

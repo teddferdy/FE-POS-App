@@ -8,7 +8,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { X, Save } from "lucide-react";
 import { createReservation } from "@/services/reservation";
-import { getAllLocation, getLocationDetail } from "@/services/location";
+import { getLocationDetail } from "@/services/location";
+import { useLocations } from "@/queries/useLocations";
 import { getTablesByStore } from "@/services/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,7 +74,8 @@ const AddReservation = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [stores, setStores] = useState([]);
+  const { data: storesData } = useLocations();
+  const stores = storesData?.data || [];
   const [availableTables, setAvailableTables] = useState([]);
   const [loadingTables, setLoadingTables] = useState(false);
   const [locationDetail, setLocationDetail] = useState(null);
@@ -110,12 +112,6 @@ const AddReservation = () => {
       notes: ""
     }
   });
-
-  useEffect(() => {
-    getAllLocation()
-      .then((res) => setStores(res.data || []))
-      .catch(() => {});
-  }, []);
 
   const selectedStore = form.watch("store");
   const reservationDate = form.watch("reservationDate");

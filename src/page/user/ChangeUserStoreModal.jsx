@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQuery } from "react-query";
+import { useMutation } from "react-query";
 import { toast } from "sonner";
 import Modal from "@/components/organism/modal";
 import { Combobox } from "@/components/ui/combobox";
-import { getAllLocation } from "@/services/location";
 import { changeRoleUser } from "@/services/user";
+import { useLocations } from "@/queries/useLocations";
 
 const fieldLabelClass = "text-xs font-semibold text-muted-foreground uppercase tracking-wider";
 
@@ -20,11 +20,7 @@ const ChangeUserStoreModal = ({ target, currentStoreName, onClose, onChanged }) 
   const [storeId, setStoreId] = useState("");
   const [error, setError] = useState(null);
 
-  const { data: locData, isLoading: locLoading } = useQuery(
-    ["locations-change-user-store"],
-    () => getAllLocation(),
-    { enabled: !!target }
-  );
+  const { data: locData, isLoading: locLoading } = useLocations("active", { enabled: !!target });
   const locations = locData?.data || [];
 
   const mutation = useMutation(changeRoleUser, {

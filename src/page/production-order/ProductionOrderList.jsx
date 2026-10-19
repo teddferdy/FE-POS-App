@@ -26,7 +26,6 @@ import {
   startProduction,
   completeProduction
 } from "@/services/production-order";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
@@ -41,6 +40,7 @@ import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import NoStore from "@/components/ui/NoStore";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLocations } from "@/queries/useLocations";
 
 const ProductionOrderList = () => {
   const { t } = useTranslation();
@@ -94,7 +94,7 @@ const ProductionOrderList = () => {
     setPage(1);
   };
 
-  const { data: locData } = useQuery(["locations-production-order"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
 

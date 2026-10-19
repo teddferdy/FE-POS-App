@@ -16,7 +16,6 @@ import {
   Users
 } from "lucide-react";
 import { getAllRoleTable, deleteRole } from "@/services/role";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,6 +32,7 @@ import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import NoStore from "@/components/ui/NoStore";
 import { roleTypeLabelKey } from "./rolePermissions";
+import { useLocations } from "@/queries/useLocations";
 
 const RoleManagement = () => {
   const { t } = useTranslation();
@@ -45,7 +45,7 @@ const RoleManagement = () => {
   const isGlobalSuperAdmin = isSuperAdmin && (user?.store == null || user?.store === "");
   const MENU_KEY = "/role-management";
 
-  const { data: locData } = useQuery(["locations-role"], () => getAllLocation(), {
+  const { data: locData } = useLocations("active", {
     enabled: isSuperAdmin
   });
   const [page, setPage] = useState(1);

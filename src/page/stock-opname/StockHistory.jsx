@@ -13,11 +13,11 @@ import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
 import PageHeader from "@/components/ui/PageHeader";
 import { DatePicker } from "@/components/ui/date-picker";
-import { getAllLocation } from "@/services/location";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLocations } from "@/queries/useLocations";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -61,13 +61,9 @@ const StockHistory = () => {
   const [searchProduct] = useState("");
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-stock-history"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("active", {
+    enabled: isSuperAdmin
+  });
 
   const store = isSuperAdmin
     ? storeFilter && storeFilter !== "all"

@@ -27,7 +27,6 @@ import { useRoomSubscription } from "@/hooks/useRoomSubscription";
 import StoreFilter from "@/components/ui/StoreFilter";
 import TableToolbar from "@/components/ui/TableToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import QrOrderFreshness from "./QrOrderFreshness";
 import Modal from "@/components/organism/modal";
@@ -39,6 +38,7 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
+import { useLocations } from "@/queries/useLocations";
 
 // Polling fallback interval while the store room is not confirmed. An
 // engineering default (DR-19: polling is engineering-owned); the numeric
@@ -97,13 +97,9 @@ const CustomerOrderManagement = () => {
     setSearch("");
   };
 
-  const { data: locData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-customer-orders"],
-    () => getAllLocation("all"),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const { data: locData, isLoading: isLoadingLocations } = useLocations("all", {
+    enabled: isSuperAdmin
+  });
 
   const {
     data: ordersData,

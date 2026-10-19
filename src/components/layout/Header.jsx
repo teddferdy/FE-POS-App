@@ -22,7 +22,6 @@ import {
   Globe
 } from "lucide-react";
 import { translationSelect } from "@/state/translation";
-import { getAllLocation } from "@/services/location";
 import { useSocket } from "@/services/socket";
 import { useQueryClient } from "react-query";
 import { axiosInstance } from "@/services";
@@ -35,6 +34,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useStore } from "@/contexts/StoreContext";
+import { useLocations } from "@/queries/useLocations";
 
 const StoreSelector = ({ cookie, setCookie }) => {
   const { t } = useTranslation();
@@ -45,7 +45,7 @@ const StoreSelector = ({ cookie, setCookie }) => {
   const user = cookie?.user;
   const role = user?.roleType || "";
 
-  const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
+  const { data: locationsData } = useLocations("active", {
     enabled: role === "super_admin"
   });
   const locations = locationsData?.data || [];
