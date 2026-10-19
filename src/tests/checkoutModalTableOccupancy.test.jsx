@@ -386,3 +386,48 @@ describe("Phase 39 CheckoutModal — table.status is the occupancy source of tru
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Table is already occupied"));
   });
 });
+
+// BA note (10-19): not every resto/warung uses tables — a dine-in order
+// without a table is valid. A picked table keeps every occupancy guard.
+describe("Dine-in table is optional", () => {
+  beforeEach(() => {
+    getAllCustomer.mockResolvedValue({ data: [] });
+    getAllDiscount.mockResolvedValue({ data: [] });
+    createOrder.mockClear();
+    getTableAvailability.mockClear();
+    getTablesWithActiveOrders.mockClear();
+  });
+
+  test("a dine-in order without a table goes through with tableId null", async () => {
+    getTableAvailability.mockResolvedValue({
+      data: { tables: [{ id: 7, name: "Meja 7", status: "available", capacity: 4 }] }
+    });
+    getTablesWithActiveOrders.mockResolvedValue({ data: [tableRow(7, "Meja 7")] });
+
+    renderModal();
+    await selectDineInAndGetTableSelect();
+    await waitFor(() => expect(getTablesWithActiveOrders).toHaveBeenCalled());
+
+    completeCashPayment();
+    await waitForCheckoutQuote();
+    fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    const payload = createOrder.mock.calls[0][0];
+    expect(payload.tableId).toBeNull();
+  });
+
+  test("a failed occupancy lookup does not block a dine-in order without a table", async () => {
+    getTableAvailability.mockResolvedValue({ data: { tables: [] } });
+    getTablesWithActiveOrders.mockRejectedValue(new Error("boom"));
+
+    renderModal();
+    await selectDineInAndGetTableSelect();
+    await waitFor(() => expect(getTablesWithActiveOrders).toHaveBeenCalled());
+
+    completeCashPayment();
+    await waitForCheckoutQuote();
+    fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    expect(createOrder.mock.calls[0][0].tableId).toBeNull();
+  });
+});
