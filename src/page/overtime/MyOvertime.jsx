@@ -95,9 +95,13 @@ const MyOvertime = () => {
 
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
-  const { data: locData } = useQuery(["overtime-locations"], () => getAllLocation("active"), {
-    enabled: isSuperAdmin
-  });
+  const { data: locData } = useQuery(
+    [t("page.overtime.overtimelocations", "overtime-locations")],
+    () => getAllLocation("active"),
+    {
+      enabled: isSuperAdmin
+    }
+  );
   const locations = locData?.data || [];
   const effectiveStore = isSuperAdmin ? (storeFilter !== "all" ? storeFilter : "") : storeId;
   const locationName = (sid) => locations.find((l) => String(l.id) === String(sid))?.name || null;
@@ -112,7 +116,7 @@ const MyOvertime = () => {
     isError,
     refetch
   } = useQuery(
-    ["my-overtime", effectiveStore, page],
+    [t("page.overtime.myovertime", "my-overtime"), effectiveStore, page],
     () => getOvertimes({ store: effectiveStore, page, pageSize, mine: 1 }),
     { keepPreviousData: true, enabled: isSuperAdmin ? true : !!effectiveStore }
   );
@@ -124,7 +128,7 @@ const MyOvertime = () => {
   const totalPages = pagination?.totalPage || Math.ceil(total / pageSize) || 1;
 
   const { data: shiftData } = useQuery(
-    ["overtime-shift-options", effectiveStore],
+    [t("page.overtime.overtimeshiftoptions", "overtime-shift-options"), effectiveStore],
     () => getShiftDropdown({ store: effectiveStore, statusShift: "active" }),
     { enabled: isSuperAdmin ? true : !!effectiveStore }
   );
@@ -159,23 +163,33 @@ const MyOvertime = () => {
 
   const createMutation = useMutation(createOvertime, {
     onSuccess: (res) => {
-      toast.success("Berhasil", { description: res?.message || "Pengajuan lembur dikirim." });
+      toast.success(t("page.overtime.berhasil", "Berhasil"), {
+        description:
+          res?.message || t("page.overtime.pengajuan_lembur_dikirim", "Pengajuan lembur dikirim.")
+      });
       setForm((f) => ({ ...f, start_time: "", end_time: "", note: "" }));
-      queryClient.invalidateQueries(["my-overtime"]);
+      queryClient.invalidateQueries([t("page.overtime.myovertime", "my-overtime")]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.overtime.gagal", "Gagal"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
   });
 
   const cancelMutation = useMutation(cancelOvertime, {
     onSuccess: (res) => {
-      toast.success("Berhasil", { description: res?.message || "Pengajuan dibatalkan." });
+      toast.success(t("page.overtime.berhasil", "Berhasil"), {
+        description:
+          res?.message || t("page.overtime.pengajuan_dibatalkan", "Pengajuan dibatalkan.")
+      });
       setCancelTarget(null);
-      queryClient.invalidateQueries(["my-overtime"]);
+      queryClient.invalidateQueries([t("page.overtime.myovertime", "my-overtime")]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.overtime.gagal", "Gagal"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
   });
 
@@ -208,17 +222,32 @@ const MyOvertime = () => {
             i18nKey: "breadcrumb.home"
           },
           { label: "SDM" },
-          { label: "Lembur", i18nKey: "sidebar.overtime" }
+          { label: t("page.overtime.lembur", "Lembur"), i18nKey: "sidebar.overtime" }
         ]}
-        title="Lembur Saya"
-        description="Ajukan lembur berdasarkan shift aktif dan pantau status pengajuan."
+        title={t("page.overtime.lembur_saya", "Lembur Saya")}
+        description={t(
+          "page.overtime.ajukan_lembur_berdasarkan_shift_aktif_dan_pantau_s",
+          "Ajukan lembur berdasarkan shift aktif dan pantau status pengajuan."
+        )}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        {statItem("Menunggu", stats.pending || 0, "text-amber-600 dark:text-amber-400")}
-        {statItem("Disetujui", stats.approved || 0, "text-green-600 dark:text-green-400")}
-        {statItem("Ditolak", stats.rejected || 0, "text-red-600 dark:text-red-400")}
-        {statItem("Total", total || 0, "text-foreground")}
+        {statItem(
+          t("page.overtime.menunggu", "Menunggu"),
+          stats.pending || 0,
+          "text-amber-600 dark:text-amber-400"
+        )}
+        {statItem(
+          t("page.overtime.disetujui", "Disetujui"),
+          stats.approved || 0,
+          "text-green-600 dark:text-green-400"
+        )}
+        {statItem(
+          t("page.overtime.ditolak", "Ditolak"),
+          stats.rejected || 0,
+          "text-red-600 dark:text-red-400"
+        )}
+        {statItem(t("page.overtime.total", "Total"), total || 0, "text-foreground")}
       </div>
 
       {isSuperAdmin && (
@@ -228,7 +257,7 @@ const MyOvertime = () => {
           </label>
           <Combobox
             options={[
-              { value: "all", label: "Semua Toko" },
+              { value: "all", label: t("page.overtime.semua_toko", "Semua Toko") },
               ...locations.map((l) => ({ value: String(l.id), label: l.name }))
             ]}
             value={storeFilter}
@@ -236,8 +265,8 @@ const MyOvertime = () => {
               setGlobalStoreFilter(v);
               setPage(1);
             }}
-            placeholder="Pilih toko"
-            searchPlaceholder="Cari toko..."
+            placeholder={t("page.overtime.pilih_toko", "Pilih toko")}
+            searchPlaceholder={t("page.overtime.cari_toko", "Cari toko...")}
           />
         </div>
       )}
@@ -265,8 +294,12 @@ const MyOvertime = () => {
               options={shiftOptions}
               value={form.shift_id}
               onChange={(v) => setForm((f) => ({ ...f, shift_id: v }))}
-              placeholder={myShifts.length ? "Pilih shift" : "Tidak ada shift aktif"}
-              searchPlaceholder="Cari shift..."
+              placeholder={
+                myShifts.length
+                  ? t("page.overtime.pilih_shift", "Pilih shift")
+                  : t("page.overtime.tidak_ada_shift_aktif", "Tidak ada shift aktif")
+              }
+              searchPlaceholder={t("page.overtime.cari_shift", "Cari shift...")}
             />
             {myShifts.length === 0 && (
               <p className="text-[11px] text-red-500">
@@ -322,7 +355,10 @@ const MyOvertime = () => {
             </label>
             <Textarea
               rows={3}
-              placeholder="Alasan / detail pekerjaan lembur (opsional)"
+              placeholder={t(
+                "page.overtime.alasan___detail_pekerjaan_lembur_opsional",
+                "Alasan / detail pekerjaan lembur (opsional)"
+              )}
               value={form.note}
               onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
             />
@@ -461,11 +497,11 @@ const MyOvertime = () => {
         type="confirm"
         open={!!cancelTarget}
         onOpenChange={(open) => !open && setCancelTarget(null)}
-        title="Batalkan pengajuan lembur?"
+        title={t("page.overtime.batalkan_pengajuan_lembur", "Batalkan pengajuan lembur?")}
         description={`Pengajuan lembur ${
           cancelTarget?.shift?.name || ""
         } pada ${fmtDate(cancelTarget?.date)} akan dibatalkan.`}
-        confirmText="Batalkan Pengajuan"
+        confirmText={t("page.overtime.batalkan_pengajuan", "Batalkan Pengajuan")}
         loading={cancelMutation.isLoading}
         onConfirm={() => cancelMutation.mutate({ id: cancelTarget.id })}
       />

@@ -123,7 +123,7 @@ const OvertimeApproval = () => {
   const [payrollMonth, setPayrollMonth] = useState(() => new Date().toISOString().slice(0, 7));
 
   const { data: locData } = useQuery(
-    ["overtime-approval-locations"],
+    [t("page.overtime.overtimeapprovallocations", "overtime-approval-locations")],
     () => getAllLocation("active"),
     {
       enabled: isSuperAdmin
@@ -134,7 +134,7 @@ const OvertimeApproval = () => {
   const locationName = (sid) => locations.find((l) => String(l.id) === String(sid))?.name || null;
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["overtime-approvals", store, page, status],
+    [t("page.overtime.overtimeapprovals", "overtime-approvals"), store, page, status],
     () => getOvertimes({ store, page, pageSize, status }),
     { keepPreviousData: true, enabled: isSuperAdmin ? true : !!store }
   );
@@ -149,20 +149,22 @@ const OvertimeApproval = () => {
     ({ id, decision, note }) => updateOvertimeStatus({ id, status: decision, note }),
     {
       onSuccess: (_res, vars) => {
-        toast.success("Berhasil", {
+        toast.success(t("page.overtime.berhasil", "Berhasil"), {
           description:
             vars.decision === "approved"
-              ? "Pengajuan lembur disetujui."
-              : "Pengajuan lembur ditolak."
+              ? t("page.overtime.pengajuan_lembur_disetujui", "Pengajuan lembur disetujui.")
+              : t("page.overtime.pengajuan_lembur_ditolak", "Pengajuan lembur ditolak.")
         });
       },
       onError: (err) => {
-        toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+        toast.error(t("page.overtime.gagal", "Gagal"), {
+          description: err?.response?.data?.message || err.message
+        });
       },
       onSettled: () => {
         setDecisionTarget(null);
         setDecisionNote("");
-        queryClient.invalidateQueries(["overtime-approvals"]);
+        queryClient.invalidateQueries([t("page.overtime.overtimeapprovals", "overtime-approvals")]);
       }
     }
   );
@@ -171,18 +173,20 @@ const OvertimeApproval = () => {
     ({ store: s, month }) => postOvertimePayroll({ store: s, month }),
     {
       onSuccess: (res) => {
-        toast.success("Berhasil", {
+        toast.success(t("page.overtime.berhasil", "Berhasil"), {
           description: `${res?.data?.posted || 0} lembur diposting, total Rp ${fmtMoney(
             res?.data?.totalAmount
           )}.`
         });
       },
       onError: (err) => {
-        toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+        toast.error(t("page.overtime.gagal", "Gagal"), {
+          description: err?.response?.data?.message || err.message
+        });
       },
       onSettled: () => {
         setPayrollTarget(null);
-        queryClient.invalidateQueries(["overtime-approvals"]);
+        queryClient.invalidateQueries([t("page.overtime.overtimeapprovals", "overtime-approvals")]);
       }
     }
   );
@@ -215,17 +219,36 @@ const OvertimeApproval = () => {
             i18nKey: "breadcrumb.home"
           },
           { label: "SDM" },
-          { label: "Lembur", i18nKey: "sidebar.overtime" }
+          { label: t("page.overtime.lembur", "Lembur"), i18nKey: "sidebar.overtime" }
         ]}
-        title="Persetujuan Lembur"
-        description="Tinjau pengajuan lembur, putuskan, dan tutup payroll lembur bulanan."
+        title={t("page.overtime.persetujuan_lembur", "Persetujuan Lembur")}
+        description={t(
+          "page.overtime.tinjau_pengajuan_lembur_putuskan_dan_tutup_payroll",
+          "Tinjau pengajuan lembur, putuskan, dan tutup payroll lembur bulanan."
+        )}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        {statItem("Menunggu", stats.pending || 0, "text-amber-600 dark:text-amber-400")}
-        {statItem("Disetujui", stats.approved || 0, "text-green-600 dark:text-green-400")}
-        {statItem("Ditolak", stats.rejected || 0, "text-red-600 dark:text-red-400")}
-        {statItem("Dibatalkan", stats.cancelled || 0, "text-slate-600 dark:text-slate-400")}
+        {statItem(
+          t("page.overtime.menunggu", "Menunggu"),
+          stats.pending || 0,
+          "text-amber-600 dark:text-amber-400"
+        )}
+        {statItem(
+          t("page.overtime.disetujui", "Disetujui"),
+          stats.approved || 0,
+          "text-green-600 dark:text-green-400"
+        )}
+        {statItem(
+          t("page.overtime.ditolak", "Ditolak"),
+          stats.rejected || 0,
+          "text-red-600 dark:text-red-400"
+        )}
+        {statItem(
+          t("page.overtime.dibatalkan", "Dibatalkan"),
+          stats.cancelled || 0,
+          "text-slate-600 dark:text-slate-400"
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
@@ -237,7 +260,7 @@ const OvertimeApproval = () => {
               </label>
               <Combobox
                 options={[
-                  { value: "all", label: "Semua Toko" },
+                  { value: "all", label: t("page.overtime.semua_toko", "Semua Toko") },
                   ...locations.map((l) => ({ value: String(l.id), label: l.name }))
                 ]}
                 value={storeFilter}
@@ -245,8 +268,8 @@ const OvertimeApproval = () => {
                   setGlobalStoreFilter(v);
                   setPage(1);
                 }}
-                placeholder="Pilih toko"
-                searchPlaceholder="Cari toko..."
+                placeholder={t("page.overtime.pilih_toko", "Pilih toko")}
+                searchPlaceholder={t("page.overtime.cari_toko", "Cari toko...")}
               />
             </div>
           )}
@@ -256,10 +279,10 @@ const OvertimeApproval = () => {
             </label>
             <Combobox
               options={[
-                { value: "pending", label: "Menunggu" },
-                { value: "approved", label: "Disetujui" },
-                { value: "rejected", label: "Ditolak" },
-                { value: "cancelled", label: "Dibatalkan" },
+                { value: "pending", label: t("page.overtime.menunggu", "Menunggu") },
+                { value: "approved", label: t("page.overtime.disetujui", "Disetujui") },
+                { value: "rejected", label: t("page.overtime.ditolak", "Ditolak") },
+                { value: "cancelled", label: t("page.overtime.dibatalkan", "Dibatalkan") },
                 { value: "", label: "Semua" }
               ]}
               value={status}
@@ -267,7 +290,7 @@ const OvertimeApproval = () => {
                 setStatus(v);
                 setPage(1);
               }}
-              placeholder="Pilih status"
+              placeholder={t("page.overtime.pilih_status", "Pilih status")}
               searchPlaceholder="Cari..."
             />
           </div>
@@ -362,7 +385,8 @@ const OvertimeApproval = () => {
                   </div>
                   <div className="flex items-center gap-1.5 text-muted-foreground sm:col-span-2">
                     <AlarmClock size={12} className="shrink-0" />
-                    {ot.shift?.name || "Shift"} ({String(ot.shift?.startTime || "-").slice(0, 5)} -{" "}
+                    {ot.shift?.name || t("page.overtime.shift", "Shift")} (
+                    {String(ot.shift?.startTime || "-").slice(0, 5)} -{" "}
                     {String(ot.shift?.endTime || "-").slice(0, 5)})
                   </div>
                 </div>
@@ -503,7 +527,7 @@ const OvertimeApproval = () => {
         type="confirm"
         open={decisionTarget?.decision === "approved"}
         onOpenChange={(open) => !open && setDecisionTarget(null)}
-        title="Terima pengajuan lembur?"
+        title={t("page.overtime.terima_pengajuan_lembur", "Terima pengajuan lembur?")}
         description={`Anda akan menyetujui lembur ${
           decisionTarget?.ot?.employee?.fullName || "karyawan"
         } pada ${fmt(decisionTarget?.ot?.date)} selama ${durationLabel(
@@ -518,7 +542,7 @@ const OvertimeApproval = () => {
         type="form"
         open={decisionTarget?.decision === "rejected"}
         onOpenChange={(open) => !open && setDecisionTarget(null)}
-        title="Tolak pengajuan lembur?"
+        title={t("page.overtime.tolak_pengajuan_lembur", "Tolak pengajuan lembur?")}
         description={`Lembur ${
           decisionTarget?.ot?.employee?.fullName || "karyawan"
         } pada ${fmt(decisionTarget?.ot?.date)} akan ditolak.`}
