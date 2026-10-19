@@ -1,6 +1,6 @@
 import { safeGet, hasOwn } from "@/lib/safe-lookup";
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -55,11 +55,13 @@ import {
   getPostalCode
 } from "@/services/general";
 import { printViaBrowser } from "@/utils/thermalPrint";
+import ReceiptPaper from "@/components/receipt/ReceiptPaper";
+import { receiptLabels } from "@/components/receipt/receiptLabels";
+import { buildAddressLines } from "@/utils/receiptDocument";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loading } from "@/components/ui/loading";
 import NoStore from "@/components/ui/NoStore";
-import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
 
 const DEFAULT_INVOICE_TEMPLATE = {
@@ -100,8 +102,6 @@ const sampleMember = {
   points: 2450
 };
 
-const formatPrice = (val) => `Rp${Number(val).toLocaleString("id-ID")}`;
-
 const DetailRow = ({ icon: Icon, label, value }) => (
   <div className="flex items-start gap-3 py-3 border-b border-border last:border-b-0">
     <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
@@ -113,294 +113,6 @@ const DetailRow = ({ icon: Icon, label, value }) => (
     </div>
   </div>
 );
-
-const InvoicePreview = ({
-  storeName,
-  storePhone,
-  storeEmail,
-  locationDetail,
-  cityName,
-  provinceName,
-  districtName,
-  villageName,
-  postalCodeValue,
-  fullAddress,
-  cashierName,
-  memberName,
-  memberTier,
-  memberPoints,
-  logoUrl,
-  showLogo = true,
-  showStoreName = true,
-  showAddress = true,
-  showMemberInfo = true,
-  showSocialMedia = true,
-  socialMedia = [],
-  socialMediaVisible = {},
-  addressFieldsVisible = {},
-  memberFieldsVisible = {},
-  footerText = "Terima kasih atas kunjungan Anda",
-  paperSize = "58mm",
-  fontSize = "normal",
-  fontFamily = "monospace",
-  lineSpacing = "normal"
-}) => {
-  const { t } = useTranslation();
-  const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
-  const tax = Math.round(subtotal * 0.1);
-  const total = subtotal + tax;
-
-  const fontFamClass =
-    fontFamily === "sans" ? "font-sans" : fontFamily === "serif" ? "font-serif" : "font-mono";
-
-  const sizeClasses = {
-    small: {
-      title: "text-base font-bold tracking-tight",
-      address: "text-[10px]",
-      memberHeader: "text-[9px]",
-      memberText: "text-[10px]",
-      memberName: "text-[11px] font-semibold",
-      tableTh: "text-[9px]",
-      tableItem: "text-xs",
-      tableSub: "text-[9px]",
-      totalsLabel: "text-xs",
-      totalsValue: "text-xs font-medium",
-      totalsGrand: "text-sm font-bold",
-      footer: "text-[10px]",
-      social: "text-[9px]"
-    },
-    normal: {
-      title: "text-lg font-bold tracking-tight",
-      address: "text-[11px]",
-      memberHeader: "text-[10px]",
-      memberText: "text-[11px]",
-      memberName: "text-xs font-semibold",
-      tableTh: "text-[10px]",
-      tableItem: "text-sm",
-      tableSub: "text-[10px]",
-      totalsLabel: "text-sm",
-      totalsValue: "text-sm font-medium",
-      totalsGrand: "text-base font-bold",
-      footer: "text-xs",
-      social: "text-[10px]"
-    },
-    large: {
-      title: "text-xl font-bold tracking-tight",
-      address: "text-xs",
-      memberHeader: "text-xs",
-      memberText: "text-xs",
-      memberName: "text-sm font-semibold",
-      tableTh: "text-xs",
-      tableItem: "text-base",
-      tableSub: "text-xs",
-      totalsLabel: "text-base",
-      totalsValue: "text-base font-medium",
-      totalsGrand: "text-lg font-bold",
-      footer: "text-sm",
-      social: "text-xs"
-    }
-  };
-  const sz = sizeClasses[fontSize] || sizeClasses.normal;
-
-  const padClasses = {
-    compact: {
-      header: "px-4 py-4",
-      section: "px-4 py-2",
-      tablePy: "py-1",
-      totals: "p-2 space-y-1",
-      footer: "px-4 py-2"
-    },
-    normal: {
-      header: "px-5 py-6",
-      section: "px-5 py-3",
-      tablePy: "py-2",
-      totals: "p-3 space-y-2",
-      footer: "px-5 py-3"
-    },
-    relaxed: {
-      header: "px-6 py-7",
-      section: "px-6 py-4",
-      tablePy: "py-3",
-      totals: "p-4 space-y-3",
-      footer: "px-6 py-4"
-    }
-  };
-  const pd = padClasses[lineSpacing] || padClasses.normal;
-
-  const showHeader = showStoreName || showAddress || !!logoUrl;
-
-  return (
-    <div
-      className={`bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 mx-auto overflow-hidden select-all transition-all duration-200 ${fontFamClass} ${
-        paperSize === "80mm" ? "max-w-[420px]" : "max-w-[320px]"
-      }`}>
-      {showHeader && (
-        <div
-          className={`bg-gradient-to-br from-gray-900 to-gray-800 ${pd.header} text-white text-center`}>
-          {showLogo && logoUrl && (
-            <img
-              src={logoUrl}
-              alt="Logo"
-              className="h-16 w-16 object-contain bg-white rounded-lg p-1 mx-auto mb-3"
-            />
-          )}
-          {showStoreName && <h3 className={sz.title}>{storeName || "NAMA TOKO"}</h3>}
-          {showAddress && (
-            <div className="text-gray-400 mt-2 space-y-0.5">
-              {addressFieldsVisible.storeName !== false && storeName && (
-                <p className={`font-medium text-gray-300 ${sz.address}`}>{storeName}</p>
-              )}
-              {addressFieldsVisible.address !== false && locationDetail?.address && (
-                <p className={sz.address}>{locationDetail.address}</p>
-              )}
-              {addressFieldsVisible.locationDetail !== false && locationDetail?.detailLocation && (
-                <p className={sz.address}>{locationDetail.detailLocation}</p>
-              )}
-              {((addressFieldsVisible.province !== false && provinceName) ||
-                (addressFieldsVisible.city !== false && cityName) ||
-                (addressFieldsVisible.district !== false && districtName) ||
-                (addressFieldsVisible.village !== false && villageName)) && (
-                <p className={sz.address}>
-                  {[
-                    addressFieldsVisible.province !== false && provinceName ? provinceName : "",
-                    addressFieldsVisible.city !== false && cityName ? cityName : "",
-                    addressFieldsVisible.district !== false && districtName ? districtName : "",
-                    addressFieldsVisible.village !== false && villageName ? villageName : ""
-                  ]
-                    .filter(Boolean)
-                    .join(", ")}
-                </p>
-              )}
-              {addressFieldsVisible.postalCode !== false && postalCodeValue && (
-                <p className={sz.address}>Kode Pos: {postalCodeValue}</p>
-              )}
-              {addressFieldsVisible.phone !== false && storePhone && (
-                <p className={sz.address}>Telp: {storePhone}</p>
-              )}
-              {addressFieldsVisible.email !== false && storeEmail && (
-                <p className={sz.address}>{storeEmail}</p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {showMemberInfo && (memberName || memberTier) && (
-        <div className={`${pd.section} bg-yellow-50 border-b border-yellow-100`}>
-          <p
-            className={`${sz.memberHeader} font-semibold text-yellow-800 uppercase tracking-wider mb-2`}>
-            {t("page.invoice.memberInfo")}
-          </p>
-          <div className="space-y-1">
-            {memberName && memberFieldsVisible.name !== false && (
-              <div className="flex justify-between items-center">
-                <span className={`${sz.memberText} text-yellow-900 font-medium`}>
-                  {t("page.invoice.memberName")}
-                </span>
-                <span className={`${sz.memberName} text-yellow-800`}>{memberName}</span>
-              </div>
-            )}
-            {memberTier && memberFieldsVisible.tier !== false && (
-              <div className="flex justify-between items-center">
-                <span className={`${sz.memberText} text-yellow-900 font-medium`}>
-                  {t("page.invoice.memberTier")}
-                </span>
-                <span className={`${sz.memberName} text-yellow-800`}>{memberTier}</span>
-              </div>
-            )}
-            {memberPoints !== undefined && memberFieldsVisible.points !== false && (
-              <div className="flex justify-between items-center">
-                <span className={`${sz.memberText} text-yellow-900 font-medium`}>
-                  {t("page.invoice.totalPoints")}
-                </span>
-                <span className={`${sz.memberName} text-yellow-800`}>
-                  {Number(memberPoints).toLocaleString("id-ID")} pts
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className={pd.section}>
-        <HorizontalScrollArea>
-          <table className="w-full">
-            <thead>
-              <tr
-                className={`${sz.tableTh} text-gray-500 uppercase tracking-wider border-b border-gray-200`}>
-                <th className={`text-left ${pd.tablePy} font-semibold`}>
-                  {t("page.invoice.item")}
-                </th>
-                <th className={`text-center ${pd.tablePy} font-semibold w-10`}>Qty</th>
-                <th className={`text-right ${pd.tablePy} font-semibold`}>Harga</th>
-                <th className={`text-right ${pd.tablePy} font-semibold`}>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sampleItems.map((item, i) => (
-                <tr key={i} className={i % 2 === 0 ? "bg-gray-50/50" : ""}>
-                  <td className={`${pd.tablePy} ${sz.tableItem} text-gray-800`}>{item.name}</td>
-                  <td className={`${pd.tablePy} text-center ${sz.tableItem} text-gray-600`}>
-                    {item.qty}
-                  </td>
-                  <td className={`${pd.tablePy} text-right ${sz.tableItem} text-gray-600`}>
-                    {formatPrice(item.price)}
-                  </td>
-                  <td
-                    className={`${pd.tablePy} text-right ${sz.tableItem} font-medium text-gray-900`}>
-                    {formatPrice(item.qty * item.price)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </HorizontalScrollArea>
-      </div>
-
-      <div className={pd.section}>
-        <div className={`bg-gray-50 rounded-lg ${pd.totals}`}>
-          <div className="flex justify-between">
-            <span className={`text-gray-500 ${sz.totalsLabel}`}>{t("page.invoice.subtotal")}</span>
-            <span className={`text-gray-700 ${sz.totalsValue}`}>{formatPrice(subtotal)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className={`text-gray-500 ${sz.totalsLabel}`}>Pajak (10%)</span>
-            <span className={`text-gray-700 ${sz.totalsValue}`}>{formatPrice(tax)}</span>
-          </div>
-          <div className="flex justify-between pt-2 border-t border-gray-200 mt-2">
-            <span className={`text-gray-900 ${sz.totalsGrand}`}>{t("page.invoice.total")}</span>
-            <span className={`text-gray-900 ${sz.totalsGrand}`}>{formatPrice(total)}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className={`bg-gray-50 ${pd.footer} border-t border-gray-200`}>
-        <p
-          className={`text-center text-gray-400 ${sz.footer} italic overflow-hidden`}
-          style={{
-            display: "-webkit-box",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 4,
-            textOverflow: "ellipsis"
-          }}>
-          {footerText || t("page.invoice.footerDefault")}
-        </p>
-        {showSocialMedia &&
-          socialMedia.filter((_, i) => safeGet(socialMediaVisible, i)).length > 0 && (
-            <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-gray-200 flex-wrap">
-              {socialMedia
-                .filter((_, i) => safeGet(socialMediaVisible, i))
-                .map((sm, i) => (
-                  <span key={i} className={`text-gray-400 ${sz.social}`}>
-                    {sm.platform}: {sm.account}
-                  </span>
-                ))}
-            </div>
-          )}
-      </div>
-    </div>
-  );
-};
 
 const InvoicePage = () => {
   const { t } = useTranslation();
@@ -607,18 +319,6 @@ const InvoicePage = () => {
 
   const allSelected = locationList.length > 0 && selectedStores.length === locationList.length;
 
-  const fullAddress = [
-    locationDetail?.address,
-    locationDetail?.detailLocation,
-    cityName,
-    provinceName,
-    districtName,
-    villageName,
-    postalCodeValue
-  ]
-    .filter(Boolean)
-    .join(", ");
-
   const handleLogoChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -716,48 +416,90 @@ const InvoicePage = () => {
     handleSaveSettings();
   };
 
-  const handlePrintPreview = () => {
-    const items = sampleItems.map((i) => ({
-      name: i.name,
-      qty: i.qty,
-      price: i.price,
-      total: i.qty * i.price
-    }));
+  // One sample receipt drives both the on-screen preview and the print, so
+  // the preview is exactly what the printer receives.
+  const sampleReceipt = useMemo(() => {
+    const items = sampleItems.map((i) => ({ ...i, total: i.qty * i.price }));
     const subtotal = items.reduce((sum, i) => sum + i.total, 0);
     const tax = Math.round(subtotal * 0.1);
     const total = subtotal + tax;
-
-    const addressParts = [];
-    if (fullAddress) addressParts.push(fullAddress);
-    if (storePhone) addressParts.push("Telp: " + storePhone);
-    if (storeEmail) addressParts.push(storeEmail);
-
-    printViaBrowser({
-      storeName: showStoreName ? storeName || "Nama Toko" : "",
-      storeAddress: showAddress ? addressParts.join(" | ") : "",
-      storePhone: "",
-      logo: showLogo ? logoPreview : "",
-      memberName: showMemberInfo ? sampleMember.name : "",
-      memberTier: showMemberInfo ? sampleMember.tier : "",
-      memberPoints: showMemberInfo ? sampleMember.points : 0,
-      orderNumber: "INV-" + String(Date.now()).slice(-8),
-      cashier: cashierName || "Demo",
-      customer: "Umum",
-      date: new Date().toLocaleString("id-ID"),
+    const cashAmount = Math.ceil(total / 10000) * 10000;
+    return {
+      labels: receiptLabels(t),
+      storeName,
+      addressLines: buildAddressLines(
+        {
+          address: locationDetail?.address,
+          locationDetail: locationDetail?.detailLocation,
+          village: villageName,
+          district: districtName,
+          city: cityName,
+          province: provinceName,
+          postalCode: postalCodeValue,
+          phone: storePhone,
+          email: storeEmail
+        },
+        addressFieldsVisible
+      ),
+      logo: logoPreview,
+      memberName: sampleMember.name,
+      memberTier: sampleMember.tier,
+      memberPoints: sampleMember.points,
+      orderNumber: "INV-20261019-0001",
+      cashier: cashierName || "Kasir",
+      date: new Date(),
+      paymentMethod: "Tunai",
       items,
       subtotal,
       tax,
+      taxLabel: `${t("page.cashier.tax")} (10%)`,
       total,
-      paymentMethod: "Tunai",
-      cashAmount: total,
-      changeAmount: 0,
-      footer: footerText,
+      cashAmount,
+      changeAmount: cashAmount - total,
+      footer: footerText || t("page.invoice.footerDefault"),
+      socialMedia: locationDetail?.socialMedia || [],
+      socialMediaVisibility: socialMediaVisible,
+      showLogo,
+      showStoreName,
+      showAddress,
+      showMemberInfo,
+      showSocialMedia,
+      addressFieldsVisibility: addressFieldsVisible,
+      memberFieldsVisibility: memberFieldsVisible,
       paperSize,
       fontSize,
       fontFamily,
       lineSpacing
-    });
-  };
+    };
+  }, [
+    t,
+    storeName,
+    locationDetail,
+    villageName,
+    districtName,
+    cityName,
+    provinceName,
+    postalCodeValue,
+    storePhone,
+    storeEmail,
+    addressFieldsVisible,
+    logoPreview,
+    cashierName,
+    footerText,
+    socialMediaVisible,
+    showLogo,
+    showStoreName,
+    showAddress,
+    showMemberInfo,
+    showSocialMedia,
+    memberFieldsVisible,
+    paperSize,
+    fontSize,
+    fontFamily,
+    lineSpacing
+  ]);
+
+  const handlePrintPreview = () => printViaBrowser(sampleReceipt);
 
   return (
     <div data-tour="page-settings" className="space-y-6">
@@ -1476,44 +1218,15 @@ const InvoicePage = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.print()}
+                      onClick={handlePrintPreview}
+                      title={t("page.invoice.pdfHint")}
                       className="gap-1.5 shrink-0">
                       <FileText size={18} className="text-base" />
                       PDF
                     </Button>
                   </div>
                 </div>
-                <InvoicePreview
-                  storeName={storeName}
-                  storePhone={storePhone}
-                  storeEmail={storeEmail}
-                  locationDetail={locationDetail}
-                  cityName={cityName}
-                  provinceName={provinceName}
-                  districtName={districtName}
-                  villageName={villageName}
-                  postalCodeValue={postalCodeValue}
-                  fullAddress={fullAddress}
-                  cashierName={cashierName}
-                  memberName={sampleMember.name}
-                  memberTier={sampleMember.tier}
-                  memberPoints={sampleMember.points}
-                  logoUrl={logoPreview}
-                  showLogo={showLogo}
-                  showStoreName={showStoreName}
-                  showAddress={showAddress}
-                  showMemberInfo={showMemberInfo}
-                  showSocialMedia={showSocialMedia}
-                  socialMedia={locationDetail?.socialMedia || []}
-                  socialMediaVisible={socialMediaVisible}
-                  addressFieldsVisible={addressFieldsVisible}
-                  memberFieldsVisible={memberFieldsVisible}
-                  footerText={footerText}
-                  paperSize={paperSize}
-                  fontSize={fontSize}
-                  fontFamily={fontFamily}
-                  lineSpacing={lineSpacing}
-                />
+                <ReceiptPaper data={sampleReceipt} />
               </div>
             </div>
           </div>
