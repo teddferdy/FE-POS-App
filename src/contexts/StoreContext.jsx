@@ -40,7 +40,12 @@ export function StoreProvider({ children }) {
       // If not super_admin, we force the user's assigned store name so the UI never
       // shows a stale store from a previous session.
       const storeValue = isSuperAdmin ? id : user?.store || "";
-      const storeNameValue = isSuperAdmin ? name || "" : user?.storeName || name || "";
+      // ponytail: non-super_admin — nama yang dioper hanya dipercaya bila id-nya
+      // memang toko user; auto-pick DashboardLayout mengoper lokasi pertama
+      // (bisa toko lain) sehingga admin tanpa toko tampil "Bakso ABC".
+      const storeNameValue = isSuperAdmin
+        ? name || ""
+        : user?.storeName || (String(id ?? "") === String(storeValue) ? name : "") || "";
 
       // ponytail: set tanpa perubahan = no-op. Tanpa ini, admin tanpa store
       // (storeValue selalu "") memicu loop: DashboardLayout auto-pick →

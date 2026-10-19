@@ -80,6 +80,30 @@ describe("StoreContext refetch loop (admin without store)", () => {
     expect(fetchLocations.mock.calls.length).toBeLessThanOrEqual(2);
   });
 
+  test("auto-pick never labels an unassigned admin with another store's name", async () => {
+    setCookies({ user: { roleType: "admin", store: "", storeName: "" } });
+    const fetchLocations = jest.fn(() => Promise.resolve({ data: [{ id: 3, name: "Toko A" }] }));
+    let store;
+    const Grab = () => {
+      store = useStore();
+      return null;
+    };
+
+    renderWithStore(
+      <>
+        <AutoPick fetchLocations={fetchLocations} onPick={jest.fn()} />
+        <Grab />
+      </>
+    );
+    await waitFor(() => expect(fetchLocations).toHaveBeenCalled());
+    await act(() => new Promise((r) => setTimeout(r, 100)));
+
+    // The BE treats this account as storeless (403 Store assignment
+    // required); the header pill must not claim "Toko A".
+    expect(store.activeStoreName).toBe("");
+    expect(document.cookie).not.toContain(encodeURIComponent("Toko A"));
+  });
+
   test("setting the store that is already active does not invalidate queries", () => {
     setCookies({
       user: { roleType: "super_admin" },
