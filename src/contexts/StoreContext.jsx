@@ -42,6 +42,16 @@ export function StoreProvider({ children }) {
       const storeValue = isSuperAdmin ? id : user?.store || "";
       const storeNameValue = isSuperAdmin ? name || "" : user?.storeName || name || "";
 
+      // ponytail: set tanpa perubahan = no-op. Tanpa ini, admin tanpa store
+      // (storeValue selalu "") memicu loop: DashboardLayout auto-pick →
+      // invalidateQueries() → locations refetch (array baru) → auto-pick lagi.
+      if (
+        String(storeValue ?? "") === String(activeStoreId ?? "") &&
+        storeNameValue === activeStoreName
+      ) {
+        return;
+      }
+
       setCookie("activeStore", storeValue, { path: "/" });
       setCookie("activeStoreName", storeNameValue || "", { path: "/" });
 
@@ -56,7 +66,7 @@ export function StoreProvider({ children }) {
       localStorage.setItem("globalStoreFilter", String(storeValue));
       queryClient.invalidateQueries();
     },
-    [setCookie, user, queryClient, isSuperAdmin]
+    [setCookie, user, queryClient, isSuperAdmin, activeStoreId, activeStoreName]
   );
 
   const value = useMemo(

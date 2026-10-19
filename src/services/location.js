@@ -2,7 +2,9 @@ import { axiosInstance } from ".";
 import { normalizeStoreId } from "@/utils/storeId";
 
 export const getAllLocation = async (status) => {
-  const params = status ? `?status=${status}` : "";
+  // ponytail: dipakai langsung sebagai queryFn (useQuery(key, getAllLocation))
+  // → react-query mengoper context object; jangan kirim "[object Object]"
+  const params = typeof status === "string" && status ? `?status=${status}` : "";
   const { data, status: resStatus } = await axiosInstance.get(
     `/location/get-location-public${params}`
   );
