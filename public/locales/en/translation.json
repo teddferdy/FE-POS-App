@@ -8588,5 +8588,11 @@
   "page.supplier.detail.tabs.debt": "Saldo Utang",
   "page.shiftTemplate.detail.createdAt": "Dibuat",
   "page.supplier.detail.tabs.tax": "Pajak",
-  "page.supplier.detail.contacts.name": "Nama"
+  "page.supplier.detail.contacts.name": "Nama",
+  "page.supplier.selectCategory": "Select category...",
+  "page.supplier.selectPaymentType": "Select payment type...",
+  "page.supplier.selectTaxType": "Select tax type...",
+  "page.supplier.selectTransactionType": "Select transaction type...",
+  "page.supplier.selectUnit": "Select unit...",
+  "page.supplier.searchUnit": "Search unit..."
 }

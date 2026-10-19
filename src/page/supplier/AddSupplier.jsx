@@ -651,7 +651,7 @@ const AddSupplier = () => {
                                 onChange={(v) => field.onChange(v ? Number(v) : null)}
                                 placeholder={t(
                                   "page.supplier.categoryPlaceholder",
-                                  "Pilih kategori..."
+                                  t("page.supplier.selectCategory", "Pilih kategori...")
                                 )}
                                 searchPlaceholder={t("common.search")}
                               />
@@ -994,7 +994,10 @@ const AddSupplier = () => {
                                 ]}
                                 value={field.value}
                                 onChange={field.onChange}
-                                placeholder="Pilih tipe pembayaran..."
+                                placeholder={t(
+                                  "page.supplier.selectPaymentType",
+                                  "Pilih tipe pembayaran..."
+                                )}
                                 searchPlaceholder="Cari..."
                               />
                               <FormMessage />
@@ -1303,7 +1306,10 @@ const AddSupplier = () => {
                                 ]}
                                 value={field.value || ""}
                                 onChange={field.onChange}
-                                placeholder="Pilih jenis pajak..."
+                                placeholder={t(
+                                  "page.supplier.selectTaxType",
+                                  "Pilih jenis pajak..."
+                                )}
                                 searchPlaceholder="Cari..."
                               />
                               <FormMessage />
@@ -1325,7 +1331,10 @@ const AddSupplier = () => {
                                 ]}
                                 value={field.value || ""}
                                 onChange={field.onChange}
-                                placeholder="Pilih tipe transaksi..."
+                                placeholder={t(
+                                  "page.supplier.selectTransactionType",
+                                  "Pilih tipe transaksi..."
+                                )}
                                 searchPlaceholder="Cari..."
                               />
                               <FormMessage />
@@ -1505,8 +1514,8 @@ const AddSupplier = () => {
                           options={unitOptions}
                           value={productUnit}
                           onChange={(v) => setProductUnit(v)}
-                          placeholder="Pilih satuan..."
-                          searchPlaceholder="Cari satuan..."
+                          placeholder={t("page.supplier.selectUnit", "Pilih satuan...")}
+                          searchPlaceholder={t("page.supplier.searchUnit", "Cari satuan...")}
                         />
                       </div>
                       <div className="col-span-6 space-y-1">

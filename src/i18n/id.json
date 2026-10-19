@@ -8588,5 +8588,11 @@
   "page.supplier.detail.tabs.debt": "Saldo Utang",
   "page.shiftTemplate.detail.createdAt": "Dibuat",
   "page.supplier.detail.tabs.tax": "Pajak",
-  "page.supplier.detail.contacts.name": "Nama"
+  "page.supplier.detail.contacts.name": "Nama",
+  "page.supplier.selectCategory": "Pilih kategori...",
+  "page.supplier.selectPaymentType": "Pilih tipe pembayaran...",
+  "page.supplier.selectTaxType": "Pilih jenis pajak...",
+  "page.supplier.selectTransactionType": "Pilih tipe transaksi...",
+  "page.supplier.selectUnit": "Pilih satuan...",
+  "page.supplier.searchUnit": "Cari satuan..."
 }
