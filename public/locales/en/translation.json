@@ -8842,5 +8842,6 @@
   "page.dashboardSuperAdmin.semua_store": "All stores",
   "page.dashboardSuperAdmin.semua_waktu": "All time",
   "page.dashboardSuperAdmin.bulan_lalu": "last month",
-  "page.dashboardSuperAdmin.seluruh_periode": "entire period"
+  "page.dashboardSuperAdmin.seluruh_periode": "entire period",
+  "page.auth.cari_lokasi": "Search location..."
 }

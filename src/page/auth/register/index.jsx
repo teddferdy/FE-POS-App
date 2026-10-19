@@ -307,7 +307,7 @@ const RegisterPage = () => {
                             value={field.value || ""}
                             onChange={field.onChange}
                             placeholder={translationMemo.selectLocation}
-                            searchPlaceholder="Cari lokasi..."
+                            searchPlaceholder={t("page.auth.cari_lokasi", "Cari lokasi...")}
                           />
                         </div>
                         {form?.formState?.errors?.store && (
