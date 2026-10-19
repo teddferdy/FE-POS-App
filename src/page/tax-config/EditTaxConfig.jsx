@@ -106,9 +106,9 @@ const EditTaxConfig = () => {
   const [searchParams] = useSearchParams();
   const taxId = searchParams.get("id");
   const taxFieldLabels = {
-    name: "Nama Pajak",
-    type: "Tipe Pajak",
-    rate: "Tarif Pajak"
+    name: t("page.taxConfig.nama_pajak", "Nama Pajak"),
+    type: t("page.taxConfig.tipe_pajak", "Tipe Pajak"),
+    rate: t("page.taxConfig.tarif_pajak", "Tarif Pajak")
   };
 
   const [cancelModal, setCancelModal] = useState(false);
@@ -397,9 +397,12 @@ const EditTaxConfig = () => {
           type="confirm"
           open={confirmSaveModal}
           onOpenChange={setConfirmSaveModal}
-          title="Konfirmasi Simpan"
-          description="Apakah Anda yakin ingin menyimpan data ini?"
-          confirmText="Ya, Simpan"
+          title={t("page.taxConfig.konfirmasi_simpan", "Konfirmasi Simpan")}
+          description={t(
+            "page.taxConfig.apakah_anda_yakin_ingin_menyimpan_data_ini",
+            "Apakah Anda yakin ingin menyimpan data ini?"
+          )}
+          confirmText={t("page.taxConfig.ya_simpan", "Ya, Simpan")}
           onConfirm={() => {
             setConfirmSaveModal(false);
             const values = form.getValues();

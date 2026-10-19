@@ -8799,5 +8799,11 @@
   "page.dashboardUser.semua_toko": "All stores",
   "page.dashboardUser.sudah_absen_hari_ini": "Already absent today",
   "page.dashboardUser.total_penjualan": "Total Sales",
-  "page.dashboardUser.rekan_kerja": "colleagues"
+  "page.dashboardUser.rekan_kerja": "colleagues",
+  "page.taxConfig.apakah_anda_yakin_ingin_menyimpan_data_ini": "Are you sure you want to save this data?",
+  "page.taxConfig.konfirmasi_simpan": "Confirm Save",
+  "page.taxConfig.nama_pajak": "Tax Name",
+  "page.taxConfig.tarif_pajak": "Tax Rate",
+  "page.taxConfig.tipe_pajak": "Tax Type",
+  "page.taxConfig.ya_simpan": "Yes, Save"
 }

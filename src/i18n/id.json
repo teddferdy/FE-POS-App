@@ -8799,5 +8799,11 @@
   "page.dashboardUser.semua_toko": "Semua toko",
   "page.dashboardUser.sudah_absen_hari_ini": "Sudah absen hari ini",
   "page.dashboardUser.total_penjualan": "Total Penjualan",
-  "page.dashboardUser.rekan_kerja": "rekan kerja"
+  "page.dashboardUser.rekan_kerja": "rekan kerja",
+  "page.taxConfig.apakah_anda_yakin_ingin_menyimpan_data_ini": "Apakah Anda yakin ingin menyimpan data ini?",
+  "page.taxConfig.konfirmasi_simpan": "Konfirmasi Simpan",
+  "page.taxConfig.nama_pajak": "Nama Pajak",
+  "page.taxConfig.tarif_pajak": "Tarif Pajak",
+  "page.taxConfig.tipe_pajak": "Tipe Pajak",
+  "page.taxConfig.ya_simpan": "Ya, Simpan"
 }
