@@ -8785,5 +8785,19 @@
   "page.cashRegister.rp_0": "Rp 0",
   "page.cashRegister.termasuk_periode": "Include period",
   "page.cashRegister.whatsapp_qr_code": "WhatsApp QR Code",
-  "page.cashRegister.rincian_per_invoice": "details per invoice"
+  "page.cashRegister.rincian_per_invoice": "details per invoice",
+  "page.dashboardUser.capaian_target": "Target Achievement",
+  "page.dashboardUser.diajukan_untukmu": "Requested for you",
+  "page.dashboardUser.kamu_mengajukan": "You requested",
+  "page.dashboardUser.pertukaran_shift_berhasil": "Shift exchange successful",
+  "page.dashboardUser.ratarata___transaksi": "Average / Transaction",
+  "page.dashboardUser.sedang_diproses": "Processing",
+  "page.dashboardUser.selamat_malam": "Good evening",
+  "page.dashboardUser.selamat_pagi": "Good morning",
+  "page.dashboardUser.selamat_siang": "Good afternoon",
+  "page.dashboardUser.selamat_sore": "Good afternoon",
+  "page.dashboardUser.semua_toko": "All stores",
+  "page.dashboardUser.sudah_absen_hari_ini": "Already absent today",
+  "page.dashboardUser.total_penjualan": "Total Sales",
+  "page.dashboardUser.rekan_kerja": "colleagues"
 }

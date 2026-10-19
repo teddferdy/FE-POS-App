@@ -64,10 +64,10 @@ const nowHM = () => {
 
 const greeting = () => {
   const h = new Date().getHours();
-  if (h < 11) return "Selamat pagi";
-  if (h < 15) return "Selamat siang";
-  if (h < 19) return "Selamat sore";
-  return "Selamat malam";
+  if (h < 11) return t("page.dashboardUser.selamat_pagi", "Selamat pagi");
+  if (h < 15) return t("page.dashboardUser.selamat_siang", "Selamat siang");
+  if (h < 19) return t("page.dashboardUser.selamat_sore", "Selamat sore");
+  return t("page.dashboardUser.selamat_malam", "Selamat malam");
 };
 
 const DashboardUser = () => {
@@ -218,11 +218,14 @@ const DashboardUser = () => {
       seenApprovedRef.current.add(s.id);
       const other =
         String(s.requesterId) === String(currentUserId) ? s.requesterUser : s.targetUser;
-      toast.success("Pertukaran Shift Berhasil", {
-        description: `Pertukaran shift kamu dengan ${
-          other?.fullName || "rekan kerja"
-        } telah disetujui.`
-      });
+      toast.success(
+        t("page.dashboardUser.pertukaran_shift_berhasil", "Pertukaran Shift Berhasil"),
+        {
+          description: `Pertukaran shift kamu dengan ${
+            other?.fullName || t("page.dashboardUser.rekan_kerja", "rekan kerja")
+          } telah disetujui.`
+        }
+      );
     });
   }, [mySwaps, currentUserId]);
 
@@ -379,7 +382,9 @@ const DashboardUser = () => {
                   </p>
                   <p className="flex items-center gap-2">
                     <Store size={14} className="shrink-0 text-muted-foreground/70" />
-                    {todayShift.storeName || todayShift.store || "Semua toko"}
+                    {todayShift.storeName ||
+                      todayShift.store ||
+                      t("page.dashboardUser.semua_toko", "Semua toko")}
                   </p>
                 </div>
                 <div className="mt-auto pt-4">
@@ -417,7 +422,7 @@ const DashboardUser = () => {
                         setAttendanceType(hasCheckedIn && !hasCheckedOut ? "check-out" : "check-in")
                       }>
                       {hasCheckedIn && hasCheckedOut ? (
-                        "Sudah absen hari ini"
+                        t("page.dashboardUser.sudah_absen_hari_ini", "Sudah absen hari ini")
                       ) : hasCheckedIn ? (
                         <>
                           <LogOut size={14} className="mr-1.5" />
@@ -665,7 +670,7 @@ const DashboardUser = () => {
               const statusCfg =
                 s.status === "pending"
                   ? {
-                      label: "Sedang Diproses",
+                      label: t("page.dashboardUser.sedang_diproses", "Sedang Diproses"),
                       cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
                       icon: Loader2
                     }
@@ -732,7 +737,10 @@ const DashboardUser = () => {
                     <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">{s.note}</p>
                   )}
                   <p className="mt-2 text-[11px] text-muted-foreground">
-                    {isRequester ? "Kamu mengajukan" : "Diajukan untukmu"} ·{" "}
+                    {isRequester
+                      ? t("page.dashboardUser.kamu_mengajukan", "Kamu mengajukan")
+                      : t("page.dashboardUser.diajukan_untukmu", "Diajukan untukmu")}{" "}
+                    ·{" "}
                     {s.createdAt
                       ? new Date(s.createdAt).toLocaleString("id-ID", {
                           day: "numeric",
@@ -848,20 +856,20 @@ const DashboardUser = () => {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
-                  label="Total Penjualan"
+                  label={t("page.dashboardUser.total_penjualan", "Total Penjualan")}
                   value={fmtCurrency(totalSales)}
                   icon={TrendingUp}
                   variant="default"
                 />
                 <StatCard label="Transaksi" value={totalOrders} icon={Receipt} variant="active" />
                 <StatCard
-                  label="Rata-rata / Transaksi"
+                  label={t("page.dashboardUser.ratarata___transaksi", "Rata-rata / Transaksi")}
                   value={fmtCurrency(averageOrderValue)}
                   icon={ShoppingCart}
                   variant="blue"
                 />
                 <StatCard
-                  label="Capaian Target"
+                  label={t("page.dashboardUser.capaian_target", "Capaian Target")}
                   value={`${targetProgress}%`}
                   icon={Target}
                   variant={targetProgress >= 100 ? "active" : "gold"}
