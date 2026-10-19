@@ -52,14 +52,14 @@ const getRange = (key) => {
     return {
       startDate: new Date(todayStart.getTime() - 6 * 86400000).toISOString(),
       endDate: now.toISOString(),
-      label: "7 hari terakhir"
+      label: t("page.dashboardSuperAdmin.7_hari_terakhir", "7 hari terakhir")
     };
   }
   if (key === "30d") {
     return {
       startDate: new Date(todayStart.getTime() - 29 * 86400000).toISOString(),
       endDate: now.toISOString(),
-      label: "30 hari terakhir"
+      label: t("page.dashboardSuperAdmin.30_hari_terakhir", "30 hari terakhir")
     };
   }
   if (key === "thisMonth") {
@@ -73,10 +73,10 @@ const getRange = (key) => {
     return {
       startDate: new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString(),
       endDate: new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).toISOString(),
-      label: "bulan lalu"
+      label: t("page.dashboardSuperAdmin.bulan_lalu", "bulan lalu")
     };
   }
-  return { startDate: null, endDate: null, label: "seluruh periode" };
+  return { startDate: null, endDate: null, label: t("page.dashboardSuperAdmin.seluruh_periode", "seluruh periode") };
 };
 
 const DashboardSuperAdmin = () => {
@@ -124,7 +124,7 @@ const DashboardSuperAdmin = () => {
   const selectedStoreName = locations.find((l) => String(l.id) === String(storeFilter))?.name;
 
   useEffect(() => {
-    document.title = "Dashboard Super Admin - POS";
+    document.title = t("page.dashboardSuperAdmin.dashboard_super_admin__pos", "Dashboard Super Admin - POS");
   }, []);
 
   const handlePreset = (key) => {
@@ -175,7 +175,7 @@ const DashboardSuperAdmin = () => {
                   else setActiveStore(v, "");
                 }}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Semua Toko" />
+                  <SelectValue placeholder={t("page.dashboardSuperAdmin.semua_toko", "Semua Toko") />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Toko</SelectItem>
@@ -208,7 +208,7 @@ const DashboardSuperAdmin = () => {
         <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <Building2 size={13} />
-            {storeFilter ? selectedStoreName || `Store #${storeFilter}` : "Semua store"}
+            {storeFilter ? selectedStoreName || `Store #${storeFilter}` : t("page.dashboardSuperAdmin.semua_store", "Semua store")}
           </span>
           <span className="inline-flex items-center gap-1.5">
             <CalendarDays size={13} />
@@ -217,7 +217,7 @@ const DashboardSuperAdmin = () => {
               ? `${new Date(dateRange.startDate).toLocaleDateString("id-ID")} – ${new Date(
                   dateRange.endDate
                 ).toLocaleDateString("id-ID")}`
-              : "Semua waktu"}
+              : t("page.dashboardSuperAdmin.semua_waktu", "Semua waktu")}
           </span>
           <span className="inline-flex items-center gap-1.5">
             <Info size={13} />

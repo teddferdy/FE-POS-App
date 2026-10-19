@@ -8834,5 +8834,13 @@
   "page.stockForecast.writeoff_batch_kedaluwarsa": "Write-off Batch Kedaluwarsa?",
   "page.stockForecast.writeoff_kedaluwarsa": "Write-off Kedaluwarsa",
   "page.stockForecast.writeoff_gagal": "Write-off gagal",
-  "page.stockForecast.writeoff_selesai": "Write-off selesai"
+  "page.stockForecast.writeoff_selesai": "Write-off selesai",
+  "page.dashboardSuperAdmin.30_hari_terakhir": "30 hari terakhir",
+  "page.dashboardSuperAdmin.7_hari_terakhir": "7 hari terakhir",
+  "page.dashboardSuperAdmin.dashboard_super_admin__pos": "Dashboard Super Admin - POS",
+  "page.dashboardSuperAdmin.semua_toko": "Semua Toko",
+  "page.dashboardSuperAdmin.semua_store": "Semua store",
+  "page.dashboardSuperAdmin.semua_waktu": "Semua waktu",
+  "page.dashboardSuperAdmin.bulan_lalu": "bulan lalu",
+  "page.dashboardSuperAdmin.seluruh_periode": "seluruh periode"
 }

@@ -8834,5 +8834,13 @@
   "page.stockForecast.writeoff_batch_kedaluwarsa": "Write-off expired batch?",
   "page.stockForecast.writeoff_kedaluwarsa": "Write-off Expired",
   "page.stockForecast.writeoff_gagal": "Write-off failed",
-  "page.stockForecast.writeoff_selesai": "Write-off completed"
+  "page.stockForecast.writeoff_selesai": "Write-off completed",
+  "page.dashboardSuperAdmin.30_hari_terakhir": "Last 30 days",
+  "page.dashboardSuperAdmin.7_hari_terakhir": "Last 7 days",
+  "page.dashboardSuperAdmin.dashboard_super_admin__pos": "Dashboard Super Admin - POS",
+  "page.dashboardSuperAdmin.semua_toko": "All Stores",
+  "page.dashboardSuperAdmin.semua_store": "All stores",
+  "page.dashboardSuperAdmin.semua_waktu": "All time",
+  "page.dashboardSuperAdmin.bulan_lalu": "last month",
+  "page.dashboardSuperAdmin.seluruh_periode": "entire period"
 }
