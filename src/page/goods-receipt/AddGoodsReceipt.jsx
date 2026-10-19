@@ -1185,7 +1185,10 @@ const AddGoodsReceipt = () => {
                                     value={item.batchNumber || ""}
                                     onChange={(e) => updateItem(idx, "batchNumber", e.target.value)}
                                     className="h-9 text-sm"
-                                    placeholder="No. batch / lot"
+                                    placeholder={t(
+                                      "page.goodsReceipt.no_batch___lot",
+                                      "No. batch / lot"
+                                    )}
                                   />
                                 </div>
                                 <div>
@@ -1530,7 +1533,7 @@ const AddGoodsReceipt = () => {
                       }`}>
                       {grSummary.shortageValue > 0
                         ? `-Rp ${grSummary.shortageValue.toLocaleString("id-ID")}`
-                        : "Rp 0"}
+                        : t("page.goodsReceipt.rp_0", "Rp 0")}
                     </span>
                   </div>
                   {grSummary.shortageValue > 0 && poId && (

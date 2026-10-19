@@ -8735,5 +8735,8 @@
   "page.employee.nomor_telepon": "Nomor Telepon",
   "page.employee.tanggal_lahir": "Tanggal Lahir",
   "page.employee.tempat_lahir": "Tempat Lahir",
-  "page.employee.belum_ada_penempatan_store": "belum ada penempatan store"
+  "page.employee.belum_ada_penempatan_store": "belum ada penempatan store",
+  "page.goodsReceipt.no_batch___lot": "No. batch / lot",
+  "page.goodsReceipt.rp_0": "Rp 0",
+  "page.goodsReceipt.tidak_ada_bahan_ditemukan": "Tidak ada bahan ditemukan"
 }

@@ -915,7 +915,10 @@ const EditGoodsReceipt = () => {
                                   ) : (
                                     <p className="p-3 text-xs text-muted-foreground text-center">
                                       {t("page.goodsReceipt.edit.placeholder.noIngredient") ||
-                                        "Tidak ada bahan ditemukan"}
+                                        t(
+                                          "page.goodsReceipt.tidak_ada_bahan_ditemukan",
+                                          "Tidak ada bahan ditemukan"
+                                        )}
                                     </p>
                                   )}
                                 </div>
@@ -1222,7 +1225,7 @@ const EditGoodsReceipt = () => {
                   }`}>
                   {grSummary.shortageValue > 0
                     ? `-Rp ${grSummary.shortageValue.toLocaleString("id-ID")}`
-                    : "Rp 0"}
+                    : t("page.goodsReceipt.rp_0", "Rp 0")}
                 </span>
               </div>
               {grSummary.shortageValue > 0 && poId && (
