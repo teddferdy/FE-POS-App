@@ -289,7 +289,7 @@ const DetailShift = () => {
             <InfoRow icon={Hash} label="ID">
               <span className="font-mono">#{shift.id}</span>
             </InfoRow>
-            <InfoRow icon={Store} label="Toko" iconClass="text-primary">
+            <InfoRow icon={Store} label={t("common.store")} iconClass="text-primary">
               {locationName || `Toko #${shift.store || "Semua"}`}
             </InfoRow>
             <InfoRow icon={CalendarDays} label={t("page.shift.table.name")}>

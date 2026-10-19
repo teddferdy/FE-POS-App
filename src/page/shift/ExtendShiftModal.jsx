@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import {
   CalendarDays,
@@ -26,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { resolveKaryawan, groupKaryawanByStore, splitKaryawanByStore } from "./shiftMembers";
 
 const ExtendShiftModal = ({ open, onOpenChange, shift, locationName, onSave, isSaving }) => {
+  const { t } = useTranslation();
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -189,7 +191,9 @@ const ExtendShiftModal = ({ open, onOpenChange, shift, locationName, onSave, isS
                         ? "text-amber-600 dark:text-amber-400"
                         : "text-muted-foreground"
                   )}>
-                  {isExpired ? "Shift telah berakhir" : `${daysLeft} hari lagi berakhir`}
+                  {isExpired
+                    ? t("page.shift.ended", "Shift telah berakhir")
+                    : `${daysLeft} hari lagi berakhir`}
                 </span>
               )}
             </div>
@@ -222,7 +226,7 @@ const ExtendShiftModal = ({ open, onOpenChange, shift, locationName, onSave, isS
                 date={tanggalMulai}
                 setDate={setTanggalMulai}
                 minDate={today}
-                placeholder="Pilih tanggal"
+                placeholder={t("page.shift.selectDate", "Pilih tanggal")}
               />
               {!tanggalMulai && (
                 <p className="text-[11px] text-red-600 dark:text-red-400 mt-1">Wajib diisi</p>
@@ -241,11 +245,13 @@ const ExtendShiftModal = ({ open, onOpenChange, shift, locationName, onSave, isS
                   date={tanggalSelesai}
                   setDate={isMingguan ? setTanggalSelesai : () => {}}
                   minDate={tanggalMulai || today}
-                  placeholder="Pilih tanggal"
+                  placeholder={t("page.shift.selectDate", "Pilih tanggal")}
                 />
               </div>
               <p className="text-[11px] text-muted-foreground mt-1">
-                {isMingguan ? "Atur tanggal berakhir shift" : "Hanya untuk shift mingguan"}
+                {isMingguan
+                  ? t("page.shift.setEndDate", "Atur tanggal berakhir shift")
+                  : t("page.shift.weeklyOnly", "Hanya untuk shift mingguan")}
               </p>
             </div>
           </div>
@@ -268,15 +274,17 @@ const ExtendShiftModal = ({ open, onOpenChange, shift, locationName, onSave, isS
                     ? "bg-primary text-primary-foreground border-primary shadow-sm"
                     : "bg-background text-muted-foreground border-border hover:border-primary/50"
                 )}>
-                {type === "harian" ? "Harian" : "Mingguan"}
+                {type === "harian"
+                  ? t("page.shift.daily", "Harian")
+                  : t("page.shift.weekly", "Mingguan")}
               </button>
             ))}
           </div>
           <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
             <Info size={11} className="shrink-0" />
             {isMingguan
-              ? "Shift berjalan mingguan dengan tanggal selesai."
-              : "Hanya untuk shift mingguan"}
+              ? t("page.shift.weeklyWithEnd", "Shift berjalan mingguan dengan tanggal selesai.")
+              : t("page.shift.weeklyOnly", "Hanya untuk shift mingguan")}
           </p>
         </div>
 
@@ -399,7 +407,10 @@ const ExtendShiftModal = ({ open, onOpenChange, shift, locationName, onSave, isS
               <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                 <Info size={11} className="shrink-0" />
                 {resolvedCount === 0
-                  ? "Belum ada data karyawan yang cocok. Pastikan data karyawan tersedia pada toko ini."
+                  ? t(
+                      "page.shift.noEmployees",
+                      "Belum ada data karyawan yang cocok. Pastikan data karyawan tersedia pada toko ini."
+                    )
                   : `${resolvedCount} karyawan terisi, ${unknownCount} ID tidak ditemukan di daftar karyawan.`}
               </p>
             </div>

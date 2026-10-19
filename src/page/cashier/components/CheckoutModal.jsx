@@ -1588,7 +1588,7 @@ const CheckoutModal = ({
                 <span className="text-muted-foreground">Poin:</span>
                 <span className="font-medium">{memberPoints.toLocaleString("id-ID")} pts</span>
                 <span className="text-muted-foreground">
-                  Status: {selectedCustomer.status || "Aktif"}
+                  Status: {selectedCustomer.status || t("common.active", "Aktif")}
                 </span>
               </div>
             </div>

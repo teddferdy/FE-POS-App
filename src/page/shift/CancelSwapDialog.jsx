@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { ArrowRightLeft, Loader2 } from "lucide-react";
@@ -20,12 +21,13 @@ const isSwapQuery = (query) => {
 };
 
 const CancelSwapDialog = ({ open, onOpenChange, swap, onSuccess }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const cancelMutation = useMutation(cancelShiftSwap, {
     onSuccess: (data) => {
-      toast.success("Pembatalan Berhasil", {
-        description: "Permintaan tukar shift telah dibatalkan."
+      toast.success(t("page.shift.cancelSuccess", "Pembatalan Berhasil"), {
+        description: t("page.shift.swapCancelled", "Permintaan tukar shift telah dibatalkan.")
       });
       queryClient.invalidateQueries({
         predicate: isSwapQuery,
@@ -35,7 +37,7 @@ const CancelSwapDialog = ({ open, onOpenChange, swap, onSuccess }) => {
       onOpenChange(false);
     },
     onError: (err) => {
-      toast.error("Gagal Membatalkan", {
+      toast.error(t("page.shift.cancelFailed", "Gagal Membatalkan"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -91,7 +93,9 @@ const CancelSwapDialog = ({ open, onOpenChange, swap, onSuccess }) => {
             ) : (
               <ArrowRightLeft size={14} />
             )}
-            {cancelMutation.isLoading ? "Membatalkan..." : "Ya, Batalkan"}
+            {cancelMutation.isLoading
+              ? t("page.shift.cancelling", "Membatalkan...")
+              : "Ya, Batalkan"}
           </Button>
         </div>
       </DialogContent>

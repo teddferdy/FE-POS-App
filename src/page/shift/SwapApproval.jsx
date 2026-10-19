@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import {
@@ -238,6 +239,7 @@ const AuditTrailPanel = ({ store, locations }) => {
 };
 
 const SwapApproval = ({ user, store, locations }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [status, setStatus] = useState("pending");
   const [page, setPage] = useState(1);
@@ -278,11 +280,11 @@ const SwapApproval = ({ user, store, locations }) => {
         return { snapshot };
       },
       onSuccess: (_res, vars) => {
-        toast.success("Berhasil", {
+        toast.success(t("common.success"), {
           description:
             vars.decision === "approved"
-              ? "Permintaan ubah jadwal disetujui."
-              : "Permintaan ubah jadwal ditolak."
+              ? t("page.shift.scheduleChangeApproved", "Permintaan ubah jadwal disetujui.")
+              : t("page.shift.scheduleChangeRejected", "Permintaan ubah jadwal ditolak.")
         });
         setDecisionTarget(null);
       },
@@ -291,7 +293,9 @@ const SwapApproval = ({ user, store, locations }) => {
         (ctx?.snapshot || []).forEach(([key, value]) => {
           queryClient.setQueryData(key, value);
         });
-        toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+        toast.error(t("common.error"), {
+          description: err?.response?.data?.message || err.message
+        });
       },
       onSettled: () => {
         setDecisionTarget(null);
@@ -331,18 +335,34 @@ const SwapApproval = ({ user, store, locations }) => {
             href: "/dashboard-super-admin",
             i18nKey: "breadcrumb.home"
           },
-          { label: "Shift" },
+          { label: t("page.shift.title", "Shift") },
           { label: "Swap Approval" }
         ]}
         title="Swap Approval"
-        description="Kelola permintaan tukar jadwal shift"
+        description={t("page.shift.manageSwap", "Kelola permintaan tukar jadwal shift")}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-        {statItem("Menunggu", stats.pending || 0, "text-amber-600 dark:text-amber-400")}
-        {statItem("Disetujui", stats.approved || 0, "text-green-600 dark:text-green-400")}
-        {statItem("Ditolak", stats.rejected || 0, "text-red-600 dark:text-red-400")}
-        {statItem("Kedaluwarsa", stats.expired || 0, "text-slate-600 dark:text-slate-400")}
+        {statItem(
+          t("page.shift.status.pending", "Menunggu"),
+          stats.pending || 0,
+          "text-amber-600 dark:text-amber-400"
+        )}
+        {statItem(
+          t("page.shift.status.approved", "Disetujui"),
+          stats.approved || 0,
+          "text-green-600 dark:text-green-400"
+        )}
+        {statItem(
+          t("page.shift.status.rejected", "Ditolak"),
+          stats.rejected || 0,
+          "text-red-600 dark:text-red-400"
+        )}
+        {statItem(
+          t("page.shift.status.expired", "Kedaluwarsa"),
+          stats.expired || 0,
+          "text-slate-600 dark:text-slate-400"
+        )}
         {statItem("Total", stats.total || 0, "text-foreground")}
       </div>
 
@@ -354,10 +374,10 @@ const SwapApproval = ({ user, store, locations }) => {
             </label>
             <Combobox
               options={[
-                { value: "pending", label: "Menunggu" },
-                { value: "approved", label: "Disetujui" },
-                { value: "rejected", label: "Ditolak" },
-                { value: "expired", label: "Kedaluwarsa" },
+                { value: "pending", label: t("page.shift.status.pending", "Menunggu") },
+                { value: "approved", label: t("page.shift.status.approved", "Disetujui") },
+                { value: "rejected", label: t("page.shift.status.rejected", "Ditolak") },
+                { value: "expired", label: t("page.shift.status.expired", "Kedaluwarsa") },
                 { value: "", label: "Semua" }
               ]}
               value={status}
@@ -365,7 +385,7 @@ const SwapApproval = ({ user, store, locations }) => {
                 setStatus(v);
                 setPage(1);
               }}
-              placeholder="Pilih status"
+              placeholder={t("page.shift.selectStatus", "Pilih status")}
               searchPlaceholder="Cari..."
             />
           </div>

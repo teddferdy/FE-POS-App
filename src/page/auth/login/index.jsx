@@ -62,9 +62,9 @@ const LoginPage = () => {
   useEffect(() => {
     if (!sessionNotice || !ready) return;
     if (sessionNotice === SESSION_END_REASON.EXPIRED) {
-      toast.error("Sesi Berakhir", {
+      toast.error(t("page.login.sessionExpired.title"), {
         id: "session-end-notice",
-        description: "Sesi login Anda telah berakhir. Silakan login kembali untuk melanjutkan."
+        description: t("page.login.sessionExpired.description")
       });
     } else if (sessionNotice === SESSION_END_REASON.LOGOUT) {
       toast.success(t("header.logoutSuccessTitle"), { id: "session-end-notice" });
@@ -217,11 +217,10 @@ const LoginPage = () => {
               </span>
               <div className="w-12 h-0.5 bg-white/30 mx-auto mb-6" />
               <h2 className="text-lg xl:text-xl leading-relaxed mb-4 font-light text-white/80">
-                Kelola seluruh operasional restoran — kasir, stok, dan laporan.
+                {t("page.login.brand.tagline")}
               </h2>
               <p className="text-sm xl:text-base text-white/50 font-light leading-relaxed max-w-sm mx-auto">
-                Ledger operasional yang bisa Anda lihat menembus: angka yang tepat, dalam satu
-                aplikasi.
+                {t("page.login.brand.description")}
               </p>
             </div>
           </div>

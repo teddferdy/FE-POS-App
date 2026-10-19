@@ -127,6 +127,7 @@ const WEEKDAYS_ID = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
 // Kalender bulanan untuk melihat ketersediaan rekan kerja sebelum swap.
 const AvailabilityCalendar = ({ month, busyDates, selectedDate, onSelectDate, disabledDates }) => {
+  const { t } = useTranslation();
   const year = month.getFullYear();
   const mIdx = month.getMonth();
   const first = new Date(year, mIdx, 1);
@@ -143,7 +144,9 @@ const AvailabilityCalendar = ({ month, busyDates, selectedDate, onSelectDate, di
           {safeGet(MONTHS_ID, mIdx, mIdx)} {year}
         </p>
         <span className="text-[10px] text-muted-foreground font-medium">
-          {busyDates.size > 0 ? `${busyDates.size} hari sibuk` : "Semua kosong"}
+          {busyDates.size > 0
+            ? `${busyDates.size} hari sibuk`
+            : t("page.shift.allEmpty", "Semua kosong")}
         </span>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center mb-1">

@@ -117,7 +117,7 @@ const ShiftList = () => {
 
   const extendMutation = useMutation((payload) => editShift({ id: payload.id, ...payload.data }), {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Periode shift berhasil diperpanjang." });
+      toast.success(t("common.success"), { description: t("page.shift.toast.extendSuccess") });
       queryClient.invalidateQueries(["shifts"]);
       setExtendTarget(null);
     },
@@ -193,7 +193,7 @@ const ShiftList = () => {
       )
     },
     {
-      header: "Toko",
+      header: t("common.store", t("common.store")),
       render: (row) => {
         const loc = locData?.data?.find((l) => String(l.id) === String(row.store));
         return (
@@ -216,7 +216,7 @@ const ShiftList = () => {
       )
     },
     {
-      header: "Tanggal",
+      header: t("common.date", t("common.date")),
       render: (row) => (
         <div className="text-sm">
           <div className="flex items-center gap-1.5 text-foreground">
@@ -245,7 +245,7 @@ const ShiftList = () => {
       )
     },
     {
-      header: "Karyawan",
+      header: t("page.shift.table.employees", t("page.shift.table.employees")),
       render: (row) => (
         <div className="flex items-center gap-1.5">
           <Users size={13} className="shrink-0 text-muted-foreground" />
@@ -326,7 +326,7 @@ const ShiftList = () => {
       stickyRight: true,
       legend: [
         { icon: Eye, label: t("common.detail") },
-        { icon: CalendarClock, label: "Perpanjang" },
+        { icon: CalendarClock, label: t("page.shift.extend", t("page.shift.extend")) },
         { icon: Edit, label: t("common.edit") },
         { icon: Trash2, label: t("common.delete") }
       ],
@@ -341,7 +341,7 @@ const ShiftList = () => {
               onClick: () => navigate(`/detail-shift?id=${row.id || row._id}`)
             },
             {
-              label: "Perpanjang shift",
+              label: t("page.shift.extendShift", t("page.shift.extendShift")),
               icon: CalendarClock,
               onClick: () => setExtendTarget(row),
               hidden: !canAccess(user, MENU_KEY, "edit")
@@ -504,9 +504,9 @@ const ShiftList = () => {
                                     <span
                                       className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${badgeClass}`}>
                                       {isPast
-                                        ? "Sudah berakhir"
+                                        ? t("page.shift.status.ended", "Sudah berakhir")
                                         : diff === 0
-                                          ? "Hari ini"
+                                          ? t("common.today", t("common.today"))
                                           : diff === 1
                                             ? "Besok"
                                             : `${diff} hari lagi`}
@@ -584,7 +584,10 @@ const ShiftList = () => {
                                   setPage(1);
                                 }}
                                 placeholder={t("page.employee.list.allStores")}
-                                searchPlaceholder="Cari toko..."
+                                searchPlaceholder={t(
+                                  "page.shift.searchStore",
+                                  t("page.shift.searchStore")
+                                )}
                               />
                             </div>
                           )}

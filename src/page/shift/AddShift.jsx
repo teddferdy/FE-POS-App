@@ -79,15 +79,15 @@ const AddShift = () => {
   });
 
   const fieldLabels = {
-    nama_shift: "Nama Shift",
+    nama_shift: t("page.shift.shiftName", t("page.shift.shiftName")),
     tipe_shift: "Tipe Shift",
-    store: "Penempatan Toko",
-    jam_mulai: "Jam Mulai",
-    jam_selesai: "Jam Selesai",
+    store: t("page.shift.storePlacement", "Penempatan Toko"),
+    jam_mulai: t("page.shift.table.startTime"),
+    jam_selesai: t("page.shift.table.endTime"),
     tanggal_mulai: "Tanggal Mulai",
     tanggal_selesai: "Tanggal Selesai",
-    karyawan: "Karyawan",
-    status: "Status"
+    karyawan: t("page.shift.table.employees"),
+    status: t("common.status")
   };
 
   const form = useForm({
@@ -264,7 +264,11 @@ const AddShift = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      setModalMessage(err?.response?.data?.message || err.message || "Gagal menambahkan shift");
+      setModalMessage(
+        err?.response?.data?.message ||
+          err.message ||
+          t("page.shift.addFailed", "Gagal menambahkan shift")
+      );
       setErrorModal(true);
     }
   });
@@ -385,9 +389,12 @@ const AddShift = () => {
                   isSuperAdmin={isSuperAdmin}
                   user={user}
                   t={t}
-                  title="Pilih Toko*"
-                  description="Pilih toko dimana shift ini tersedia"
-                  noStoreLabel="Belum ada toko"
+                  title={t("page.shift.selectStoreRequired", "Pilih Toko*")}
+                  description={t(
+                    "page.shift.selectStoreAvailable",
+                    "Pilih toko dimana shift ini tersedia"
+                  )}
+                  noStoreLabel={t("page.shift.noStore", "Belum ada toko")}
                   addStoreLabel="Tambah Toko"
                   storeInfoLabel="Toko:"
                   allStores={allStores}
@@ -444,13 +451,19 @@ const AddShift = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <Wand2 size={20} className="text-blue-600 dark:text-blue-400 text-lg" />
                     <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
-                      {t("page.shift.template.selectorTitle", "Pilih Template (Opsional)")}
+                      {t(
+                        "page.shift.template.selectorTitle",
+                        t("page.shift.selectTemplateOptional", "Pilih Template (Opsional)")
+                      )}
                     </p>
                   </div>
                   <p className="text-xs text-blue-600/80 dark:text-blue-400/80 mb-3">
                     {t(
                       "page.shift.template.selectorDesc",
-                      "Pilih template untuk mengisi nama dan jam shift secara otomatis."
+                      t(
+                        "page.shift.selectTemplateHint",
+                        "Pilih template untuk mengisi nama dan jam shift secara otomatis."
+                      )
                     )}
                   </p>
                   <select
@@ -473,7 +486,10 @@ const AddShift = () => {
                     }}
                     className="w-full px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-blue-950 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">
-                      {t("page.shift.template.selectPlaceholder", "-- Pilih Template --")}
+                      {t(
+                        "page.shift.template.selectPlaceholder",
+                        t("page.shift.selectTemplate", "-- Pilih Template --")
+                      )}
                     </option>
                     {templates.map((tmpl) => (
                       <option key={tmpl.id} value={tmpl.id}>
@@ -568,8 +584,8 @@ const AddShift = () => {
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
                         {tipeShift === "harian"
-                          ? "Hanya untuk shift mingguan"
-                          : "Atur tanggal berakhir shift"}
+                          ? t("page.shift.weeklyOnly", "Hanya untuk shift mingguan")
+                          : t("page.shift.setEndDate", "Atur tanggal berakhir shift")}
                       </p>
                       <FormMessage />
                     </FormItem>
@@ -588,10 +604,13 @@ const AddShift = () => {
                       <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-dashed border-border bg-muted/20 text-sm text-muted-foreground">
                         <Users size={16} className="shrink-0" />
                         {isMultiStore
-                          ? "Pilih toko untuk melihat karyawan"
+                          ? t("page.shift.selectStoreToView", "Pilih toko untuk melihat karyawan")
                           : allStores
-                            ? "Pilih toko spesifik untuk memilih karyawan"
-                            : "Pilih toko terlebih dahulu"}
+                            ? t(
+                                "page.shift.selectStoreForEmployee",
+                                "Pilih toko spesifik untuk memilih karyawan"
+                              )
+                            : t("page.shift.selectStoreFirst", "Pilih toko terlebih dahulu")}
                       </div>
                     ) : (
                       <div className="space-y-4">
@@ -672,7 +691,10 @@ const AddShift = () => {
                                             [storeId]: e.target.value
                                           }))
                                         }
-                                        placeholder="Cari nama atau posisi..."
+                                        placeholder={t(
+                                          "page.shift.searchEmployee",
+                                          "Cari nama atau posisi..."
+                                        )}
                                         className="w-full h-8 pl-8 pr-3 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                                       />
                                     </div>
@@ -817,12 +839,12 @@ const AddShift = () => {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-foreground">
-                            {field.value ? "Aktif" : "Tidak Aktif"}
+                            {field.value ? t("common.active") : "Tidak Aktif"}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {field.value
-                              ? "Shift ini aktif dan dapat digunakan."
-                              : "Shift ini tidak aktif."}
+                              ? t("page.shift.activeUsable", "Shift ini aktif dan dapat digunakan.")
+                              : t("page.shift.inactive", "Shift ini tidak aktif.")}
                           </p>
                         </div>
                       </div>
@@ -936,8 +958,11 @@ const AddShift = () => {
         type="confirm"
         open={storeRemoveModal}
         onOpenChange={setStoreRemoveModal}
-        title="Hapus Karyawan dari Toko?"
-        description="Beberapa karyawan yang sudah dipilih akan dihapus karena toko tidak lagi dipilih. Lanjutkan?"
+        title={t("page.shift.removeEmployeeTitle", "Hapus Karyawan dari Toko?")}
+        description={t(
+          "page.shift.confirmRemoveEmployees",
+          "Beberapa karyawan yang sudah dipilih akan dihapus karena toko tidak lagi dipilih. Lanjutkan?"
+        )}
         confirmText="Ya, Lanjutkan"
         onConfirm={confirmStoreRemove}
       />
