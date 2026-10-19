@@ -15,6 +15,7 @@ import { CookiesProvider } from "react-cookie";
 import i18n from "./i18n";
 import { SocketProvider } from "@/services/socket";
 import { StoreProvider } from "@/contexts/StoreContext";
+import { shouldRetryQuery } from "@/lib/query-retry";
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -27,7 +28,7 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 30000,
       // cacheTime: 10 * 60 * 1000, // 10 minutes
-      retry: 2,
+      retry: shouldRetryQuery,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,

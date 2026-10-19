@@ -167,21 +167,45 @@ describe("disabled-session probe: retry isolation", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  test("sequential 403s after a completed probe trigger a fresh probe (no permanent cache)", async () => {
+  test("sequential 403s after a completed probe trigger a fresh probe once the OK window passes (no permanent cache)", async () => {
+    const { PROBE_OK_TTL_MS } = require("@/services/index");
+    let now = 1_000_000;
+    jest.spyOn(Date, "now").mockImplementation(() => now);
     const calls = useAdapter({ appStatus: 403, probe: 200 });
 
     await expect(axiosInstance.get("/order/get-orders")).rejects.toMatchObject({
       response: { status: 403 }
     });
     await flush();
+    now += PROBE_OK_TTL_MS;
     await expect(axiosInstance.get("/order/get-orders")).rejects.toMatchObject({
       response: { status: 403 }
     });
     await flush();
 
-    // Fresh probe per completed cycle so a subsequently disabled account is
-    // still detected; single-flight only dedupes concurrent flights.
+    // Fresh probe per completed cycle (after the short OK window) so a
+    // subsequently disabled account is still detected.
     expect(calls.filter((u) => u === "/auth/context")).toHaveLength(2);
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  test("sequential 403s inside the OK window share the completed probe", async () => {
+    const { PROBE_OK_TTL_MS } = require("@/services/index");
+    let now = 1_000_000;
+    jest.spyOn(Date, "now").mockImplementation(() => now);
+    const calls = useAdapter({ appStatus: 403, probe: 200 });
+
+    for (const url of [
+      "/pos/dashboard/summary",
+      "/notification/unread",
+      "/purchase-payment/ap-dashboard"
+    ]) {
+      await expect(axiosInstance.get(url)).rejects.toMatchObject({ response: { status: 403 } });
+      await flush();
+      now += Math.floor(PROBE_OK_TTL_MS / 4);
+    }
+
+    expect(calls.filter((u) => u === "/auth/context")).toHaveLength(1);
     expect(navigate).not.toHaveBeenCalled();
   });
 });
