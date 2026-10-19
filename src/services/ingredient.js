@@ -51,6 +51,21 @@ export const adjustIngredientStock = async (id, payload) => {
   return data;
 };
 
+// Remaining-stock view from the stock ledger. startDate/endDate are
+// YYYY-MM-DD business days; omitted = all recorded history.
+export const getIngredientStockSummary = async ({ store, startDate, endDate } = {}) => {
+  const params = new URLSearchParams();
+  if (store && store !== "all") params.append("store", store);
+  if (startDate) params.append("startDate", startDate);
+  if (endDate) params.append("endDate", endDate);
+  const query = params.toString();
+  const { data, status } = await axiosInstance.get(
+    `/ingredient/stock-summary${query ? `?${query}` : ""}`
+  );
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
 const downloadBlob = async (url, filename) => {
   const { data, status } = await axiosInstance.get(url, { responseType: "arraybuffer" });
   if (status !== 200) throw new Error("Download failed");

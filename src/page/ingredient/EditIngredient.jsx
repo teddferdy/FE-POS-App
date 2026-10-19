@@ -43,7 +43,8 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
-import { toQuantity } from "@/utils/quantity";
+import { toQuantity, formatQuantity } from "@/utils/quantity";
+import { getIngredientStockState } from "@/utils/ingredientStockState";
 import { useLocations } from "@/queries/useLocations";
 
 const conversionHints = {
@@ -286,7 +287,12 @@ const EditIngredient = () => {
     }
   });
 
-  const onSubmit = (values, saveAsDraft = false) => {
+  // Stock is not sent: the form holds the value read at load time, and
+  // saving it would overwrite sales made since. Stock changes go through
+  // the audited "Atur Stok" action on the ingredient list.
+  const onSubmit = (formValues, saveAsDraft = false) => {
+    const values = { ...formValues };
+    delete values.stock;
     mutation.mutate({
       ...values,
       supplier: values.supplier ? parseInt(values.supplier) : null,
@@ -791,15 +797,22 @@ const EditIngredient = () => {
                             </FormLabel>
                             <Input
                               type="text"
-                              inputMode="numeric"
-                              className="h-12"
-                              value={field.value}
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                              className="h-12 bg-muted/50"
+                              value={
+                                getIngredientStockState(ingredientData?.data) === "uninitialized"
+                                  ? t("page.ingredient.stockState.uninitialized")
+                                  : `${formatQuantity(field.value)} ${ingredientData?.data?.baseUnit || ingredientData?.data?.unit || "pcs"}`
                               }
+                              readOnly
+                              aria-readonly="true"
                             />
+                            {getIngredientStockState(ingredientData?.data) === "unrecorded" && (
+                              <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                                {t("page.ingredient.stockState.unrecorded")}
+                              </p>
+                            )}
                             <p className="text-xs text-muted-foreground">
-                              {t("page.ingredient.form.stockDesc")}
+                              {t("page.ingredient.form.stockReadOnlyDesc")}
                             </p>
                             <FormMessage />
                           </FormItem>
