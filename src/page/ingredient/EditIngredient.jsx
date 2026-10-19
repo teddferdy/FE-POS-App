@@ -102,16 +102,16 @@ const EditIngredient = () => {
   ];
 
   const ingredientFieldLabels = {
-    name: "Nama Bahan Baku",
+    name: t("page.ingredient.nama_bahan_baku", "Nama Bahan Baku"),
     supplier: "Supplier",
     store: "Toko",
     category: "Kategori",
     unit: "Satuan",
-    baseUnit: "Satuan Dasar",
-    conversionFactor: "Faktor Konversi",
+    baseUnit: t("page.ingredient.satuan_dasar", "Satuan Dasar"),
+    conversionFactor: t("page.ingredient.faktor_konversi", "Faktor Konversi"),
     stock: "Stok",
-    minStock: "Stok Minimum",
-    costPrice: "Harga Beli",
+    minStock: t("page.ingredient.stok_minimum", "Stok Minimum"),
+    costPrice: t("page.ingredient.harga_beli", "Harga Beli"),
     isActive: "Status"
   };
 
@@ -414,7 +414,7 @@ const EditIngredient = () => {
                         value={field.value || ""}
                         onChange={(v) => field.onChange(v || null)}
                         placeholder={t("page.ingredient.edit.selectStorePlaceholder")}
-                        searchPlaceholder="Cari toko..."
+                        searchPlaceholder={t("page.ingredient.cari_toko", "Cari toko...")}
                         loading={locationsLoading}
                       />
                       <FormMessage />
@@ -669,8 +669,8 @@ const EditIngredient = () => {
                               options={unitOptions}
                               value={field.value}
                               onChange={(v) => field.onChange(v)}
-                              placeholder="Pilih unit..."
-                              searchPlaceholder="Cari unit..."
+                              placeholder={t("page.ingredient.pilih_unit", "Pilih unit...")}
+                              searchPlaceholder={t("page.ingredient.cari_unit", "Cari unit...")}
                             />
                             <FormMessage />
                           </FormItem>
@@ -688,8 +688,14 @@ const EditIngredient = () => {
                               options={baseUnitOptions}
                               value={field.value}
                               onChange={(v) => field.onChange(v)}
-                              placeholder="Pilih base unit..."
-                              searchPlaceholder="Cari base unit..."
+                              placeholder={t(
+                                "page.ingredient.pilih_base_unit",
+                                "Pilih base unit..."
+                              )}
+                              searchPlaceholder={t(
+                                "page.ingredient.cari_base_unit",
+                                "Cari base unit..."
+                              )}
                             />
                             <FormMessage />
                           </FormItem>

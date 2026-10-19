@@ -8697,5 +8697,15 @@
   "page.discount.persentase_diskon_harus_diisi": "Discount percentage is required",
   "page.discount.produk_harus_dipilih": "Product is required",
   "page.discount.tipe_diskon_harus_diisi": "Discount type is required",
-  "page.discount.toko_harus_dipilih": "Store is required"
+  "page.discount.toko_harus_dipilih": "Store is required",
+  "page.ingredient.cari_base_unit": "Search base unit...",
+  "page.ingredient.cari_toko": "Search store...",
+  "page.ingredient.cari_unit": "Search unit...",
+  "page.ingredient.faktor_konversi": "Conversion Factor",
+  "page.ingredient.harga_beli": "Purchase Price",
+  "page.ingredient.nama_bahan_baku": "Ingredient Name",
+  "page.ingredient.pilih_base_unit": "Select base unit...",
+  "page.ingredient.pilih_unit": "Select unit...",
+  "page.ingredient.satuan_dasar": "Base Unit",
+  "page.ingredient.stok_minimum": "Minimum Stock"
 }
