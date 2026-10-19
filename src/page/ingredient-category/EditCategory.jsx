@@ -16,6 +16,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
@@ -45,6 +46,7 @@ const EditCategory = () => {
     mode: "onChange",
     defaultValues: { name: "", isActive: true }
   });
+  const requestLeave = useLeaveGuard(form, "/ingredient-category", () => setShowCancel(true));
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
@@ -114,7 +116,7 @@ const EditCategory = () => {
         title={t("page.ingredientCategory.add.titleEdit")}
         description={t("page.ingredientCategory.add.subtitleEdit")}
         backLink="/ingredient-category"
-        onBack={() => setShowCancel(true)}>
+        onBack={requestLeave}>
         <UserGuide guideKey="edit-ingredient-category" />
       </PageHeader>
 
@@ -200,7 +202,7 @@ const EditCategory = () => {
             <Button
               type="button"
               variant="success"
-              onClick={() => setShowCancel(true)}
+              onClick={requestLeave}
               className="w-full sm:w-auto justify-center">
               <X size={16} className="mr-1" />
               {t("page.ingredientCategory.add.cancelButton")}

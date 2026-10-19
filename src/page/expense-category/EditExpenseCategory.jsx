@@ -35,6 +35,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 
 const EditExpenseCategory = () => {
   const { t } = useTranslation();
@@ -113,6 +114,7 @@ const EditExpenseCategory = () => {
       isActive: true
     }
   });
+  const requestLeave = useLeaveGuard(form, "/expense-category", () => setCancelModal(true));
 
   useEffect(() => {
     if (categoryItem?.id) {
@@ -190,7 +192,7 @@ const EditExpenseCategory = () => {
           title={t("page.expenseCategory.edit.title")}
           description={t("page.expenseCategory.edit.description")}
           backLink="/expense-category"
-          onBack={() => setCancelModal(true)}
+          onBack={requestLeave}
         />
 
         <Card className="p-6">
@@ -303,7 +305,7 @@ const EditExpenseCategory = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
                 <Button
                   variant="danger"
-                  onClick={() => setCancelModal(true)}
+                  onClick={requestLeave}
                   className="gap-2 w-full sm:w-auto justify-center">
                   <X size={18} />
                   {t("common.cancel")}

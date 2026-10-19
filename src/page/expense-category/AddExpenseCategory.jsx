@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { X, Save, Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 import { useCookies } from "react-cookie";
 import { addExpenseCategory } from "@/services/expense";
 import { getAccounts } from "@/services/accounting";
@@ -97,6 +98,7 @@ const AddExpenseCategory = () => {
       isActive: true
     }
   });
+  const requestLeave = useLeaveGuard(form, "/expense-category", () => setCancelModal(true));
 
   const createMutation = useMutation(addExpenseCategory, {
     onSuccess: () => {
@@ -141,7 +143,7 @@ const AddExpenseCategory = () => {
           ]}
           title={t("page.expenseCategory.add.title")}
           description={t("page.expenseCategory.add.description")}
-          onBack={() => setCancelModal(true)}
+          onBack={requestLeave}
           dynamicInfo={false}
         />
 
@@ -255,7 +257,7 @@ const AddExpenseCategory = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 bg-card border border-border rounded-xl p-4">
                 <Button
                   variant="danger"
-                  onClick={() => setCancelModal(true)}
+                  onClick={requestLeave}
                   className="gap-2 w-full sm:w-auto justify-center">
                   <X size={18} />
                   {t("common.cancel")}

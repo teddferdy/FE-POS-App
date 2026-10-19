@@ -8,6 +8,7 @@ import { z } from "zod";
 import { useCookies } from "react-cookie";
 import { X, Save, Check } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 import { editTaxConfig, getTaxConfigById } from "@/services/tax-config";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
@@ -141,6 +142,7 @@ const EditTaxConfig = () => {
       store: ""
     }
   });
+  const requestLeave = useLeaveGuard(form, "/tax-list", () => setCancelModal(true));
 
   const tax = taxData?.data || {};
 
@@ -206,7 +208,7 @@ const EditTaxConfig = () => {
           title={t("page.taxConfig.edit.title")}
           description={t("page.taxConfig.edit.description")}
           backLink="/tax-list"
-          onBack={() => setCancelModal(true)}
+          onBack={requestLeave}
         />
       </div>
 
@@ -355,7 +357,7 @@ const EditTaxConfig = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
               <Button
                 variant="danger"
-                onClick={() => setCancelModal(true)}
+                onClick={requestLeave}
                 className="gap-2 w-full sm:w-auto justify-center">
                 <X size={18} />
                 {t("common.cancel")}

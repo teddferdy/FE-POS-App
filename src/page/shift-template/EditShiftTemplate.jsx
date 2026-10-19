@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Check, BadgeCheck, X, Save } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
@@ -88,6 +89,7 @@ const EditShiftTemplate = () => {
       isActive: true
     }
   });
+  const requestLeave = useLeaveGuard(form, "/shift-template-list", () => setCancelModal(true));
 
   useEffect(() => {
     if (template) {
@@ -168,7 +170,7 @@ const EditShiftTemplate = () => {
         title={t("page.shiftTemplate.edit.title")}
         description={t("page.shiftTemplate.edit.description")}
         backLink="/shift-template-list"
-        onBack={() => setCancelModal(true)}
+        onBack={requestLeave}
       />
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
@@ -304,11 +306,7 @@ const EditShiftTemplate = () => {
             />
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="danger"
-                onClick={() => setCancelModal(true)}
-                className="gap-2">
+              <Button type="button" variant="danger" onClick={requestLeave} className="gap-2">
                 <X size={20} className="text-lg" />
                 {t("common.cancel")}
               </Button>
