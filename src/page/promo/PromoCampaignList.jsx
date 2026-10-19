@@ -417,8 +417,8 @@ const PromoCampaignList = () => {
                     setStatusFilter(val);
                     setPage(1);
                   }}
-                  placeholder="Filter Status"
-                  searchPlaceholder="Cari status..."
+                  placeholder={t("page.promo.filter_status", "Filter Status")}
+                  searchPlaceholder={t("page.promo.cari_status", "Cari status...")}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
@@ -432,8 +432,8 @@ const PromoCampaignList = () => {
                     setTypeFilter(val);
                     setPage(1);
                   }}
-                  placeholder="Filter Tipe"
-                  searchPlaceholder="Cari tipe..."
+                  placeholder={t("page.promo.filter_tipe", "Filter Tipe")}
+                  searchPlaceholder={t("page.promo.cari_tipe", "Cari tipe...")}
                 />
               </div>
               <div className="flex flex-col gap-1.5">

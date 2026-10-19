@@ -89,11 +89,14 @@ const EditPromoCampaign = () => {
   const [rewards, setRewards] = useState([]);
 
   const promoFieldLabels = {
-    name: "Nama Campaign",
-    type: "Tipe Campaign",
-    startDate: "Tanggal Mulai",
-    endDate: "Tanggal Akhir",
-    applicableIds: "Pilihan Spesifik (Berlaku Untuk)"
+    name: t("page.promo.nama_campaign", "Nama Campaign"),
+    type: t("page.promo.tipe_campaign", "Tipe Campaign"),
+    startDate: t("page.promo.tanggal_mulai", "Tanggal Mulai"),
+    endDate: t("page.promo.tanggal_akhir", "Tanggal Akhir"),
+    applicableIds: t(
+      "page.promo.pilihan_spesifik_berlaku_untuk",
+      "Pilihan Spesifik (Berlaku Untuk)"
+    )
   };
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -532,8 +535,8 @@ const EditPromoCampaign = () => {
                     </label>
                     <Combobox
                       options={[
-                        { value: "happy_hour", label: "Happy Hour" },
-                        { value: "birthday", label: "Birthday" },
+                        { value: "happy_hour", label: t("page.promo.happy_hour", "Happy Hour") },
+                        { value: "birthday", label: t("page.promo.birthday", "Birthday") },
                         { value: "buy_x_get_y", label: "Buy X Get Y" },
                         { value: "spend_get", label: "Spend & Get" },
                         { value: "manual", label: "Manual" },
@@ -541,8 +544,11 @@ const EditPromoCampaign = () => {
                       ]}
                       value={form.watch("type")}
                       onChange={(v) => form.setValue("type", v)}
-                      placeholder={t("page.promo.form.typePlaceholder") || "Pilih tipe campaign"}
-                      searchPlaceholder="Cari tipe..."
+                      placeholder={
+                        t("page.promo.form.typePlaceholder") ||
+                        t("page.promo.pilih_tipe_campaign", "Pilih tipe campaign")
+                      }
+                      searchPlaceholder={t("page.promo.cari_tipe", "Cari tipe...")}
                     />
                   </div>
                 </div>
@@ -570,8 +576,11 @@ const EditPromoCampaign = () => {
                           value={form.watch("discountType")}
                           onChange={(v) => form.setValue("discountType", v)}
                           disabled={isBirthday}
-                          placeholder="Pilih tipe diskon"
-                          searchPlaceholder="Cari tipe diskon..."
+                          placeholder={t("page.promo.pilih_tipe_diskon", "Pilih tipe diskon")}
+                          searchPlaceholder={t(
+                            "page.promo.cari_tipe_diskon",
+                            "Cari tipe diskon..."
+                          )}
                         />
                       </div>
                       <div>
@@ -728,16 +737,19 @@ const EditPromoCampaign = () => {
                         <Combobox
                           options={[
                             { value: "time", label: "Time" },
-                            { value: "birthday", label: "Birthday" },
+                            { value: "birthday", label: t("page.promo.birthday", "Birthday") },
                             { value: "buy_x_get_y", label: "Buy X Get Y" },
                             { value: "spend_threshold", label: "Spend Threshold" },
-                            { value: "member_tier", label: "Member Tier" },
+                            {
+                              value: "member_tier",
+                              label: t("page.promo.member_tier", "Member Tier")
+                            },
                             { value: "first_purchase", label: "First Purchase" }
                           ]}
                           value={rule.ruleType}
                           onChange={(v) => updateRule(index, "ruleType", v)}
-                          placeholder="Pilih rule"
-                          searchPlaceholder="Cari rule..."
+                          placeholder={t("page.promo.pilih_rule", "Pilih rule")}
+                          searchPlaceholder={t("page.promo.cari_rule", "Cari rule...")}
                         />
                         <Button
                           type="button"
@@ -794,8 +806,8 @@ const EditPromoCampaign = () => {
                           ]}
                           value={reward.rewardType}
                           onChange={(v) => updateReward(index, "rewardType", v)}
-                          placeholder="Pilih reward"
-                          searchPlaceholder="Cari reward..."
+                          placeholder={t("page.promo.pilih_reward", "Pilih reward")}
+                          searchPlaceholder={t("page.promo.cari_reward", "Cari reward...")}
                         />
                         <input
                           type="number"
@@ -832,7 +844,10 @@ const EditPromoCampaign = () => {
                         { value: "all", label: "All Products" },
                         { value: "specific_products", label: "Specific Products" },
                         { value: "specific_categories", label: "Specific Categories" },
-                        { value: "specific_members", label: "Specific Members" }
+                        {
+                          value: "specific_members",
+                          label: t("page.promo.specific_members", "Specific Members")
+                        }
                       ]}
                       value={form.watch("applicableTo")}
                       onChange={(v) => {
@@ -841,9 +856,11 @@ const EditPromoCampaign = () => {
                       }}
                       disabled={!storeReady}
                       placeholder={
-                        !storeReady ? t("page.bom.add.form.selectStoreFirst") : "Pilih penerapan"
+                        !storeReady
+                          ? t("page.bom.add.form.selectStoreFirst")
+                          : t("page.promo.pilih_penerapan", "Pilih penerapan")
                       }
-                      searchPlaceholder="Cari penerapan..."
+                      searchPlaceholder={t("page.promo.cari_penerapan", "Cari penerapan...")}
                     />
                     {!storeReady && (
                       <p className="text-[11px] text-muted-foreground mt-1">
@@ -858,10 +875,13 @@ const EditPromoCampaign = () => {
                         value={applicableIds}
                         loading={productsLoading}
                         onChange={setApplicableIds}
-                        placeholder="Pilih produk..."
+                        placeholder={t("page.promo.pilih_produk", "Pilih produk...")}
                         selectedLabel="produk dipilih"
-                        searchPlaceholder="Cari produk..."
-                        emptyMessage="Produk tidak ditemukan"
+                        searchPlaceholder={t("page.promo.cari_produk", "Cari produk...")}
+                        emptyMessage={t(
+                          "page.promo.produk_tidak_ditemukan",
+                          "Produk tidak ditemukan"
+                        )}
                       />
                     ) : null)}
                   {watchedApplicableTo === "specific_categories" &&
@@ -871,10 +891,13 @@ const EditPromoCampaign = () => {
                         value={applicableIds}
                         loading={categoriesLoading}
                         onChange={setApplicableIds}
-                        placeholder="Pilih kategori..."
+                        placeholder={t("page.promo.pilih_kategori", "Pilih kategori...")}
                         selectedLabel="kategori dipilih"
-                        searchPlaceholder="Cari kategori..."
-                        emptyMessage="Kategori tidak ditemukan"
+                        searchPlaceholder={t("page.promo.cari_kategori", "Cari kategori...")}
+                        emptyMessage={t(
+                          "page.promo.kategori_tidak_ditemukan",
+                          "Kategori tidak ditemukan"
+                        )}
                       />
                     ) : null)}
                   {watchedApplicableTo === "specific_members" && (
@@ -882,10 +905,10 @@ const EditPromoCampaign = () => {
                       options={tierOptions}
                       value={applicableIds}
                       onChange={setApplicableIds}
-                      placeholder="Pilih tier member..."
+                      placeholder={t("page.promo.pilih_tier_member", "Pilih tier member...")}
                       selectedLabel="tier dipilih"
-                      searchPlaceholder="Cari tier..."
-                      emptyMessage="Tier tidak ditemukan"
+                      searchPlaceholder={t("page.promo.cari_tier", "Cari tier...")}
+                      emptyMessage={t("page.promo.tier_tidak_ditemukan", "Tier tidak ditemukan")}
                     />
                   )}
                   <div>
@@ -929,7 +952,9 @@ const EditPromoCampaign = () => {
                   <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
                     <div>
                       <p className="text-sm font-medium text-foreground">
-                        {form.watch("autoActivate") ? "Aktif Otomatis" : "Nonaktif"}
+                        {form.watch("autoActivate")
+                          ? t("page.promo.aktif_otomatis", "Aktif Otomatis")
+                          : t("page.promo.nonaktif", "Nonaktif")}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Aktifkan langsung saat tanggal mulai tercapai
@@ -957,7 +982,10 @@ const EditPromoCampaign = () => {
                   {!!watchedIsCombinable && (
                     <div className="pt-3 border-t border-border space-y-2">
                       <p className="text-xs font-medium text-foreground">
-                        Promo Aktif — {allStores ? t("header.allStore") : "Toko Terpilih"}
+                        Promo Aktif —{" "}
+                        {allStores
+                          ? t("header.allStore")
+                          : t("page.promo.toko_terpilih", "Toko Terpilih")}
                       </p>
                       {combinableLoading ? (
                         <p className="text-xs text-muted-foreground">Memuat promo...</p>
@@ -1102,6 +1130,7 @@ function IdsMultiSelect({
   searchPlaceholder,
   emptyMessage
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const toggle = (v) => onChange(value.includes(v) ? value.filter((x) => x !== v) : [...value, v]);
   const selectedOptions = options.filter((o) => value.includes(o.value));
@@ -1119,7 +1148,7 @@ function IdsMultiSelect({
             className="w-full justify-between font-normal h-10 bg-background">
             <span className="truncate text-muted-foreground">
               {loading
-                ? "Memuat..."
+                ? t("page.promo.memuat", "Memuat...")
                 : value.length > 0
                   ? `${value.length} ${selectedLabel}`
                   : placeholder}

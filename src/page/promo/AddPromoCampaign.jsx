@@ -130,11 +130,14 @@ const AddPromoCampaign = () => {
   };
 
   const promoFieldLabels = {
-    name: "Nama Campaign",
-    type: "Tipe Campaign",
-    startDate: "Tanggal Mulai",
-    endDate: "Tanggal Akhir",
-    applicableIds: "Pilihan Spesifik (Berlaku Untuk)"
+    name: t("page.promo.nama_campaign", "Nama Campaign"),
+    type: t("page.promo.tipe_campaign", "Tipe Campaign"),
+    startDate: t("page.promo.tanggal_mulai", "Tanggal Mulai"),
+    endDate: t("page.promo.tanggal_akhir", "Tanggal Akhir"),
+    applicableIds: t(
+      "page.promo.pilihan_spesifik_berlaku_untuk",
+      "Pilihan Spesifik (Berlaku Untuk)"
+    )
   };
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -540,8 +543,8 @@ const AddPromoCampaign = () => {
                     </Label>
                     <Combobox
                       options={[
-                        { value: "happy_hour", label: "Happy Hour" },
-                        { value: "birthday", label: "Birthday" },
+                        { value: "happy_hour", label: t("page.promo.happy_hour", "Happy Hour") },
+                        { value: "birthday", label: t("page.promo.birthday", "Birthday") },
                         { value: "buy_x_get_y", label: "Buy X Get Y" },
                         { value: "spend_get", label: "Spend & Get" },
                         { value: "manual", label: "Manual" },
@@ -549,8 +552,11 @@ const AddPromoCampaign = () => {
                       ]}
                       value={form.watch("type")}
                       onChange={(v) => form.setValue("type", v)}
-                      placeholder={t("page.promo.form.typePlaceholder") || "Pilih tipe campaign"}
-                      searchPlaceholder="Cari tipe..."
+                      placeholder={
+                        t("page.promo.form.typePlaceholder") ||
+                        t("page.promo.pilih_tipe_campaign", "Pilih tipe campaign")
+                      }
+                      searchPlaceholder={t("page.promo.cari_tipe", "Cari tipe...")}
                     />
                   </div>
                 </div>
@@ -576,8 +582,11 @@ const AddPromoCampaign = () => {
                           value={form.watch("discountType")}
                           onChange={(v) => form.setValue("discountType", v)}
                           disabled={isBirthday}
-                          placeholder="Pilih tipe diskon"
-                          searchPlaceholder="Cari tipe diskon..."
+                          placeholder={t("page.promo.pilih_tipe_diskon", "Pilih tipe diskon")}
+                          searchPlaceholder={t(
+                            "page.promo.cari_tipe_diskon",
+                            "Cari tipe diskon..."
+                          )}
                         />
                       </div>
                       <div className="space-y-2">
@@ -776,14 +785,29 @@ const AddPromoCampaign = () => {
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-xs text-muted-foreground">
                     {isBuyXGetY
-                      ? "Tentukan produk X (yang dibeli) dan produk Y (bonusnya)"
+                      ? t(
+                          "page.promo.tentukan_produk_x_yang_dibeli_dan_produk_y_bonusny",
+                          "Tentukan produk X (yang dibeli) dan produk Y (bonusnya)"
+                        )
                       : isSpendGet
-                        ? "Atur minimal belanja untuk memicu kampanye"
+                        ? t(
+                            "page.promo.atur_minimal_belanja_untuk_memicu_kampanye",
+                            "Atur minimal belanja untuk memicu kampanye"
+                          )
                         : isHappyHour
-                          ? "Aturan waktu sudah ditentukan dari jadwal Happy Hour"
+                          ? t(
+                              "page.promo.aturan_waktu_sudah_ditentukan_dari_jadwal_happy_ho",
+                              "Aturan waktu sudah ditentukan dari jadwal Happy Hour"
+                            )
                           : isBirthday
-                            ? "Kampanye birthday aktif otomatis untuk member yang berulang tahun"
-                            : "Tambahkan aturan bila diperlukan"}
+                            ? t(
+                                "page.promo.kampanye_birthday_aktif_otomatis_untuk_member_yang",
+                                "Kampanye birthday aktif otomatis untuk member yang berulang tahun"
+                              )
+                            : t(
+                                "page.promo.tambahkan_aturan_bila_diperlukan",
+                                "Tambahkan aturan bila diperlukan"
+                              )}
                   </p>
                   <Button type="button" variant="success" size="sm" onClick={addRule}>
                     <Plus size={14} className="mr-1" />
@@ -802,17 +826,23 @@ const AddPromoCampaign = () => {
                           <div className="flex-1">
                             <Combobox
                               options={[
-                                { value: "time", label: "Waktu" },
-                                { value: "birthday", label: "Birthday" },
+                                { value: "time", label: t("page.promo.waktu", "Waktu") },
+                                { value: "birthday", label: t("page.promo.birthday", "Birthday") },
                                 { value: "buy_x_get_y", label: "Buy X Get Y" },
-                                { value: "spend_threshold", label: "Minimal Belanja" },
-                                { value: "member_tier", label: "Tier Member" },
+                                {
+                                  value: "spend_threshold",
+                                  label: t("page.promo.minimal_belanja", "Minimal Belanja")
+                                },
+                                {
+                                  value: "member_tier",
+                                  label: t("page.promo.tier_member", "Tier Member")
+                                },
                                 { value: "first_purchase", label: "Pembelian Pertama" }
                               ]}
                               value={rule.ruleType}
                               onChange={(v) => updateRule(index, "ruleType", v)}
-                              placeholder="Pilih rule"
-                              searchPlaceholder="Cari rule..."
+                              placeholder={t("page.promo.pilih_rule", "Pilih rule")}
+                              searchPlaceholder={t("page.promo.cari_rule", "Cari rule...")}
                             />
                           </div>
                           <Button
@@ -836,8 +866,8 @@ const AddPromoCampaign = () => {
                                 onChange={(v) =>
                                   updateRule(index, "condition.productIdX", Number(v))
                                 }
-                                placeholder="Pilih produk X"
-                                searchPlaceholder="Cari produk..."
+                                placeholder={t("page.promo.pilih_produk_x", "Pilih produk X")}
+                                searchPlaceholder={t("page.promo.cari_produk", "Cari produk...")}
                               />
                             </div>
                             <div className="space-y-1">
@@ -850,8 +880,11 @@ const AddPromoCampaign = () => {
                                 onChange={(v) =>
                                   updateRule(index, "condition.productIdY", Number(v))
                                 }
-                                placeholder="Pilih produk bonus"
-                                searchPlaceholder="Cari produk..."
+                                placeholder={t(
+                                  "page.promo.pilih_produk_bonus",
+                                  "Pilih produk bonus"
+                                )}
+                                searchPlaceholder={t("page.promo.cari_produk", "Cari produk...")}
                               />
                             </div>
                             <div className="space-y-1">
@@ -902,8 +935,8 @@ const AddPromoCampaign = () => {
                               options={tierOptions}
                               value={rule.condition.tierId ? String(rule.condition.tierId) : ""}
                               onChange={(v) => updateRule(index, "condition.tierId", Number(v))}
-                              placeholder="Pilih tier"
-                              searchPlaceholder="Cari tier..."
+                              placeholder={t("page.promo.pilih_tier", "Pilih tier")}
+                              searchPlaceholder={t("page.promo.cari_tier", "Cari tier...")}
                             />
                           </div>
                         )}
@@ -922,10 +955,19 @@ const AddPromoCampaign = () => {
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-xs text-muted-foreground">
                     {isFreeItem
-                      ? "Tipe free item, pilih produk yang akan diberikan sebagai reward"
+                      ? t(
+                          "page.promo.tipe_free_item_pilih_produk_yang_akan_diberikan_se",
+                          "Tipe free item, pilih produk yang akan diberikan sebagai reward"
+                        )
                       : isBirthday
-                        ? "Reward akan diberikan di hari ulang tahun member"
-                        : "Tentukan reward yang diberikan saat kampanye terpicu"}
+                        ? t(
+                            "page.promo.reward_akan_diberikan_di_hari_ulang_tahun_member",
+                            "Reward akan diberikan di hari ulang tahun member"
+                          )
+                        : t(
+                            "page.promo.tentukan_reward_yang_diberikan_saat_kampanye_terpi",
+                            "Tentukan reward yang diberikan saat kampanye terpicu"
+                          )}
                   </p>
                   <Button type="button" variant="success" size="sm" onClick={addReward}>
                     <Plus size={14} className="mr-1" />
@@ -948,17 +990,26 @@ const AddPromoCampaign = () => {
                               <Label className="text-xs">Tipe Reward</Label>
                               <Combobox
                                 options={[
-                                  { value: "discount_percentage", label: "Diskon %" },
-                                  { value: "discount_fixed", label: "Diskon Nominal" },
-                                  { value: "free_item", label: "Produk Gratis" },
+                                  {
+                                    value: "discount_percentage",
+                                    label: t("page.promo.diskon_pct", "Diskon %")
+                                  },
+                                  {
+                                    value: "discount_fixed",
+                                    label: t("page.promo.diskon_nominal", "Diskon Nominal")
+                                  },
+                                  {
+                                    value: "free_item",
+                                    label: t("page.promo.produk_gratis", "Produk Gratis")
+                                  },
                                   { value: "buy_x_get_y", label: "Buy X Get Y" },
                                   { value: "points_multiplier", label: "Kelipatan Poin" },
                                   { value: "cashback", label: "Cashback" }
                                 ]}
                                 value={reward.rewardType}
                                 onChange={(v) => updateReward(index, "rewardType", v)}
-                                placeholder="Pilih reward"
-                                searchPlaceholder="Cari reward..."
+                                placeholder={t("page.promo.pilih_reward", "Pilih reward")}
+                                searchPlaceholder={t("page.promo.cari_reward", "Cari reward...")}
                               />
                             </div>
                             {!needProduct && (
@@ -1018,8 +1069,11 @@ const AddPromoCampaign = () => {
                                   options={productOptions}
                                   value={reward.productId ? String(reward.productId) : ""}
                                   onChange={(v) => updateReward(index, "productId", Number(v))}
-                                  placeholder="Pilih produk gratis"
-                                  searchPlaceholder="Cari produk..."
+                                  placeholder={t(
+                                    "page.promo.pilih_produk_gratis",
+                                    "Pilih produk gratis"
+                                  )}
+                                  searchPlaceholder={t("page.promo.cari_produk", "Cari produk...")}
                                 />
                               </div>
                             )}
@@ -1062,7 +1116,10 @@ const AddPromoCampaign = () => {
                         { value: "all", label: "All Products" },
                         { value: "specific_products", label: "Specific Products" },
                         { value: "specific_categories", label: "Specific Categories" },
-                        { value: "specific_members", label: "Specific Members" }
+                        {
+                          value: "specific_members",
+                          label: t("page.promo.specific_members", "Specific Members")
+                        }
                       ]}
                       value={form.watch("applicableTo")}
                       onChange={(v) => {
@@ -1071,9 +1128,11 @@ const AddPromoCampaign = () => {
                       }}
                       disabled={!storeReady}
                       placeholder={
-                        !storeReady ? t("page.bom.add.form.selectStoreFirst") : "Pilih penerapan"
+                        !storeReady
+                          ? t("page.bom.add.form.selectStoreFirst")
+                          : t("page.promo.pilih_penerapan", "Pilih penerapan")
                       }
-                      searchPlaceholder="Cari penerapan..."
+                      searchPlaceholder={t("page.promo.cari_penerapan", "Cari penerapan...")}
                     />
                     {!storeReady && (
                       <p className="text-[11px] text-muted-foreground">
@@ -1092,10 +1151,13 @@ const AddPromoCampaign = () => {
                             value={applicableIds}
                             loading={productsLoading}
                             onChange={setApplicableIds}
-                            placeholder="Pilih produk..."
+                            placeholder={t("page.promo.pilih_produk", "Pilih produk...")}
                             selectedLabel="produk dipilih"
-                            searchPlaceholder="Cari produk..."
-                            emptyMessage="Produk tidak ditemukan"
+                            searchPlaceholder={t("page.promo.cari_produk", "Cari produk...")}
+                            emptyMessage={t(
+                              "page.promo.produk_tidak_ditemukan",
+                              "Produk tidak ditemukan"
+                            )}
                           />
                         )}
                         {watchedApplicableTo === "specific_categories" && (
@@ -1104,10 +1166,13 @@ const AddPromoCampaign = () => {
                             value={applicableIds}
                             loading={categoriesLoading}
                             onChange={setApplicableIds}
-                            placeholder="Pilih kategori..."
+                            placeholder={t("page.promo.pilih_kategori", "Pilih kategori...")}
                             selectedLabel="kategori dipilih"
-                            searchPlaceholder="Cari kategori..."
-                            emptyMessage="Kategori tidak ditemukan"
+                            searchPlaceholder={t("page.promo.cari_kategori", "Cari kategori...")}
+                            emptyMessage={t(
+                              "page.promo.kategori_tidak_ditemukan",
+                              "Kategori tidak ditemukan"
+                            )}
                           />
                         )}
                         {watchedApplicableTo === "specific_members" && (
@@ -1115,10 +1180,13 @@ const AddPromoCampaign = () => {
                             options={tierOptions}
                             value={applicableIds}
                             onChange={setApplicableIds}
-                            placeholder="Pilih tier member..."
+                            placeholder={t("page.promo.pilih_tier_member", "Pilih tier member...")}
                             selectedLabel="tier dipilih"
-                            searchPlaceholder="Cari tier..."
-                            emptyMessage="Tier tidak ditemukan"
+                            searchPlaceholder={t("page.promo.cari_tier", "Cari tier...")}
+                            emptyMessage={t(
+                              "page.promo.tier_tidak_ditemukan",
+                              "Tier tidak ditemukan"
+                            )}
                           />
                         )}
                       </div>
@@ -1152,7 +1220,9 @@ const AddPromoCampaign = () => {
                   <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
                     <div>
                       <p className="text-sm font-medium text-foreground">
-                        {form.watch("autoActivate") ? "Aktif Otomatis" : "Nonaktif"}
+                        {form.watch("autoActivate")
+                          ? t("page.promo.aktif_otomatis", "Aktif Otomatis")
+                          : t("page.promo.nonaktif", "Nonaktif")}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Aktifkan langsung saat tanggal mulai tercapai
@@ -1180,7 +1250,10 @@ const AddPromoCampaign = () => {
                   {watchedIsCombinable && (
                     <div className="pt-3 border-t border-border space-y-2">
                       <p className="text-xs font-medium text-foreground">
-                        Promo Aktif — {allStores ? t("header.allStore") : "Toko Terpilih"}
+                        Promo Aktif —{" "}
+                        {allStores
+                          ? t("header.allStore")
+                          : t("page.promo.toko_terpilih", "Toko Terpilih")}
                       </p>
                       {combinableLoading ? (
                         <p className="text-xs text-muted-foreground">Memuat promo...</p>
@@ -1349,6 +1422,7 @@ function IdsMultiSelect({
   searchPlaceholder,
   emptyMessage
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const toggle = (v) => onChange(value.includes(v) ? value.filter((x) => x !== v) : [...value, v]);
   const selectedOptions = options.filter((o) => value.includes(o.value));
@@ -1366,7 +1440,7 @@ function IdsMultiSelect({
             className="w-full justify-between font-normal h-10 bg-background">
             <span className="truncate text-muted-foreground">
               {loading
-                ? "Memuat..."
+                ? t("page.promo.memuat", "Memuat...")
                 : value.length > 0
                   ? `${value.length} ${selectedLabel}`
                   : placeholder}
