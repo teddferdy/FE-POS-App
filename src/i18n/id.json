@@ -2701,6 +2701,7 @@
   "page.cashier.modal.notesPlaceholder": "Catatan transaksi (opsional)",
   "page.cashier.modal.processing": "Memproses pembayaran...",
   "page.cashier.modal.table": "Meja",
+  "page.cashier.noTable": "Tanpa meja",
   "page.cashier.modal.totalShopping": "Total Belanja",
   "page.cashier.payment": "Pembayaran",
   "page.cashier.product.defaultName": "Produk",

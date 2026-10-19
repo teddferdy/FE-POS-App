@@ -930,11 +930,9 @@ const CheckoutModal = ({
       toast.error(t("page.cashier.emptyCart", "Keranjang kosong"));
       return;
     }
-    if (orderType === "dine-in") {
-      if (!selectedTable) {
-        toast.error(t("page.cashier.selectTable", "Pilih meja terlebih dahulu"));
-        return;
-      }
+    // A table is optional for dine-in (not every warung uses tables); a
+    // picked table must still pass every occupancy guard.
+    if (orderType === "dine-in" && selectedTable) {
       if (!canResolveTableSafety) {
         toast.error(
           occupancyError
@@ -1282,11 +1280,12 @@ const CheckoutModal = ({
                   </div>
                   <div className="flex-1">
                     <label className="block text-xs font-medium text-muted-foreground mb-1">
-                      {t("page.cashier.modal.table", "Pilih Meja")}
+                      {t("page.cashier.modal.table", "Pilih Meja")}{" "}
+                      <span className="font-normal">({t("common.optional")})</span>
                     </label>
                     <Combobox
                       options={[
-                        { value: "", label: t("page.cashier.selectTable", "Pilih Meja") },
+                        { value: "", label: t("page.cashier.noTable") },
                         ...allTables.map((tbl) => {
                           const hasActiveOrder = tableIdsWithActiveOrders.has(tbl.id);
                           const isAvailable = tbl.status === "available" && !hasActiveOrder;
