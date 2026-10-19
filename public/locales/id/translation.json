@@ -8716,5 +8716,12 @@
   "page.product.cashierProductList": "Daftar produk kasir",
   "page.product.menuCard": "Kartu menu",
   "page.product.productDetail": "Detail produk",
-  "page.product.defaultName": "Nama Produk"
+  "page.product.defaultName": "Nama Produk",
+  "page.user.cari_lokasi": "Cari lokasi...",
+  "page.user.cari_role": "Cari role...",
+  "page.user.data_yang_belum_lengkap_bisa_dilengkapi_nanti": "Data yang belum lengkap bisa dilengkapi nanti",
+  "page.user.gagal_mengubah_status_user": "Gagal mengubah status user",
+  "page.user.simpan_sebagai_draft": "Simpan sebagai Draft?",
+  "page.user.status_user_berhasil_diubah": "Status user berhasil diubah",
+  "page.user.ya_simpan_draft": "Ya, Simpan Draft"
 }

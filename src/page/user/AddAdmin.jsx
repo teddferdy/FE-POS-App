@@ -235,7 +235,7 @@ const AddAdmin = () => {
                     value={form.locationId}
                     onChange={(v) => setForm((prev) => ({ ...prev, locationId: v }))}
                     placeholder={t("page.user.form.locationPlaceholder")}
-                    searchPlaceholder="Cari lokasi..."
+                    searchPlaceholder={t("page.user.cari_lokasi", "Cari lokasi...")}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -255,7 +255,7 @@ const AddAdmin = () => {
                     value={form.role}
                     onChange={(v) => setForm((prev) => ({ ...prev, role: v }))}
                     placeholder={t("page.user.form.rolePlaceholder")}
-                    searchPlaceholder="Cari role..."
+                    searchPlaceholder={t("page.user.cari_role", "Cari role...")}
                   />
                 </div>
               </div>
@@ -378,9 +378,12 @@ const AddAdmin = () => {
           type="confirm"
           open={draftModal}
           onOpenChange={setDraftModal}
-          title="Simpan sebagai Draft?"
-          description="Data yang belum lengkap bisa dilengkapi nanti"
-          confirmText="Ya, Simpan Draft"
+          title={t("page.user.simpan_sebagai_draft", "Simpan sebagai Draft?")}
+          description={t(
+            "page.user.data_yang_belum_lengkap_bisa_dilengkapi_nanti",
+            "Data yang belum lengkap bisa dilengkapi nanti"
+          )}
+          confirmText={t("page.user.ya_simpan_draft", "Ya, Simpan Draft")}
           onConfirm={() => {
             setDraftModal(false);
             setIsSubmitting(true);

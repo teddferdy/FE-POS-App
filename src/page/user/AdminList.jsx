@@ -136,12 +136,17 @@ const AdminList = () => {
 
   const statusMutation = useMutation(changeUserStatus, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Status user berhasil diubah" });
+      toast.success("Berhasil", {
+        description: t("page.user.status_user_berhasil_diubah", "Status user berhasil diubah")
+      });
       refetch();
     },
     onError: (err) => {
       toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal mengubah status user"
+        description:
+          err?.response?.data?.message ||
+          err.message ||
+          t("page.user.gagal_mengubah_status_user", "Gagal mengubah status user")
       });
     }
   });

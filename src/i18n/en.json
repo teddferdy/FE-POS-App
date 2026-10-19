@@ -8716,5 +8716,12 @@
   "page.product.cashierProductList": "Cashier product list",
   "page.product.menuCard": "Menu card",
   "page.product.productDetail": "Product detail",
-  "page.product.defaultName": "Product name"
+  "page.product.defaultName": "Product name",
+  "page.user.cari_lokasi": "Search location...",
+  "page.user.cari_role": "Search role...",
+  "page.user.data_yang_belum_lengkap_bisa_dilengkapi_nanti": "Incomplete data can be completed later",
+  "page.user.gagal_mengubah_status_user": "Failed to change user status",
+  "page.user.simpan_sebagai_draft": "Save as draft?",
+  "page.user.status_user_berhasil_diubah": "User status changed successfully",
+  "page.user.ya_simpan_draft": "Yes, Save Draft"
 }
