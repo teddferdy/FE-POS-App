@@ -8824,5 +8824,15 @@
   "page.bundle.nama_bundle": "Bundle Name",
   "page.bundle.nama_bundle_harus_diisi": "Bundle name is required",
   "page.bundle.rp_0": "Rp 0",
-  "page.bundle.toko_harus_dipilih": "Store is required"
+  "page.bundle.toko_harus_dipilih": "Store is required",
+  "page.stockForecast.forecast_berhasil_dijalankan": "Forecast executed successfully",
+  "page.stockForecast.gagal_menjalankan_forecast": "Failed to run forecast",
+  "page.stockForecast.pilih_toko": "Select store",
+  "page.stockForecast.ratarata_hpp": "Average COGS",
+  "page.stockForecast.total_nilai_inventory": "Total Inventory Value",
+  "page.stockForecast.total_produk": "Total Products",
+  "page.stockForecast.writeoff_batch_kedaluwarsa": "Write-off expired batch?",
+  "page.stockForecast.writeoff_kedaluwarsa": "Write-off Expired",
+  "page.stockForecast.writeoff_gagal": "Write-off failed",
+  "page.stockForecast.writeoff_selesai": "Write-off completed"
 }

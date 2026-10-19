@@ -87,11 +87,11 @@ const StockForecast = () => {
   const runForecastMutation = useMutation({
     mutationFn: (payload) => runForecast(payload),
     onSuccess: () => {
-      toast.success("Forecast berhasil dijalankan");
+      toast.success(t("page.stockForecast.forecast_berhasil_dijalankan", "Forecast berhasil dijalankan"));
       queryClient.invalidateQueries(["stock-forecast"]);
     },
     onError: (err) => {
-      toast.error(err?.message || "Gagal menjalankan forecast");
+      toast.error(err?.message || t("page.stockForecast.gagal_menjalankan_forecast", "Gagal menjalankan forecast"));
     }
   });
 
@@ -104,7 +104,7 @@ const StockForecast = () => {
   const writeOffMutation = useMutation({
     mutationFn: (payload) => postWriteOffExpired(payload),
     onSuccess: (res) => {
-      toast.success("Write-off selesai", {
+      toast.success(t("page.stockForecast.writeoff_selesai", "Write-off selesai"), {
         description: `${res.total || 0} unit dari batch kedaluwarsa dihapus`
       });
       queryClient.invalidateQueries(["expiring-soon"]);
@@ -114,7 +114,7 @@ const StockForecast = () => {
       setWriteoffModal(false);
     },
     onError: (err) => {
-      toast.error("Write-off gagal", {
+      toast.error(t("page.stockForecast.writeoff_gagal", "Write-off gagal"), {
         description: err?.message || err?.response?.data?.message
       });
     }
@@ -146,7 +146,7 @@ const StockForecast = () => {
         {isSuperAdmin && (
           <Select value={store} onValueChange={setStore}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Pilih toko" />
+              <SelectValue placeholder={t("page.stockForecast.pilih_toko", "Pilih toko") />
             </SelectTrigger>
             <SelectContent>
               {locations.map((loc) => (
@@ -299,7 +299,7 @@ const StockForecast = () => {
                     onClick={() => setWriteoffModal(true)}
                     disabled={writeOffMutation.isLoading}>
                     <AlertTriangle className="w-4 h-4 mr-1.5" />
-                    {writeOffMutation.isLoading ? "Memproses..." : "Write-off Kedaluwarsa"}
+                    {writeOffMutation.isLoading ? "Memproses..." : t("page.stockForecast.writeoff_kedaluwarsa", "Write-off Kedaluwarsa")}
                   </Button>
                 </div>
               </CardHeader>
@@ -363,17 +363,17 @@ const StockForecast = () => {
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <StatCard
                     icon={Package}
-                    label="Total Nilai Inventory"
+                    label={t("page.stockForecast.total_nilai_inventory", "Total Nilai Inventory")}
                     value={formatCurrency(valuationData.data.totalValue)}
                   />
                   <StatCard
                     icon={Package}
-                    label="Total Produk"
+                    label={t("page.stockForecast.total_produk", "Total Produk")}
                     value={formatNumber(valuationData.data.totalProducts)}
                   />
                   <StatCard
                     icon={TrendingDown}
-                    label="Rata-rata HPP"
+                    label={t("page.stockForecast.ratarata_hpp", "Rata-rata HPP")}
                     value={formatCurrency(valuationData.data.avgCost)}
                   />
                 </div>
@@ -421,7 +421,7 @@ const StockForecast = () => {
         type="confirm"
         open={writeoffModal}
         onOpenChange={setWriteoffModal}
-        title="Write-off Batch Kedaluwarsa?"
+        title={t("page.stockForecast.writeoff_batch_kedaluwarsa", "Write-off Batch Kedaluwarsa?")}
         description="Semua batch dengan tanggal kedaluwarsa yang sudah lewat akan dihapus dari stok dan dicatat di Stock History. Lanjutkan?"
         confirmText="Ya, Write-off"
         onConfirm={handleWriteOff}

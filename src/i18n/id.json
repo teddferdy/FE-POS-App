@@ -8824,5 +8824,15 @@
   "page.bundle.nama_bundle": "Nama Bundle",
   "page.bundle.nama_bundle_harus_diisi": "Nama Bundle harus diisi",
   "page.bundle.rp_0": "Rp 0",
-  "page.bundle.toko_harus_dipilih": "Toko harus dipilih"
+  "page.bundle.toko_harus_dipilih": "Toko harus dipilih",
+  "page.stockForecast.forecast_berhasil_dijalankan": "Forecast berhasil dijalankan",
+  "page.stockForecast.gagal_menjalankan_forecast": "Gagal menjalankan forecast",
+  "page.stockForecast.pilih_toko": "Pilih toko",
+  "page.stockForecast.ratarata_hpp": "Rata-rata HPP",
+  "page.stockForecast.total_nilai_inventory": "Total Nilai Inventory",
+  "page.stockForecast.total_produk": "Total Produk",
+  "page.stockForecast.writeoff_batch_kedaluwarsa": "Write-off Batch Kedaluwarsa?",
+  "page.stockForecast.writeoff_kedaluwarsa": "Write-off Kedaluwarsa",
+  "page.stockForecast.writeoff_gagal": "Write-off gagal",
+  "page.stockForecast.writeoff_selesai": "Write-off selesai"
 }
