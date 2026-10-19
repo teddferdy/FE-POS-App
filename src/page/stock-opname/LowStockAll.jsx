@@ -185,7 +185,7 @@ const LowStockAll = () => {
       align: "right"
     },
     {
-      header: "Min. Stok",
+      header: t("page.stockOpname.min_stok", "Min. Stok"),
       render: (row) => (
         <span className="text-muted-foreground font-mono">
           {Number(row.minStock).toLocaleString("id-ID")}
@@ -233,7 +233,7 @@ const LowStockAll = () => {
                   setSearch(val);
                   setPage(1);
                 }}
-                placeholder="Cari nama barang..."
+                placeholder={t("page.stockOpname.cari_nama_barang", "Cari nama barang...")}
                 isLoading={isLoading}
               />
             </div>,
@@ -248,7 +248,7 @@ const LowStockAll = () => {
                   setPage(1);
                 }}>
                 <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Semua Toko" />
+                  <SelectValue placeholder={t("page.stockOpname.semua_toko", "Semua Toko") />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Toko</SelectItem>
@@ -271,7 +271,7 @@ const LowStockAll = () => {
                   setPage(1);
                 }}>
                 <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Semua Tipe" />
+                  <SelectValue placeholder={t("page.stockOpname.semua_tipe", "Semua Tipe") />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Tipe</SelectItem>

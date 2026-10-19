@@ -8805,5 +8805,15 @@
   "page.taxConfig.nama_pajak": "Tax Name",
   "page.taxConfig.tarif_pajak": "Tax Rate",
   "page.taxConfig.tipe_pajak": "Tax Type",
-  "page.taxConfig.ya_simpan": "Yes, Save"
+  "page.taxConfig.ya_simpan": "Yes, Save",
+  "page.stockOpname.barang_keluar": "Items Out",
+  "page.stockOpname.barang_masuk": "Items In",
+  "page.stockOpname.cari_nama_barang": "Search item name...",
+  "page.stockOpname.kode_barang": "Item Code",
+  "page.stockOpname.min_stok": "Min. Stock",
+  "page.stockOpname.nama_barang": "Item Name",
+  "page.stockOpname.semua_tipe": "All Types",
+  "page.stockOpname.semua_toko": "All Stores",
+  "page.stockOpname.stok_awal": "Initial Stock",
+  "page.stockOpname.stok_fisik": "Physical Stock"
 }

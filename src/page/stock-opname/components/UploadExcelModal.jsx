@@ -50,14 +50,14 @@ const parseExcelFile = (file) =>
   });
 
 const COLUMN_MAP = {
-  "Kode Barang": "kodeBarang",
-  "Nama Barang": "namaBarang",
+  t("page.stockOpname.kode_barang", "Kode Barang"): "kodeBarang",
+  t("page.stockOpname.nama_barang", "Nama Barang"): "namaBarang",
   Satuan: "satuan",
   Lokasi: "lokasi",
-  "Stok Awal": "stokAwalJumlah",
-  "Barang Masuk": "barangMasukJumlah",
-  "Barang Keluar": "barangKeluarJumlah",
-  "Stok Fisik": "stokFisikJumlah",
+  t("page.stockOpname.stok_awal", "Stok Awal"): "stokAwalJumlah",
+  t("page.stockOpname.barang_masuk", "Barang Masuk"): "barangMasukJumlah",
+  t("page.stockOpname.barang_keluar", "Barang Keluar"): "barangKeluarJumlah",
+  t("page.stockOpname.stok_fisik", "Stok Fisik"): "stokFisikJumlah",
   Keterangan: "keterangan"
 };
 

@@ -8805,5 +8805,15 @@
   "page.taxConfig.nama_pajak": "Nama Pajak",
   "page.taxConfig.tarif_pajak": "Tarif Pajak",
   "page.taxConfig.tipe_pajak": "Tipe Pajak",
-  "page.taxConfig.ya_simpan": "Ya, Simpan"
+  "page.taxConfig.ya_simpan": "Ya, Simpan",
+  "page.stockOpname.barang_keluar": "Barang Keluar",
+  "page.stockOpname.barang_masuk": "Barang Masuk",
+  "page.stockOpname.cari_nama_barang": "Cari nama barang...",
+  "page.stockOpname.kode_barang": "Kode Barang",
+  "page.stockOpname.min_stok": "Min. Stok",
+  "page.stockOpname.nama_barang": "Nama Barang",
+  "page.stockOpname.semua_tipe": "Semua Tipe",
+  "page.stockOpname.semua_toko": "Semua Toko",
+  "page.stockOpname.stok_awal": "Stok Awal",
+  "page.stockOpname.stok_fisik": "Stok Fisik"
 }
