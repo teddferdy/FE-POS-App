@@ -83,16 +83,16 @@ const EditReservation = () => {
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
   const fieldLabels = {
-    customerName: "Nama Customer",
+    customerName: t("page.reservation.nama_customer", "Nama Customer"),
     customerPhone: "No. Telepon",
     customerEmail: "Email",
-    guestCount: "Jumlah Tamu",
-    reservationDate: "Tanggal",
-    startTime: "Jam Mulai",
-    endTime: "Jam Selesai",
-    tableId: "Meja",
-    notes: "Catatan",
-    status: "Status"
+    guestCount: t("page.reservation.jumlah_tamu", "Jumlah Tamu"),
+    reservationDate: t("page.reservation.tanggal", "Tanggal"),
+    startTime: t("page.reservation.jam_mulai", "Jam Mulai"),
+    endTime: t("page.reservation.jam_selesai", "Jam Selesai"),
+    tableId: t("page.reservation.meja", "Meja"),
+    notes: t("page.reservation.catatan", "Catatan"),
+    status: t("page.reservation.status", "Status")
   };
 
   const {
@@ -507,9 +507,9 @@ const EditReservation = () => {
           type="confirm"
           open={confirmSaveModal}
           onOpenChange={setConfirmSaveModal}
-          title="Konfirmasi Simpan"
+          title={t("page.reservation.konfirmasi_simpan", "Konfirmasi Simpan")}
           description="Apakah Anda yakin ingin menyimpan perubahan ini?"
-          confirmText="Ya, Simpan"
+          confirmText={t("page.reservation.ya_simpan", "Ya, Simpan")}
           onConfirm={() => {
             setConfirmSaveModal(false);
             const values = form.getValues();

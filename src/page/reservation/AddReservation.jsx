@@ -82,16 +82,16 @@ const AddReservation = () => {
   const [confirmSaveModal, setConfirmSaveModal] = useState(false);
 
   const fieldLabels = {
-    customerName: "Nama Customer",
+    customerName: t("page.reservation.nama_customer", "Nama Customer"),
     customerPhone: "No. Telepon",
     customerEmail: "Email",
-    guestCount: "Jumlah Tamu",
-    store: "Toko",
-    reservationDate: "Tanggal",
-    startTime: "Jam Mulai",
-    endTime: "Jam Selesai",
-    tableId: "Meja",
-    notes: "Catatan"
+    guestCount: t("page.reservation.jumlah_tamu", "Jumlah Tamu"),
+    store: t("page.reservation.toko", "Toko"),
+    reservationDate: t("page.reservation.tanggal", "Tanggal"),
+    startTime: t("page.reservation.jam_mulai", "Jam Mulai"),
+    endTime: t("page.reservation.jam_selesai", "Jam Selesai"),
+    tableId: t("page.reservation.meja", "Meja"),
+    notes: t("page.reservation.catatan", "Catatan")
   };
 
   const form = useForm({
@@ -182,7 +182,11 @@ const AddReservation = () => {
       navigate("/reservation");
     },
     onError: (err) => {
-      setModalMessage(err?.response?.data?.message || err.message || "Gagal membuat reservasi");
+      setModalMessage(
+        err?.response?.data?.message ||
+          err.message ||
+          t("page.reservation.gagal_membuat_reservasi", "Gagal membuat reservasi")
+      );
       setErrorModal(true);
     }
   });
@@ -213,14 +217,14 @@ const AddReservation = () => {
             i18nKey: "breadcrumb.home"
           },
           {
-            label: "Reservasi",
+            label: t("page.reservation.reservasi", "Reservasi"),
             href: "/reservation",
             i18nKey: "breadcrumb.reservation"
           },
-          { label: "Tambah Reservasi" }
+          { label: t("page.reservation.tambah_reservasi", "Tambah Reservasi") }
         ]}
-        title="Tambah Reservasi"
-        description="Buat reservasi meja baru"
+        title={t("page.reservation.tambah_reservasi", "Tambah Reservasi")}
+        description={t("page.reservation.buat_reservasi_meja_baru", "Buat reservasi meja baru")}
         onBack={() => setCancelModal(true)}
         dynamicInfo={false}
       />
@@ -244,7 +248,7 @@ const AddReservation = () => {
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih toko" />
+                        <SelectValue placeholder={t("page.reservation.pilih_toko", "Pilih toko")} />
                       </SelectTrigger>
                       <SelectContent>
                         {stores.map((s) => (
@@ -288,7 +292,7 @@ const AddReservation = () => {
                     </FormLabel>
                     <TimePicker
                       {...field}
-                      placeholder="Pilih jam mulai"
+                      placeholder={t("page.reservation.pilih_jam_mulai", "Pilih jam mulai")}
                       slots={timeSlots}
                       disabled={detailLoading}
                     />
@@ -304,7 +308,7 @@ const AddReservation = () => {
                     <FormLabel>Jam Selesai</FormLabel>
                     <TimePicker
                       {...field}
-                      placeholder="Pilih jam selesai"
+                      placeholder={t("page.reservation.pilih_jam_selesai", "Pilih jam selesai")}
                       slots={timeSlots}
                       disabled={detailLoading}
                     />
@@ -323,7 +327,10 @@ const AddReservation = () => {
                     <FormLabel>
                       Nama Customer <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input placeholder="Nama customer" {...field} />
+                    <Input
+                      placeholder={t("page.reservation.nama_customer", "Nama customer")}
+                      {...field}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -384,7 +391,11 @@ const AddReservation = () => {
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
                         <SelectValue
-                          placeholder={loadingTables ? "Memuat meja..." : "Pilih meja (opsional)"}
+                          placeholder={
+                            loadingTables
+                              ? t("page.reservation.memuat_meja", "Memuat meja...")
+                              : t("page.reservation.pilih_meja_opsional", "Pilih meja (opsional)")
+                          }
                         />
                       </SelectTrigger>
                       <SelectContent>
@@ -426,7 +437,11 @@ const AddReservation = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Catatan</FormLabel>
-                  <Textarea placeholder="Catatan reservasi" rows={3} {...field} />
+                  <Textarea
+                    placeholder={t("page.reservation.catatan_reservasi", "Catatan reservasi")}
+                    rows={3}
+                    {...field}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -455,7 +470,7 @@ const AddReservation = () => {
                 disabled={createMutation.isLoading}
                 className="gap-2 w-full sm:w-auto justify-center">
                 <Save size={18} />
-                {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
+                {createMutation.isLoading ? "Menyimpan..." : t("page.reservation.simpan", "Simpan")}
               </Button>
             </div>
           </form>
@@ -464,9 +479,9 @@ const AddReservation = () => {
           type="confirm"
           open={confirmSaveModal}
           onOpenChange={setConfirmSaveModal}
-          title="Konfirmasi Simpan"
+          title={t("page.reservation.konfirmasi_simpan", "Konfirmasi Simpan")}
           description="Apakah Anda yakin ingin menyimpan data ini?"
-          confirmText="Ya, Simpan"
+          confirmText={t("page.reservation.ya_simpan", "Ya, Simpan")}
           onConfirm={() => {
             setConfirmSaveModal(false);
             const values = form.getValues();
@@ -479,9 +494,12 @@ const AddReservation = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.reservation.batalkan", "Batalkan?")}
+        description={t(
+          "page.reservation.perubahan_yang_belum_disimpan_akan_hilang",
+          "Perubahan yang belum disimpan akan hilang."
+        )}
+        confirmText={t("page.reservation.ya_batalkan", "Ya, Batalkan")}
         onConfirm={() => setTimeout(() => navigate("/reservation"), 150)}
       />
       <MissingFieldsModal
