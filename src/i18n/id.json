@@ -8707,5 +8707,6 @@
   "page.ingredient.pilih_base_unit": "Pilih base unit...",
   "page.ingredient.pilih_unit": "Pilih unit...",
   "page.ingredient.satuan_dasar": "Satuan Dasar",
-  "page.ingredient.stok_minimum": "Stok Minimum"
+  "page.ingredient.stok_minimum": "Stok Minimum",
+  "page.typePayment.searchStore": "Cari toko..."
 }

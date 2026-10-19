@@ -8707,5 +8707,6 @@
   "page.ingredient.pilih_base_unit": "Select base unit...",
   "page.ingredient.pilih_unit": "Select unit...",
   "page.ingredient.satuan_dasar": "Base Unit",
-  "page.ingredient.stok_minimum": "Minimum Stock"
+  "page.ingredient.stok_minimum": "Minimum Stock",
+  "page.typePayment.searchStore": "Search store..."
 }

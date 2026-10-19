@@ -464,7 +464,7 @@ const TypePaymentList = () => {
                               setPage(1);
                             }}
                             placeholder={t("page.employee.list.allStores")}
-                            searchPlaceholder="Cari toko..."
+                            searchPlaceholder={t("page.typePayment.searchStore", "Cari toko...")}
                           />
                         </div>
                       )}
