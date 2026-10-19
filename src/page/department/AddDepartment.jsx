@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Check, Building2, X, Save } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
@@ -59,6 +60,7 @@ const AddDepartment = () => {
     mode: "onChange",
     defaultValues: { name: "", description: "", isActive: true }
   });
+  const requestLeave = useLeaveGuard(form, "/department-list", () => setCancelModal(true));
 
   const createMutation = useMutation(addDepartment, {
     onSuccess: () => {
@@ -96,7 +98,7 @@ const AddDepartment = () => {
         title={t("page.department.add.title")}
         description={t("page.department.add.description")}
         backLink="/department-list"
-        onBack={() => setCancelModal(true)}>
+        onBack={requestLeave}>
         <UserGuide guideKey="add-department" />
       </PageHeader>
 
@@ -199,7 +201,7 @@ const AddDepartment = () => {
               <Button
                 type="button"
                 variant="danger"
-                onClick={() => setCancelModal(true)}
+                onClick={requestLeave}
                 className="gap-2 w-full sm:w-auto justify-center">
                 <X size={20} className="text-lg" />
                 {t("common.cancel")}

@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Check, BadgeCheck, Plus, Building2, Info, X, Save } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
+import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
@@ -70,6 +71,7 @@ const AddPosition = () => {
     mode: "onChange",
     defaultValues: { name: "", department: "", description: "", isActive: true }
   });
+  const requestLeave = useLeaveGuard(form, "/position-list", () => setCancelModal(true));
 
   const positionFieldLabels = {
     name: "Nama Posisi",
@@ -116,7 +118,7 @@ const AddPosition = () => {
         title={t("page.position.add.title")}
         description={t("page.position.add.description")}
         backLink="/position-list"
-        onBack={() => setCancelModal(true)}>
+        onBack={requestLeave}>
         <UserGuide guideKey="add-position" />
       </PageHeader>
 
@@ -334,7 +336,7 @@ const AddPosition = () => {
                   <Button
                     type="button"
                     variant="danger"
-                    onClick={() => setCancelModal(true)}
+                    onClick={requestLeave}
                     className="gap-2 w-full sm:w-auto justify-center">
                     <X size={20} className="text-lg" />
                     {t("common.cancel")}
