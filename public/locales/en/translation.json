@@ -1395,6 +1395,7 @@
   "page.invoice.footerDefault": "Thank you for your visit",
   "page.invoice.socialMedia": "Social Media",
   "page.invoice.printPreview": "Print Preview",
+  "page.invoice.pdfHint": "Choose \"Save as PDF\" in the print dialog",
   "page.invoiceFooter.list.title": "Invoice Footer",
   "page.invoiceFooter.list.description": "Manage invoice footer text.",
   "page.invoiceFooter.list.search": "Search invoice footers...",
