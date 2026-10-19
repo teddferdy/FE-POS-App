@@ -8775,5 +8775,9 @@
   "page.thermalPrinter.usb___ethernet": "USB / Ethernet",
   "page.thermalPrinter.usb___ethernet___bluetooth": "USB / Ethernet / Bluetooth",
   "page.thermalPrinter.usb___serial": "USB / Serial",
-  "page.thermalPrinter.via_thermalbtpy": "Via thermal-bt.py"
+  "page.thermalPrinter.via_thermalbtpy": "Via thermal-bt.py",
+  "page.accountsReceivable.belum_dibayar": "Unpaid",
+  "page.accountsReceivable.jatuh_tempo": "Overdue",
+  "page.accountsReceivable.sebagian_dibayar": "Partially Paid",
+  "page.accountsReceivable.tidak_ada_piutang_yang_perlu_dibayar": "No receivables to pay"
 }

@@ -14,10 +14,19 @@ import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import AbortController from "@/components/organism/abort-controller";
 
 const STATUS_MAP = {
-  UNPAID: { label: "Belum Dibayar", color: "bg-yellow-100 text-yellow-800" },
-  PARTIAL: { label: "Sebagian Dibayar", color: "bg-blue-100 text-blue-800" },
+  UNPAID: {
+    label: t("page.accountsReceivable.belum_dibayar", "Belum Dibayar"),
+    color: "bg-yellow-100 text-yellow-800"
+  },
+  PARTIAL: {
+    label: t("page.accountsReceivable.sebagian_dibayar", "Sebagian Dibayar"),
+    color: "bg-blue-100 text-blue-800"
+  },
   PAID: { label: "Lunas", color: "bg-green-100 text-green-800" },
-  OVERDUE: { label: "Jatuh Tempo", color: "bg-red-100 text-red-800" }
+  OVERDUE: {
+    label: t("page.accountsReceivable.jatuh_tempo", "Jatuh Tempo"),
+    color: "bg-red-100 text-red-800"
+  }
 };
 
 const AccountsReceivableDetail = () => {

@@ -15,10 +15,16 @@ import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 
 const STATUS_LABELS = {
-  UNPAID: { label: "Belum Dibayar", color: "bg-yellow-100 text-yellow-800" },
+  UNPAID: {
+    label: t("page.accountsReceivable.belum_dibayar", "Belum Dibayar"),
+    color: "bg-yellow-100 text-yellow-800"
+  },
   PARTIAL: { label: "Sebagian", color: "bg-blue-100 text-blue-800" },
   PAID: { label: "Lunas", color: "bg-green-100 text-green-800" },
-  OVERDUE: { label: "Jatuh Tempo", color: "bg-red-100 text-red-800" }
+  OVERDUE: {
+    label: t("page.accountsReceivable.jatuh_tempo", "Jatuh Tempo"),
+    color: "bg-red-100 text-red-800"
+  }
 };
 const statusLabelKeys = { UNPAID: "unpaid", PARTIAL: "partial", PAID: "paid", OVERDUE: "overdue" };
 
@@ -205,7 +211,10 @@ const ARPaymentList = () => {
           columns={columns}
           data={arList}
           isLoading={isLoading}
-          emptyMessage="Tidak ada piutang yang perlu dibayar"
+          emptyMessage={t(
+            "page.accountsReceivable.tidak_ada_piutang_yang_perlu_dibayar",
+            "Tidak ada piutang yang perlu dibayar"
+          )}
           emptyIcon={Receipt}
           pagination={{
             page,
