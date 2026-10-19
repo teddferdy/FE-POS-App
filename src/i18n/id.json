@@ -8738,5 +8738,19 @@
   "page.employee.belum_ada_penempatan_store": "belum ada penempatan store",
   "page.goodsReceipt.no_batch___lot": "No. batch / lot",
   "page.goodsReceipt.rp_0": "Rp 0",
-  "page.goodsReceipt.tidak_ada_bahan_ditemukan": "Tidak ada bahan ditemukan"
+  "page.goodsReceipt.tidak_ada_bahan_ditemukan": "Tidak ada bahan ditemukan",
+  "page.invoice.ayam_bakar": "Ayam Bakar",
+  "page.invoice.besar_14px": "Besar (14px)",
+  "page.invoice.budi_santoso": "Budi Santoso",
+  "page.invoice.ekstra_jelas_terbaca": "Ekstra jelas terbaca",
+  "page.invoice.es_teh_manis": "Es Teh Manis",
+  "page.invoice.hemat_ruang_kertas": "Hemat ruang kertas",
+  "page.invoice.jarak_baris_normal": "Jarak baris normal",
+  "page.invoice.kecil_10px": "Kecil (10px)",
+  "page.invoice.klasik_pos_thermal": "Klasik POS Thermal",
+  "page.invoice.logo_preview": "Logo preview",
+  "page.invoice.nama_toko": "NAMA TOKO",
+  "page.invoice.nasi_goreng": "Nasi Goreng",
+  "page.invoice.standar_12px": "Standar (12px)",
+  "page.invoice.terima_kasih_atas_kunjungan_anda": "Terima kasih atas kunjungan Anda"
 }

@@ -67,7 +67,7 @@ const DEFAULT_INVOICE_TEMPLATE = {
   showMemberInfo: true,
   showLogo: true,
   logo: null,
-  footer: "Terima kasih atas kunjungan Anda",
+  footer: t("page.invoice.terima_kasih_atas_kunjungan_anda", "Terima kasih atas kunjungan Anda"),
   paperSize: "58mm",
   fontSize: "normal",
   fontFamily: "monospace",
@@ -88,13 +88,13 @@ const DEFAULT_INVOICE_TEMPLATE = {
 };
 
 const sampleItems = [
-  { name: "Nasi Goreng", qty: 2, price: 25000 },
-  { name: "Es Teh Manis", qty: 1, price: 8000 },
-  { name: "Ayam Bakar", qty: 1, price: 35000 }
+  { name: t("page.invoice.nasi_goreng", "Nasi Goreng"), qty: 2, price: 25000 },
+  { name: t("page.invoice.es_teh_manis", "Es Teh Manis"), qty: 1, price: 8000 },
+  { name: t("page.invoice.ayam_bakar", "Ayam Bakar"), qty: 1, price: 35000 }
 ];
 
 const sampleMember = {
-  name: "Budi Santoso",
+  name: t("page.invoice.budi_santoso", "Budi Santoso"),
   tier: "Gold",
   points: 2450
 };
@@ -138,7 +138,10 @@ const InvoicePreview = ({
   socialMediaVisible = {},
   addressFieldsVisible = {},
   memberFieldsVisible = {},
-  footerText = "Terima kasih atas kunjungan Anda",
+  footerText = t(
+    "page.invoice.terima_kasih_atas_kunjungan_anda",
+    "Terima kasih atas kunjungan Anda"
+  ),
   paperSize = "58mm",
   fontSize = "normal",
   fontFamily = "monospace",
@@ -243,7 +246,9 @@ const InvoicePreview = ({
               className="h-16 w-16 object-contain bg-white rounded-lg p-1 mx-auto mb-3"
             />
           )}
-          {showStoreName && <h3 className={sz.title}>{storeName || "NAMA TOKO"}</h3>}
+          {showStoreName && (
+            <h3 className={sz.title}>{storeName || t("page.invoice.nama_toko", "NAMA TOKO")}</h3>
+          )}
           {showAddress && (
             <div className="text-gray-400 mt-2 space-y-0.5">
               {addressFieldsVisible.storeName !== false && storeName && (
@@ -433,7 +438,9 @@ const InvoicePage = () => {
   });
   const locationDetail = (storeData?.data || storeData) ?? null;
   const hasStore = !!locationDetail && !!(locationDetail?.name || locationDetail?.storeName);
-  const storeName = hasStore ? locationDetail?.name || locationDetail?.storeName : "Nama Toko";
+  const storeName = hasStore
+    ? locationDetail?.name || locationDetail?.storeName
+    : t("page.invoice.nama_toko", "Nama Toko");
   const storePhone = hasStore ? locationDetail?.phoneNumber || "" : "";
   const storeEmail = hasStore ? locationDetail?.email || "" : "";
 
@@ -463,7 +470,9 @@ const InvoicePage = () => {
   const [logoUrl, setLogoUrl] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
-  const [footerText, setFooterText] = useState("Terima kasih atas kunjungan Anda");
+  const [footerText, setFooterText] = useState(
+    t("page.invoice.terima_kasih_atas_kunjungan_anda", "Terima kasih atas kunjungan Anda")
+  );
   const [paperSize, setPaperSize] = useState("58mm");
   const [fontSize, setFontSize] = useState("normal");
   const [fontFamily, setFontFamily] = useState("monospace");
@@ -736,7 +745,7 @@ const InvoicePage = () => {
     if (storeEmail) addressParts.push(storeEmail);
 
     printViaBrowser({
-      storeName: showStoreName ? storeName || "Nama Toko" : "",
+      storeName: showStoreName ? storeName || t("page.invoice.nama_toko", "Nama Toko") : "",
       storeAddress: showAddress ? addressParts.join(" | ") : "",
       storePhone: "",
       logo: showLogo ? logoPreview : "",
@@ -914,7 +923,7 @@ const InvoicePage = () => {
                     {logoPreview ? (
                       <img
                         src={logoPreview}
-                        alt="Logo preview"
+                        alt={t("page.invoice.logo_preview", "Logo preview")}
                         className="max-w-full max-h-full object-contain p-2"
                       />
                     ) : (
@@ -1044,17 +1053,21 @@ const InvoicePage = () => {
                     </Label>
                     <span className="text-xs font-medium text-muted-foreground">
                       {fontSize === "small"
-                        ? "Kecil (10px)"
+                        ? t("page.invoice.kecil_10px", "Kecil (10px)")
                         : fontSize === "large"
-                          ? "Besar (14px)"
-                          : "Standar (12px)"}
+                          ? t("page.invoice.besar_14px", "Besar (14px)")
+                          : t("page.invoice.standar_12px", "Standar (12px)")}
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { key: "small", label: "Kecil", desc: "Kompak & hemat kertas" },
                       { key: "normal", label: "Standar", desc: "Seimbang & nyaman" },
-                      { key: "large", label: "Besar", desc: "Ekstra jelas terbaca" }
+                      {
+                        key: "large",
+                        label: "Besar",
+                        desc: t("page.invoice.ekstra_jelas_terbaca", "Ekstra jelas terbaca")
+                      }
                     ].map((opt) => (
                       <button
                         key={opt.key}
@@ -1099,7 +1112,7 @@ const InvoicePage = () => {
                         key: "monospace",
                         label: "Monospace",
                         fontCls: "font-mono",
-                        desc: "Klasik POS Thermal"
+                        desc: t("page.invoice.klasik_pos_thermal", "Klasik POS Thermal")
                       },
                       {
                         key: "sans",
@@ -1155,8 +1168,16 @@ const InvoicePage = () => {
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { key: "compact", label: "Rapat", desc: "Hemat ruang kertas" },
-                      { key: "normal", label: "Standar", desc: "Jarak baris normal" },
+                      {
+                        key: "compact",
+                        label: "Rapat",
+                        desc: t("page.invoice.hemat_ruang_kertas", "Hemat ruang kertas")
+                      },
+                      {
+                        key: "normal",
+                        label: "Standar",
+                        desc: t("page.invoice.jarak_baris_normal", "Jarak baris normal")
+                      },
                       { key: "relaxed", label: "Longgar", desc: "Lega & berjarak" }
                     ].map((opt) => (
                       <button

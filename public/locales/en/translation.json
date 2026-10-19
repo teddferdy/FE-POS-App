@@ -8738,5 +8738,19 @@
   "page.employee.belum_ada_penempatan_store": "No store placement yet",
   "page.goodsReceipt.no_batch___lot": "No. batch / lot",
   "page.goodsReceipt.rp_0": "Rp 0",
-  "page.goodsReceipt.tidak_ada_bahan_ditemukan": "No ingredients found"
+  "page.goodsReceipt.tidak_ada_bahan_ditemukan": "No ingredients found",
+  "page.invoice.ayam_bakar": "Grilled Chicken",
+  "page.invoice.besar_14px": "Large (14px)",
+  "page.invoice.budi_santoso": "Budi Santoso",
+  "page.invoice.ekstra_jelas_terbaca": "Extra clear readable",
+  "page.invoice.es_teh_manis": "Sweet Iced Tea",
+  "page.invoice.hemat_ruang_kertas": "Save paper space",
+  "page.invoice.jarak_baris_normal": "Normal line spacing",
+  "page.invoice.kecil_10px": "Small (10px)",
+  "page.invoice.klasik_pos_thermal": "Classic POS Thermal",
+  "page.invoice.logo_preview": "Logo preview",
+  "page.invoice.nama_toko": "STORE NAME",
+  "page.invoice.nasi_goreng": "Fried Rice",
+  "page.invoice.standar_12px": "Standard (12px)",
+  "page.invoice.terima_kasih_atas_kunjungan_anda": "Thank you for your visit"
 }
