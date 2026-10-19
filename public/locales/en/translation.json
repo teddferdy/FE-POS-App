@@ -8815,5 +8815,6 @@
   "page.stockOpname.semua_tipe": "All Types",
   "page.stockOpname.semua_toko": "All Stores",
   "page.stockOpname.stok_awal": "Initial Stock",
-  "page.stockOpname.stok_fisik": "Physical Stock"
+  "page.stockOpname.stok_fisik": "Physical Stock",
+  "page.department.cari_status": "Search status..."
 }
