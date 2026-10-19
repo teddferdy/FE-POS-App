@@ -8594,5 +8594,11 @@
   "page.supplier.selectTaxType": "Pilih jenis pajak...",
   "page.supplier.selectTransactionType": "Pilih tipe transaksi...",
   "page.supplier.selectUnit": "Pilih satuan...",
-  "page.supplier.searchUnit": "Cari satuan..."
+  "page.supplier.searchUnit": "Cari satuan...",
+  "page.location.nameRequired": "Nama Toko tidak boleh kosong",
+  "page.location.invalidEmail": "Format email tidak valid",
+  "page.location.emailRequired": "Email harus diisi",
+  "page.location.phoneRequired": "Nomor Telepon harus diisi",
+  "page.location.phoneDigitsOnly": "Nomor Telepon hanya boleh angka",
+  "page.location.phoneMax16": "Nomor Telepon maksimal 16 digit"
 }

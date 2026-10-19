@@ -8594,5 +8594,11 @@
   "page.supplier.selectTaxType": "Select tax type...",
   "page.supplier.selectTransactionType": "Select transaction type...",
   "page.supplier.selectUnit": "Select unit...",
-  "page.supplier.searchUnit": "Search unit..."
+  "page.supplier.searchUnit": "Search unit...",
+  "page.location.nameRequired": "Store name is required",
+  "page.location.invalidEmail": "Invalid email format",
+  "page.location.emailRequired": "Email is required",
+  "page.location.phoneRequired": "Phone number is required",
+  "page.location.phoneDigitsOnly": "Phone number must contain digits only",
+  "page.location.phoneMax16": "Phone number max 16 digits"
 }

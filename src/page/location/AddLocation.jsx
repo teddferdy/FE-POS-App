@@ -190,7 +190,7 @@ const AddLocation = () => {
 
   const baseFields = useMemo(
     () => ({
-      name: z.string().min(1, "Nama Toko tidak boleh kosong"),
+      name: z.string().min(1, t("page.location.nameRequired", "Nama Toko tidak boleh kosong")),
       storeId: z.string().optional(),
       locationId: z.string().optional(),
       phoneNumber: z
@@ -232,7 +232,10 @@ const AddLocation = () => {
       z.object({
         ...baseFields,
         storeId: z.string().min(1, "ID Toko harus diisi"),
-        email: z.string().min(1, "Email harus diisi").email("Format email tidak valid")
+        email: z
+          .string()
+          .min(1, t("page.location.emailRequired", "Email harus diisi"))
+          .email("Format email tidak valid")
       }),
     [baseFields]
   );
