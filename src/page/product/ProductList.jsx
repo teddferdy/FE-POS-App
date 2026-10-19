@@ -666,7 +666,7 @@ const ProductList = () => {
                         setPage(1);
                       }}
                       placeholder={`${t("common.all")} ${t("page.product.table.category")}`}
-                      searchPlaceholder="Cari kategori..."
+                      searchPlaceholder={t("page.product.searchCategory", "Cari kategori...")}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -686,7 +686,7 @@ const ProductList = () => {
                         setPage(1);
                       }}
                       placeholder={t("common.all")}
-                      searchPlaceholder="Cari status..."
+                      searchPlaceholder={t("page.product.searchStatus", "Cari status...")}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">

@@ -8708,5 +8708,13 @@
   "page.ingredient.pilih_unit": "Select unit...",
   "page.ingredient.satuan_dasar": "Base Unit",
   "page.ingredient.stok_minimum": "Minimum Stock",
-  "page.typePayment.searchStore": "Search store..."
+  "page.typePayment.searchStore": "Search store...",
+  "page.product.searchCategory": "Search category...",
+  "page.product.searchStatus": "Search status...",
+  "page.product.outOfStock": "Out of stock",
+  "page.product.addToCart": "Add to cart",
+  "page.product.cashierProductList": "Cashier product list",
+  "page.product.menuCard": "Menu card",
+  "page.product.productDetail": "Product detail",
+  "page.product.defaultName": "Product name"
 }
