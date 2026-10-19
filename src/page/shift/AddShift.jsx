@@ -316,7 +316,9 @@ const AddShift = () => {
           }
         ]}
         title={t("page.shift.add.title")}
-        description={t("page.shift.list.description")}>
+        description={t("page.shift.list.description")}
+        backLink="/shift-list"
+        onBack={() => setCancelModal(true)}>
         <UserGuide guideKey="add-shift" />
         <Button variant="outline" onClick={() => setCancelModal(true)}>
           {t("action.back")}

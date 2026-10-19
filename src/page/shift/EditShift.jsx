@@ -377,7 +377,9 @@ const EditShift = () => {
           }
         ]}
         title={t("page.shift.edit.title")}
-        description={t("page.shift.edit.subtitle")}>
+        description={t("page.shift.edit.subtitle")}
+        backLink="/shift-list"
+        onBack={() => setCancelModal(true)}>
         <Button variant="outline" onClick={() => setCancelModal(true)}>
           {t("action.back")}
         </Button>

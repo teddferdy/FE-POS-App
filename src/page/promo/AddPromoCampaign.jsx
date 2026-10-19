@@ -428,7 +428,9 @@ const AddPromoCampaign = () => {
           }
         ]}
         title={t("page.promo.add.title")}
-        description={t("page.promo.add.description")}>
+        description={t("page.promo.add.description")}
+        backLink="/promo-list"
+        onBack={() => setCancelModalOpen(true)}>
         <Button variant="outline" onClick={() => setCancelModalOpen(true)}>
           {t("action.back")}
         </Button>
