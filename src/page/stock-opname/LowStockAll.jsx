@@ -248,7 +248,7 @@ const LowStockAll = () => {
                   setPage(1);
                 }}>
                 <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder={t("page.stockOpname.semua_toko", "Semua Toko") />
+                  <SelectValue placeholder={t("page.stockOpname.semua_toko", "Semua Toko")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Toko</SelectItem>
@@ -271,7 +271,7 @@ const LowStockAll = () => {
                   setPage(1);
                 }}>
                 <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder={t("page.stockOpname.semua_tipe", "Semua Tipe") />
+                  <SelectValue placeholder={t("page.stockOpname.semua_tipe", "Semua Tipe")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Tipe</SelectItem>

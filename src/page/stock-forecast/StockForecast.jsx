@@ -146,7 +146,7 @@ const StockForecast = () => {
         {isSuperAdmin && (
           <Select value={store} onValueChange={setStore}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t("page.stockForecast.pilih_toko", "Pilih toko") />
+              <SelectValue placeholder={t("page.stockForecast.pilih_toko", "Pilih toko")} />
             </SelectTrigger>
             <SelectContent>
               {locations.map((loc) => (

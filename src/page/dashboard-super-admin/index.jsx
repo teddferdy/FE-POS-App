@@ -175,7 +175,7 @@ const DashboardSuperAdmin = () => {
                   else setActiveStore(v, "");
                 }}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder={t("page.dashboardSuperAdmin.semua_toko", "Semua Toko") />
+                  <SelectValue placeholder={t("page.dashboardSuperAdmin.semua_toko", "Semua Toko")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Toko</SelectItem>
