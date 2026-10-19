@@ -8761,5 +8761,19 @@
   "page.support.panduan_pengguna": "Panduan Pengguna",
   "page.support.user_guide": "User Guide",
   "page.support.video_tutorial": "Video Tutorial",
-  "page.support.video_tutorials": "Video Tutorials"
+  "page.support.video_tutorials": "Video Tutorials",
+  "page.thermalPrinter.basic_support": "Basic support",
+  "page.thermalPrinter.bixolon_srp350_350plus": "Bixolon SRP-350/350plus",
+  "page.thermalPrinter.bluetooth_macos": "Bluetooth (macOS)",
+  "page.thermalPrinter.citizen_cts310_cts400": "Citizen CT-S310/CT-S400",
+  "page.thermalPrinter.epson_tmt20_t20ii_t88": "Epson TM-T20/T20II/T88",
+  "page.thermalPrinter.fully_supported": "Fully supported",
+  "page.thermalPrinter.generic_58mm_80mm_thermal": "Generic 58mm/80mm Thermal",
+  "page.thermalPrinter.otomatis_disarankan": "Otomatis (Disarankan)",
+  "page.thermalPrinter.rpp02n___rpp300_bluetooth": "RPP02N / RPP300 (Bluetooth)",
+  "page.thermalPrinter.star_micronics_tsp100_tsp143": "Star Micronics TSP100/TSP143",
+  "page.thermalPrinter.usb___ethernet": "USB / Ethernet",
+  "page.thermalPrinter.usb___ethernet___bluetooth": "USB / Ethernet / Bluetooth",
+  "page.thermalPrinter.usb___serial": "USB / Serial",
+  "page.thermalPrinter.via_thermalbtpy": "Via thermal-bt.py"
 }

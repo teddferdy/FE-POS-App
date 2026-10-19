@@ -20,10 +20,18 @@ import { toast } from "sonner";
 import { testPrint, getPrinterStatus, configurePrinter } from "@/services/thermalPrinter";
 
 const printerTypes = [
-  { value: "auto", label: "Otomatis (Disarankan)", icon: "🔍" },
+  {
+    value: "auto",
+    label: t("page.thermalPrinter.otomatis_disarankan", "Otomatis (Disarankan)"),
+    icon: "🔍"
+  },
   { value: "network", label: "Jaringan (LAN/WiFi)", icon: "🌐" },
   { value: "usb", label: "USB (Thermal Printer)", icon: "🔌" },
-  { value: "bluetooth", label: "Bluetooth (macOS)", icon: "📱" },
+  {
+    value: "bluetooth",
+    label: t("page.thermalPrinter.bluetooth_macos", "Bluetooth (macOS)"),
+    icon: "📱"
+  },
   { value: "file", label: "File (Testing)", icon: "📄" }
 ];
 
@@ -381,30 +389,49 @@ Terima kasih telah berbelanja!
         <div className="p-4 space-y-3">
           {[
             {
-              name: "Epson TM-T20/T20II/T88",
-              interface: "USB / Ethernet / Bluetooth",
-              note: "Fully supported"
+              name: t("page.thermalPrinter.epson_tmt20_t20ii_t88", "Epson TM-T20/T20II/T88"),
+              interface: t(
+                "page.thermalPrinter.usb___ethernet___bluetooth",
+                "USB / Ethernet / Bluetooth"
+              ),
+              note: t("page.thermalPrinter.fully_supported", "Fully supported")
             },
             {
-              name: "Star Micronics TSP100/TSP143",
-              interface: "USB / Ethernet / Bluetooth",
-              note: "Fully supported"
+              name: t(
+                "page.thermalPrinter.star_micronics_tsp100_tsp143",
+                "Star Micronics TSP100/TSP143"
+              ),
+              interface: t(
+                "page.thermalPrinter.usb___ethernet___bluetooth",
+                "USB / Ethernet / Bluetooth"
+              ),
+              note: t("page.thermalPrinter.fully_supported", "Fully supported")
             },
             {
-              name: "Bixolon SRP-350/350plus",
-              interface: "USB / Ethernet / Bluetooth",
-              note: "Fully supported"
+              name: t("page.thermalPrinter.bixolon_srp350_350plus", "Bixolon SRP-350/350plus"),
+              interface: t(
+                "page.thermalPrinter.usb___ethernet___bluetooth",
+                "USB / Ethernet / Bluetooth"
+              ),
+              note: t("page.thermalPrinter.fully_supported", "Fully supported")
             },
             {
-              name: "Citizen CT-S310/CT-S400",
-              interface: "USB / Ethernet",
-              note: "Fully supported"
+              name: t("page.thermalPrinter.citizen_cts310_cts400", "Citizen CT-S310/CT-S400"),
+              interface: t("page.thermalPrinter.usb___ethernet", "USB / Ethernet"),
+              note: t("page.thermalPrinter.fully_supported", "Fully supported")
             },
-            { name: "Generic 58mm/80mm Thermal", interface: "USB / Serial", note: "Basic support" },
             {
-              name: "RPP02N / RPP300 (Bluetooth)",
-              interface: "Bluetooth (macOS)",
-              note: "Via thermal-bt.py"
+              name: t("page.thermalPrinter.generic_58mm_80mm_thermal", "Generic 58mm/80mm Thermal"),
+              interface: t("page.thermalPrinter.usb___serial", "USB / Serial"),
+              note: t("page.thermalPrinter.basic_support", "Basic support")
+            },
+            {
+              name: t(
+                "page.thermalPrinter.rpp02n___rpp300_bluetooth",
+                "RPP02N / RPP300 (Bluetooth)"
+              ),
+              interface: t("page.thermalPrinter.bluetooth_macos", "Bluetooth (macOS)"),
+              note: t("page.thermalPrinter.via_thermalbtpy", "Via thermal-bt.py")
             }
           ].map((p, i) => (
             <div key={i} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
