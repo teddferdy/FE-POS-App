@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import {
   X,
@@ -9,7 +9,8 @@ import {
   Plus,
   Trash2,
   Banknote,
-  Merge
+  Merge,
+  FileText
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -43,8 +44,10 @@ import {
 } from "@/services/general";
 import { toast } from "sonner";
 import { warnStockShortages } from "@/lib/stock-shortage";
-import { printReceipt } from "@/utils/thermalPrint";
-import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { printReceipt, printViaBrowser } from "@/utils/thermalPrint";
+import ReceiptPaper from "@/components/receipt/ReceiptPaper";
+import { receiptLabels } from "@/components/receipt/receiptLabels";
+import { buildAddressLines } from "@/utils/receiptDocument";
 
 const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const { t } = useTranslation();
@@ -178,7 +181,9 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const storeAddress = buildStoreAddress();
 
   const socialMedia = locationDetail?.socialMedia || data?.socialMedia || [];
-  const footerText = settingsData?.footer || data?.footer || t("page.cashier.receipt.thanks");
+  // Same fallback as the invoice-settings preview, so an empty footer
+  // setting prints the same text in both places.
+  const footerText = settingsData?.footer || data?.footer || t("page.invoice.footerDefault");
   const orderNumber =
     data?.orderNumber ||
     data?.invoice ||
@@ -186,13 +191,6 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     `#INV-${Date.now().toString().slice(-6)}`;
   const orderId = data?.id || data?._id;
   const transactionDate = data?.createdAt || data?.date || new Date().toISOString();
-  const formattedDate = new Date(transactionDate).toLocaleDateString("id-ID", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
   const cashierName = data?.cashierName || data?.cashier || "-";
   // C11: mirrors the same table?.name-or-raw-id fallback already used by
   // Dapur KDS (kitchen-display/index.jsx) — only renders once a table
@@ -408,54 +406,100 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     });
   };
 
+  const isCashPayment = String(paymentMethod).toLowerCase() === "cash";
+  const memberPointsValue =
+    data?.customer?.memberPoints ?? data?.customer?.totalPoints ?? data?.customer?.points;
+  const redeemedPoints = data?.redeemedPoints || data?.customer?.redeemedPoints || 0;
+
+  // One receipt object drives the on-screen receipt AND every print path
+  // (browser, ESC/POS, local bridge), so what is shown is what prints.
+  const receiptData = useMemo(
+    () => ({
+      labels: receiptLabels(t),
+      storeName,
+      storeAddress,
+      storePhone,
+      storeEmail,
+      addressLines: buildAddressLines(
+        {
+          address: locationAddress,
+          locationDetail: locationDetailAddress,
+          village: villageName,
+          district: districtName,
+          city: cityName,
+          province: provinceName,
+          postalCode: postalCodeValue,
+          phone: storePhone,
+          email: storeEmail
+        },
+        addressFieldsVisible
+      ),
+      logo: settingsData?.logo || "",
+      memberName: customerName !== "-" ? customerName : "",
+      memberTier: data?.customer?.memberTier || data?.customer?.tier || "",
+      memberPoints: memberPointsValue ?? null,
+      orderNumber,
+      cashier: cashierName,
+      date: transactionDate,
+      table: tableName,
+      paymentMethod,
+      paymentMethodLabel:
+        paymentMethod && paymentMethod !== "-"
+          ? paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)
+          : "",
+      items: items.map((i) => ({
+        name: i.nameProduct || i.name || "-",
+        qty: i.count || i.qty || 0,
+        price: i.price || 0,
+        total: i.totalPrice || i.price * (i.count || 1) || 0,
+        options: i.options || (i.variantName ? [{ name: i.variantName }] : [])
+      })),
+      subtotal,
+      discount,
+      tax,
+      taxLabel: `${t("page.cashier.tax")} (${taxRatePercent}%)`,
+      redeemedPoints,
+      total,
+      // A receipt recovered from an already-recorded order carries no
+      // tender detail — show none rather than invented amounts.
+      showTender: isCashPayment && !data?.tenderDetailUnknown,
+      cashAmount,
+      changeAmount,
+      socialMedia,
+      footer: footerText,
+      showLogo,
+      showStoreName,
+      showAddress,
+      showMemberInfo,
+      showSocialMedia,
+      socialMediaVisibility: settingsData?.socialMediaVisibility,
+      addressFieldsVisibility: addressFieldsVisible,
+      memberFieldsVisibility: settingsData?.memberFieldsVisibility,
+      paperSize,
+      fontSize: settingsData?.fontSize || "normal",
+      fontFamily: settingsData?.fontFamily || "monospace",
+      lineSpacing: settingsData?.lineSpacing || "normal"
+    }),
+    // Every value above derives from the order, the invoice settings, the
+    // location and its region lookups, and the paper size.
+    [
+      data,
+      settingsData,
+      locationDetail,
+      paperSize,
+      provinces,
+      cities,
+      districts,
+      villages,
+      postalCodes,
+      t
+    ]
+  );
+
   const handleThermalPrint = async () => {
     setThermalLoading(true);
     try {
-      const receipt = {
-        storeName,
-        storeAddress,
-        storePhone,
-        storeEmail,
-        logo: settingsData?.logo || "",
-        memberName: data?.customerName || data?.customer?.name || "",
-        memberTier: data?.customer?.memberTier || data?.customer?.tier || "",
-        memberPoints:
-          data?.customer?.memberPoints ||
-          data?.customer?.totalPoints ||
-          data?.customer?.points ||
-          0,
-        orderNumber,
-        cashier: cashierName,
-        date: transactionDate,
-        items: items.map((i) => ({
-          name: i.nameProduct || i.name || "-",
-          qty: i.count || i.qty || 0,
-          price: i.price || 0,
-          total: i.totalPrice || i.price * (i.count || 1) || 0,
-          options: i.options || (i.variantName ? [{ name: i.variantName }] : [])
-        })),
-        subtotal,
-        discount,
-        tax,
-        total,
-        paymentMethod,
-        cashAmount,
-        changeAmount,
-        socialMedia,
-        footer: footerText,
-        showLogo,
-        showStoreName,
-        showAddress,
-        showMemberInfo,
-        showSocialMedia,
-        socialMediaVisibility: settingsData?.socialMediaVisibility,
-        addressFieldsVisibility: addressFieldsVisible,
-        paperSize,
-        fontSize: settingsData?.fontSize || "normal",
-        fontFamily: settingsData?.fontFamily || "monospace",
-        lineSpacing: settingsData?.lineSpacing || "normal"
-      };
-      await printReceipt(receipt, "auto");
+      await printReceipt(receiptData, "auto");
       toast.success(t("page.cashier.receipt.toast.printSuccess"));
     } catch (err) {
       if (err.name !== "NotFoundError") {
@@ -465,93 +509,6 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
       setThermalLoading(false);
     }
   };
-
-  const fontSize = settingsData?.fontSize || "normal";
-  const fontFamily = settingsData?.fontFamily || "monospace";
-  const lineSpacing = settingsData?.lineSpacing || "normal";
-
-  const fontFamClass =
-    fontFamily === "sans" ? "font-sans" : fontFamily === "serif" ? "font-serif" : "font-mono";
-
-  const sizeClasses = {
-    small: {
-      title: "text-base font-bold tracking-tight",
-      address: "text-[10px]",
-      memberHeader: "text-[9px]",
-      memberText: "text-[10px]",
-      memberName: "text-[11px] font-semibold",
-      metaOrder: "text-xs",
-      metaText: "text-[10px]",
-      tableTh: "text-[9px]",
-      tableItem: "text-xs",
-      tableSub: "text-[9px]",
-      totalsLabel: "text-xs",
-      totalsValue: "text-xs font-medium",
-      totalsGrand: "text-sm font-bold",
-      footer: "text-[10px]",
-      social: "text-[9px]"
-    },
-    normal: {
-      title: "text-lg font-bold tracking-tight",
-      address: "text-[11px]",
-      memberHeader: "text-[10px]",
-      memberText: "text-[11px]",
-      memberName: "text-xs font-semibold",
-      metaOrder: "text-sm",
-      metaText: "text-[11px]",
-      tableTh: "text-[10px]",
-      tableItem: "text-sm",
-      tableSub: "text-[10px]",
-      totalsLabel: "text-sm",
-      totalsValue: "text-sm font-medium",
-      totalsGrand: "text-base font-bold",
-      footer: "text-xs",
-      social: "text-[10px]"
-    },
-    large: {
-      title: "text-xl font-bold tracking-tight",
-      address: "text-xs",
-      memberHeader: "text-xs",
-      memberText: "text-xs",
-      memberName: "text-sm font-semibold",
-      metaOrder: "text-base",
-      metaText: "text-xs",
-      tableTh: "text-xs",
-      tableItem: "text-base",
-      tableSub: "text-xs",
-      totalsLabel: "text-base",
-      totalsValue: "text-base font-medium",
-      totalsGrand: "text-lg font-bold",
-      footer: "text-sm",
-      social: "text-xs"
-    }
-  };
-  const sz = sizeClasses[fontSize] || sizeClasses.normal;
-
-  const padClasses = {
-    compact: {
-      header: "px-4 py-4",
-      section: "px-4 py-2",
-      tablePy: "py-1",
-      totals: "p-2 space-y-1",
-      footer: "px-4 py-2"
-    },
-    normal: {
-      header: "px-5 py-6",
-      section: "px-5 py-3",
-      tablePy: "py-2",
-      totals: "p-3 space-y-2",
-      footer: "px-5 py-3"
-    },
-    relaxed: {
-      header: "px-6 py-7",
-      section: "px-6 py-4",
-      tablePy: "py-3",
-      totals: "p-4 space-y-3",
-      footer: "px-6 py-4"
-    }
-  };
-  const pd = padClasses[lineSpacing] || padClasses.normal;
 
   return (
     // F9-04: migrated onto the project's accessible Dialog primitive —
@@ -604,290 +561,13 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {/* InvoicePreview-style receipt */}
-          <div
-            className={`bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 mx-auto overflow-hidden transition-all duration-200 ${fontFamClass} ${
-              paperSize === "80mm" ? "max-w-[420px]" : "max-w-[320px]"
-            }`}>
-            {/* Dark header — store name, logo, address */}
-            <div
-              className={`bg-gradient-to-br from-gray-900 to-gray-800 ${pd.header} text-white text-center`}>
-              {showLogo && settingsData?.logo && (
-                <img
-                  src={settingsData.logo}
-                  alt="Logo"
-                  className="h-16 w-16 object-contain bg-white rounded-lg p-1 mx-auto mb-3"
-                />
-              )}
-              {showStoreName && <h3 className={sz.title}>{storeName}</h3>}
-              {showAddress && (
-                <div className="text-gray-400 mt-2 space-y-0.5">
-                  {addressFieldsVisible.address !== false && locationAddress && (
-                    <p className={sz.address}>{locationAddress}</p>
-                  )}
-                  {addressFieldsVisible.locationDetail !== false && locationDetailAddress && (
-                    <p className={sz.address}>{locationDetailAddress}</p>
-                  )}
-                  {((addressFieldsVisible.province !== false && provinceName) ||
-                    (addressFieldsVisible.city !== false && cityName) ||
-                    (addressFieldsVisible.district !== false && districtName) ||
-                    (addressFieldsVisible.village !== false && villageName)) && (
-                    <p className={sz.address}>
-                      {[
-                        addressFieldsVisible.province !== false && provinceName ? provinceName : "",
-                        addressFieldsVisible.city !== false && cityName ? cityName : "",
-                        addressFieldsVisible.district !== false && districtName ? districtName : "",
-                        addressFieldsVisible.village !== false && villageName ? villageName : ""
-                      ]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  )}
-                  {addressFieldsVisible.postalCode !== false && postalCodeValue && (
-                    <p className={sz.address}>Kode Pos: {postalCodeValue}</p>
-                  )}
-                  {addressFieldsVisible.phone !== false && storePhone && (
-                    <p className={sz.address}>Telp: {storePhone}</p>
-                  )}
-                  {addressFieldsVisible.email !== false && storeEmail && (
-                    <p className={sz.address}>{storeEmail}</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Transaction meta */}
-            <div className={`${pd.section} border-b border-gray-200 space-y-1`}>
-              <div className="flex items-center justify-center gap-2">
-                <CheckCircle size={14} className="text-emerald-500" />
-                <p className={`${sz.metaText} font-semibold text-emerald-600`}>
-                  {t("page.cashier.receipt.paymentSuccess")}
-                </p>
-              </div>
-              <p className={`text-center font-bold tracking-wide text-gray-800 ${sz.metaOrder}`}>
-                {orderNumber}
-              </p>
-              <p className={`text-center text-gray-500 ${sz.metaText}`}>{formattedDate}</p>
-              <div className={`flex justify-between text-gray-600 pt-1 ${sz.metaText}`}>
-                <span>
-                  {t("page.cashier.receipt.cashier")}:{" "}
-                  <span className="font-medium">{cashierName}</span>
-                </span>
-                <span className="capitalize">{paymentMethod}</span>
-              </div>
-              {tableName && (
-                <div className={`flex justify-between text-gray-600 ${sz.metaText}`}>
-                  <span>{t("page.cashier.receipt.table", "Meja")}</span>
-                  <span className="font-medium">{tableName}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Member info band */}
-            {showMemberInfo && (customerName !== "-" || data?.customer?.memberTier) && (
-              <div className={`${pd.section} bg-yellow-50 border-b border-yellow-100`}>
-                <p
-                  className={`${sz.memberHeader} font-semibold text-yellow-800 uppercase tracking-wider mb-2`}>
-                  {t("page.invoice.memberInfo")}
-                </p>
-                <div className="space-y-1">
-                  {customerName && customerName !== "-" && (
-                    <div className="flex justify-between items-center">
-                      <span className={`${sz.memberText} text-yellow-900 font-medium`}>
-                        {t("page.invoice.memberName")}
-                      </span>
-                      <span className={`${sz.memberName} text-yellow-800`}>{customerName}</span>
-                    </div>
-                  )}
-                  {data?.customer?.memberTier && (
-                    <div className="flex justify-between items-center">
-                      <span className={`${sz.memberText} text-yellow-900 font-medium`}>
-                        {t("page.invoice.memberTier")}
-                      </span>
-                      <span className={`${sz.memberName} text-yellow-800`}>
-                        {data.customer.memberTier}
-                      </span>
-                    </div>
-                  )}
-                  {data?.customer?.memberPoints != null && (
-                    <div className="flex justify-between items-center">
-                      <span className={`${sz.memberText} text-yellow-900 font-medium`}>
-                        {t("page.invoice.totalPoints")}
-                      </span>
-                      <span className={`${sz.memberName} text-yellow-800`}>
-                        {Number(data.customer.memberPoints).toLocaleString("id-ID")} pts
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Items table */}
-            <div className={pd.section}>
-              <HorizontalScrollArea>
-                <table className="w-full">
-                  <thead>
-                    <tr
-                      className={`${sz.tableTh} text-gray-500 uppercase tracking-wider border-b border-gray-200`}>
-                      <th className={`text-left ${pd.tablePy} font-semibold`}>
-                        {t("page.invoice.item")}
-                      </th>
-                      <th className={`text-center ${pd.tablePy} font-semibold w-10`}>Qty</th>
-                      <th className={`text-right ${pd.tablePy} font-semibold`}>Harga</th>
-                      <th className={`text-right ${pd.tablePy} font-semibold`}>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.length > 0 ? (
-                      items.map((item, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bg-gray-50/50" : ""}>
-                          <td className={`${pd.tablePy} ${sz.tableItem} text-gray-800`}>
-                            <span>{item.nameProduct || item.name || "-"}</span>
-                            {item.options?.[0]?.name && (
-                              <span className={`block text-gray-400 ${sz.tableSub}`}>
-                                – {item.options[0].name}
-                              </span>
-                            )}
-                          </td>
-                          <td className={`${pd.tablePy} text-center ${sz.tableItem} text-gray-600`}>
-                            {item.count || item.qty || 0}
-                          </td>
-                          <td className={`${pd.tablePy} text-right ${sz.tableItem} text-gray-600`}>
-                            Rp{formatPrice(item.price || 0)}
-                          </td>
-                          <td
-                            className={`${pd.tablePy} text-right ${sz.tableItem} font-medium text-gray-900`}>
-                            Rp{formatPrice(item.totalPrice || item.price * (item.count || 1) || 0)}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={4} className="py-4 text-center text-sm text-gray-400">
-                          -
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </HorizontalScrollArea>
-            </div>
-
-            {/* Summary card */}
-            <div className={pd.section}>
-              <div className={`bg-gray-50 rounded-lg ${pd.totals}`}>
-                <div className="flex justify-between">
-                  <span className={`text-gray-500 ${sz.totalsLabel}`}>
-                    {t("page.invoice.subtotal")}
-                  </span>
-                  <span className={`text-gray-700 ${sz.totalsValue}`}>
-                    Rp{formatPrice(subtotal)}
-                  </span>
-                </div>
-                {tax > 0 && (
-                  <div className="flex justify-between">
-                    <span className={`text-gray-500 ${sz.totalsLabel}`}>
-                      {t("page.cashier.tax")} ({taxRatePercent}%)
-                    </span>
-                    <span className={`text-gray-700 ${sz.totalsValue}`}>Rp{formatPrice(tax)}</span>
-                  </div>
-                )}
-                {discount > 0 && (
-                  <div className="flex justify-between">
-                    <span className={`text-emerald-600 ${sz.totalsLabel}`}>
-                      {t("page.cashier.discount")}
-                    </span>
-                    <span className={`text-emerald-600 ${sz.totalsValue}`}>
-                      -Rp{formatPrice(discount)}
-                    </span>
-                  </div>
-                )}
-                {(data?.redeemedPoints > 0 || data?.customer?.redeemedPoints > 0) && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className={`text-violet-600 ${sz.totalsLabel}`}>
-                        {t("page.cashier.receipt.redeemPoints", {
-                          points: (
-                            data.redeemedPoints ||
-                            data.customer?.redeemedPoints ||
-                            0
-                          ).toLocaleString("id-ID")
-                        })}
-                      </span>
-                      <span className={`text-violet-600 ${sz.totalsValue}`}>
-                        -Rp{formatPrice(data.redeemedPoints || data.customer?.redeemedPoints || 0)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{t("page.cashier.receipt.totalBeforeRedeem")}</span>
-                      <span>
-                        Rp
-                        {formatPrice(
-                          total + (data.redeemedPoints || data.customer?.redeemedPoints || 0)
-                        )}
-                      </span>
-                    </div>
-                  </>
-                )}
-                <div className="flex justify-between pt-2 border-t border-gray-200 mt-2">
-                  <span className={`text-gray-900 ${sz.totalsGrand}`}>
-                    {t("page.invoice.total")}
-                  </span>
-                  <span className={`text-gray-900 ${sz.totalsGrand}`}>Rp{formatPrice(total)}</span>
-                </div>
-                {/* A receipt recovered from an already-recorded order carries no
-                    tender detail (cash received / change are not part of the
-                    order read) — show none rather than invented amounts. */}
-                {!data?.tenderDetailUnknown &&
-                  (paymentMethod === "cash" || paymentMethod?.toLowerCase() === "cash") && (
-                    <>
-                      <div className="flex justify-between">
-                        <span className={`text-gray-500 ${sz.totalsLabel}`}>
-                          {t("page.cashier.cashAmount")}
-                        </span>
-                        <span className={`text-gray-700 ${sz.totalsValue}`}>
-                          Rp{formatPrice(cashAmount)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className={`text-gray-500 ${sz.totalsLabel}`}>
-                          {t("page.cashier.change")}
-                        </span>
-                        <span className={`text-emerald-600 font-semibold ${sz.totalsValue}`}>
-                          Rp{formatPrice(changeAmount)}
-                        </span>
-                      </div>
-                    </>
-                  )}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className={`bg-gray-50 ${pd.footer} border-t border-gray-200`}>
-              <p
-                className={`text-center text-gray-400 ${sz.footer} italic overflow-hidden`}
-                style={{
-                  display: "-webkit-box",
-                  WebkitBoxOrient: "vertical",
-                  WebkitLineClamp: 4,
-                  textOverflow: "ellipsis"
-                }}>
-                {footerText}
-              </p>
-              {showSocialMedia && socialMedia.length > 0 && (
-                <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-gray-200 flex-wrap">
-                  {socialMedia.map((sm, idx) => (
-                    <span key={idx} className={`text-gray-400 ${sz.social}`}>
-                      {typeof sm === "string"
-                        ? sm
-                        : `${sm.platform || sm.name || ""}: ${sm.account || sm.username || sm.url || ""}`.trim()}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <CheckCircle size={14} className="text-emerald-500" />
+            <p className="text-xs font-semibold text-emerald-600">
+              {t("page.cashier.receipt.paymentSuccess")}
+            </p>
           </div>
+          <ReceiptPaper data={receiptData} />
         </div>
 
         <div className="border-t border-border/50 p-4 shrink-0 flex flex-col gap-2">
@@ -899,6 +579,14 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
               loading={thermalLoading}>
               <Printer size={16} />
               {t("page.cashier.receipt.thermal")}
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 h-11 rounded-xl border-border/60"
+              title={t("page.invoice.pdfHint")}
+              onClick={() => printViaBrowser(receiptData)}>
+              <FileText size={16} />
+              PDF
             </Button>
             <Button
               variant="outline"

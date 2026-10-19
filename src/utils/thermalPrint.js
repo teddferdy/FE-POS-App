@@ -1,4 +1,4 @@
-import { escapeHtml as esc } from "@/utils/htmlEscape";
+import { buildReceiptModel, receiptPrintCss, renderReceiptElement } from "@/utils/receiptDocument";
 
 const RECEIPT_WIDTH = 48;
 
@@ -13,271 +13,57 @@ const line = (char = "-", width = RECEIPT_WIDTH) => char.repeat(width);
 
 const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;
 
-// ponytail: semua interpolasi data struk (nama toko/member/item dll)
-// wajib lewat esc() — data ini berasal dari input pengguna, tanpa escape
-// html yang disisipkan ke dokumen cetak jadi vektor XSS
-
-export const generateReceiptHTML = (data) => {
-  const {
-    storeName,
-    storeAddress,
-    storePhone,
-    storeEmail,
-    logo,
-    memberName,
-    memberTier,
-    memberPoints,
-    items = [],
-    subtotal = 0,
-    tax = 0,
-    total = 0,
-    footer,
-    socialMedia = [],
-    showLogo = true,
-    showStoreName = true,
-    showAddress = true,
-    showMemberInfo = true,
-    showSocialMedia = true,
-    addressFieldsVisibility = {},
-    socialMediaVisibility = {},
-    paperSize = "58mm"
-  } = data;
-
-  const is80 = paperSize === "80mm";
-  const widthCss = is80 ? "80mm" : "58mm";
-
-  const logoHtml =
-    showLogo && logo
-      ? `<div style="text-align:center;margin-bottom:8px"><img src="${esc(logo)}" style="max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto" /></div>`
-      : "";
-
-  const headerHtml = `
-    <div style="background:#111;color:#fff;padding:10px 5px;text-align:center;">
-      ${logoHtml}
-      ${showStoreName && addressFieldsVisibility.storeName !== false ? `<div style="font-size:14px;font-weight:bold;text-transform:uppercase;">${esc(storeName) || "TOKO"}</div>` : ""}
-      ${
-        showAddress
-          ? `
-        <div style="font-size:10px;color:#ccc;margin-top:4px;">
-          ${addressFieldsVisibility.address !== false && storeAddress ? `<div>${esc(storeAddress)}</div>` : ""}
-          ${addressFieldsVisibility.phone !== false && storePhone ? `<div>Telp: ${esc(storePhone)}</div>` : ""}
-          ${addressFieldsVisibility.email !== false && storeEmail ? `<div>${esc(storeEmail)}</div>` : ""}
-        </div>
-      `
-          : ""
-      }
-    </div>
-  `;
-
-  const memberHtml =
-    showMemberInfo && (memberName || memberTier)
-      ? `
-    <div style="background:#fffbeb;padding:8px;border-bottom:1px solid #fef3c7;font-size:10px;color:#78350f;">
-      <div style="font-weight:bold;text-transform:uppercase;margin-bottom:4px;">INFO MEMBER</div>
-      ${memberName ? `<div style="display:flex;justify-content:space-between;"><span>Nama:</span><span style="font-weight:bold;">${esc(memberName)}</span></div>` : ""}
-      ${memberTier ? `<div style="display:flex;justify-content:space-between;"><span>Tier:</span><span style="font-weight:bold;">${esc(memberTier)}</span></div>` : ""}
-      ${memberPoints !== undefined ? `<div style="display:flex;justify-content:space-between;"><span>Poin:</span><span style="font-weight:bold;">${Number(memberPoints).toLocaleString("id-ID")}</span></div>` : ""}
-    </div>
-  `
-      : "";
-
-  const itemsHtml = items
-    .map(
-      (item) => `
-    <tr style="font-size:11px;">
-      <td style="padding:4px 0;">${esc(item.name)}</td>
-      <td style="padding:4px 0;text-align:center;">${esc(item.qty)}</td>
-      <td style="padding:4px 0;text-align:right;">${esc(formatPrice(item.price))}</td>
-      <td style="padding:4px 0;text-align:right;font-weight:bold;">${esc(formatPrice(item.qty * item.price))}</td>
-    </tr>
-  `
-    )
-    .join("");
-
-  const footerHtml = `
-    <div style="padding:10px 5px;border-top:1px solid #ddd;font-size:10px;text-align:center;color:#666;">
-      <div style="font-style:italic;margin-bottom:8px;">${esc(footer)}</div>
-      ${
-        showSocialMedia && socialMedia.length > 0
-          ? `
-        <div style="display:flex;justify-content:center;gap:5px;flex-wrap:wrap;">
-          ${socialMedia
-            .filter((sm) => !socialMediaVisibility || socialMediaVisibility[sm.platform] !== false)
-            .map((sm) => `<span>${esc(sm.platform)}: ${esc(sm.account)}</span>`)
-            .join(" | ")}
-        </div>
-      `
-          : ""
-      }
-    </div>
-  `;
-
-  return `
-<!DOCTYPE html>
-<html>
-<head><style>@page { width: ${widthCss}; margin:0; } body { font-family: 'Courier New', Courier, monospace; }</style></head>
-<body>
-  <div style="width: ${widthCss}; padding: 0 2px;">
-    ${headerHtml}
-    ${memberHtml}
-    <table style="width:100%;border-collapse:collapse;margin:10px 0;">
-      <tr style="font-size:10px;color:#666;text-transform:uppercase;border-bottom:1px solid #ddd;">
-        <th style="text-align:left;padding:4px 0;">Item</th>
-        <th style="text-align:center;padding:4px 0;">Qty</th>
-        <th style="text-align:right;padding:4px 0;">Harga</th>
-        <th style="text-align:right;padding:4px 0;">Total</th>
-      </tr>
-      ${itemsHtml}
-    </table>
-    <div style="padding:5px;background:#f9f9f9;font-size:11px;">
-      <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span>${esc(formatPrice(subtotal))}</span></div>
-      <div style="display:flex;justify-content:space-between;"><span>Pajak</span><span>${esc(formatPrice(tax))}</span></div>
-      <div style="display:flex;justify-content:space-between;font-weight:bold;margin-top:5px;font-size:13px;"><span>Total</span><span>${esc(formatPrice(total))}</span></div>
-    </div>
-    ${footerHtml}
-  </div>
-</body>
-</html>
-  `;
-};
-
+// Text version of the same receipt for ESC/POS printers (USB/Serial):
+// identical sections, order and labels as renderReceiptElement, laid out
+// in fixed-width columns (32 chars on 58mm, 48 on 80mm).
 export const generateESCPOS = (data, opts = {}) => {
-  const {
-    storeName = "TOKO ANDA",
-    storeAddress = "",
-    storePhone = "",
-    storeEmail = "",
-    memberName = "",
-    memberTier = "",
-    memberPoints = 0,
-    orderNumber = "",
-    cashier = "",
-    date = new Date().toLocaleString("id-ID"),
-    items = [],
-    subtotal = 0,
-    discount = 0,
-    serviceCharge = 0,
-    tax = 0,
-    taxLabel = "Pajak (10%)",
-    total = 0,
-    paymentMethod = "Tunai",
-    cashAmount = 0,
-    changeAmount = 0,
-    footer = "Terima kasih atas kunjungan Anda",
-    socialMedia = [],
-    showStoreName = true,
-    showAddress = true,
-    showMemberInfo = true,
-    showSocialMedia = true
-  } = data;
-
-  const paymentLabel =
-    String(paymentMethod || "Tunai")
-      .charAt(0)
-      .toUpperCase() + String(paymentMethod || "Tunai").slice(1);
-
-  const is80 = data.paperSize === "80mm" || opts.paperSize === "80mm";
-  const W = is80 ? 48 : 32;
-  let enc = "";
-
+  const m = buildReceiptModel(data);
+  const W = m.paperSize === "80mm" ? 48 : 32;
   const init = "\x1B\x40";
   const alignCenter = "\x1B\x61\x01";
   const alignLeft = "\x1B\x61\x00";
-  const doubleWidth = "\x1B\x21\x20";
+  const doubleHeight = "\x1B\x21\x10";
   const normal = "\x1B\x21\x00";
   const boldOn = "\x1B\x45\x01";
   const boldOff = "\x1B\x45\x00";
+  const row = ([label, value]) => padBoth(String(label), String(value), W) + "\n";
 
-  const dateObj = date ? new Date(date) : null;
-  const validDate = dateObj && !isNaN(dateObj.getTime());
-  const dateStr = validDate
-    ? dateObj.toLocaleDateString("id-ID", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-      })
-    : "-";
-  const timeStr = validDate
-    ? dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
-    : "-";
-
-  enc += init;
-  if (showStoreName && storeName) {
-    enc += alignCenter + doubleWidth + boldOn;
-    enc += storeName + "\n";
-    enc += boldOff + normal;
+  let enc = init + alignCenter;
+  if (m.storeName)
+    enc += boldOn + doubleHeight + m.storeName.toUpperCase() + "\n" + normal + boldOff;
+  m.addressLines.forEach((l) => (enc += l + "\n"));
+  enc += alignLeft + line("-", W) + "\n";
+  if (m.meta.length) {
+    m.meta.forEach((r) => (enc += row(r)));
+    enc += line("-", W) + "\n";
   }
-
-  enc += alignCenter;
-  if (showAddress && storeAddress) enc += storeAddress + "\n";
-  if (showAddress && storePhone) enc += "Telp: " + storePhone + "\n";
-  if (showAddress && storeEmail) enc += storeEmail + "\n";
-
-  enc += line("=", W) + "\n";
-  enc += alignLeft;
-  enc += padBoth(dateStr, timeStr, W) + "\n";
-  enc += padBoth("Invoice: " + orderNumber, "Kasir: " + cashier, W) + "\n";
-  if (showMemberInfo && memberName) {
-    enc += "Member: " + memberName + "\n";
-    if (memberTier) enc += "Tier: " + memberTier + "\n";
-    if (memberPoints) enc += "Poin: " + Number(memberPoints).toLocaleString("id-ID") + "\n";
+  if (m.member.length) {
+    enc += boldOn + m.labels.memberInfo.toUpperCase() + boldOff + "\n";
+    m.member.forEach((r) => (enc += row(r)));
+    enc += line("-", W) + "\n";
   }
-  enc += line("=", W) + "\n";
-
-  enc += padBoth("Item", "", W) + "\n";
-  if (is80) {
-    enc +=
-      "  " + "Qty".padEnd(4) + "  " + "Harga".padStart(15) + "  " + "Total".padStart(15) + "\n";
-  } else {
-    enc += "  " + "Qty".padEnd(3) + " " + "Harga".padStart(10) + " " + "Total".padStart(11) + "\n";
-  }
-  enc += line("-", W) + "\n";
-
-  items.forEach((item) => {
-    const name = item.name || item.productName || "-";
-    const qty = item.qty || item.quantity || 0;
-    const price = item.price || 0;
-    const itemTotal = item.total || item.subtotal || qty * price;
-    const variant = item.options?.[0]?.name || item.variantName || "";
-
-    enc += name + "\n";
-    if (variant) enc += "  - " + variant + "\n";
-    if (is80) {
-      enc += "  " + String(qty).padEnd(4);
-      enc += formatPrice(price).padStart(17);
-      enc += "  " + formatPrice(itemTotal).padStart(15) + "\n";
-    } else {
-      enc += "  " + String(qty).padEnd(3);
-      enc += formatPrice(price).padStart(11);
-      enc += " " + formatPrice(itemTotal).padStart(12) + "\n";
-    }
+  if (!m.items.length) enc += m.labels.noItems + "\n";
+  m.items.forEach((item) => {
+    enc += item.name + "\n";
+    if (item.variant) enc += "  - " + item.variant + "\n";
+    enc += row([`${item.qty} x ${formatPrice(item.price)}`, formatPrice(item.total)]);
   });
-
+  enc += line("-", W) + "\n";
+  m.totals.forEach((r) => (enc += row(r)));
   enc += line("=", W) + "\n";
-  enc += padBoth("Subtotal", formatPrice(subtotal), W) + "\n";
-  if (discount > 0) enc += padBoth("Diskon", "-" + formatPrice(discount), W) + "\n";
-  if (serviceCharge > 0) enc += padBoth("Biaya Layanan", formatPrice(serviceCharge), W) + "\n";
-  enc += padBoth(taxLabel, formatPrice(tax), W) + "\n";
-  enc += boldOn + line("=", W) + "\n";
-  enc += padBoth("TOTAL", formatPrice(total), W) + "\n";
-  enc += boldOff + line("-", W) + "\n";
-  enc += padBoth(paymentLabel, formatPrice(cashAmount), W) + "\n";
-  if (changeAmount > 0) enc += padBoth("Kembali", formatPrice(changeAmount), W) + "\n";
-
-  enc += line("=", W) + "\n";
-  enc += alignCenter + footer + "\n";
-  if (showSocialMedia && socialMedia.length > 0) {
-    socialMedia.forEach((sm) => {
-      enc += sm.platform + ": " + sm.account + "\n";
-    });
+  enc += boldOn + row(m.grandTotal) + boldOff;
+  m.tender.forEach((r) => (enc += row(r)));
+  if (m.footer || m.social.length) {
+    enc += line("-", W) + "\n" + alignCenter;
+    if (m.footer) enc += m.footer + "\n";
+    m.social.forEach((l) => (enc += l + "\n"));
+    enc += alignLeft;
   }
   enc += "\n\n\n";
   // ponytail: skip cut for mobile printers (no cutter), enable via opts.cut
   if (opts.cut) {
     enc += "\x1D\x56\x00";
   }
-
   return enc;
 };
 
@@ -285,219 +71,23 @@ export const formatCurrency = (amount) => {
   return formatPrice(amount);
 };
 
-const mkEl = (tag, style, text) => {
-  const el = document.createElement(tag);
-  if (style) el.style.cssText = style;
-  if (text != null) el.textContent = String(text);
-  return el;
-};
-
-const getReceiptBodyStyle = (paperSize = "58mm", fontFamily = "monospace", fontSize = "normal") => {
-  const width = paperSize === "80mm" ? "80mm" : "58mm";
-  const fontFam =
-    fontFamily === "sans"
-      ? 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-      : fontFamily === "serif"
-        ? 'Georgia, Cambria, "Times New Roman", Times, serif'
-        : "'Courier New', Courier, monospace";
-
-  const baseFont = fontSize === "small" ? "10px" : fontSize === "large" ? "13px" : "11px";
-
-  return `@page { width: ${width}; margin:0; } body { font-family: ${fontFam}; font-size: ${baseFont}; margin: 0; padding: 4px; color: #111; }`;
-};
-
-// ponytail: struk versi cetak dibangun via createElement+textContent —
-// tanpa string HTML yang lewat sink apa pun (innerHTML/write/
-// createObjectURL), jadi bebas XSS secara struktural
-const buildReceiptFragment = (data) => {
-  const {
-    storeName,
-    storeAddress,
-    storePhone,
-    storeEmail,
-    logo,
-    memberName,
-    memberTier,
-    memberPoints,
-    items = [],
-    subtotal = 0,
-    tax = 0,
-    total = 0,
-    footer,
-    socialMedia = [],
-    showLogo = true,
-    showStoreName = true,
-    showAddress = true,
-    showMemberInfo = true,
-    showSocialMedia = true,
-    addressFieldsVisibility = {},
-    socialMediaVisibility = {},
-    paperSize = "58mm",
-    fontSize = "normal",
-    fontFamily = "monospace",
-    lineSpacing = "normal"
-  } = data;
-
-  const is80 = paperSize === "80mm";
-  const widthCss = is80 ? "80mm" : "58mm";
-
-  const fontFamCss =
-    fontFamily === "sans"
-      ? 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-      : fontFamily === "serif"
-        ? 'Georgia, Cambria, "Times New Roman", Times, serif'
-        : "'Courier New', Courier, monospace";
-
-  const sizeMap = {
-    small: { base: "9.5px", title: "12px", header: "9px", price: "11px" },
-    normal: { base: "11px", title: "14px", header: "10px", price: "13px" },
-    large: { base: "13px", title: "16px", header: "12px", price: "15px" }
-  };
-  const currentSize = sizeMap[fontSize] || sizeMap.normal;
-
-  const padY = lineSpacing === "compact" ? "2px" : lineSpacing === "relaxed" ? "6px" : "4px";
-  const myMargin = lineSpacing === "compact" ? "6px" : lineSpacing === "relaxed" ? "14px" : "10px";
-
-  const wrap = mkEl(
-    "div",
-    `width:${widthCss};padding:0 2px;max-width:100%;box-sizing:border-box;font-family:${fontFamCss};font-size:${currentSize.base};`
-  );
-
-  const header = mkEl(
-    "div",
-    `background:#111;color:#fff;padding:${lineSpacing === "compact" ? "6px 4px" : "10px 5px"};text-align:center;`
-  );
-  if (showLogo && logo) {
-    const logoWrap = mkEl("div", "text-align:center;margin-bottom:8px;");
-    const img = document.createElement("img");
-    img.src = logo;
-    img.alt = "";
-    img.style.cssText =
-      "max-width:40px;max-height:40px;border-radius:4px;background:#fff;padding:2px;margin:0 auto";
-    logoWrap.append(img);
-    header.append(logoWrap);
-  }
-  if (showStoreName && addressFieldsVisibility.storeName !== false) {
-    header.append(
-      mkEl(
-        "div",
-        `font-size:${currentSize.title};font-weight:bold;text-transform:uppercase;`,
-        storeName || "TOKO"
-      )
-    );
-  }
-  if (showAddress) {
-    const addr = mkEl("div", `font-size:${currentSize.header};color:#ccc;margin-top:4px;`);
-    if (addressFieldsVisibility.address !== false && storeAddress)
-      addr.append(mkEl("div", "", storeAddress));
-    if (addressFieldsVisibility.phone !== false && storePhone)
-      addr.append(mkEl("div", "", `Telp: ${storePhone}`));
-    if (addressFieldsVisibility.email !== false && storeEmail)
-      addr.append(mkEl("div", "", storeEmail));
-    header.append(addr);
-  }
-  wrap.append(header);
-
-  if (showMemberInfo && (memberName || memberTier)) {
-    const box = mkEl(
-      "div",
-      `background:#fffbeb;padding:${padY} 8px;border-bottom:1px solid #fef3c7;font-size:${currentSize.header};color:#78350f;`
-    );
-    box.append(
-      mkEl("div", "font-weight:bold;text-transform:uppercase;margin-bottom:4px;", "INFO MEMBER")
-    );
-    const row = (label, value) => {
-      const r = mkEl("div", `display:flex;justify-content:space-between;padding:${padY} 0;`);
-      r.append(mkEl("span", "", label), mkEl("span", "font-weight:bold;", value));
-      return r;
-    };
-    if (memberName) box.append(row("Nama:", memberName));
-    if (memberTier) box.append(row("Tier:", memberTier));
-    if (memberPoints !== undefined)
-      box.append(row("Poin:", Number(memberPoints).toLocaleString("id-ID")));
-    wrap.append(box);
-  }
-
-  const table = mkEl("table", `width:100%;border-collapse:collapse;margin:${myMargin} 0;`);
-  const headRow = mkEl(
-    "tr",
-    `font-size:${currentSize.header};color:#666;text-transform:uppercase;border-bottom:1px solid #ddd;`
-  );
-  [
-    ["Item", `text-align:left;padding:${padY} 0;`],
-    ["Qty", `text-align:center;padding:${padY} 0;`],
-    ["Harga", `text-align:right;padding:${padY} 0;`],
-    ["Total", `text-align:right;padding:${padY} 0;`]
-  ].forEach(([label, st]) => headRow.append(mkEl("th", st, label)));
-  table.append(headRow);
-  items.forEach((item) => {
-    const tr = mkEl("tr", `font-size:${currentSize.base};`);
-    tr.append(
-      mkEl("td", `padding:${padY} 0;`, item.name),
-      mkEl("td", `padding:${padY} 0;text-align:center;`, item.qty),
-      mkEl("td", `padding:${padY} 0;text-align:right;`, formatPrice(item.price)),
-      mkEl(
-        "td",
-        `padding:${padY} 0;text-align:right;font-weight:bold;`,
-        formatPrice(item.qty * item.price)
-      )
-    );
-    table.append(tr);
-  });
-  wrap.append(table);
-
-  const totals = mkEl(
-    "div",
-    `padding:${padY} 5px;background:#f9f9f9;font-size:${currentSize.base};`
-  );
-  const trow = (label, value, extra) => {
-    const r = mkEl(
-      "div",
-      `display:flex;justify-content:space-between;padding:${padY} 0;${extra || ""}`
-    );
-    r.append(mkEl("span", "", label), mkEl("span", "", value));
-    return r;
-  };
-  totals.append(trow("Subtotal", formatPrice(subtotal)), trow("Pajak", formatPrice(tax)));
-  totals.append(
-    trow(
-      "Total",
-      formatPrice(total),
-      `font-weight:bold;margin-top:4px;font-size:${currentSize.price};`
-    )
-  );
-  wrap.append(totals);
-
-  const foot = mkEl(
-    "div",
-    `padding:${lineSpacing === "compact" ? "6px 5px" : "10px 5px"};border-top:1px solid #ddd;font-size:${currentSize.header};text-align:center;color:#666;`
-  );
-  foot.append(mkEl("div", "font-style:italic;margin-bottom:6px;", footer ?? ""));
-  if (showSocialMedia && socialMedia.length > 0) {
-    const smWrap = mkEl("div", "display:flex;justify-content:center;gap:5px;flex-wrap:wrap;");
-    socialMedia
-      .filter((sm) => !socialMediaVisibility || socialMediaVisibility[sm.platform] !== false)
-      .forEach((sm) => smWrap.append(mkEl("span", "", `${sm.platform}: ${sm.account}`)));
-    foot.append(smWrap);
-  }
-  wrap.append(foot);
-
-  return wrap;
-};
-
+// Browser print of the shared receipt element (renderReceiptElement) —
+// the same element the settings preview and the cashier receipt show.
 export const printViaBrowser = (data) => {
-  const paperSize = data?.paperSize || "58mm";
-  const fontFamily = data?.fontFamily || "monospace";
-  const fontSize = data?.fontSize || "normal";
-  const bodyStyle = getReceiptBodyStyle(paperSize, fontFamily, fontSize);
+  const fill = (doc) => {
+    // Becomes the suggested file name for "Save as PDF".
+    doc.title = data?.orderNumber ? `Struk ${data.orderNumber}` : "Struk";
+    const style = doc.createElement("style");
+    style.textContent = receiptPrintCss();
+    doc.head.append(style);
+    doc.body.append(renderReceiptElement(data, doc));
+  };
 
   // ponytail: konten disuntikkan langsung ke dokumen tujuan via DOM API;
   // kalau popup diblokir, iframe tersembunyi mencetak tanpa buka tab baru
   const win = window.open("", "_blank");
   if (win) {
-    win.document.title = "Struk";
-    win.document.head.append(mkEl("style", "", bodyStyle));
-    win.document.body.append(buildReceiptFragment(data));
+    fill(win.document);
     setTimeout(() => {
       win.focus();
       win.print();
@@ -512,9 +102,7 @@ export const printViaBrowser = (data) => {
   const style = document.createElement("style");
   style.textContent = "@media print{body>*:not(.print-thermal){display:none!important}}";
   document.body.append(style, iframe);
-  const doc = iframe.contentDocument;
-  doc.head.append(mkEl("style", "", bodyStyle));
-  doc.body.append(buildReceiptFragment(data));
+  fill(iframe.contentDocument);
   setTimeout(() => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();

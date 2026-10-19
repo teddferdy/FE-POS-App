@@ -1393,6 +1393,7 @@
   "page.invoice.footerDefault": "Terima kasih atas kunjungan Anda",
   "page.invoice.socialMedia": "Media Sosial",
   "page.invoice.printPreview": "Cetak Preview",
+  "page.invoice.pdfHint": "Pilih \"Simpan sebagai PDF\" di dialog cetak",
   "page.invoiceFooter.list.title": "Footer Invoice",
   "page.invoiceFooter.list.description": "Kelola teks footer untuk invoice.",
   "page.invoiceFooter.list.search": "Cari footer invoice...",
