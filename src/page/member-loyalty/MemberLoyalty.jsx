@@ -95,11 +95,12 @@ const MemberLoyalty = () => {
   const deleteTierMutation = useMutation({
     mutationFn: deleteMemberTier,
     onSuccess: () => {
-      toast.success("Tier berhasil dihapus");
+      toast.success(t("page.memberTier.tier_berhasil_dihapus", "Tier berhasil dihapus"));
       queryClient.invalidateQueries(["member-tiers"]);
       setDeleteTierTarget(null);
     },
-    onError: (err) => toast.error(err?.message || "Gagal menghapus tier")
+    onError: (err) =>
+      toast.error(err?.message || t("page.memberTier.gagal_menghapus_tier", "Gagal menghapus tier"))
   });
 
   const updateTiersMutation = useMutation({
@@ -109,32 +110,41 @@ const MemberLoyalty = () => {
       queryClient.invalidateQueries(["member-tiers"]);
       queryClient.invalidateQueries(["members-loyalty"]);
     },
-    onError: (err) => toast.error(err?.message || "Gagal update tier member")
+    onError: (err) =>
+      toast.error(
+        err?.message || t("page.memberTier.gagal_update_tier_member", "Gagal update tier member")
+      )
   });
 
   const redeemMutation = useMutation({
     mutationFn: ({ phoneNumber, points }) =>
       addMemberPoints(phoneNumber, { points: -Math.abs(points) }),
     onSuccess: () => {
-      toast.success("Poin berhasil diredeem");
+      toast.success(t("page.memberTier.poin_berhasil_diredeem", "Poin berhasil diredeem"));
       queryClient.invalidateQueries(["members-loyalty"]);
       queryClient.invalidateQueries(["member-detail-loyalty"]);
       setRedeemPoints("");
     },
     onError: (err) =>
-      toast.error(err?.response?.data?.message || err?.message || "Gagal meredeem poin")
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          t("page.memberTier.gagal_meredeem_poin", "Gagal meredeem poin")
+      )
   });
 
   const handleRedeemPoints = (memberId) => {
     const points = Number(redeemPoints);
     if (!points || points <= 0) {
-      toast.error("Jumlah poin harus lebih dari 0");
+      toast.error(
+        t("page.memberTier.jumlah_poin_harus_lebih_dari_0", "Jumlah poin harus lebih dari 0")
+      );
       return;
     }
     const member = members.find((m) => m.id === memberId);
     if (!member) return;
     if (points > (member.totalPoints || 0)) {
-      toast.error("Poin tidak cukup");
+      toast.error(t("page.memberTier.poin_tidak_cukup", "Poin tidak cukup"));
       return;
     }
     redeemMutation.mutate({ phoneNumber: member.phoneNumber, points });
@@ -165,7 +175,7 @@ const MemberLoyalty = () => {
         {isSuperAdmin && (
           <Select value={store} onValueChange={setStore}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Pilih toko" />
+              <SelectValue placeholder={t("page.memberTier.pilih_toko", "Pilih toko")} />
             </SelectTrigger>
             <SelectContent>
               {locations.map((loc) => (
@@ -294,7 +304,7 @@ const MemberLoyalty = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle>Members</CardTitle>
                   <Input
-                    placeholder="Cari member..."
+                    placeholder={t("page.memberTier.cari_member", "Cari member...")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-[200px]"
@@ -362,7 +372,9 @@ const MemberLoyalty = () => {
                         setRedeemPoints("");
                       }}>
                       <SelectTrigger id="redeem-member">
-                        <SelectValue placeholder="Pilih member" />
+                        <SelectValue
+                          placeholder={t("page.memberTier.pilih_member", "Pilih member")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {members.map((m) => (
@@ -381,14 +393,16 @@ const MemberLoyalty = () => {
                       min={1}
                       value={redeemPoints}
                       onChange={(e) => setRedeemPoints(e.target.value)}
-                      placeholder="Jumlah poin"
+                      placeholder={t("page.memberTier.jumlah_poin", "Jumlah poin")}
                     />
                   </div>
                   <Button
                     onClick={() => selectedMember && handleRedeemPoints(selectedMember)}
                     disabled={redeemMutation.isLoading}>
                     <Gift className="w-4 h-4 mr-2" />
-                    {redeemMutation.isLoading ? t("common.processing") : "Redeem"}
+                    {redeemMutation.isLoading
+                      ? t("common.processing")
+                      : t("page.memberTier.redeem", "Redeem")}
                   </Button>
                 </div>
               </div>
@@ -410,7 +424,7 @@ const MemberLoyalty = () => {
         type="confirm"
         open={!!deleteTierTarget}
         onOpenChange={(open) => !open && setDeleteTierTarget(null)}
-        title="Hapus Tier"
+        title={t("page.memberTier.hapus_tier", "Hapus Tier")}
         description={`Yakin ingin menghapus tier "${deleteTierTarget?.name}"? Tindakan ini tidak dapat dibatalkan.`}
         confirmText="Hapus"
         confirmVariant="destructive"
@@ -432,10 +446,13 @@ const AddTierForm = ({ onSuccess }) => {
   const addTier = useMutation({
     mutationFn: (payload) => addMemberTier(payload),
     onSuccess: () => {
-      toast.success("Tier berhasil ditambahkan");
+      toast.success(t("page.memberTier.tier_berhasil_ditambahkan", "Tier berhasil ditambahkan"));
       onSuccess();
     },
-    onError: (err) => toast.error(err?.message || "Gagal menambahkan tier")
+    onError: (err) =>
+      toast.error(
+        err?.message || t("page.memberTier.gagal_menambahkan_tier", "Gagal menambahkan tier")
+      )
   });
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -503,7 +520,7 @@ const AddTierForm = ({ onSuccess }) => {
         </Select>
       </div>
       <Button variant="success" type="submit" disabled={addTier.isLoading}>
-        {addTier.isLoading ? "Saving..." : "Add Tier"}
+        {addTier.isLoading ? "Saving..." : t("page.memberTier.add_tier", "Add Tier")}
       </Button>
     </form>
   );
@@ -520,10 +537,13 @@ const EditTierForm = ({ tier, onSuccess }) => {
   const editTier = useMutation({
     mutationFn: (payload) => editMemberTier({ id: tier.id, ...payload }),
     onSuccess: () => {
-      toast.success("Tier berhasil diperbarui");
+      toast.success(t("page.memberTier.tier_berhasil_diperbarui", "Tier berhasil diperbarui"));
       onSuccess();
     },
-    onError: (err) => toast.error(err?.message || "Gagal memperbarui tier")
+    onError: (err) =>
+      toast.error(
+        err?.message || t("page.memberTier.gagal_memperbarui_tier", "Gagal memperbarui tier")
+      )
   });
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -589,7 +609,7 @@ const EditTierForm = ({ tier, onSuccess }) => {
         </Select>
       </div>
       <Button variant="success" type="submit" disabled={editTier.isLoading}>
-        {editTier.isLoading ? "Saving..." : "Update Tier"}
+        {editTier.isLoading ? "Saving..." : t("page.memberTier.update_tier", "Update Tier")}
       </Button>
     </form>
   );

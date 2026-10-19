@@ -102,7 +102,7 @@ const DetailMemberTier = () => {
           { label: t("breadcrumb.detail") }
         ]}
         title={isLoading ? t("common.loading") : tier.name || "-"}
-        description="Member Tier Detail"
+        description={t("page.memberTier.member_tier_detail", "Member Tier Detail")}
         backLink="/member-tier"
         dynamicInfo={false}>
         {!isLoading && (
@@ -208,7 +208,7 @@ const DetailMemberTier = () => {
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
                       />
-                      {isActive ? "Aktif" : "Non-Active"}
+                      {isActive ? t("page.memberTier.aktif", "Aktif") : "Non-Active"}
                     </span>
                   </div>
                 </div>

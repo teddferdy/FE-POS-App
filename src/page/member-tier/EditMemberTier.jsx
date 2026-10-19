@@ -222,7 +222,7 @@ const EditMemberTier = () => {
         ]}
         title={t("page.memberTier.edit.title")}
         description={t("page.memberTier.edit.description", {
-          tierName: formData.tierName || "Tier"
+          tierName: formData.tierName || t("page.memberTier.tier", "Tier")
         })}
         backLink="/member-tier"
         onBack={() => setCancelModal(true)}></PageHeader>
