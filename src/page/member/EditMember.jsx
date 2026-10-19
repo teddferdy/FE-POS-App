@@ -20,7 +20,7 @@ import { getMissingFields } from "@/lib/validation";
 
 const editSchema = z.object({
   name: z.string().min(1),
-  phoneNumber: z.string().min(1).max(16, "Max 16 characters"),
+  phoneNumber: z.string().min(1).max(16, t("page.member.max_16_characters", "Max 16 characters")),
   email: z.string().email().optional().or(z.literal("")),
   birthDate: z.date().optional(),
   gender: z.enum(["male", "female"]),

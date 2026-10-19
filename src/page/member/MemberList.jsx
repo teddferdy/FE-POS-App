@@ -147,7 +147,9 @@ const MemberList = () => {
   const deleteMutation = useMutation(deleteMember, {
     onSuccess: () => {
       toast.success(t("common.success"), {
-        description: t("page.member.list.deleteSuccess") || "Member berhasil dihapus"
+        description:
+          t("page.member.list.deleteSuccess") ||
+          t("page.member.member_berhasil_dihapus", "Member berhasil dihapus")
       });
       queryClient.invalidateQueries(["members"]);
       setDeleteTarget(null);

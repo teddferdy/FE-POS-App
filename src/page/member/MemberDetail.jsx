@@ -248,7 +248,7 @@ const MemberDetail = () => {
       IconComponent: ReceiptText,
       iconBg: "bg-primary/10",
       iconColor: "text-primary",
-      trend: `${totalSpent > 0 ? formatCurrency(totalSpent) : "Rp 0"} total belanja`,
+      trend: `${totalSpent > 0 ? formatCurrency(totalSpent) : t("page.member.rp_0", "Rp 0")} total belanja`,
       TrendIconComponent: Banknote,
       trendColor: "text-foreground"
     },
@@ -287,7 +287,7 @@ const MemberDetail = () => {
           { label: t("breadcrumb.detail") }
         ]}
         title={isLoading ? t("common.loading") : name}
-        description="Detail informasi member"
+        description={t("page.member.detail_informasi_member", "Detail informasi member")}
         backLink="/member-list"
         dynamicInfo={false}>
         {!isLoading && (

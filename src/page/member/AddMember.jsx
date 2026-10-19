@@ -21,7 +21,7 @@ import { getMissingFields } from "@/lib/validation";
 const formSchema = z.object({
   name: z.string().min(1),
   email: z.string().email().optional().or(z.literal("")),
-  phoneNumber: z.string().min(1).max(16, "Max 16 characters"),
+  phoneNumber: z.string().min(1).max(16, t("page.member.max_16_characters", "Max 16 characters")),
   birthDate: z.date(),
   gender: z.enum(["male", "female"]),
   address: z.string().optional().default(""),

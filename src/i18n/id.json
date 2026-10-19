@@ -8752,5 +8752,9 @@
   "page.invoice.nama_toko": "NAMA TOKO",
   "page.invoice.nasi_goreng": "Nasi Goreng",
   "page.invoice.standar_12px": "Standar (12px)",
-  "page.invoice.terima_kasih_atas_kunjungan_anda": "Terima kasih atas kunjungan Anda"
+  "page.invoice.terima_kasih_atas_kunjungan_anda": "Terima kasih atas kunjungan Anda",
+  "page.member.detail_informasi_member": "Detail informasi member",
+  "page.member.max_16_characters": "Max 16 characters",
+  "page.member.member_berhasil_dihapus": "Member berhasil dihapus",
+  "page.member.rp_0": "Rp 0"
 }

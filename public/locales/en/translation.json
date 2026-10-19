@@ -8752,5 +8752,9 @@
   "page.invoice.nama_toko": "STORE NAME",
   "page.invoice.nasi_goreng": "Fried Rice",
   "page.invoice.standar_12px": "Standard (12px)",
-  "page.invoice.terima_kasih_atas_kunjungan_anda": "Thank you for your visit"
+  "page.invoice.terima_kasih_atas_kunjungan_anda": "Thank you for your visit",
+  "page.member.detail_informasi_member": "Member information details",
+  "page.member.max_16_characters": "Max 16 characters",
+  "page.member.member_berhasil_dihapus": "Member deleted successfully",
+  "page.member.rp_0": "Rp 0"
 }
