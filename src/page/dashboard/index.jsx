@@ -131,6 +131,7 @@ const Dashboard = () => {
     data: dashData,
     isLoading,
     isError,
+    error,
     refetch
   } = useQuery(
     ["dashboard-summary", store, chartFilter, orderPage],
@@ -556,7 +557,7 @@ const Dashboard = () => {
           </div>
         </>
       ) : isError ? (
-        <AbortController refetch={refetch} />
+        <AbortController refetch={refetch} error={error} />
       ) : (
         <>
           <DashboardAlerts apData={apData} isLoading={apLoading} />
