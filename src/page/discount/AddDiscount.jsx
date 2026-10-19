@@ -108,7 +108,12 @@ const AddDiscount = () => {
 
   const baseFields = useMemo(
     () => ({
-      name: z.string().min(1, "Nama Diskon tidak boleh kosong"),
+      name: z
+        .string()
+        .min(
+          1,
+          t("page.discount.nama_diskon_tidak_boleh_kosong", "Nama Diskon tidak boleh kosong")
+        ),
       promoType: z.string().default("standard"),
       type: z.string().optional().or(z.literal("")),
       value: z.coerce.number().optional().or(z.literal("")),
@@ -174,25 +179,33 @@ const AddDiscount = () => {
 
     const promoTypeFields = {
       standard: {
-        type: required("Tipe Diskon harus diisi"),
-        value: requiredNum("Nilai Diskon harus diisi")
+        type: required(t("page.discount.tipe_diskon_harus_diisi", "Tipe Diskon harus diisi")),
+        value: requiredNum(t("page.discount.nilai_diskon_harus_diisi", "Nilai Diskon harus diisi"))
       },
       bogo: {
-        buyQty: requiredNum("Jumlah Beli harus diisi"),
-        freeQty: requiredNum("Jumlah Gratis harus diisi")
+        buyQty: requiredNum(t("page.discount.jumlah_beli_harus_diisi", "Jumlah Beli harus diisi")),
+        freeQty: requiredNum(
+          t("page.discount.jumlah_gratis_harus_diisi", "Jumlah Gratis harus diisi")
+        )
       },
       bundling: {
-        bundlePrice: requiredNum("Harga Bundling harus diisi"),
-        productIds: required("Produk harus dipilih")
+        bundlePrice: requiredNum(
+          t("page.discount.harga_bundling_harus_diisi", "Harga Bundling harus diisi")
+        ),
+        productIds: required(t("page.discount.produk_harus_dipilih", "Produk harus dipilih"))
       },
       happyHour: {
-        discountPercent: requiredNum("Persentase Diskon harus diisi"),
-        startTime: required("Jam Mulai harus diisi"),
-        endTime: required("Jam Selesai harus diisi")
+        discountPercent: requiredNum(
+          t("page.discount.persentase_diskon_harus_diisi", "Persentase Diskon harus diisi")
+        ),
+        startTime: required(t("page.discount.jam_mulai_harus_diisi", "Jam Mulai harus diisi")),
+        endTime: required(t("page.discount.jam_selesai_harus_diisi", "Jam Selesai harus diisi"))
       },
       category: {
-        catDiscountPercent: requiredNum("Persentase Diskon harus diisi"),
-        categoryIds: required("Kategori harus dipilih")
+        catDiscountPercent: requiredNum(
+          t("page.discount.persentase_diskon_harus_diisi", "Persentase Diskon harus diisi")
+        ),
+        categoryIds: required(t("page.discount.kategori_harus_dipilih", "Kategori harus dipilih"))
       }
     };
 
@@ -303,7 +316,9 @@ const AddDiscount = () => {
 
   const onSubmit = (values) => {
     if (isSuperAdmin && !allStores && selectedStores.length === 0) {
-      form.setError("store", { message: "Toko harus dipilih" });
+      form.setError("store", {
+        message: t("page.discount.toko_harus_dipilih", "Toko harus dipilih")
+      });
     }
 
     const extraErrors = [];

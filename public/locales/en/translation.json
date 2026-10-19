@@ -8684,5 +8684,18 @@
   "page.memberTier.tier": "Tier",
   "page.memberTier.update_tier": "Update Tier",
   "common.storeName": "Store Name",
-  "page.category.defaultName": "Category Name"
+  "page.category.defaultName": "Category Name",
+  "page.discount.happy_hour": "Happy Hour",
+  "page.discount.harga_bundling_harus_diisi": "Bundle price is required",
+  "page.discount.jam_mulai_harus_diisi": "Start time is required",
+  "page.discount.jam_selesai_harus_diisi": "End time is required",
+  "page.discount.jumlah_beli_harus_diisi": "Purchase quantity is required",
+  "page.discount.jumlah_gratis_harus_diisi": "Free quantity is required",
+  "page.discount.kategori_harus_dipilih": "Category is required",
+  "page.discount.nama_diskon_tidak_boleh_kosong": "Discount name is required",
+  "page.discount.nilai_diskon_harus_diisi": "Discount value is required",
+  "page.discount.persentase_diskon_harus_diisi": "Discount percentage is required",
+  "page.discount.produk_harus_dipilih": "Product is required",
+  "page.discount.tipe_diskon_harus_diisi": "Discount type is required",
+  "page.discount.toko_harus_dipilih": "Store is required"
 }
