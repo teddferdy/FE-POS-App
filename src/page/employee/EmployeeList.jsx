@@ -206,7 +206,8 @@ const EmployeeList = () => {
         <div className="flex items-center gap-2">
           <MapPin size={18} className="text-muted-foreground text-base" />
           <span className="text-sm text-muted-foreground">
-            {row.storeData?.name || "belum ada penempatan store"}
+            {row.storeData?.name ||
+              t("page.employee.belum_ada_penempatan_store", "belum ada penempatan store")}
           </span>
         </div>
       )
@@ -444,7 +445,7 @@ const EmployeeList = () => {
                             setPage(1);
                           }}
                           placeholder={t("page.employee.list.allStores")}
-                          searchPlaceholder="Cari toko..."
+                          searchPlaceholder={t("page.employee.cari_toko", "Cari toko...")}
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
@@ -465,7 +466,7 @@ const EmployeeList = () => {
                             setPage(1);
                           }}
                           placeholder={t("page.employee.list.allPositions")}
-                          searchPlaceholder="Cari posisi..."
+                          searchPlaceholder={t("page.employee.cari_posisi", "Cari posisi...")}
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
@@ -486,7 +487,10 @@ const EmployeeList = () => {
                             setPage(1);
                           }}
                           placeholder={`${t("common.all")} ${t("page.employee.form.department")}`}
-                          searchPlaceholder="Cari departemen..."
+                          searchPlaceholder={t(
+                            "page.employee.cari_departemen",
+                            "Cari departemen..."
+                          )}
                         />
                       </div>
                     </TableToolbar>

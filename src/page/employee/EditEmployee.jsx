@@ -93,17 +93,17 @@ const EditEmployee = () => {
   const [activeTab, setActiveTab] = useState("profile");
 
   const employeeFieldLabels = {
-    fullName: "Nama Lengkap",
+    fullName: t("page.employee.nama_lengkap", "Nama Lengkap"),
     userName: "Username",
     email: "Email",
     password: "Password",
-    phoneNumber: "Nomor Telepon",
-    placeOfBirth: "Tempat Lahir",
+    phoneNumber: t("page.employee.nomor_telepon", "Nomor Telepon"),
+    placeOfBirth: t("page.employee.tempat_lahir", "Tempat Lahir"),
     address: "Alamat",
-    gender: "Jenis Kelamin",
-    dateOfBirth: "Tanggal Lahir",
-    employeeId: "ID Employee",
-    monthlySalary: "Gaji Pokok"
+    gender: t("page.employee.jenis_kelamin", "Jenis Kelamin"),
+    dateOfBirth: t("page.employee.tanggal_lahir", "Tanggal Lahir"),
+    employeeId: t("page.employee.id_employee", "ID Employee"),
+    monthlySalary: t("page.employee.gaji_pokok", "Gaji Pokok")
   };
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -1721,7 +1721,7 @@ const EditEmployee = () => {
         type="confirm"
         open={confirmSaveModal}
         onOpenChange={setConfirmSaveModal}
-        title="Konfirmasi Simpan"
+        title={t("page.employee.konfirmasi_simpan", "Konfirmasi Simpan")}
         description="Apakah Anda yakin ingin menyimpan perubahan data ini?"
         confirmText="Ya, Simpan"
         onConfirm={() => {

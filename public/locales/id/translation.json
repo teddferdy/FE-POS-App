@@ -8723,5 +8723,17 @@
   "page.user.gagal_mengubah_status_user": "Gagal mengubah status user",
   "page.user.simpan_sebagai_draft": "Simpan sebagai Draft?",
   "page.user.status_user_berhasil_diubah": "Status user berhasil diubah",
-  "page.user.ya_simpan_draft": "Ya, Simpan Draft"
+  "page.user.ya_simpan_draft": "Ya, Simpan Draft",
+  "page.employee.cari_departemen": "Cari departemen...",
+  "page.employee.cari_posisi": "Cari posisi...",
+  "page.employee.cari_toko": "Cari toko...",
+  "page.employee.gaji_pokok": "Gaji Pokok",
+  "page.employee.id_employee": "ID Employee",
+  "page.employee.jenis_kelamin": "Jenis Kelamin",
+  "page.employee.konfirmasi_simpan": "Konfirmasi Simpan",
+  "page.employee.nama_lengkap": "Nama Lengkap",
+  "page.employee.nomor_telepon": "Nomor Telepon",
+  "page.employee.tanggal_lahir": "Tanggal Lahir",
+  "page.employee.tempat_lahir": "Tempat Lahir",
+  "page.employee.belum_ada_penempatan_store": "belum ada penempatan store"
 }

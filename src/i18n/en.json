@@ -8723,5 +8723,17 @@
   "page.user.gagal_mengubah_status_user": "Failed to change user status",
   "page.user.simpan_sebagai_draft": "Save as draft?",
   "page.user.status_user_berhasil_diubah": "User status changed successfully",
-  "page.user.ya_simpan_draft": "Yes, Save Draft"
+  "page.user.ya_simpan_draft": "Yes, Save Draft",
+  "page.employee.cari_departemen": "Search department...",
+  "page.employee.cari_posisi": "Search position...",
+  "page.employee.cari_toko": "Search store...",
+  "page.employee.gaji_pokok": "Base Salary",
+  "page.employee.id_employee": "Employee ID",
+  "page.employee.jenis_kelamin": "Gender",
+  "page.employee.konfirmasi_simpan": "Confirm Save",
+  "page.employee.nama_lengkap": "Full Name",
+  "page.employee.nomor_telepon": "Phone Number",
+  "page.employee.tanggal_lahir": "Date of Birth",
+  "page.employee.tempat_lahir": "Place of Birth",
+  "page.employee.belum_ada_penempatan_store": "No store placement yet"
 }
