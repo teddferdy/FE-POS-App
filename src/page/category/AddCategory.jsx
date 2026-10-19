@@ -383,7 +383,7 @@ const AddCategory = () => {
   const [allStores, setAllStores] = useState(false);
 
   const categoryFieldLabels = {
-    name: "Nama Kategori"
+    name: t("page.category.defaultName", "Nama Kategori")
   };
 
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -1055,9 +1055,9 @@ const AddCategory = () => {
           type="confirm"
           open={confirmSaveModal}
           onOpenChange={setConfirmSaveModal}
-          title="Konfirmasi Simpan"
+          title={t("common.confirmSave", "Konfirmasi Simpan")}
           description="Apakah Anda yakin ingin menyimpan data ini?"
-          confirmText="Ya, Simpan"
+          confirmText={t("common.yesSave", "Ya, Simpan")}
           onConfirm={() => {
             setConfirmSaveModal(false);
             const values = form.getValues();

@@ -345,7 +345,9 @@ const DetailCategory = () => {
                             p.status === "active" ? "bg-green-500" : "bg-red-500"
                           }`}
                         />
-                        {p.status === "active" ? "Aktif" : "Tidak Aktif"}
+                        {p.status === "active"
+                          ? t("common.active", "Aktif")
+                          : t("common.inactive", "Tidak Aktif")}
                       </span>
                     </div>
                     {tax?.rate && (

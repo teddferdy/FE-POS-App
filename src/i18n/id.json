@@ -8682,5 +8682,7 @@
   "page.memberTier.tier_berhasil_diperbarui": "Tier berhasil diperbarui",
   "page.memberTier.tier_berhasil_ditambahkan": "Tier berhasil ditambahkan",
   "page.memberTier.tier": "Tier",
-  "page.memberTier.update_tier": "Update Tier"
+  "page.memberTier.update_tier": "Update Tier",
+  "common.storeName": "Nama Toko",
+  "page.category.defaultName": "Nama Kategori"
 }

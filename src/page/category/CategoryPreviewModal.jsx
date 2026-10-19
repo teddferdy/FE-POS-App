@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React, { useState } from "react";
 import {
   Bell,
@@ -77,16 +78,17 @@ const QrMenuCard = ({ index, categoryName, color, outOfStock, price }) => (
 );
 
 const CategoryPreviewModal = ({ open, onOpenChange, category }) => {
+  const { t } = useTranslation();
   const [view, setView] = useState("cashier");
 
   if (!open) return null;
 
-  const name = category?.name?.trim() || "Nama Kategori";
+  const name = category?.name?.trim() || t("page.category.defaultName", "Nama Kategori");
   const color = category?.color || "#0f172a";
   const icon = category?.icon || "";
   const image = category?.image || null;
   const isActive = category?.isActive !== false;
-  const storeName = category?.storeName || "Nama Toko";
+  const storeName = category?.storeName || t("common.storeName", "Nama Toko");
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
