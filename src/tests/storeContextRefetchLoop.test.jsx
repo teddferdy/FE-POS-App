@@ -9,7 +9,7 @@ import { axiosInstance } from "../services";
 
 // StoreContext.jsx relies on Vite's automatic JSX runtime (no React import);
 // this Jest transform compiles JSX to React.createElement.
-global.React = React;
+globalThis.React = React;
 
 // Observed 2026-10-19 on /dashboard-admin: an `admin` account with no store
 // looped GET /auth/context + GET /location/get-location-public forever.
