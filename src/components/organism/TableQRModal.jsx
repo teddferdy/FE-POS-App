@@ -5,7 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import Modal from "@/components/organism/modal";
-import { randomToken } from "@/utils/secureRandom";
+import { buildTableOrderUrl } from "@/utils/tableOrderUrl";
 
 const TableQRModal = ({ open, onOpenChange, table }) => {
   const { t } = useTranslation();
@@ -19,11 +19,9 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
 
   const orderAppBaseUrl = import.meta.env.VITE_ORDER_APP_URL || "https://order-app-dun.vercel.app";
 
-  const sessionId = React.useMemo(() => randomToken(), []);
-
   if (!table) return null;
 
-  const orderUrl = `${orderAppBaseUrl}/?table=${table.id}&store=${storeId}&source=qr&session=${sessionId}`;
+  const orderUrl = buildTableOrderUrl(orderAppBaseUrl, table.id, storeId);
 
   const handlePrint = () => {
     // ponytail: halaman cetak dibangun via DOM API murni — tidak ada
