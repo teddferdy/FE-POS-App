@@ -10,7 +10,8 @@ import {
   Trash2,
   Banknote,
   Merge,
-  FileText
+  FileText,
+  MessageCircle
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -46,6 +47,7 @@ import { toast } from "sonner";
 import { warnStockShortages } from "@/lib/stock-shortage";
 import { printReceipt, printViaBrowser } from "@/utils/thermalPrint";
 import ReceiptPaper from "@/components/receipt/ReceiptPaper";
+import SendWhatsAppDialog from "./SendWhatsAppDialog";
 import { receiptLabels } from "@/components/receipt/receiptLabels";
 import { buildAddressLines } from "@/utils/receiptDocument";
 
@@ -53,6 +55,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
   const [thermalLoading, setThermalLoading] = useState(false);
+  const [showWhatsApp, setShowWhatsApp] = useState(false);
   const formatPrice = (value) => {
     if (value == null || isNaN(value)) return "0";
     return Number(value).toLocaleString("id-ID");
@@ -591,6 +594,14 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
             <Button
               variant="outline"
               className="flex-1 h-11 rounded-xl border-border/60"
+              disabled={!orderId}
+              onClick={() => setShowWhatsApp(true)}>
+              <MessageCircle size={16} />
+              {t("page.cashier.receipt.sendWA")}
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 h-11 rounded-xl border-border/60"
               onClick={() => {
                 setSplitCount(2);
                 const base = Math.floor(total / 2);
@@ -612,6 +623,16 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
           </div>
         </div>
       </DialogContent>
+
+      {showWhatsApp && orderId && (
+        <SendWhatsAppDialog
+          orderId={orderId}
+          defaultPhone={
+            data?.customer?.phoneNumber || data?.customer?.phone || data?.customerPhone || ""
+          }
+          onClose={() => setShowWhatsApp(false)}
+        />
+      )}
 
       {/* F9-04: a second, independent Dialog for the split-bill sub-flow —
           Radix supports these stacked, and closes only the topmost one on

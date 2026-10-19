@@ -29,6 +29,14 @@ export const sendInvoiceWhatsApp = async (payload) => {
   return data;
 };
 
+// The receipt as WhatsApp text (nothing is sent) + whether the store's
+// gateway can send it automatically.
+export const getInvoiceWhatsAppText = async (orderId) => {
+  const { data, status } = await axiosInstance.get(`/pos/invoice/wa-text/${orderId}`);
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
 export const sendInvoiceEmail = async (payload) => {
   const { data, status } = await axiosInstance.post("/pos/invoice/send-email", payload);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
