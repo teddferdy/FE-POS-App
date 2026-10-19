@@ -111,15 +111,24 @@ const PUBLIC_AUTH_URLS = [
 // 403 when the P1-4 account gate fires). Probe 403 ends the session via the
 // existing boundary; probe 200 or probe failure preserves everything.
 let sessionProbePromise = null;
+// A probe 200 is remembered briefly so several denied widgets on one page
+// share it instead of each re-probing. A later-disabled account is still
+// caught by the first 403 after the window (the BE denies every request
+// meanwhile, so only the logout redirect waits).
+export const PROBE_OK_TTL_MS = 10000;
+let lastProbeOkAt = -Infinity;
 
 const PROBE_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
 const probeSessionState = () => {
   if (sessionProbePromise) return sessionProbePromise;
+  if (Date.now() - lastProbeOkAt < PROBE_OK_TTL_MS) return Promise.resolve();
   sessionProbePromise = axiosInstance
     .get("/auth/context", { sessionProbe: true })
     .then(
-      () => {},
+      () => {
+        lastProbeOkAt = Date.now();
+      },
       (probeErr) => {
         if (probeErr?.response?.status === 403) {
           endSession({ reason: SESSION_END_REASON.EXPIRED });

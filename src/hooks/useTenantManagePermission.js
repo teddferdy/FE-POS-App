@@ -11,6 +11,9 @@ export const TENANT_MANAGE_PERMISSION = "tenant.manage";
 export function useTenantManagePermission() {
   const query = useQuery(AUTH_CONTEXT_QUERY_KEY, getAuthContext, {
     staleTime: 5 * 60 * 1000,
+    // The app default refetchOnMount "always" ignores staleTime, so every
+    // Sidebar/page mount refetched /auth/context; honor the 5 min here.
+    refetchOnMount: true,
     refetchOnWindowFocus: false,
     retry: false
   });
