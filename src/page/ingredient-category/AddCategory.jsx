@@ -148,7 +148,9 @@ const AddCategory = () => {
           isEdit
             ? t("page.ingredientCategory.add.subtitleEdit")
             : t("page.ingredientCategory.add.subtitleAdd")
-        }>
+        }
+        backLink="/ingredient-category"
+        onBack={() => setShowCancel(true)}>
         <UserGuide guideKey={isEdit ? "edit-ingredient-category" : "add-ingredient-category"} />
       </PageHeader>
 

@@ -415,7 +415,9 @@ const EditPromoCampaign = () => {
           }
         ]}
         title={t("page.promo.edit.title")}
-        description={t("page.promo.edit.description")}>
+        description={t("page.promo.edit.description")}
+        backLink="/promo-list"
+        onBack={() => setCancelModalOpen(true)}>
         <Button variant="danger" onClick={() => setCancelModalOpen(true)}>
           {t("common.cancel")}
         </Button>

@@ -88,13 +88,18 @@ const PageHeader = ({
       )}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          {backLink && (
+          {/* ponytail: tampil bila salah satu ada — halaman form sering hanya
+              mengoper onBack (modal konfirmasi batal) tanpa backLink */}
+          {(backLink || onBack) && (
             <Button
+              type="button"
               variant="outline"
               size="icon"
               className="h-10 w-10 shrink-0"
+              aria-label={t("common.back", { defaultValue: "Kembali" })}
+              title={t("common.back", { defaultValue: "Kembali" })}
               onClick={handleBack}>
-              <ArrowLeft size={16} />
+              <ArrowLeft size={16} aria-hidden="true" />
             </Button>
           )}
           <div className="min-w-0">
