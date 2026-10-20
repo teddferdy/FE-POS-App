@@ -18,9 +18,14 @@ docker build -t bisa-nota-fe \
 docker rm -f bisa-nota-fe >/dev/null 2>&1 || true
 docker run -d --name bisa-nota-fe -p 3000:80 bisa-nota-fe >/dev/null
 
-# confirm the API URL really is in the bundle
+# wait for nginx to answer (up to ~10 s), then confirm the API URL really is
+# in the bundle
+for _ in $(seq 1 20); do
+  [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/)" = "200" ] && break
+  sleep 0.5
+done
 entry="$(curl -s http://localhost:3000/ | grep -oE '/assets/index-[A-Za-z0-9_-]+\.js' | head -1 || true)"
-if [ -n "$entry" ] && curl -s "http://localhost:3000$entry" | grep -q "$API"; then
+if [ -n "$entry" ] && curl -s "http://localhost:3000$entry" | grep -F "$API" >/dev/null; then
   echo "OK: running on http://localhost:3000 (API $API)"
 else
   echo "WARNING: could not confirm the API URL in the bundle — check docker logs bisa-nota-fe"
