@@ -8543,5 +8543,11 @@
   "page.cashier.orderQueue.timeAgo.justNow": "Baru saja",
   "page.cashier.orderQueue.timeAgo.minutes": "{{count}} menit lalu",
   "page.cashier.orderQueue.timeAgo.hours": "{{count}} jam lalu",
-  "page.cashier.orderQueue.timeAgo.days": "{{count}} hari lalu"
+  "page.cashier.orderQueue.timeAgo.days": "{{count}} hari lalu",
+  "page.role.add.typeLabel": "Tipe Role",
+  "page.role.add.typeRequired": "Pilih tipe role terlebih dahulu.",
+  "page.role.add.typeHint.admin": "Kelola toko: produk, stok, karyawan, buka/tutup kasir, void dan persetujuan retur.",
+  "page.role.add.typeHint.kasir": "Jualan dan terima pembayaran, split bill, batalkan pesanan belum dibayar, ajukan retur. Tidak bisa void atau buka/tutup kasir.",
+  "page.role.add.typeHint.user": "Staf dapur, pelayan atau gudang: hanya halaman sesuai menu, tanpa transaksi uang.",
+  "page.role.add.typeHint.super_admin": "Akses penuh ke semua toko (khusus vendor)."
 }

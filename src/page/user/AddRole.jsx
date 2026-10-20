@@ -21,8 +21,12 @@ import {
   countGranted,
   getLeafItemsGrouped,
   setAllPermissions,
-  togglePermissionValue
+  togglePermissionValue,
+  roleTypeLabelKey
 } from "@/page/role/rolePermissions";
+
+// Role types a store account may create (super_admin: global accounts only).
+const ROLE_TYPE_OPTIONS = ["admin", "kasir", "user"];
 
 const AddRole = () => {
   const { t } = useTranslation();
@@ -32,6 +36,15 @@ const AddRole = () => {
   // The server decides the role's store: a store-bound account creates
   // roles for its own store, a global super admin creates global roles.
   const isStoreBound = cookie?.user?.store != null && cookie?.user?.store !== "";
+  // What the role may DO is decided by its type on the server (taking
+  // payments, opening the register, managing stock…); the menu matrix only
+  // decides which pages it sees. Only a global super admin may create a
+  // super admin role — the server refuses it for everyone else.
+  const isGlobalSuperAdmin = cookie?.user?.roleType === "super_admin" && !isStoreBound;
+  const roleTypeOptions = isGlobalSuperAdmin
+    ? ["admin", "kasir", "user", "super_admin"]
+    : ROLE_TYPE_OPTIONS;
+  const [roleType, setRoleType] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,7 +76,11 @@ const AddRole = () => {
   const groups = useMemo(() => getLeafItemsGrouped(), []);
   const [permissions, setPermissions] = useState(() => buildInitialPermissions(groups));
 
-  const isDirty = name.trim() !== "" || description.trim() !== "" || countGranted(permissions) > 0;
+  const isDirty =
+    name.trim() !== "" ||
+    description.trim() !== "" ||
+    roleType !== "" ||
+    countGranted(permissions) > 0;
   useUnsavedChanges(isDirty && !successModal);
 
   const createMutation = useMutation(addRole, {
@@ -87,11 +104,18 @@ const AddRole = () => {
       });
       return;
     }
+    if (!roleType) {
+      toast.error(t("common.error"), {
+        description: t("page.role.add.typeRequired")
+      });
+      return;
+    }
     setIsSubmitting(true);
-    // createdBy, roleType and store are set by the server.
+    // createdBy and store are set by the server; the type is chosen here.
     createMutation.mutate({
       name: name.trim(),
       description: description.trim(),
+      roleType,
       status: saveAsDraft ? "draft" : "active",
       accessMenu: buildRoleAccessMenu(permissions)
     });
@@ -159,6 +183,46 @@ const AddRole = () => {
                     rows={5}
                   />
                 </div>
+                <fieldset className="flex flex-col gap-2">
+                  <legend className="mb-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.role.add.typeLabel")} <span className="text-destructive">*</span>
+                  </legend>
+                  <div
+                    role="radiogroup"
+                    aria-label={t("page.role.add.typeLabel")}
+                    className="flex flex-col gap-2">
+                    {roleTypeOptions.map((type) => {
+                      const selected = roleType === type;
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => setRoleType(type)}
+                          className={`flex w-full flex-col items-start rounded-lg border px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            selected
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:bg-muted/50"
+                          }`}>
+                          <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                            <span
+                              aria-hidden="true"
+                              className={`flex h-4 w-4 items-center justify-center rounded-full border ${
+                                selected ? "border-primary" : "border-muted-foreground/40"
+                              }`}>
+                              {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
+                            </span>
+                            {t(roleTypeLabelKey(type))}
+                          </span>
+                          <span className="mt-0.5 pl-6 text-xs text-muted-foreground">
+                            {t(`page.role.add.typeHint.${type}`)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </fieldset>
                 <div className="space-y-1 border-t border-border pt-4">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.role.scope.label")}
