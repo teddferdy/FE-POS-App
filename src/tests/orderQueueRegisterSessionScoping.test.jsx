@@ -83,10 +83,12 @@ describe("OrderQueue — Phase 39 Batch 6B register-session scoping", () => {
     getCurrentCashRegister.mockReset();
   });
 
-  test("Case 1 — current-register order appears in the Current Register bucket", async () => {
+  // 10-20: no "Register Sebelumnya" section any more — orders of an earlier
+  // register of today share the one list with the open register's orders.
+  test("Case 1 — current and earlier-register orders share one list, no section headers", async () => {
     const current = makeOrder({ id: 1, status: "preparing", cashRegisterId: CURRENT_REGISTER_ID });
-    const previous = makeOrder({ id: 2, status: "ready", cashRegisterId: 5 });
-    const statusMap = byStatus([current, previous]);
+    const earlier = makeOrder({ id: 2, status: "ready", cashRegisterId: 5 });
+    const statusMap = byStatus([current, earlier]);
     getOrdersByStore.mockImplementation(({ status }) =>
       Promise.resolve({ data: statusMap[status] || [] })
     );
@@ -94,21 +96,18 @@ describe("OrderQueue — Phase 39 Batch 6B register-session scoping", () => {
 
     renderQueue();
 
-    expect(await screen.findByText("page.cashier.orderQueue.currentRegister")).toBeInTheDocument();
-    const currentRail = screen.getByTestId("order-queue-rail");
-    expect(currentRail).toHaveTextContent("#00001");
-    expect(currentRail).not.toHaveTextContent("#00002");
+    const rail = await screen.findByTestId("order-queue-rail");
+    await waitFor(() => expect(rail).toHaveTextContent("#00002"));
+    expect(rail).toHaveTextContent("#00001");
+    expect(screen.queryByText("page.cashier.orderQueue.previousRegister")).not.toBeInTheDocument();
+    expect(screen.queryByText("page.cashier.orderQueue.currentRegister")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("order-queue-rail-previous")).not.toBeInTheDocument();
   });
 
-  test("Case 2 — previous-register order (different cashRegisterId) remains visible in the Previous Register bucket", async () => {
+  test("Case 2 — an earlier-register order carries no register label", async () => {
     const current = makeOrder({ id: 1, cashRegisterId: CURRENT_REGISTER_ID });
-    const previous = makeOrder({
-      id: 2,
-      status: "ready",
-      cashRegisterId: 5,
-      paymentStatus: "unpaid"
-    });
-    const statusMap = byStatus([current, previous]);
+    const earlier = makeOrder({ id: 2, status: "ready", cashRegisterId: 5 });
+    const statusMap = byStatus([current, earlier]);
     getOrdersByStore.mockImplementation(({ status }) =>
       Promise.resolve({ data: statusMap[status] || [] })
     );
@@ -116,22 +115,19 @@ describe("OrderQueue — Phase 39 Batch 6B register-session scoping", () => {
 
     renderQueue();
 
-    expect(await screen.findByText("page.cashier.orderQueue.previousRegister")).toBeInTheDocument();
-    const previousRail = screen.getByTestId("order-queue-rail-previous");
-    expect(previousRail).toHaveTextContent("#00002");
-    // Register-id label uses only the already-present cashRegisterId field.
-    expect(previousRail).toHaveTextContent("page.cashier.orderQueue.registerLabel:5");
+    expect(await screen.findByText("#00002")).toBeInTheDocument();
+    expect(screen.queryByText(/page.cashier.orderQueue.registerLabel/)).not.toBeInTheDocument();
   });
 
-  test("Case 3 — previous-register unpaid/pending order remains actionable", async () => {
+  test("Case 3 — an unpaid earlier-register order remains actionable", async () => {
     const current = makeOrder({ id: 1, cashRegisterId: CURRENT_REGISTER_ID });
-    const previousUnpaid = makeOrder({
+    const earlierUnpaid = makeOrder({
       id: 2,
       status: "served",
       cashRegisterId: 5,
       paymentStatus: "unpaid"
     });
-    const statusMap = byStatus([current, previousUnpaid]);
+    const statusMap = byStatus([current, earlierUnpaid]);
     getOrdersByStore.mockImplementation(({ status }) =>
       Promise.resolve({ data: statusMap[status] || [] })
     );
@@ -140,49 +136,95 @@ describe("OrderQueue — Phase 39 Batch 6B register-session scoping", () => {
     const onCollectPayment = jest.fn();
 
     renderQueue({ onLoadOrder, onCollectPayment });
-    await screen.findByTestId("order-queue-rail-previous");
+    await screen.findByText("#00002");
 
     fireEvent.click(screen.getByText("#00002"));
     expect(onLoadOrder).toHaveBeenCalledWith(expect.objectContaining({ id: 2 }));
-
-    // Both the current-register order (id 1) and this unpaid
-    // previous-register order (id 2) are unpaid, so both keep their
-    // collect-payment button — the previous-register one, specifically,
-    // must still invoke onCollectPayment for order 2.
-    const previousRail = screen.getByTestId("order-queue-rail-previous");
-    const collectButton = previousRail.querySelector(
-      '[aria-label="page.cashier.orderQueue.collectPayment"]'
-    );
-    fireEvent.click(collectButton);
+    const buttons = screen.getAllByLabelText("page.cashier.orderQueue.collectPayment");
+    expect(buttons).toHaveLength(2);
+    buttons.forEach((button) => fireEvent.click(button));
     expect(onCollectPayment).toHaveBeenCalledWith(expect.objectContaining({ id: 2 }));
   });
 
-  test("Case 4 — previous-register completed/paid order remains visible but read-only", async () => {
+  test("Case 4 — a paid order of an earlier register today stays visible but read-only", async () => {
     const current = makeOrder({ id: 1, cashRegisterId: CURRENT_REGISTER_ID });
-    const previousPaid = makeOrder({
+    const earlierPaid = makeOrder({
       id: 2,
       status: "served",
       cashRegisterId: 5,
       paymentStatus: "paid"
     });
-    const statusMap = byStatus([current, previousPaid]);
+    const statusMap = byStatus([current, earlierPaid]);
     getOrdersByStore.mockImplementation(({ status }) =>
       Promise.resolve({ data: statusMap[status] || [] })
     );
     mockCurrentRegister(CURRENT_REGISTER_ID);
     const onLoadOrder = jest.fn();
-    const onCollectPayment = jest.fn();
 
-    renderQueue({ onLoadOrder, onCollectPayment });
-    await screen.findByTestId("order-queue-rail-previous");
+    renderQueue({ onLoadOrder });
+    await screen.findByText("#00002");
+    await waitFor(() => expect(getCurrentCashRegister).toHaveBeenCalled());
 
-    // Still visible.
-    expect(screen.getByText("#00002")).toBeInTheDocument();
-    // No collect-payment button (already paid) and no clickable load-into-cart
-    // control (read-only) — clicking the card text must not load it.
-    expect(screen.queryAllByLabelText("page.cashier.orderQueue.collectPayment")).toHaveLength(1); // only the current-register order's button
+    // only the open register's unpaid order offers collect payment
+    expect(screen.queryAllByLabelText("page.cashier.orderQueue.collectPayment")).toHaveLength(1);
     fireEvent.click(screen.getByText("#00002"));
     expect(onLoadOrder).not.toHaveBeenCalled();
+  });
+
+  test("Case 4b — paid orders from earlier days are hidden; unpaid ones stay", async () => {
+    const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString();
+    const today = makeOrder({ id: 1, cashRegisterId: CURRENT_REGISTER_ID });
+    const oldPaid = makeOrder({
+      id: 2,
+      status: "served",
+      cashRegisterId: 5,
+      paymentStatus: "paid",
+      createdAt: twoDaysAgo
+    });
+    const oldUnpaid = makeOrder({
+      id: 3,
+      status: "served",
+      cashRegisterId: 5,
+      paymentStatus: "unpaid",
+      createdAt: twoDaysAgo
+    });
+    const statusMap = byStatus([today, oldPaid, oldUnpaid]);
+    getOrdersByStore.mockImplementation(({ status }) =>
+      Promise.resolve({ data: statusMap[status] || [] })
+    );
+    mockCurrentRegister(CURRENT_REGISTER_ID);
+
+    renderQueue();
+
+    expect(await screen.findByText("#00003")).toBeInTheDocument();
+    expect(screen.getByText("#00001")).toBeInTheDocument();
+    expect(screen.queryByText("#00002")).not.toBeInTheDocument();
+    expect(screen.getByText("page.cashier.orderQueue.timeAgo.days")).toBeInTheDocument();
+  });
+
+  test("Case 4c — only paid orders from earlier days: the queue is not shown at all", async () => {
+    const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString();
+    const oldPaid = makeOrder({
+      id: 2,
+      status: "served",
+      cashRegisterId: 5,
+      paymentStatus: "paid",
+      createdAt: twoDaysAgo
+    });
+    getOrdersByStore.mockImplementation(({ status }) =>
+      Promise.resolve({ data: status === "served" ? [oldPaid] : [] })
+    );
+    mockCurrentRegister(CURRENT_REGISTER_ID);
+
+    const { container } = renderQueue();
+
+    // loaded (skeleton gone) — and nothing rendered: the old paid order is
+    // filtered out, so there is no queue at all
+    await waitFor(() => expect(getOrdersByStore).toHaveBeenCalledTimes(5));
+    await waitFor(() => expect(container.querySelector(".animate-pulse")).toBeNull());
+    expect(container.firstChild).toBeEmptyDOMElement();
+    expect(screen.queryByText("#00002")).not.toBeInTheDocument();
+    expect(screen.queryByText("page.cashier.orderQueue.title")).not.toBeInTheDocument();
   });
 
   test("Case 5 — unassigned/self-order (cashRegisterId null) appears in the Unassigned bucket", async () => {
