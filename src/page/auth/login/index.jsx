@@ -30,6 +30,7 @@ import { useThemeStore } from "@/state/theme";
 import { useThemeEffect } from "@/hooks/useThemeEffect";
 import { getRoleDashboard } from "@/utils/role";
 import AuthGuideModal from "@/components/organism/AuthGuideModal";
+import { isPublicRegistrationEnabled } from "@/utils/publicRegistration";
 
 const LoginPage = () => {
   const { t, ready } = useTranslation();
@@ -341,15 +342,22 @@ const LoginPage = () => {
             </Form>
 
             <div className="pt-6 md:pt-8 text-center">
-              <p className="text-xs md:text-sm text-muted-foreground/70">
-                {translationMemo.noAccount}
-                <button
-                  type="button"
-                  onClick={() => navigate("/register")}
-                  className="text-foreground font-semibold hover:underline ml-1">
-                  {translationMemo.registerNow}
-                </button>
-              </p>
+              {isPublicRegistrationEnabled() ? (
+                <p className="text-xs md:text-sm text-muted-foreground/70">
+                  {translationMemo.noAccount}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/register")}
+                    className="text-foreground font-semibold hover:underline ml-1">
+                    {translationMemo.registerNow}
+                  </button>
+                </p>
+              ) : (
+                // D-08: accounts come from the store owner, not self sign-up.
+                <p className="text-xs md:text-sm text-muted-foreground/70">
+                  {t("page.login.accountFromOwner")}
+                </p>
+              )}
             </div>
           </div>
         </section>

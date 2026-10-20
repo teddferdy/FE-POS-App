@@ -19,6 +19,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { safeGet } from "@/lib/safe-lookup";
+import { isPublicRegistrationEnabled } from "@/utils/publicRegistration";
 
 const SpotlightOverlay = ({ target, stepIndex }) => {
   const [rect, setRect] = useState(null);
@@ -140,7 +141,8 @@ const authSteps = {
 
 const navActions = {
   login: [
-    { key: "guide.auth.nav.register", to: "/register" },
+    // D-08: only offered while public sign-up is open.
+    ...(isPublicRegistrationEnabled() ? [{ key: "guide.auth.nav.register", to: "/register" }] : []),
     { key: "guide.auth.nav.forgot", to: "/reset-password" }
   ],
   register: [{ key: "guide.auth.nav.login", to: "/" }],
