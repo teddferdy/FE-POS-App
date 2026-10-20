@@ -319,21 +319,48 @@ describe("EditRole", () => {
 });
 
 describe("AddRole", () => {
-  test("creates without client-supplied createdBy, roleType or store", async () => {
+  // 10-20: the role TYPE is chosen here — the server only validates it
+  // (super_admin for a global super admin only) and defaulted a missing one
+  // to "user", so every UI-made role could not sell or manage the store.
+  test("creates with the chosen role type, never client-supplied createdBy or store", async () => {
     renderWithClient(<AddRole />);
     fireEvent.change(screen.getByLabelText(/page.role.detail.nameLabel/), {
       target: { value: "Supervisor" }
     });
     fireEvent.click(screen.getByLabelText("Home — page.role.action.view"));
+    fireEvent.click(screen.getByRole("radio", { name: /page.role.type.kasir/ }));
     fireEvent.click(screen.getByText("page.role.add.saveRole"));
     await waitFor(() => expect(addRole).toHaveBeenCalledTimes(1));
     const payload = addRole.mock.calls[0][0];
     expect(payload).not.toHaveProperty("createdBy");
-    expect(payload).not.toHaveProperty("roleType");
     expect(payload).not.toHaveProperty("store");
+    expect(payload.roleType).toBe("kasir");
     expect(payload.accessMenu).toEqual(
       expect.arrayContaining([expect.objectContaining({ menu: "/home", view: true })])
     );
+  });
+
+  test("a role type must be chosen before saving", async () => {
+    addRole.mockClear();
+    renderWithClient(<AddRole />);
+    fireEvent.change(screen.getByLabelText(/page.role.detail.nameLabel/), {
+      target: { value: "Gudang" }
+    });
+    fireEvent.click(screen.getByText("page.role.add.saveRole"));
+    expect(addRole).not.toHaveBeenCalled();
+  });
+
+  test("only a global super admin is offered the super admin type", () => {
+    mockCookieUser = { id: 1, roleType: "super_admin", store: null };
+    const { unmount } = renderWithClient(<AddRole />);
+    expect(screen.getByRole("radio", { name: /page.role.type.superAdmin/ })).toBeInTheDocument();
+    unmount();
+    mockCookieUser = { id: 2, roleType: "super_admin", store: 3 };
+    renderWithClient(<AddRole />);
+    expect(
+      screen.queryByRole("radio", { name: /page.role.type.superAdmin/ })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /page.role.type.admin/ })).toBeInTheDocument();
   });
 
   test("a store-bound account is told the role is created for its own store", () => {

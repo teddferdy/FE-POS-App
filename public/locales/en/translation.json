@@ -8686,5 +8686,11 @@
   "page.cashier.orderQueue.timeAgo.justNow": "Just now",
   "page.cashier.orderQueue.timeAgo.minutes": "{{count}}m ago",
   "page.cashier.orderQueue.timeAgo.hours": "{{count}}h ago",
-  "page.cashier.orderQueue.timeAgo.days": "{{count}}d ago"
+  "page.cashier.orderQueue.timeAgo.days": "{{count}}d ago",
+  "page.role.add.typeLabel": "Role type",
+  "page.role.add.typeRequired": "Choose a role type first.",
+  "page.role.add.typeHint.admin": "Runs the store: products, stock, employees, open/close the register, voids and return approval.",
+  "page.role.add.typeHint.kasir": "Sells and takes payments, split bills, cancels unpaid orders, requests returns. Cannot void or open/close the register.",
+  "page.role.add.typeHint.user": "Kitchen, floor or warehouse staff: only the pages in its menu, no money actions.",
+  "page.role.add.typeHint.super_admin": "Full access to every store (vendor only)."
 }
