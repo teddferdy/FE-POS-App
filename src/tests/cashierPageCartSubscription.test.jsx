@@ -21,6 +21,11 @@ jest.mock("sonner", () => ({
 jest.mock("react-cookie", () => ({
   useCookies: () => [{ user: { id: 1, roleType: "admin", store: "1" }, activeStore: "1" }]
 }));
+// Cashier table panel (header "Meja" button) — no tables in these suites.
+jest.mock("@/services/table", () => ({
+  getCashierTables: jest.fn(() => Promise.resolve({ data: [] })),
+  releaseCashierTable: jest.fn()
+}));
 jest.mock("@/services/product", () => ({
   getProductByOutlet: jest.fn(() => Promise.resolve({ data: [] })),
   getFullProductCatalog: jest.fn(() => Promise.resolve({ data: [], bundles: [] }))

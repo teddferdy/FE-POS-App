@@ -59,3 +59,24 @@ export const deleteTable = async (id) => {
   if (status !== 200 && status !== 201 && status !== 204) throw Error(`${data?.error}`);
   return data;
 };
+
+// Cashier table panel (BA C-16 amended): tables of the store with their
+// unpaid open orders and whether the caller may reset them (server-decided).
+export const getCashierTables = async (storeId) => {
+  const { data, status } = await axiosInstance.get(`/pos/tables/status`, {
+    params: { storeId }
+  });
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
+// Put a table back to "available" from the cashier (reason required).
+export const releaseCashierTable = async ({ id, reason, storeId }) => {
+  const { data, status } = await axiosInstance.put(
+    `/pos/tables/${id}/release`,
+    { reason },
+    { params: { storeId } }
+  );
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
