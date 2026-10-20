@@ -13,6 +13,7 @@ import { getOrderById, updateOrderStatus } from "@/services/order";
 import { getMemberById } from "@/services/member";
 import MemberSearchModal from "@/components/MemberSearchModal";
 import { REFERENCE_REQUIRED_METHODS, MAX_REFERENCE_LENGTH } from "@/utils/payment";
+import { isRegisterRequiredError } from "@/state/registerRequired";
 
 // F4-01: settles an order that already exists (e.g. created through
 // BISA-MAKAN's QR ordering flow) instead of the previous workaround of
@@ -233,6 +234,8 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
       onClose();
     },
     onError: (err) => {
+      // No open register: the app-wide RegisterRequiredDialog handles it.
+      if (isRegisterRequiredError(err)) return;
       // DR-16: attaching a different member than the order's existing one is
       // refused fail-closed (409 MEMBER_MISMATCH) — never silently replaced.
       // Surface the conflict inline, refresh the server-confirmed order so

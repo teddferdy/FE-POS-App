@@ -431,3 +431,38 @@ describe("Dine-in table is optional", () => {
     expect(createOrder.mock.calls[0][0].tableId).toBeNull();
   });
 });
+
+// Client request: 422 REGISTER_REQUIRED is explained by the app-wide
+// RegisterRequiredDialog (raised by the axios interceptor) — the checkout
+// adds no raw English toast and never claims the sale might be recorded.
+describe("No open register (REGISTER_REQUIRED)", () => {
+  beforeEach(() => {
+    getAllCustomer.mockResolvedValue({ data: [] });
+    getAllDiscount.mockResolvedValue({ data: [] });
+    createOrder.mockClear();
+    getTableAvailability.mockResolvedValue({ data: { tables: [] } });
+    getTablesWithActiveOrders.mockResolvedValue({ data: [] });
+  });
+
+  test("the refusal leaves the explanation to the register dialog", async () => {
+    const { toast } = jest.requireMock("sonner");
+    toast.error.mockClear();
+    createOrder.mockRejectedValueOnce({
+      response: {
+        status: 422,
+        data: {
+          error: "No open cash register for this store; open a register before settling",
+          code: "REGISTER_REQUIRED"
+        }
+      }
+    });
+    renderModal();
+    await screen.findByText("Cash");
+    completeCashPayment();
+    await waitForCheckoutQuote();
+    fireEvent.click(screen.getByText("page.cashier.confirmPayment"));
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
+    await new Promise((r) => setTimeout(r, 50));
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+});
