@@ -8534,5 +8534,10 @@
   "page.reportSettings.columnLabels.kasirPerformance.transactions": "Transaksi",
   "page.reportSettings.columnLabels.kasirPerformance.avgTransaction": "Rata-rata Transaksi",
   "page.reportSettings.columnLabels.kasirPerformance.itemsSold": "Item Terjual",
-  "page.reportSettings.columnLabels.kasirPerformance.accuracyRate": "Akurasi"
+  "page.reportSettings.columnLabels.kasirPerformance.accuracyRate": "Akurasi",
+  "page.cashier.receipt.paperSize": "Ukuran kertas",
+  "page.cashier.receipt.summary": "Ringkasan pembayaran",
+  "page.cashier.receipt.totalPaid": "Total dibayar",
+  "page.cashier.receipt.paidWith": "Metode pembayaran",
+  "page.cashier.receipt.preview": "Pratinjau struk"
 }

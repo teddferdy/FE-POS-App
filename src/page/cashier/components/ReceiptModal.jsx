@@ -11,7 +11,8 @@ import {
   Banknote,
   Merge,
   FileText,
-  MessageCircle
+  MessageCircle,
+  ReceiptText
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -51,12 +52,14 @@ import SendWhatsAppDialog from "./SendWhatsAppDialog";
 import { receiptLabels } from "@/components/receipt/receiptLabels";
 import { buildAddressLines } from "@/utils/receiptDocument";
 import { isRegisterRequiredError } from "@/state/registerRequired";
+import { paymentMethodLabel } from "@/utils/payment";
 
 const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
   const [thermalLoading, setThermalLoading] = useState(false);
   const [showWhatsApp, setShowWhatsApp] = useState(false);
+  const newTransactionRef = useRef(null);
   const formatPrice = (value) => {
     if (value == null || isNaN(value)) return "0";
     return Number(value).toLocaleString("id-ID");
@@ -449,10 +452,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
       date: transactionDate,
       table: tableName,
       paymentMethod,
-      paymentMethodLabel:
-        paymentMethod && paymentMethod !== "-"
-          ? paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)
-          : "",
+      paymentMethodLabel: paymentMethodLabel(paymentMethod),
       items: items.map((i) => ({
         name: i.nameProduct || i.name || "-",
         qty: i.count || i.qty || 0,
@@ -525,106 +525,146 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     // top" behavior without extra code.
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="w-[80vw] max-w-none max-h-[90vh] flex flex-col overflow-hidden p-0"
-        withX={false}>
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/50 shrink-0">
+        className="flex max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-4xl flex-col gap-0 overflow-hidden rounded-xl p-0 sm:w-[calc(100vw-2rem)]"
+        withX={false}
+        aria-describedby={undefined}
+        // The next step after a sale is the next sale: land on the primary
+        // action so Enter starts it (Tab still reaches every other control).
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          newTransactionRef.current?.focus();
+        }}>
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border/60 px-4 py-3 sm:px-5">
+          <DialogTitle className="flex min-w-0 items-center gap-2 text-base font-bold">
+            <ReceiptText size={18} className="shrink-0 text-primary" aria-hidden="true" />
+            <span className="truncate">{t("page.cashier.receipt.title")}</span>
+          </DialogTitle>
           <div className="flex items-center gap-2">
-            <CheckCircle size={18} className="text-emerald-500" />
-            <DialogTitle className="text-base font-bold">
-              {t("page.cashier.receipt.title")}
-            </DialogTitle>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* Paper Size selector */}
-            <div className="flex items-center bg-muted p-0.5 rounded-lg text-xs">
-              <button
-                type="button"
-                onClick={() => setPaperSize("58mm")}
-                className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
-                  paperSize === "58mm"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}>
-                58mm
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaperSize("80mm")}
-                className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
-                  paperSize === "80mm"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}>
-                80mm
-              </button>
+            <div
+              role="radiogroup"
+              aria-label={t("page.cashier.receipt.paperSize")}
+              className="flex items-center rounded-lg bg-muted p-0.5 text-xs">
+              {["58mm", "80mm"].map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  role="radio"
+                  aria-checked={paperSize === size}
+                  onClick={() => setPaperSize(size)}
+                  className={`h-8 min-w-[3.25rem] rounded-md px-2.5 font-semibold tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    paperSize === size
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}>
+                  {size}
+                </button>
+              ))}
             </div>
             <button
+              type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-accent transition-colors">
-              <X size={18} />
+              aria-label={t("common.close")}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <X size={18} aria-hidden="true" />
             </button>
           </div>
+        </header>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
+          {/* Sale summary: what was charged and how, before the receipt. */}
+          <section
+            aria-label={t("page.cashier.receipt.summary")}
+            className="shrink-0 border-b border-border/60 p-4 sm:px-5 md:w-72 md:overflow-y-auto md:border-b-0 md:border-r md:p-5">
+            <div
+              role="status"
+              className="flex items-center gap-3 rounded-xl bg-emerald-50 px-3 py-2.5 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+              <CheckCircle size={22} className="shrink-0" aria-hidden="true" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">{t("page.cashier.receipt.paymentSuccess")}</p>
+                <p className="truncate font-mono text-xs opacity-80" title={orderNumber}>
+                  {orderNumber}
+                </p>
+              </div>
+            </div>
+            <dl className="mt-4 grid grid-cols-2 items-baseline gap-x-3 gap-y-2 text-sm md:grid-cols-1 md:gap-y-1">
+              <dt className="text-muted-foreground">{t("page.cashier.receipt.totalPaid")}</dt>
+              <dd className="text-right text-2xl font-bold tabular-nums md:text-left md:text-3xl">
+                Rp{formatPrice(total)}
+              </dd>
+              <dt className="text-muted-foreground md:mt-3">
+                {t("page.cashier.receipt.paidWith")}
+              </dt>
+              <dd className="text-right font-semibold md:text-left">
+                {receiptData.paymentMethodLabel || "-"}
+              </dd>
+              {receiptData.showTender && (
+                <>
+                  <dt className="text-muted-foreground md:mt-3">
+                    {t("page.cashier.receipt.change")}
+                  </dt>
+                  <dd className="text-right font-semibold tabular-nums text-emerald-700 dark:text-emerald-400 md:text-left">
+                    Rp{formatPrice(changeAmount)}
+                  </dd>
+                </>
+              )}
+            </dl>
+          </section>
+
+          {/* The receipt exactly as printed, zoomed to fit the column. */}
+          <section
+            aria-label={t("page.cashier.receipt.preview")}
+            className="flex-1 bg-muted/40 p-3 sm:p-5 md:min-h-0 md:overflow-y-auto">
+            <ReceiptPaper data={receiptData} fit />
+          </section>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <CheckCircle size={14} className="text-emerald-500" />
-            <p className="text-xs font-semibold text-emerald-600">
-              {t("page.cashier.receipt.paymentSuccess")}
-            </p>
-          </div>
-          <ReceiptPaper data={receiptData} />
-        </div>
-
-        <div className="border-t border-border/50 p-4 shrink-0 flex flex-col gap-2">
-          <div className="flex items-center gap-2">
+        <footer className="shrink-0 border-t border-border/60 bg-background p-3 sm:p-4 md:grid md:grid-cols-[1fr_auto] md:items-center md:gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Button
               variant="outline"
-              className="flex-1 h-11 rounded-xl border-border/60"
+              className="h-11 rounded-xl border-border/60"
               onClick={handleThermalPrint}
               loading={thermalLoading}>
-              <Printer size={16} />
+              <Printer size={16} aria-hidden="true" />
               {t("page.cashier.receipt.thermal")}
             </Button>
             <Button
               variant="outline"
-              className="flex-1 h-11 rounded-xl border-border/60"
+              className="h-11 rounded-xl border-border/60"
               title={t("page.invoice.pdfHint")}
               onClick={() => printViaBrowser(receiptData)}>
-              <FileText size={16} />
+              <FileText size={16} aria-hidden="true" />
               PDF
             </Button>
             <Button
               variant="outline"
-              className="flex-1 h-11 rounded-xl border-border/60"
+              className="h-11 rounded-xl border-border/60"
               disabled={!orderId}
               onClick={() => setShowWhatsApp(true)}>
-              <MessageCircle size={16} />
-              {t("page.cashier.receipt.sendWA")}
+              <MessageCircle size={16} aria-hidden="true" />
+              <span className="truncate">{t("page.cashier.receipt.sendWA")}</span>
             </Button>
             <Button
               variant="outline"
-              className="flex-1 h-11 rounded-xl border-border/60"
+              className="h-11 rounded-xl border-border/60"
               onClick={() => {
                 setSplitCount(2);
                 const base = Math.floor(total / 2);
                 setSplitAmounts([total - base, base]);
                 setShowSplit(true);
               }}>
-              <Users size={16} />
+              <Users size={16} aria-hidden="true" />
               {t("page.cashier.receipt.split")}
             </Button>
-            <Button
-              onClick={onNewTransaction}
-              className="flex-1 h-11 rounded-xl relative overflow-hidden group/btn">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/90 opacity-90 group-hover/btn:opacity-100 transition-opacity" />
-              <span className="relative flex items-center justify-center gap-2">
-                <RotateCcw size={16} />
-                {t("page.cashier.receipt.newTransaction")}
-              </span>
-            </Button>
           </div>
-        </div>
+          <Button
+            ref={newTransactionRef}
+            onClick={onNewTransaction}
+            className="mt-2 h-12 w-full rounded-xl text-base font-semibold md:mt-0 md:w-56">
+            <RotateCcw size={18} aria-hidden="true" />
+            {t("page.cashier.receipt.newTransaction")}
+          </Button>
+        </footer>
       </DialogContent>
 
       {showWhatsApp && orderId && (

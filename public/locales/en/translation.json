@@ -8677,5 +8677,10 @@
   "page.reportSettings.columnLabels.kasirPerformance.transactions": "Transactions",
   "page.reportSettings.columnLabels.kasirPerformance.avgTransaction": "Avg. Transaction",
   "page.reportSettings.columnLabels.kasirPerformance.itemsSold": "Items Sold",
-  "page.reportSettings.columnLabels.kasirPerformance.accuracyRate": "Accuracy"
+  "page.reportSettings.columnLabels.kasirPerformance.accuracyRate": "Accuracy",
+  "page.cashier.receipt.paperSize": "Paper size",
+  "page.cashier.receipt.summary": "Payment summary",
+  "page.cashier.receipt.totalPaid": "Total paid",
+  "page.cashier.receipt.paidWith": "Payment method",
+  "page.cashier.receipt.preview": "Receipt preview"
 }
