@@ -3,6 +3,7 @@ import { ENDPOINT } from "@/utils/endpoints";
 import { hasOwn } from "@/lib/safe-lookup";
 import { getToken, getCookie } from "@/utils/cookies";
 import { endSession, isSessionEnding, isSessionExemptPath, SESSION_END_REASON } from "./session";
+import { isRegisterRequiredError, useRegisterRequiredStore } from "@/state/registerRequired";
 
 const axiosInstance = axios.create({
   baseURL: ENDPOINT.BASE_URL
@@ -168,6 +169,11 @@ axiosInstance.interceptors.response.use(
     }
     if (isQualifyingProbeTrigger(err)) {
       probeSessionState();
+    }
+    // No open cash register: one app-wide dialog sends the cashier to open
+    // it (RegisterRequiredDialog); callers still receive the rejection.
+    if (isRegisterRequiredError(err)) {
+      useRegisterRequiredStore.getState().show();
     }
     return Promise.reject(err);
   }

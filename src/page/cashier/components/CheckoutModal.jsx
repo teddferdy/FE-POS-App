@@ -50,6 +50,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import MemberSearchModal from "@/components/MemberSearchModal";
 import { toast } from "sonner";
 import { dispatchDisplayEvent, DISPLAY_EVENT_TYPES } from "@/utils/customerDisplayBoard";
+import { isRegisterRequiredError } from "@/state/registerRequired";
 
 // The customer/discount dropdowns render in a fixed-position portal anchored
 // to their input's rect — always below it, with no bounds check. On a
@@ -684,6 +685,10 @@ const CheckoutModal = ({
     },
     onError: (err, variables) => {
       const outcome = err?.attemptOutcome || classifyCreateError(err);
+      // No open register: refused before anything was written; the app-wide
+      // RegisterRequiredDialog explains it and links to opening one. A
+      // pending QRIS confirmation is kept — the customer may already have paid.
+      if (isRegisterRequiredError(err)) return;
       // DR-23 §K: the sale may already be recorded — never invite a fresh
       // sale here; the attempt panel offers the same-payload retry.
       if (outcome.kind === "unknown") {

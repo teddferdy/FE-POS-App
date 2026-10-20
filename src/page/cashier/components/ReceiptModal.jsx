@@ -50,6 +50,7 @@ import ReceiptPaper from "@/components/receipt/ReceiptPaper";
 import SendWhatsAppDialog from "./SendWhatsAppDialog";
 import { receiptLabels } from "@/components/receipt/receiptLabels";
 import { buildAddressLines } from "@/utils/receiptDocument";
+import { isRegisterRequiredError } from "@/state/registerRequired";
 
 const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const { t } = useTranslation();
@@ -322,6 +323,8 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
       }
     },
     onError: (err) => {
+      // No open register: the app-wide RegisterRequiredDialog handles it.
+      if (isRegisterRequiredError(err)) return;
       const code = err?.response?.data?.code;
       if (code === "DUPLICATE_REFERENCE") {
         toast.error(t("page.cashier.collectPayment.reference.duplicate"));

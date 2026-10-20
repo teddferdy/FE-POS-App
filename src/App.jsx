@@ -35,6 +35,7 @@ import {
   bundleRoutes,
   businessTripRoutes
 } from "@/routes";
+import RegisterRequiredDialog from "@/components/organism/RegisterRequiredDialog";
 
 // Global lazy components
 const SupportComponent = React.lazy(() => import("@/components/organism/Support"));
@@ -89,6 +90,7 @@ function App() {
           <SupportComponent />
           <RouteProgress />
           <ShortcutHandler />
+          <RegisterRequiredDialog />
           <DeferredSentry />
           <ErrorBoundary>
             <Routes>
