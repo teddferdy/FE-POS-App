@@ -152,3 +152,26 @@ describe("bakso_admin POS menu and actions", () => {
     expect(canAccess(fullSuper, "/expense", "view")).toBe(true);
   });
 });
+
+describe("action aliases", () => {
+  // Pages ask with "create"/"update"/"detail"; accessMenu stores add/edit/view.
+  // bakso_admin could not see "Tambah Kategori" on /ingredient-category.
+  test("create/update/detail answer from add/edit/view", () => {
+    expect(canAccess(scoped, "/ingredient-category", "create")).toBe(true);
+    expect(canAccess(scoped, "/ingredient-category", "update")).toBe(true);
+    expect(canAccess(scoped, "/ingredient-category", "detail")).toBe(true);
+    expect(hasMenuAccess(scoped, "/ingredient-category", ["create"])).toBe(true);
+  });
+
+  test("an alias never grants what the stored action denies", () => {
+    const viewOnly = {
+      id: 31,
+      roleType: "admin",
+      accessMenu: [{ menu: "/ingredient-category", view: true, add: false, edit: false }]
+    };
+    expect(canAccess(viewOnly, "/ingredient-category", "detail")).toBe(true);
+    expect(canAccess(viewOnly, "/ingredient-category", "create")).toBe(false);
+    expect(canAccess(viewOnly, "/ingredient-category", "update")).toBe(false);
+    expect(canAccess(viewOnly, "/ingredient-category", "delete")).toBe(false);
+  });
+});

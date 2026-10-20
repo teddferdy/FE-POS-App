@@ -102,8 +102,14 @@ const ACTION_MAP = {
   add: "add",
   edit: "edit",
   import: "import",
-  export: "export"
+  export: "export",
+  detail: "view"
 };
+
+// Callers ask with either vocabulary ("create"/"update"/"detail" or
+// "add"/"edit"/"view"); the stored keys are normalized the same way, so a
+// menu saved as { add: true } also answers canAccess(..., "create").
+const normalizeAction = (action) => safeGet(ACTION_MAP, action) || action;
 
 export const normalizePermissionActions = (perm) => {
   if (!perm) return perm;
@@ -139,7 +145,7 @@ export const canAccess = (user, menuKey, action) => {
   );
   if (!menu) return false;
   const normalized = normalizePermissionActions(menu);
-  return !!safeGet(normalized, action, false);
+  return !!safeGet(normalized, normalizeAction(action), false);
 };
 
 export const hasMenuAccess = (user, href, actions) => {
@@ -161,7 +167,7 @@ export const hasMenuAccess = (user, href, actions) => {
   const perm = normalizePermissionActions(findMenuPermission(permissions, href));
   if (!perm) return false;
   if (actions && actions.length > 0) {
-    return actions.some((a) => !!safeGet(perm, a));
+    return actions.some((a) => !!safeGet(perm, normalizeAction(a)));
   }
   return !!perm.view;
 };
