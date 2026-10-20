@@ -45,6 +45,7 @@ import CartPanel from "./components/CartPanel";
 import CheckoutModal from "./components/CheckoutModal";
 import ReceiptModal from "./components/ReceiptModal";
 import OrderQueue from "./components/OrderQueue";
+import IncomingQrOrderAlert from "./components/IncomingQrOrderAlert";
 import CollectPaymentModal from "./components/CollectPaymentModal";
 import ParkedCartPanel from "./components/ParkedCartPanel";
 import { createParkedCart } from "@/services/parked-cart";
@@ -798,6 +799,12 @@ const CashierPage = () => {
           onClose={() => setScreenModeStore(null)}
           onChoose={handleScreenMode}
         />
+        {store && ["kasir", "admin", "super_admin"].includes(role) && (
+          <IncomingQrOrderAlert
+            store={store}
+            actor={{ id: user?.id, name: user?.fullName || user?.userName }}
+          />
+        )}
         {collectPaymentOrder && (
           <CollectPaymentModal
             order={collectPaymentOrder}
