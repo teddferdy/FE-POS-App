@@ -86,10 +86,7 @@ jest.mock("@/services/location", () => ({
   getLocationDetail: jest.fn()
 }));
 
-jest.mock("@/services/invoice", () => ({
-  getWhatsAppStatus: jest.fn(() => Promise.resolve({ data: { ready: true } })),
-  restartWhatsApp: jest.fn()
-}));
+jest.mock("@/services/invoice", () => ({}));
 
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({

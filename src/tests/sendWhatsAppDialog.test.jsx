@@ -1,23 +1,20 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import SendWhatsAppDialog, {
   toWhatsAppNumber
 } from "../page/cashier/components/SendWhatsAppDialog";
 import ReceiptModal from "../page/cashier/components/ReceiptModal";
-import { getInvoiceWhatsAppText, sendInvoiceWhatsApp } from "@/services/invoice";
-import { toast } from "sonner";
+import { getInvoiceWhatsAppText } from "@/services/invoice";
 
 // Client request: send the invoice to the member/customer on WhatsApp.
-// Primary path = wa.me on the device's own WhatsApp (no gateway needed);
-// automatic gateway send only when the store has one configured.
+// wa.me on the device's own WhatsApp — no gateway (Fonnte removed).
 
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (k) => k }) }));
 jest.mock("sonner", () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 jest.mock("@/services/invoice", () => ({
   getInvoiceWhatsAppText: jest.fn(),
-  sendInvoiceWhatsApp: jest.fn(),
   getInvoiceSetting: jest.fn(() => Promise.resolve({ data: {} }))
 }));
 jest.mock("@/utils/thermalPrint", () => ({ printReceipt: jest.fn(), printViaBrowser: jest.fn() }));
@@ -52,17 +49,11 @@ const wrap = (ui) => {
   });
   return render(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>);
 };
-const apiError = (status, body) =>
-  Object.assign(new Error("x"), { response: { status, data: body } });
 const findLink = () => screen.findByRole("link", { name: /page.cashier.receipt.waOpenManual/ });
-const textReply = (gatewayReady) =>
-  Promise.resolve({ data: { orderId: 42, text: TEXT, gatewayReady } });
+const textReply = () => Promise.resolve({ data: { orderId: 42, text: TEXT } });
 
 beforeEach(() => {
-  getInvoiceWhatsAppText.mockReset().mockImplementation(() => textReply(false));
-  sendInvoiceWhatsApp.mockReset();
-  toast.success.mockClear();
-  toast.error.mockClear();
+  getInvoiceWhatsAppText.mockReset().mockImplementation(() => textReply());
 });
 
 test("toWhatsAppNumber maps local Indonesian forms to wa.me digits", () => {
@@ -84,9 +75,8 @@ describe("SendWhatsAppDialog", () => {
     );
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", expect.stringContaining("noopener"));
-    // no gateway configured → no automatic send offered
+    // no gateway any more: never an automatic-send action
     expect(screen.queryByText("page.cashier.receipt.waSendAuto")).not.toBeInTheDocument();
-    expect(sendInvoiceWhatsApp).not.toHaveBeenCalled();
   });
 
   test("no number = WhatsApp's own contact picker; the link follows the typed number", async () => {
@@ -110,39 +100,6 @@ describe("SendWhatsAppDialog", () => {
     const notPrevented = fireEvent.click(link);
     expect(notPrevented).toBe(false);
     expect(screen.getByRole("alert")).toHaveTextContent("page.cashier.receipt.waInvalidPhone");
-  });
-
-  test("Kirim otomatis needs a number (the gateway cannot pick a contact)", async () => {
-    getInvoiceWhatsAppText.mockImplementation(() => textReply(true));
-    wrap(<SendWhatsAppDialog orderId={42} defaultPhone="" onClose={jest.fn()} />);
-    fireEvent.click(await screen.findByText("page.cashier.receipt.waSendAuto"));
-    expect(screen.getByRole("alert")).toHaveTextContent("page.cashier.receipt.waInvalidPhone");
-    expect(sendInvoiceWhatsApp).not.toHaveBeenCalled();
-  });
-
-  test("with a configured gateway, Kirim otomatis sends and closes", async () => {
-    getInvoiceWhatsAppText.mockImplementation(() => textReply(true));
-    sendInvoiceWhatsApp.mockResolvedValue({ success: true });
-    const onClose = jest.fn();
-    wrap(<SendWhatsAppDialog orderId={42} defaultPhone="081234567890" onClose={onClose} />);
-    fireEvent.click(await screen.findByText("page.cashier.receipt.waSendAuto"));
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(sendInvoiceWhatsApp).toHaveBeenCalledWith({ orderId: 42, phone: "081234567890" });
-    expect(toast.success).toHaveBeenCalledWith("page.cashier.receipt.toast.waSuccess");
-  });
-
-  test("a gateway failure keeps the dialog open and points to the direct link", async () => {
-    getInvoiceWhatsAppText.mockImplementation(() => textReply(true));
-    sendInvoiceWhatsApp.mockRejectedValue(apiError(502, { code: "WA_SEND_FAILED" }));
-    const onClose = jest.fn();
-    wrap(<SendWhatsAppDialog orderId={42} defaultPhone="081234567890" onClose={onClose} />);
-    fireEvent.click(await screen.findByText("page.cashier.receipt.waSendAuto"));
-    await waitFor(() => expect(toast.error).toHaveBeenCalled());
-    expect(toast.error.mock.calls[0][1]).toEqual({
-      description: "page.cashier.receipt.waUseDirect"
-    });
-    expect(onClose).not.toHaveBeenCalled();
-    expect(screen.getByText("page.cashier.receipt.waOpenManual").closest("a")).toBeTruthy();
   });
 
   test("a failed text load shows an error with retry, and no link", async () => {

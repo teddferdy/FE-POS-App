@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQuery } from "react-query";
-import { toast } from "sonner";
-import { MessageCircle, X, Send } from "lucide-react";
+import { useQuery } from "react-query";
+import { MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { getInvoiceWhatsAppText, sendInvoiceWhatsApp } from "@/services/invoice";
+import { getInvoiceWhatsAppText } from "@/services/invoice";
 
 const P = "page.cashier.receipt";
 
@@ -26,7 +25,6 @@ export const toWhatsAppNumber = (raw) => {
 // phone/iPad, Desktop or Web) with the message prefilled — the cashier
 // taps Send there. The message is fetched when the dialog opens so the link
 // is a plain tap (iOS Safari blocks opening apps after an async request).
-// When the store's gateway is configured, it can also send automatically.
 const SendWhatsAppDialog = ({ orderId, defaultPhone = "", onClose }) => {
   const { t } = useTranslation();
   const [phone, setPhone] = useState(defaultPhone);
@@ -37,29 +35,13 @@ const SendWhatsAppDialog = ({ orderId, defaultPhone = "", onClose }) => {
     refetchOnWindowFocus: false
   });
   const text = textQuery.data?.data?.text || "";
-  const gatewayReady = !!textQuery.data?.data?.gatewayReady;
   const waNumber = toWhatsAppNumber(phone);
-
-  const autoSend = useMutation(() => sendInvoiceWhatsApp({ orderId, phone: phone.trim() }), {
-    onSuccess: () => {
-      toast.success(t(`${P}.toast.waSuccess`));
-      onClose();
-    },
-    onError: (err) => {
-      const body = err?.response?.data || {};
-      if (body.code === "INVALID_PHONE") {
-        setPhoneError(t(`${P}.waInvalidPhone`));
-        return;
-      }
-      toast.error(t(`${P}.toast.waError`), { description: t(`${P}.waUseDirect`) });
-    }
-  });
 
   // Empty number = let the cashier pick the contact inside WhatsApp; a
   // typed number must be valid.
   const numberProblem = phone.trim() !== "" && !waNumber;
-  const guardNumber = (e, { requireNumber = false } = {}) => {
-    if (numberProblem || (requireNumber && !waNumber)) {
+  const guardNumber = (e) => {
+    if (numberProblem) {
       e?.preventDefault();
       setPhoneError(t(`${P}.waInvalidPhone`));
       return false;
@@ -77,7 +59,7 @@ const SendWhatsAppDialog = ({ orderId, defaultPhone = "", onClose }) => {
       : `https://wa.me/?text=${encoded}`;
 
   return (
-    <Dialog open onOpenChange={(open) => !open && !autoSend.isLoading && onClose()}>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-sm p-0" withX={false}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
           <div className="flex items-center gap-2">
@@ -149,18 +131,6 @@ const SendWhatsAppDialog = ({ orderId, defaultPhone = "", onClose }) => {
           ) : (
             <Button disabled loading={textQuery.isLoading} className="w-full">
               {t(`${P}.waOpenManual`)}
-            </Button>
-          )}
-          {gatewayReady && (
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              loading={autoSend.isLoading}
-              disabled={autoSend.isLoading}
-              onClick={() => guardNumber(null, { requireNumber: true }) && autoSend.mutate()}>
-              <Send size={14} />
-              {autoSend.isLoading ? t(`${P}.sending`) : t(`${P}.waSendAuto`)}
             </Button>
           )}
         </div>

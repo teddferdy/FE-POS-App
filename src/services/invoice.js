@@ -23,14 +23,8 @@ export const resetInvoiceSetting = async (payload) => {
   return data;
 };
 
-export const sendInvoiceWhatsApp = async (payload) => {
-  const { data, status } = await axiosInstance.post("/pos/invoice/send-wa", payload);
-  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
-  return data;
-};
-
-// The receipt as WhatsApp text (nothing is sent) + whether the store's
-// gateway can send it automatically.
+// The receipt as WhatsApp text (nothing is sent) — opened through wa.me on
+// the cashier's own WhatsApp.
 export const getInvoiceWhatsAppText = async (orderId) => {
   const { data, status } = await axiosInstance.get(`/pos/invoice/wa-text/${orderId}`);
   if (status !== 200) throw Error(`${data?.message}`);
@@ -39,24 +33,6 @@ export const getInvoiceWhatsAppText = async (orderId) => {
 
 export const sendInvoiceEmail = async (payload) => {
   const { data, status } = await axiosInstance.post("/pos/invoice/send-email", payload);
-  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
-  return data;
-};
-
-export const sendInvoiceWA = sendInvoiceWhatsApp;
-
-export const getWhatsAppStatus = async (storeId) => {
-  const { data, status } = await axiosInstance.get("/pos/whatsapp/status", {
-    params: { storeId }
-  });
-  if (status !== 200) throw Error(`${data?.message}`);
-  return data;
-};
-
-export const restartWhatsApp = async (storeId) => {
-  const { data, status } = await axiosInstance.post("/pos/whatsapp/restart", null, {
-    params: { storeId }
-  });
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };
