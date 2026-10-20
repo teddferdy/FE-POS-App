@@ -4,20 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import {
-  DollarSign,
-  X,
-  Wallet,
-  Coins,
-  Landmark,
-  Smartphone,
-  RefreshCw,
-  CheckCircle2,
-  AlertCircle
-} from "lucide-react";
+import { DollarSign, X, Wallet, Coins, Landmark, AlertCircle } from "lucide-react";
 import { openCashRegister, getOpenRegisters, getTableResetPreview } from "@/services/cash-register";
 import { getLocationDetail } from "@/services/location";
-import { getWhatsAppStatus, restartWhatsApp } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
@@ -109,28 +98,6 @@ const CashRegisterOpenClose = () => {
     !!openSchedule && openSchedule.openMinutes == null && openSchedule.closeMinutes == null;
 
   const numericBalance = parseIDR(rawBalance);
-
-  const waStoreId = isSuperAdmin ? selectedStore : cookie?.activeStore || user?.store || "default";
-
-  const {
-    data: waStatus,
-    refetch: refetchWa,
-    isFetching: waLoading
-  } = useQuery(["wa-status", waStoreId], () => getWhatsAppStatus(waStoreId), {
-    refetchInterval: 5000,
-    enabled: !!waStoreId
-  });
-  const waData = waStatus?.data;
-  const waReady = waData?.ready;
-  const waQR = waData?.qrBase64;
-
-  const restartWaMut = useMutation(() => restartWhatsApp(waStoreId), {
-    onSuccess: () => {
-      toast.info("WhatsApp client restarting, QR akan muncul dalam beberapa detik");
-      setTimeout(() => refetchWa(), 2000);
-    },
-    onError: (err) => toast.error(err?.response?.data?.message || err.message)
-  });
 
   const openMut = useMutation(
     (confirmTableReset = false) =>
@@ -380,80 +347,6 @@ const CashRegisterOpenClose = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* WA Connection Status */}
-        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-          <div className="border-b border-border bg-gradient-to-r from-primary/10 via-primary/[0.03] to-transparent px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Smartphone size={18} className="text-primary" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="font-semibold text-sm">WhatsApp</h2>
-                {isSuperAdmin && waStoreId && (
-                  <p className="text-[11px] text-muted-foreground truncate">({waStoreId})</p>
-                )}
-              </div>
-            </div>
-            {waLoading ? (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
-                Loading...
-              </span>
-            ) : waReady ? (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-full">
-                <CheckCircle2 size={12} />
-                Terhubung
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-full">
-                <AlertCircle size={12} />
-                Belum Terhubung
-              </span>
-            )}
-          </div>
-          <div className="p-4 sm:p-6">
-            {waLoading && !waData ? (
-              <div className="space-y-3">
-                <Skeleton className="h-5 w-64 max-w-full mx-auto" />
-                <Skeleton className="h-4 w-48 max-w-full mx-auto" />
-              </div>
-            ) : waReady ? (
-              <div className="flex items-center justify-center gap-3">
-                <CheckCircle2 size={20} className="text-emerald-600 shrink-0" />
-                <p className="text-sm text-muted-foreground">
-                  WhatsApp terhubung — invoice bisa dikirim langsung dari POS.
-                </p>
-              </div>
-            ) : waQR ? (
-              <div className="flex flex-col items-center gap-3">
-                <img
-                  src={waQR}
-                  alt="WhatsApp QR Code"
-                  className="w-40 h-40 sm:w-48 sm:h-48 border border-border rounded-lg"
-                />
-                <p className="text-sm text-muted-foreground text-center max-w-md">
-                  Scan QR code ini dengan WhatsApp kamu untuk menghubungkan.
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => restartWaMut.mutate()}
-                  loading={restartWaMut.isLoading}>
-                  <RefreshCw size={14} className="mr-1" />
-                  QR Tidak Muncul? Klik Refresh
-                </Button>
-              </div>
-            ) : waData?.error ? (
-              <div className="flex flex-col items-center gap-3">
-                <p className="text-sm text-destructive text-center">{waData.error}</p>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-3">
-                <p className="text-sm text-muted-foreground text-center">Menunggu QR code...</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
