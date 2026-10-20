@@ -44,7 +44,10 @@ export default defineConfig({
   plugins: [react()],
   define: {
     __GIT_SHA__: JSON.stringify(gitSha),
-    __TRANSLATION_REV__: JSON.stringify(translationRev)
+    __TRANSLATION_REV__: JSON.stringify(translationRev),
+    // DR-24 D-08: public sign-up is closed unless the build sets
+    // VITE_PUBLIC_REGISTRATION_ENABLED=true (the BE has its own switch).
+    __PUBLIC_REGISTRATION__: JSON.stringify(process.env.VITE_PUBLIC_REGISTRATION_ENABLED === "true")
   },
   resolve: {
     alias: {

@@ -41,6 +41,7 @@ import {
   UserCog,
   MapPinned
 } from "lucide-react";
+import { isPublicRegistrationEnabled } from "@/utils/publicRegistration";
 
 const guideData = [
   {
@@ -55,13 +56,18 @@ const guideData = [
         descKey: "guide.auth.login.s1desc",
         actions: ["view"]
       },
-      {
-        path: "/register",
-        icon: UserPlus,
-        titleKey: "sidebar.register",
-        descKey: "guide.auth.register.s1desc",
-        actions: ["add"]
-      },
+      // D-08: shown only while public sign-up is open.
+      ...(isPublicRegistrationEnabled()
+        ? [
+            {
+              path: "/register",
+              icon: UserPlus,
+              titleKey: "sidebar.register",
+              descKey: "guide.auth.register.s1desc",
+              actions: ["add"]
+            }
+          ]
+        : []),
       {
         path: "/reset-password",
         icon: KeyRound,

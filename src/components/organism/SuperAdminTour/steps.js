@@ -54,6 +54,7 @@ import {
   BellDot,
   MapPinned
 } from "lucide-react";
+import { isPublicRegistrationEnabled } from "@/utils/publicRegistration";
 
 export const superAdminSteps = [
   // ── Header (always visible from any page) ──
@@ -1176,14 +1177,19 @@ export const superAdminSteps = [
     descKey: "guide.auth.login.s1desc",
     actionKey: "guide.dashboard.next"
   },
-  {
-    id: "auth-register",
-    page: "/register",
-    icon: UserPlus,
-    titleKey: "sidebar.register",
-    descKey: "guide.auth.register.s1desc",
-    actionKey: "guide.dashboard.next"
-  },
+  // D-08: shown only while public sign-up is open.
+  ...(isPublicRegistrationEnabled()
+    ? [
+        {
+          id: "auth-register",
+          page: "/register",
+          icon: UserPlus,
+          titleKey: "sidebar.register",
+          descKey: "guide.auth.register.s1desc",
+          actionKey: "guide.dashboard.next"
+        }
+      ]
+    : []),
   {
     id: "auth-reset",
     page: "/reset-password",
