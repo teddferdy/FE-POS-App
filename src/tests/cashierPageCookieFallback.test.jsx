@@ -28,6 +28,11 @@ jest.mock("react-i18next", () => ({
 jest.mock("sonner", () => ({
   toast: { success: jest.fn(), error: jest.fn(), info: jest.fn() }
 }));
+// Cashier table panel (header "Meja" button) — no tables in these suites.
+jest.mock("@/services/table", () => ({
+  getCashierTables: jest.fn(() => Promise.resolve({ data: [] })),
+  releaseCashierTable: jest.fn()
+}));
 jest.mock("@/services/product", () => ({
   getProductByOutlet: jest.fn(() => Promise.resolve({ data: [] })),
   getFullProductCatalog: jest.fn(() => Promise.resolve({ data: [], bundles: [] }))

@@ -6,6 +6,7 @@ import { MemoryRouter } from "react-router-dom";
 import CashierPage from "../page/cashier/CashierPage";
 import CollapsiblePanel from "../components/ui/CollapsiblePanel";
 import { canonicalLocationNavItems, withCanonicalLocationItems } from "../lib/canonical-nav";
+import { getCashierTables } from "@/services/table";
 
 // Cashier store pick asks 1 screen / 2 screens (2 = also the customer display
 // board in a new tab); order queue / parked carts are show/hide panels; Tenant
@@ -22,6 +23,11 @@ jest.mock("react-i18next", () => ({
 }));
 jest.mock("sonner", () => ({
   toast: { success: jest.fn(), error: jest.fn(), info: jest.fn() }
+}));
+// Cashier table panel (header "Meja" button) — no tables in these suites.
+jest.mock("@/services/table", () => ({
+  getCashierTables: jest.fn(() => Promise.resolve({ data: [] })),
+  releaseCashierTable: jest.fn()
 }));
 jest.mock("@/services/product", () => ({
   getProductByOutlet: jest.fn(() => Promise.resolve({ data: [] })),
@@ -212,5 +218,30 @@ describe("Location navigation category", () => {
       canManageStores: true
     });
     expect(hrefsOf(result)).toEqual(["/store-configuration"]);
+  });
+});
+
+describe("cashier table reset button (BA C-16 amended)", () => {
+  test("a kasir sees the Meja button with a badge for tables that are not available", async () => {
+    mockCookies = { user: { id: 2, roleType: "kasir", store: 5 }, activeStore: 5 };
+    getCashierTables.mockResolvedValueOnce({
+      data: [
+        { id: 1, name: "Meja 1", status: "occupied", canRelease: true },
+        { id: 2, name: "Meja 2", status: "reserved", canRelease: true },
+        { id: 3, name: "Meja 3", status: "available", canRelease: false }
+      ]
+    });
+    renderCashierPage();
+    expect(await screen.findByTestId("tables-not-available-badge")).toHaveTextContent("2");
+    expect(screen.getByText("page.cashier.tables.button")).toBeInTheDocument();
+  });
+
+  test("staff without a cashier role get no button and no request", async () => {
+    getCashierTables.mockClear();
+    mockCookies = { user: { id: 3, roleType: "user", store: 5 }, activeStore: 5 };
+    renderCashierPage();
+    await screen.findByTestId("order-queue").catch(() => null);
+    expect(screen.queryByText("page.cashier.tables.button")).not.toBeInTheDocument();
+    expect(getCashierTables).not.toHaveBeenCalled();
   });
 });

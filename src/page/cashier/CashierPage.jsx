@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ChevronLeft,
   MonitorPlay,
+  Armchair,
   Loader2
 } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
@@ -55,6 +56,8 @@ import { UserDropdown, NotificationBell } from "@/components/layout/Header";
 import { useThemeStore } from "@/state/theme";
 import { useThemeEffect } from "@/hooks/useThemeEffect";
 import ScreenModeDialog from "./components/ScreenModeDialog";
+import CashierTablePanel, { cashierTablesKey } from "./components/CashierTablePanel";
+import { getCashierTables } from "@/services/table";
 import { useLocations } from "@/queries/useLocations";
 
 const CashierPage = () => {
@@ -145,6 +148,17 @@ const CashierPage = () => {
   const [barcode, setBarcode] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [showCartMobile, setShowCartMobile] = useState(false);
+  const [showTables, setShowTables] = useState(false);
+  // Table reset (BA C-16 amended): cashier roles only; the button shows when
+  // the store has tables, with a badge for tables that are not available.
+  const canManageTables = ["kasir", "admin", "super_admin"].includes(role);
+  const { data: cashierTablesData } = useQuery(
+    cashierTablesKey(store),
+    () => getCashierTables(store),
+    { enabled: !!store && canManageTables, staleTime: 60000, refetchOnWindowFocus: false }
+  );
+  const cashierTables = cashierTablesData?.data || [];
+  const tablesNotAvailable = cashierTables.filter((tb) => tb.status !== "available").length;
   const [isOpeningBoard, setIsOpeningBoard] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
@@ -569,6 +583,30 @@ const CashierPage = () => {
                     </TooltipContent>
                   </Tooltip>
                 )}
+                {canManageTables && cashierTables.length > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="relative rounded-xl border-border/60 bg-card/60 hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all"
+                        onClick={() => setShowTables(true)}>
+                        <Armchair size={16} />
+                        <span className="hidden lg:inline">{t("page.cashier.tables.button")}</span>
+                        {tablesNotAvailable > 0 && (
+                          <span
+                            data-testid="tables-not-available-badge"
+                            className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-[10px] font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center">
+                            {tablesNotAvailable}
+                          </span>
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="center">
+                      {t("page.cashier.tables.buttonTooltip")}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
@@ -794,6 +832,9 @@ const CashierPage = () => {
 
         {/* F4-01: settles an EXISTING order (e.g. a QR order from the queue
             above) in place — never creates a new order via CheckoutModal. */}
+        {showTables && store && (
+          <CashierTablePanel store={store} onClose={() => setShowTables(false)} />
+        )}
         <ScreenModeDialog
           store={screenModeStore}
           onClose={() => setScreenModeStore(null)}
