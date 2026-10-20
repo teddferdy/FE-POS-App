@@ -4,7 +4,7 @@ import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { format } from "date-fns";
 import DailyReport from "../page/report/DailyReport";
-import { getDailyReport } from "../services/report";
+import { getReportData } from "../services/reportData";
 import { getAllLocation } from "../services/location";
 
 class ResizeObserverStub {
@@ -23,7 +23,9 @@ if (!Element.prototype.scrollIntoView) {
 let mockCookieUser = { roleType: "super_admin" };
 
 jest.mock("react-router-dom", () => ({
-  useNavigate: () => jest.fn()
+  useNavigate: () => jest.fn(),
+
+  Link: ({ to, children }) => <a href={to}>{children}</a>
 }));
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
@@ -34,8 +36,9 @@ jest.mock("sonner", () => ({
 jest.mock("react-cookie", () => ({
   useCookies: () => [{ user: mockCookieUser }]
 }));
-jest.mock("@/services/report", () => ({
-  getDailyReport: jest.fn()
+// The table loads GET /report/data/daily — the rows the export holds.
+jest.mock("@/services/reportData", () => ({
+  getReportData: jest.fn()
 }));
 jest.mock("@/services/location", () => ({
   getAllLocation: jest.fn()
@@ -89,7 +92,7 @@ const selectStore = async (storeName) => {
 };
 
 beforeEach(() => {
-  getDailyReport.mockReset();
+  getReportData.mockReset();
   getAllLocation.mockReset();
 });
 
@@ -97,7 +100,7 @@ describe("Daily Report — super admin store selector", () => {
   test("Test 1: super_admin sees a store selector with All Stores + store options", async () => {
     mockCookieUser = { roleType: "super_admin" };
     seedStores();
-    getDailyReport.mockResolvedValue({ data: [] });
+    getReportData.mockResolvedValue({ columns: [], rows: [] });
 
     renderPage();
 
@@ -113,7 +116,7 @@ describe("Daily Report — super admin store selector", () => {
   test("Test 2: super_admin selecting a specific store scopes the request", async () => {
     mockCookieUser = { roleType: "super_admin" };
     seedStores();
-    getDailyReport.mockResolvedValue({ data: [] });
+    getReportData.mockResolvedValue({ columns: [], rows: [] });
 
     renderPage();
     await screen.findByRole("combobox");
@@ -121,19 +124,19 @@ describe("Daily Report — super admin store selector", () => {
     await selectStore("Toko A");
 
     await waitFor(() =>
-      expect(getDailyReport).toHaveBeenCalledWith(expect.objectContaining({ store: "1" }))
+      expect(getReportData).toHaveBeenCalledWith("daily", expect.objectContaining({ store: "1" }))
     );
   });
 
   test("Test 3: super_admin with All Stores sends no store param", async () => {
     mockCookieUser = { roleType: "super_admin" };
     seedStores();
-    getDailyReport.mockResolvedValue({ data: [] });
+    getReportData.mockResolvedValue({ columns: [], rows: [] });
 
     renderPage();
 
-    await waitFor(() => expect(getDailyReport).toHaveBeenCalled());
-    const call = getDailyReport.mock.calls[0][0];
+    await waitFor(() => expect(getReportData).toHaveBeenCalled());
+    const call = getReportData.mock.calls[0][1];
     expect(call.store).toBeUndefined();
     const today = format(new Date(), "yyyy-MM-dd");
     expect(call).toEqual({ startDate: today, endDate: today });
@@ -142,55 +145,58 @@ describe("Daily Report — super admin store selector", () => {
   test("Test 4: admin (own store) sees no selector and no explicit store param", async () => {
     mockCookieUser = { roleType: "admin", store: 1 };
     seedStores();
-    getDailyReport.mockResolvedValue({ data: [] });
+    getReportData.mockResolvedValue({ columns: [], rows: [] });
 
     renderPage();
 
-    await waitFor(() => expect(getDailyReport).toHaveBeenCalled());
+    await waitFor(() => expect(getReportData).toHaveBeenCalled());
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
     expect(screen.queryByText("page.category.form.storeSection.allStores")).not.toBeInTheDocument();
-    const call = getDailyReport.mock.calls[0][0];
+    const call = getReportData.mock.calls[0][1];
     expect(call.store).toBeUndefined();
   });
 
   test("Test 5: user (own store) sees no selector and no explicit store param", async () => {
     mockCookieUser = { roleType: "user", store: 1 };
     seedStores();
-    getDailyReport.mockResolvedValue({ data: [] });
+    getReportData.mockResolvedValue({ columns: [], rows: [] });
 
     renderPage();
 
-    await waitFor(() => expect(getDailyReport).toHaveBeenCalled());
+    await waitFor(() => expect(getReportData).toHaveBeenCalled());
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
     expect(screen.queryByText("page.category.form.storeSection.allStores")).not.toBeInTheDocument();
-    const call = getDailyReport.mock.calls[0][0];
+    const call = getReportData.mock.calls[0][1];
     expect(call.store).toBeUndefined();
   });
 
-  test("Test 6: existing daily report behavior preserved for super_admin", async () => {
+  test("Test 6: the table shows the settings columns, in order, with export formatting", async () => {
     mockCookieUser = { roleType: "super_admin" };
     seedStores();
-    getDailyReport.mockResolvedValue({
-      data: [
-        {
-          id: 1,
-          tanggal: "2026-09-13",
-          totalTransaksi: 5,
-          totalPenjualanBersih: 100000,
-          totalHpp: 40000,
-          foodCostPersen: 40,
-          grossProfit: 60000,
-          netProfit: 50000,
-          totalCovers: 8
-        }
-      ]
+    getReportData.mockResolvedValue({
+      columns: [
+        { key: "netProfit", label: "Laba Bersih", type: "currency", align: "right" },
+        { key: "date", label: "Tanggal", type: "date", align: "left" }
+      ],
+      rows: [{ date: "2026-09-13", netProfit: 50000, totalHpp: 40000 }],
+      totals: { netProfit: 50000 },
+      accentColor: "#1d4ed8"
     });
 
     renderPage();
 
-    await screen.findByText("2026-09-13");
+    await screen.findByText("13 Sep 2026");
+    const headers = screen.getAllByRole("columnheader").map((th) => th.textContent);
+    expect(headers).toEqual([
+      "page.reportSettings.columnLabels.daily.netProfit",
+      "page.reportSettings.columnLabels.daily.date"
+    ]);
+    // hidden columns are not rendered even though the row carries them
+    expect(screen.queryByText("Rp 40.000")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Rp 50.000")).toHaveLength(2); // row + totals
     const today = format(new Date(), "yyyy-MM-dd");
-    expect(getDailyReport).toHaveBeenCalledWith(
+    expect(getReportData).toHaveBeenCalledWith(
+      "daily",
       expect.objectContaining({ startDate: today, endDate: today })
     );
   });

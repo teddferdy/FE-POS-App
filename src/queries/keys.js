@@ -7,5 +7,10 @@ export const qk = {
     all: () => ["location-options"],
     // "active" = default BE (status selain "all" → hanya toko aktif)
     list: (status = "active") => ["location-options", status === "all" ? "all" : "active"]
+  },
+  reportData: {
+    // invalidated when /report/settings saves, so tables pick up new columns
+    all: () => ["report-data"],
+    detail: (key, params = {}) => ["report-data", key, params]
   }
 };

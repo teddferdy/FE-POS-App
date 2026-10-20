@@ -1,20 +1,14 @@
 import React, { useState } from "react";
-import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { getDailyReport } from "@/services/report";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
-import { formatCurrency } from "@/utils/reportUtils";
 import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import StoreFilter from "@/components/ui/StoreFilter";
 import ExportButtons from "@/components/organism/ExportButtons";
-import AbortController from "@/components/organism/abort-controller";
+import ReportTable from "@/components/organism/ReportTable";
 import NoStore from "@/components/ui/NoStore";
-import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
 
 const DailyReport = () => {
@@ -33,18 +27,12 @@ const DailyReport = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["daily-report", startDate, endDate, storeId],
-    () =>
-      getDailyReport({
-        startDate: format(startDate, "yyyy-MM-dd"),
-        endDate: format(endDate, "yyyy-MM-dd"),
-        ...storeParams
-      }),
-    {}
-  );
-
-  const reports = data?.data || [];
+  // One set of params for the table and the export, so both show the same.
+  const reportParams = {
+    startDate: format(startDate, "yyyy-MM-dd"),
+    endDate: format(endDate, "yyyy-MM-dd"),
+    ...storeParams
+  };
 
   return (
     <div className="space-y-6">
@@ -75,14 +63,7 @@ const DailyReport = () => {
               t={t}
             />
           )}
-          <ExportButtons
-            reportKey="daily"
-            buildParams={() => ({
-              startDate: format(startDate, "yyyy-MM-dd"),
-              endDate: format(endDate, "yyyy-MM-dd"),
-              ...storeParams
-            })}
-          />
+          <ExportButtons reportKey="daily" buildParams={() => reportParams} />
           <DatePicker date={startDate} setDate={setStartDate} />
           <DatePicker date={endDate} setDate={setEndDate} minDate={startDate} />
         </div>
@@ -91,77 +72,13 @@ const DailyReport = () => {
       {locData && (locData?.data || []).length === 0 ? (
         <NoStore />
       ) : (
-        <>
-          {isError ? (
-            <AbortController refetch={refetch} />
-          ) : isLoading ? (
-            <div className="bg-card rounded-xl border border-border p-4">
-              <div className="flex items-start justify-between mb-3">
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-4 w-4 rounded" />
-              </div>
-              <Skeleton className="h-8 w-28 mb-2" />
-              <Skeleton className="h-3 w-20" />
-            </div>
-          ) : reports.length === 0 ? (
-            <div className="bg-card rounded-xl border border-border p-12 text-center">
-              <p className="text-muted-foreground">{t("page.report.daily.noData")}</p>
-            </div>
-          ) : (
-            <Card className="overflow-hidden">
-              <HorizontalScrollArea>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-muted/60 border-b">
-                      <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase">
-                        {t("page.report.daily.table.date")}
-                      </th>
-                      <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
-                        {t("page.report.daily.table.transactions")}
-                      </th>
-                      <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
-                        {t("page.report.daily.table.sales")}
-                      </th>
-                      <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
-                        {t("page.report.daily.table.hpp")}
-                      </th>
-                      <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
-                        {t("page.report.daily.table.foodCost")}
-                      </th>
-                      <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
-                        {t("page.report.daily.table.grossProfit")}
-                      </th>
-                      <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
-                        {t("page.report.daily.table.netProfit")}
-                      </th>
-                      <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
-                        {t("page.report.daily.table.covers")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reports.map((r) => (
-                      <tr key={r.id} className="border-b border-muted/30 hover:bg-muted/15">
-                        <td className="px-3 py-3">{r.tanggal}</td>
-                        <td className="px-3 py-3 text-right">{r.totalTransaksi}</td>
-                        <td className="px-3 py-3 text-right">
-                          {formatCurrency(r.totalPenjualanBersih)}
-                        </td>
-                        <td className="px-3 py-3 text-right">{formatCurrency(r.totalHpp)}</td>
-                        <td className="px-3 py-3 text-right">{r.foodCostPersen}%</td>
-                        <td className="px-3 py-3 text-right">{formatCurrency(r.grossProfit)}</td>
-                        <td className="px-3 py-3 text-right font-semibold">
-                          {formatCurrency(r.netProfit)}
-                        </td>
-                        <td className="px-3 py-3 text-right">{r.totalCovers}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </HorizontalScrollArea>
-            </Card>
-          )}
-        </>
+        <ReportTable
+          reportKey="daily"
+          params={reportParams}
+          title={t("page.report.daily.title")}
+          emptyText={t("page.report.daily.noData")}
+          signedKeys={["grossProfit", "netProfit"]}
+        />
       )}
     </div>
   );

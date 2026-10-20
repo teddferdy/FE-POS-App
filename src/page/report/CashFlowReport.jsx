@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency } from "@/utils/reportUtils";
 import ExportButtons from "@/components/organism/ExportButtons";
+import ReportTable from "@/components/organism/ReportTable";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 import { useLocations } from "@/queries/useLocations";
@@ -27,14 +28,14 @@ const CashFlowReport = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["cash-flow", startDate, endDate],
-    () =>
-      getCashFlow({
-        startDate: format(startDate, "yyyy-MM-dd"),
-        endDate: format(endDate, "yyyy-MM-dd")
-      }),
-    {}
+  // Same params for the cards, the detail table and the export.
+  const reportParams = {
+    startDate: format(startDate, "yyyy-MM-dd"),
+    endDate: format(endDate, "yyyy-MM-dd")
+  };
+
+  const { data, isLoading, isError, refetch } = useQuery(["cash-flow", reportParams], () =>
+    getCashFlow(reportParams)
   );
 
   const cf = data?.data || {};
@@ -132,13 +133,7 @@ const CashFlowReport = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <ExportButtons
-            reportKey="cashFlow"
-            buildParams={() => ({
-              startDate: format(startDate, "yyyy-MM-dd"),
-              endDate: format(endDate, "yyyy-MM-dd")
-            })}
-          />
+          <ExportButtons reportKey="cashFlow" buildParams={() => reportParams} />
           <DatePicker date={startDate} setDate={setStartDate} />
           <DatePicker date={endDate} setDate={setEndDate} minDate={startDate} />
         </div>
@@ -177,6 +172,11 @@ const CashFlowReport = () => {
                 </h3>
                 {renderCards(outflowCards)}
               </div>
+              <ReportTable
+                reportKey="cashFlow"
+                params={reportParams}
+                title={t("page.report.cashFlow.detailTitle")}
+              />
             </div>
           )}
         </>
