@@ -8449,5 +8449,10 @@
   "page.bom.list.deductsStock": "Deducts stock when sold",
   "page.bom.list.notDeductingStock": "Does not deduct stock — sales of this menu are refused",
   "page.bom.list.pendingConfirmation": "Awaiting owner confirmation",
-  "page.ingredient.stockState.unrecorded": "Recorded value without stock history (unverified)"
+  "page.ingredient.stockState.unrecorded": "Recorded value without stock history (unverified)",
+  "page.cashier.receipt.paperSize": "Paper size",
+  "page.cashier.receipt.summary": "Payment summary",
+  "page.cashier.receipt.totalPaid": "Total paid",
+  "page.cashier.receipt.paidWith": "Payment method",
+  "page.cashier.receipt.preview": "Receipt preview"
 }

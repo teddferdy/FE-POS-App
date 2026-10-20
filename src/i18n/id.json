@@ -8449,5 +8449,10 @@
   "page.bom.list.deductsStock": "Memotong stok saat terjual",
   "page.bom.list.notDeductingStock": "Tidak memotong stok — penjualan menu ini ditolak",
   "page.bom.list.pendingConfirmation": "Menunggu konfirmasi pemilik",
-  "page.ingredient.stockState.unrecorded": "Nilai tercatat tanpa riwayat stok (belum terverifikasi)"
+  "page.ingredient.stockState.unrecorded": "Nilai tercatat tanpa riwayat stok (belum terverifikasi)",
+  "page.cashier.receipt.paperSize": "Ukuran kertas",
+  "page.cashier.receipt.summary": "Ringkasan pembayaran",
+  "page.cashier.receipt.totalPaid": "Total dibayar",
+  "page.cashier.receipt.paidWith": "Metode pembayaran",
+  "page.cashier.receipt.preview": "Pratinjau struk"
 }

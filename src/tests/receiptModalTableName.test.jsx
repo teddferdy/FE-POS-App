@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import ReceiptModal from "../page/cashier/components/ReceiptModal";
@@ -90,6 +90,6 @@ describe("ReceiptModal table display (C11)", () => {
     expect(() =>
       renderModal({ id: 603, orderNumber: "ORD-603", total: 50000, items: [], tableId: null })
     ).not.toThrow();
-    expect(screen.getByText("ORD-603")).toBeInTheDocument();
+    expect(within(screen.getByTestId("receipt-paper")).getByText("ORD-603")).toBeInTheDocument();
   });
 });

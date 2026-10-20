@@ -52,6 +52,29 @@ export const PAYMENT_METHOD_META = Object.freeze({
 export const paymentMethodMeta = (code) =>
   safeGet(PAYMENT_METHOD_META, code, PAYMENT_METHOD_META.UNRECONCILED);
 
+// Human label of a stored payment method for receipts: canonical codes
+// (E_WALLET) and the cashier's lowercase types (e-wallet, debit, transfer)
+// both resolve to the same label; an unknown method shows as typed.
+const PAYMENT_ALIASES = Object.freeze({
+  EWALLET: "E_WALLET",
+  DEBIT: "CARD",
+  CREDIT: "CARD",
+  TRANSFER: "BANK_TRANSFER"
+});
+export const paymentMethodLabel = (method) => {
+  if (!method || method === "-") return "";
+  const code = String(method)
+    .trim()
+    .toUpperCase()
+    .replace(/[-\s]+/g, "_");
+  const canonical = safeGet(PAYMENT_ALIASES, code, code);
+  if (Object.prototype.hasOwnProperty.call(PAYMENT_METHOD_META, canonical)) {
+    return PAYMENT_METHOD_META[canonical].label;
+  }
+  const text = String(method).trim();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
+
 // DR-23 §D / §M: the configured payment types whose payment must carry a
 // reference — every method but cash and points (BE requiresTenderReference:
 // CARD = debit/credit, BANK_TRANSFER, E_WALLET, QRIS, OTHER, where OTHER's

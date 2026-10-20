@@ -82,14 +82,31 @@ export const buildAddressLines = (fields = {}, visibility = {}) => {
   const lines = [];
   if (on("address") && fields.address) lines.push(fields.address);
   if (on("locationDetail") && fields.locationDetail) lines.push(fields.locationDetail);
+  // A full street address (e.g. from a map pick) often already names the
+  // village/district/city/province and postal code — print each only once.
+  const written = `${on("address") ? fields.address || "" : ""} ${
+    on("locationDetail") ? fields.locationDetail || "" : ""
+  }`.toLowerCase();
+  const alreadyWritten = (name) => {
+    const core = String(name)
+      .toLowerCase()
+      .replace(
+        /^(kota administrasi|kabupaten administrasi|kabupaten|kota|kecamatan|kelurahan|desa|provinsi)\s+/,
+        ""
+      )
+      .trim();
+    return core.length > 0 && written.includes(core);
+  };
   const region = [
     on("village") && fields.village,
     on("district") && fields.district,
     on("city") && fields.city,
     on("province") && fields.province
-  ].filter(Boolean);
+  ].filter((name) => name && !alreadyWritten(name));
   if (region.length) lines.push(region.join(", "));
-  if (on("postalCode") && fields.postalCode) lines.push(`Kode Pos ${fields.postalCode}`);
+  if (on("postalCode") && fields.postalCode && !written.includes(String(fields.postalCode))) {
+    lines.push(`Kode Pos ${fields.postalCode}`);
+  }
   if (on("phone") && fields.phone) lines.push(`Telp ${fields.phone}`);
   if (on("email") && fields.email) lines.push(fields.email);
   return lines;
