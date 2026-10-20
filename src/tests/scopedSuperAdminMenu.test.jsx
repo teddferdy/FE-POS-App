@@ -151,6 +151,12 @@ describe("bakso_admin POS menu and actions", () => {
     expect(hasMenuAccess(scoped, "/accounting")).toBe(false);
     expect(canAccess(fullSuper, "/expense", "view")).toBe(true);
   });
+
+  test("Tenant follows the /tenant entry in bakso_admin's accessMenu", () => {
+    expect(hasMenuAccess(scoped, "/tenant", ["view"])).toBe(true);
+    expect(canAccess(scoped, "/tenant", "view")).toBe(true);
+    expect(canAccess(fullSuper, "/tenant", "view")).toBe(true);
+  });
 });
 
 describe("action aliases", () => {
