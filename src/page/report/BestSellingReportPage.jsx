@@ -54,7 +54,7 @@ const BestSellingReportPage = () => {
             {t("page.report.bestSeller.description")}
           </p>
         </div>
-        <ExportButtons reportKey="bestSeller" />
+        <ExportButtons reportKey="bestSeller" buildParams={() => ({ limit: 10 })} />
       </div>
 
       {locData && (locData?.data || []).length === 0 ? (

@@ -497,6 +497,60 @@ describe("CheckoutModal — D2 pending QRIS is bound to its checkout", () => {
     expect(screen.queryByTestId("qris-invalidated")).not.toBeInTheDocument();
   });
 
+  // Regression: a SUCCESSFUL QRIS showed the red "QRIS dibatalkan karena
+  // checkout berubah" toast. CashierPage's onComplete closes the modal
+  // (useState, batched) and resets the cart (zustand → useSyncExternalStore,
+  // flushed synchronously), so the modal rendered once more with an empty
+  // cart while the QRIS was still pending — which the D2 guard read as a
+  // checkout change.
+  test("a confirmed QRIS never reports itself as cancelled when the cart is reset", async () => {
+    const { create } = jest.requireActual("zustand");
+    const useCart = create(() => ({
+      items: [
+        {
+          id: "p1",
+          cartKey: "p1_",
+          nameProduct: "Kopi",
+          price: 100000,
+          count: 1,
+          totalPrice: 100000,
+          priceAuthoritative: true,
+          priceOverridden: false
+        }
+      ]
+    }));
+    const onComplete = jest.fn();
+    const CashierLike = () => {
+      const items = useCart((st) => st.items);
+      const [open, setOpen] = React.useState(true);
+      return open ? (
+        <CheckoutModal
+          items={items}
+          store="1"
+          cashierName="Kasir"
+          cashierId={1}
+          onClose={jest.fn()}
+          onTableChange={jest.fn()}
+          onComplete={(result) => {
+            onComplete(result);
+            setOpen(false);
+            useCart.setState({ items: [] });
+          }}
+        />
+      ) : null;
+    };
+    render(
+      <QueryClientProvider client={newQueryClient()}>
+        <CashierLike />
+      </QueryClientProvider>
+    );
+    await startQris();
+    fireEvent.click(qrisConfirm());
+    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1));
+    expect(toast.error).not.toHaveBeenCalledWith("page.cashier.qris.invalidated");
+    expect(toast.success).toHaveBeenCalledWith("page.cashier.transactionSuccess");
+  });
+
   test("a promo code change while QRIS is pending voids it", async () => {
     renderModal();
     await startQris();

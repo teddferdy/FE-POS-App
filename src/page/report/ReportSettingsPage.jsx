@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
+import { useQueryClient } from "react-query";
 import { toast } from "sonner";
 import {
   Save,
@@ -7,11 +9,17 @@ import {
   ChevronUp,
   ChevronDown,
   CalendarDays,
-  Bitcoin,
+  Banknote,
+  Hash,
+  Percent,
   Type,
-  Store,
+  Image as ImageIcon,
   Phone,
   MapPin,
+  Mail,
+  Info,
+  RotateCcw,
+  Check,
   FileBarChart,
   FileSpreadsheet,
   FileText
@@ -20,6 +28,7 @@ import { getReportConfigMeta, getReportConfigs, saveReportConfig } from "@/servi
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import EmptyState from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,55 +40,92 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import { formatCurrency } from "@/utils/reportUtils";
-import ExcelPreviewSummary from "@/components/report/ExcelPreviewSummary";
-import ExcelPreviewRanking from "@/components/report/ExcelPreviewRanking";
-import ExcelPreviewStatement from "@/components/report/ExcelPreviewStatement";
-import ExcelPreviewRoster from "@/components/report/ExcelPreviewRoster";
-import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import ReportPreview from "@/components/report/ReportPreview";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { qk } from "@/queries/keys";
+import { columnLabel, reportLabel } from "@/utils/reportFormat";
+
+const DEFAULT_ACCENT = "#0f172a";
+const DEFAULT_BRANDING = { showLogo: true, showAddress: true, showPhone: true, showEmail: true };
 
 const ACCENTS = [
-  { value: "#0f172a", name: "Slate" },
-  { value: "#1d4ed8", name: "Blue" },
-  { value: "#15803d", name: "Green" },
-  { value: "#b45309", name: "Amber" },
-  { value: "#be123c", name: "Rose" },
-  { value: "#6d28d9", name: "Violet" }
+  { value: "#0f172a", key: "slate" },
+  { value: "#1d4ed8", key: "blue" },
+  { value: "#15803d", key: "green" },
+  { value: "#b45309", key: "amber" },
+  { value: "#be123c", key: "rose" },
+  { value: "#6d28d9", key: "violet" }
 ];
 
-const TYPE_ICONS = {
-  date: CalendarDays,
-  currency: Bitcoin,
-  text: Type
+const TYPE_META = {
+  date: {
+    Icon: CalendarDays,
+    style: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+  },
+  currency: {
+    Icon: Banknote,
+    style: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+  },
+  number: {
+    Icon: Hash,
+    style: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+  },
+  percent: {
+    Icon: Percent,
+    style: "bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300"
+  },
+  string: { Icon: Type, style: "bg-muted text-muted-foreground" }
 };
 
-const TYPE_STYLES = {
-  date: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300",
-  currency: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
-  text: "bg-muted text-muted-foreground"
-};
-
-const SAMPLE_ROWS = [
-  { date: "01/09/2026", currency: 1285000, text: "Customer A" },
-  { date: "02/09/2026", currency: 940000, text: "Customer B" },
-  { date: "03/09/2026", currency: 1560000, text: "Customer C" }
+const BRANDING_FIELDS = [
+  { field: "showLogo", Icon: ImageIcon },
+  { field: "showAddress", Icon: MapPin },
+  { field: "showPhone", Icon: Phone },
+  { field: "showEmail", Icon: Mail }
 ];
+
+// The editable settings of one report, from its saved config (or defaults).
+const draftFrom = (report, saved) => {
+  const known = (report?.columns || []).map((c) => c.key);
+  const selected = (saved?.selectedColumns || []).filter((key) => known.includes(key));
+  return {
+    selected: selected.length ? selected : known,
+    accent: saved?.accentColor || DEFAULT_ACCENT,
+    branding: { ...DEFAULT_BRANDING, ...(saved?.branding || {}) }
+  };
+};
+
+const sameDraft = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 const ReportSettingsPage = () => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
 
   const [meta, setMeta] = useState([]);
   const [configs, setConfigs] = useState({});
   const [activeKey, setActiveKey] = useState(null);
-  const [selected, setSelected] = useState([]);
-  const [accent, setAccent] = useState("#0f172a");
-  const [branding, setBranding] = useState({ showLogo: true, showAddress: true, showPhone: true });
+  const [draft, setDraft] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [dirty, setDirty] = useState(false);
+  const [pendingKey, setPendingKey] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTab, setPreviewTab] = useState("pdf");
+
+  const activeReport = useMemo(() => meta.find((r) => r.key === activeKey), [meta, activeKey]);
+  const savedDraft = useMemo(
+    () => (activeReport ? draftFrom(activeReport, configs[activeKey]) : null),
+    [activeReport, configs, activeKey]
+  );
+  const dirty = !!draft && !!savedDraft && !sameDraft(draft, savedDraft);
+  useUnsavedChanges(dirty);
+
+  const openReport = (key, cfgMap = configs, reportList = meta) => {
+    const report = reportList.find((r) => r.key === key);
+    setActiveKey(key);
+    setDraft(report ? draftFrom(report, cfgMap[key]) : null);
+  };
 
   const loadReports = () => {
     setLoading(true);
@@ -88,13 +134,16 @@ const ReportSettingsPage = () => {
       try {
         const [metaRes, configRes] = await Promise.all([getReportConfigMeta(), getReportConfigs()]);
         const metaList = metaRes.data || [];
-        setMeta(metaList);
         const cfgMap = {};
         (configRes.data || []).forEach((r) => {
           cfgMap[r.key] = r.config;
         });
+        setMeta(metaList);
         setConfigs(cfgMap);
-        if (metaList[0]) selectReport(metaList[0].key, cfgMap[metaList[0].key], metaList);
+        // ?report=<key> comes from the "Column settings" link on a report page
+        const requested = searchParams.get("report");
+        const first = metaList.find((r) => r.key === requested) || metaList[0];
+        if (first) openReport(first.key, cfgMap, metaList);
       } catch (err) {
         // A failed fetch otherwise left `meta` at its initial empty array,
         // rendering exactly like "no report types configured" — with no
@@ -111,65 +160,56 @@ const ReportSettingsPage = () => {
     loadReports();
   }, []);
 
-  const selectReport = (key, cfg, reportList = meta) => {
-    setActiveKey(key);
-    const report = reportList.find((r) => r.key === key);
-    const saved = cfg || configs[key] || {};
-    setAccent(saved.accentColor || "#0f172a");
-    setBranding({ showLogo: true, showAddress: true, showPhone: true, ...(saved.branding || {}) });
-    setSelected(saved.selectedColumns || report?.columns?.map((col) => col.key) || []);
-    setDirty(false);
+  // Switching report with unsaved changes asks first instead of dropping them.
+  const requestReport = (key) => {
+    if (key === activeKey) return;
+    if (dirty) setPendingKey(key);
+    else openReport(key);
   };
 
+  const update = (patch) => setDraft((prev) => ({ ...prev, ...patch }));
+
   const toggleColumn = (key) => {
-    setSelected((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
-    setDirty(true);
+    const { selected } = draft;
+    if (selected.includes(key)) {
+      if (selected.length === 1) {
+        toast.error(t("page.reportSettings.requiredColumn"));
+        return;
+      }
+      update({ selected: selected.filter((k) => k !== key) });
+    } else {
+      update({ selected: [...selected, key] });
+    }
   };
 
   const moveColumn = (key, dir) => {
-    setSelected((prev) => {
-      const idx = prev.indexOf(key);
-      const swap = idx + dir;
-      if (idx < 0 || swap < 0 || swap >= prev.length) return prev;
-      const next = [...prev];
-      [next[idx], next[swap]] = [next[swap], next[idx]];
-      return next;
-    });
-    setDirty(true);
+    const next = [...draft.selected];
+    const idx = next.indexOf(key);
+    const swap = idx + dir;
+    if (idx < 0 || swap < 0 || swap >= next.length) return;
+    [next[idx], next[swap]] = [next[swap], next[idx]];
+    update({ selected: next });
   };
 
-  const handleAccentChange = (value) => {
-    setAccent(value);
-    setDirty(true);
-  };
-
-  const handleBrandingChange = (field) => (checked) => {
-    setBranding((prev) => ({ ...prev, [field]: checked }));
-    setDirty(true);
-  };
-
-  const activeReport = useMemo(() => meta.find((r) => r.key === activeKey), [meta, activeKey]);
-
-  const orderedColumns = useMemo(
-    () =>
-      activeReport
-        ? selected.map((k) => activeReport.columns.find((c) => c.key === k)).filter(Boolean)
-        : [],
-    [activeReport, selected]
-  );
+  const resetToDefault = () => update(draftFrom(activeReport, null));
 
   const handleSave = async () => {
-    if (!activeKey) return;
-    if (selected.length === 0) {
+    if (!activeKey || !draft) return;
+    if (draft.selected.length === 0) {
       toast.error(t("page.reportSettings.requiredColumn"));
       return;
     }
     setSaving(true);
     try {
-      const config = { selectedColumns: selected, accentColor: accent, branding };
+      const config = {
+        selectedColumns: draft.selected,
+        accentColor: draft.accent,
+        branding: draft.branding
+      };
       await saveReportConfig(activeKey, config);
       setConfigs((prev) => ({ ...prev, [activeKey]: config }));
-      setDirty(false);
+      // report tables pick up the new columns right away
+      queryClient.invalidateQueries(qk.reportData.all());
       toast.success(t("common.success"), { description: t("page.reportSettings.saved") });
     } catch (err) {
       toast.error(t("common.error"), { description: err?.message });
@@ -178,10 +218,29 @@ const ReportSettingsPage = () => {
     }
   };
 
-  const renderPreviewCell = (type, row) => {
-    if (type === "currency") return formatCurrency(row.currency);
-    if (type === "date") return row.date;
-    return row.text;
+  const columnsByKey = useMemo(
+    () => Object.fromEntries((activeReport?.columns || []).map((c) => [c.key, c])),
+    [activeReport]
+  );
+  const selectedColumns = draft ? draft.selected.map((k) => columnsByKey[k]).filter(Boolean) : [];
+  const hiddenColumns = (activeReport?.columns || []).filter(
+    (c) => !draft?.selected.includes(c.key)
+  );
+  const activeLabel = activeReport ? reportLabel(t, activeReport.key, activeReport.label) : "";
+  const previewColumns = selectedColumns.map((col) => ({
+    ...col,
+    label: columnLabel(t, activeKey, col)
+  }));
+
+  const typePill = (col) => {
+    const { Icon, style } = TYPE_META[col.type] || TYPE_META.string;
+    return (
+      <span
+        className={`inline-flex flex-shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${style}`}>
+        <Icon size={11} />
+        {t(`page.reportSettings.columnType.${col.type}`)}
+      </span>
+    );
   };
 
   return (
@@ -201,191 +260,293 @@ const ReportSettingsPage = () => {
           <Eye size={16} />
           {t("page.reportSettings.preview")}
         </Button>
-        <Button onClick={handleSave} loading={saving}>
+        <Button onClick={handleSave} loading={saving} disabled={!activeReport || !dirty}>
           <Save size={16} />
           {t("common.save")}
         </Button>
       </PageHeader>
 
-      {dirty && activeReport && (
-        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
-          <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
-          {t("page.reportSettings.unsaved")}
-        </div>
-      )}
+      <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
+        <Info size={16} className="mt-0.5 shrink-0" />
+        <p>{t("page.reportSettings.appliesNote")}</p>
+      </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="w-full lg:w-1/4">
-          <div className="rounded-xl border border-border bg-card p-4 space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <aside className="w-full lg:w-72 lg:shrink-0">
+          <div className="space-y-1 rounded-xl border border-border bg-card p-3">
+            <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {t("page.reportSettings.reports")}
             </p>
             {loading ? (
               <div className="space-y-2">
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-9 rounded-lg" />
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-11 rounded-lg" />
                 ))}
               </div>
             ) : loadError ? (
-              <div className="text-center py-4 space-y-2">
+              <div className="space-y-2 py-4 text-center">
                 <p className="text-xs text-muted-foreground">{t("common.loadError")}</p>
                 <Button variant="outline" size="sm" onClick={loadReports}>
                   {t("common.retry")}
                 </Button>
               </div>
             ) : (
-              meta.map((r) => (
-                <button
-                  key={r.key}
-                  onClick={() => selectReport(r.key)}
-                  className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    activeKey === r.key ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                  }`}>
-                  {r.label}
-                </button>
-              ))
+              meta.map((r) => {
+                const active = activeKey === r.key;
+                return (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => requestReport(r.key)}
+                    aria-current={active ? "page" : undefined}
+                    className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                      active ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                    }`}>
+                    <span className="min-w-0 truncate font-medium">
+                      {reportLabel(t, r.key, r.label)}
+                    </span>
+                    {active && dirty ? (
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full bg-amber-400"
+                        title={t("page.reportSettings.unsaved")}
+                      />
+                    ) : configs[r.key] ? (
+                      <span
+                        className={`shrink-0 text-[10px] font-medium ${active ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                        {t("page.reportSettings.customized")}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })
             )}
           </div>
-        </div>
+        </aside>
 
-        <div className="w-full lg:w-3/4 space-y-6">
-          {activeReport ? (
+        <div className="min-w-0 flex-1 space-y-6">
+          {activeReport && draft ? (
             <>
-              <div className="rounded-xl border border-border bg-card p-6">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <h2 className="text-lg font-semibold">{activeReport.label}</h2>
+              {dirty && (
+                <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+                  <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  {t("page.reportSettings.unsavedHint")}
+                </div>
+              )}
+
+              <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-semibold">{activeLabel}</h2>
                     <p className="text-sm text-muted-foreground">
                       {t("page.reportSettings.columnHint")}
                     </p>
                   </div>
-                  <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                    {selected.length} {t("page.reportSettings.selectedCount")}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                      {t("page.reportSettings.selectedCount", {
+                        count: draft.selected.length,
+                        total: activeReport.columns.length
+                      })}
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={resetToDefault}>
+                      <RotateCcw size={14} />
+                      {t("page.reportSettings.resetDefault")}
+                    </Button>
+                  </div>
                 </div>
-                <div className="mt-4 space-y-2">
-                  {activeReport.columns.map((col) => {
-                    const TypeIcon = TYPE_ICONS[col.type] || Type;
-                    const selectedColumn = selected.includes(col.key);
+
+                <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("page.reportSettings.shownColumns")}
+                </p>
+                <ol className="space-y-2">
+                  {selectedColumns.map((col, index) => {
+                    const label = columnLabel(t, activeKey, col);
                     return (
-                      <div
+                      <li
                         key={col.key}
-                        className={`flex items-center justify-between rounded-lg border px-3 py-2 transition-colors ${
-                          selectedColumn
-                            ? "border-border bg-card"
-                            : "border-dashed border-border/50"
-                        }`}>
+                        className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2">
                         <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-sm">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold tabular-nums text-muted-foreground">
+                            {index + 1}
+                          </span>
                           <Checkbox
-                            checked={selectedColumn}
+                            checked
                             onCheckedChange={() => toggleColumn(col.key)}
-                            aria-label={col.label}
+                            aria-label={label}
                           />
-                          <span
-                            className={`truncate ${selectedColumn ? "" : "text-muted-foreground"}`}>
-                            {col.label}
-                          </span>
-                          <span
-                            className={`inline-flex flex-shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${TYPE_STYLES[col.type] || TYPE_STYLES.text}`}>
-                            <TypeIcon size={11} />
-                            {t(`page.reportSettings.columnType.${col.type}`)}
-                          </span>
+                          <span className="truncate font-medium">{label}</span>
+                          {typePill(col)}
                         </label>
                         <div className="flex items-center gap-1">
                           <button
+                            type="button"
                             onClick={() => moveColumn(col.key, -1)}
-                            disabled={!selectedColumn}
-                            className="rounded p-1 hover:bg-muted disabled:pointer-events-none disabled:opacity-30"
-                            aria-label={t("page.reportSettings.moveUp")}>
-                            <ChevronUp size={14} />
+                            disabled={index === 0}
+                            className="rounded p-1.5 hover:bg-muted disabled:pointer-events-none disabled:opacity-30"
+                            aria-label={`${t("page.reportSettings.moveUp")}: ${label}`}>
+                            <ChevronUp size={16} />
                           </button>
                           <button
+                            type="button"
                             onClick={() => moveColumn(col.key, 1)}
-                            disabled={!selectedColumn}
-                            className="rounded p-1 hover:bg-muted disabled:pointer-events-none disabled:opacity-30"
-                            aria-label={t("page.reportSettings.moveDown")}>
-                            <ChevronDown size={14} />
+                            disabled={index === selectedColumns.length - 1}
+                            className="rounded p-1.5 hover:bg-muted disabled:pointer-events-none disabled:opacity-30"
+                            aria-label={`${t("page.reportSettings.moveDown")}: ${label}`}>
+                            <ChevronDown size={16} />
                           </button>
                         </div>
-                      </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+
+                {hiddenColumns.length > 0 && (
+                  <>
+                    <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("page.reportSettings.hiddenColumns")}
+                    </p>
+                    <ul className="space-y-2">
+                      {hiddenColumns.map((col) => {
+                        const label = columnLabel(t, activeKey, col);
+                        return (
+                          <li
+                            key={col.key}
+                            className="rounded-lg border border-dashed border-border px-3 py-2">
+                            <label className="flex cursor-pointer items-center gap-3 text-sm">
+                              <span className="h-6 w-6 shrink-0" />
+                              <Checkbox
+                                checked={false}
+                                onCheckedChange={() => toggleColumn(col.key)}
+                                aria-label={label}
+                              />
+                              <span className="truncate text-muted-foreground">{label}</span>
+                              {typePill(col)}
+                            </label>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </>
+                )}
+              </section>
+
+              <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
+                <h2 className="text-lg font-semibold">{t("page.reportSettings.branding")}</h2>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.reportSettings.brandingDesc")}
+                </p>
+
+                <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("page.reportSettings.accentColor")}
+                </p>
+                <div className="flex flex-wrap gap-3" role="radiogroup">
+                  {ACCENTS.map((c) => {
+                    const active = draft.accent === c.value;
+                    const name = t(`page.reportSettings.accent.${c.key}`);
+                    return (
+                      <button
+                        key={c.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        aria-label={name}
+                        onClick={() => update({ accent: c.value })}
+                        className="flex w-14 flex-col items-center gap-1 rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        <span
+                          style={{ backgroundColor: c.value }}
+                          className={`flex h-9 w-9 items-center justify-center rounded-full text-white ring-offset-2 ring-offset-background ${
+                            active ? "ring-2 ring-ring" : ""
+                          }`}>
+                          {active && <Check size={16} />}
+                        </span>
+                        <span
+                          className={`text-[11px] ${active ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                          {name}
+                        </span>
+                      </button>
                     );
                   })}
                 </div>
-              </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t("page.reportSettings.accentHint")}
+                </p>
 
-              <div className="rounded-xl border border-border bg-card p-6">
-                <div>
-                  <h2 className="text-lg font-semibold">{t("page.reportSettings.branding")}</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {t("page.reportSettings.brandingDesc")}
-                  </p>
-                </div>
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                      {t("page.reportSettings.accentColor")}
-                    </p>
-                    <div className="flex flex-wrap gap-3">
-                      {ACCENTS.map((c) => (
-                        <button
-                          key={c.value}
-                          onClick={() => handleAccentChange(c.value)}
-                          className="flex flex-col items-center gap-1"
-                          aria-label={c.name}>
-                          <span
-                            style={{ backgroundColor: c.value }}
-                            className={`h-8 w-8 rounded-full border-2 ${
-                              accent === c.value
-                                ? "border-ring ring-2 ring-ring/40"
-                                : "border-transparent"
-                            }`}
-                          />
-                          <span
-                            className={`text-[11px] ${accent === c.value ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
-                            {c.name}
+                <p className="mb-1 mt-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("page.reportSettings.headerInfo")}
+                </p>
+                <div className="divide-y divide-border">
+                  {BRANDING_FIELDS.map(({ field, Icon }) => (
+                    <label
+                      key={field}
+                      className="flex cursor-pointer items-center justify-between gap-4 py-3">
+                      <span className="flex min-w-0 items-start gap-3">
+                        <Icon size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium">
+                            {t(`page.reportSettings.${field}`)}
                           </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-3 border-t border-border pt-4">
-                    {["showLogo", "showAddress", "showPhone"].map((field) => (
-                      <label
-                        key={field}
-                        className="flex cursor-pointer items-center justify-between text-sm">
-                        <span>{t(`page.reportSettings.${field}`)}</span>
-                        <Checkbox
-                          checked={branding[field]}
-                          onCheckedChange={handleBrandingChange(field)}
-                          aria-label={t(`page.reportSettings.${field}`)}
-                        />
-                      </label>
-                    ))}
-                  </div>
+                          <span className="block text-xs text-muted-foreground">
+                            {t(`page.reportSettings.${field}Hint`)}
+                          </span>
+                        </span>
+                      </span>
+                      <Switch
+                        checked={draft.branding[field]}
+                        onCheckedChange={(checked) =>
+                          update({ branding: { ...draft.branding, [field]: checked } })
+                        }
+                        aria-label={t(`page.reportSettings.${field}`)}
+                      />
+                    </label>
+                  ))}
                 </div>
-              </div>
+              </section>
             </>
           ) : (
-            <div className="rounded-xl border border-border bg-card">
-              <EmptyState
-                icon={FileBarChart}
-                title={t("page.reportSettings.empty")}
-                description={null}
-              />
-            </div>
+            !loading && (
+              <div className="rounded-xl border border-border bg-card">
+                <EmptyState
+                  icon={FileBarChart}
+                  title={t("page.reportSettings.empty")}
+                  description={null}
+                />
+              </div>
+            )
           )}
         </div>
       </div>
 
+      <Dialog open={!!pendingKey} onOpenChange={(open) => !open && setPendingKey(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("modal.discardTitle")}</DialogTitle>
+            <DialogDescription>{t("page.reportSettings.discardDesc")}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingKey(null)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                openReport(pendingKey);
+                setPendingKey(null);
+              }}>
+              {t("modal.discardConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="flex max-h-[90vh] w-[90vw] max-w-[90vw] flex-col overflow-hidden">
+        <DialogContent className="flex max-h-[90vh] w-[95vw] max-w-4xl flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye size={16} className="text-primary" />
               {t("page.reportSettings.previewTitle")}
             </DialogTitle>
             <DialogDescription>
-              {activeReport ? activeReport.label : ""} — {t("page.reportSettings.previewDesc")}
+              {activeLabel} — {t("page.reportSettings.previewDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -403,131 +564,30 @@ const ReportSettingsPage = () => {
                 {t("page.reportSettings.previewTabExcel")}
               </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="pdf" className="mt-3 min-h-0 flex-1 overflow-auto">
-              <div className="overflow-hidden rounded-xl border-2" style={{ borderColor: accent }}>
-                <div
-                  className="flex items-start justify-between gap-4 px-6 py-5"
-                  style={{ backgroundColor: accent }}>
-                  <div className="min-w-0">
-                    <p className="text-base font-semibold text-white">{activeReport?.label}</p>
-                    <p className="text-xs text-white/80">Laporan Periode</p>
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-1.5 text-right text-white/90">
-                    {branding.showLogo && (
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/20">
-                        <Store size={18} />
-                      </span>
-                    )}
-                    {branding.showAddress && (
-                      <span className="flex items-center gap-1.5 text-[11px]">
-                        <MapPin size={11} />
-                        <span className="text-xs text-white/80">
-                          Contoh Alamat Toko, Jakarta 12345
-                        </span>
-                      </span>
-                    )}
-                    {branding.showPhone && (
-                      <span className="flex items-center gap-1.5 text-[11px]">
-                        <Phone size={11} />
-                        <span className="text-xs text-white/80">(+62) 812-3456-7890</span>
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  {orderedColumns.length === 0 ? (
-                    <div className="py-10 text-center text-sm text-muted-foreground">
-                      {t("page.reportSettings.previewEmpty")}
-                    </div>
-                  ) : (
-                    <HorizontalScrollArea>
-                      <table className="w-full text-left text-sm">
-                        <thead>
-                          <tr>
-                            {orderedColumns.map((col) => (
-                              <th
-                                key={col.key}
-                                className="border-b-2 px-3 py-2 font-semibold text-muted-foreground"
-                                style={{ borderColor: accent }}>
-                                {col.label}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {SAMPLE_ROWS.map((row, ri) => (
-                            <tr key={ri}>
-                              {orderedColumns.map((col) => (
-                                <td
-                                  key={col.key}
-                                  className={`border-b border-border/60 px-3 py-2 ${
-                                    col.type === "currency" ? "font-mono" : ""
-                                  }`}>
-                                  {renderPreviewCell(col.type, row)}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </HorizontalScrollArea>
-                  )}
-                  <p className="mt-4 text-[11px] italic text-muted-foreground">
-                    {t("page.reportSettings.previewPdfFooter")}
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="excel" className="mt-3 flex min-h-0 flex-1 flex-col">
-              <div
-                className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border-2"
-                style={{ borderColor: "#94a3b8" }}>
-                <div className="flex items-center justify-between bg-muted px-3 py-1.5 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <FileSpreadsheet size={13} className="text-green-600" />
-                    {activeReport?.label}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between bg-white px-3 py-1 text-[10px] text-muted-foreground">
-                  <span>A1 : {activeReport?.label || ""}</span>
-                  <span className="flex items-center gap-1 font-medium text-foreground">
-                    <span className="flex h-4 w-4 items-center justify-center rounded-sm border border-green-600 bg-green-600 text-center font-sans text-[11px] leading-none">
-                      <FileSpreadsheet size={10} className="text-white" />
-                    </span>
-                    {t("page.reportSettings.previewExcelSheetName")}
-                  </span>
-                </div>
-                <div className="min-h-0 flex-1 overflow-auto bg-slate-100/50 p-6">
-                  {orderedColumns.length === 0 ? (
-                    <div className="px-6 py-10 text-center text-sm text-muted-foreground">
-                      {t("page.reportSettings.previewEmpty")}
-                    </div>
-                  ) : (
-                    <div className="mx-auto max-w-4xl overflow-hidden rounded-t-lg border border-slate-200 bg-white shadow-sm">
-                      {(() => {
-                        const archetype = activeReport?.archetype || "summary";
-                        const props = { accent, columns: orderedColumns, branding };
-                        switch (archetype) {
-                          case "ranking":
-                            return <ExcelPreviewRanking {...props} />;
-                          case "statement":
-                            return <ExcelPreviewStatement {...props} />;
-                          case "roster":
-                            return <ExcelPreviewRoster {...props} />;
-                          case "summary":
-                          default:
-                            return <ExcelPreviewSummary {...props} />;
-                        }
-                      })()}
-                    </div>
+            {["pdf", "excel"].map((variant) => (
+              <TabsContent
+                key={variant}
+                value={variant}
+                className="mt-3 min-h-0 flex-1 overflow-auto rounded-lg border border-border bg-slate-100 p-3 dark:bg-slate-900">
+                <div className="mx-auto max-w-3xl overflow-hidden rounded-md shadow-sm">
+                  {draft && (
+                    <ReportPreview
+                      variant={variant}
+                      title={activeLabel}
+                      archetype={activeReport?.archetype}
+                      columns={previewColumns}
+                      totals={activeReport?.totals || []}
+                      accent={draft.accent}
+                      branding={draft.branding}
+                    />
                   )}
                 </div>
-              </div>
-            </TabsContent>
+              </TabsContent>
+            ))}
           </Tabs>
+          <p className="text-xs text-muted-foreground">
+            {t("page.reportSettings.exportLanguageNote")}
+          </p>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setPreviewOpen(false)}>

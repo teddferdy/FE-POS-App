@@ -176,6 +176,8 @@ const CheckoutModal = ({
   // CollectPaymentModal's synchronous guard (set on the click that starts
   // the submission, cleared in onSettled regardless of outcome).
   const isSubmittingRef = useRef(false);
+  // Set once the order is created; a finished checkout never voids its QRIS.
+  const orderCompletedRef = useRef(false);
   const cashInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const discountSearchRef = useRef(null);
@@ -408,7 +410,12 @@ const CheckoutModal = ({
   });
   // D2: a pending QRIS is void as soon as its checkout changes — the stored
   // payload must never be confirmed against a different quote.
+  // Not after the sale went through: the parent resets the cart (zustand,
+  // flushed synchronously) before its batched close unmounts this modal, so
+  // one render sees an empty cart with the QRIS still pending — that is the
+  // completed sale, not a checkout change.
   useEffect(() => {
+    if (orderCompletedRef.current) return;
     if (qrisPending && pendingCheckoutKey !== checkoutKey) invalidatePendingQris();
   }, [qrisPending, pendingCheckoutKey, checkoutKey, invalidatePendingQris]);
   const debouncedQuoteKey = useDebounce(quoteKey, 300);
@@ -642,6 +649,8 @@ const CheckoutModal = ({
   const mutation = useMutation({
     mutationFn: sendAttempt,
     onSuccess: (res, variables) => {
+      orderCompletedRef.current = true;
+      clearPendingQris();
       toast.success(t("page.cashier.transactionSuccess"));
       const order = res?.data || res;
       checkoutAttempts.getState().resolve(store);
