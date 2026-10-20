@@ -56,33 +56,33 @@ const paymentStatusConfig = {
   }
 };
 
-function timeAgo(dateStr) {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now - date;
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin} minutes ago`;
+function timeAgo(dateStr, t) {
+  const diffMin = Math.floor((new Date() - new Date(dateStr)) / 60000);
+  if (diffMin < 1) return t("page.cashier.orderQueue.timeAgo.justNow");
+  if (diffMin < 60) return t("page.cashier.orderQueue.timeAgo.minutes", { count: diffMin });
   const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr} hours ago`;
-  return `${Math.floor(diffHr / 24)} days ago`;
+  if (diffHr < 24) return t("page.cashier.orderQueue.timeAgo.hours", { count: diffHr });
+  return t("page.cashier.orderQueue.timeAgo.days", { count: Math.floor(diffHr / 24) });
 }
 
-// Phase 39 Batch 6B: `readOnly` is set only for a PREVIOUS-register order
-// whose payment is already finalized (paymentStatus === "paid" — the same
-// definition canCollectPayment already used to know nothing is left to
-// collect). It never applies to the current register or to unassigned/
-// self-orders, which stay fully actionable regardless of payment state,
-// per spec. `registerId` is purely a display label (order.cashRegisterId,
-// nothing invented) shown only outside the current-register bucket.
+// The queue lists today's orders plus older ones that still have money to
+// collect; a finished (paid) order from an earlier day is history, not work.
+const isTodayOrUnpaid = (order, startOfToday) =>
+  order.paymentStatus !== "paid" || new Date(order.createdAt) >= startOfToday;
+
+// Phase 39 Batch 6B: `readOnly` is set only for an order of an EARLIER
+// (closed) register whose payment is already finalized (paymentStatus ===
+// "paid" — the same definition canCollectPayment already used to know
+// nothing is left to collect). It never applies to the current register or
+// to unassigned/self-orders, which stay fully actionable regardless of
+// payment state.
 const OrderCard = ({
   order,
   onClick,
   onCollectPayment,
   onCancelOrder,
   onVoidOrder,
-  readOnly = false,
-  registerId = null
+  readOnly = false
 }) => {
   const { t } = useTranslation();
   const status = statusConfig[order.status] || statusConfig.pending;
@@ -161,11 +161,6 @@ const OrderCard = ({
             {t(`page.delivery.source.${order.source}`, order.source)}
           </span>
         )}
-        {registerId != null && (
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border border-border/60 text-muted-foreground">
-            {t("page.cashier.orderQueue.registerLabel", { id: registerId })}
-          </span>
-        )}
       </div>
       <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">
@@ -173,7 +168,7 @@ const OrderCard = ({
         </span>
         <span className="text-[10px] text-muted-foreground/70 flex items-center gap-1">
           <Clock size={10} />
-          {timeAgo(order.createdAt)}
+          {timeAgo(order.createdAt, t)}
         </span>
       </div>
     </>
@@ -456,43 +451,41 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment, canVoid = false }) =
     return Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [pendingOrders, confirmedOrders, preparingOrders, readyOrders, servedOrders]);
 
-  // Phase 39 Batch 6B: classify by order.cashRegisterId vs. the current
-  // register's id — never by date/createdAt/openedAt/calendar day. null
-  // specifically means unassigned/self-order, never "previous register".
-  // While currentRegisterKnown is false, bucketing is skipped entirely
-  // (everything renders in the single flat "current" list exactly as
-  // before Batch 6B) so a valid current-register order can never be
-  // transiently mislabeled previous-register while this query is still
-  // loading.
+  // Only today's orders, plus older ones still waiting for payment — a
+  // paid order from another day no longer clutters the cashier.
+  const today = new Date().toDateString(); // re-filters after midnight
+  const visibleOrders = useMemo(() => {
+    const startOfToday = new Date(today);
+    return allOrders.filter((order) => isTodayOrUnpaid(order, startOfToday));
+  }, [allOrders, today]);
+
+  // Phase 39 Batch 6B: orders of the open register and of an earlier
+  // register (closed and reopened) share one list; only unassigned/
+  // self-orders (cashRegisterId null) get their own section. While the
+  // current register is unknown, nothing is split or locked.
   const buckets = useMemo(() => {
-    if (!currentRegisterKnown) {
-      return { current: allOrders, previous: [], unassigned: [] };
-    }
+    if (!currentRegisterKnown) return { current: visibleOrders, unassigned: [] };
     const current = [];
-    const previous = [];
     const unassigned = [];
-    for (const order of allOrders) {
-      if (order.cashRegisterId == null) {
-        unassigned.push(order);
-      } else if (currentRegisterId != null && order.cashRegisterId === currentRegisterId) {
-        current.push(order);
-      } else {
-        previous.push(order);
-      }
+    for (const order of visibleOrders) {
+      if (order.cashRegisterId == null) unassigned.push(order);
+      else current.push(order);
     }
-    return { current, previous, unassigned };
-  }, [allOrders, currentRegisterId, currentRegisterKnown]);
+    return { current, unassigned };
+  }, [visibleOrders, currentRegisterKnown]);
 
-  // Only previous-register orders that are fully paid become read-only —
-  // the same "nothing left to collect" definition canCollectPayment already
-  // used. Unpaid/pending previous-register orders, and every unassigned/
-  // self-order regardless of payment state, stay fully actionable.
-  const isFinalized = (order) => order.paymentStatus === "paid";
+  // A paid order of an earlier (closed) register is read-only — nothing left
+  // to collect and its register is closed. Unpaid ones, the open register's
+  // and unassigned/self-orders stay fully actionable.
+  const isClosedRegisterPaid = (order) =>
+    currentRegisterKnown &&
+    order.cashRegisterId != null &&
+    order.cashRegisterId !== currentRegisterId &&
+    order.paymentStatus === "paid";
 
-  // The common case (no previous/unassigned orders at all) renders exactly
-  // as it did before Batch 6B — one flat rail, no section headers — so nothing
-  // changes visually for a store that has never had a stale/self-order.
-  const hasMultipleBuckets = buckets.previous.length > 0 || buckets.unassigned.length > 0;
+  // The common case (no unassigned orders) renders one flat rail with no
+  // section headers.
+  const hasMultipleBuckets = buckets.unassigned.length > 0;
 
   const isLoading =
     pendingLoading || confirmedLoading || preparingLoading || readyLoading || servedLoading;
@@ -511,11 +504,6 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment, canVoid = false }) =
       fadeTestIdPrefix: "order-queue",
       labelKey: "page.cashier.orderQueue.currentRegister"
     },
-    previous: {
-      railTestId: "order-queue-rail-previous",
-      fadeTestIdPrefix: "order-queue-previous",
-      labelKey: "page.cashier.orderQueue.previousRegister"
-    },
     unassigned: {
       railTestId: "order-queue-rail-unassigned",
       fadeTestIdPrefix: "order-queue-unassigned",
@@ -523,7 +511,7 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment, canVoid = false }) =
     }
   };
 
-  const renderSection = (bucketKey, orders, { sectionReadOnly = false, showLabel = false }) => {
+  const renderSection = (bucketKey, orders, { showLabel = false }) => {
     if (orders.length === 0) return null;
     const meta = sectionMeta[bucketKey];
     return (
@@ -549,8 +537,7 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment, canVoid = false }) =
                 onCollectPayment={onCollectPayment}
                 onCancelOrder={handleCancelOrder}
                 onVoidOrder={canVoid ? setVoidTarget : undefined}
-                readOnly={sectionReadOnly && isFinalized(order)}
-                registerId={bucketKey === "previous" ? order.cashRegisterId : null}
+                readOnly={isClosedRegisterPaid(order)}
               />
             ))}
           </div>
@@ -563,25 +550,20 @@ const OrderQueue = ({ store, onLoadOrder, onCollectPayment, canVoid = false }) =
     <div className="shrink-0">
       {isLoading ? (
         <OrderQueueSkeleton />
-      ) : allOrders.length > 0 ? (
+      ) : visibleOrders.length > 0 ? (
         <CollapsiblePanel
           title={t("page.cashier.orderQueue.title")}
           icon={ClipboardList}
-          count={allOrders.length}
+          count={visibleOrders.length}
           storageKey="cashier.orderQueue"
           className="mt-3">
           {hasMultipleBuckets ? (
             <div className="mt-6 space-y-4">
               {renderSection("current", buckets.current, { showLabel: true })}
-              {renderSection("previous", buckets.previous, {
-                sectionReadOnly: true,
-                showLabel: true
-              })}
               {renderSection("unassigned", buckets.unassigned, { showLabel: true })}
             </div>
           ) : (
-            // Common case: nothing outside the current-register bucket —
-            // render exactly as before Batch 6B, no section headers.
+            // Common case: no unassigned orders — one rail, no headers.
             renderSection("current", buckets.current, {})
           )}
         </CollapsiblePanel>

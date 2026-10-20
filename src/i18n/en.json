@@ -8539,5 +8539,9 @@
   "page.cashier.receipt.summary": "Payment summary",
   "page.cashier.receipt.totalPaid": "Total paid",
   "page.cashier.receipt.paidWith": "Payment method",
-  "page.cashier.receipt.preview": "Receipt preview"
+  "page.cashier.receipt.preview": "Receipt preview",
+  "page.cashier.orderQueue.timeAgo.justNow": "Just now",
+  "page.cashier.orderQueue.timeAgo.minutes": "{{count}}m ago",
+  "page.cashier.orderQueue.timeAgo.hours": "{{count}}h ago",
+  "page.cashier.orderQueue.timeAgo.days": "{{count}}d ago"
 }

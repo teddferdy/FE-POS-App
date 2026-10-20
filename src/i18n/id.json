@@ -8539,5 +8539,9 @@
   "page.cashier.receipt.summary": "Ringkasan pembayaran",
   "page.cashier.receipt.totalPaid": "Total dibayar",
   "page.cashier.receipt.paidWith": "Metode pembayaran",
-  "page.cashier.receipt.preview": "Pratinjau struk"
+  "page.cashier.receipt.preview": "Pratinjau struk",
+  "page.cashier.orderQueue.timeAgo.justNow": "Baru saja",
+  "page.cashier.orderQueue.timeAgo.minutes": "{{count}} menit lalu",
+  "page.cashier.orderQueue.timeAgo.hours": "{{count}} jam lalu",
+  "page.cashier.orderQueue.timeAgo.days": "{{count}} hari lalu"
 }
