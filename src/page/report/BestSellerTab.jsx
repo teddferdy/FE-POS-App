@@ -2,7 +2,7 @@ import { Sparkles, ShoppingBag, Banknote, Package, RotateCcw } from "lucide-reac
 import React from "react";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import { Skeleton } from "@/components/ui/skeleton";
-import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import ReportTable from "@/components/organism/ReportTable";
 
 const BestSellerTab = ({ t, data, isLoading }) => {
   const bestSellers = data?.bestSellers || [];
@@ -164,70 +164,12 @@ const BestSellerTab = ({ t, data, isLoading }) => {
           )}
         </div>
 
-        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-border flex justify-between items-center">
-            <h3 className="text-base font-semibold text-foreground">
-              {t("page.report.bestSeller.productPerformanceTable")}
-            </h3>
-          </div>
-          <HorizontalScrollArea>
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-muted/50 border-b border-border">
-                  <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.report.bestSeller.table.rank")}
-                  </th>
-                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.report.bestSeller.table.productName")}
-                  </th>
-                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.report.bestSeller.table.totalSold")}
-                  </th>
-                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.report.bestSeller.table.revenue")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {bestSellers.length > 0 ? (
-                  bestSellers.map((item, idx) => (
-                    <tr key={item.id} className="hover:bg-accent/30 transition-colors">
-                      <td className="px-6 py-4 text-sm font-mono font-bold text-primary">
-                        #{idx + 1}
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-2">
-                          {item.image && (
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-8 h-8 rounded object-cover"
-                            />
-                          )}
-                          <span className="text-sm font-semibold text-foreground">{item.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm font-mono text-foreground">
-                        {formatNumber(item.sold)} {t("page.report.bestSeller.unit")}
-                      </td>
-                      <td className="px-4 py-4 text-sm font-mono text-foreground">
-                        {formatCurrency(item.revenue)}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="px-6 py-12 text-center text-sm text-muted-foreground">
-                      {t("page.report.bestSeller.noData")}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </HorizontalScrollArea>
-        </div>
+        <ReportTable
+          reportKey="bestSeller"
+          params={{ limit: 10 }}
+          title={t("page.report.bestSeller.productPerformanceTable")}
+          emptyText={t("page.report.bestSeller.noData")}
+        />
       </div>
     </div>
   );

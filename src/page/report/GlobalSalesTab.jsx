@@ -11,7 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import ReportTable from "@/components/organism/ReportTable";
 
 const STORE_COLORS = [
   "#3B82F6",
@@ -49,7 +49,6 @@ const CustomTooltip = ({ active, payload, label, t }) => {
 
 const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
   const salesChart = data?.salesChart || [];
-  const stores = data?.stores || [];
   const storeSalesChart = data?.storeSalesChart || [];
   const hasMultipleStores = storeSalesChart.length > 1;
 
@@ -282,66 +281,12 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
           </div>
         </div>
 
-        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-border flex justify-between items-center">
-            <h3 className="text-base font-semibold text-foreground">
-              {t("page.report.sales.storePerformance")}
-            </h3>
-          </div>
-          <HorizontalScrollArea>
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-muted/30">
-                  <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.report.sales.table.storeName")}
-                  </th>
-                  <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.report.sales.table.location")}
-                  </th>
-                  <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                    {t("page.report.sales.table.totalSales")}
-                  </th>
-                  <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                    {t("page.report.sales.table.transactions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {stores.length > 0 ? (
-                  stores.map((store) => (
-                    <tr key={store.id} className="hover:bg-muted/20 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-bold">
-                            {store.name?.charAt(0) || "S"}
-                          </div>
-                          <p className="text-sm font-semibold text-foreground">{store.name}</p>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">
-                        {store.city || "-"}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-mono font-semibold text-foreground text-right">
-                        {formatCurrency(store.sales)}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-mono font-semibold text-foreground text-right">
-                        {formatNumber(store.transactions)}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="px-6 py-12 text-center text-sm text-muted-foreground">
-                      {t("page.report.sales.noStoreData")}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </HorizontalScrollArea>
-        </div>
+        <ReportTable
+          reportKey="sales"
+          params={{ filter: String(period || "").toLowerCase() }}
+          title={t("page.report.sales.storePerformance")}
+          emptyText={t("page.report.sales.noStoreData")}
+        />
       </div>
     </div>
   );
