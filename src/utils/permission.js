@@ -148,9 +148,11 @@ export const canAccess = (user, menuKey, action) => {
   return !!safeGet(normalized, normalizeAction(action), false);
 };
 
-export const hasMenuAccess = (user, href, actions) => {
+// The stored accessMenu grant for a menu, without the role-based super_admin
+// bypass. Callers that need an explicit opt-in (e.g. /tenant) use this so a
+// platform super_admin is not treated as granted by roleType alone.
+export const hasExplicitMenuAccess = (user, href, actions) => {
   if (!user) return false;
-  if (bypassesMenuPermissions(user)) return true;
   // ponytail: accessMenu stripped from cookie to fit 4KB limit, read from sessionStorage
   let accessMenu = parseAccessMenu(user.accessMenu);
   if (!accessMenu || accessMenu.length === 0) {
@@ -170,6 +172,12 @@ export const hasMenuAccess = (user, href, actions) => {
     return actions.some((a) => !!safeGet(perm, normalizeAction(a)));
   }
   return !!perm.view;
+};
+
+export const hasMenuAccess = (user, href, actions) => {
+  if (!user) return false;
+  if (bypassesMenuPermissions(user)) return true;
+  return hasExplicitMenuAccess(user, href, actions);
 };
 
 export const filterMenuByPermission = (menuItems, user) => {
