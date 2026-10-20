@@ -418,17 +418,5 @@
     "approve": true,
     "print": true,
     "update-status": true
-  },
-  {
-    "menu": "/tenant",
-    "view": true,
-    "add": true,
-    "edit": true,
-    "delete": true,
-    "import": true,
-    "export": true,
-    "approve": true,
-    "print": true,
-    "update-status": true
   }
 ]

@@ -1,7 +1,6 @@
 import React from "react";
 import { render, act, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider, useQuery } from "react-query";
-import { CookiesProvider } from "react-cookie";
 import { shouldRetryQuery } from "../lib/query-retry";
 import { useStoreManagePermission } from "../hooks/useStoreManagePermission";
 import { useTenantManagePermission } from "../hooks/useTenantManagePermission";
@@ -68,21 +67,17 @@ describe("auth-context permission hooks", () => {
       return null;
     };
     const { rerender } = render(
-      <CookiesProvider>
-        <QueryClientProvider client={client}>
-          <Sidebar />
-        </QueryClientProvider>
-      </CookiesProvider>
+      <QueryClientProvider client={client}>
+        <Sidebar />
+      </QueryClientProvider>
     );
     await waitFor(() => expect(getAuthContext).toHaveBeenCalledTimes(1));
 
     rerender(
-      <CookiesProvider>
-        <QueryClientProvider client={client}>
-          <Sidebar />
-          <Page />
-        </QueryClientProvider>
-      </CookiesProvider>
+      <QueryClientProvider client={client}>
+        <Sidebar />
+        <Page />
+      </QueryClientProvider>
     );
     await act(() => new Promise((r) => setTimeout(r, 30)));
 
