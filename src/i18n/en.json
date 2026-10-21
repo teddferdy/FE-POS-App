@@ -8543,5 +8543,11 @@
   "page.role.add.typeHint.kasir": "Sells and takes payments, split bills, cancels unpaid orders, requests returns. Cannot void or open/close the register.",
   "page.role.add.typeHint.user": "Kitchen, floor or warehouse staff: only the pages in its menu, no money actions.",
   "page.role.add.typeHint.super_admin": "Full access to every store (vendor only).",
-  "page.login.accountFromOwner": "No account yet? Ask the store owner to create your staff account."
+  "page.login.accountFromOwner": "No account yet? Ask the store owner to create your staff account.",
+  "common.deleteConfirmDesc": "Are you sure you want to delete {{name}}? This cannot be undone.",
+  "page.cashRegister.current.varianceMore": "{{amount}} over expected",
+  "page.cashRegister.current.varianceLess": "{{amount}} short of expected",
+  "page.customerOrder.pendingDesc": "{{count}} orders awaiting confirmation",
+  "page.customerOrder.itemsCount": "{{count}} items",
+  "page.purchaseOrder.edit.lockedAfterReceipt": "Locked because goods have already been received"
 }
