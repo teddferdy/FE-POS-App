@@ -48,9 +48,15 @@ export function Combobox({
               Memuat...
             </span>
           ) : selected ? (
-            selected.label
+            // Long labels (store names) truncate inside the field instead of
+            // pushing past its border and the chevron.
+            <span
+              className="min-w-0 truncate text-left"
+              title={typeof selected.label === "string" ? selected.label : undefined}>
+              {selected.label}
+            </span>
           ) : (
-            <span className="text-muted-foreground">{placeholder}</span>
+            <span className="min-w-0 truncate text-left text-muted-foreground">{placeholder}</span>
           )}
           <span className="ml-2 flex items-center gap-1 shrink-0">
             {showClear && (
