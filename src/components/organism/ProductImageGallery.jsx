@@ -152,7 +152,7 @@ const ProductImageGallery = ({ images = [], onChange, maxImages = 6, compact = f
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
             </div>
 
-            <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-2 right-2 flex flex-col gap-1 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity">
               {idx > 0 && (
                 <button
                   type="button"

@@ -287,7 +287,7 @@ const NotificationPage = () => {
                               e.stopPropagation();
                               readMutate(notif.id);
                             }}
-                            className="absolute top-3 right-3 p-1 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-accent transition-all">
+                            className="absolute top-3 right-3 p-1 rounded-lg text-muted-foreground [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 hover:bg-accent transition-all">
                             <X size={14} />
                           </button>
                         )}

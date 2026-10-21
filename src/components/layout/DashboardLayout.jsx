@@ -307,13 +307,13 @@ const DashboardLayout = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <div className="hidden xl:block">
+      <div className="hidden desk:block">
         <Sidebar collapsed={sidebarCollapsed} onHoverChange={handleSidebarHoverChange} />
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarMounted && (
-        <div className="fixed inset-0 z-50 xl:hidden">
+        <div className="fixed inset-0 z-50 desk:hidden">
           <div
             aria-hidden="true"
             onClick={closeMobileSidebar}
@@ -339,7 +339,7 @@ const DashboardLayout = () => {
       <div
         style={{ willChange: "margin-left" }}
         className={`transition-[margin-left] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-          sidebarCollapsed ? "xl:ml-16" : "xl:ml-64"
+          sidebarCollapsed ? "desk:ml-16" : "desk:ml-64"
         }`}>
         <Header
           onMenuToggle={handleMobileMenuToggle}

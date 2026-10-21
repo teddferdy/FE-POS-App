@@ -282,7 +282,7 @@ const NavigationModal = ({ open, onOpenChange, categories = [], onNavigate }) =>
                                       ? "text-primary opacity-100"
                                       : isSelected
                                         ? "text-muted-foreground opacity-100"
-                                        : "text-muted-foreground opacity-0 group-hover:opacity-100"
+                                        : "text-muted-foreground [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                                   )}
                                 />
                                 {active && (
