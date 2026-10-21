@@ -9,7 +9,7 @@ import Header from "./Header";
 import CommandPalette from "./CommandPalette";
 import { TipsCard } from "@/components/ui/tips-card";
 import FloatingTourButton from "@/components/organism/FloatingTourButton";
-import { OfflineIndicator, OfflineBanner } from "@/components/ui/OfflineIndicator";
+import { OfflineBanner } from "@/components/ui/OfflineIndicator";
 import { useStore } from "@/contexts/StoreContext";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useLocations } from "@/queries/useLocations";
@@ -375,7 +375,6 @@ const DashboardLayout = () => {
 
       {/* Offline Indicator & Banner */}
       <OfflineBanner />
-      <OfflineIndicator />
     </div>
   );
 };

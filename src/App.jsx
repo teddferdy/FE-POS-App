@@ -7,7 +7,6 @@ import useKeyboardShortcuts from "@/hooks/useKeyboardShortcuts";
 
 // Offline
 import { OfflineIndicator } from "@/components/ui/OfflineIndicator";
-import { setupAutoSync } from "@/services/offline";
 
 // Layout
 const DashboardLayout = React.lazy(() => import("./components/layout/DashboardLayout"));
@@ -76,11 +75,6 @@ function App() {
       i18n.changeLanguage(translation);
     }
   }, [translation]);
-
-  useEffect(() => {
-    const cleanup = setupAutoSync();
-    return cleanup;
-  }, []);
 
   return (
     <React.Fragment>
