@@ -508,13 +508,13 @@ const CashierPage = () => {
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="hidden xl:block">
+      <div className="hidden desk:block">
         <Sidebar collapsed={sidebarCollapsed} onHoverChange={handleSidebarHoverChange} />
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 xl:hidden">
+        <div className="fixed inset-0 z-50 desk:hidden">
           <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setMobileSidebarOpen(false)}
@@ -527,7 +527,7 @@ const CashierPage = () => {
 
       {/* Main Content */}
       <div
-        className={`h-screen flex flex-col transition-all duration-300 ${sidebarCollapsed ? "xl:ml-16" : "xl:ml-64"}`}>
+        className={`h-screen flex flex-col transition-all duration-300 ${sidebarCollapsed ? "desk:ml-16" : "desk:ml-64"}`}>
         <header className="sticky top-0 z-40 bg-background/70 backdrop-blur-xl border-b border-border/50 shrink-0">
           <TooltipProvider>
             <div className="flex items-center justify-between px-4 lg:px-6 py-3 gap-4">
@@ -536,7 +536,7 @@ const CashierPage = () => {
                   <TooltipTrigger asChild>
                     <button
                       onClick={handleMobileMenuToggle}
-                      className="xl:hidden p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
+                      className="desk:hidden p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
                       <Menu size={20} />
                     </button>
                   </TooltipTrigger>

@@ -50,3 +50,10 @@ test("the dashboard shell switches between drawer and rail on desk, not on width
   expect(layout).toMatch(/desk:hidden/);
   expect(header).toMatch(/desk:hidden p-2/);
 });
+
+test("the cashier page shell follows the same rule", () => {
+  const cashier = fs.readFileSync(path.join(SRC, "page/cashier/CashierPage.jsx"), "utf8");
+  expect(cashier).toMatch(/hidden desk:block/);
+  expect(cashier).toMatch(/desk:ml-16/);
+  expect(cashier).toMatch(/onClick=\{handleMobileMenuToggle\}\s+className="desk:hidden/);
+});
