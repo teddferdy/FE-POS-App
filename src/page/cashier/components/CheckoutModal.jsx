@@ -1764,7 +1764,7 @@ const CheckoutModal = ({
             layer is on top" behavior of the manual handler this replaced. */}
         {addCustomerOpen && (
           <Dialog open onOpenChange={(open) => !open && setAddCustomerOpen(false)}>
-            <DialogContent className="max-w-md p-0 overflow-hidden" withX={false}>
+            <DialogContent className="max-w-md p-0 overflow-y-auto" withX={false}>
               <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
                 <div className="flex items-center gap-2">
                   <UserPlus size={18} className="text-primary" />
