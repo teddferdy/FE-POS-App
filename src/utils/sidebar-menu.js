@@ -440,6 +440,86 @@ export const sidebarMenuSuperAdmin = [
     ]
   },
   {
+    // SDM & Member: offered in Role Management so a role can be granted them
+    // (the sidebar already shows them from navCategories when granted).
+    title: "SDM & Member",
+    section: true,
+    i18nKey: "sidebar.section.sdm",
+    icon: Users,
+    children: [
+      {
+        title: "Departemen",
+        i18nKey: "sidebar.departemen",
+        href: "/department-list",
+        icon: Building2,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Posisi",
+        i18nKey: "sidebar.posisi",
+        href: "/position-list",
+        icon: FileText,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Daftar Karyawan",
+        i18nKey: "sidebar.daftarKaryawan",
+        href: "/employee-list",
+        icon: Users,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Daftar Pengguna",
+        i18nKey: "sidebar.daftarPengguna",
+        href: "/user-list",
+        icon: Shield,
+        actions: ["view", "add", "edit", "update-status"]
+      },
+      {
+        title: "Perjalanan Dinas",
+        i18nKey: "sidebar.businessTrip",
+        href: "/business-trip",
+        icon: Plane,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Template Shift",
+        i18nKey: "sidebar.shiftTemplate",
+        href: "/shift-template-list",
+        icon: Clock,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Shift",
+        i18nKey: "sidebar.shift",
+        href: "/shift-list",
+        icon: CalendarDays,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Shift Saya",
+        i18nKey: "sidebar.myShift",
+        href: "/my-shift",
+        icon: CalendarDays,
+        actions: ["view"]
+      },
+      {
+        title: "Member Tier",
+        i18nKey: "sidebar.memberTier",
+        href: "/member-tier",
+        icon: Award,
+        actions: ["view", "add", "edit", "delete"]
+      },
+      {
+        title: "Daftar Member",
+        i18nKey: "sidebar.daftarMember",
+        href: "/member-list",
+        icon: Users,
+        actions: ["view", "add", "edit", "delete"]
+      }
+    ]
+  },
+  {
     title: "Pengaturan",
     section: true,
     i18nKey: "sidebar.section.settings",
@@ -1170,6 +1250,7 @@ export const navCategories = {
             },
             {
               title: "Daftar Pengguna",
+              i18nKey: "sidebar.daftarPengguna",
               href: "/user-list",
               icon: Shield
             },

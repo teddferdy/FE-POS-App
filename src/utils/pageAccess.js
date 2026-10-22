@@ -11,7 +11,7 @@ import { bypassesMenuPermissions } from "@/utils/role";
 // permission matrix) are guarded, and only for menu-controlled accounts (an
 // accessMenu, no super_admin bypass). Everything else keeps its own guards:
 // landing pages, profile/notifications, Tenant / Store Configuration
-// (canonical permissions) and menus the matrix does not offer yet.
+// (canonical permissions) and menus the matrix does not offer.
 
 const MATRIX_ACTIONS = new Map(
   getLeafItemsGrouped()
@@ -97,6 +97,32 @@ export const SUBPAGES = [
   ["/add-expense-category", "/expense-category", "add"],
   ["/edit-expense-category", "/expense-category", "edit"],
   ["/detail-expense-category", "/expense-category", "view"],
+  ["/add-user", "/user-list", "add"],
+  ["/add-employee", "/employee-list", "add"],
+  ["/edit-employee", "/employee-list", "edit"],
+  ["/detail-employee", "/employee-list", "view"],
+  ["/add-department", "/department-list", "add"],
+  ["/edit-department", "/department-list", "edit"],
+  ["/detail-department", "/department-list", "view"],
+  ["/add-position", "/position-list", "add"],
+  ["/edit-position", "/position-list", "edit"],
+  ["/detail-position", "/position-list", "view"],
+  ["/add-shift", "/shift-list", "add"],
+  ["/edit-shift", "/shift-list", "edit"],
+  ["/detail-shift", "/shift-list", "view"],
+  ["/add-shift-template", "/shift-template-list", "add"],
+  ["/edit-shift-template", "/shift-template-list", "edit"],
+  ["/detail-shift-template", "/shift-template-list", "view"],
+  ["/add-business-trip", "/business-trip", "add"],
+  ["/edit-business-trip", "/business-trip", "edit"],
+  ["/business-trip/detail", "/business-trip", "view"],
+  ["/add-member", "/member-list", "add"],
+  ["/edit-member", "/member-list", "edit"],
+  ["/detail-member", "/member-list", "view"],
+  ["/member-point-history", "/member-list", "view"],
+  ["/add-member-tier", "/member-tier", "add"],
+  ["/edit-member-tier/:id", "/member-tier", "edit"],
+  ["/detail-member-tier", "/member-tier", "view"],
   ["/add-expense", "/expense", "add"],
   ["/edit-expense", "/expense", "edit"],
   ["/detail-expense", "/expense", "view"]
