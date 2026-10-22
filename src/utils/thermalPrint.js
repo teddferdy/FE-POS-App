@@ -1,4 +1,5 @@
 import { buildReceiptModel, receiptPrintCss, renderReceiptElement } from "@/utils/receiptDocument";
+import { getToken } from "@/utils/cookies";
 
 const RECEIPT_WIDTH = 48;
 
@@ -190,9 +191,13 @@ export const printViaSerial = async (data) => {
 const BACKEND_PRINT_URL = "http://localhost:5001/print-thermal";
 
 export const printViaBackend = async (data) => {
+  const token = getToken();
   const resp = await fetch(BACKEND_PRINT_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    },
     body: JSON.stringify({ data })
   });
   const result = await resp.json();
