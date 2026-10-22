@@ -2,7 +2,16 @@ import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Building2, CheckCircle, Edit, PauseCircle, PlayCircle, Plus, XCircle } from "lucide-react";
+import {
+  Building2,
+  CheckCircle,
+  Edit,
+  PauseCircle,
+  PlayCircle,
+  Plus,
+  Trash2,
+  XCircle
+} from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
@@ -16,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
-import { createTenant, getTenants, updateTenant } from "@/services/tenant";
+import { createTenant, deleteTenant, getTenants, updateTenant } from "@/services/tenant";
 import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
 
 export const TENANTS_QUERY_KEY = "tenants";
@@ -75,6 +84,11 @@ const errorMessage = (t, error) => {
   if (code === "TENANT_CODE_TAKEN") return { field: "code", message: t(`${P}.error.codeTaken`) };
   if (code === "INVALID_CODE") return { field: "code", message: t(`${P}.error.invalidCode`) };
   if (code === "INVALID_NAME") return { field: "name", message: t(`${P}.error.invalidName`) };
+  if (code === "TENANT_HAS_STORES") return { field: null, message: t(`${P}.error.hasStores`) };
+  if (code === "TENANT_HAS_MEMBERS") return { field: null, message: t(`${P}.error.hasMembers`) };
+  if (code === "TENANT_STATUS_PLATFORM_ONLY") {
+    return { field: null, message: t(`${P}.error.statusPlatformOnly`) };
+  }
   if (error?.response?.status === 403) return { field: null, message: t(`${P}.error.forbidden`) };
   return { field: null, message: t(`${P}.error.generic`) };
 };
@@ -214,8 +228,12 @@ const TenantList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [formTarget, setFormTarget] = useState(null); // { tenant } | null
   const [statusTarget, setStatusTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const enabled = permission.canManageTenants;
+  // The platform sees every tenant; a client's own super admin (bakso_admin)
+  // only its own, without suspend/resume (the BE enforces both).
+  const enabled = permission.canAdministerTenants;
+  const ownOnly = permission.ownTenantsOnly;
   const { data, isLoading, isFetching, isError, error, refetch } = useQuery(
     [TENANTS_QUERY_KEY, page, limit, search, statusFilter],
     () => getTenants({ page, limit, search, status: statusFilter }),
@@ -234,6 +252,18 @@ const TenantList = () => {
     onError: (err) => toast.error(errorMessage(t, err).message)
   });
 
+  const deleteMutation = useMutation((id) => deleteTenant(id), {
+    onSuccess: () => {
+      toast.success(t(`${P}.toast.deleted`));
+      queryClient.invalidateQueries(TENANTS_QUERY_KEY);
+      setDeleteTarget(null);
+    },
+    onError: (err) => {
+      toast.error(errorMessage(t, err).message);
+      setDeleteTarget(null);
+    }
+  });
+
   if (permission.isLoading) {
     return (
       <div className="space-y-6">
@@ -243,7 +273,7 @@ const TenantList = () => {
     );
   }
   if (permission.isError) return <AbortController refetch={permission.refetch} />;
-  if (!permission.canManageTenants || error?.response?.status === 403) return <AccessDenied />;
+  if (!permission.canAdministerTenants || error?.response?.status === 403) return <AccessDenied />;
 
   const tenants = data?.data || [];
   const pagination = data?.pagination || {};
@@ -304,8 +334,13 @@ const TenantList = () => {
       stickyRight: true,
       legend: [
         { icon: Edit, label: t("common.edit") },
-        { icon: PauseCircle, label: t(`${P}.action.suspend`) },
-        { icon: PlayCircle, label: t(`${P}.action.resume`) }
+        ...(ownOnly
+          ? []
+          : [
+              { icon: PauseCircle, label: t(`${P}.action.suspend`) },
+              { icon: PlayCircle, label: t(`${P}.action.resume`) }
+            ]),
+        { icon: Trash2, label: t(`${P}.action.delete`) }
       ],
       render: (row) => (
         <TableActions
@@ -322,13 +357,21 @@ const TenantList = () => {
               icon: PauseCircle,
               danger: true,
               onClick: () => setStatusTarget({ tenant: row, status: "suspended" }),
-              hidden: row.status !== "active"
+              hidden: ownOnly || row.status !== "active"
             },
             {
               label: t(`${P}.action.resume`),
               icon: PlayCircle,
               onClick: () => setStatusTarget({ tenant: row, status: "active" }),
-              hidden: row.status === "active"
+              hidden: ownOnly || row.status === "active"
+            },
+            {
+              label: t(`${P}.action.delete`),
+              icon: Trash2,
+              danger: true,
+              onClick: () => setDeleteTarget(row),
+              // a tenant with stores can only be suspended
+              hidden: row.storeCount > 0
             }
           ]}
         />
@@ -348,7 +391,7 @@ const TenantList = () => {
           { label: t(`${P}.title`), i18nKey: `${P}.title` }
         ]}
         title={t(`${P}.title`)}
-        description={t(`${P}.description`)}>
+        description={ownOnly ? t(`${P}.ownScopeNote`) : t(`${P}.description`)}>
         <Button
           variant="success"
           onClick={() => setFormTarget({ tenant: null })}
@@ -468,6 +511,21 @@ const TenantList = () => {
           if (!statusTarget) return undefined;
           statusMutation.mutate({ id: statusTarget.tenant.id, status: statusTarget.status });
           return false; // closed by onSuccess
+        }}
+      />
+
+      <Modal
+        type="confirm"
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && !deleteMutation.isLoading && setDeleteTarget(null)}
+        title={t(`${P}.modal.deleteTitle`)}
+        description={t(`${P}.modal.deleteDesc`, { name: deleteTarget?.name || "" })}
+        confirmText={t(`${P}.action.delete`)}
+        loading={deleteMutation.isLoading}
+        onConfirm={() => {
+          if (!deleteTarget) return undefined;
+          deleteMutation.mutate(deleteTarget.id);
+          return false; // closed by onSuccess / onError
         }}
       />
     </div>

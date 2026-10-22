@@ -27,10 +27,12 @@ jest.mock("sonner", () => ({ toast: { success: jest.fn(), error: jest.fn() } }))
 const mockGetTenants = jest.fn();
 const mockCreateTenant = jest.fn();
 const mockUpdateTenant = jest.fn();
+const mockDeleteTenant = jest.fn();
 jest.mock("@/services/tenant", () => ({
   getTenants: (...args) => mockGetTenants(...args),
   createTenant: (...args) => mockCreateTenant(...args),
-  updateTenant: (...args) => mockUpdateTenant(...args)
+  updateTenant: (...args) => mockUpdateTenant(...args),
+  deleteTenant: (...args) => mockDeleteTenant(...args)
 }));
 
 let mockPermission;
@@ -89,7 +91,14 @@ const wrap = (ui) =>
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockPermission = { canManageTenants: true, isLoading: false, isError: false, refetch: jest.fn() };
+  mockPermission = {
+    canManageTenants: true,
+    canAdministerTenants: true,
+    ownTenantsOnly: false,
+    isLoading: false,
+    isError: false,
+    refetch: jest.fn()
+  };
   mockGetTenants.mockResolvedValue(listResponse([tenant(1), tenant(2, { status: "suspended" })]));
 });
 
@@ -106,7 +115,7 @@ describe("suggestTenantCode", () => {
 
 describe("TenantList", () => {
   test("without tenant.manage the page is access-denied and nothing is fetched", () => {
-    mockPermission = { ...mockPermission, canManageTenants: false };
+    mockPermission = { ...mockPermission, canManageTenants: false, canAdministerTenants: false };
     wrap(<TenantList />);
     expect(mockGetTenants).not.toHaveBeenCalled();
     expect(screen.queryByText("breadcrumb.add")).not.toBeInTheDocument();
@@ -208,6 +217,65 @@ describe("TenantList", () => {
         expect.objectContaining({ status: "active", page: 1, limit: 10 })
       )
     );
+  });
+});
+
+describe("TenantList — delete and a client's own super admin", () => {
+  const ownScope = () => {
+    mockPermission = { ...mockPermission, canManageTenants: false, ownTenantsOnly: true };
+  };
+  // More than two actions collapse into the kebab; Radix opens it from the
+  // keyboard in jsdom (no PointerEvent).
+  const openActions = async (name) => {
+    const row = (await screen.findByText(name)).closest("tr");
+    const trigger = within(row).getByRole("button", { name: "common.actions" });
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: "Enter" });
+  };
+
+  test("only an empty tenant offers Delete; confirming calls the API", async () => {
+    mockGetTenants.mockResolvedValue(
+      listResponse([tenant(1), tenant(2, { storeCount: 0, activeMemberCount: 1 })])
+    );
+    mockDeleteTenant.mockResolvedValue({ success: true });
+    wrap(<TenantList />);
+    // Warung 1 has stores: edit + suspend only, inline, no delete
+    await screen.findByText("Warung 1");
+    expect(screen.queryByTitle("page.tenant.action.delete")).not.toBeInTheDocument();
+
+    await openActions("Warung 2");
+    fireEvent.click(await screen.findByRole("menuitem", { name: /page.tenant.action.delete/ }));
+    expect(await screen.findByText("page.tenant.modal.deleteTitle")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /page.tenant.action.delete/ }));
+    await waitFor(() => expect(mockDeleteTenant).toHaveBeenCalledWith(2));
+  });
+
+  test("a refused delete shows the backend reason", async () => {
+    const { toast } = jest.requireMock("sonner");
+    mockGetTenants.mockResolvedValue(listResponse([tenant(2, { storeCount: 0 })]));
+    mockDeleteTenant.mockRejectedValue(httpError(409, { code: "TENANT_HAS_MEMBERS" }));
+    wrap(<TenantList />);
+    await openActions("Warung 2");
+    fireEvent.click(await screen.findByRole("menuitem", { name: /page.tenant.action.delete/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /page.tenant.action.delete/ }));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("page.tenant.error.hasMembers"));
+  });
+
+  test("own scope: page opens, explains the scope, no suspend/resume", async () => {
+    ownScope();
+    wrap(<TenantList />);
+    expect(await screen.findByText("Warung 1")).toBeInTheDocument();
+    expect(screen.getByText("page.tenant.ownScopeNote")).toBeInTheDocument();
+    expect(screen.queryByTitle("page.tenant.action.suspend")).not.toBeInTheDocument();
+    expect(screen.queryByTitle("page.tenant.action.resume")).not.toBeInTheDocument();
+    expect(screen.getAllByTitle("common.edit").length).toBeGreaterThan(0);
+    expect(screen.getByText("breadcrumb.add")).toBeInTheDocument();
+  });
+
+  test("own scope does not unlock the store form's target-tenant field", () => {
+    ownScope();
+    const { container } = wrap(<TenantSelectField value="" onChange={() => {}} />);
+    expect(container).toBeEmptyDOMElement();
   });
 });
 

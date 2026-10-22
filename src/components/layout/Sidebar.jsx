@@ -63,7 +63,7 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
 
   const user = useUserSession();
   const { canManageStores } = useStoreManagePermission();
-  const { canManageTenants } = useTenantManagePermission();
+  const { canAdministerTenants } = useTenantManagePermission();
 
   const hasAccessMenu =
     user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
@@ -89,8 +89,8 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
     else if (isAdminRole(user)) base = navCategories.admin || [];
     // Tenant and Store Configuration sit in the Location category, gated by
     // the canonical permissions (independent of roleType/accessMenu).
-    return withCanonicalLocationItems(base, { canManageTenants, canManageStores });
-  }, [hasAccessMenu, isMenuControlled, user, canManageTenants, canManageStores]);
+    return withCanonicalLocationItems(base, { canAdministerTenants, canManageStores });
+  }, [hasAccessMenu, isMenuControlled, user, canAdministerTenants, canManageStores]);
 
   const directItems = useMemo(() => {
     const items = [];
