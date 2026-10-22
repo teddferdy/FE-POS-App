@@ -108,7 +108,6 @@ test("pages this guard does not decide stay open for everyone", () => {
     "/dashboard-super-admin",
     "/profile",
     "/notification",
-    "/employee-list",
     "/tenant",
     "/store-configuration",
     "/audit-log"
@@ -142,4 +141,28 @@ test("bakso_admin opens every menu it has, and their sub-pages", () => {
     expect(matchPath({ path: pattern, end: true }, sample)).not.toBeNull();
     expect([sample, canOpenPage(user, sample)]).toEqual([sample, true]);
   }
+});
+
+test("Role Management now offers SDM and Member, and their pages follow the grant", () => {
+  const offered = new Set(MATRIX.map((i) => i.href));
+  for (const href of [
+    "/employee-list",
+    "/user-list",
+    "/department-list",
+    "/position-list",
+    "/shift-list",
+    "/shift-template-list",
+    "/my-shift",
+    "/business-trip",
+    "/member-list",
+    "/member-tier"
+  ]) {
+    expect([href, offered.has(href)]).toEqual([href, true]);
+  }
+  const viewer = role([{ menu: "/employee-list", view: true }]);
+  expect(canOpenPage(viewer, "/employee-list")).toBe(true);
+  expect(canOpenPage(viewer, "/detail-employee")).toBe(true);
+  expect(canOpenPage(viewer, "/add-employee")).toBe(false);
+  expect(canOpenPage(viewer, "/member-list")).toBe(false);
+  expect(sidebarHrefs(viewer)).toContain("/employee-list");
 });
