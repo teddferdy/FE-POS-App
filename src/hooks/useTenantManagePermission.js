@@ -8,12 +8,16 @@ import { bypassesMenuPermissions } from "@/utils/role";
 export const TENANT_MANAGE_PERMISSION = "tenant.manage";
 export const TENANT_MENU_HREF = "/tenant";
 
-// UX gate for platform tenant administration, from the canonical
-// authorization context (shares the auth-context query with
-// useStoreManagePermission). A menu-scoped role (e.g. bakso_admin) may also
-// be granted /tenant explicitly in its accessMenu; that opt-in is honored so
-// Add Location can name the target tenant. The backend stays authoritative:
-// /tenants answers 403 without tenant.manage.
+// UX gate for tenant administration, from the canonical authorization
+// context (shares the auth-context query with useStoreManagePermission).
+// The backend stays authoritative: /tenants answers 403 outside its scope.
+//
+// - canManageTenants: platform tenant.manage. Also unlocks the store form's
+//   target-tenant field, so it never comes from accessMenu.
+// - ownTenantsOnly: the BE says tenantAdministration "own" (a client's own
+//   super admin, e.g. bakso_admin: its tenants only, no suspend/resume). A
+//   menu-scoped account must also carry /tenant in its accessMenu — that is
+//   the owner's switch for showing the menu.
 export function useTenantManagePermission() {
   const query = useQuery(AUTH_CONTEXT_QUERY_KEY, getAuthContext, {
     staleTime: 5 * 60 * 1000,
@@ -25,17 +29,20 @@ export function useTenantManagePermission() {
   });
 
   const user = useUserSession();
-  const permissions = query.data?.data?.context?.permissions;
-  const hasCanonicalPermission =
+  const context = query.data?.data?.context;
+  const permissions = context?.permissions;
+  const canManageTenants =
     Array.isArray(permissions) && permissions.includes(TENANT_MANAGE_PERMISSION);
-  // Never let the super_admin roleType bypass grant this on its own: a
-  // platform super_admin still needs tenant.manage from the auth context.
-  const hasAccessMenuGrant =
-    !bypassesMenuPermissions(user) && hasExplicitMenuAccess(user, TENANT_MENU_HREF, ["view"]);
-  const canManageTenants = hasCanonicalPermission || hasAccessMenuGrant;
+  const isMenuControlled =
+    Array.isArray(user?.accessMenu) && user.accessMenu.length > 0 && !bypassesMenuPermissions(user);
+  const menuAllows = !isMenuControlled || hasExplicitMenuAccess(user, TENANT_MENU_HREF, ["view"]);
+  const ownTenantsOnly = !canManageTenants && context?.tenantAdministration === "own" && menuAllows;
+  const canAdministerTenants = canManageTenants || ownTenantsOnly;
 
   return {
     canManageTenants,
+    canAdministerTenants,
+    ownTenantsOnly,
     isLoading: query.isLoading,
     isError: query.isError,
     refetch: query.refetch

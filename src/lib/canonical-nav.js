@@ -3,7 +3,8 @@ import { Building2, SlidersHorizontal, Store } from "lucide-react";
 const LOCATION_CATEGORY_ID = "location";
 const STORE_SECTION_KEY = "sidebar.section.kelolaToko";
 
-// Tenant administration (tenant.manage, platform only) and Store
+// Tenant administration (platform, or a client's own super admin for its own
+// tenants) and Store
 // Configuration (store.manage) are decided by the canonical authorization
 // context, not by roleType/accessMenu. They live in the Location ("Lokasi")
 // category's "Kelola Toko" section next to the store list. A role whose
@@ -14,7 +15,7 @@ const STORE_SECTION_KEY = "sidebar.section.kelolaToko";
 const splitCanonicalItems = (permissions) => {
   const tenantItems = [];
   const storeItems = [];
-  if (permissions.canManageTenants) {
+  if (permissions.canAdministerTenants) {
     tenantItems.push({
       title: "Tenant",
       i18nKey: "page.tenant.title",

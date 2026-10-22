@@ -179,7 +179,7 @@ describe("Location navigation category", () => {
 
   test("Tenant and Store Configuration join the Kelola Toko section", () => {
     const result = withCanonicalLocationItems(superAdminCategories, {
-      canManageTenants: true,
+      canAdministerTenants: true,
       canManageStores: true
     });
     const storeSection = result[0].sections[0];
@@ -196,25 +196,25 @@ describe("Location navigation category", () => {
     expect(
       hrefsOf(
         withCanonicalLocationItems(superAdminCategories, {
-          canManageTenants: false,
+          canAdministerTenants: false,
           canManageStores: true
         })
       )
     ).not.toContain("/tenant");
     expect(
       withCanonicalLocationItems(superAdminCategories, {
-        canManageTenants: false,
+        canAdministerTenants: false,
         canManageStores: false
       })
     ).toBe(superAdminCategories);
     expect(
-      canonicalLocationNavItems({ canManageTenants: true, canManageStores: false })
+      canonicalLocationNavItems({ canAdministerTenants: true, canManageStores: false })
     ).toHaveLength(1);
   });
 
   test("a role without a Location category gets one for these items", () => {
     const result = withCanonicalLocationItems([{ id: "produk", sections: [] }], {
-      canManageTenants: false,
+      canAdministerTenants: false,
       canManageStores: true
     });
     expect(hrefsOf(result)).toEqual(["/store-configuration"]);
