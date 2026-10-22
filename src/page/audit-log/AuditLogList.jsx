@@ -173,7 +173,9 @@ const AuditLogList = () => {
                       { value: "payment", label: "PAYMENT" },
                       { value: "refund", label: "REFUND" },
                       { value: "login", label: "LOGIN" },
-                      { value: "status_change", label: "STATUS CHANGE" }
+                      { value: "status_change", label: "STATUS CHANGE" },
+                      { value: "report_export", label: "REPORT EXPORT" },
+                      { value: "receipt_read", label: "RECEIPT READ" }
                     ]}
                     className="w-full sm:w-48"
                   />
