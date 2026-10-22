@@ -376,7 +376,7 @@ const CollectPaymentModal = ({ order, store, onClose, onOpenReceipt }) => {
     // the X, even mid-mutation), so wiring Escape to the same `onClose`
     // is a consistency fix, not new behavior.
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-sm p-0 overflow-hidden" withX={false}>
+      <DialogContent className="max-w-sm p-0 overflow-y-auto" withX={false}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
           <DialogTitle className="text-base font-bold">
             {t("page.cashier.collectPayment.title")}

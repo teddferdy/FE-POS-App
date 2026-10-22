@@ -403,7 +403,7 @@ const EditMemberTier = () => {
                     </div>
                     <button
                       onClick={() => removePerk(perk.id)}
-                      className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0">
+                      className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 disabled:opacity-0">
                       <Delete size={18} />
                     </button>
                   </div>

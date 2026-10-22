@@ -138,10 +138,11 @@ const PageHeader = ({
           </div>
         </div>
         {children && (
-          <div
-            className="overflow-x-auto shrink-0"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-            <div className="flex items-center gap-2 flex-nowrap">{children}</div>
+          // Actions wrap onto another row instead of scrolling behind a hidden
+          // scrollbar: on a tablet the clipped last button (often "Tambah …")
+          // was unreachable unless the user guessed to swipe the header.
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 lg:justify-end">{children}</div>
           </div>
         )}
       </div>

@@ -492,14 +492,14 @@ const Header = ({ onMenuToggle, onOpenPalette, sidebarCollapsed }) => {
 
   return (
     <header
-      className={`fixed top-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border transition-[left] duration-300 ${sidebarCollapsed ? "xl:left-16" : "xl:left-64"} left-0`}>
+      className={`fixed top-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border transition-[left] duration-300 ${sidebarCollapsed ? "desk:left-16" : "desk:left-64"} left-0`}>
       <div className="flex items-center justify-between px-4 lg:px-6 py-3 gap-4">
         {/* Left */}
         <div className="flex items-center gap-3 flex-1">
           <button
             aria-label={t("header.openMenu")}
             onClick={onMenuToggle}
-            className="xl:hidden p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+            className="desk:hidden p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Menu size={20} />
           </button>
           <button

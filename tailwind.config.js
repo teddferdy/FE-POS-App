@@ -29,6 +29,12 @@ module.exports = {
       }
     },
     extend: {
+      screens: {
+        // Desktop shell (sidebar rail that expands on hover): a wide screen
+        // WITH a mouse. Touch tablets of any width keep the drawer +
+        // hamburger, since a hover-only rail never shows its labels there.
+        desk: { raw: "(min-width: 1280px) and (hover: hover) and (pointer: fine)" }
+      },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans]
       },

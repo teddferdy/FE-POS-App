@@ -1532,7 +1532,7 @@ export default function DetailPurchaseOrder() {
                         alt={`Doc ${idx + 1}`}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute top-1 right-1 flex gap-1 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity">
                         <button
                           type="button"
                           onClick={() => window.open(d.url, "_blank")}

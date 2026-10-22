@@ -169,7 +169,7 @@ const GuidePanel = ({ onClose }) => {
                                   </span>
                                   <ExternalLink
                                     size={12}
-                                    className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                                    className="text-muted-foreground [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity shrink-0"
                                   />
                                 </div>
                                 <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
