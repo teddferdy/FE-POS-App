@@ -86,29 +86,99 @@ export const hrRoutes = (
     />
 
     <Route path="/employee-list" element={<EmployeeList />} />
-    <Route path="/add-employee" element={<AddEmployee />} />
-    <Route path="/edit-employee" element={<EditEmployee />} />
+    <Route
+      path="/add-employee"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <AddEmployee />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/edit-employee"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <EditEmployee />
+        </RequireRole>
+      }
+    />
     <Route path="/detail-employee" element={<DetailEmployee />} />
 
     <Route path="/position-list" element={<PositionList />} />
-    <Route path="/add-position" element={<AddPosition />} />
-    <Route path="/edit-position" element={<EditPosition />} />
+    <Route
+      path="/add-position"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <AddPosition />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/edit-position"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <EditPosition />
+        </RequireRole>
+      }
+    />
     <Route path="/detail-position" element={<DetailPosition />} />
 
     <Route path="/department-list" element={<DepartmentList />} />
-    <Route path="/add-department" element={<AddDepartment />} />
-    <Route path="/edit-department" element={<EditDepartment />} />
+    <Route
+      path="/add-department"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <AddDepartment />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/edit-department"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <EditDepartment />
+        </RequireRole>
+      }
+    />
     <Route path="/detail-department" element={<DetailDepartment />} />
 
     <Route path="/shift-list" element={<ShiftList />} />
-    <Route path="/add-shift" element={<AddShift />} />
-    <Route path="/edit-shift" element={<EditShift />} />
+    <Route
+      path="/add-shift"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <AddShift />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/edit-shift"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <EditShift />
+        </RequireRole>
+      }
+    />
     <Route path="/detail-shift" element={<DetailShift />} />
     <Route path="/my-shift" element={<MyShift />} />
 
     <Route path="/shift-template-list" element={<ShiftTemplateList />} />
-    <Route path="/add-shift-template" element={<AddShiftTemplate />} />
-    <Route path="/edit-shift-template" element={<EditShiftTemplate />} />
+    <Route
+      path="/add-shift-template"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <AddShiftTemplate />
+        </RequireRole>
+      }
+    />
+    <Route
+      path="/edit-shift-template"
+      element={
+        <RequireRole roles={["super_admin", "admin"]}>
+          <EditShiftTemplate />
+        </RequireRole>
+      }
+    />
     <Route path="/detail-shift-template" element={<DetailShiftTemplate />} />
 
     <Route path="/my-overtime" element={<MyOvertime />} />
