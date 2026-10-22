@@ -36,6 +36,7 @@ import {
 import { useUserSession } from "@/hooks/useUserSession";
 import { useStoreManagePermission } from "@/hooks/useStoreManagePermission";
 import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
+import { canOpenMenu } from "@/utils/pageAccess";
 import { canonicalLocationNavItems, withCanonicalLocationItems } from "@/lib/canonical-nav";
 import { endSession, SESSION_END_REASON } from "@/services/session";
 import { Loading } from "@/components/ui/loading";
@@ -84,7 +85,8 @@ const Sidebar = ({ collapsed = true, expandWidthClass = "w-64", onToggle, onHove
   const categories = useMemo(() => {
     const raw = hasAccessMenu || isSuperAdminRole(user) ? navCategories.super_admin || [] : [];
     let base = raw;
-    if (isMenuControlled) base = filterNavCategoriesByPermission(raw, user);
+    if (isMenuControlled)
+      base = filterNavCategoriesByPermission(raw, user, (href) => canOpenMenu(user, href));
     else if (isSuperAdminRole(user)) base = raw;
     else if (isAdminRole(user)) base = navCategories.admin || [];
     // Tenant and Store Configuration sit in the Location category, gated by

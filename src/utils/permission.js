@@ -199,11 +199,17 @@ export const filterMenuByPermission = (menuItems, user) => {
   return filterItems([...menuItems]);
 };
 
-export const filterNavCategoriesByPermission = (categories, user) => {
+// `canSee(href, actions)` decides one item; the Sidebar passes canOpenMenu
+// (utils/pageAccess) so the menu and opening the page by URL share a rule.
+export const filterNavCategoriesByPermission = (
+  categories,
+  user,
+  canSee = (href, actions) => hasMenuAccess(user, href, actions)
+) => {
   if (!user) return [];
   if (bypassesMenuPermissions(user)) return categories;
 
-  const hasAccess = (href, actions) => hasMenuAccess(user, href, actions);
+  const hasAccess = canSee;
 
   const result = [];
   categories.forEach((cat) => {

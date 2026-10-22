@@ -13,6 +13,9 @@ import { OfflineBanner } from "@/components/ui/OfflineIndicator";
 import { useStore } from "@/contexts/StoreContext";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useLocations } from "@/queries/useLocations";
+import { useUserSession } from "@/hooks/useUserSession";
+import { AccessDenied } from "@/components/ui/RequireRole";
+import { canOpenPage } from "@/utils/pageAccess";
 
 const tipsKeys = {
   "/product-list": ["tips.product", "tips.product2", "tips.product3"],
@@ -224,6 +227,8 @@ const DashboardLayout = () => {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [cookie] = useCookies();
   const location = useLocation();
+  // The full session user (cookie copy has accessMenu stripped), as the Sidebar reads it.
+  const sessionUser = useUserSession();
   const { activeStoreId, setActiveStore } = useStore();
 
   const user = cookie?.user;
@@ -351,7 +356,7 @@ const DashboardLayout = () => {
             <div
               key={location.pathname}
               className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <Outlet />
+              {canOpenPage(sessionUser, location.pathname) ? <Outlet /> : <AccessDenied />}
             </div>
           </SidebarContext.Provider>
           {tips && (
