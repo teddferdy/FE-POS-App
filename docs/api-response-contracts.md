@@ -1,11 +1,11 @@
 # Kontrak Response API — ERP & Akuntansi (BE → FE)
 
-**Status:** berlaku untuk `BE-POS-App` master (`f3b5169`, 2026-10-18).
+**Status:** berlaku untuk `BE-POS-App` master (`c9fe118`, 2026-10-23).
 **Cakupan:** konvensi envelope & error global, modul akuntansi (COA, jurnal, laporan), expense, purchase (PO → goods receipt → purchase payment), sales return, dan order/tender kasir.
 **Dokumen terkait:**
-- `docs/order-create-client-contract.md` — siklus hidup idempotency key `POST /order/create` + jalur recovery (BE).
-- `API_DOCUMENTATION.md` — katalog endpoint lengkap (BE).
-- `SIMULATION_ERP_DEV_TEST_RESULTS.md` — bukti perilaku (46/46 check) di repo POS-APP.
+- `../../BE-POS-App/docs/order-create-client-contract.md` — siklus hidup idempotency key `POST /order/create` + jalur recovery (BE).
+- `../../BE-POS-App/API_DOCUMENTATION.md` — katalog endpoint lengkap (BE).
+- `../../SIMULATION_ERP_DEV_TEST_RESULTS.md` — bukti perilaku (46/46 check) di repo POS-APP.
 
 > Dokumen ini fokus pada **bentuk response** (field, status, kode error) yang harus diandalkan FE. Semua contoh JSON diambil langsung dari kode BE. Bila terjadi perbedaan, kode BE adalah sumber kebenaran.
 
@@ -44,7 +44,7 @@ Deteksi di FE: cek `typeof body.success === 'boolean'` dulu; kalau tidak ada, in
 Endpoint tulis yang menerima `idempotencyKey` (order, sales return, goods receipt, purchase payment):
 - Retry dengan key sama + payload sama → **replay** (200, tanpa efek baru).
 - Key sama + payload beda → `409 IDEMPOTENCY_MISMATCH` dengan `fields[]`.
-- Detail siklus hidup lengkap: `docs/order-create-client-contract.md`.
+- Detail siklus hidup lengkap: `../../BE-POS-App/docs/order-create-client-contract.md`.
 
 ---
 
