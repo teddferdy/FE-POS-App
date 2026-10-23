@@ -1,29 +1,30 @@
 # Bisa Nota - Frontend
 
-[![CI/CD](https://github.com/teddferdy/FE-POS-App/actions/workflows/ci.yml/badge.svg)](https://github.com/teddferdy/FE-POS-App/actions/workflows/ci.yml)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 
 Point of Sale (POS) web application frontend built with React, Vite, and shadcn/ui.
+
+> **Checkpoint:** reconciled against `master` `ab03f3ab` on 2026-10-23. 192 `<Route>` tags, 69 service files, 200 Jest test files. The route tables below list the main screens; the full catalog is `POS-MASTER-PRODUCT-DOCUMENTATION.md` §10 in the parent POS-APP folder. Socket.IO is unavailable on serverless Vercel; KDS/queue fall back to polling.
 
 ## Tech Stack
 
 | Category | Technology |
 |----------|-----------|
-| **Framework** | React 18, Vite 5 |
+| **Framework** | React 18, Vite 7 |
 | **UI Library** | shadcn/ui (Radix UI primitives) |
 | **Styling** | Tailwind CSS 3 |
-| **State Management** | Zustand, React Query |
+| **State Management** | Zustand, React Query v3 (`react-query`) |
 | **Forms** | React Hook Form + Zod validation |
-| **Routing** | React Router v6 |
-| **i18n** | i18next (EN, ID, JP) |
+| **Routing** | React Router v7 |
+| **i18n** | i18next (EN, ID) |
 | **HTTP** | Axios |
-| **Real-time** | Socket.IO Client |
+| **Real-time** | Socket.IO Client (no socket server on Vercel → polling fallback) |
 | **Charts** | Recharts |
 | **Maps** | Leaflet + React-Leaflet |
 | **Monitoring** | Sentry |
 | **Export/Import** | SheetJS (xlsx) |
-| **PWA** | Service Worker + Manifest |
+| **Service worker** | `public/sw.js` caches static shell + a few read APIs; no offline mode (DR-25) |
 
 ---
 
@@ -46,9 +47,14 @@ npm install
 
 Create `.env` file:
 
+Copy `.env.example` to `.env`:
+
 ```env
-VITE_BASE_URL=https://api-bisa-nota.vercel.app
+VITE_BASE_URL=https://api-bisa-nota.vercel.app      # required
+VITE_ORDER_APP_URL=https://order-app-dun.vercel.app # BISA-MAKAN-APP base URL for table QR codes (this is the default)
 ```
+
+Vite inlines `VITE_*` at build time, so a change needs a rebuild/redeploy.
 
 ### Development
 
@@ -67,7 +73,7 @@ npm run preview    # Preview production build
 
 ```bash
 npm run lint       # Run ESLint
-npm run test       # Run Jest tests
+npm run test       # Run Jest tests (200 files)
 ```
 
 ---
@@ -85,7 +91,7 @@ src/
 ├── i18n/                 # Translations (en.json, id.json)
 ├── lib/                  # Utility libraries, constants
 ├── page/                 # Page components (45+ modules, lazy-loaded)
-├── services/             # API service layer (50+ files, Axios-based)
+├── services/             # API service layer (69 files, Axios-based)
 ├── state/                # Zustand stores (theme, checkout, order, tour, etc.)
 ├── utils/                # Utilities (permissions, sidebar menu, formatters)
 ├── App.jsx               # Root router config
@@ -98,14 +104,14 @@ src/
 
 ### Core POS
 - **Cashier Terminal** - Product grid, cart, order queue, checkout
-- **Kitchen Display System (KDS)** - Real-time order notifications via Socket.IO
+- **Kitchen Display System (KDS)** - Order updates via Socket.IO on a long-running server; polling on Vercel
 - **Customer Self-Order** - QR code menu, cart, and order tracking
 - **Customer Display** - Customer-facing order display screen
 - **Split Bill** - Divide orders among multiple customers
 - **Thermal Printing** - ESC/POS receipt printing via Bluetooth
 
 ### Inventory & Procurement
-- **Product Management** - CRUD, categories, sub-categories, images, per-store pricing
+- **Product Management** - CRUD, categories, images, per-store pricing
 - **Stock Management** - History, opname, adjustment, low stock alerts
 - **Stock Transfer** - Inter-store transfers with receive/cancel workflow
 - **Purchase Orders** - Create, approve, partial payments, goods receipt
@@ -115,7 +121,7 @@ src/
 
 ### People & Access
 - **Employee Management** - CRUD with avatar, salary, contract info
-- **Role-Based Access Control (RBAC)** - 5 role types, granular per-menu permissions
+- **Role-Based Access Control (RBAC)** - 4 role types, granular per-menu permissions (menu enforcement partial: 30/77 BE route files write-gated)
 - **Departments & Positions** - Hierarchical organization management
 - **Members & Loyalty** - Points accumulation, redemption, tier system
 
@@ -137,9 +143,9 @@ src/
 - **Notifications** - In-app notification system
 
 ### Platform Features
-- **Internationalization (i18n)** - English, Indonesian, Japanese
+- **Internationalization (i18n)** - English, Indonesian
 - **Dark Mode** - Full dark theme support
-- **PWA** - Offline indicator, auto-sync on reconnect
+- **Connection indicator** - Warns when offline that saves/payments/prints are blocked; nothing is queued or synced (DR-25)
 - **Keyboard Shortcuts** - Ctrl+S (submit), Ctrl+N (add new)
 - **Guided Tours** - Super admin onboarding tour
 - **Excel Import/Export** - Products, suppliers, categories, departments, positions
@@ -154,7 +160,7 @@ src/
 | Route | Description |
 |-------|-------------|
 | `/` | Login |
-| `/register` | Registration |
+| `/register` | Registration (redirects to `/` unless public registration is enabled) |
 | `/reset-password` | Password Reset |
 | `/home` | Cashier Terminal |
 | `/customer-display` | Customer Display Screen |
@@ -170,7 +176,7 @@ src/
 |-------|-------------|
 | `/kitchen-display` | Kitchen Display System |
 | `/qr-order-management` | QR Order Management |
-| `/cash-register/*` | Cash Register (open/close, current, history) |
+| `/cash-register/open-close`, `/current`, `/history`, `/history/detail`, `/xz-report` | Cash Register |
 | `/table-list` | Table Management |
 
 ### Products & Inventory
@@ -223,7 +229,9 @@ src/
 | `/expense-category` | Expense Category List |
 | `/report/sales` | Sales Report |
 | `/report/daily` | Daily Report |
-| `/report/profit-loss` | Profit & Loss Report |
+| `/report/profit-per-product` | Profit per Product Report |
+| `/report/settings` | Report column/branding settings |
+| `/advanced-reporting` | Advanced Reporting |
 | `/report/cash-flow` | Cash Flow Report |
 | `/best-selling` | Best Selling Report |
 
@@ -250,9 +258,8 @@ src/
 |------|-------------|--------|
 | **super_admin** | Owner | All stores, all features |
 | **admin** | Store Manager | Store-level access |
-| **cashier** | POS Staff | POS + Membership |
+| **kasir** | POS Staff | POS + Membership |
 | **user** | General Staff | Dashboard + basic reports |
-| **kitchen** | Kitchen Staff | KDS only |
 
 Sidebar menus, page access, and button permissions are all controlled by RBAC. See `src/utils/sidebar-menu.js` and `src/utils/permission.js`.
 
@@ -262,7 +269,8 @@ Sidebar menus, page access, and button permissions are all controlled by RBAC. S
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `VITE_BASE_URL` | Backend API URL | `https://api-bisa-nota.vercel.app` |
+| `VITE_BASE_URL` | Backend API URL (required) | `https://api-bisa-nota.vercel.app` |
+| `VITE_ORDER_APP_URL` | BISA-MAKAN-APP base URL used in table QR codes | `https://order-app-dun.vercel.app` (default) |
 
 ---
 
@@ -272,12 +280,13 @@ Deployed on **Vercel** with SPA rewrites configured in `vercel.json`.
 
 - **Demo**: https://bisa-nota-demo.vercel.app
 - **API**: https://api-bisa-nota.vercel.app
+- **CI**: GitHub Actions is currently disabled at the organisation level; run `npm run lint` and `npm test` locally before pushing.
 
 ---
 
 ## Related
 
-- [Backend API](../BE-POS-APP/README.md)
+- [Backend API](../BE-POS-App/README.md)
 - [Referensi API Backend — FE](./docs/backend-api-reference.md) (pemetaan seluruh pemanggilan `src/services/*` ke endpoint BE)
 - [API Response Contracts — ERP/Akuntansi](./docs/api-response-contracts.md) (envelope, error codes, response shapes BE → FE)
 - [Super Admin Guide](./PANDUAN-SUPER-ADMIN.md)

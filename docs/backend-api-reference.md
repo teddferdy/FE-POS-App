@@ -2,6 +2,8 @@
 
 Dokumen ini memetakan **seluruh panggilan HTTP** yang dilakukan aplikasi frontend (`src/services/*`) ke endpoint backend (`BE-POS-App`). Gunakan dokumen ini saat menelusuri dari layar → service → endpoint, atau saat endpoint backend berubah.
 
+> **Checkpoint:** FE `ab03f3ab`; BE `c9fe118` (2026-10-23). Backend endpoint count is documented in `BE-POS-App/API_DOCUMENTATION.md` (544 route handlers + 3 inline routes).
+
 **Sumber kebenaran:** kode di `src/services/` (dokumen ini dihasilkan dari pemindaian seluruh panggilan `axiosInstance.*`). Bila ada perbedaan dengan backend, kode BE adalah sumber kebenaran.
 
 ## Konfigurasi HTTP (`src/services/index.js`)
@@ -26,8 +28,8 @@ Setiap entri berisi:
 Dokumen terkait:
 
 - `docs/api-response-contracts.md` — kontrak response ERP/akuntansi (envelope, kode error) yang harus diandalkan FE.
-- `docs/order-create-client-contract.md` — siklus hidup idempotency key `POST /order/create`.
-- `API_DOCUMENTATION.md` (repo BE) — katalog lengkap endpoint + contoh response dari sisi backend.
+- `../../BE-POS-App/docs/order-create-client-contract.md` — siklus hidup idempotency key `POST /order/create`.
+- `../../BE-POS-App/API_DOCUMENTATION.md` (repo BE) — katalog lengkap endpoint + contoh response dari sisi backend.
 
 ---
 
@@ -310,6 +312,13 @@ Dokumen terkait:
 - **Dikirim:** tanpa param
 - **Dipakai:** tidak ada nilai kembali — memicu unduhan file di browser
 - **Catatan:** `responseType: 'arraybuffer'`; blob MIME xlsx; endpoint: `/ingredient/download-template`, `/ingredient/download`; nama file: `template-bahan-baku.xlsx`, `<timestamp>-bahan-baku.xlsx`; (path dibangun dinamis)
+---
+
+### GET `/ingredient/stock-summary`
+- **Service:** `src/services/ingredient.js` → `getIngredientStockSummary({ store, startDate, endDate })`
+- **Dikirim:** query `store` (kecuali `"all"`), `startDate`, `endDate` (`YYYY-MM-DD`) — masing-masing hanya bila diisi
+- **Dipakai:** `res.data` (`data.items[]` per bahan + `data.menuSold[]`)
+- **Catatan:** status selain 200 → `throw Error(data.message)`
 ---
 
 ### GET `/ingredient/product-names`
@@ -718,6 +727,13 @@ Dokumen terkait:
 ---
 
 
+### DELETE `/tenants/${id}`
+- **Service:** `src/services/tenant.js` → `deleteTenant(id)`
+- **Dikirim:** path `id`
+- **Dipakai:** `res.data`
+- **Catatan:** hanya tenant kosong (tanpa store, tanpa member aktif lain); selain itu BE 409 `TENANT_HAS_STORES` / `TENANT_HAS_MEMBERS`
+---
+
 ## Export Laporan
 
 ### GET `/report/export/${key}`
@@ -727,6 +743,13 @@ Dokumen terkait:
 - **Catatan:** `responseType: 'arraybuffer'`; nama file dari header `content-disposition` server bila ada, fallback `${filename}.<ext>`; MIME per format (`excel` → `.xlsx`, `pdf`, `csv`); (path dibangun dinamis)
 ---
 
+
+### GET `/report/data/${key}`
+- **Service:** `src/services/reportData.js` → `getReportData(key, params = {})`
+- **Dikirim:** query = seluruh entri `params` yang nilainya bukan `undefined`/`null`/string kosong; `key` menjadi segmen path
+- **Dipakai:** `res.data.data` (`columns`, `rows`, `totals`, `title`, …) — kolom sama dengan export & `/report/settings`
+- **Catatan:** status selain 200 → `throw Error(data.message)`
+---
 
 ## Expense
 
@@ -1969,6 +1992,20 @@ Dokumen terkait:
 - **Dipakai:** `data` (dari `res.data`)
 - **Catatan:** (path dibangun dinamis); sukses 200/201/204; error memakai `data.error`
 
+---
+
+### GET `/pos/tables/status`
+- **Service:** `src/services/table.js` → `getCashierTables(storeId)`
+- **Dikirim:** query `storeId`
+- **Dipakai:** `res.data` (`data[]` meja + `unpaidOrders`, `canRelease`, `blockedReason`)
+- **Catatan:** panel "Meja" kasir (BA C-16); status selain 200 → `throw Error(data.message)`
+---
+
+### PUT `/pos/tables/${id}/release`
+- **Service:** `src/services/table.js` → `releaseCashierTable({ id, reason, storeId })`
+- **Dikirim:** path `id`; body `{ reason }`; query `storeId`
+- **Dipakai:** `res.data`
+- **Catatan:** reason wajib; kasir ditolak 409 bila meja masih punya pesanan belum dibayar
 ---
 
 
@@ -3438,11 +3475,11 @@ Dokumen terkait:
 
 ---
 
-### POST `/pos/invoice/send-wa`
-- **Service:** `src/services/invoice.js` → `sendInvoiceWhatsApp(payload)`
-- **Dikirim:** body `payload` (diteruskan apa adanya)
-- **Dipakai:** `data` (dari `res.data`)
-- **Catatan:** diekspor juga sebagai alias `sendInvoiceWA` (tanpa panggilan HTTP tambahan)
+### GET `/pos/invoice/wa-text/${orderId}`
+- **Service:** `src/services/invoice.js` → `getInvoiceWhatsAppText(orderId)`
+- **Dikirim:** path `orderId`
+- **Dipakai:** `res.data` (`data.text`) — dibuka lewat `wa.me` di WhatsApp kasir; server tidak mengirim apa pun
+- **Catatan:** pengganti `send-wa` / `whatsapp/status` / `whatsapp/restart` (Fonnte dihapus 2026-10-20)
 
 ---
 
@@ -3453,23 +3490,6 @@ Dokumen terkait:
 - **Catatan:** —
 
 ---
-
-### GET `/pos/whatsapp/status`
-- **Service:** `src/services/invoice.js` → `getWhatsAppStatus(storeId)`
-- **Dikirim:** query `storeId` (lewat `params`)
-- **Dipakai:** `data` (dari `res.data`)
-- **Catatan:** —
-
----
-
-### POST `/pos/whatsapp/restart`
-- **Service:** `src/services/invoice.js` → `restartWhatsApp(storeId)`
-- **Dikirim:** body `null` (tanpa body); query `storeId` (lewat `params`)
-- **Dipakai:** `data` (dari `res.data`)
-- **Catatan:** —
-
----
-
 
 ## Parked Cart
 
