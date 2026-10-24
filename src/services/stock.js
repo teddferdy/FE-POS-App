@@ -6,6 +6,8 @@ export const getAllStockHistory = async (payload) => {
   if (payload?.limit) params.append("limit", payload.limit);
   if (payload?.store) params.append("store", payload.store);
   if (payload?.product) params.append("product", payload.product);
+  if (payload?.itemType) params.append("itemType", payload.itemType);
+  if (payload?.ingredient) params.append("ingredient", payload.ingredient);
   if (payload?.referenceType) params.append("referenceType", payload.referenceType);
   if (payload?.startDate) params.append("startDate", payload.startDate);
   if (payload?.endDate) params.append("endDate", payload.endDate);

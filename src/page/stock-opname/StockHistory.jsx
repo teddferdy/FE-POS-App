@@ -5,6 +5,8 @@ import { useCookies } from "react-cookie";
 import { Calendar } from "lucide-react";
 import { getAllStockHistory } from "@/services/stock";
 import { getAllProductTable } from "@/services/product";
+import { getAllIngredients } from "@/services/ingredient";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Combobox } from "@/components/ui/combobox";
 import DataTable from "@/components/ui/DataTable";
 import TableToolbar from "@/components/ui/TableToolbar";
@@ -54,7 +56,11 @@ const StockHistory = () => {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  // Client note 2026-10-24: ingredients and finished products on separate
+  // tabs, ingredients first (a recipe menu's sales show up there).
+  const [itemType, setItemType] = useState("ingredient");
   const [productFilter, setProductFilter] = useState("");
+  const [ingredientFilter, setIngredientFilter] = useState("");
   const [referenceFilter, setReferenceFilter] = useState("");
   const [startDate, setStartDate] = useState(undefined);
   const [endDate, setEndDate] = useState(undefined);
@@ -73,6 +79,7 @@ const StockHistory = () => {
 
   const isFiltered =
     productFilter !== "" ||
+    ingredientFilter !== "" ||
     referenceFilter !== "" ||
     !!startDate ||
     !!endDate ||
@@ -80,6 +87,7 @@ const StockHistory = () => {
 
   const resetFilters = () => {
     setProductFilter("");
+    setIngredientFilter("");
     setReferenceFilter("");
     setStartDate(undefined);
     setEndDate(undefined);
@@ -88,13 +96,26 @@ const StockHistory = () => {
   };
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["stock-history", page, pageSize, productFilter, referenceFilter, startDate, endDate, store],
+    [
+      "stock-history",
+      itemType,
+      page,
+      pageSize,
+      productFilter,
+      ingredientFilter,
+      referenceFilter,
+      startDate,
+      endDate,
+      store
+    ],
     () =>
       getAllStockHistory({
         page,
         limit: pageSize,
         store,
-        product: productFilter || undefined,
+        itemType,
+        product: itemType === "product" ? productFilter || undefined : undefined,
+        ingredient: itemType === "ingredient" ? ingredientFilter || undefined : undefined,
         referenceType: referenceFilter || undefined,
         startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
         endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined
@@ -102,9 +123,25 @@ const StockHistory = () => {
     { keepPreviousData: true }
   );
 
-  const { data: productsData } = useQuery(["products-dropdown", searchProduct], () =>
-    getAllProductTable({ location: "", limit: 100, page: 1, statusProduct: "all" })
+  const { data: productsData } = useQuery(
+    ["products-dropdown", searchProduct],
+    () => getAllProductTable({ location: "", limit: 100, page: 1, statusProduct: "all" }),
+    { enabled: itemType === "product" }
   );
+
+  const { data: ingredientsData } = useQuery(
+    ["ingredients-dropdown", store],
+    () => getAllIngredients({ store: store || undefined, limit: 999 }),
+    { enabled: itemType === "ingredient" }
+  );
+  const ingredients = ingredientsData?.data || [];
+
+  const changeItemType = (next) => {
+    setItemType(next);
+    setProductFilter("");
+    setIngredientFilter("");
+    setPage(1);
+  };
 
   const histories = data?.data || [];
   const pagination = data?.pagination || {};
@@ -180,7 +217,10 @@ const StockHistory = () => {
       render: (h) => <span className="text-xs whitespace-nowrap">{formatDate(h.createdAt)}</span>
     },
     {
-      header: t("page.stockHistory.table.product"),
+      header:
+        itemType === "ingredient"
+          ? t("page.stockHistory.table.ingredient")
+          : t("page.stockHistory.table.product"),
       // A recipe sale writes one row per ingredient that also carries the
       // menu product, so the ingredient row is named by its ingredient and
       // the menu is only the context.
@@ -188,20 +228,14 @@ const StockHistory = () => {
         h.ingredient ? (
           <span className="flex flex-col">
             <span className="font-medium text-sm">{h.ingredientName || "-"}</span>
-            <span className="text-[11px] text-muted-foreground">
-              {t("page.stockHistory.item.ingredient")}
-              {h.productData?.nameProduct
-                ? ` · ${t("page.stockHistory.item.forMenu", { name: h.productData.nameProduct })}`
-                : ""}
-            </span>
+            {h.productData?.nameProduct && (
+              <span className="text-[11px] text-muted-foreground">
+                {t("page.stockHistory.item.forMenu", { name: h.productData.nameProduct })}
+              </span>
+            )}
           </span>
         ) : (
-          <span className="flex flex-col">
-            <span className="font-medium text-sm">{h.productData?.nameProduct || "-"}</span>
-            <span className="text-[11px] text-muted-foreground">
-              {t("page.stockHistory.item.product")}
-            </span>
-          </span>
+          <span className="font-medium text-sm">{h.productData?.nameProduct || "-"}</span>
         )
     },
     {
@@ -217,7 +251,14 @@ const StockHistory = () => {
     {
       header: t("page.stockHistory.table.after"),
       align: "right",
-      render: (h) => <span className="text-sm font-semibold">{formatNumber(h.quantityAfter)}</span>
+      render: (h) => (
+        <span className="text-sm font-semibold">
+          {formatNumber(h.quantityAfter)}
+          {h.unit && (
+            <span className="ml-1 text-xs font-normal text-muted-foreground">{h.unit}</span>
+          )}
+        </span>
+      )
     },
     {
       header: t("page.stockHistory.table.type"),
@@ -253,6 +294,12 @@ const StockHistory = () => {
         <NoStore />
       ) : (
         <>
+          <Tabs value={itemType} onValueChange={changeItemType} className="mb-4">
+            <TabsList>
+              <TabsTrigger value="ingredient">{t("page.stockHistory.tab.ingredient")}</TabsTrigger>
+              <TabsTrigger value="product">{t("page.stockHistory.tab.product")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
           {isError ? (
             <AbortController refetch={refetch} />
           ) : (
@@ -293,27 +340,51 @@ const StockHistory = () => {
                             />
                           </div>
                         ),
-                        <div key="product">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                            {t("page.stockHistory.filter.product")}
-                          </label>
-                          <Combobox
-                            options={[
-                              { value: "", label: t("page.stockHistory.filter.allProducts") },
-                              ...products.map((p) => ({
-                                value: String(p.id || p._id),
-                                label: p.name || p.nameProduct
-                              }))
-                            ]}
-                            value={productFilter}
-                            onChange={(v) => {
-                              setProductFilter(v);
-                              setPage(1);
-                            }}
-                            placeholder={t("page.stockHistory.filter.allProducts")}
-                            searchPlaceholder={t("common.search")}
-                          />
-                        </div>,
+                        itemType === "ingredient" ? (
+                          <div key="ingredient">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                              {t("page.stockHistory.filter.ingredient")}
+                            </label>
+                            <Combobox
+                              options={[
+                                { value: "", label: t("page.stockHistory.filter.allIngredients") },
+                                ...ingredients.map((i) => ({
+                                  value: String(i.id),
+                                  label: i.name
+                                }))
+                              ]}
+                              value={ingredientFilter}
+                              onChange={(v) => {
+                                setIngredientFilter(v);
+                                setPage(1);
+                              }}
+                              placeholder={t("page.stockHistory.filter.allIngredients")}
+                              searchPlaceholder={t("common.search")}
+                            />
+                          </div>
+                        ) : (
+                          <div key="product">
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                              {t("page.stockHistory.filter.product")}
+                            </label>
+                            <Combobox
+                              options={[
+                                { value: "", label: t("page.stockHistory.filter.allProducts") },
+                                ...products.map((p) => ({
+                                  value: String(p.id || p._id),
+                                  label: p.name || p.nameProduct
+                                }))
+                              ]}
+                              value={productFilter}
+                              onChange={(v) => {
+                                setProductFilter(v);
+                                setPage(1);
+                              }}
+                              placeholder={t("page.stockHistory.filter.allProducts")}
+                              searchPlaceholder={t("common.search")}
+                            />
+                          </div>
+                        ),
                         <div key="ref">
                           <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
                             {t("page.stockHistory.filter.referenceType")}

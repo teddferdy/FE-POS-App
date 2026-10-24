@@ -1525,9 +1525,9 @@ Dokumen terkait:
 
 ### GET `/stock-history/get-all`
 - **Service:** `src/services/stock.js` → `getAllStockHistory(payload)`
-- **Dikirim:** query `page`, `limit`, `store`, `product`, `referenceType`, `startDate`, `endDate` (kondisional — hanya bila terisi)
+- **Dikirim:** query `page`, `limit`, `store`, `product`, `itemType`, `ingredient`, `referenceType`, `startDate`, `endDate` (kondisional — hanya bila terisi)
 - **Dipakai:** `data` (dari `res.data`)
-- **Catatan:** —
+- **Catatan:** `StockHistory.jsx` selalu mengirim `itemType` sesuai tab (`ingredient` default, `product`); `ingredient` hanya di tab Bahan Baku, `product` hanya di tab Produk. Butuh BE dengan filter `itemType` (BE #266)
 
 ---
 
