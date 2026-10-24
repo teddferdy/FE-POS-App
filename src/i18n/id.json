@@ -694,7 +694,7 @@
   "page.lowStock.description": "Produk dengan stok menipis",
   "page.lowStock.empty": "Semua produk dalam stok cukup",
   "page.stockHistory.title": "History Stok",
-  "page.stockHistory.description": "Riwayat perubahan stok produk",
+  "page.stockHistory.description": "Riwayat perubahan stok produk dan bahan baku",
   "page.stockHistory.search": "Cari...",
   "page.stockHistory.empty": "Belum ada history stok",
   "breadcrumb.location": "Lokasi",
@@ -2383,7 +2383,7 @@
   "page.stockHistory.reference.saleReversal": "Pembatalan Penjualan",
   "page.stockHistory.reference.productionReversal": "Pembatalan Produksi",
   "page.stockHistory.table.time": "Waktu",
-  "page.stockHistory.table.product": "Produk",
+  "page.stockHistory.table.product": "Item",
   "page.stockHistory.table.before": "Sebelum",
   "page.stockHistory.table.change": "Perubahan",
   "page.stockHistory.table.after": "Sesudah",
@@ -8564,5 +8564,10 @@
   "page.cashRegister.current.varianceLess": "Kurang {{amount}} dari perkiraan",
   "page.customerOrder.pendingDesc": "{{count}} pesanan menunggu konfirmasi",
   "page.customerOrder.itemsCount": "{{count}} item",
-  "page.purchaseOrder.edit.lockedAfterReceipt": "Tidak dapat diubah karena barang sudah diterima"
+  "page.purchaseOrder.edit.lockedAfterReceipt": "Tidak dapat diubah karena barang sudah diterima",
+  "page.stockHistory.item.ingredient": "Bahan baku",
+  "page.stockHistory.item.product": "Produk",
+  "page.stockHistory.item.forMenu": "untuk {{name}}",
+  "page.bom.toast.recipeModeAdopted": "Produk sekarang memotong bahan baku",
+  "page.bom.toast.recipeModeAdoptedDesc": "Pemotongan stok produk diubah ke \"Dibuat sesuai pesanan (resep)\". Setiap penjualan mengurangi bahan baku sesuai resep ini. Ubah di Edit Produk bila produk dijual dari stok jadi."
 }

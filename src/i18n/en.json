@@ -694,7 +694,7 @@
   "page.lowStock.description": "Products with low stock",
   "page.lowStock.empty": "All products have sufficient stock",
   "page.stockHistory.title": "Stock History",
-  "page.stockHistory.description": "Product stock change history",
+  "page.stockHistory.description": "Product and ingredient stock change history",
   "page.stockHistory.search": "Search...",
   "page.stockHistory.empty": "No stock history found",
   "breadcrumb.location": "Location",
@@ -2386,7 +2386,7 @@
   "page.stockHistory.reference.saleReversal": "Sale Reversal",
   "page.stockHistory.reference.productionReversal": "Production Reversal",
   "page.stockHistory.table.time": "Time",
-  "page.stockHistory.table.product": "Product",
+  "page.stockHistory.table.product": "Item",
   "page.stockHistory.table.before": "Before",
   "page.stockHistory.table.change": "Change",
   "page.stockHistory.table.after": "After",
@@ -8564,5 +8564,10 @@
   "page.cashRegister.current.varianceLess": "{{amount}} short of expected",
   "page.customerOrder.pendingDesc": "{{count}} orders awaiting confirmation",
   "page.customerOrder.itemsCount": "{{count}} items",
-  "page.purchaseOrder.edit.lockedAfterReceipt": "Locked because goods have already been received"
+  "page.purchaseOrder.edit.lockedAfterReceipt": "Locked because goods have already been received",
+  "page.stockHistory.item.ingredient": "Ingredient",
+  "page.stockHistory.item.product": "Product",
+  "page.stockHistory.item.forMenu": "for {{name}}",
+  "page.bom.toast.recipeModeAdopted": "The product now uses up its ingredients",
+  "page.bom.toast.recipeModeAdoptedDesc": "Its stock deduction was changed to \"Made to order (recipe)\". Every sale now deducts the ingredients of this recipe. Change it in Edit Product if it is sold from finished stock."
 }

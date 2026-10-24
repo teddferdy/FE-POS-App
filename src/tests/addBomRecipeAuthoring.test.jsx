@@ -6,6 +6,7 @@ import AddBom from "../page/bom/AddBom";
 import { addBom, editBom, getBomById } from "../services/bom";
 import { getAllIngredients } from "../services/ingredient";
 import { getAllSupplier } from "../services/supplier";
+import { toast } from "sonner";
 
 // Recipe (BOM) authoring for per-recipe stock deduction (e.g. a bakso shop):
 // ingredients made in-house have no supplier, the line unit is always the
@@ -30,7 +31,7 @@ jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
 }));
 jest.mock("sonner", () => ({
-  toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn() }
+  toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn(), info: jest.fn() }
 }));
 jest.mock("react-cookie", () => ({
   useCookies: () => [{ user: mockUser }]
@@ -126,6 +127,31 @@ describe("AddBom — in-house ingredients without a supplier", () => {
       { ingredientId: 22, qty: 2, unit: "pcs", notes: "" },
       { ingredientId: 21, qty: 2, unit: "pcs", notes: "" }
     ]);
+  });
+});
+
+describe("AddBom — recipe deduction notice", () => {
+  const saveOneLine = async () => {
+    renderPage();
+    await pickIngredient(0, "Bakso Halus");
+    setQty(0, "5");
+    fireEvent.click(screen.getByText("page.bom.add.form.save"));
+    await waitFor(() => expect(addBom).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/bom"));
+  };
+
+  test("tells the owner when the product now deducts its ingredients", async () => {
+    addBom.mockResolvedValue({ success: true, recipeModeAdopted: true });
+    await saveOneLine();
+    expect(toast.info).toHaveBeenCalledWith("page.bom.toast.recipeModeAdopted", {
+      description: "page.bom.toast.recipeModeAdoptedDesc"
+    });
+  });
+
+  test("says nothing extra when the product mode was left alone", async () => {
+    addBom.mockResolvedValue({ success: true, recipeModeAdopted: false });
+    await saveOneLine();
+    expect(toast.info).not.toHaveBeenCalled();
   });
 });
 

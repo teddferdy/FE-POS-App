@@ -181,11 +181,28 @@ const StockHistory = () => {
     },
     {
       header: t("page.stockHistory.table.product"),
-      render: (h) => (
-        <span className="font-medium text-sm">
-          {h.productData?.nameProduct || h.ingredientName || "-"}
-        </span>
-      )
+      // A recipe sale writes one row per ingredient that also carries the
+      // menu product, so the ingredient row is named by its ingredient and
+      // the menu is only the context.
+      render: (h) =>
+        h.ingredient ? (
+          <span className="flex flex-col">
+            <span className="font-medium text-sm">{h.ingredientName || "-"}</span>
+            <span className="text-[11px] text-muted-foreground">
+              {t("page.stockHistory.item.ingredient")}
+              {h.productData?.nameProduct
+                ? ` · ${t("page.stockHistory.item.forMenu", { name: h.productData.nameProduct })}`
+                : ""}
+            </span>
+          </span>
+        ) : (
+          <span className="flex flex-col">
+            <span className="font-medium text-sm">{h.productData?.nameProduct || "-"}</span>
+            <span className="text-[11px] text-muted-foreground">
+              {t("page.stockHistory.item.product")}
+            </span>
+          </span>
+        )
     },
     {
       header: t("page.stockHistory.table.before"),
