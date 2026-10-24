@@ -18,11 +18,13 @@ import {
   CheckCircle2,
   AlertTriangle,
   CalendarDays,
-  Wallet
+  Wallet,
+  Undo2
 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Modal from "@/components/organism/modal";
@@ -118,7 +120,8 @@ const JOURNAL_SOURCES = [
   "expense",
   "order_reversal",
   "cogs_reversal",
-  "manual"
+  "manual",
+  "manual_reversal"
 ];
 
 const CardSection = ({ title, children, icon: Icon, className = "" }) => (
@@ -519,6 +522,7 @@ const JournalTab = ({ storeId, isAll }) => {
   const queryClient = useQueryClient();
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [reverseReason, setReverseReason] = useState("");
   const [search, setSearch] = useState("");
   const [sourceType, setSourceType] = useState("all");
   const [dateRange, setDateRange] = useState({ from: null, to: null });
@@ -554,14 +558,16 @@ const JournalTab = ({ storeId, isAll }) => {
     }
   );
 
-  const deleteMut = useMutation((id) => deleteJournal(id), {
+  const deleteMut = useMutation(({ id, reason }) => deleteJournal(id, reason), {
     onSuccess: () => {
-      toast.success(t("page.accounting.toast.deleteSuccess"));
+      toast.success(t("page.accounting.toast.reverseSuccess"));
       setDeleting(null);
+      setReverseReason("");
       queryClient.invalidateQueries(["accounting-journals", storeId || "all"]);
+      queryClient.invalidateQueries(["accounting-trial", storeId || "all"]);
     },
     onError: (err) =>
-      toast.error(err?.response?.data?.message || t("page.accounting.toast.deleteFailed"))
+      toast.error(err?.response?.data?.message || t("page.accounting.toast.reverseFailed"))
   });
 
   const createMut = useMutation((payload) => createManualJournal({ ...payload, store: storeId }), {
@@ -788,6 +794,11 @@ const JournalTab = ({ storeId, isAll }) => {
                     <span className="inline-flex px-2 py-0.5 rounded-full bg-accent text-[11px] font-semibold capitalize">
                       {t(`page.accounting.journal.source.${entry.sourceType}`)}
                     </span>
+                    {entry.status === "reversed" && (
+                      <span className="inline-flex px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-semibold">
+                        {t("page.accounting.journal.reversed")}
+                      </span>
+                    )}
                     {entry.storeName && (
                       <span className="inline-flex px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold">
                         {entry.storeName}
@@ -799,12 +810,12 @@ const JournalTab = ({ storeId, isAll }) => {
                       {t("page.accounting.journal.total")}:{" "}
                       <b className="font-mono text-foreground">{formatIDR(entry.totalDebit)}</b>
                     </span>
-                    {entry.sourceType === "manual" && !isAll && (
+                    {entry.sourceType === "manual" && entry.status !== "reversed" && !isAll && (
                       <button
                         onClick={() => setDeleting(entry)}
                         className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                        title={t("page.accounting.journal.delete")}>
-                        <Trash2 size={14} />
+                        title={t("page.accounting.journal.reverse")}>
+                        <Undo2 size={14} />
                       </button>
                     )}
                   </div>
@@ -927,17 +938,35 @@ const JournalTab = ({ storeId, isAll }) => {
 
       <Modal
         open={!!deleting}
-        onOpenChange={(o) => !o && setDeleting(null)}
-        type="confirm"
+        onOpenChange={(o) => {
+          if (!o) {
+            setDeleting(null);
+            setReverseReason("");
+          }
+        }}
+        type="form"
         confirmVariant="destructive"
-        title={t("page.accounting.journal.deleteTitle")}
-        description={t("page.accounting.journal.deleteConfirm", {
+        title={t("page.accounting.journal.reverseTitle")}
+        description={t("page.accounting.journal.reverseConfirm", {
           number: deleting?.entryNumber || ""
         })}
-        confirmText={t("page.accounting.journal.delete")}
+        confirmText={t("page.accounting.journal.reverse")}
         loading={deleteMut.isLoading}
-        onConfirm={() => deleteMut.mutate(deleting.id)}
-      />
+        onConfirm={() => deleteMut.mutate({ id: deleting.id, reason: reverseReason.trim() })}>
+        <label
+          htmlFor="journal-reverse-reason"
+          className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {t("page.accounting.journal.reverseReason")}
+        </label>
+        <Textarea
+          id="journal-reverse-reason"
+          className="mt-1.5"
+          maxLength={500}
+          value={reverseReason}
+          onChange={(e) => setReverseReason(e.target.value)}
+          placeholder={t("page.accounting.journal.reverseReasonPlaceholder")}
+        />
+      </Modal>
     </div>
   );
 };
@@ -1756,4 +1785,5 @@ const AccountingPage = () => {
   );
 };
 
+export { JournalTab };
 export default AccountingPage;
