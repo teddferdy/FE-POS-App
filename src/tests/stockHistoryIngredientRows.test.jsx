@@ -11,6 +11,7 @@ import { getAllStockHistory } from "../services/stock";
 // rows after the product, so the sale looked like the menu stock going down.
 // An ingredient row is named by its ingredient; the menu is the context.
 // Ingredients and finished products sit on separate tabs, ingredients first.
+// Every row names its store, in the first column, which stays pinned left.
 
 class ResizeObserverStub {
   observe() {}
@@ -65,7 +66,9 @@ const RECIPE_ROW = {
   quantityBefore: "100.0000",
   quantityChange: "-10.0000",
   quantityAfter: "90.0000",
-  unit: "butir"
+  unit: "butir",
+  store: 1,
+  storeData: { id: 1, name: "Bakso ABC" }
 };
 const PRODUCT_ROW = {
   id: 1,
@@ -78,7 +81,9 @@ const PRODUCT_ROW = {
   quantityBefore: "20.0000",
   quantityChange: "-1.0000",
   quantityAfter: "19.0000",
-  unit: "pcs"
+  unit: "pcs",
+  store: 1,
+  storeData: { id: 1, name: "Bakso ABC" }
 };
 
 beforeEach(() => {
@@ -121,4 +126,23 @@ test("the product tab lists finished-product rows only", async () => {
   expect((await screen.findAllByText("Es Teh Botol")).length).toBeGreaterThan(0);
   expect(screen.queryByText("Bakso Halus")).not.toBeInTheDocument();
   expect(screen.getAllByText("page.stockHistory.table.product").length).toBeGreaterThan(0);
+});
+
+test("the store is the first column and stays pinned left", async () => {
+  renderPage();
+  await screen.findAllByText("Bakso Halus");
+
+  const header = screen
+    .getAllByText("page.stockHistory.table.store")
+    .map((el) => el.closest("th"))
+    .find(Boolean);
+  expect(header).toHaveClass("sticky", "left-0");
+  expect(header.parentElement.firstElementChild).toBe(header);
+
+  const cell = screen
+    .getAllByText("Bakso ABC")
+    .map((el) => el.closest("td"))
+    .find(Boolean);
+  expect(cell).toHaveClass("sticky", "left-0");
+  expect(cell.parentElement.firstElementChild).toBe(cell);
 });
