@@ -43,6 +43,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import IngredientSourceField from "./components/IngredientSourceField";
 import { toQuantity, formatQuantity } from "@/utils/quantity";
 import { getIngredientStockState } from "@/utils/ingredientStockState";
 import { useLocations } from "@/queries/useLocations";
@@ -69,6 +70,8 @@ const EditIngredient = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
+  // "none" (market / in-house) or "supplier"; see IngredientSourceField.
+  const [source, setSource] = useState("none");
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [missingFieldsModal, setMissingFieldsModal] = useState(false);
@@ -217,10 +220,15 @@ const EditIngredient = () => {
 
   const isSupplierDisabled = isSuperAdmin && !watchStore && !ingredientData?.data;
   const isCategoryDisabled = isSuperAdmin && !watchStore && !ingredientData?.data;
-  // The supplier is optional (client note 2026-10-24): many ingredients are
-  // bought at the market or made in-house. With a supplier that has a
-  // catalog, the name is picked from it (and fills price and unit);
-  // otherwise it is typed in.
+  const changeSource = (next) => {
+    setSource(next);
+    if (next === "none") form.setValue("supplier", null);
+  };
+
+  // Client note 2026-10-24: an ingredient is either bought from a supplier
+  // or not (market / in-house). With a supplier that has a catalog, the
+  // name is picked from it (and fills price and unit); otherwise it is
+  // typed in.
   const pickFromCatalog =
     !!watchSupplier &&
     (allSupplierProductsLoading || (allSupplierProductsData?.data?.length ?? 0) > 0) &&
@@ -231,6 +239,7 @@ const EditIngredient = () => {
     const d = ingredientData?.data;
     if (!d) return;
     hydrateGuard.current = true;
+    setSource(d.supplier ? "supplier" : "none");
     form.reset({
       name: d.name || "",
       supplier: d.supplier ? String(d.supplier) : null,
@@ -457,42 +466,48 @@ const EditIngredient = () => {
 
                 <TabsContent value="informasi" className="mt-0">
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="supplier"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.ingredient.form.supplierLabel")}
-                            </FormLabel>
-                            <Combobox
-                              options={suppliers
-                                .filter((s) => s.status === "active")
-                                .map((s) => ({
-                                  value: String(s.id),
-                                  label: s.name
-                                }))}
-                              value={field.value || ""}
-                              onChange={(v) => field.onChange(v || null)}
-                              placeholder={
-                                isSupplierDisabled
-                                  ? t("page.ingredient.form.supplierDisabledPlaceholder")
-                                  : t("page.ingredient.form.supplierPlaceholder")
-                              }
-                              searchPlaceholder={t(
-                                "page.ingredient.form.supplierSearchPlaceholder"
-                              )}
-                              disabled={isSupplierDisabled}
-                              loading={suppliersLoading}
-                            />
-                            <FormDescription>
-                              {t("page.ingredient.form.supplierOptionalHint")}
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <IngredientSourceField
+                      value={source}
+                      onChange={changeSource}
+                      disabled={isSupplierDisabled}
+                    />
+                    <div
+                      className={`grid grid-cols-1 gap-4 ${source === "supplier" ? "xl:grid-cols-3" : "xl:grid-cols-2"}`}>
+                      {source === "supplier" && (
+                        <FormField
+                          control={form.control}
+                          name="supplier"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.ingredient.form.supplierLabel")}{" "}
+                                <span className="text-destructive">*</span>
+                              </FormLabel>
+                              <Combobox
+                                options={suppliers
+                                  .filter((s) => s.status === "active")
+                                  .map((s) => ({
+                                    value: String(s.id),
+                                    label: s.name
+                                  }))}
+                                value={field.value || ""}
+                                onChange={(v) => field.onChange(v || null)}
+                                placeholder={
+                                  isSupplierDisabled
+                                    ? t("page.ingredient.form.supplierDisabledPlaceholder")
+                                    : t("page.ingredient.form.supplierPlaceholder")
+                                }
+                                searchPlaceholder={t(
+                                  "page.ingredient.form.supplierSearchPlaceholder"
+                                )}
+                                disabled={isSupplierDisabled}
+                                loading={suppliersLoading}
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
                       <FormField
                         control={form.control}
                         name="category"
@@ -976,7 +991,8 @@ const EditIngredient = () => {
                       e.preventDefault();
                       const values = form.getValues();
                       const extraErrors = [
-                        ...(isSuperAdmin && !values.store ? [{ name: "store" }] : [])
+                        ...(isSuperAdmin && !values.store ? [{ name: "store" }] : []),
+                        ...(source === "supplier" && !values.supplier ? [{ name: "supplier" }] : [])
                       ];
                       const missing = getMissingFields(
                         values,
