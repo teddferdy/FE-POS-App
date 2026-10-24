@@ -50,6 +50,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
 import { FIELD_LIMITS, CURRENT_DB_LIMITS } from "@/constants/fieldLimits";
+import { digitsOnly } from "@/utils/quantity";
 
 const AddSupplier = () => {
   const { t } = useTranslation();
@@ -1583,9 +1584,12 @@ const AddSupplier = () => {
                         <label className="text-xs text-muted-foreground">Min Order</label>
                         <Input
                           type="text"
+                          inputMode="numeric"
                           placeholder="1"
+                          maxLength={9}
+                          showCount={false}
                           value={productMinOrderQty}
-                          onChange={(e) => setProductMinOrderQty(e.target.value)}
+                          onChange={(e) => setProductMinOrderQty(digitsOnly(e.target.value))}
                         />
                       </div>
                       <div className="col-span-12 space-y-1">
