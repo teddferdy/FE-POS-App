@@ -3,13 +3,14 @@ import { render, screen, fireEvent, waitFor, within } from "@testing-library/rea
 import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import AddIngredient from "../page/ingredient/AddIngredient";
-import { addIngredient, getProductNamesByFilters } from "../services/ingredient";
+import EditIngredient from "../page/ingredient/EditIngredient";
+import { addIngredient, getIngredientById, getProductNamesByFilters } from "../services/ingredient";
 import { getAllSupplier } from "../services/supplier";
 
-// Client note 2026-10-24: adding an ingredient must not need a supplier
-// first. Many ingredients are bought at the market or made in-house; the
-// category is chosen directly and the name is typed in. A supplier with a
-// catalog still lets the name be picked from it.
+// Client notes 2026-10-24: adding an ingredient must not need a supplier
+// first, and the form offers an explicit choice between "Tanpa supplier"
+// (market / in-house: no supplier field, the name is typed in) and "Dari
+// supplier" (supplier required, the name can come from its catalog).
 
 class ResizeObserverStub {
   observe() {}
@@ -19,7 +20,8 @@ class ResizeObserverStub {
 if (!globalThis.ResizeObserver) globalThis.ResizeObserver = ResizeObserverStub;
 
 jest.mock("react-router-dom", () => ({
-  useNavigate: () => jest.fn()
+  useNavigate: () => jest.fn(),
+  useSearchParams: () => [new URLSearchParams("id=7"), jest.fn()]
 }));
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k) => k })
@@ -58,6 +60,8 @@ jest.mock("@/hooks/useConfirmSubmit", () => ({
 }));
 jest.mock("@/services/ingredient", () => ({
   addIngredient: jest.fn(),
+  editIngredient: jest.fn(),
+  getIngredientById: jest.fn(),
   getProductNamesByFilters: jest.fn()
 }));
 jest.mock("@/services/supplier", () => ({
@@ -72,16 +76,20 @@ jest.mock("@/queries/useLocations", () => ({
   useLocations: () => ({ data: undefined, isLoading: false })
 }));
 
-const renderPage = () => {
+const renderPage = (Page = AddIngredient) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
   });
   render(
     <QueryClientProvider client={queryClient}>
-      <AddIngredient />
+      <Page />
     </QueryClientProvider>
   );
 };
+
+const sourceRadio = (source) =>
+  document.querySelector(`input[name="ingredientSource"][value="${source}"]`);
+const chooseSource = (source) => fireEvent.click(sourceRadio(source));
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -92,8 +100,10 @@ beforeEach(() => {
   addIngredient.mockResolvedValue({ success: true });
 });
 
-test("an ingredient is saved with a typed name and no supplier", async () => {
+test("the default source has no supplier field; a typed name is saved", async () => {
   renderPage();
+  expect(sourceRadio("none")).toBeChecked();
+  expect(screen.queryByTestId("page.ingredient.form.supplierPlaceholder")).not.toBeInTheDocument();
 
   const categoryBox = await screen.findByTestId("page.ingredient.form.categoryPlaceholder");
   expect(categoryBox).toHaveAttribute("data-disabled", "false");
@@ -120,6 +130,7 @@ test("a supplier with a catalog still offers its products as the name", async ()
     })
   );
   renderPage();
+  chooseSource("supplier");
 
   const supplierBox = await screen.findByTestId("page.ingredient.form.supplierPlaceholder");
   fireEvent.click(await within(supplierBox).findByText("PT Daging Segar"));
@@ -131,4 +142,46 @@ test("a supplier with a catalog still offers its products as the name", async ()
   expect(
     screen.queryByPlaceholderText("page.ingredient.form.nameFreePlaceholder")
   ).not.toBeInTheDocument();
+});
+
+test('"Dari supplier" without a supplier is not saved', async () => {
+  renderPage();
+  chooseSource("supplier");
+  const categoryBox = await screen.findByTestId("page.ingredient.form.categoryPlaceholder");
+  fireEvent.click(await within(categoryBox).findByText("Bahan Bakso"));
+  fireEvent.change(screen.getByPlaceholderText("page.ingredient.form.nameFreePlaceholder"), {
+    target: { value: "Bakso Halus" }
+  });
+
+  fireEvent.click(screen.getByText("page.ingredient.form.saveButton"));
+  await new Promise((r) => setTimeout(r, 50));
+  expect(addIngredient).not.toHaveBeenCalled();
+
+  // back to "Tanpa supplier": the same entry saves
+  chooseSource("none");
+  fireEvent.click(screen.getByText("page.ingredient.form.saveButton"));
+  await waitFor(() => expect(addIngredient).toHaveBeenCalledTimes(1));
+  expect(addIngredient.mock.calls[0][0]).toMatchObject({ name: "Bakso Halus", supplier: null });
+});
+
+test("editing opens in the source the ingredient already has", async () => {
+  getIngredientById.mockResolvedValue({
+    data: {
+      id: 7,
+      name: "Daging Sapi",
+      supplier: 5,
+      category: 3,
+      unit: "kg",
+      baseUnit: "gram",
+      conversionFactor: "1000",
+      stock: "0",
+      minStock: 0,
+      costPrice: 120000,
+      status: "active",
+      store: 1
+    }
+  });
+  renderPage(EditIngredient);
+  await waitFor(() => expect(sourceRadio("supplier")).toBeChecked());
+  expect(screen.getByTestId("page.ingredient.form.supplierPlaceholder")).toBeInTheDocument();
 });

@@ -3507,7 +3507,7 @@
   "guide.editPurchaseOrder.step7": "Simpan Perubahan - Klik Simpan untuk memperbarui purchase order.",
   "guide.addIngredient.title": "Panduan Tambah Bahan Baku",
   "guide.addIngredient.step1": "Nama Bahan Baku (*) - Masukkan nama bahan baku yang akan ditambahkan.",
-  "guide.addIngredient.step2": "Kategori & Supplier - Tentukan kategori bahan baku. Supplier opsional: bila dipilih, nama, harga, dan satuan bisa diambil dari katalog supplier.",
+  "guide.addIngredient.step2": "Sumber, Kategori & Supplier - Pilih \"Tanpa supplier\" untuk bahan yang dibeli di pasar atau dibuat sendiri, atau \"Dari supplier\" untuk memilih supplier dan mengambil nama, harga, dan satuan dari katalognya. Lalu tentukan kategori.",
   "guide.addIngredient.step3": "Konversi Satuan - Atur satuan beli, satuan dasar (satuan terkecil), dan faktor konversi (contoh: 1 kg = 1000 gram).",
   "guide.addIngredient.step4": "Stok & Min Stok - Atur jumlah stok awal dan batas minimum stok untuk notifikasi stok menipis.",
   "guide.addIngredient.step5": "Harga Beli - Masukkan harga beli per satuan.",
@@ -8771,6 +8771,10 @@
   "page.stockHistory.item.forMenu": "untuk {{name}}",
   "page.bom.toast.recipeModeAdopted": "Produk sekarang memotong bahan baku",
   "page.bom.toast.recipeModeAdoptedDesc": "Pemotongan stok produk diubah ke \"Dibuat sesuai pesanan (resep)\". Setiap penjualan mengurangi bahan baku sesuai resep ini. Ubah di Edit Produk bila produk dijual dari stok jadi.",
-  "page.ingredient.form.supplierOptionalHint": "Opsional. Kosongkan untuk bahan yang dibeli di pasar atau dibuat sendiri.",
-  "page.ingredient.form.nameFreePlaceholder": "Contoh: Bakso Halus"
+  "page.ingredient.form.nameFreePlaceholder": "Contoh: Bakso Halus",
+  "page.ingredient.form.source.label": "Sumber bahan baku",
+  "page.ingredient.form.source.none": "Tanpa supplier",
+  "page.ingredient.form.source.noneDesc": "Dibeli di pasar atau dibuat sendiri. Nama bahan baku diketik langsung.",
+  "page.ingredient.form.source.supplier": "Dari supplier",
+  "page.ingredient.form.source.supplierDesc": "Dibeli dari supplier terdaftar. Nama, harga, dan satuan bisa diambil dari katalog supplier."
 }

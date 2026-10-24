@@ -3567,7 +3567,7 @@
   "guide.editPurchaseOrder.step7": "Save Changes - Click Save to update the purchase order.",
   "guide.addIngredient.title": "Add Ingredient Guide",
   "guide.addIngredient.step1": "Ingredient Name (*) - Enter the name of the ingredient or raw material.",
-  "guide.addIngredient.step2": "Category & Supplier - Set the ingredient category. The supplier is optional: when chosen, the name, price and unit can come from its catalog.",
+  "guide.addIngredient.step2": "Source, Category & Supplier - Choose \"No supplier\" for ingredients bought at the market or made in-house, or \"From a supplier\" to pick a supplier and take the name, price and unit from its catalog. Then set the category.",
   "guide.addIngredient.step3": "Unit Conversion - Set purchase unit, base unit (smallest unit), and conversion factor (e.g. 1 kg = 1000 gram).",
   "guide.addIngredient.step4": "Stock & Min Stock - Set initial stock quantity and minimum stock threshold for low stock alerts.",
   "guide.addIngredient.step5": "Cost Price - Enter the purchase cost price per unit.",
@@ -8771,6 +8771,10 @@
   "page.stockHistory.item.forMenu": "for {{name}}",
   "page.bom.toast.recipeModeAdopted": "The product now uses up its ingredients",
   "page.bom.toast.recipeModeAdoptedDesc": "Its stock deduction was changed to \"Made to order (recipe)\". Every sale now deducts the ingredients of this recipe. Change it in Edit Product if it is sold from finished stock.",
-  "page.ingredient.form.supplierOptionalHint": "Optional. Leave empty for ingredients bought at the market or made in-house.",
-  "page.ingredient.form.nameFreePlaceholder": "E.g. Beef meatballs"
+  "page.ingredient.form.nameFreePlaceholder": "E.g. Beef meatballs",
+  "page.ingredient.form.source.label": "Ingredient source",
+  "page.ingredient.form.source.none": "No supplier",
+  "page.ingredient.form.source.noneDesc": "Bought at the market or made in-house. The ingredient name is typed in.",
+  "page.ingredient.form.source.supplier": "From a supplier",
+  "page.ingredient.form.source.supplierDesc": "Bought from a registered supplier. The name, price and unit can come from its catalog."
 }
