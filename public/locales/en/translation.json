@@ -3567,7 +3567,7 @@
   "guide.editPurchaseOrder.step7": "Save Changes - Click Save to update the purchase order.",
   "guide.addIngredient.title": "Add Ingredient Guide",
   "guide.addIngredient.step1": "Ingredient Name (*) - Enter the name of the ingredient or raw material.",
-  "guide.addIngredient.step2": "Category & Supplier - Optionally set a category and default supplier for this ingredient.",
+  "guide.addIngredient.step2": "Category & Supplier - Set the ingredient category. The supplier is optional: when chosen, the name, price and unit can come from its catalog.",
   "guide.addIngredient.step3": "Unit Conversion - Set purchase unit, base unit (smallest unit), and conversion factor (e.g. 1 kg = 1000 gram).",
   "guide.addIngredient.step4": "Stock & Min Stock - Set initial stock quantity and minimum stock threshold for low stock alerts.",
   "guide.addIngredient.step5": "Cost Price - Enter the purchase cost price per unit.",
@@ -4973,7 +4973,7 @@
   "page.ingredient.form.categoryLabel": "Category",
   "page.ingredient.form.categoryHint": "Select the ingredient category for better organization",
   "page.ingredient.form.categoryPlaceholder": "Select category",
-  "page.ingredient.form.categoryDisabledPlaceholder": "Select supplier first",
+  "page.ingredient.form.categoryDisabledPlaceholder": "Select store first",
   "page.ingredient.form.categorySearchPlaceholder": "Search category...",
   "page.ingredient.form.convBox": "1 box converts automatically",
   "page.ingredient.form.convKarton": "1 karton converts automatically",
@@ -4989,7 +4989,7 @@
   "page.ingredient.form.minStockLabel": "Min Stock",
   "page.ingredient.form.nameLabel": "Ingredient Name",
   "page.ingredient.form.namePlaceholder": "Select ingredient from list",
-  "page.ingredient.form.nameDisabledPlaceholder": "Select supplier first",
+  "page.ingredient.form.nameDisabledPlaceholder": "Select category first",
   "page.ingredient.form.nameSearchPlaceholder": "Search ingredient...",
   "page.ingredient.form.nameRequired": "Ingredient name is required",
   "page.ingredient.form.priceLabel": "Cost Price",
@@ -8770,5 +8770,7 @@
   "page.stockHistory.item.product": "Product",
   "page.stockHistory.item.forMenu": "for {{name}}",
   "page.bom.toast.recipeModeAdopted": "The product now uses up its ingredients",
-  "page.bom.toast.recipeModeAdoptedDesc": "Its stock deduction was changed to \"Made to order (recipe)\". Every sale now deducts the ingredients of this recipe. Change it in Edit Product if it is sold from finished stock."
+  "page.bom.toast.recipeModeAdoptedDesc": "Its stock deduction was changed to \"Made to order (recipe)\". Every sale now deducts the ingredients of this recipe. Change it in Edit Product if it is sold from finished stock.",
+  "page.ingredient.form.supplierOptionalHint": "Optional. Leave empty for ingredients bought at the market or made in-house.",
+  "page.ingredient.form.nameFreePlaceholder": "E.g. Beef meatballs"
 }

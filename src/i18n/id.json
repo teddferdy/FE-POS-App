@@ -3536,7 +3536,7 @@
   "guide.editPurchaseOrder.step7": "Simpan Perubahan - Klik Simpan untuk memperbarui purchase order.",
   "guide.addIngredient.title": "Panduan Tambah Bahan Baku",
   "guide.addIngredient.step1": "Nama Bahan Baku (*) - Masukkan nama bahan baku yang akan ditambahkan.",
-  "guide.addIngredient.step2": "Kategori & Supplier - Tentukan kategori dan supplier default untuk bahan baku ini.",
+  "guide.addIngredient.step2": "Kategori & Supplier - Tentukan kategori bahan baku. Supplier opsional: bila dipilih, nama, harga, dan satuan bisa diambil dari katalog supplier.",
   "guide.addIngredient.step3": "Konversi Satuan - Atur satuan beli, satuan dasar (satuan terkecil), dan faktor konversi (contoh: 1 kg = 1000 gram).",
   "guide.addIngredient.step4": "Stok & Min Stok - Atur jumlah stok awal dan batas minimum stok untuk notifikasi stok menipis.",
   "guide.addIngredient.step5": "Harga Beli - Masukkan harga beli per satuan.",
@@ -4924,7 +4924,7 @@
   "page.ingredient.form.categoryLabel": "Kategori",
   "page.ingredient.form.categoryHint": "Pilih kategori bahan baku untuk pengorganisasian yang lebih baik",
   "page.ingredient.form.categoryPlaceholder": "Pilih kategori",
-  "page.ingredient.form.categoryDisabledPlaceholder": "Pilih supplier terlebih dahulu",
+  "page.ingredient.form.categoryDisabledPlaceholder": "Pilih toko terlebih dahulu",
   "page.ingredient.form.categorySearchPlaceholder": "Cari kategori...",
   "page.ingredient.form.convBox": "1 box terkonversi otomatis",
   "page.ingredient.form.convKarton": "1 karton terkonversi otomatis",
@@ -4940,7 +4940,7 @@
   "page.ingredient.form.minStockLabel": "Min. Stok",
   "page.ingredient.form.nameLabel": "Nama Bahan Baku",
   "page.ingredient.form.namePlaceholder": "Pilih bahan baku dari daftar",
-  "page.ingredient.form.nameDisabledPlaceholder": "Pilih supplier terlebih dahulu",
+  "page.ingredient.form.nameDisabledPlaceholder": "Pilih kategori terlebih dahulu",
   "page.ingredient.form.nameSearchPlaceholder": "Cari bahan baku...",
   "page.ingredient.form.nameRequired": "Nama bahan baku wajib diisi",
   "page.ingredient.form.priceLabel": "Harga Beli",
@@ -8569,5 +8569,7 @@
   "page.stockHistory.item.product": "Produk",
   "page.stockHistory.item.forMenu": "untuk {{name}}",
   "page.bom.toast.recipeModeAdopted": "Produk sekarang memotong bahan baku",
-  "page.bom.toast.recipeModeAdoptedDesc": "Pemotongan stok produk diubah ke \"Dibuat sesuai pesanan (resep)\". Setiap penjualan mengurangi bahan baku sesuai resep ini. Ubah di Edit Produk bila produk dijual dari stok jadi."
+  "page.bom.toast.recipeModeAdoptedDesc": "Pemotongan stok produk diubah ke \"Dibuat sesuai pesanan (resep)\". Setiap penjualan mengurangi bahan baku sesuai resep ini. Ubah di Edit Produk bila produk dijual dari stok jadi.",
+  "page.ingredient.form.supplierOptionalHint": "Opsional. Kosongkan untuk bahan yang dibeli di pasar atau dibuat sendiri.",
+  "page.ingredient.form.nameFreePlaceholder": "Contoh: Bakso Halus"
 }
