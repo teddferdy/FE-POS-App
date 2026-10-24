@@ -10,3 +10,7 @@ export const toQuantity = (value) => {
 
 export const formatQuantity = (value) =>
   toQuantity(value).toLocaleString("id-ID", { maximumFractionDigits: 4 });
+
+// BA DR-28 decision 4: a whole-number field (e.g. supplier min. order) keeps
+// only the digits the user typed or pasted.
+export const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
