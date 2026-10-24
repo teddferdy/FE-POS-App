@@ -59,6 +59,7 @@ import ScreenModeDialog from "./components/ScreenModeDialog";
 import CashierTablePanel, { cashierTablesKey } from "./components/CashierTablePanel";
 import { getCashierTables } from "@/services/table";
 import { useLocations } from "@/queries/useLocations";
+import NoStore from "@/components/ui/NoStore";
 
 const CashierPage = () => {
   const { t } = useTranslation();
@@ -134,6 +135,9 @@ const CashierPage = () => {
     enabled: isSuperAdmin
   });
   const locationList = locsData?.data || locsData || [];
+  // The store list loaded and holds no store: nothing to pick, so point to
+  // creating one (same empty state as the other store-scoped pages).
+  const noStoreYet = !!locsData && !locsLoading && locationList.length === 0;
 
   const storeName = store
     ? locationList.find((l) => storeIdsEqual(l.id, store))?.name || t("page.cashier.storeName")
@@ -647,7 +651,13 @@ const CashierPage = () => {
         </header>
 
         <div className="flex flex-1 overflow-hidden">
-          {!store ? (
+          {!store && noStoreYet ? (
+            <div className="flex-1 flex items-center justify-center p-6">
+              <div className="w-full max-w-xl">
+                <NoStore />
+              </div>
+            </div>
+          ) : !store ? (
             <div className="flex-1 flex items-center justify-center p-6">
               <div className="text-center w-full">
                 <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
