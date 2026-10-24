@@ -81,6 +81,8 @@ import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Textarea } from "@/components/ui/textarea";
 
 const SupplierExpandableRow = ({ supplier, renderSupplierItems }) => {
   const [open, setOpen] = useState(false);
@@ -1553,11 +1555,13 @@ const PurchaseOrderList = () => {
                           );
                         })}
                       </div>
-                      <textarea
+                      <Textarea
+                        unstyled
                         className="w-full min-h-[100px] px-3 py-2.5 border border-border rounded-lg bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary transition-shadow"
                         placeholder={t("page.purchaseOrder.list.returInfo.reasonPlaceholder")}
                         value={returReason}
                         onChange={(e) => setReturReason(e.target.value)}
+                        maxLength={FIELD_LIMITS.DESCRIPTION}
                       />
                     </div>
 
@@ -1960,6 +1964,7 @@ const PurchaseOrderList = () => {
                             value={payForm.reference}
                             onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })}
                             className="h-11"
+                            maxLength={FIELD_LIMITS.REFERENCE}
                           />
                         </div>
                         <div className="space-y-2">
@@ -1971,6 +1976,7 @@ const PurchaseOrderList = () => {
                             value={payForm.notes}
                             onChange={(e) => setPayForm({ ...payForm, notes: e.target.value })}
                             className="h-11"
+                            maxLength={FIELD_LIMITS.SHORT_NOTE}
                           />
                         </div>
                       </div>

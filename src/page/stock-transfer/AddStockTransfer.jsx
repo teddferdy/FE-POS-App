@@ -29,6 +29,7 @@ import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS, CURRENT_DB_LIMITS } from "@/constants/fieldLimits";
 
 const AddStockTransfer = () => {
   const { t } = useTranslation();
@@ -241,6 +242,7 @@ const AddStockTransfer = () => {
             <Input
               {...form.register("transferredBy")}
               placeholder={t("page.stockTransfer.add.form.transferredByPlaceholder")}
+              maxLength={FIELD_LIMITS.PERSON_NAME}
             />
           </div>
 
@@ -250,6 +252,7 @@ const AddStockTransfer = () => {
               <Input
                 {...form.register("reason")}
                 placeholder={t("page.stockTransfer.add.form.reasonPlaceholder")}
+                maxLength={CURRENT_DB_LIMITS.STOCK_TRANSFER_REASON}
               />
             </div>
             <div className="space-y-2">
@@ -451,6 +454,7 @@ const AddStockTransfer = () => {
               rows={2}
               {...form.register("notes")}
               placeholder={t("page.stockTransfer.add.form.notesPlaceholder")}
+              maxLength={FIELD_LIMITS.DESCRIPTION}
             />
           </div>
 

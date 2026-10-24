@@ -29,6 +29,7 @@ import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const SectionHeader = ({ icon: Icon, title, desc, from, to }) => (
   <div className={`bg-gradient-to-r ${from} ${to} px-6 py-4`}>
@@ -312,6 +313,7 @@ const AddBusinessTrip = () => {
                   <Input
                     {...form.register("destination")}
                     placeholder={t("page.businessTrip.add.form.destination")}
+                    maxLength={FIELD_LIMITS.BUSINESS_NAME}
                   />
                   {errors.destination && (
                     <p className="text-xs text-destructive">{errors.destination.message}</p>
@@ -322,6 +324,7 @@ const AddBusinessTrip = () => {
                   <Input
                     {...form.register("tripPurpose")}
                     placeholder={t("page.businessTrip.add.form.tripPurpose")}
+                    maxLength={FIELD_LIMITS.SHORT_NOTE}
                   />
                 </div>
                 <div className="space-y-2">
@@ -372,6 +375,7 @@ const AddBusinessTrip = () => {
                     {...form.register("notes")}
                     placeholder={t("page.businessTrip.add.form.notes")}
                     className="min-h-[72px] resize-none"
+                    maxLength={FIELD_LIMITS.DESCRIPTION}
                   />
                 </div>
               </div>

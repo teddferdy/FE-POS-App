@@ -51,6 +51,7 @@ import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import TableActions from "@/components/ui/TableActions";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const statusColors = {
   available: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
@@ -515,6 +516,7 @@ const TableList = () => {
                   placeholder={t("page.table.form.namePlaceholder")}
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
+                  maxLength={FIELD_LIMITS.SHORT_LABEL}
                 />
               </div>
               <div>
@@ -628,7 +630,7 @@ const TableList = () => {
               value={releaseReason}
               onChange={(e) => setReleaseReason(e.target.value)}
               placeholder={t("page.table.releaseReasonPlaceholder")}
-              maxLength={500}
+              maxLength={FIELD_LIMITS.DESCRIPTION}
             />
           </Modal>
 

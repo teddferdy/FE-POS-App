@@ -27,6 +27,7 @@ import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import { createTenant, deleteTenant, getTenants, updateTenant } from "@/services/tenant";
 import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
+import { CURRENT_DB_LIMITS, FIELD_LIMITS } from "@/constants/fieldLimits";
 
 export const TENANTS_QUERY_KEY = "tenants";
 const DEFAULT_LIMIT = 10;
@@ -159,7 +160,7 @@ const TenantFormModal = ({ open, tenant, onClose }) => {
           <Input
             id="tenant-name"
             value={name}
-            maxLength={100}
+            maxLength={CURRENT_DB_LIMITS.TENANT_NAME}
             autoComplete="off"
             placeholder={t(`${P}.form.namePlaceholder`)}
             aria-invalid={error.field === "name" || undefined}
@@ -182,7 +183,7 @@ const TenantFormModal = ({ open, tenant, onClose }) => {
           <Input
             id="tenant-code"
             value={code}
-            maxLength={50}
+            maxLength={FIELD_LIMITS.CODE}
             autoComplete="off"
             disabled={isEdit}
             placeholder="warung-bakso"

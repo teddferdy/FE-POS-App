@@ -30,6 +30,9 @@ import {
 } from "./rolePermissions";
 import { safeGet } from "@/lib/safe-lookup";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const SUMMARY_LIMIT = 8;
 
@@ -335,13 +338,15 @@ const EditRole = () => {
                   className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("page.role.detail.nameLabel")} <span className="text-destructive">*</span>
                 </label>
-                <input
+                <Input
+                  unstyled
                   id="role-name"
                   data-tour="role-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                   placeholder={t("page.role.edit.namePlaceholder")}
+                  maxLength={FIELD_LIMITS.SHORT_LABEL}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
@@ -350,7 +355,8 @@ const EditRole = () => {
                   className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("page.role.edit.descLabel")}
                 </label>
-                <textarea
+                <Textarea
+                  unstyled
                   id="role-description"
                   data-tour="role-description"
                   value={description}
@@ -358,6 +364,7 @@ const EditRole = () => {
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
                   placeholder={t("page.role.edit.descPlaceholder")}
                   rows={5}
+                  maxLength={FIELD_LIMITS.DESCRIPTION}
                 />
               </div>
               <dl className="grid grid-cols-2 gap-3 border-t border-border pt-4">

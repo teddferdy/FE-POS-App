@@ -32,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const fmt = (d) => {
   if (!d) return "-";
@@ -528,6 +529,7 @@ const OvertimeApproval = () => {
           placeholder="Alasan penolakan (opsional)"
           value={decisionNote}
           onChange={(e) => setDecisionNote(e.target.value)}
+          maxLength={FIELD_LIMITS.DESCRIPTION}
         />
       </Modal>
 

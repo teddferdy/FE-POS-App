@@ -28,6 +28,8 @@ import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import VoidOrderDialog from "@/components/organism/VoidOrderDialog";
 import { isAdminRole } from "@/utils/role";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Textarea } from "@/components/ui/textarea";
 
 const reasonKeys = [
   "damaged",
@@ -535,11 +537,13 @@ const CreateSalesReturn = () => {
             <label className="text-sm font-semibold">
               {t("page.salesReturn.create.notesLabel")}
             </label>
-            <textarea
+            <Textarea
+              unstyled
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("page.salesReturn.create.notesPlaceholder")}
               className="w-full px-3 py-2 border rounded-lg text-sm min-h-24 resize-none bg-background"
+              maxLength={FIELD_LIMITS.DESCRIPTION}
             />
           </Card>
 

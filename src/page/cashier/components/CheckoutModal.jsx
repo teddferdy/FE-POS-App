@@ -51,6 +51,8 @@ import MemberSearchModal from "@/components/MemberSearchModal";
 import { toast } from "sonner";
 import { dispatchDisplayEvent, DISPLAY_EVENT_TYPES } from "@/utils/customerDisplayBoard";
 import { isRegisterRequiredError } from "@/state/registerRequired";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Input } from "@/components/ui/input";
 
 // The customer/discount dropdowns render in a fixed-position portal anchored
 // to their input's rect — always below it, with no bounds check. On a
@@ -1692,13 +1694,15 @@ const CheckoutModal = ({
               {t("page.cashier.promoCode")}
             </label>
             <div className="flex gap-2">
-              <input
+              <Input
+                unstyled
                 type="text"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
                 placeholder={t("page.cashier.promoCodePlaceholder")}
                 className="flex-1 h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
                 disabled={promoLoading || !!selectedDiscount}
+                maxLength={FIELD_LIMITS.CODE}
               />
               <Button
                 size="sm"
@@ -1783,20 +1787,23 @@ const CheckoutModal = ({
                   <label className="block text-sm font-medium mb-1.5 text-muted-foreground">
                     {t("page.cashier.addCustomerName")}
                   </label>
-                  <input
+                  <Input
+                    unstyled
                     type="text"
                     value={newCustomerName}
                     onChange={(e) => setNewCustomerName(e.target.value)}
                     placeholder={t("page.cashier.addCustomerName")}
                     className="w-full h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
                     autoFocus
+                    maxLength={FIELD_LIMITS.PERSON_NAME}
                   />
                 </div>
                 <div className="mb-3">
                   <label className="block text-sm font-medium mb-1.5 text-muted-foreground">
                     {t("page.cashier.addCustomerPhone")}
                   </label>
-                  <input
+                  <Input
+                    unstyled
                     type="text"
                     value={newCustomerPhone}
                     onChange={(e) =>
@@ -1805,7 +1812,7 @@ const CheckoutModal = ({
                     placeholder={t("page.cashier.addCustomerPhone")}
                     className="w-full h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
                     inputMode="numeric"
-                    maxLength={14}
+                    maxLength={FIELD_LIMITS.PHONE}
                   />
                   <p className="text-xs text-muted-foreground mt-1">{t("common.phoneHint")}</p>
                 </div>

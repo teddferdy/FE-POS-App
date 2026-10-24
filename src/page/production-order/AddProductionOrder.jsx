@@ -23,6 +23,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const AddProductionOrder = () => {
   const { t } = useTranslation();
@@ -216,6 +217,7 @@ const AddProductionOrder = () => {
             rows={3}
             {...form.register("notes")}
             placeholder={t("page.productionOrder.add.placeholderCatatan")}
+            maxLength={FIELD_LIMITS.DESCRIPTION}
           />
         </div>
 

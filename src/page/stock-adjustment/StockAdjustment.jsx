@@ -36,6 +36,7 @@ import StoreFilter from "@/components/ui/StoreFilter";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const StockAdjustment = () => {
   const { t } = useTranslation();
@@ -289,6 +290,7 @@ const StockAdjustment = () => {
                     placeholder={t("page.stockAdjustment.form.reasonPlaceholder")}
                     {...form.register("reason")}
                     rows={3}
+                    maxLength={FIELD_LIMITS.DESCRIPTION}
                   />
                 </div>
 

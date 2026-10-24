@@ -511,6 +511,7 @@
   "page.expenseCategory.button.cancel": "Cancel",
   "common.success": "Success",
   "common.error": "Error",
+  "common.maxLengthReached": "Maximum length reached",
   "common.status": "Status",
   "common.all": "All",
   "common.active": "Active",

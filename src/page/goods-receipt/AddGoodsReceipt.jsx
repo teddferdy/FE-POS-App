@@ -44,6 +44,7 @@ import { Lock } from "lucide-react";
 import { useCookies } from "react-cookie";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const AddGoodsReceipt = () => {
   const navigate = useNavigate();
@@ -754,6 +755,7 @@ const AddGoodsReceipt = () => {
                       value={suratJalan}
                       onChange={(e) => setSuratJalan(e.target.value)}
                       placeholder={t("page.goodsReceipt.add.placeholder.suratJalan")}
+                      maxLength={FIELD_LIMITS.DOCUMENT_NUMBER}
                     />
                   </div>
                   <div className="space-y-2">
@@ -768,6 +770,7 @@ const AddGoodsReceipt = () => {
                       value={taxInvoiceNo}
                       onChange={(e) => setTaxInvoiceNo(e.target.value)}
                       placeholder={t("page.goodsReceipt.add.placeholder.taxInvoiceNo")}
+                      maxLength={FIELD_LIMITS.DOCUMENT_NUMBER}
                     />
                   </div>
                   <div className="space-y-2">
@@ -1209,6 +1212,7 @@ const AddGoodsReceipt = () => {
                                     }
                                     className="h-9 text-sm"
                                     placeholder={t("page.goodsReceipt.add.placeholder.condition")}
+                                    maxLength={FIELD_LIMITS.SHORT_NOTE}
                                   />
                                 </div>
                               </div>
@@ -1393,6 +1397,7 @@ const AddGoodsReceipt = () => {
                       rows={2}
                       {...form.register("notes")}
                       placeholder={t("page.goodsReceipt.add.placeholder.notes")}
+                      maxLength={FIELD_LIMITS.DESCRIPTION}
                     />
                   )}
                 </div>

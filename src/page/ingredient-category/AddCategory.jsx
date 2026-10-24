@@ -25,6 +25,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const AddCategory = () => {
   const { t } = useTranslation();
@@ -178,6 +179,7 @@ const AddCategory = () => {
                           {...field}
                           placeholder={t("page.ingredientCategory.add.placeholderNama")}
                           className="h-12"
+                          maxLength={FIELD_LIMITS.SHORT_LABEL}
                         />
                         <FormMessage />
                       </FormItem>

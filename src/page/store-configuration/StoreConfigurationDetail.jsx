@@ -51,6 +51,7 @@ import {
 } from "@/lib/store-configuration";
 import { StoreConfigurationSkeleton, StoreStatusPill, useCategoryLabel } from "./shared";
 import { qk } from "@/queries/keys";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const LIST_PATH = "/store-configuration";
 
@@ -438,6 +439,7 @@ const StoreConfigurationEditor = ({ routeId }) => {
                       rows={3}
                       disabled={isTerminal}
                       placeholder={t("page.storeConfiguration.field.descriptionPlaceholder")}
+                      maxLength={FIELD_LIMITS.DESCRIPTION}
                     />
                   </FormControl>
                   <FormDescription>

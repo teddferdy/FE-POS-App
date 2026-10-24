@@ -17,6 +17,9 @@ import AbortController from "@/components/organism/abort-controller";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const editSchema = z.object({
   name: z.string().min(1),
@@ -168,25 +171,29 @@ const EditMember = () => {
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.member.edit.fullName")} <span className="text-destructive">*</span>
                   </label>
-                  <input
+                  <Input
+                    unstyled
                     name="name"
                     value={form.name}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                     placeholder={t("page.member.edit.fullNamePlaceholder")}
+                    maxLength={FIELD_LIMITS.PERSON_NAME}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.member.edit.email")}
                   </label>
-                  <input
+                  <Input
+                    unstyled
                     name="email"
                     type="email"
                     value={form.email}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                     placeholder={t("page.member.edit.emailPlaceholder")}
+                    maxLength={FIELD_LIMITS.EMAIL}
                   />
                   <p className="text-xs text-muted-foreground">{t("common.optionalField")}</p>
                 </div>
@@ -194,14 +201,15 @@ const EditMember = () => {
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.member.edit.phoneNumber")} <span className="text-destructive">*</span>
                   </label>
-                  <input
+                  <Input
+                    unstyled
                     name="phoneNumber"
                     type="tel"
                     value={form.phoneNumber}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                     placeholder={t("page.member.edit.phonePlaceholder")}
-                    maxLength={16}
+                    maxLength={FIELD_LIMITS.PHONE}
                   />
                   <p className="text-xs text-muted-foreground">{t("common.phoneHintMin")}</p>
                 </div>
@@ -255,13 +263,15 @@ const EditMember = () => {
                   {t("page.member.edit.fullAddress")}
                 </h3>
               </div>
-              <textarea
+              <Textarea
+                unstyled
                 name="address"
                 value={form.address}
                 onChange={handleChange}
                 className="w-full p-4 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm resize-none"
                 placeholder={t("page.member.edit.addressPlaceholder")}
                 rows={4}
+                maxLength={FIELD_LIMITS.ADDRESS}
               />
             </div>
           </div>

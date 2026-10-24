@@ -41,6 +41,7 @@ import { translationSelect } from "@/state/translation";
 import { useThemeStore } from "@/state/theme";
 import { useThemeEffect } from "@/hooks/useThemeEffect";
 import AuthGuideModal from "@/components/organism/AuthGuideModal";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const RegisterPage = () => {
   const { t } = useTranslation();
@@ -248,6 +249,7 @@ const RegisterPage = () => {
                             {...field}
                             placeholder={translationMemo.placeholderUsername}
                             className="w-full pl-10 md:pl-12 pr-3.5 md:pr-4 h-10 text-sm md:text-base rounded-md border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
+                            maxLength={FIELD_LIMITS.SHORT_LABEL}
                           />
                         </div>
                         {form?.formState?.errors?.userName && (
@@ -272,6 +274,7 @@ const RegisterPage = () => {
                             {...field}
                             placeholder={translationMemo.placeholderEmail}
                             className="w-full pl-10 md:pl-12 pr-3.5 md:pr-4 h-10 text-sm md:text-base rounded-md border-border/60 bg-background focus:border-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300"
+                            maxLength={FIELD_LIMITS.EMAIL}
                           />
                         </div>
                         {form?.formState?.errors?.email && (

@@ -61,6 +61,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import InventoryModeField from "@/page/product/InventoryModeField";
 import { INVENTORY_MODES, initialStockNeedsStore } from "@/lib/inventory-mode";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -711,6 +712,7 @@ const AddProduct = () => {
                             <Input
                               placeholder={t("page.product.form.namePlaceholder")}
                               {...field}
+                              maxLength={FIELD_LIMITS.BUSINESS_NAME}
                             />
                             <FormMessage />
                           </FormItem>
@@ -825,6 +827,7 @@ const AddProduct = () => {
                               placeholder={t("page.product.form.descriptionPlaceholder")}
                               className="min-h-[80px] resize-y"
                               {...field}
+                              maxLength={FIELD_LIMITS.DESCRIPTION}
                             />
                             <FormMessage />
                           </FormItem>
@@ -872,6 +875,7 @@ const AddProduct = () => {
                                 <Input
                                   placeholder={t("page.product.form.brandPlaceholder")}
                                   {...field}
+                                  maxLength={FIELD_LIMITS.BUSINESS_NAME}
                                 />
                                 <p className="text-[11px] text-muted-foreground mt-1">
                                   {t("page.product.form.brandOptional")}
@@ -890,6 +894,7 @@ const AddProduct = () => {
                                 <Input
                                   placeholder={t("page.product.form.skuPlaceholder2")}
                                   {...field}
+                                  maxLength={FIELD_LIMITS.CODE}
                                 />
                                 <p className="text-[11px] text-muted-foreground mt-1">
                                   {t("page.product.form.skuOptional")}
@@ -909,6 +914,7 @@ const AddProduct = () => {
                                 <Input
                                   placeholder={t("page.product.form.barcodePlaceholder")}
                                   {...field}
+                                  maxLength={FIELD_LIMITS.BARCODE}
                                 />
                                 <p className="text-[11px] text-muted-foreground mt-1">
                                   {t("page.product.form.barcodeOptional")}
@@ -1344,6 +1350,7 @@ const AddProduct = () => {
                                       updateVariantGroup(group.id, "name", e.target.value)
                                     }
                                     className="h-9 text-sm flex-1"
+                                    maxLength={FIELD_LIMITS.SHORT_LABEL}
                                   />
                                 </div>
                                 <Button
@@ -1375,6 +1382,7 @@ const AddProduct = () => {
                                         updateVariantOption(group.id, idx, "name", e.target.value)
                                       }
                                       className="h-9 text-sm flex-1"
+                                      maxLength={FIELD_LIMITS.SHORT_LABEL}
                                     />
                                     <div className="relative w-28 shrink-0">
                                       <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -1484,6 +1492,7 @@ const AddProduct = () => {
                                       updateModifierItem(mod.id, "name", e.target.value)
                                     }
                                     className="h-9 text-sm flex-1"
+                                    maxLength={FIELD_LIMITS.SHORT_LABEL}
                                   />
                                   <div className="relative w-32 shrink-0">
                                     <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -1558,6 +1567,7 @@ const AddProduct = () => {
                               value={tier.name}
                               onChange={(e) => updatePriceTier(tier.id, "name", e.target.value)}
                               className="h-9 text-sm flex-1"
+                              maxLength={FIELD_LIMITS.SHORT_LABEL}
                             />
                             <div className="relative w-40 shrink-0">
                               <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">

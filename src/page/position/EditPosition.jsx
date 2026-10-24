@@ -38,6 +38,7 @@ import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import DepartmentPositions from "@/components/organism/DepartmentPositions";
 import { getMissingFields } from "@/lib/validation";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const EditPosition = () => {
   const { t } = useTranslation();
@@ -230,6 +231,7 @@ const EditPosition = () => {
                           {...field}
                           placeholder={t("page.position.form.namePlaceholder")}
                           className="pl-9"
+                          maxLength={FIELD_LIMITS.SHORT_LABEL}
                         />
                       </div>
                     </FormControl>
@@ -329,6 +331,7 @@ const EditPosition = () => {
                       placeholder={t("page.position.form.descriptionPlaceholder")}
                       rows={4}
                       className="resize-none"
+                      maxLength={FIELD_LIMITS.DESCRIPTION}
                     />
                   </FormControl>
                   <FormMessage />

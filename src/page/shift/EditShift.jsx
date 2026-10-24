@@ -34,6 +34,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const EditShift = () => {
   const { t } = useTranslation();
@@ -466,7 +467,11 @@ const EditShift = () => {
                     {t("page.shift.edit.form.namaShift")}{" "}
                     <span className="text-destructive">*</span>
                   </FormLabel>
-                  <Input placeholder={t("page.shift.edit.form.namaShiftPlaceholder")} {...field} />
+                  <Input
+                    placeholder={t("page.shift.edit.form.namaShiftPlaceholder")}
+                    {...field}
+                    maxLength={FIELD_LIMITS.SHORT_LABEL}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

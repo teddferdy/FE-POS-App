@@ -510,6 +510,7 @@
   "page.expenseCategory.button.cancel": "Batal",
   "common.success": "Berhasil",
   "common.error": "Gagal",
+  "common.maxLengthReached": "Sudah mencapai batas maksimal",
   "common.status": "Status",
   "common.all": "Semua",
   "common.active": "Aktif",

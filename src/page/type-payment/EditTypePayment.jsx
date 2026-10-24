@@ -29,6 +29,7 @@ import AbortController from "@/components/organism/abort-controller";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const EditTypePayment = () => {
   const { t } = useTranslation();
@@ -270,6 +271,7 @@ const EditTypePayment = () => {
                           <Input
                             placeholder={t("page.typePayment.form.namePlaceholder")}
                             {...field}
+                            maxLength={FIELD_LIMITS.SHORT_LABEL}
                           />
                           <FormMessage />
                         </FormItem>

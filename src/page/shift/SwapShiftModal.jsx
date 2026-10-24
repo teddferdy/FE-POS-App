@@ -27,6 +27,8 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Textarea } from "@/components/ui/textarea";
 
 const fmtTime = (t) => (t ? String(t).slice(0, 5) : "??:??");
 
@@ -688,12 +690,14 @@ const SwapShiftModal = ({
                   size={15}
                   className="absolute left-3 top-3 text-muted-foreground/70"
                 />
-                <textarea
+                <Textarea
+                  unstyled
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder={t("page.shift.swap.notePlaceholder")}
                   rows={2}
                   className="w-full rounded-xl border border-border bg-background pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                  maxLength={FIELD_LIMITS.DESCRIPTION}
                 />
               </div>
             </div>

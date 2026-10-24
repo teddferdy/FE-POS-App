@@ -42,6 +42,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 const PROMO_TYPES = {
   standard: "page.discount.form.promoType.standard",
   bogo: "page.discount.form.promoType.bogo",
@@ -541,7 +542,11 @@ const EditDiscount = () => {
                       <FormLabel>
                         {t("page.discount.form.name")} <span className="text-destructive">*</span>
                       </FormLabel>
-                      <Input placeholder={t("page.discount.form.namePlaceholder")} {...field} />
+                      <Input
+                        placeholder={t("page.discount.form.namePlaceholder")}
+                        {...field}
+                        maxLength={FIELD_LIMITS.BUSINESS_NAME}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -941,6 +946,7 @@ const EditDiscount = () => {
                         placeholder={t("page.discount.form.promoCodePlaceholder")}
                         {...field}
                         onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                        maxLength={FIELD_LIMITS.CODE}
                       />
                       <FormMessage />
                       <FormDescription>{t("common.optionalField")}</FormDescription>
@@ -958,6 +964,7 @@ const EditDiscount = () => {
                       placeholder={t("page.discount.form.descriptionPlaceholder")}
                       rows={3}
                       {...field}
+                      maxLength={FIELD_LIMITS.DESCRIPTION}
                     />
                     <FormMessage />
                     <FormDescription>{t("common.optionalField")}</FormDescription>

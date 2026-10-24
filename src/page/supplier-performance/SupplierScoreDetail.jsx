@@ -10,6 +10,8 @@ import { getSupplierScoreById, updateSupplierScoreNote } from "@/services/suppli
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Textarea } from "@/components/ui/textarea";
 
 const gradeBadge = (grade) => {
   const map = {
@@ -208,11 +210,13 @@ const SupplierScoreDetail = () => {
             <h3 className="font-semibold text-foreground mb-4">
               {t("page.supplierPerformance.detail.notes")}
             </h3>
-            <textarea
+            <Textarea
+              unstyled
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full h-32 px-3 py-2 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none resize-none"
               placeholder={t("page.supplierPerformance.detail.notesPlaceholder")}
+              maxLength={FIELD_LIMITS.DESCRIPTION}
             />
             <Button
               variant="success"

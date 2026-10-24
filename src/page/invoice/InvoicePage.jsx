@@ -63,6 +63,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loading } from "@/components/ui/loading";
 import NoStore from "@/components/ui/NoStore";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const DEFAULT_INVOICE_TEMPLATE = {
   showStoreName: true,
@@ -933,6 +934,7 @@ const InvoicePage = () => {
                   placeholder={t("page.invoice.footerPlaceholder")}
                   className="text-sm min-h-[80px]"
                   rows={4}
+                  maxLength={FIELD_LIMITS.DESCRIPTION}
                 />
                 <p className="text-[11px] text-muted-foreground mt-2">
                   {t("page.invoice.footerDescription")}

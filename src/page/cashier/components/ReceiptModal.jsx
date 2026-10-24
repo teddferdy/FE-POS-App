@@ -53,6 +53,7 @@ import { receiptLabels } from "@/components/receipt/receiptLabels";
 import { buildAddressLines } from "@/utils/receiptDocument";
 import { isRegisterRequiredError } from "@/state/registerRequired";
 import { paymentMethodLabel } from "@/utils/payment";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const { t } = useTranslation();
@@ -786,7 +787,8 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                                 </Button>
                               </div>
                               {splitNeedsReference && (
-                                <input
+                                <Input
+                                  unstyled
                                   value={payReference}
                                   onChange={(e) => setPayReference(e.target.value)}
                                   aria-label={t(
@@ -800,6 +802,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                                       : "page.cashier.collectPayment.reference.placeholder"
                                   )}
                                   className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
+                                  maxLength={FIELD_LIMITS.REFERENCE}
                                 />
                               )}
                             </div>

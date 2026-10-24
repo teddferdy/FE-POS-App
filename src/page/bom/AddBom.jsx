@@ -23,6 +23,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const emptyLine = () => ({ supplierId: "", ingredientId: "", qty: "", unit: "pcs", notes: "" });
 
@@ -364,6 +365,7 @@ const AddBom = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t("page.bom.add.placeholder.name")}
+                maxLength={FIELD_LIMITS.BUSINESS_NAME}
               />
             </div>
           </div>
@@ -460,6 +462,7 @@ const AddBom = () => {
                               onChange={(e) => updateLine(idx, "notes", e.target.value)}
                               className="h-8 text-xs"
                               placeholder={t("page.bom.add.placeholder.notes")}
+                              maxLength={FIELD_LIMITS.SHORT_NOTE}
                             />
                           </td>
                           <td className="px-3 py-2 text-center">
@@ -495,6 +498,7 @@ const AddBom = () => {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("page.bom.add.placeholder.globalNotes")}
+              maxLength={FIELD_LIMITS.DESCRIPTION}
             />
           </div>
 

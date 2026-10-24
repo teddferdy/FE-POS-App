@@ -60,6 +60,8 @@ import CashierTablePanel, { cashierTablesKey } from "./components/CashierTablePa
 import { getCashierTables } from "@/services/table";
 import { useLocations } from "@/queries/useLocations";
 import NoStore from "@/components/ui/NoStore";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Textarea } from "@/components/ui/textarea";
 
 const CashierPage = () => {
   const { t } = useTranslation();
@@ -926,11 +928,13 @@ const CashierPage = () => {
                 )}
               </DialogDescription>
             </DialogHeader>
-            <textarea
+            <Textarea
+              unstyled
               value={parkNotes}
               onChange={(e) => setParkNotes(e.target.value)}
               placeholder={t("page.cashier.parkedCart.notesPlaceholder", "Notes (optional)")}
               className="w-full min-h-[80px] rounded-lg border border-border/60 bg-transparent p-2 text-sm outline-none focus:border-primary/50"
+              maxLength={FIELD_LIMITS.DESCRIPTION}
             />
             <DialogFooter>
               <Button variant="danger" onClick={() => setParkCartOpen(false)}>

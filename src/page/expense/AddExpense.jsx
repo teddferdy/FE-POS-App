@@ -50,6 +50,7 @@ import {
 import { normalizePayload } from "@/lib/payload-normalizer";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const SectionHeader = ({ step, title, description }) => (
   <div className="flex items-center gap-3 pt-1">
@@ -727,6 +728,7 @@ const AddExpense = () => {
                             placeholder={t("page.expense.add.notesPlaceholder")}
                             rows={3}
                             {...field}
+                            maxLength={FIELD_LIMITS.DESCRIPTION}
                           />
                           <FormMessage />
                         </FormItem>
@@ -837,6 +839,7 @@ const AddExpense = () => {
                               }
                               disabled={isSalary}
                               {...field}
+                              maxLength={FIELD_LIMITS.SHORT_NOTE}
                             />
                             {isSalary && (
                               <FormDescription>
@@ -975,6 +978,7 @@ const AddExpense = () => {
                               placeholder={t("page.expense.form.payeePlaceholder")}
                               disabled={isSalary}
                               {...field}
+                              maxLength={FIELD_LIMITS.BUSINESS_NAME}
                             />
                             <FormDescription>{t("page.expense.form.payeeHint")}</FormDescription>
                             <FormMessage />
@@ -1051,6 +1055,7 @@ const AddExpense = () => {
                             placeholder={t("page.expense.add.notesPlaceholder")}
                             rows={3}
                             {...field}
+                            maxLength={FIELD_LIMITS.DESCRIPTION}
                           />
                           <FormMessage />
                         </FormItem>

@@ -34,6 +34,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import CategoryPreviewModal from "./CategoryPreviewModal";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const iconSections = [
   {
@@ -615,6 +616,7 @@ const EditCategory = () => {
                               {...field}
                               placeholder={t("page.category.form.namePlaceholder")}
                               className="h-12"
+                              maxLength={FIELD_LIMITS.SHORT_LABEL}
                             />
                             <FormMessage />
                           </FormItem>
@@ -633,6 +635,7 @@ const EditCategory = () => {
                               placeholder={t("page.category.form.descPlaceholder")}
                               className="resize-none"
                               rows={5}
+                              maxLength={FIELD_LIMITS.DESCRIPTION}
                             />
                             <FormMessage />
                           </FormItem>

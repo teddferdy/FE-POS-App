@@ -39,6 +39,7 @@ import { useTranslation } from "react-i18next";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import PageHeader from "@/components/ui/PageHeader";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
@@ -319,7 +320,11 @@ const AddReservation = () => {
                     <FormLabel>
                       Nama Customer <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input placeholder="Nama customer" {...field} />
+                    <Input
+                      placeholder="Nama customer"
+                      {...field}
+                      maxLength={FIELD_LIMITS.PERSON_NAME}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -330,7 +335,7 @@ const AddReservation = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>No. Telepon</FormLabel>
-                    <Input placeholder="08123456789" maxLength={16} {...field} />
+                    <Input placeholder="08123456789" maxLength={FIELD_LIMITS.PHONE} {...field} />
                     <FormMessage />
                     <FormDescription>{t("common.phoneHint")}</FormDescription>
                   </FormItem>
@@ -342,7 +347,12 @@ const AddReservation = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
-                    <Input type="email" placeholder="email@example.com" {...field} />
+                    <Input
+                      type="email"
+                      placeholder="email@example.com"
+                      {...field}
+                      maxLength={FIELD_LIMITS.EMAIL}
+                    />
                     <FormMessage />
                     <FormDescription>{t("common.optionalField")}</FormDescription>
                   </FormItem>
@@ -422,7 +432,12 @@ const AddReservation = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Catatan</FormLabel>
-                  <Textarea placeholder="Catatan reservasi" rows={3} {...field} />
+                  <Textarea
+                    placeholder="Catatan reservasi"
+                    rows={3}
+                    {...field}
+                    maxLength={FIELD_LIMITS.DESCRIPTION}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

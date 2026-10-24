@@ -68,6 +68,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const EditEmployee = () => {
   const { t } = useTranslation();
@@ -813,6 +814,7 @@ const EditEmployee = () => {
                                     <Input
                                       {...field}
                                       placeholder={t("page.employee.form.fullNamePlaceholder")}
+                                      maxLength={FIELD_LIMITS.PERSON_NAME}
                                     />
                                     <FormMessage />
                                   </FormItem>
@@ -831,6 +833,7 @@ const EditEmployee = () => {
                                       {...field}
                                       type="email"
                                       placeholder={t("page.employee.form.emailPlaceholder")}
+                                      maxLength={FIELD_LIMITS.EMAIL}
                                     />
                                     <FormMessage />
                                     <FormDescription>{t("common.emailHint")}</FormDescription>
@@ -852,7 +855,7 @@ const EditEmployee = () => {
                                       {...field}
                                       type="tel"
                                       placeholder={t("page.employee.form.phonePlaceholder")}
-                                      maxLength={16}
+                                      maxLength={FIELD_LIMITS.PHONE}
                                       onChange={(e) => {
                                         const value = e.target.value
                                           .replace(/\D/g, "")
@@ -907,6 +910,7 @@ const EditEmployee = () => {
                                     <Input
                                       {...field}
                                       placeholder={t("page.employee.form.placeOfBirthPlaceholder")}
+                                      maxLength={FIELD_LIMITS.SHORT_LABEL}
                                     />
                                     <FormMessage />
                                   </FormItem>
@@ -946,6 +950,7 @@ const EditEmployee = () => {
                                     rows={3}
                                     className="resize-none"
                                     placeholder={t("page.employee.form.addressPlaceholder")}
+                                    maxLength={FIELD_LIMITS.ADDRESS}
                                   />
                                   <FormMessage />
                                 </FormItem>
@@ -981,6 +986,7 @@ const EditEmployee = () => {
                                   disabled
                                   className="font-mono bg-muted/50"
                                   placeholder={t("page.employee.form.employeeIdPlaceholder")}
+                                  maxLength={FIELD_LIMITS.CODE}
                                 />
                                 <FormMessage />
                               </FormItem>
@@ -1430,6 +1436,7 @@ const EditEmployee = () => {
                                 <Input
                                   {...field}
                                   placeholder={t("page.employee.form.usernamePlaceholder")}
+                                  maxLength={FIELD_LIMITS.SHORT_LABEL}
                                 />
                                 <FormMessage />
                               </FormItem>

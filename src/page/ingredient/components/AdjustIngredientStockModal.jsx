@@ -9,6 +9,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { adjustIngredientStock } from "@/services/ingredient";
 import { toQuantity, formatQuantity } from "@/utils/quantity";
 import { getIngredientStockState } from "@/utils/ingredientStockState";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const P = "page.ingredient.adjust";
 const fieldLabelClass = "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground";
@@ -157,7 +158,7 @@ const AdjustIngredientStockModal = ({ ingredient, onClose }) => {
           <Textarea
             id="adjust-notes"
             rows={2}
-            maxLength={500}
+            maxLength={FIELD_LIMITS.DESCRIPTION}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />

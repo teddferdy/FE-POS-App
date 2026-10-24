@@ -24,6 +24,9 @@ import {
   togglePermissionValue,
   roleTypeLabelKey
 } from "@/page/role/rolePermissions";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 // Role types a store account may create (super_admin: global accounts only).
 const ROLE_TYPE_OPTIONS = ["admin", "kasir", "user"];
@@ -160,12 +163,14 @@ const AddRole = () => {
                     className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.role.detail.nameLabel")} <span className="text-destructive">*</span>
                   </label>
-                  <input
+                  <Input
+                    unstyled
                     id="role-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder={t("page.role.add.namePlaceholder")}
+                    maxLength={FIELD_LIMITS.SHORT_LABEL}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -174,13 +179,15 @@ const AddRole = () => {
                     className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.role.edit.descLabel")}
                   </label>
-                  <textarea
+                  <Textarea
+                    unstyled
                     id="role-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
                     placeholder={t("page.role.add.descPlaceholder")}
                     rows={5}
+                    maxLength={FIELD_LIMITS.DESCRIPTION}
                   />
                 </div>
                 <fieldset className="flex flex-col gap-2">

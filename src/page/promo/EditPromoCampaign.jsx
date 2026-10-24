@@ -48,6 +48,9 @@ import { DateInput } from "@/components/ui/date-input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const SectionHeader = ({ icon: Icon, title, description, gradient }) => (
   <div className={`bg-gradient-to-r ${gradient} px-6 py-4`}>
@@ -496,10 +499,12 @@ const EditPromoCampaign = () => {
                     <label className="text-sm font-medium text-foreground">
                       {t("page.promo.form.name")} <span className="text-destructive">*</span>
                     </label>
-                    <input
+                    <Input
+                      unstyled
                       {...form.register("name")}
                       className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
                       placeholder={t("page.promo.form.namePlaceholder")}
+                      maxLength={FIELD_LIMITS.BUSINESS_NAME}
                     />
                     {form.formState.errors.name && (
                       <p className="text-xs text-destructive mt-1">
@@ -511,20 +516,24 @@ const EditPromoCampaign = () => {
                     <label className="text-sm font-medium text-foreground">
                       {t("page.promo.form.description")}
                     </label>
-                    <textarea
+                    <Textarea
+                      unstyled
                       {...form.register("description")}
                       className="mt-1 w-full h-20 px-3 py-2 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none resize-none"
                       placeholder={t("page.promo.form.descriptionPlaceholder")}
+                      maxLength={FIELD_LIMITS.DESCRIPTION}
                     />
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground">
                       {t("page.promo.form.code")}
                     </label>
-                    <input
+                    <Input
+                      unstyled
                       {...form.register("code")}
                       className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none uppercase"
                       placeholder={t("page.promo.form.codePlaceholder")}
+                      maxLength={FIELD_LIMITS.CODE}
                     />
                     <FormDescription>{t("common.optionalField")}</FormDescription>
                   </div>

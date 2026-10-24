@@ -30,6 +30,7 @@ import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const emptyItem = {
   name: "",
@@ -955,6 +956,7 @@ const EditPurchaseOrder = () => {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="min-h-[80px] resize-none"
+                  maxLength={FIELD_LIMITS.DESCRIPTION}
                 />
               </div>
             </div>
@@ -1278,6 +1280,7 @@ const EditPurchaseOrder = () => {
                           onChange={(e) => setAdditionalCostNotes(e.target.value)}
                           className="h-9 text-sm flex-1 min-w-[160px]"
                           disabled={hasFinancialLock}
+                          maxLength={FIELD_LIMITS.SHORT_NOTE}
                         />
                       </div>
                     )}

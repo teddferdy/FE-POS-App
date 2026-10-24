@@ -63,6 +63,7 @@ import {
   Eye
 } from "lucide-react";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 export default function DetailPurchaseOrder() {
   const { t } = useTranslation();
@@ -1405,6 +1406,7 @@ export default function DetailPurchaseOrder() {
                   value={payRef}
                   onChange={(e) => setPayRef(e.target.value)}
                   placeholder={t("page.purchaseOrder.detail.referencePlaceholder")}
+                  maxLength={FIELD_LIMITS.REFERENCE}
                 />
               </div>
             </div>
@@ -1491,6 +1493,7 @@ export default function DetailPurchaseOrder() {
                 value={returnReason}
                 onChange={(e) => setReturnReason(e.target.value)}
                 placeholder={t("page.purchaseOrder.detail.returnReasonPlaceholder")}
+                maxLength={FIELD_LIMITS.SHORT_NOTE}
               />
             </div>
             <div className="space-y-2">
@@ -1499,6 +1502,7 @@ export default function DetailPurchaseOrder() {
                 value={returnedByName}
                 onChange={(e) => setReturnedByName(e.target.value)}
                 placeholder={t("page.purchaseOrder.detail.returnedByNamePlaceholder")}
+                maxLength={FIELD_LIMITS.PERSON_NAME}
               />
             </div>
             <div className="space-y-2">

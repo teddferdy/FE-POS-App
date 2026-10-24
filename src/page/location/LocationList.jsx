@@ -43,6 +43,7 @@ import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import TableActions from "@/components/ui/TableActions";
 import { qk } from "@/queries/keys";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const LocationList = () => {
   const { t } = useTranslation();
@@ -646,7 +647,7 @@ const LocationList = () => {
             value={archiveReason}
             onChange={(e) => setArchiveReason(e.target.value)}
             placeholder={t("page.location.archiveReasonPlaceholder")}
-            maxLength={500}
+            maxLength={FIELD_LIMITS.DESCRIPTION}
           />
         </div>
       </Modal>

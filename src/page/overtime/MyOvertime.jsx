@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const fmtDate = (d) => {
   if (!d) return "-";
@@ -325,6 +326,7 @@ const MyOvertime = () => {
               placeholder="Alasan / detail pekerjaan lembur (opsional)"
               value={form.note}
               onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+              maxLength={FIELD_LIMITS.DESCRIPTION}
             />
           </div>
 

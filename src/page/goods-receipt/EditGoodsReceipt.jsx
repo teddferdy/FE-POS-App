@@ -42,6 +42,7 @@ import { useCookies } from "react-cookie";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const EditGoodsReceipt = () => {
   const navigate = useNavigate();
@@ -746,6 +747,7 @@ const EditGoodsReceipt = () => {
                 value={suratJalan}
                 onChange={(e) => setSuratJalan(e.target.value)}
                 placeholder={t("page.goodsReceipt.add.placeholder.suratJalan")}
+                maxLength={FIELD_LIMITS.DOCUMENT_NUMBER}
               />
             </div>
             <div className="space-y-2">
@@ -760,6 +762,7 @@ const EditGoodsReceipt = () => {
                 value={taxInvoiceNo}
                 onChange={(e) => setTaxInvoiceNo(e.target.value)}
                 placeholder={t("page.goodsReceipt.add.placeholder.taxInvoiceNo")}
+                maxLength={FIELD_LIMITS.DOCUMENT_NUMBER}
               />
             </div>
             <div className="space-y-2">
@@ -889,6 +892,7 @@ const EditGoodsReceipt = () => {
                                 onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
                                 className="h-8 text-xs"
                                 placeholder={t("page.goodsReceipt.edit.placeholder.name")}
+                                maxLength={FIELD_LIMITS.BUSINESS_NAME}
                               />
                               {ingredientFocusIdx === idx && (
                                 <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
@@ -1068,6 +1072,7 @@ const EditGoodsReceipt = () => {
                             onChange={(e) => updateItem(idx, "conditionNotes", e.target.value)}
                             className="h-8 text-xs"
                             placeholder={t("page.goodsReceipt.edit.placeholder.condition")}
+                            maxLength={FIELD_LIMITS.SHORT_NOTE}
                           />
                         </td>
                         <td className="px-3 py-2 text-center">
@@ -1099,6 +1104,7 @@ const EditGoodsReceipt = () => {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("page.goodsReceipt.edit.placeholder.notes")}
+              maxLength={FIELD_LIMITS.DESCRIPTION}
             />
           </div>
 

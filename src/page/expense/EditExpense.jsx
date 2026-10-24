@@ -42,6 +42,7 @@ import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
 import { isSalaryCategoryName } from "@/lib/salary-category";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const SectionHeader = ({ step, title, description }) => (
   <div className="flex items-center gap-3 pt-1">
@@ -413,6 +414,7 @@ const EditExpense = () => {
                           }
                           disabled={isSalary}
                           {...field}
+                          maxLength={FIELD_LIMITS.SHORT_NOTE}
                         />
                         {isSalary && (
                           <FormDescription>
@@ -547,6 +549,7 @@ const EditExpense = () => {
                           placeholder={t("page.expense.form.payeePlaceholder")}
                           disabled={isSalary}
                           {...field}
+                          maxLength={FIELD_LIMITS.BUSINESS_NAME}
                         />
                         <FormDescription>{t("page.expense.form.payeeHint")}</FormDescription>
                         <FormMessage />
@@ -621,6 +624,7 @@ const EditExpense = () => {
                         placeholder={t("page.expense.edit.notesPlaceholder")}
                         rows={3}
                         {...field}
+                        maxLength={FIELD_LIMITS.DESCRIPTION}
                       />
                       <FormMessage />
                     </FormItem>

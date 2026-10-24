@@ -28,6 +28,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { Switch } from "@/components/ui/switch";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const emptyItem = { product: "", quantity: 1, unitPrice: 0, isOptional: false };
 
@@ -355,6 +356,7 @@ const AddBundle = () => {
                     value={formData.name}
                     onChange={(e) => updateFormData("name", e.target.value)}
                     placeholder={t("page.bundle.form.namePlaceholder")}
+                    maxLength={FIELD_LIMITS.BUSINESS_NAME}
                   />
                 </div>
                 <div className="space-y-2">
@@ -380,6 +382,7 @@ const AddBundle = () => {
                     onChange={(e) => updateFormData("description", e.target.value)}
                     placeholder={t("page.bundle.form.descriptionPlaceholder")}
                     rows={3}
+                    maxLength={FIELD_LIMITS.DESCRIPTION}
                   />
                 </div>
 
