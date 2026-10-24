@@ -45,8 +45,12 @@ export const createManualJournal = async (payload) => {
   return data;
 };
 
-export const deleteJournal = async (id) => {
-  const { data, status } = await axiosInstance.delete(`/accounting/journals/${id}`);
+// FG-ACC-03: the BE never removes a journal — it posts a reversing entry and
+// marks the original "reversed".
+export const deleteJournal = async (id, reason) => {
+  const { data, status } = await axiosInstance.delete(`/accounting/journals/${id}`, {
+    data: reason ? { reason } : undefined
+  });
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
