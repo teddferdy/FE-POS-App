@@ -9,13 +9,14 @@ export const INGREDIENT_SOURCES = ["none", "supplier"];
 // Where an ingredient comes from (client note 2026-10-24). "none" is bought
 // at the market or made in-house: no supplier, the name is typed in.
 // "supplier" is bought from a registered supplier: the supplier is required
-// and the name can come from its catalog.
-const IngredientSourceField = ({ value, onChange, disabled }) => {
+// and the name can come from its catalog. Always selectable: the choice
+// does not depend on the store (only the supplier list does).
+const IngredientSourceField = ({ value, onChange }) => {
   const { t } = useTranslation();
   const source = INGREDIENT_SOURCES.includes(value) ? value : "none";
 
   return (
-    <fieldset className="space-y-2" disabled={disabled}>
+    <fieldset className="space-y-2">
       <legend className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
         {t(`${P}.label`)}
       </legend>
@@ -47,8 +48,7 @@ const IngredientSourceField = ({ value, onChange, disabled }) => {
 
 IngredientSourceField.propTypes = {
   value: PropTypes.string,
-  onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool
+  onChange: PropTypes.func.isRequired
 };
 
 export default IngredientSourceField;

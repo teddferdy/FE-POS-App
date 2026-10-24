@@ -29,8 +29,9 @@ jest.mock("react-i18next", () => ({
 jest.mock("sonner", () => ({
   toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn() }
 }));
+let mockUser = { id: 1, roleType: "admin", store: 1 };
 jest.mock("react-cookie", () => ({
-  useCookies: () => [{ user: { id: 1, roleType: "admin", store: 1 } }]
+  useCookies: () => [{ user: mockUser }]
 }));
 jest.mock("@/components/ui/tabs", () => ({
   Tabs: ({ children }) => <div>{children}</div>,
@@ -93,6 +94,7 @@ const chooseSource = (source) => fireEvent.click(sourceRadio(source));
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockUser = { id: 1, roleType: "admin", store: 1 };
   getAllSupplier.mockResolvedValue({
     data: [{ id: 5, name: "PT Daging Segar", status: "active" }]
   });
@@ -102,6 +104,8 @@ beforeEach(() => {
 
 test("the default source has no supplier field; a typed name is saved", async () => {
   renderPage();
+  // an admin's store is fixed, so there is no store hint
+  expect(screen.queryByText("page.ingredient.form.storeFirstHint")).not.toBeInTheDocument();
   expect(sourceRadio("none")).toBeChecked();
   expect(screen.queryByTestId("page.ingredient.form.supplierPlaceholder")).not.toBeInTheDocument();
 
@@ -184,4 +188,24 @@ test("editing opens in the source the ingredient already has", async () => {
   renderPage(EditIngredient);
   await waitFor(() => expect(sourceRadio("supplier")).toBeChecked());
   expect(screen.getByTestId("page.ingredient.form.supplierPlaceholder")).toBeInTheDocument();
+});
+
+test("a super admin can switch the source before picking a store", async () => {
+  // bakso_admin is a (scoped) super admin: the store is picked on the form,
+  // and the source choice must not wait for it.
+  mockUser = { id: 16, roleType: "super_admin", store: null };
+  renderPage();
+  expect(screen.getByText("page.ingredient.form.storeFirstHint")).toBeInTheDocument();
+
+  expect(sourceRadio("none")).not.toBeDisabled();
+  expect(sourceRadio("supplier")).not.toBeDisabled();
+  chooseSource("supplier");
+  expect(sourceRadio("supplier")).toBeChecked();
+
+  // only the supplier list waits for the store
+  const supplierBox = screen.getByTestId("page.ingredient.form.supplierDisabledPlaceholder");
+  expect(supplierBox).toHaveAttribute("data-disabled", "true");
+
+  chooseSource("none");
+  expect(sourceRadio("none")).toBeChecked();
 });

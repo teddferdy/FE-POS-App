@@ -355,6 +355,11 @@ const AddIngredient = () => {
                           searchPlaceholder="Cari toko..."
                           loading={locationsLoading}
                         />
+                        {!field.value && (
+                          <p className="text-xs text-amber-700 dark:text-amber-400" role="note">
+                            {t("page.ingredient.form.storeFirstHint")}
+                          </p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -386,11 +391,7 @@ const AddIngredient = () => {
 
                   <TabsContent value="informasi" className="mt-0">
                     <div className="space-y-6">
-                      <IngredientSourceField
-                        value={source}
-                        onChange={changeSource}
-                        disabled={isSupplierDisabled}
-                      />
+                      <IngredientSourceField value={source} onChange={changeSource} />
                       <div
                         className={`grid grid-cols-1 gap-4 ${source === "supplier" ? "xl:grid-cols-3" : "xl:grid-cols-2"}`}>
                         {source === "supplier" && (
