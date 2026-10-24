@@ -161,9 +161,9 @@ const AddIngredient = () => {
   const suppliers = suppliersData?.data || [];
 
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
-    ["ingredient-categories-dropdown", activeStore, watchSupplier],
+    ["ingredient-categories-dropdown", activeStore],
     () => getAllIngredientCategory(),
-    { enabled: (!!activeStore || !isSuperAdmin) && !!watchSupplier }
+    { enabled: !!activeStore || !isSuperAdmin }
   );
   const categories = categoriesData?.data || [];
 
@@ -202,8 +202,16 @@ const AddIngredient = () => {
   }, [productNamesData]);
 
   const isSupplierDisabled = isSuperAdmin && !watchStore;
-  const isCategoryDisabled = isSuperAdmin ? !watchStore || !watchSupplier : !watchSupplier;
-  const isNameDisabled = !watchCategory;
+  const isCategoryDisabled = isSuperAdmin && !watchStore;
+  // The supplier is optional (client note 2026-10-24): many ingredients are
+  // bought at the market or made in-house. With a supplier that has a
+  // catalog, the name is picked from it (and fills price and unit);
+  // otherwise it is typed in.
+  const pickFromCatalog =
+    !!watchSupplier &&
+    (allSupplierProductsLoading || (allSupplierProductsData?.data?.length ?? 0) > 0) &&
+    !(watchCategory && !productNamesLoading && supplierProductOptions.length === 0);
+  const isNameDisabled = pickFromCatalog ? !watchCategory : isSuperAdmin && !watchStore;
 
   React.useEffect(() => {
     form.setValue("supplier", null);
@@ -212,12 +220,11 @@ const AddIngredient = () => {
   }, [watchStore]);
 
   React.useEffect(() => {
-    form.setValue("category", null);
-    form.setValue("name", "");
+    if (watchSupplier) form.setValue("name", "");
   }, [watchSupplier]);
 
   React.useEffect(() => {
-    form.setValue("name", "");
+    if (pickFromCatalog) form.setValue("name", "");
   }, [watchCategory]);
 
   React.useEffect(() => {
@@ -378,8 +385,7 @@ const AddIngredient = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.ingredient.form.supplierLabel")}{" "}
-                                <span className="text-destructive">*</span>
+                                {t("page.ingredient.form.supplierLabel")}
                               </FormLabel>
                               <Combobox
                                 options={suppliers
@@ -401,6 +407,9 @@ const AddIngredient = () => {
                                 disabled={isSupplierDisabled}
                                 loading={suppliersLoading}
                               />
+                              <FormDescription>
+                                {t("page.ingredient.form.supplierOptionalHint")}
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -450,30 +459,43 @@ const AddIngredient = () => {
                                 {t("page.ingredient.form.nameLabel")}{" "}
                                 <span className="text-destructive">*</span>
                               </FormLabel>
-                              <Combobox
-                                options={supplierProductOptions}
-                                value={field.value || ""}
-                                onChange={(v) => {
-                                  field.onChange(v || "");
-                                  if (v && allSupplierProductsData?.data) {
-                                    const product = allSupplierProductsData.data.find(
-                                      (p) => p.name?.toLowerCase().trim() === v.toLowerCase().trim()
-                                    );
-                                    if (product) {
-                                      form.setValue("costPrice", Number(product.price) || 0);
-                                      form.setValue("unit", product.unit || "pcs");
+                              {pickFromCatalog ? (
+                                <Combobox
+                                  options={supplierProductOptions}
+                                  value={field.value || ""}
+                                  onChange={(v) => {
+                                    field.onChange(v || "");
+                                    if (v && allSupplierProductsData?.data) {
+                                      const product = allSupplierProductsData.data.find(
+                                        (p) =>
+                                          p.name?.toLowerCase().trim() === v.toLowerCase().trim()
+                                      );
+                                      if (product) {
+                                        form.setValue("costPrice", Number(product.price) || 0);
+                                        form.setValue("unit", product.unit || "pcs");
+                                      }
                                     }
+                                  }}
+                                  placeholder={
+                                    isNameDisabled
+                                      ? t("page.ingredient.form.nameDisabledPlaceholder")
+                                      : t("page.ingredient.form.namePlaceholder")
                                   }
-                                }}
-                                placeholder={
-                                  isNameDisabled
-                                    ? t("page.ingredient.form.nameDisabledPlaceholder")
-                                    : t("page.ingredient.form.namePlaceholder")
-                                }
-                                searchPlaceholder={t("page.ingredient.form.nameSearchPlaceholder")}
-                                disabled={isNameDisabled}
-                                loading={productNamesLoading}
-                              />
+                                  searchPlaceholder={t(
+                                    "page.ingredient.form.nameSearchPlaceholder"
+                                  )}
+                                  disabled={isNameDisabled}
+                                  loading={productNamesLoading}
+                                />
+                              ) : (
+                                <Input
+                                  className="h-10"
+                                  value={field.value || ""}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                  placeholder={t("page.ingredient.form.nameFreePlaceholder")}
+                                  disabled={isNameDisabled}
+                                />
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}
@@ -881,8 +903,7 @@ const AddIngredient = () => {
                         e.preventDefault();
                         const values = form.getValues();
                         const extraErrors = [
-                          ...(isSuperAdmin && !values.store ? [{ name: "store" }] : []),
-                          ...(!values.supplier ? [{ name: "supplier" }] : [])
+                          ...(isSuperAdmin && !values.store ? [{ name: "store" }] : [])
                         ];
                         const missing = getMissingFields(
                           values,
