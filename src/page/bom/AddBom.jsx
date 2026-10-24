@@ -236,16 +236,22 @@ const AddBom = () => {
             notes: l.notes
           }))
       };
-      if (isEdit) {
-        await editBom(editId, body);
-      } else {
-        await addBom({ ...body, productId: parseInt(productId), createdBy: user?.id });
-      }
+      const saved = isEdit
+        ? await editBom(editId, body)
+        : await addBom({ ...body, productId: parseInt(productId), createdBy: user?.id });
       toast.success(t(isEdit ? "page.bom.edit.toast.success" : "page.bom.add.toast.success"), {
         description: t(
           isEdit ? "page.bom.edit.toast.successDesc" : "page.bom.add.toast.successDesc"
         )
       });
+      // The server moved a product still on "Stok produk jadi" to recipe
+      // deduction, so its sales now use up the ingredients.
+      if (saved?.recipeModeAdopted) {
+        toast.info(t("page.bom.toast.recipeModeAdopted"), {
+          description: t("page.bom.toast.recipeModeAdoptedDesc")
+        });
+        queryClient.invalidateQueries(["products"]);
+      }
       queryClient.invalidateQueries(["bom-list"]);
       queryClient.invalidateQueries(["bom-edit", editId]);
       navigate("/bom");
