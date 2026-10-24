@@ -39,6 +39,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import DepartmentPositions from "@/components/organism/DepartmentPositions";
 import { getMissingFields } from "@/lib/validation";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const AddPosition = () => {
   const { t } = useTranslation();
@@ -175,6 +176,7 @@ const AddPosition = () => {
                               {...field}
                               placeholder={t("page.position.form.namePlaceholder")}
                               className="pl-9"
+                              maxLength={FIELD_LIMITS.SHORT_LABEL}
                             />
                           </div>
                         </FormControl>
@@ -271,6 +273,7 @@ const AddPosition = () => {
                           placeholder={t("page.position.form.descriptionPlaceholder")}
                           rows={4}
                           className="resize-none"
+                          maxLength={FIELD_LIMITS.DESCRIPTION}
                         />
                       </FormControl>
                       <FormMessage />

@@ -84,6 +84,7 @@ import { resolveSubmitStatus } from "@/lib/store-lifecycle";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import TenantSelectField, { tenantErrorMessage } from "@/components/organism/TenantSelectField";
 import { useTenantManagePermission } from "@/hooks/useTenantManagePermission";
+import { FIELD_LIMITS, CURRENT_DB_LIMITS } from "@/constants/fieldLimits";
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -769,6 +770,7 @@ const AddLocation = () => {
                               {...field}
                               placeholder={t("page.location.form.namePlaceholder")}
                               className="h-12"
+                              maxLength={FIELD_LIMITS.BUSINESS_NAME}
                             />
                             <FormMessage />
                           </FormItem>
@@ -826,7 +828,7 @@ const AddLocation = () => {
                                 placeholder={t("page.location.form.phonePlaceholder")}
                                 className="pl-9"
                                 inputMode="numeric"
-                                maxLength={16}
+                                maxLength={FIELD_LIMITS.PHONE}
                                 onChange={(e) => {
                                   const value = e.target.value.replace(/\D/g, "").slice(0, 16);
                                   field.onChange(value);
@@ -859,6 +861,7 @@ const AddLocation = () => {
                                 placeholder={t("page.location.form.emailPlaceholder")}
                                 className="pl-9"
                                 type="email"
+                                maxLength={FIELD_LIMITS.EMAIL}
                               />
                             </div>
                             <FormMessage />
@@ -946,6 +949,7 @@ const AddLocation = () => {
                               {...field}
                               placeholder={t("page.location.form.addressPlaceholder")}
                               className="pl-9 min-h-[80px]"
+                              maxLength={FIELD_LIMITS.ADDRESS}
                             />
                           </div>
                           <FormMessage />
@@ -966,6 +970,7 @@ const AddLocation = () => {
                             {...field}
                             placeholder={t("page.location.form.detailPlaceholder")}
                             className="min-h-[80px]"
+                            maxLength={FIELD_LIMITS.ADDRESS}
                           />
                           <p className="text-xs text-muted-foreground mt-1">
                             {t("page.location.form.detailLocationHint")}
@@ -1162,6 +1167,7 @@ const AddLocation = () => {
                             placeholder={t("page.location.form.autoFill")}
                             disabled
                             className="bg-muted/50"
+                            maxLength={FIELD_LIMITS.POSTAL_CODE}
                           />
                           <FormMessage />
                         </FormItem>
@@ -1243,6 +1249,7 @@ const AddLocation = () => {
                                 placeholder={t("page.location.form.clickSelectManager")}
                                 className="pl-9 pr-10 cursor-pointer"
                                 readOnly
+                                maxLength={FIELD_LIMITS.PERSON_NAME}
                               />
                             </div>
                             {field.value && (
@@ -1470,6 +1477,7 @@ const AddLocation = () => {
                             value={link.account}
                             onChange={(e) => updateSocial(idx, "account", e.target.value)}
                             className="flex-1"
+                            maxLength={CURRENT_DB_LIMITS.URL_COLUMN}
                           />
                           <button
                             type="button"

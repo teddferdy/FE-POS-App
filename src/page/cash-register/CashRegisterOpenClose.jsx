@@ -16,6 +16,8 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { getTodayScheduleMinutes, formatMinutesAsTime } from "@/utils/storeTimezone";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Textarea } from "@/components/ui/textarea";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
@@ -296,12 +298,14 @@ const CashRegisterOpenClose = () => {
                   <Label className="text-sm font-medium">
                     {t("page.cashRegister.openClose.notesLabel")}
                   </Label>
-                  <textarea
+                  <Textarea
+                    unstyled
                     rows={4}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring focus:border-input transition-shadow resize-none"
                     placeholder={t("page.cashRegister.openClose.notesPlaceholder")}
+                    maxLength={FIELD_LIMITS.DESCRIPTION}
                   />
                 </div>
                 {isEarlyOpening && (

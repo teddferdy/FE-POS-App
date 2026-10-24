@@ -27,6 +27,8 @@ import { getMissingFields } from "@/lib/validation";
 import { normalizePayload } from "@/lib/payload-normalizer";
 import PageHeader from "@/components/ui/PageHeader";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Input } from "@/components/ui/input";
 
 const AddAdmin = () => {
   const { t } = useTranslation();
@@ -159,25 +161,29 @@ const AddAdmin = () => {
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.user.form.name")}
                   </label>
-                  <input
+                  <Input
+                    unstyled
                     name="name"
                     value={form.name}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                     placeholder={t("page.user.form.namePlaceholder")}
+                    maxLength={FIELD_LIMITS.PERSON_NAME}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.user.form.email")}
                   </label>
-                  <input
+                  <Input
+                    unstyled
                     name="email"
                     type="email"
                     value={form.email}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                     placeholder={t("page.user.form.emailPlaceholder")}
+                    maxLength={FIELD_LIMITS.EMAIL}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -210,14 +216,15 @@ const AddAdmin = () => {
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.user.form.phone")}
                   </label>
-                  <input
+                  <Input
+                    unstyled
                     name="phoneNumber"
                     type="tel"
                     value={form.phoneNumber}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                     placeholder={t("page.user.form.phonePlaceholder")}
-                    maxLength={14}
+                    maxLength={FIELD_LIMITS.PHONE}
                   />
                   <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
                   <p className="text-xs text-muted-foreground">{t("common.optionalField")}</p>

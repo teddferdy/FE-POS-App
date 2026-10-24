@@ -64,6 +64,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import InventoryModeField from "@/page/product/InventoryModeField";
 import { INVENTORY_MODES } from "@/lib/inventory-mode";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const EditProduct = () => {
   const { t } = useTranslation();
@@ -925,6 +926,7 @@ const EditProduct = () => {
                             <Input
                               placeholder={t("page.product.form.namePlaceholder")}
                               {...field}
+                              maxLength={FIELD_LIMITS.BUSINESS_NAME}
                             />
                             <FormMessage />
                           </FormItem>
@@ -1039,6 +1041,7 @@ const EditProduct = () => {
                               placeholder={t("page.product.form.descPlaceholder")}
                               rows={3}
                               {...field}
+                              maxLength={FIELD_LIMITS.DESCRIPTION}
                             />
                             <FormMessage />
                           </FormItem>
@@ -1086,6 +1089,7 @@ const EditProduct = () => {
                                 <Input
                                   placeholder={t("page.product.form.brandPlaceholder")}
                                   {...field}
+                                  maxLength={FIELD_LIMITS.BUSINESS_NAME}
                                 />
                                 <p className="text-[11px] text-muted-foreground mt-1">
                                   {t("page.product.form.brandOptional")}
@@ -1104,6 +1108,7 @@ const EditProduct = () => {
                                 <Input
                                   placeholder={t("page.product.form.skuPlaceholder2")}
                                   {...field}
+                                  maxLength={FIELD_LIMITS.CODE}
                                 />
                                 <p className="text-[11px] text-muted-foreground mt-1">
                                   {t("page.product.form.skuOptional")}
@@ -1123,6 +1128,7 @@ const EditProduct = () => {
                                 <Input
                                   placeholder={t("page.product.form.barcodePlaceholder")}
                                   {...field}
+                                  maxLength={FIELD_LIMITS.BARCODE}
                                 />
                                 <p className="text-[11px] text-muted-foreground mt-1">
                                   {t("page.product.form.barcodeInfo")}
@@ -1659,6 +1665,7 @@ const EditProduct = () => {
                                       updateVariantGroup(group.id, "name", e.target.value)
                                     }
                                     className="h-9 text-sm flex-1"
+                                    maxLength={FIELD_LIMITS.SHORT_LABEL}
                                   />
                                 </div>
                                 <Button
@@ -1690,6 +1697,7 @@ const EditProduct = () => {
                                         updateVariantOption(group.id, idx, "name", e.target.value)
                                       }
                                       className="h-9 text-sm flex-1"
+                                      maxLength={FIELD_LIMITS.SHORT_LABEL}
                                     />
                                     <div className="relative w-28 shrink-0">
                                       <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -1808,6 +1816,7 @@ const EditProduct = () => {
                                     updateModifierItem(mod.id, "name", e.target.value)
                                   }
                                   className="h-9 text-sm"
+                                  maxLength={FIELD_LIMITS.SHORT_LABEL}
                                 />
                                 <div className="flex items-center gap-2">
                                   <div className="relative flex-1">
@@ -1882,6 +1891,7 @@ const EditProduct = () => {
                               value={tier.name}
                               onChange={(e) => updatePriceTier(tier.id, "name", e.target.value)}
                               className="h-9 text-sm flex-1"
+                              maxLength={FIELD_LIMITS.SHORT_LABEL}
                             />
                             <div className="relative w-40 shrink-0">
                               <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">

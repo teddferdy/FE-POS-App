@@ -38,6 +38,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
@@ -372,7 +373,7 @@ const EditReservation = () => {
                       {t("page.reservation.edit.form.customerName")}{" "}
                       <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input {...field} />
+                    <Input {...field} maxLength={FIELD_LIMITS.PERSON_NAME} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -383,7 +384,7 @@ const EditReservation = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("page.reservation.edit.form.customerPhone")}</FormLabel>
-                    <Input maxLength={16} {...field} />
+                    <Input maxLength={FIELD_LIMITS.PHONE} {...field} />
                     <FormMessage />
                     <FormDescription>{t("common.phoneHint")}</FormDescription>
                   </FormItem>
@@ -395,7 +396,7 @@ const EditReservation = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("page.reservation.edit.form.customerEmail")}</FormLabel>
-                    <Input type="email" {...field} />
+                    <Input type="email" {...field} maxLength={FIELD_LIMITS.EMAIL} />
                     <FormMessage />
                     <FormDescription>{t("common.optionalField")}</FormDescription>
                   </FormItem>
@@ -467,7 +468,7 @@ const EditReservation = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("page.reservation.edit.form.notes")}</FormLabel>
-                  <Textarea rows={3} {...field} />
+                  <Textarea rows={3} {...field} maxLength={FIELD_LIMITS.DESCRIPTION} />
                   <FormMessage />
                 </FormItem>
               )}

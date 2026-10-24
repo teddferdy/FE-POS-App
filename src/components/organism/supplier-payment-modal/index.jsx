@@ -10,6 +10,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { recordPayment } from "@/services/purchase-payment";
 import { newPurchasePaymentKey } from "@/utils/paymentIdempotency";
 import { getPayablePurchaseOrders } from "@/utils/supplierPayment";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const rupiah = (value) => Number(value || 0).toLocaleString("id-ID");
 
@@ -172,6 +173,7 @@ export default function SupplierPaymentModal({
             value={payRef}
             onChange={(e) => setPayRef(e.target.value)}
             placeholder={t("page.supplier.detail.modal.referencePlaceholder")}
+            maxLength={FIELD_LIMITS.REFERENCE}
           />
         </div>
         <div className="space-y-2">
@@ -183,6 +185,7 @@ export default function SupplierPaymentModal({
             value={payNotes}
             onChange={(e) => setPayNotes(e.target.value)}
             placeholder={t("page.supplier.detail.modal.notesPlaceholder")}
+            maxLength={FIELD_LIMITS.SHORT_NOTE}
           />
         </div>
       </div>

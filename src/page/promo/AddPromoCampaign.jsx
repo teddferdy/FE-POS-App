@@ -51,6 +51,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const SectionHeader = ({ icon: Icon, title, description, gradient }) => (
   <div className={`bg-gradient-to-r ${gradient} px-6 py-4`}>
@@ -512,6 +513,7 @@ const AddPromoCampaign = () => {
                     <Input
                       {...form.register("name")}
                       placeholder={t("page.promo.form.namePlaceholder")}
+                      maxLength={FIELD_LIMITS.BUSINESS_NAME}
                     />
                     {form.formState.errors.name && (
                       <p className="text-xs text-destructive">
@@ -525,6 +527,7 @@ const AddPromoCampaign = () => {
                       {...form.register("description")}
                       rows={3}
                       placeholder={t("page.promo.form.descriptionPlaceholder")}
+                      maxLength={FIELD_LIMITS.DESCRIPTION}
                     />
                   </div>
                   <div className="space-y-2">
@@ -533,6 +536,7 @@ const AddPromoCampaign = () => {
                       {...form.register("code")}
                       className="uppercase"
                       placeholder={t("page.promo.form.codePlaceholder")}
+                      maxLength={FIELD_LIMITS.CODE}
                     />
                     <FormDescription>{t("common.optionalField")}</FormDescription>
                   </div>

@@ -35,6 +35,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { useTranslation } from "react-i18next";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const AddExpenseCategory = () => {
   const { t } = useTranslation();
@@ -163,6 +164,7 @@ const AddExpenseCategory = () => {
                       <Input
                         placeholder={t("page.expenseCategory.add.namePlaceholder")}
                         {...field}
+                        maxLength={FIELD_LIMITS.SHORT_LABEL}
                       />
                       <FormMessage />
                     </FormItem>
@@ -178,6 +180,7 @@ const AddExpenseCategory = () => {
                         placeholder={t("page.expenseCategory.add.descriptionPlaceholder")}
                         rows={3}
                         {...field}
+                        maxLength={FIELD_LIMITS.DESCRIPTION}
                       />
                       <FormMessage />
                     </FormItem>

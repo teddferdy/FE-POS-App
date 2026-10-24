@@ -20,6 +20,8 @@ import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Input } from "@/components/ui/input";
 
 const statusCfg = {
   pending: {
@@ -430,7 +432,8 @@ const SalesReturnList = () => {
                 )}{" "}
                 <span className="text-destructive">*</span>
               </label>
-              <input
+              <Input
+                unstyled
                 id="sales-return-refund-reference"
                 value={refundReference}
                 onChange={(e) => {
@@ -440,6 +443,7 @@ const SalesReturnList = () => {
                 aria-invalid={referenceError}
                 aria-describedby="sales-return-refund-reference-hint"
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                maxLength={FIELD_LIMITS.REFERENCE}
               />
               <p
                 id="sales-return-refund-reference-hint"

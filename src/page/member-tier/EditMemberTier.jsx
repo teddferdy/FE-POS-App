@@ -30,6 +30,8 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Input } from "@/components/ui/input";
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -242,12 +244,14 @@ const EditMemberTier = () => {
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {t("page.memberTier.edit.tierName")} <span className="text-destructive">*</span>
                   </label>
-                  <input
+                  <Input
+                    unstyled
                     type="text"
                     value={formData.tierName}
                     onChange={(e) => handleInputChange("tierName", e.target.value)}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50"
                     placeholder={t("page.memberTier.edit.tierNamePlaceholder")}
+                    maxLength={FIELD_LIMITS.SHORT_LABEL}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -393,12 +397,14 @@ const EditMemberTier = () => {
                           perk.text.trim() ? "text-green-600" : "text-muted-foreground"
                         }`}
                       />
-                      <input
+                      <Input
+                        unstyled
                         type="text"
                         value={perk.text}
                         onChange={(e) => handlePerkChange(perk.id, e.target.value)}
                         className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2.5 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all text-sm disabled:opacity-50"
                         placeholder={t("page.memberTier.edit.perkPlaceholder")}
+                        maxLength={FIELD_LIMITS.SHORT_NOTE}
                       />
                     </div>
                     <button

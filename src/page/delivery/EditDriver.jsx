@@ -16,6 +16,9 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const EditDriver = () => {
   const { t } = useTranslation();
@@ -152,10 +155,12 @@ const EditDriver = () => {
                 <label className="text-sm font-medium text-foreground">
                   {t("page.delivery.driver.form.name")} <span className="text-destructive">*</span>
                 </label>
-                <input
+                <Input
+                  unstyled
                   {...form.register("name")}
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
                   placeholder={t("page.delivery.driver.form.namePlaceholder")}
+                  maxLength={FIELD_LIMITS.PERSON_NAME}
                 />
                 {form.formState.errors.name && (
                   <p className="text-xs text-destructive mt-1">
@@ -167,10 +172,12 @@ const EditDriver = () => {
                 <label className="text-sm font-medium text-foreground">
                   {t("page.delivery.driver.form.phone")} <span className="text-destructive">*</span>
                 </label>
-                <input
+                <Input
+                  unstyled
                   {...form.register("phone")}
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
                   placeholder={t("page.delivery.driver.form.phonePlaceholder")}
+                  maxLength={FIELD_LIMITS.PHONE}
                 />
                 {form.formState.errors.phone && (
                   <p className="text-xs text-destructive mt-1">
@@ -183,10 +190,12 @@ const EditDriver = () => {
                 <label className="text-sm font-medium text-foreground">
                   {t("page.delivery.driver.form.email")}
                 </label>
-                <input
+                <Input
+                  unstyled
                   {...form.register("email")}
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
                   placeholder={t("page.delivery.driver.form.emailPlaceholder")}
+                  maxLength={FIELD_LIMITS.EMAIL}
                 />
                 <p className="text-xs text-muted-foreground mt-1">{t("common.optionalField")}</p>
               </div>
@@ -219,10 +228,12 @@ const EditDriver = () => {
                   {t("page.delivery.driver.form.vehicleType")}{" "}
                   <span className="text-destructive">*</span>
                 </label>
-                <input
+                <Input
+                  unstyled
                   {...form.register("vehicleType")}
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
                   placeholder={t("page.delivery.driver.form.vehicleTypePlaceholder")}
+                  maxLength={FIELD_LIMITS.SHORT_LABEL}
                 />
                 {form.formState.errors.vehicleType && (
                   <p className="text-xs text-destructive mt-1">
@@ -235,10 +246,12 @@ const EditDriver = () => {
                   {t("page.delivery.driver.form.vehiclePlate")}{" "}
                   <span className="text-destructive">*</span>
                 </label>
-                <input
+                <Input
+                  unstyled
                   {...form.register("vehiclePlate")}
                   className="mt-1 w-full h-10 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none"
                   placeholder={t("page.delivery.driver.form.vehiclePlatePlaceholder")}
+                  maxLength={FIELD_LIMITS.VEHICLE_PLATE}
                 />
                 {form.formState.errors.vehiclePlate && (
                   <p className="text-xs text-destructive mt-1">
@@ -250,10 +263,12 @@ const EditDriver = () => {
                 <label className="text-sm font-medium text-foreground">
                   {t("page.delivery.driver.form.notes")}
                 </label>
-                <textarea
+                <Textarea
+                  unstyled
                   {...form.register("notes")}
                   className="mt-1 w-full h-20 px-3 py-2 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none resize-none"
                   placeholder={t("page.delivery.driver.form.notesPlaceholder")}
+                  maxLength={FIELD_LIMITS.DESCRIPTION}
                 />
               </div>
             </div>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getCashierTables, releaseCashierTable } from "@/services/table";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const P = "page.cashier.tables";
 
@@ -132,7 +133,7 @@ const CashierTablePanel = ({ store, onClose }) => {
             <Textarea
               id="table-release-reason"
               rows={2}
-              maxLength={200}
+              maxLength={FIELD_LIMITS.DESCRIPTION}
               value={reason}
               aria-invalid={reasonError || undefined}
               onChange={(e) => {

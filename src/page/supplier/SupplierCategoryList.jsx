@@ -37,6 +37,7 @@ import { Card } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const SupplierCategoryList = () => {
   const { t } = useTranslation();
@@ -461,6 +462,7 @@ const SupplierCategoryList = () => {
                       placeholder={t("page.supplierCategory.namePlaceholder")}
                       className="h-10"
                       {...field}
+                      maxLength={FIELD_LIMITS.SHORT_LABEL}
                     />
                   </FormControl>
                   <FormMessage />
@@ -481,6 +483,7 @@ const SupplierCategoryList = () => {
                       rows={3}
                       className="resize-none"
                       {...field}
+                      maxLength={FIELD_LIMITS.DESCRIPTION}
                     />
                   </FormControl>
                   <FormDescription className="text-xs text-muted-foreground">

@@ -18,6 +18,8 @@ import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Textarea } from "@/components/ui/textarea";
 
 const statusOptions = [
   { value: "all", label: "All" },
@@ -354,11 +356,13 @@ const DeliveryOrderList = () => {
           <label className="text-sm font-medium text-foreground">
             {t("page.delivery.detail.cancelReason")}
           </label>
-          <textarea
+          <Textarea
+            unstyled
             value={cancelReason}
             onChange={(e) => setCancelReason(e.target.value)}
             className="mt-1 w-full h-20 px-3 py-2 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none resize-none"
             placeholder={t("page.delivery.detail.cancelReason")}
+            maxLength={FIELD_LIMITS.DESCRIPTION}
           />
         </div>
       </Modal>

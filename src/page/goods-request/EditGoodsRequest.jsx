@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const unitOptions = [
   { value: "pcs", label: "pcs" },
@@ -413,6 +414,7 @@ const EditGoodsRequest = () => {
                   onChange={(e) => setRequestedBy(e.target.value)}
                   placeholder={t("page.goodsRequest.edit.placeholder.requestedBy")}
                   className="pl-9"
+                  maxLength={FIELD_LIMITS.PERSON_NAME}
                 />
               </div>
             </div>
@@ -543,6 +545,7 @@ const EditGoodsRequest = () => {
                               onChange={(e) => updateItem(gIdx, iIdx, "notes", e.target.value)}
                               className="h-8 text-xs"
                               placeholder={t("page.goodsRequest.edit.placeholder.notes")}
+                              maxLength={FIELD_LIMITS.SHORT_NOTE}
                             />
                           </td>
                           <td className="px-3 py-2 text-center">
@@ -590,6 +593,7 @@ const EditGoodsRequest = () => {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("page.goodsRequest.edit.placeholder.notes")}
+              maxLength={FIELD_LIMITS.DESCRIPTION}
             />
           </div>
 

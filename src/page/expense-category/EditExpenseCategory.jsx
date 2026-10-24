@@ -36,6 +36,7 @@ import { getMissingFields } from "@/lib/validation";
 import AbortController from "@/components/organism/abort-controller";
 import PageHeader from "@/components/ui/PageHeader";
 import { useLeaveGuard } from "@/hooks/useLeaveGuard";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const EditExpenseCategory = () => {
   const { t } = useTranslation();
@@ -211,6 +212,7 @@ const EditExpenseCategory = () => {
                       <Input
                         placeholder={t("page.expenseCategory.edit.namePlaceholder")}
                         {...field}
+                        maxLength={FIELD_LIMITS.SHORT_LABEL}
                       />
                       <FormMessage />
                     </FormItem>
@@ -226,6 +228,7 @@ const EditExpenseCategory = () => {
                         placeholder={t("page.expenseCategory.edit.descriptionPlaceholder")}
                         rows={3}
                         {...field}
+                        maxLength={FIELD_LIMITS.DESCRIPTION}
                       />
                       <FormMessage />
                     </FormItem>

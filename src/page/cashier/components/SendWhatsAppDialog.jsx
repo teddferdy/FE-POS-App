@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getInvoiceWhatsAppText } from "@/services/invoice";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const P = "page.cashier.receipt";
 
@@ -93,6 +94,7 @@ const SendWhatsAppDialog = ({ orderId, defaultPhone = "", onClose }) => {
                 setPhone(e.target.value.replace(/[^0-9+\-\s]/g, ""));
                 setPhoneError(null);
               }}
+              maxLength={FIELD_LIMITS.PHONE}
             />
             {phoneError ? (
               <p role="alert" className="text-xs text-destructive">

@@ -30,6 +30,7 @@ import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const taxTypes = [
   { value: "ppn", label: "PPN" },
@@ -151,7 +152,11 @@ const AddTaxConfig = () => {
                           {t("page.taxConfig.form.name")}{" "}
                           <span className="text-destructive">*</span>
                         </FormLabel>
-                        <Input placeholder={t("page.taxConfig.form.namePlaceholder")} {...field} />
+                        <Input
+                          placeholder={t("page.taxConfig.form.namePlaceholder")}
+                          {...field}
+                          maxLength={FIELD_LIMITS.BUSINESS_NAME}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -274,6 +279,7 @@ const AddTaxConfig = () => {
                         placeholder={t("page.taxConfig.form.descriptionPlaceholder")}
                         rows={3}
                         {...field}
+                        maxLength={FIELD_LIMITS.DESCRIPTION}
                       />
                       <FormMessage />
                     </FormItem>

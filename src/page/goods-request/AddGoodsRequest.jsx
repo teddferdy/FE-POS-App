@@ -22,6 +22,7 @@ import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const emptyItem = {
   name: "",
@@ -575,6 +576,7 @@ const AddGoodsRequest = () => {
                   {...form.register("requestedBy")}
                   placeholder={t("page.goodsRequest.add.placeholder.requestedBy")}
                   className="pl-9"
+                  maxLength={FIELD_LIMITS.PERSON_NAME}
                 />
               </div>
             </div>
@@ -661,6 +663,7 @@ const AddGoodsRequest = () => {
               rows={2}
               {...form.register("notes")}
               placeholder={t("page.goodsRequest.add.placeholder.notes")}
+              maxLength={FIELD_LIMITS.DESCRIPTION}
             />
           </div>
 

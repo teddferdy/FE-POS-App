@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const MOVEMENT_TYPES = ["cash_in", "cash_out"];
 const REASON_CODES = [
@@ -317,6 +318,7 @@ const CashMovements = ({ registerId, canManage }) => {
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               placeholder={t("page.cashRegister.movements.notesPlaceholder")}
+              maxLength={FIELD_LIMITS.SHORT_NOTE}
             />
           </div>
           {fieldError && (

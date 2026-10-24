@@ -54,6 +54,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS, CURRENT_DB_LIMITS } from "@/constants/fieldLimits";
 
 const EditSupplier = () => {
   const { t } = useTranslation();
@@ -725,6 +726,7 @@ const EditSupplier = () => {
                               <Input
                                 placeholder={t("page.supplier.form.namePlaceholder")}
                                 {...field}
+                                maxLength={FIELD_LIMITS.BUSINESS_NAME}
                               />
                               <FormMessage />
                             </FormItem>
@@ -739,6 +741,7 @@ const EditSupplier = () => {
                               <Input
                                 placeholder={t("page.supplier.form.contactPersonPlaceholder")}
                                 {...field}
+                                maxLength={FIELD_LIMITS.PERSON_NAME}
                               />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
@@ -757,7 +760,7 @@ const EditSupplier = () => {
                               <Input
                                 placeholder={t("page.supplier.form.phonePlaceholder")}
                                 inputMode="numeric"
-                                maxLength={16}
+                                maxLength={FIELD_LIMITS.PHONE}
                                 {...field}
                                 onChange={(e) => {
                                   const v = e.target.value.replace(/\D/g, "").slice(0, 16);
@@ -778,6 +781,7 @@ const EditSupplier = () => {
                               <Input
                                 placeholder={t("page.supplier.form.emailPlaceholder")}
                                 {...field}
+                                maxLength={FIELD_LIMITS.EMAIL}
                               />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
@@ -821,6 +825,7 @@ const EditSupplier = () => {
                               placeholder={t("page.supplier.form.addressPlaceholder")}
                               rows={3}
                               {...field}
+                              maxLength={FIELD_LIMITS.ADDRESS}
                             />
                             <FormMessage />
                             <FormDescription>{t("common.optionalField")}</FormDescription>
@@ -840,6 +845,7 @@ const EditSupplier = () => {
                                   "Nomor HP/WA utama"
                                 )}
                                 {...field}
+                                maxLength={FIELD_LIMITS.PHONE}
                               />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
@@ -858,6 +864,7 @@ const EditSupplier = () => {
                                   "Nomor WhatsApp"
                                 )}
                                 {...field}
+                                maxLength={FIELD_LIMITS.PHONE}
                               />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
@@ -873,6 +880,7 @@ const EditSupplier = () => {
                               <Input
                                 placeholder={t("page.supplier.form.faxPlaceholder", "Nomor Fax")}
                                 {...field}
+                                maxLength={FIELD_LIMITS.PHONE}
                               />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
@@ -888,6 +896,7 @@ const EditSupplier = () => {
                               <Input
                                 placeholder={t("page.supplier.form.websitePlaceholder", "https://")}
                                 {...field}
+                                maxLength={CURRENT_DB_LIMITS.URL_COLUMN}
                               />
                               <FormMessage />
                               <FormDescription>{t("common.optionalField")}</FormDescription>
@@ -940,6 +949,7 @@ const EditSupplier = () => {
                                 placeholder="Nama kontak"
                                 value={contactName}
                                 onChange={(e) => setContactName(e.target.value)}
+                                maxLength={FIELD_LIMITS.PERSON_NAME}
                               />
                             </div>
                             <div className="space-y-1">
@@ -950,6 +960,7 @@ const EditSupplier = () => {
                                 placeholder="Jabatan"
                                 value={contactPosition}
                                 onChange={(e) => setContactPosition(e.target.value)}
+                                maxLength={FIELD_LIMITS.SHORT_LABEL}
                               />
                             </div>
                             <div className="space-y-1">
@@ -960,6 +971,7 @@ const EditSupplier = () => {
                                 placeholder="Email"
                                 value={contactEmail}
                                 onChange={(e) => setContactEmail(e.target.value)}
+                                maxLength={FIELD_LIMITS.EMAIL}
                               />
                             </div>
                             <div className="space-y-1">
@@ -970,6 +982,7 @@ const EditSupplier = () => {
                                 placeholder="Telepon"
                                 value={contactPhone}
                                 onChange={(e) => setContactPhone(e.target.value)}
+                                maxLength={FIELD_LIMITS.PHONE}
                               />
                             </div>
                           </div>
@@ -1171,6 +1184,7 @@ const EditSupplier = () => {
                                 )}
                                 rows={2}
                                 {...field}
+                                maxLength={FIELD_LIMITS.DESCRIPTION}
                               />
                               <FormMessage />
                             </FormItem>
@@ -1220,6 +1234,7 @@ const EditSupplier = () => {
                                   placeholder="BCA, Mandiri, BRI..."
                                   value={bankName}
                                   onChange={(e) => setBankName(e.target.value)}
+                                  maxLength={FIELD_LIMITS.BUSINESS_NAME}
                                 />
                               </div>
                               <div className="space-y-1">
@@ -1231,6 +1246,7 @@ const EditSupplier = () => {
                                   placeholder="0012345678"
                                   value={accountNumber}
                                   onChange={(e) => setAccountNumber(e.target.value)}
+                                  maxLength={FIELD_LIMITS.BANK_ACCOUNT}
                                 />
                               </div>
                               <div className="space-y-1">
@@ -1241,6 +1257,7 @@ const EditSupplier = () => {
                                   placeholder="Nama pemilik rekening"
                                   value={accountName}
                                   onChange={(e) => setAccountName(e.target.value)}
+                                  maxLength={FIELD_LIMITS.PERSON_NAME}
                                 />
                               </div>
                             </div>
@@ -1451,6 +1468,7 @@ const EditSupplier = () => {
                                   "Nomor NPWP"
                                 )}
                                 {...field}
+                                maxLength={FIELD_LIMITS.NPWP}
                               />
                               <FormMessage />
                             </FormItem>
@@ -1468,6 +1486,7 @@ const EditSupplier = () => {
                                   "Nama sesuai NPWP"
                                 )}
                                 {...field}
+                                maxLength={FIELD_LIMITS.BUSINESS_NAME}
                               />
                               <FormMessage />
                             </FormItem>
@@ -1482,6 +1501,7 @@ const EditSupplier = () => {
                               <Input
                                 placeholder={t("page.supplier.form.nitkuPlaceholder", "NITKU")}
                                 {...field}
+                                maxLength={FIELD_LIMITS.NITKU}
                               />
                               <FormMessage />
                             </FormItem>
@@ -1580,6 +1600,7 @@ const EditSupplier = () => {
                           placeholder={t("page.supplier.products.searchPlaceholder")}
                           value={newProductName}
                           onChange={(e) => setNewProductName(e.target.value)}
+                          maxLength={FIELD_LIMITS.BUSINESS_NAME}
                         />
                       </div>
                       <div className="col-span-6 space-y-1">
@@ -1653,6 +1674,7 @@ const EditSupplier = () => {
                           inputMode="decimal"
                           placeholder="0"
                           maxLength={3}
+                          showCount={false}
                           value={productQualityRating}
                           onChange={(e) => {
                             const v = e.target.value.replace(/[^0-5.]/g, "");
@@ -1683,6 +1705,7 @@ const EditSupplier = () => {
                           rows={2}
                           value={productNotes}
                           onChange={(e) => setProductNotes(e.target.value)}
+                          maxLength={FIELD_LIMITS.DESCRIPTION}
                         />
                       </div>
                     </div>

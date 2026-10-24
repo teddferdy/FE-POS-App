@@ -27,6 +27,7 @@ import { useLeaveGuard } from "@/hooks/useLeaveGuard";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const AddShiftTemplate = () => {
   const { t } = useTranslation();
@@ -137,6 +138,7 @@ const AddShiftTemplate = () => {
                         {...field}
                         placeholder={t("page.shiftTemplate.form.namePlaceholder")}
                         className="pl-9"
+                        maxLength={FIELD_LIMITS.SHORT_LABEL}
                       />
                     </div>
                   </FormControl>
@@ -195,6 +197,7 @@ const AddShiftTemplate = () => {
                       placeholder={t("page.shiftTemplate.form.descPlaceholder")}
                       rows={3}
                       className="resize-none"
+                      maxLength={FIELD_LIMITS.DESCRIPTION}
                     />
                   </FormControl>
                   <FormMessage />

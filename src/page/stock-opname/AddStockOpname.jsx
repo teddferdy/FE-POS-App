@@ -62,6 +62,7 @@ import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 // BE persists these opname quantities as decimals (matching the product's
 // own DECIMAL(10,4) stock field, which is what auto-fills stokAwalJumlah) —
@@ -654,6 +655,7 @@ const AddStockOpname = () => {
                     className={
                       errors.auditor ? "border-destructive focus-visible:ring-destructive" : ""
                     }
+                    maxLength={FIELD_LIMITS.PERSON_NAME}
                   />
                   <FieldError error={errors.auditor} />
                 </div>
@@ -983,6 +985,7 @@ const AddStockOpname = () => {
                 {...form.register("catatan")}
                 rows={3}
                 placeholder={t("page.stockOpname.form.auditNotesPlaceholder")}
+                maxLength={FIELD_LIMITS.DESCRIPTION}
               />
             </div>
 

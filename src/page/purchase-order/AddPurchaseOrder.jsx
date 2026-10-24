@@ -31,6 +31,7 @@ import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const emptyItem = {
   name: "",
@@ -902,6 +903,7 @@ const AddPurchaseOrder = () => {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     className="min-h-[80px] resize-none"
+                    maxLength={FIELD_LIMITS.DESCRIPTION}
                   />
                 </div>
               </div>

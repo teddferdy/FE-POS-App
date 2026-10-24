@@ -41,6 +41,7 @@ import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { isSalaryCategoryName } from "@/lib/salary-category";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const statusBadge = {
   draft: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
@@ -604,6 +605,7 @@ const DetailExpense = () => {
                 placeholder={t("page.expense.detail.paymentFormNotePlaceholder")}
                 value={paymentForm.note}
                 onChange={(e) => setPaymentForm((f) => ({ ...f, note: e.target.value }))}
+                maxLength={FIELD_LIMITS.DESCRIPTION}
               />
             </div>
           </div>

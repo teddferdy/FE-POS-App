@@ -55,6 +55,7 @@ import {
 } from "@/services/accounting";
 import HorizontalScrollArea from "@/components/ui/HorizontalScrollArea";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS, CURRENT_DB_LIMITS } from "@/constants/fieldLimits";
 
 const formatIDR = (num) => {
   if (num == null || isNaN(num)) return "Rp 0";
@@ -159,13 +160,14 @@ const AccountForm = ({ form, onChange, initial }) => {
             onChange={set("code")}
             placeholder="1000"
             disabled={initial?.isSystem}
+            maxLength={CURRENT_DB_LIMITS.ACCOUNT_CODE}
           />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">
             {t("page.accounting.accounts.name")}
           </label>
-          <Input value={form.name} onChange={set("name")} />
+          <Input value={form.name} onChange={set("name")} maxLength={FIELD_LIMITS.BUSINESS_NAME} />
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -929,7 +931,7 @@ const JournalTab = ({ storeId, isAll }) => {
               <label className="text-xs font-medium text-muted-foreground">
                 {t("page.accounting.journal.description")}
               </label>
-              <Input name="description" />
+              <Input name="description" maxLength={FIELD_LIMITS.SHORT_NOTE} />
             </div>
           </div>
           <ManualLines accounts={accData?.data || []} />
@@ -961,7 +963,7 @@ const JournalTab = ({ storeId, isAll }) => {
         <Textarea
           id="journal-reverse-reason"
           className="mt-1.5"
-          maxLength={500}
+          maxLength={FIELD_LIMITS.DESCRIPTION}
           value={reverseReason}
           onChange={(e) => setReverseReason(e.target.value)}
           placeholder={t("page.accounting.journal.reverseReasonPlaceholder")}

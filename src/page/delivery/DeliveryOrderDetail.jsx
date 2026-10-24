@@ -20,6 +20,8 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { canAccess } from "@/utils/permission";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
+import { Textarea } from "@/components/ui/textarea";
 
 const statusBadge = (status) => {
   const map = {
@@ -460,11 +462,13 @@ const DeliveryOrderDetail = () => {
               </button>
             ))}
           </div>
-          <textarea
+          <Textarea
+            unstyled
             value={statusNote}
             onChange={(e) => setStatusNote(e.target.value)}
             className="w-full h-20 px-3 py-2 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none resize-none"
             placeholder="Optional note..."
+            maxLength={FIELD_LIMITS.DESCRIPTION}
           />
         </div>
       </Modal>

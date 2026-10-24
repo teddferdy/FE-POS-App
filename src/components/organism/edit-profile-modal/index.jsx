@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { editProfile } from "@/services/auth";
 import { isSessionEnding } from "@/services/session";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 export default function EditProfileModal({ open, onOpenChange, user, onSuccess }) {
   const { t } = useTranslation();
@@ -127,6 +128,7 @@ export default function EditProfileModal({ open, onOpenChange, user, onSuccess }
             id="edit-profile-fullName"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            maxLength={FIELD_LIMITS.PERSON_NAME}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -136,6 +138,7 @@ export default function EditProfileModal({ open, onOpenChange, user, onSuccess }
               id="edit-profile-userName"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
+              maxLength={FIELD_LIMITS.SHORT_LABEL}
             />
           </div>
           <div className="space-y-2">
@@ -144,6 +147,7 @@ export default function EditProfileModal({ open, onOpenChange, user, onSuccess }
               id="edit-profile-phoneNumber"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
+              maxLength={FIELD_LIMITS.PHONE}
             />
           </div>
         </div>
@@ -153,6 +157,7 @@ export default function EditProfileModal({ open, onOpenChange, user, onSuccess }
             id="edit-profile-address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
+            maxLength={FIELD_LIMITS.ADDRESS}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -179,6 +184,7 @@ export default function EditProfileModal({ open, onOpenChange, user, onSuccess }
             id="edit-profile-placeOfBirth"
             value={placeOfBirth}
             onChange={(e) => setPlaceOfBirth(e.target.value)}
+            maxLength={FIELD_LIMITS.SHORT_LABEL}
           />
         </div>
         <div className="space-y-2">

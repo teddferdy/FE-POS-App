@@ -40,6 +40,7 @@ import { getMissingFields } from "@/lib/validation";
 import { SHIFT_TYPES, DEFAULT_SHIFT_TYPE, SHIFT_TYPE_LABELS } from "@/constants/shiftTypes";
 import { safeGet } from "@/lib/safe-lookup";
 import { useLocations } from "@/queries/useLocations";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const AddShift = () => {
   const { t } = useTranslation();
@@ -505,6 +506,7 @@ const AddShift = () => {
                           placeholder={t("page.shift.edit.form.namaShiftPlaceholder")}
                           className="pl-9"
                           {...field}
+                          maxLength={FIELD_LIMITS.SHORT_LABEL}
                         />
                       </div>
                       <FormMessage />

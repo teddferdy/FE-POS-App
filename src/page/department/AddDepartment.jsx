@@ -28,6 +28,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import MissingFieldsModal from "@/components/organism/MissingFieldsModal";
 import { getMissingFields } from "@/lib/validation";
+import { FIELD_LIMITS } from "@/constants/fieldLimits";
 
 const AddDepartment = () => {
   const { t } = useTranslation();
@@ -124,6 +125,7 @@ const AddDepartment = () => {
                           {...field}
                           placeholder={t("page.department.form.namePlaceholder")}
                           className="pl-9"
+                          maxLength={FIELD_LIMITS.SHORT_LABEL}
                         />
                       </div>
                     </FormControl>
@@ -147,6 +149,7 @@ const AddDepartment = () => {
                       placeholder={t("page.department.form.descPlaceholder")}
                       rows={4}
                       className="resize-none"
+                      maxLength={FIELD_LIMITS.DESCRIPTION}
                     />
                   </FormControl>
                   <FormMessage />
