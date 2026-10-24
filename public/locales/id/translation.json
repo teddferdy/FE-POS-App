@@ -8776,5 +8776,6 @@
   "page.ingredient.form.source.none": "Tanpa supplier",
   "page.ingredient.form.source.noneDesc": "Dibeli di pasar atau dibuat sendiri. Nama bahan baku diketik langsung.",
   "page.ingredient.form.source.supplier": "Dari supplier",
-  "page.ingredient.form.source.supplierDesc": "Dibeli dari supplier terdaftar. Nama, harga, dan satuan bisa diambil dari katalog supplier."
+  "page.ingredient.form.source.supplierDesc": "Dibeli dari supplier terdaftar. Nama, harga, dan satuan bisa diambil dari katalog supplier.",
+  "page.ingredient.form.storeFirstHint": "Pilih toko terlebih dahulu. Supplier, kategori, dan nama bahan baku baru bisa diisi setelah toko dipilih."
 }
