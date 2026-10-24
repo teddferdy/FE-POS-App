@@ -2313,7 +2313,7 @@
   "page.stockHistory.reference.saleReversal": "Sale Reversal",
   "page.stockHistory.reference.productionReversal": "Production Reversal",
   "page.stockHistory.table.time": "Time",
-  "page.stockHistory.table.product": "Item",
+  "page.stockHistory.table.product": "Product",
   "page.stockHistory.table.before": "Before",
   "page.stockHistory.table.change": "Change",
   "page.stockHistory.table.after": "After",
@@ -8766,8 +8766,6 @@
   "page.customerOrder.pendingDesc": "{{count}} orders awaiting confirmation",
   "page.customerOrder.itemsCount": "{{count}} items",
   "page.purchaseOrder.edit.lockedAfterReceipt": "Locked because goods have already been received",
-  "page.stockHistory.item.ingredient": "Ingredient",
-  "page.stockHistory.item.product": "Product",
   "page.stockHistory.item.forMenu": "for {{name}}",
   "page.bom.toast.recipeModeAdopted": "The product now uses up its ingredients",
   "page.bom.toast.recipeModeAdoptedDesc": "Its stock deduction was changed to \"Made to order (recipe)\". Every sale now deducts the ingredients of this recipe. Change it in Edit Product if it is sold from finished stock.",
@@ -8777,5 +8775,10 @@
   "page.ingredient.form.source.noneDesc": "Bought at the market or made in-house. The ingredient name is typed in.",
   "page.ingredient.form.source.supplier": "From a supplier",
   "page.ingredient.form.source.supplierDesc": "Bought from a registered supplier. The name, price and unit can come from its catalog.",
-  "page.ingredient.form.storeFirstHint": "Select a store first. Supplier, category and the ingredient name can be filled in once a store is selected."
+  "page.ingredient.form.storeFirstHint": "Select a store first. Supplier, category and the ingredient name can be filled in once a store is selected.",
+  "page.stockHistory.tab.ingredient": "Ingredients",
+  "page.stockHistory.tab.product": "Products",
+  "page.stockHistory.table.ingredient": "Ingredient",
+  "page.stockHistory.filter.ingredient": "Ingredient",
+  "page.stockHistory.filter.allIngredients": "All Ingredients"
 }
