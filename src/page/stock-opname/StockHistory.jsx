@@ -213,6 +213,13 @@ const StockHistory = () => {
 
   const columns = [
     {
+      header: t("page.stockHistory.table.store"),
+      stickyLeft: true,
+      render: (h) => (
+        <span className="text-sm font-medium whitespace-nowrap">{h.storeData?.name || "-"}</span>
+      )
+    },
+    {
       header: t("page.stockHistory.table.time"),
       render: (h) => <span className="text-xs whitespace-nowrap">{formatDate(h.createdAt)}</span>
     },

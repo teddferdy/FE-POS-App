@@ -2382,6 +2382,7 @@
   "page.stockHistory.reference.saleReturnReversal": "Pembatalan Retur Penjualan",
   "page.stockHistory.reference.saleReversal": "Pembatalan Penjualan",
   "page.stockHistory.reference.productionReversal": "Pembatalan Produksi",
+  "page.stockHistory.table.store": "Toko",
   "page.stockHistory.table.time": "Waktu",
   "page.stockHistory.table.product": "Produk",
   "page.stockHistory.table.before": "Sebelum",

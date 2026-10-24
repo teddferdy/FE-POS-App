@@ -2385,6 +2385,7 @@
   "page.stockHistory.reference.saleReturnReversal": "Sale Return Reversal",
   "page.stockHistory.reference.saleReversal": "Sale Reversal",
   "page.stockHistory.reference.productionReversal": "Production Reversal",
+  "page.stockHistory.table.store": "Store",
   "page.stockHistory.table.time": "Time",
   "page.stockHistory.table.product": "Product",
   "page.stockHistory.table.before": "Before",
